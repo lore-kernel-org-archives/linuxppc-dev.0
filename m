@@ -2,91 +2,92 @@ Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 814E4C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 15:15:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1975AC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 18:29:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F177920672
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 15:15:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F177920672
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D6B4020837
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 18:29:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="sWdJ8OVB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6B4020837
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43CVBD0MqWzDqZb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:15:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CZVv2rdxzDqWv
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 05:29:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="sWdJ8OVB";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::12; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="sWdJ8OVB"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43CTt75r8ZzDqxb
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 02:01:03 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wB9ExIAa085633
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Dec 2018 10:01:01 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p8v5dprp2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Dec 2018 10:01:00 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Sun, 9 Dec 2018 15:00:58 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 9 Dec 2018 15:00:51 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wB9F0oPM26476574
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sun, 9 Dec 2018 15:00:50 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 10D96AE051;
- Sun,  9 Dec 2018 15:00:50 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 45CAEAE053;
- Sun,  9 Dec 2018 15:00:47 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.8.213])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Sun,  9 Dec 2018 15:00:47 +0000 (GMT)
-Received: by rapoport-lnx (sSMTP sendmail emulation);
- Sun, 09 Dec 2018 17:00:46 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 6/6] arm, unicore32: remove early_alloc*() wrappers
-Date: Sun,  9 Dec 2018 17:00:24 +0200
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1544367624-15376-1-git-send-email-rppt@linux.ibm.com>
-References: <1544367624-15376-1-git-send-email-rppt@linux.ibm.com>
-X-TM-AS-GCONF: 00
-x-cbid: 18120915-0012-0000-0000-000002D6AF53
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18120915-0013-0000-0000-0000210C1EE1
-Message-Id: <1544367624-15376-7-git-send-email-rppt@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-09_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812090139
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43CZS669bRzDqcj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 05:27:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544380033;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=ZwqB3fEfvgX8g+8jLemdA538IQXdYBFwTvYj1EW8mCc=;
+ b=sWdJ8OVB+W4GTyXG6fgmvkb98G22IzyHe3m3LzUqnYL9i7xZTETZ9GJveAHGR0MdlV
+ aHtx2u+Z5sPrGz3sNgte5MTMhU0rzjLw616TWEQCaFhTclchVyAMPRofSq9WtupdxM+g
+ pfpQcGJnSZnfG4TMUTR70fvlSx1GKJUY7Cm8C6P8dgIOhG4Nf9LWhNIPC3bbGRFKFcXi
+ KJo4KFSza1aUaS/Dlv71RwfQ5f9zb18uiLtPr6LS9Oo1fRb4VQxxlqQ9gu+MxdiFBm1I
+ JTObDoDLc4tCfxgOZ1yYFRUrktDkyvyrtSEkOWn/tF3GZMF/+sGLOUHTCs7CkV50HpCD
+ Vehg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7Cleh/U4UJXbAwdk7mn3Iw24hmsq"
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:a909:518d:b600:96a]
+ by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uB9IQw0gp
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Sun, 9 Dec 2018 19:26:58 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <20181129170351.GC27951@lst.de>
+ <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
+ <20181130105346.GB26765@lst.de>
+ <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+ <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+ <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
+ <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
+ <20181204142426.GA2743@lst.de>
+ <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ <20181205140550.GA27549@lst.de>
+ <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
+ <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
+ <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
+ <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
+ <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
+ <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
+Message-ID: <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
+Date: Sun, 9 Dec 2018 19:26:57 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
+MIME-Version: 1.0
+In-Reply-To: <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,114 +99,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
- linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- Vincent Chen <deanbo422@gmail.com>, Jonas Bonn <jonas@southpole.se>,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
- Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
- openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On arm and unicore32i the early_alloc_aligned() and and early_alloc() are
-oneliner wrappers for memblock_alloc.
+Next step: c1bfcad4b0cf38ce5b00f7ad880d3a13484c123a (dma-mapping, 
+powerpc: simplify the arch dma_set_mask override)
 
-Replace their usage with direct call to memblock_alloc.
+Result: No problems with the PASEMI onboard ethernet and with booting 
+the X5000 (P5020 board).
 
-Suggested-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
----
- arch/arm/mm/mmu.c       | 11 +++--------
- arch/unicore32/mm/mmu.c | 12 ++++--------
- 2 files changed, 7 insertions(+), 16 deletions(-)
+-- Christian
 
-diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
-index 0a04c9a5..57de0dd 100644
---- a/arch/arm/mm/mmu.c
-+++ b/arch/arm/mm/mmu.c
-@@ -719,14 +719,9 @@ EXPORT_SYMBOL(phys_mem_access_prot);
- 
- #define vectors_base()	(vectors_high() ? 0xffff0000 : 0)
- 
--static void __init *early_alloc_aligned(unsigned long sz, unsigned long align)
--{
--	return memblock_alloc(sz, align);
--}
--
- static void __init *early_alloc(unsigned long sz)
- {
--	return early_alloc_aligned(sz, sz);
-+	return memblock_alloc(sz, sz);
- }
- 
- static void *__init late_alloc(unsigned long sz)
-@@ -998,7 +993,7 @@ void __init iotable_init(struct map_desc *io_desc, int nr)
- 	if (!nr)
- 		return;
- 
--	svm = early_alloc_aligned(sizeof(*svm) * nr, __alignof__(*svm));
-+	svm = memblock_alloc(sizeof(*svm) * nr, __alignof__(*svm));
- 
- 	for (md = io_desc; nr; md++, nr--) {
- 		create_mapping(md);
-@@ -1020,7 +1015,7 @@ void __init vm_reserve_area_early(unsigned long addr, unsigned long size,
- 	struct vm_struct *vm;
- 	struct static_vm *svm;
- 
--	svm = early_alloc_aligned(sizeof(*svm), __alignof__(*svm));
-+	svm = memblock_alloc(sizeof(*svm), __alignof__(*svm));
- 
- 	vm = &svm->vm;
- 	vm->addr = (void *)addr;
-diff --git a/arch/unicore32/mm/mmu.c b/arch/unicore32/mm/mmu.c
-index 50d8c1a..a402192 100644
---- a/arch/unicore32/mm/mmu.c
-+++ b/arch/unicore32/mm/mmu.c
-@@ -141,16 +141,12 @@ static void __init build_mem_type_table(void)
- 
- #define vectors_base()	(vectors_high() ? 0xffff0000 : 0)
- 
--static void __init *early_alloc(unsigned long sz)
--{
--	return memblock_alloc(sz, sz);
--}
--
- static pte_t * __init early_pte_alloc(pmd_t *pmd, unsigned long addr,
- 		unsigned long prot)
- {
- 	if (pmd_none(*pmd)) {
--		pte_t *pte = early_alloc(PTRS_PER_PTE * sizeof(pte_t));
-+		pte_t *pte = memblock_alloc(PTRS_PER_PTE * sizeof(pte_t),
-+					    PTRS_PER_PTE * sizeof(pte_t));
- 		__pmd_populate(pmd, __pa(pte) | prot);
- 	}
- 	BUG_ON(pmd_bad(*pmd));
-@@ -352,7 +348,7 @@ static void __init devicemaps_init(void)
- 	/*
- 	 * Allocate the vector page early.
- 	 */
--	vectors = early_alloc(PAGE_SIZE);
-+	vectors = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
- 
- 	for (addr = VMALLOC_END; addr; addr += PGDIR_SIZE)
- 		pmd_clear(pmd_off_k(addr));
-@@ -429,7 +425,7 @@ void __init paging_init(void)
- 	top_pmd = pmd_off_k(0xffff0000);
- 
- 	/* allocate the zero page. */
--	zero_page = early_alloc(PAGE_SIZE);
-+	zero_page = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
- 
- 	bootmem_init();
- 
--- 
-2.7.4
+
+On 09 December 2018 at 3:20PM, Christian Zigotzky wrote:
+> Next step: 602307b034734ce77a05da4b99333a2eaf6b6482 (powerpc/fsl_pci: 
+> simplify fsl_pci_dma_set_mask)
+>
+> git checkout 602307b034734ce77a05da4b99333a2eaf6b6482
+>
+> The PASEMI onboard ethernet works and the X5000 boots.
+>
+> -- Christian
+>
+>
+> On 08 December 2018 at 2:47PM, Christian Zigotzky wrote:
+>> Next step: e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615 (powerpc/dma: fix 
+>> an off-by-one in dma_capable)
+>>
+>> git checkout e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615
+>>
+>> The PASEMI onboard ethernet also works with this commit and the X5000 
+>> boots without any problems.
+>>
+>> -- Christian
+>>
+>>
+>> On 08 December 2018 at 11:29AM, Christian Zigotzky wrote:
+>>> Next step: 7ebc44c535f6bd726d553756d38b137acc718443 (powerpc/dma: 
+>>> remove max_direct_dma_addr)
+>>>
+>>> git checkout 7ebc44c535f6bd726d553756d38b137acc718443
+>>>
+>>> OK, the PASEMI onboard ethernet works and the P5020 board boots.
+>>>
+>>> -- Christian
+>>>
+>>>
+>>> On 07 December 2018 at 7:33PM, Christian Zigotzky wrote:
+>>>> Next step: 13c1fdec5682b6e13257277fa16aa31f342d167d (powerpc/dma: 
+>>>> move pci_dma_dev_setup_swiotlb to fsl_pci.c)
+>>>>
+>>>> git checkout 13c1fdec5682b6e13257277fa16aa31f342d167d
+>>>>
+>>>> Result: The PASEMI onboard ethernet works and the P5020 board boots.
+>>>>
+>>>> — Christian
+>>>
+>>>
+>>>
+>>
+>>
+>
+>
 
