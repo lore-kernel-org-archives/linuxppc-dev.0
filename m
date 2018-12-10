@@ -1,67 +1,53 @@
-Return-Path: <SRS0=n4RZ=OS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13E67C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 22:55:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CAC0BC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:31:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 44E722081F
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Dec 2018 22:55:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44E722081F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
+	by mail.kernel.org (Postfix) with ESMTPS id 432ED2081F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:31:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 432ED2081F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ChP95cfkzDqpM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 09:55:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
- envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=stevens-zone.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CnBV1sQnzDqvl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 13:31:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ChLw0Vq1zDqpG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 09:53:11 +1100 (AEDT)
-Received: from mintppc.lan ([80.189.87.228]) by mrelayeu.kundenserver.de
- (mreue009 [212.227.15.163]) with ESMTPA (Nemesis) id
- 1Md6V1-1h5SPe3VTP-00aFVs; Sun, 09 Dec 2018 23:47:42 +0100
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Date: Sun, 09 Dec 2018 22:47:15 +0000 (GMT)
-Message-ID: <4d015c642f3.12487343@auth.smtp.1and1.co.uk>
-In-Reply-To: <4c6da03cac4.3957dfc0@auth.smtp.1and1.co.uk>
-References: <4c6da03cac4.3957dfc0@auth.smtp.1and1.co.uk>
-User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
-Subject: Re: [PATCH NEXT v2 1/4] powerpc/pasemi: Add PCI initialisation for
- Nemo board.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Cn8C4s9qzDqVW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 13:29:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 43Cn8C2q94z9s6w; Mon, 10 Dec 2018 13:29:15 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43Cn8B1bpmz9s0t;
+ Mon, 10 Dec 2018 13:29:14 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ Sandipan Das <sandipan@linux.ibm.com>
+Subject: Re: [PATCH bpf] bpf: powerpc: fix broken uapi for
+ BPF_PROG_TYPE_PERF_EVENT
+In-Reply-To: <20181209223424.pvdigrtm4tdbt4h7@ast-mbp.dhcp.thefacebook.com>
+References: <20181206092701.4153-1-sandipan@linux.ibm.com>
+ <20181209223424.pvdigrtm4tdbt4h7@ast-mbp.dhcp.thefacebook.com>
+Date: Mon, 10 Dec 2018 13:29:14 +1100
+Message-ID: <87efaqf72d.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Provags-ID: V03:K1:zYdhFo66QQWxeV8zJdO0Eb0Tj9FBYewia4XE42Xs1zQBTrTTf3J
- Ws0LSveW5JlKhS6FKqeUE1BPYUNmGq77GmuOk557lT39U6fuvVLzwLVyEpoNCywTThybs4h
- yKNhu2z3BbdfYtfYsYaX1Qf8md70wj28yoXlQSF8UmQndA98gHAPF+dWHBpBPsuamZkHSG4
- j9rJvM5csfzYrQMAFc8hg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:WIdBvcVDLIM=:88pmS4ddqYh+vqX0M3MtSG
- ZJuwOXRkbf/VAKpRK8GuvQ81zBEPUhPEBl3CWp2BEVl83Q7sLxs656LVH4LiOcDsW78oBgb7B
- wsBA5hEySqzr/DUKcoLtiaRf0OAjUEwmWa75CcgsN2pE44B9Z+xYOfzAbmZxyne7wkBKpiZzY
- LIhaJXeLC9vCyYdMIpg1pzhActkoCPScAdZQl738S2HKauFTTkkfXdX5RYPvl90Q6ax14hTW7
- bwvhpAZKga21eIn00BkbmfiA850rryN/zFtWtVwSIQH21L6ajDv8Wq6BpRAVH8Ch4lqZ6dnBm
- jghmd9WPdisDtCFiR1nIuwAyC4e0HNUqofYC5dWqwLYWRdX1p5UbYygKsc9U1vW4j2/iaFPoJ
- gr00GVjsW6mStI7XOzo7VhQMnZeG3nognDrA7/i4M8JkwGbcX5rzlLhDjXQ2DgccbSSGDo6r/
- XhwegPkKUGttlmIQNbcsLrgZ5/tIJlRuUv+fJ2fOh8xyorfGxVX1KS+wvGFt+F7kIQ+bF4L+T
- 4tulbfYW+JBy8PKq6hch2ZcB2fR2Kg1z3wZdsPQiiolOBdojXIcl0D+fkFYlOcvh34kjpT7XS
- XZ3lOe71rEIuWJBJE3oKOhPL3WpIDYb/F4sGjgPgNxCn98cTnKyDvYx8TsTn5eePCMyuxR0Bd
- rYq5zINbSaJ2sbh62FR2iNWQ1TsE0dGCb4ZzgJwZ8ytpQ70A+vPO7LtXx1IlipfzUJKP82ORf
- 3c+8fMvnZxobhF63RMb1rwTq2NVxfgLidaT1DUEE6GMiWouE5GmcH4zpxow=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,33 +59,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chzigotzky@xenosoft.de
+Cc: naveen.n.rao@linux.ibm.com, netdev@vger.kernel.org, ast@kernel.org,
+ daniel@iogearbox.net, linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael,
+Alexei Starovoitov <alexei.starovoitov@gmail.com> writes:
 
-Any comments on these?
+> On Thu, Dec 06, 2018 at 02:57:01PM +0530, Sandipan Das wrote:
+>> Now that there are different variants of pt_regs for userspace and
+>> kernel, the uapi for the BPF_PROG_TYPE_PERF_EVENT program type must
+>> be changed by exporting the user_pt_regs structure instead of the
+>> pt_regs structure that is in-kernel only.
+>> 
+>> Fixes: 002af9391bfb ("powerpc: Split user/kernel definitions of struct pt_regs")
+>> Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
+>
+> Thanks! Applied to bpf tree.
 
-On 19/08/2018, Darren Stevens wrote:
-> The A-Eon Amigaone X1000's Nemo motherboard has an AMD SB600
-> connected to one of the PCI-e root ports on its PaSemi
-> Pwrficient 1628M SoC. Normally the SB600 southbridge would be
-> connected to a hidden PCI-e port on the system's northbridge,
-> and as a result doesn't fully comply with the PCI-e spec.
->     
-> Add code to relax the PCI-e detection in both the root port
-> and the Linux kernel allowing on board devices to be detected.
->     
-> Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
->
-> ---
->
-> Changes made:
->
-> v2: Replaced sb600_bus with a define, moved iob_mapbase into 
->     sb600_set_flag()
->     Created some register/Flag names (as I don't have the docs
->     for the PA6T-1682M)
+I already have this in the fixes branch of the powerpc tree. I don't
+mind if you take it also, git should probably handle the merge OK.
 
+cheers
