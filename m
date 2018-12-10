@@ -2,85 +2,86 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18EF8C5CFFE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:32:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20523C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:34:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CB6B2082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:32:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 903642082F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:34:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CB6B2082F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pBsfjxfS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 903642082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DHqy2h2XzDqnB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:31:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DHty4kRdzDqlp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:34:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="pBsfjxfS";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com;
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
  envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="pBsfjxfS"; 
  dkim-atps=neutral
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
- [IPv6:2607:f8b0:4864:20::635])
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DHmc0h8zzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:29:03 +1100 (AEDT)
-Received: by mail-pl1-x635.google.com with SMTP id k8so5900550pls.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:29:03 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DHmk3XpBzDqjh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:29:10 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id n2so5641939pgm.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:29:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=wsolr/BoEZyboWroSACAY9B4LsiVLasYDYA2akxxAjs=;
- b=aiSU2W/45r42N2qszl98h57eu8a3vdkfOVivvjJKGqTuU+g3oXL1+FAWK+MU+ELWwZ
- UrlN5ax+r3/ZVdf1BWXAJd1g7PJjsMql1SV1tn3xg7a0zXH0C4KlxqsuqBcJJ7jUCOgM
- wOssUZiM1WejiFq+eS6AWMvjQguIcumI6AQTey86FVrFIeg5/TEL3qYGsayQwN2gcSY/
- s6wrIEvTuoaIPeeTgNoz+1/zF5T1/OKrX1t8jOhyv+uHA8dTn5T7UhsigWmpQI2/xAgG
- J/FlN2mzakUZt1xJ0MrIN2c16oL4ePLuOfuk1oWfRDWEWdHQ3jsacaFVgIewUj1qRErX
- +iBQ==
+ h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Q2Q4lQ2oRkM57Itjn/ZzYPUa3OWfgHNNiZhMrK/8MlQ=;
+ b=pBsfjxfSKTKZHDBLV2einrEjrqKdmBYno2vub8VSldjNZijVyp0PBGxJBImi4Jvod+
+ rgBrMYcIe/njKRbayZuesawNLAxmGBrgTMCfC4fy1Gdos8g8Ax3qwHk+hUEsLLzFBV1r
+ 16J2oULAjcpibxYzL+LiV9l1zpKj5WOG52AtBANiNYzGIQPJX7jcocqTMG0mFYahSF++
+ RHTQ3XJYSmkOAcRdYXbXFvsA1TDjLXy1XcZXs2kKqwJgpd+0rZ997f6w+qGAplGk0UiN
+ gOnx/aoj8BBGu9UVvIPIASxl6gebDWULMV/kqgakO7TNHZiI/HjUIuL/xGHXJtwpBI0i
+ F2CQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=wsolr/BoEZyboWroSACAY9B4LsiVLasYDYA2akxxAjs=;
- b=SUjsBV8Mou4rnzH8SEI3szvK4ZHRUwpDiawuQfRUqAE3FMlEEcr6BV/enrieSd9TVL
- fipLD5/E4tba/HIDal7xM3BVSzwmhZpvyTmwOe76xMx6I+mI3j62J2UnVx8feI8n6nq1
- xnmDPixxmpApDDOVQcP8Gf4edv1Ww7zbXhtlqB7nQ2LbvQHAwrJ5HLYTSnWSrmW7oLLw
- 573I3dWgZwjXsa3mjirnGo3oIEPg7u1jide2Wh6tSusgC9lOwzBYOmfGNTnrRwmgeuIQ
- 5vLIC5eD+YVpF/fQYFlc6jalTBLp57pKr6hKCQ1+vjxiRSnJ8ueqT08hxdp7a2AFwblj
- NMbQ==
-X-Gm-Message-State: AA+aEWZFoYadQNx6eE+plhiAGziE0lfYxa/SASiFvHED6m9k+x6897ki
- Q+Np5P20YK9JToAf2iLsrPtOjz+T
-X-Google-Smtp-Source: AFSGD/UYkC+mYPW69wlJhgRKYJLAZvX9uywE1eoqqWQd4YALwztx0ZfNVhrawdMNtPPvCXmTt2xOTg==
-X-Received: by 2002:a17:902:6848:: with SMTP id
- f8mr13429924pln.300.1544480941517; 
- Mon, 10 Dec 2018 14:29:01 -0800 (PST)
+ :in-reply-to:references:mime-version:content-transfer-encoding;
+ bh=Q2Q4lQ2oRkM57Itjn/ZzYPUa3OWfgHNNiZhMrK/8MlQ=;
+ b=hHMFVGY/xUe0RoXo34MVMDX9ousl9TtIGRgQ2eaihyYPpIvnW+PGuDgdhsQDagP8K/
+ Wq0zgxM89cizxmauDB1DuchThsTpCHCn+JpZwAhefF7obggeKzoqSMoVvr1Nb2XDbTVu
+ MPZFnh4YC3BUpF+MY/jz9Z8/pjUmhkpeBBsBDG+B0GCvgNnuV/JC2gxZolizUE7mYDV8
+ itM/sDfhvssMsa/ryp2Se/F/MQdzAhv707LsN/tRGfwGnhSKXEiM9rUGIhhPu19VpMBG
+ hsTHCqwkkoD91vXhVr612F8VTBFHqNk0V0b4K49kRPWCVgzJP5Te4xOM2JKztyILS5Xw
+ rw9w==
+X-Gm-Message-State: AA+aEWaTBta2uwmBPBQapMCK7gnC+C2mNzUWRiHFNiR/f+3uvEpcuEvs
+ kK4kD70f/4wviUBWT0b47q9DhS8Q
+X-Google-Smtp-Source: AFSGD/XPPo44VB4qjFGKA+7cztL9S4NAK+OmlEoxgOutZIMus0qiYjZ4a4C0HNvMqwbXadAWTGC2rQ==
+X-Received: by 2002:a63:9a52:: with SMTP id e18mr12418925pgo.14.1544480948212; 
+ Mon, 10 Dec 2018 14:29:08 -0800 (PST)
 Received: from aurora.jms.id.au ([45.124.203.15])
- by smtp.gmail.com with ESMTPSA id j6sm20143821pfg.126.2018.12.10.14.28.58
+ by smtp.gmail.com with ESMTPSA id v70sm18583265pfa.152.2018.12.10.14.29.04
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 10 Dec 2018 14:29:00 -0800 (PST)
+ Mon, 10 Dec 2018 14:29:07 -0800 (PST)
 Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Tue, 11 Dec 2018 08:58:55 +1030
+ Tue, 11 Dec 2018 08:59:01 +1030
 From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 0/3] powerpc: Add to linker script discards
-Date: Tue, 11 Dec 2018 08:58:51 +1030
-Message-Id: <20181210222854.21156-1-joel@jms.id.au>
+Subject: [PATCH v3 1/3] powerpc: Discard more sections in linker script
+Date: Tue, 11 Dec 2018 08:58:52 +1030
+Message-Id: <20181210222854.21156-2-joel@jms.id.au>
 X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20181210222854.21156-1-joel@jms.id.au>
+References: <20181210222854.21156-1-joel@jms.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -99,20 +100,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-v3 fixes up the splitting of the patches, moving the dynstr hunk from
-patch 2 to patch 1.
+Building the ppc64 kernel with a modern binutils results in this
+warning:
 
-v2 pulls in the branch_lt patch too. No changes to the first two
-patches.
+ powerpc64le-linux-gnu-ld: warning: orphan section `.gnu.hash' from
+ `linker stubs' being placed in section `.gnu.hash'
 
-Joel Stanley (3):
-  powerpc: Discard more sections in linker script
-  powerpc: Discard dynsym section for !PPC32
-  powerpc: Discard .branch_lt section
+Alan Modra <amodra@gmail.com> explains:
 
- arch/powerpc/kernel/vmlinux.lds.S | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ > .gnu.hash, like .hash, is used by glibc ld.so for dynamic symbol
+ > lookup.  I imagine you don't need either section in a kernel, so
+ > discarding both sounds reasonable.  Likely you could discard .interp
+ > and .dynstr too, and .dynsym when !CONFIG_PPC32.
 
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+See https://lore.kernel.org/lkml/CACPK8Xft3n5KkpTjN3=7_VUCXHFcK7mxvZm2Rrqu7tppcBoyOg@mail.gmail.com/T/#m58532c86cf0c7b4fb01cc1fe724e48d4c7d8e4a7
+
+v3: Add dynstr hunk to this patch (it was incorrectly left in patch 2)
+---
+ arch/powerpc/kernel/vmlinux.lds.S | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 434581bcd5b4..779b8b3075a1 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -273,14 +273,11 @@ SECTIONS
+ #endif
+ 		*(.dynsym)
+ 	}
+-	.dynstr : AT(ADDR(.dynstr) - LOAD_OFFSET) { *(.dynstr) }
+ 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
+ 	{
+ 		__dynamic_start = .;
+ 		*(.dynamic)
+ 	}
+-	.hash : AT(ADDR(.hash) - LOAD_OFFSET) { *(.hash) }
+-	.interp : AT(ADDR(.interp) - LOAD_OFFSET) { *(.interp) }
+ 	.rela.dyn : AT(ADDR(.rela.dyn) - LOAD_OFFSET)
+ 	{
+ 		__rela_dyn_start = .;
+@@ -388,5 +385,8 @@ SECTIONS
+ 		*(.gnu.version*)
+ 		*(.gnu.attributes)
+ 		*(.eh_frame)
++		*(.hash .gnu.hash)
++		*(.interp)
++		*(.dynstr)
+ 	}
+ }
 -- 
 2.19.1
 
