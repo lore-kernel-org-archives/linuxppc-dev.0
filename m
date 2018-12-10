@@ -2,64 +2,70 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7AD1C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 12:26:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25478C5CFFE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 13:30:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F0FBC2086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 12:26:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0FBC2086D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id DEF222084E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 13:30:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DEF222084E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43D2Nw2dGFzDr9y
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 23:26:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 43D3qH0t3XzDqrN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 00:30:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=oleg@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43D2KT1bzqzDqmf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 23:23:09 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43D2KP3cZGz9v6Jl;
- Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id IiZp27ydnH8M; Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43D2KP2ryCz9v6Jj;
- Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E72998B7B0;
- Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id P3U917INE2Et; Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C86F28B7A9;
- Mon, 10 Dec 2018 13:23:05 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B0171716F0; Mon, 10 Dec 2018 12:23:05 +0000 (UTC)
-Message-Id: <77dc61d57af91aa944f2416fefaa5cc27016d796.1544444552.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/mm: define an empty slice_init_new_context_exec()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 10 Dec 2018 12:23:05 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D3mZ6mQJzDqpy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 00:28:14 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id E8F35811A9;
+ Mon, 10 Dec 2018 13:28:12 +0000 (UTC)
+Received: from dhcp-27-174.brq.redhat.com (unknown [10.43.17.131])
+ by smtp.corp.redhat.com (Postfix) with SMTP id E94F01A7D4;
+ Mon, 10 Dec 2018 13:28:07 +0000 (UTC)
+Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
+ oleg@redhat.com; Mon, 10 Dec 2018 14:28:12 +0100 (CET)
+Date: Mon, 10 Dec 2018 14:28:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Dmitry V. Levin" <ldv@altlinux.org>
+Subject: Re: [PATCH v6] powerpc/ptrace: replace ptrace_report_syscall() with
+ a tracehook call
+Message-ID: <20181210132806.GA4177@redhat.com>
+References: <20181116121701.14359da0@akathisia>
+ <87ftw12nyn.fsf@concordia.ellerman.id.au>
+ <20181119210139.GA8360@altlinux.org>
+ <87efbe166y.fsf@concordia.ellerman.id.au>
+ <20181203031823.GE11573@altlinux.org>
+ <20181207011946.GA18558@altlinux.org>
+ <87y391k2tq.fsf@concordia.ellerman.id.au>
+ <20181207154255.GA28964@altlinux.org>
+ <20181207155605.GB28964@altlinux.org>
+ <20181207185226.GB31278@altlinux.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181207185226.GB31278@altlinux.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.27]); Mon, 10 Dec 2018 13:28:13 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,79 +77,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Eugene Syromyatnikov <esyr@redhat.com>, linux-kernel@vger.kernel.org,
+ Elvira Khabirova <lineprinter@altlinux.org>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Define slice_init_new_context_exec() at all time to avoid
+On 12/07, Dmitry V. Levin wrote:
+>
+> Please make either v5 or v6 edition of this fix, or any similar fix,
+> into v4.20.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/slice.h     | 14 +++++++++-----
- arch/powerpc/mm/mmu_context_nohash.c |  2 --
- 2 files changed, 9 insertions(+), 7 deletions(-)
+IIUC, v5 above means
 
-diff --git a/arch/powerpc/include/asm/slice.h b/arch/powerpc/include/asm/slice.h
-index a595461c9cb0..44816cbc4198 100644
---- a/arch/powerpc/include/asm/slice.h
-+++ b/arch/powerpc/include/asm/slice.h
-@@ -10,6 +10,10 @@
- #include <asm/nohash/32/slice.h>
- #endif
- 
-+#ifndef __ASSEMBLY__
-+
-+struct mm_struct;
-+
- #ifdef CONFIG_PPC_MM_SLICES
- 
- #ifdef CONFIG_HUGETLB_PAGE
-@@ -18,10 +22,6 @@
- #define HAVE_ARCH_UNMAPPED_AREA
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
- 
--#ifndef __ASSEMBLY__
--
--struct mm_struct;
--
- unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
- 				      unsigned long flags, unsigned int psize,
- 				      int topdown);
-@@ -34,8 +34,12 @@ void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
- void slice_init_new_context_exec(struct mm_struct *mm);
- void slice_setup_new_exec(void);
- 
--#endif /* __ASSEMBLY__ */
-+#else /* CONFIG_PPC_MM_SLICES */
-+
-+static inline void slice_init_new_context_exec(struct mm_struct *mm) {}
- 
- #endif /* CONFIG_PPC_MM_SLICES */
- 
-+#endif /* __ASSEMBLY__ */
-+
- #endif /* _ASM_POWERPC_SLICE_H */
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 431ecf37f17c..22d71a58167f 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -372,7 +372,6 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- {
- 	pr_hard("initing context for mm @%p\n", mm);
- 
--#ifdef	CONFIG_PPC_MM_SLICES
- 	/*
- 	 * We have MMU_NO_CONTEXT set to be ~0. Hence check
- 	 * explicitly against context.id == 0. This ensures that we properly
-@@ -382,7 +381,6 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- 	 */
- 	if (mm->context.id == 0)
- 		slice_init_new_context_exec(mm);
--#endif
- 	mm->context.id = MMU_NO_CONTEXT;
- 	mm->context.active = 0;
- 	pte_frag_set(&mm->context, NULL);
--- 
-2.13.3
+	[PATCH v5 23/25] powerpc/ptrace: replace ptrace_report_syscall() with a tracehook call
+
+you sent in another series...
+
+>  long do_syscall_trace_enter(struct pt_regs *regs)
+>  {
+> +	struct thread_info *ti;
+> +	u32 cached_flags;
+> +
+>  	user_exit();
+>  
+> -	if (test_thread_flag(TIF_SYSCALL_EMU)) {
+> -		ptrace_report_syscall(regs);
+> -		/*
+> -		 * Returning -1 will skip the syscall execution. We want to
+> -		 * avoid clobbering any register also, thus, not 'gotoing'
+> -		 * skip label.
+> -		 */
+> -		return -1;
+> -	}
+> +	ti = current_thread_info();
+> +	cached_flags = READ_ONCE(ti->flags) &
+> +		       (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE |
+> +			_TIF_SYSCALL_TRACEPOINT);
+>  
+> -	/*
+> -	 * The tracer may decide to abort the syscall, if so tracehook
+> -	 * will return !0. Note that the tracer may also just change
+> -	 * regs->gpr[0] to an invalid syscall number, that is handled
+> -	 * below on the exit path.
+> -	 */
+> -	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	    tracehook_report_syscall_entry(regs))
+> -		goto skip;
+> +	if (cached_flags & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE)) {
+> +		int rc = tracehook_report_syscall_entry(regs);
+> +
+> +		if (unlikely(cached_flags & _TIF_SYSCALL_EMU)) {
+> +			/*
+> +			 * A nonzero return code from
+> +			 * tracehook_report_syscall_entry() tells us
+> +			 * to prevent the syscall execution, but
+> +			 * we are not going to execute it anyway.
+> +			 *
+> +			 * Returning -1 will skip the syscall execution.
+> +			 * We want to avoid clobbering any register also,
+> +			 * thus, not 'gotoing' skip label.
+> +			 */
+> +			return -1;
+> +		}
+> +
+> +		if (rc) {
+> +			/*
+> +			 * The tracer decided to abort the syscall.
+> +			 * Note that the tracer may also just change
+> +			 * regs->gpr[0] to an invalid syscall number,
+> +			 * that is handled below on the exit path.
+> +			 */
+> +			goto skip;
+> +		}
+> +	}
+>  
+>  	/* Run seccomp after ptrace; allow it to set gpr[3]. */
+>  	if (do_seccomp(regs))
+> @@ -3293,7 +3309,7 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+>  	if (regs->gpr[0] >= NR_syscalls)
+>  		goto skip;
+>  
+> -	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+> +	if (unlikely(cached_flags & _TIF_SYSCALL_TRACEPOINT))
+
+I will leave this to maintainers, but to me this change looks good and imo it
+also cleanups the code.
+
+However I am not sure cached_flags should include _TIF_SYSCALL_TRACEPOINT. If
+nothing else, the caller can sleep in ptrace_stop() unpredictably long and
+TIF_SYSCALL_TRACEPOINT can be set/cleared meanwhile.
+
+Oleg.
 
