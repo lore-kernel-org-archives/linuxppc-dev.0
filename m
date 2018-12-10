@@ -2,59 +2,82 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A228CC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 03:53:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F052C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 04:01:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC1C92081F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 03:53:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC1C92081F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E0AFE2081F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 04:01:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XFOfxJw9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0AFE2081F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Cq1n2lD6zDqmF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:53:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CqBs60H2zDqmX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 15:01:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="XFOfxJw9";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="XFOfxJw9"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43CpzH3P56zDqQ8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:51:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43Cpz75ClMz9s47;
- Mon, 10 Dec 2018 14:51:31 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Murray <andrew.murray@arm.com>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
- Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Borislav Petkov <bp@alien8.de>, Russell King <linux@armlinux.org.uk>,
- suzuki.poulose@arm.com, robin.murphy@arm.com
-Subject: Re: [PATCH v3 09/12] powerpc: perf/core: use PERF_PMU_CAP_NO_EXCLUDE
- for exclude incapable PMUs
-In-Reply-To: <1544114849-47266-10-git-send-email-andrew.murray@arm.com>
-References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
- <1544114849-47266-10-git-send-email-andrew.murray@arm.com>
-Date: Mon, 10 Dec 2018 14:51:31 +1100
-Message-ID: <87bm5uf398.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Cq7X3T44zDqfK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:58:48 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id s198so4336948pgs.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Dec 2018 19:58:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=GsTFIcVTzDDaHX++c2Kr7Xhn+UQEZoAVxahy2lMLQSw=;
+ b=XFOfxJw9ESuS7rQT18DI0pkGV17rNFSzVuc08Lg1tM5F3Gnhosm0dm419M3R1JZ37p
+ MA6oBCHNF0AAkNrcEFo+BbI597KkGm09ojzDhcjLIvCQhb42V+BIUj08swndumFrVMon
+ fVinOJ0so95ROdTRIbwcZxppvQR+XilRLdlCJ5uCqGXzTHVzVS/xSN4Edd4rtJOxhYZK
+ LWsLPM/ANrLpg2lUBSJDAh2PBJiMzFgtI7pVHCUevjDbj2qbirLXwdIiw91pE0354aJJ
+ PGPguTe4Rx2wdV9LoVNX+san0wPsvuAan+yNJlh+HnrPSAg5dLh9/NEGqhiYYubbuTV/
+ OZqQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=GsTFIcVTzDDaHX++c2Kr7Xhn+UQEZoAVxahy2lMLQSw=;
+ b=T+4LNvZJUF8M/gjFjks3s5SdFlaP45u3O7H6rSthh/Mjhp5slw8KcBvtaSVoIBIARa
+ jt0hh1K4SGB6REYIFdGdrtUp/w+6OeapuIGa+W7CAJhV0QBFtDOfNohPMPY5wjTFy/m3
+ L1quYUrIVO+m71EB1PkVGN6JEN4Z5fUUM+uaQEne/P682zCYfUmygS6KkEz4qxHhtT/R
+ orI0ELkG+LDkiJmKgQJILmXZsyYVpZnz2E5r31sHWHjCjPFO+Wy1o6AmKSU8IU3iHnC2
+ 4MZ9ku5TYnD9M3OvmuMsYvT12dJO8tQ5MUTV3xbHyZC4xCmoqASTDrZwNEg2Tb4+7Z5x
+ PLMw==
+X-Gm-Message-State: AA+aEWYj9cCxugE6MJTFM5ag2xyHygeoFHNJUPIW4PQhqf6E36I52MuF
+ UpbZxKaqECt8rhcYoAcn2Ao=
+X-Google-Smtp-Source: AFSGD/WmQ8l0+VtkTQr1wQPKOJA2y08PR6E2dWmISbx4wSUj4hfqCgpOZVUk9lsgyPyE6tTFu0G16w==
+X-Received: by 2002:a62:46d0:: with SMTP id o77mr11019811pfi.172.1544414326545; 
+ Sun, 09 Dec 2018 19:58:46 -0800 (PST)
+Received: from surajjs2.ozlabs.ibm.com.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id f6sm14291899pfg.188.2018.12.09.19.58.43
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sun, 09 Dec 2018 19:58:45 -0800 (PST)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH V2 0/8] KVM: PPC: Implement passthrough of emulated devices
+ for nested guests
+Date: Mon, 10 Dec 2018 14:58:17 +1100
+Message-Id: <20181210035825.29404-1-sjitindarsingh@gmail.com>
+X-Mailer: git-send-email 2.13.6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,132 +89,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ sjitindarsingh@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Murray <andrew.murray@arm.com> writes:
+This patch series allows for emulated devices to be passed through to nested
+guests, irrespective of at which level the device is being emulated.
 
-> For PowerPC PMUs that do not support context exclusion let's
-> advertise the PERF_PMU_CAP_NO_EXCLUDE capability. This ensures that
-> perf will prevent us from handling events where any exclusion flags
-> are set. Let's also remove the now unnecessary check for exclusion
-> flags.
->
-> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> ---
->  arch/powerpc/perf/hv-24x7.c | 10 +---------
->  arch/powerpc/perf/hv-gpci.c | 10 +---------
->  arch/powerpc/perf/imc-pmu.c | 19 +------------------
->  3 files changed, 3 insertions(+), 36 deletions(-)
+Note that the emulated device must be using dma, not virtio.
 
-Looks good.
+For example, passing through an emulated e1000:
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+1. Emulate the device at L(n) for L(n+1)
 
-cheers
+qemu-system-ppc64 -netdev type=user,id=net0 -device e1000,netdev=net0
 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 72238ee..d2b8e60 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1306,15 +1306,6 @@ static int h_24x7_event_init(struct perf_event *event)
->  		return -EINVAL;
->  	}
->  
-> -	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> -		return -EINVAL;
-> -
->  	/* no branch sampling */
->  	if (has_branch_stack(event))
->  		return -EOPNOTSUPP;
-> @@ -1577,6 +1568,7 @@ static struct pmu h_24x7_pmu = {
->  	.start_txn   = h_24x7_event_start_txn,
->  	.commit_txn  = h_24x7_event_commit_txn,
->  	.cancel_txn  = h_24x7_event_cancel_txn,
-> +	.capabilities = PERF_PMU_CAP_NO_EXCLUDE,
->  };
->  
->  static int hv_24x7_init(void)
-> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
-> index 43fabb3..735e77b 100644
-> --- a/arch/powerpc/perf/hv-gpci.c
-> +++ b/arch/powerpc/perf/hv-gpci.c
-> @@ -232,15 +232,6 @@ static int h_gpci_event_init(struct perf_event *event)
->  		return -EINVAL;
->  	}
->  
-> -	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> -		return -EINVAL;
-> -
->  	/* no branch sampling */
->  	if (has_branch_stack(event))
->  		return -EOPNOTSUPP;
-> @@ -285,6 +276,7 @@ static struct pmu h_gpci_pmu = {
->  	.start       = h_gpci_event_start,
->  	.stop        = h_gpci_event_stop,
->  	.read        = h_gpci_event_update,
-> +	.capabilities = PERF_PMU_CAP_NO_EXCLUDE,
->  };
->  
->  static int hv_gpci_init(void)
-> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-> index 1fafc32b..1dbb0ee 100644
-> --- a/arch/powerpc/perf/imc-pmu.c
-> +++ b/arch/powerpc/perf/imc-pmu.c
-> @@ -473,15 +473,6 @@ static int nest_imc_event_init(struct perf_event *event)
->  	if (event->hw.sample_period)
->  		return -EINVAL;
->  
-> -	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> -		return -EINVAL;
-> -
->  	if (event->cpu < 0)
->  		return -EINVAL;
->  
-> @@ -748,15 +739,6 @@ static int core_imc_event_init(struct perf_event *event)
->  	if (event->hw.sample_period)
->  		return -EINVAL;
->  
-> -	/* unsupported modes and filters */
-> -	if (event->attr.exclude_user   ||
-> -	    event->attr.exclude_kernel ||
-> -	    event->attr.exclude_hv     ||
-> -	    event->attr.exclude_idle   ||
-> -	    event->attr.exclude_host   ||
-> -	    event->attr.exclude_guest)
-> -		return -EINVAL;
-> -
->  	if (event->cpu < 0)
->  		return -EINVAL;
->  
-> @@ -1069,6 +1051,7 @@ static int update_pmu_ops(struct imc_pmu *pmu)
->  	pmu->pmu.stop = imc_event_stop;
->  	pmu->pmu.read = imc_event_update;
->  	pmu->pmu.attr_groups = pmu->attr_groups;
-> +	pmu->pmu.capabilities = PERF_PMU_CAP_NO_EXCLUDE;
->  	pmu->attr_groups[IMC_FORMAT_ATTR] = &imc_format_group;
->  
->  	switch (pmu->domain) {
-> -- 
-> 2.7.4
+2. Assign the VFIO-PCI driver at L(n+1)
+
+echo vfio-pci > /sys/bus/pci/devices/0000:00:00.0/driver_override
+echo 0000:00:00.0 > /sys/bus/pci/drivers/e1000/unbind
+echo 0000:00:00.0 > /sys/bus/pci/drivers/vfio-pci/bind
+chmod 666 /dev/vfio/0
+
+3. Pass the device through from L(n+1) to L(n+2)
+
+qemu-system-ppc64 -device vfio-pci,host=0000:00:00.0
+
+4. L(n+2) can now access the device which will be emulated at L(n)
+
+V1 -> V2:
+1/8: None
+2/8: None
+3/8: None
+4/8: None
+5/8: None
+6/8: Account for L1 differing in endianess in kvmppc_complete_mmio_load()
+7/8: None
+8/8: None
+
+Suraj Jitindar Singh (8):
+  KVM: PPC: Only report KVM_CAP_SPAPR_TCE_VFIO on powernv machines
+  KVM: PPC: Book3S HV: Add function kvmhv_vcpu_is_radix()
+  KVM: PPC: Book3S HV: Implement functions to access quadrants 1 & 2
+  KVM: PPC: Add load_from_eaddr and store_to_eaddr to the kvmppc_ops
+    struct
+  KVM: PPC: Update kvmppc_st and kvmppc_ld to use quadrants
+  KVM: PPC: Book3S HV: Allow passthrough of an emulated device to an L2
+    guest
+  KVM: PPC: Introduce new hcall H_COPY_TOFROM_GUEST to access quadrants
+    1 & 2
+  KVM: PPC: Book3S HV: Allow passthrough of an emulated device to an L3
+    guest
+
+ arch/powerpc/include/asm/hvcall.h        |   1 +
+ arch/powerpc/include/asm/kvm_book3s.h    |  10 ++-
+ arch/powerpc/include/asm/kvm_book3s_64.h |  13 ++++
+ arch/powerpc/include/asm/kvm_host.h      |   3 +
+ arch/powerpc/include/asm/kvm_ppc.h       |   4 ++
+ arch/powerpc/kernel/exceptions-64s.S     |   9 +++
+ arch/powerpc/kvm/book3s_64_mmu_radix.c   |  97 ++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv.c             |  58 ++++++++++++++--
+ arch/powerpc/kvm/book3s_hv_nested.c      | 114 +++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/powerpc.c               |  30 +++++++-
+ arch/powerpc/mm/fault.c                  |   1 +
+ 11 files changed, 325 insertions(+), 15 deletions(-)
+
+-- 
+2.13.6
+
