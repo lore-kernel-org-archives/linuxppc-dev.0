@@ -2,54 +2,56 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-11.9 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 033ACC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:35:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41C43C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:38:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B69A20672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:35:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B69A20672
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id AA89B20672
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:38:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA89B20672
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DCwh1gHkzDr32
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 06:35:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DCzm4rkczDqWN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 06:38:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=vtsv=ot=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=goodmis.org
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DCst6nVRzDqxc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 06:33:21 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 99BD268DD2; Mon, 10 Dec 2018 20:33:17 +0100 (CET)
-Date: Mon, 10 Dec 2018 20:33:17 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Rui Salvaterra <rsalvaterra@gmail.com>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20181210193317.GA31514@lst.de>
-References: <CALjTZvZzHSZ=s0W0Pd-MVd7OA0hYxu0LzsZ+GxYybXKoUQQR6Q@mail.gmail.com>
- <20181130103222.GA23393@lst.de>
- <CALjTZvZsk0qA+Yxu7S+8pfa5y6rpihnThrHiAKkZMWsdyC-tVg@mail.gmail.com>
- <42b1408cafe77ebac1b1ad909db237fe34e4d177.camel@kernel.crashing.org>
- <20181208171746.GB15228@lst.de>
- <CALjTZvb4+Ox5Jdm-xwQuxMDz_ub=mHAgPLA4NgrVNZTmUZwhnQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DCtB4KsszDqy9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 06:33:38 +1100 (AEDT)
+Received: from gandalf.local.home (cpe-66-24-56-78.stny.res.rr.com
+ [66.24.56.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0FD8720880;
+ Mon, 10 Dec 2018 19:33:36 +0000 (UTC)
+Received: from rostedt by gandalf.local.home with local (Exim 4.91)
+ (envelope-from <rostedt@goodmis.org>)
+ id 1gWRJ9-0002rK-32; Mon, 10 Dec 2018 14:33:35 -0500
+Message-Id: <20181210193334.998050515@goodmis.org>
+User-Agent: quilt/0.65
+Date: Mon, 10 Dec 2018 14:30:10 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org
+Subject: [PATCH 3/6] powerpc/frace: Use ftrace_graph_get_ret_stack() instead of
+ curr_ret_stack
+References: <20181210193007.655970639@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CALjTZvb4+Ox5Jdm-xwQuxMDz_ub=mHAgPLA4NgrVNZTmUZwhnQ@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=ISO-8859-15
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,25 +63,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, hch@lst.de, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
+Cc: Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 10, 2018 at 05:04:46PM +0000, Rui Salvaterra wrote:
-> Hi, Christoph and Ben,
-> 
-> It just came to my mind (and this is most likely a stupid question,
-> but still)… Is there any possibility of these changes having an
-> (positive) effect on the long-standing problem of Power Mac machines
-> with AGP graphics cards (which have to be limited to PCI transfers,
-> otherwise they'll hang, due to coherence issues)? If so, I have a G4
-> machine where I'd gladly test them.
+From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
 
-These patches themselves are not going to affect that directly.
-But IFF the problem really is that the AGP needs to be treated as not
-cache coherent (I have no idea if that is true) the generic direct
-mapping code has full support for a per-device coherent flag, so
-support for a non-coherent AGP slot could be implemented relatively
-simply.
+[
+  Folks, I'm working on rewriting the function graph tracer. In order to
+  do so, some changes need to be done that affect architecture specific
+  code. I'm only able to compile test these changes. I would like to
+  have folks check out my repo and give them a test.
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-trace.git
+  ftrace/core
+
+  Head SHA1: 51584396cff54aaf57ed0bd353767d71429f77b4
+]
+
+The structure of the ret_stack array on the task struct is going to
+change, and accessing it directly via the curr_ret_stack index will no
+longer give the ret_stack entry that holds the return address. To access
+that, architectures must now use ftrace_graph_get_ret_stack() to get the
+associated ret_stack that matches the saved return address.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+---
+ arch/powerpc/kernel/process.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 96f34730010f..ce393df243aa 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -2061,9 +2061,10 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 	int count = 0;
+ 	int firstframe = 1;
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+-	int curr_frame = current->curr_ret_stack;
++	struct ftrace_ret_stack *ret_stack;
+ 	extern void return_to_handler(void);
+ 	unsigned long rth = (unsigned long)return_to_handler;
++	int curr_frame = 0;
+ #endif
+ 
+ 	sp = (unsigned long) stack;
+@@ -2089,9 +2090,13 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 			if ((ip == rth) && curr_frame >= 0) {
+-				pr_cont(" (%pS)",
+-				       (void *)current->ret_stack[curr_frame].ret);
+-				curr_frame--;
++				ret_stack = ftrace_graph_get_ret_stack(current,
++								  curr_frame++);
++				if (ret_stack)
++					pr_cont(" (%pS)",
++						(void *)ret_stack->ret);
++				else
++					curr_frame = -1;
+ 			}
+ #endif
+ 			if (firstframe)
+-- 
+2.19.1
+
+
