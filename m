@@ -2,72 +2,64 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0563C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 11:15:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E4DC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 11:43:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 166D52086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 11:15:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=verge.net.au header.i=@verge.net.au header.b="phgxi0CT"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 166D52086D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=verge.net.au
+	by mail.kernel.org (Postfix) with ESMTPS id 26C5120880
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 11:43:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26C5120880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43D0pr2cqszDqXb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:15:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=verge.net.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43D1S804fxzDqm6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:43:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=verge.net.au header.i=@verge.net.au header.b="phgxi0CT";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=verge.net.au
- (client-ip=202.4.237.240; helo=kirsty.vergenet.net;
- envelope-from=horms@verge.net.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=verge.net.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=verge.net.au header.i=@verge.net.au header.b="phgxi0CT";
- dkim-atps=neutral
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by lists.ozlabs.org (Postfix) with ESMTP id 43D0lv5j7ZzDr7C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 22:12:27 +1100 (AEDT)
-Received: from reginn.horms.nl (watermunt.horms.nl [80.127.179.77])
- by kirsty.vergenet.net (Postfix) with ESMTPA id 3062825B7DC;
- Mon, 10 Dec 2018 22:12:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=verge.net.au; s=mail;
- t=1544440345; bh=oRoU1UtWG/hI2sAcfvjea8bkUbn17Pq3e+Jpna+LddI=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=phgxi0CTBMi1DTjVtsTkARUZs8Y+JxwjNDhNdG5Eo+HHO7J3YQdvUWvwdw8Vcazkv
- a2Rua12uj1v9EoivlakOXeyZ88Wlg3/R1Fl6JLDg0VfbtlHM5WVHodlI9z1Tr1az92
- g+yRRZI9HmagkS9futK/GHru3ZjlJnASvIXQzkiw=
-Received: by reginn.horms.nl (Postfix, from userid 7100)
- id 8D7B59402E1; Mon, 10 Dec 2018 12:12:23 +0100 (CET)
-Date: Mon, 10 Dec 2018 12:12:23 +0100
-From: Simon Horman <horms@verge.net.au>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 26/34] dt-bindings: arm: Convert Renesas board/soc
- bindings to json-schema
-Message-ID: <20181210111223.fstjmazyo3vof7kc@verge.net.au>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-27-robh@kernel.org>
- <20181204144822.uqonsto45u7ysdu5@verge.net.au>
- <CAMuHMdV5brJyAmP0Bj7Bp7wruLNM1tSWkj_AyN5HCx4vdg-nrg@mail.gmail.com>
- <CAL_JsqJX9eb58piavQayXM5j5GXxsGxmy93m5oRKtghMFvkhuA@mail.gmail.com>
- <20181205194419.p6u56h57yk63xshj@verge.net.au>
- <CAL_JsqKHwYhHSb7GNFgOtBCqEeMshbRnU+0ONe_yW8OOiRC=SA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqKHwYhHSb7GNFgOtBCqEeMshbRnU+0ONe_yW8OOiRC=SA@mail.gmail.com>
-Organisation: Horms Solutions BV
-User-Agent: NeoMutt/20170113 (1.7.2)
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D1PX46FRzDqlQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 22:41:35 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43D1PP4NhCz9tylK;
+ Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id RLSczNLKkF5q; Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43D1PP3VQ7z9tylJ;
+ Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 000878B7A9;
+ Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id gTaV2tp9ZEjP; Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CBDCC8B74C;
+ Mon, 10 Dec 2018 12:41:29 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id A857D716EF; Mon, 10 Dec 2018 11:41:29 +0000 (UTC)
+Message-Id: <33dbb34cea199dc003cf5b7581faf905d546e0cf.1544441989.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/83xx: handle machine check caused by watchdog timer
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 10 Dec 2018 11:41:29 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,68 +71,130 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
- Sean Hudson <darknighte@darknighte.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "open list:MEDIA DRIVERS FOR RENESAS - FCP"
- <linux-renesas-soc@vger.kernel.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Frank Rowand <frowand.list@gmail.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 06, 2018 at 01:38:42PM -0600, Rob Herring wrote:
-> On Wed, Dec 5, 2018 at 1:44 PM Simon Horman <horms@verge.net.au> wrote:
-> >
-> > On Tue, Dec 04, 2018 at 09:08:57AM -0600, Rob Herring wrote:
-> > > On Tue, Dec 4, 2018 at 8:57 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > >
-> > > > Hi Simon,
-> > > >
-> > > > On Tue, Dec 4, 2018 at 3:48 PM Simon Horman <horms@verge.net.au> wrote:
-> > > > > On Mon, Dec 03, 2018 at 03:32:15PM -0600, Rob Herring wrote:
-> > > > > > Convert Renesas SoC bindings to DT schema format using json-schema.
-> > > > > >
-> > > > > > Cc: Simon Horman <horms@verge.net.au>
-> > > > > > Cc: Magnus Damm <magnus.damm@gmail.com>
-> > > > > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > > > > Cc: linux-renesas-soc@vger.kernel.org
-> > > > > > Cc: devicetree@vger.kernel.org
-> > > > > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > > > > ---
-> > > > > >  .../devicetree/bindings/arm/shmobile.txt      | 151 ------------
-> > > > > >  .../devicetree/bindings/arm/shmobile.yaml     | 218 ++++++++++++++++++
-> > > > > >  2 files changed, 218 insertions(+), 151 deletions(-)
-> > > > > >  delete mode 100644 Documentation/devicetree/bindings/arm/shmobile.txt
-> > > > > >  create mode 100644 Documentation/devicetree/bindings/arm/shmobile.yaml
-> > > > >
-> > > > > Hi Rob,
-> > > > >
-> > > > > what is this based on? I get a conflict when applying the .txt change
-> > > > > and if I knew the base for this patch it would be rather easy to work
-> > > > > out what has changed.
-> > >
-> > > 4.20-rc2
-> > >
-> > > > >
-> > > > > Also, should we do an s/shmobile.txt/shmobile.yaml/ in MAINTAINERS?
-> > >
-> > > Yes. Though it was pointed out that get_maintainers.pl can pull emails
-> > > out of this file. We'd need to get that to work by default though.
-> > >
-> > > > Probably even s/shmobile.yaml/renesas.yaml/, while at it?
-> > >
-> > > Sure, if that's what you all want.
-> >
-> > How about this?
-> 
-> LGTM
+When the watchdog timer is set in interrupt mode, it causes a
+machine check when it times out. The purpose of this mode is to
+ease debugging, not to crash the kernel and reboot the machine.
 
-Thanks.
+This patch implements a special handling for that, in order to not
+crash the kernel if the watchdog times out while in interrupt or
+within the idle task.
 
-As my tree is already closed for v4.21 I have applied this for v4.22.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/cputable.h |  1 +
+ arch/powerpc/include/asm/reg.h      |  2 ++
+ arch/powerpc/kernel/cputable.c      | 10 ++++++----
+ arch/powerpc/platforms/83xx/misc.c  | 16 ++++++++++++++++
+ 4 files changed, 25 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index a0395ccbbe9e..d05f0c28e515 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -44,6 +44,7 @@ extern int machine_check_e500(struct pt_regs *regs);
+ extern int machine_check_e200(struct pt_regs *regs);
+ extern int machine_check_47x(struct pt_regs *regs);
+ int machine_check_8xx(struct pt_regs *regs);
++int machine_check_83xx(struct pt_regs *regs);
+ 
+ extern void cpu_down_flush_e500v2(void);
+ extern void cpu_down_flush_e500mc(void);
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 0d2139a0d5b9..1c98ef1f2d5b 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -769,6 +769,8 @@
+ #define   SRR1_PROGTRAP		0x00020000 /* Trap */
+ #define   SRR1_PROGADDR		0x00010000 /* SRR0 contains subsequent addr */
+ 
++#define   SRR1_MCE_MCP		0x00080000 /* Machine check signal caused interrupt */
++
+ #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
+ #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
+ #define   HSRR1_DENORM		0x00100000 /* Denorm exception */
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 2da01340c84c..1eab54bc6ee9 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1141,6 +1141,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check		= machine_check_generic,
+ 		.platform		= "ppc603",
+ 	},
++#ifdef CONFIG_PPC_83xx
+ 	{	/* e300c1 (a 603e core, plus some) on 83xx */
+ 		.pvr_mask		= 0x7fff0000,
+ 		.pvr_value		= 0x00830000,
+@@ -1151,7 +1152,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_83xx,
+ 		.platform		= "ppc603",
+ 	},
+ 	{	/* e300c2 (an e300c1 core, plus some, minus FPU) on 83xx */
+@@ -1165,7 +1166,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_83xx,
+ 		.platform		= "ppc603",
+ 	},
+ 	{	/* e300c3 (e300c1, plus one IU, half cache size) on 83xx */
+@@ -1179,7 +1180,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_83xx,
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e300",
+ 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
+@@ -1196,12 +1197,13 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.cpu_setup		= __setup_cpu_603,
+-		.machine_check		= machine_check_generic,
++		.machine_check		= machine_check_83xx,
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e300",
+ 		.oprofile_type		= PPC_OPROFILE_FSL_EMB,
+ 		.platform		= "ppc603",
+ 	},
++#endif
+ 	{	/* default match, we assume split I/D cache & TB (non-601)... */
+ 		.pvr_mask		= 0x00000000,
+ 		.pvr_value		= 0x00000000,
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index d75c9816a5c9..3e591d159413 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -150,3 +150,19 @@ void __init mpc83xx_setup_arch(void)
+ 
+ 	mpc83xx_setup_pci();
+ }
++
++int machine_check_83xx(struct pt_regs *regs)
++{
++	u32 mask = 1 << (31 - IPIC_MCP_WDT);
++
++	if (!(regs->msr & SRR1_MCE_MCP) || !(ipic_get_mcp_status() & mask))
++		return machine_check_generic(regs);
++	ipic_clear_mcp_status(mask);
++
++	if (debugger_fault_handler(regs))
++		return 1;
++
++	die("Watchdog NMI Reset", regs, 0);
++
++	return 1;
++}
+-- 
+2.13.3
+
