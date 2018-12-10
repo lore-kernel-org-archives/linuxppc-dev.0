@@ -2,87 +2,94 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE6CAC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 17:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DCB95C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 17:20:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A79220821
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 17:07:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IG6frN4I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A79220821
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3A7B22064D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 17:20:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A7B22064D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43D8dn0b3mzDqsQ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 04:07:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43D8x30bWFzDrB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 04:20:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="IG6frN4I";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::a33; helo=mail-vk1-xa33.google.com;
- envelope-from=rsalvaterra@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="IG6frN4I"; 
- dkim-atps=neutral
-Received: from mail-vk1-xa33.google.com (mail-vk1-xa33.google.com
- [IPv6:2607:f8b0:4864:20::a33])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43D8Zk1k6ZzDqnr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 04:05:01 +1100 (AEDT)
-Received: by mail-vk1-xa33.google.com with SMTP id h128so2678441vkg.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 09:05:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=8d6hJDj9WYGcZt3sOxU9jJpzctdAC7KsWBf92Fbncno=;
- b=IG6frN4IFhlnXf7eyBGJBso/GIv3zt8BhHbMAXIo/2+8/FzmSnipAK4TOGUNbD/fbx
- ALGPxa1j0Sr5UuWMR4PtuPUsWivjAEG6H5JGFVLGCgi6pL9iVex/+a2xLXidzM+cazoU
- 4jsCiJiD5MMi0ZSy6V2S4JdXIWH48qYyJB9pyO6n/UZSiz6cl9lflxv+LqEPPpUwYGnD
- OP834UdnBTkqgn4LqcYt3etoj9n4wtxlFs79+CIOU2LTvGH/U+i9A5hGYQm6NhpoTuq8
- 4tjPkz80mwZL+pjiL8Gn7ocP47/Jj2eaVgixeRMLxU51FKIsvHuCNQR9moX3AQJsNEpW
- G8yA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=8d6hJDj9WYGcZt3sOxU9jJpzctdAC7KsWBf92Fbncno=;
- b=CohzUWMzVbRQtadqxfFuR/+gCMbfcsedM2tRY1zoHKj3ocY1Dwhu/MRLWB3xjqo0rd
- 84CGGw6M585SIolwIU/InTTONMw93i4jPVWRCUSLio1J2pDGW2Sr3nKiymW5+iKnuo6C
- 2Tc7YE79wrRD0MymECGqFY/F/PpTHV4xjLtgJnpZ9o0eW4KOmIb/AoiYtRX9RUntSBD/
- E9KvzTO4fTVSWOPAFy9tGGGVrcYxav1ejHDcIBQTNdrRBssSRKlRrcEqg872wBQe/b0V
- +w1sireik7qIH688ra9He+fKt3ppm5kY5rpGJRGYs3b1EPKAxTVEGrh4GY8Fs/eL2xGm
- 0E+A==
-X-Gm-Message-State: AA+aEWb5LgQxNXtf0r97qbgrFnj8bKkwj3cduzRV2Ul8VgNsv5CaoTMc
- RogOzGoEHYEL3u6KMtIx9e/fN3BANYB9e1snJQ==
-X-Google-Smtp-Source: AFSGD/XwD+ohLgnHVWDVpPif+ofSWFVZqhWkMcZLZLTLZ1xX5bP8T8LpKUW5pVPkDlxiOhTSZKX7OIonH6+NZYPeRkM=
-X-Received: by 2002:a1f:4982:: with SMTP id w124mr5436394vka.4.1544461498701; 
- Mon, 10 Dec 2018 09:04:58 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D8t14WrBzDqcq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 04:18:17 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBAH9dbS079979
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 12:18:15 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2p9smehgt2-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 12:18:14 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Mon, 10 Dec 2018 17:18:12 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 10 Dec 2018 17:18:09 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBAHI94A6881586
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 10 Dec 2018 17:18:09 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E6D2742042;
+ Mon, 10 Dec 2018 17:18:08 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8EBFD42049;
+ Mon, 10 Dec 2018 17:18:08 +0000 (GMT)
+Received: from [9.145.161.130] (unknown [9.145.161.130])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 10 Dec 2018 17:18:08 +0000 (GMT)
+Subject: Re: [PATCH] ocxl: Clarify error path in setup_xsl_irq()
+To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
+References: <154445509294.867383.14905585855902294361.stgit@bahia.lan>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Mon, 10 Dec 2018 18:18:08 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-References: <CALjTZvZzHSZ=s0W0Pd-MVd7OA0hYxu0LzsZ+GxYybXKoUQQR6Q@mail.gmail.com>
- <20181130103222.GA23393@lst.de>
- <CALjTZvZsk0qA+Yxu7S+8pfa5y6rpihnThrHiAKkZMWsdyC-tVg@mail.gmail.com>
- <42b1408cafe77ebac1b1ad909db237fe34e4d177.camel@kernel.crashing.org>
- <20181208171746.GB15228@lst.de>
-In-Reply-To: <20181208171746.GB15228@lst.de>
-From: Rui Salvaterra <rsalvaterra@gmail.com>
-Date: Mon, 10 Dec 2018 17:04:46 +0000
-Message-ID: <CALjTZvb4+Ox5Jdm-xwQuxMDz_ub=mHAgPLA4NgrVNZTmUZwhnQ@mail.gmail.com>
-Subject: Re: use generic DMA mapping code in powerpc V4
-To: hch@lst.de
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <154445509294.867383.14905585855902294361.stgit@bahia.lan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18121017-0008-0000-0000-0000029F6B17
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18121017-0009-0000-0000-00002209E08B
+Message-Id: <a1efab95-6256-1af3-e159-3f1fae59883d@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-10_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=879 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812100154
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,44 +101,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
+Cc: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 8 Dec 2018 at 17:17, Christoph Hellwig <hch@lst.de> wrote:
->
-> On Sun, Dec 02, 2018 at 05:11:02PM +1100, Benjamin Herrenschmidt wrote:
-> > Talking of which ... Christoph, not sure if we can do something about
-> > this at the DMA API level or keep hacks but some adapters such as the
-> > nVidia GPUs have a HW hack we can use to work around their limitations
-> > in that case.
-> >
-> > They have a register that can program a fixed value for the top bits
-> > that they don't support.
-> >
-> > This works fine for any linear mapping with an offset, provided they
-> > can program the offset in that register and they have enough DMA range
-> > to cover all memory from that offset.
-> >
-> > I can probably get the info about this from them so we can exploit it
-> > in nouveau.
->
-> I think we can expose the direct mapping offset if people care enough,
-> we just have to be very careful designing the API.  I'll happily leave
-> that to those that actually want to use it, but I'll gladly help
-> reviewing it.
 
-Hi, Christoph and Ben,
 
-It just came to my mind (and this is most likely a stupid question,
-but still)=E2=80=A6 Is there any possibility of these changes having an
-(positive) effect on the long-standing problem of Power Mac machines
-with AGP graphics cards (which have to be limited to PCI transfers,
-otherwise they'll hang, due to coherence issues)? If so, I have a G4
-machine where I'd gladly test them.
+Le 10/12/2018 à 16:18, Greg Kurz a écrit :
+> Implementing rollback with goto and labels is a common practice that
+> leads to prettier and more maintainable code. FWIW, this design pattern
+> is already being used in alloc_link() a few lines below in this file.
+> 
+> Do the same in setup_xsl_irq().
+> 
+> Signed-off-by: Greg Kurz <groug@kaod.org>
+> ---
 
-Thanks,
+This looks good. I don't have a fixed limit when I start using the "goto 
+undo" pattern, so it's likely inconsistent in other places as well. 
+Truth is I'm not too fussed either way.
 
-Rui
+Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+
+
+
+
+>   drivers/misc/ocxl/link.c |   23 ++++++++++++++---------
+>   1 file changed, 14 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index eed92055184d..659977a17405 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -273,9 +273,9 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>   	spa->irq_name = kasprintf(GFP_KERNEL, "ocxl-xsl-%x-%x-%x",
+>   				link->domain, link->bus, link->dev);
+>   	if (!spa->irq_name) {
+> -		unmap_irq_registers(spa);
+>   		dev_err(&dev->dev, "Can't allocate name for xsl interrupt\n");
+> -		return -ENOMEM;
+> +		rc = -ENOMEM;
+> +		goto err_xsl;
+>   	}
+>   	/*
+>   	 * At some point, we'll need to look into allowing a higher
+> @@ -283,11 +283,10 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>   	 */
+>   	spa->virq = irq_create_mapping(NULL, hwirq);
+>   	if (!spa->virq) {
+> -		kfree(spa->irq_name);
+> -		unmap_irq_registers(spa);
+>   		dev_err(&dev->dev,
+>   			"irq_create_mapping failed for translation interrupt\n");
+> -		return -EINVAL;
+> +		rc = -EINVAL;
+> +		goto err_name;
+>   	}
+> 
+>   	dev_dbg(&dev->dev, "hwirq %d mapped to virq %d\n", hwirq, spa->virq);
+> @@ -295,15 +294,21 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>   	rc = request_irq(spa->virq, xsl_fault_handler, 0, spa->irq_name,
+>   			link);
+>   	if (rc) {
+> -		irq_dispose_mapping(spa->virq);
+> -		kfree(spa->irq_name);
+> -		unmap_irq_registers(spa);
+>   		dev_err(&dev->dev,
+>   			"request_irq failed for translation interrupt: %d\n",
+>   			rc);
+> -		return -EINVAL;
+> +		rc = -EINVAL;
+> +		goto err_mapping;
+>   	}
+>   	return 0;
+> +
+> +err_mapping:
+> +	irq_dispose_mapping(spa->virq);
+> +err_name:
+> +	kfree(spa->irq_name);
+> +err_xsl:
+> +	unmap_irq_registers(spa);
+> +	return rc;
+>   }
+> 
+>   static void release_xsl_irq(struct link *link)
+> 
+
