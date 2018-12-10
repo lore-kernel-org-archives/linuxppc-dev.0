@@ -4,83 +4,82 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64DD5C5CFFE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:37:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16B04C5CFFE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:39:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2D0C2081F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:37:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 87A182081F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:39:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iOHNGJZv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2D0C2081F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HUOil4zM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 87A182081F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DHxz5cTFzDqpy
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:37:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DJ0l20fQzDqjH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:39:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="iOHNGJZv";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="HUOil4zM";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com;
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
  envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="iOHNGJZv"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="HUOil4zM"; 
  dkim-atps=neutral
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com
- [IPv6:2607:f8b0:4864:20::629])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DHms2cBJzDqhD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:29:17 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id 101so5915830pld.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:29:17 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DHmz6WYYzDqkk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:29:23 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id p8so5923649plo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:29:23 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
  :mime-version:content-transfer-encoding;
- bh=/TTW+WFL3zOZhLS8thtCKatOPz96ExrwSjaCelzNYKI=;
- b=iOHNGJZvDSVpQwh93tJYH1s/5tAl/VYyNR+5YgFI5bN5JyEAy8DsN9spbHjaYwjoZ+
- QPYzMXNO3fiU5fZBSd1Toid3Q2o6dlr0LIvNPYU0aM80bwf5HtHinlfP4NSQC+oRhktn
- Hj+bA8hElKytN97fYPuIHu+QtvtfTVDKssweSWrEiSvB1V2+PYrrp9SRxDW3fKNURNFj
- CqdYyPcGo+MAlzuQPu0sOCJKP9J1Et9osId6i5DAo+DaZZaxD4tbCaX0NdlKfu8freOY
- +P5/+k1eS1MyNHbSZ61ZRGj3G8e4jfJL+zGD28pFLdAO/bh57VDneOdRAz9LaWW0ljhl
- aS3A==
+ bh=c4gBFcajzgpVz3mIuYigk+ePJNILjxunDs0Xqtmk9l8=;
+ b=HUOil4zMQkESYsbT5xQ6TKy1s+USJP86lty1ko+svfcysoRJzAiyyJrECiMn1Bmo5n
+ CIeep1HZR6rcDHIHPGKMmDyHPyHIgYTEqVFRtSNU9EnEMvgzYTovMZKnrSURILyl7oN8
+ MJ0aKFrOc2Ee28te8VlRPDNj6LzaJBt5Y7IyCCBP5NO/XxYVpInlmU7hfN6RaIQjZpVk
+ auVR5puyDbykaihivyCYzLB3XAjJjlZxCGf6H/LrrG6Agg1C4aOziAzT8/gBo4m9ff90
+ 7cTGA4chkD0C79zYZSl1TY+Ecfsj06iL2QNmMPigu7vROonWH34j4mS41g/0hqRA4pCD
+ 3u6w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
  :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=/TTW+WFL3zOZhLS8thtCKatOPz96ExrwSjaCelzNYKI=;
- b=TPGGTK8yPT88LNA97wQ74R4le5HrLuFU9U6lQ8pGiU8UTL7NyHW4UZImsBvYTppMd8
- Yp/TOJyajniUVJBqq14CQUgnVX8glmMy1hrSVJvcQSegwSyXORGa04P7JpFqF/4YtKt+
- qPh8AwPjOIHcCsFv3vu2H7M+s6rvSJwPzhpJ6VZmn1ohRoHlnuByWpmVb5xSHPOnYbj0
- bvly2/dPwlEN0q3wtjk3I65RE8wOPkouH6ob+Dc2H5/jlU22e+M+w37r8vShC47svPlj
- VW27cf8h/OEN1GwIoyzQZZ1NTF1ecn2e1ETArbCf3ukYaC9M2fXFQjaT/EvyyYdE1DPa
- xc8g==
-X-Gm-Message-State: AA+aEWap+H0bNLjnISTPvN5waA2FFPM0f/Zt1yPWGi7zHsOh/G2CDr+1
- wIHsL5TwjhyfboT/XnUQmvqKg0c/
-X-Google-Smtp-Source: AFSGD/Uv8ZQXMTEb/k07MdoezgfPKAvDJYLZ1nOY97IXNUVhDWbnAs/5TwE/uo2lq6nixgUplunZDg==
-X-Received: by 2002:a17:902:9887:: with SMTP id
- s7mr13448545plp.199.1544480954751; 
- Mon, 10 Dec 2018 14:29:14 -0800 (PST)
+ bh=c4gBFcajzgpVz3mIuYigk+ePJNILjxunDs0Xqtmk9l8=;
+ b=VPetAPqU5E1e8DwdFz0ntBCODIHNNPKLlcGtKG9oV/OaCwC9bZFvIvoGrmxEFGO1Qa
+ 8bRh64/g8EV6SVZz56wXSsGYxIuQhHVm/wcsHQzK1pOMsn0OD06tpbmnXxW6IVdZMuKS
+ /OTVCw/0pMj/ShneFC9PPsyYWfNm2klLOGEItSbq7Fo6MyoYaoCLvX2JKcGkUtpNMf5o
+ Zg8TuXRbRnTmsQ3j+KS5XBeM/BoevHSYQq2HxDtzlPQ/K/wtD2x2rhEj+e6aS7kfj/VW
+ NIw8QpRLDnK/Y9yZi7WGCq9so0ZWc5taCMm9XAbq37PgzCmTu1qmcjZVjPTlPrSxFrS/
+ qPqQ==
+X-Gm-Message-State: AA+aEWZHeXzv0MzoihIVTwUpxhi/Ui/E8Vt8B9wSVelib2fyCUdKfFXo
+ 1PDKwYPvLdm2+TUpyQXEIqSPn6wh
+X-Google-Smtp-Source: AFSGD/W2d+WDkI0RMN27bcsZTWl/Jf855xvU11FHLI+dkOT6XzKsjvjPafN4b69BUTBMyJ0sE7PeTg==
+X-Received: by 2002:a17:902:6a8c:: with SMTP id
+ n12mr13850304plk.85.1544480961553; 
+ Mon, 10 Dec 2018 14:29:21 -0800 (PST)
 Received: from aurora.jms.id.au ([45.124.203.15])
- by smtp.gmail.com with ESMTPSA id 134sm14065993pgb.78.2018.12.10.14.29.11
+ by smtp.gmail.com with ESMTPSA id u137sm20225259pfc.140.2018.12.10.14.29.17
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 10 Dec 2018 14:29:14 -0800 (PST)
+ Mon, 10 Dec 2018 14:29:20 -0800 (PST)
 Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Tue, 11 Dec 2018 08:59:08 +1030
+ Tue, 11 Dec 2018 08:59:15 +1030
 From: Joel Stanley <joel@jms.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/3] powerpc: Discard dynsym section for !PPC32
-Date: Tue, 11 Dec 2018 08:58:53 +1030
-Message-Id: <20181210222854.21156-3-joel@jms.id.au>
+Subject: [PATCH v3 3/3] powerpc: Discard .branch_lt section
+Date: Tue, 11 Dec 2018 08:58:54 +1030
+Message-Id: <20181210222854.21156-4-joel@jms.id.au>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181210222854.21156-1-joel@jms.id.au>
 References: <20181210222854.21156-1-joel@jms.id.au>
@@ -102,52 +101,48 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alan Modra <amodra@gmail.com> explains:
+When building a 32 bit powerpc kernel with Binutils 2.31.1 this warning
+is emitted:
 
- > Likely you could discard .interp > and .dynstr too, and .dynsym when
- > !CONFIG_PPC32.
+ powerpc-linux-gnu-ld: warning: orphan section `.branch_lt' from
+ `arch/powerpc/kernel/head_44x.o' being placed in section `.branch_lt'
 
-Discarding of interp and dynstr happened in a previous patch. The dynsym
-cleanup was a bit less straightforward, so it gets it's own patch.
+As of binutils commit 2d7ad24e8726 ("Support PLT16 relocs against local
+symbols")[1], 32 bit targets can produce .branch_lt sections in their
+output.
 
+These sections should be empty for the kernel build so discard them for
+both PPC64 and PPC32.
+
+[1] https://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commitdiff;h=2d7ad24e8726ba4c45c9e67be08223a146a837ce
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
-See https://lore.kernel.org/lkml/CACPK8Xft3n5KkpTjN3=7_VUCXHFcK7mxvZm2Rrqu7tppcBoyOg@mail.gmail.com/T/#m58532c86cf0c7b4fb01cc1fe724e48d4c7d8e4a7
-
-v3: Move dynstr hunk to patch 1 (it was incorrectly left in this patch)
+v2: Discard instead of keep. Alan said "[discarding] can be a recipe for
+finding linker bugs", so lets go with that.
 ---
- arch/powerpc/kernel/vmlinux.lds.S | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 779b8b3075a1..2c93a420f456 100644
+index 2c93a420f456..af0f81df8bb9 100644
 --- a/arch/powerpc/kernel/vmlinux.lds.S
 +++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -266,13 +266,13 @@ SECTIONS
+@@ -316,7 +316,6 @@ SECTIONS
+ 		DATA_DATA
+ 		*(.data.rel*)
+ 		*(.toc1)
+-		*(.branch_lt)
  	}
- #ifdef CONFIG_RELOCATABLE
- 	. = ALIGN(8);
-+#ifdef CONFIG_PPC32
- 	.dynsym : AT(ADDR(.dynsym) - LOAD_OFFSET)
- 	{
--#ifdef CONFIG_PPC32
- 		__dynamic_symtab = .;
--#endif
- 		*(.dynsym)
- 	}
-+#endif
- 	.dynamic : AT(ADDR(.dynamic) - LOAD_OFFSET)
- 	{
- 		__dynamic_start = .;
-@@ -388,5 +388,8 @@ SECTIONS
+ 
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+@@ -388,6 +387,7 @@ SECTIONS
  		*(.hash .gnu.hash)
  		*(.interp)
  		*(.dynstr)
-+#ifndef CONFIG_PPC32
-+		*(.dynsym)
-+#endif
- 	}
- }
++		*(.branch_lt)
+ #ifndef CONFIG_PPC32
+ 		*(.dynsym)
+ #endif
 -- 
 2.19.1
 
