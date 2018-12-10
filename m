@@ -4,51 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD669C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:38:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 847E3C5CFFE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:50:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFD932084E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:38:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFD932084E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0C16220851
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:50:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C16220851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iogearbox.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43D5Kl6ZwmzDqWW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 01:38:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43D5c10F7kzDqyj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 01:50:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iogearbox.net
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D5Yk5RWDzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 01:48:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43D5Gv56sGzDqmK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 01:36:05 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0A2461596;
- Mon, 10 Dec 2018 06:36:04 -0800 (PST)
-Received: from [10.1.196.75] (e110467-lin.cambridge.arm.com [10.1.196.75])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ECEE43F575;
- Mon, 10 Dec 2018 06:35:56 -0800 (PST)
-Subject: Re: [PATCH] mm/zsmalloc.c: Fix zsmalloc 32-bit PAE support
-To: Rafael David Tinoco <rafael.tinoco@linaro.org>,
- Russell King <linux@armlinux.org.uk>
-References: <20181210142105.6750-1-rafael.tinoco@linaro.org>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <4da655ec-a1ac-c524-1eb4-5cbd18b265ef@arm.com>
-Date: Mon, 10 Dec 2018 14:35:55 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ dmarc=none (p=none dis=none) header.from=iogearbox.net
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43D5Yk3wdkz8t1p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 01:48:58 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43D5Yk3Y3Tz9s55; Tue, 11 Dec 2018 01:48:58 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=iogearbox.net
+ (client-ip=213.133.104.62; helo=www62.your-server.de;
+ envelope-from=daniel@iogearbox.net; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=iogearbox.net
+X-Greylist: delayed 1337 seconds by postgrey-1.36 at bilbo;
+ Tue, 11 Dec 2018 01:48:58 AEDT
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43D5Yk06pGz9s4s
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2018 01:48:57 +1100 (AEDT)
+Received: from [78.46.172.3] (helo=sslproxy06.your-server.de)
+ by www62.your-server.de with esmtpsa (TLSv1.2:DHE-RSA-AES256-GCM-SHA384:256)
+ (Exim 4.89_1) (envelope-from <daniel@iogearbox.net>)
+ id 1gWMW1-0006Oe-JZ; Mon, 10 Dec 2018 15:26:33 +0100
+Received: from [2a02:1203:ecb1:b710:c81f:d2d6:50a9:c2d] (helo=linux.home)
+ by sslproxy06.your-server.de with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.89)
+ (envelope-from <daniel@iogearbox.net>)
+ id 1gWMW1-000BNi-DN; Mon, 10 Dec 2018 15:26:33 +0100
+Subject: Re: [PATCH] bpf: fix overflow of bpf_jit_limit when PAGE_SIZE >= 64K
+To: Michael Roth <mdroth@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, netdev@vger.kernel.org
+References: <20181206170646.3736-1-mdroth@linux.vnet.ibm.com>
+ <87pnudjz72.fsf@concordia.ellerman.id.au>
+ <154419700199.27049.4999726632209685368@sif>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Message-ID: <428482af-6202-4ad7-0548-0bfdd4d4ce94@iogearbox.net>
+Date: Mon, 10 Dec 2018 15:26:31 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.3.0
 MIME-Version: 1.0
-In-Reply-To: <20181210142105.6750-1-rafael.tinoco@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
+In-Reply-To: <154419700199.27049.4999726632209685368@sif>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: daniel@iogearbox.net
+X-Virus-Scanned: Clear (ClamAV 0.100.2/25194/Mon Dec 10 11:16:15 2018)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,324 +83,225 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- linux-sh@vger.kernel.org, James Hogan <jhogan@kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, Khalid Aziz <khalid.aziz@oracle.com>,
- Paul Mackerras <paulus@samba.org>, "H . Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- Ingo Molnar <mingo@redhat.com>, Anthony Yznaga <anthony.yznaga@oracle.com>,
- Nitin Gupta <ngupta@vflare.org>, Fenghua Yu <fenghua.yu@intel.com>,
- Joerg Roedel <jroedel@suse.de>, Vasily Gorbik <gor@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Juergen Gross <jgross@suse.com>, Tony Luck <tony.luck@intel.com>,
- Jiri Kosina <jkosina@suse.cz>, linux-mips@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Minchan Kim <minchan@kernel.org>,
- Paul Burton <paul.burton@mips.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linuxppc-dev@ozlabs.org, Sandipan Das <sandipan@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Alexei Starovoitov <ast@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/12/2018 14:21, Rafael David Tinoco wrote:
-> On 32-bit systems, zsmalloc uses HIGHMEM and, when PAE is enabled, the
-> physical frame number might be so big that zsmalloc obj encoding (to
-> location) will break, causing:
+On 12/07/2018 04:36 PM, Michael Roth wrote:
+> Quoting Michael Ellerman (2018-12-07 06:31:13)
+>> Michael Roth <mdroth@linux.vnet.ibm.com> writes:
+>>
+>>> Commit ede95a63b5 introduced a bpf_jit_limit tuneable to limit BPF
+>>> JIT allocations. At compile time it defaults to PAGE_SIZE * 40000,
+>>> and is adjusted again at init time if MODULES_VADDR is defined.
+>>>
+>>> For ppc64 kernels, MODULES_VADDR isn't defined, so we're stuck with
+>>
+>> But maybe it should be, I don't know why we don't define it.
+>>
+>>> the compile-time default at boot-time, which is 0x9c400000 when
+>>> using 64K page size. This overflows the signed 32-bit bpf_jit_limit
+>>> value:
+>>>
+>>>   root@ubuntu:/tmp# cat /proc/sys/net/core/bpf_jit_limit
+>>>   -1673527296
+>>>
+>>> and can cause various unexpected failures throughout the network
+>>> stack. In one case `strace dhclient eth0` reported:
+>>>
+>>>   setsockopt(5, SOL_SOCKET, SO_ATTACH_FILTER, {len=11, filter=0x105dd27f8}, 16) = -1 ENOTSUPP (Unknown error 524)
+>>>
+>>> and similar failures can be seen with tools like tcpdump. This doesn't
+>>> always reproduce however, and I'm not sure why. The more consistent
+>>> failure I've seen is an Ubuntu 18.04 KVM guest booted on a POWER9 host
+>>> would time out on systemd/netplan configuring a virtio-net NIC with no
+>>> noticeable errors in the logs.
+>>>
+>>> Fix this by limiting the compile-time default for bpf_jit_limit to
+>>> INT_MAX.
+>>
+>> INT_MAX is a lot more than (4k * 40000), so I guess I'm not clear on
+>> whether we should be using PAGE_SIZE here at all. I guess each BPF
+>> program uses at least one page is the thinking?
 > 
-> BUG: KASAN: null-ptr-deref in zs_map_object+0xa4/0x2bc
-> Read of size 4 at addr 00000000 by task mkfs.ext4/623
-> CPU: 2 PID: 623 Comm: mkfs.ext4 Not tainted 4.19.0-rc8-00017-g8239bc6d3307-dirty #15
-> Hardware name: Generic DT based system
-> [<c0418f7c>] (unwind_backtrace) from [<c0410ca4>] (show_stack+0x20/0x24)
-> [<c0410ca4>] (show_stack) from [<c16bd540>] (dump_stack+0xbc/0xe8)
-> [<c16bd540>] (dump_stack) from [<c06cab74>] (kasan_report+0x248/0x390)
-> [<c06cab74>] (kasan_report) from [<c06c94e8>] (__asan_load4+0x78/0xb4)
-> [<c06c94e8>] (__asan_load4) from [<c06ddc24>] (zs_map_object+0xa4/0x2bc)
-> [<c06ddc24>] (zs_map_object) from [<bf0bbbd8>] (zram_bvec_rw.constprop.2+0x324/0x8e4 [zram])
-> [<bf0bbbd8>] (zram_bvec_rw.constprop.2 [zram]) from [<bf0bc3cc>] (zram_make_request+0x234/0x46c [zram])
-> [<bf0bc3cc>] (zram_make_request [zram]) from [<c09aff9c>] (generic_make_request+0x304/0x63c)
-> [<c09aff9c>] (generic_make_request) from [<c09b0320>] (submit_bio+0x4c/0x1c8)
-> [<c09b0320>] (submit_bio) from [<c0743570>] (submit_bh_wbc.constprop.15+0x238/0x26c)
-> [<c0743570>] (submit_bh_wbc.constprop.15) from [<c0746cf8>] (__block_write_full_page+0x524/0x76c)
-> [<c0746cf8>] (__block_write_full_page) from [<c07472c4>] (block_write_full_page+0x1bc/0x1d4)
-> [<c07472c4>] (block_write_full_page) from [<c0748eb4>] (blkdev_writepage+0x24/0x28)
-> [<c0748eb4>] (blkdev_writepage) from [<c064a780>] (__writepage+0x44/0x78)
-> [<c064a780>] (__writepage) from [<c064b50c>] (write_cache_pages+0x3b8/0x800)
-> [<c064b50c>] (write_cache_pages) from [<c064dd78>] (generic_writepages+0x74/0xa0)
-> [<c064dd78>] (generic_writepages) from [<c0748e64>] (blkdev_writepages+0x18/0x1c)
-> [<c0748e64>] (blkdev_writepages) from [<c064e890>] (do_writepages+0x68/0x134)
-> [<c064e890>] (do_writepages) from [<c06368a4>] (__filemap_fdatawrite_range+0xb0/0xf4)
-> [<c06368a4>] (__filemap_fdatawrite_range) from [<c0636b68>] (file_write_and_wait_range+0x64/0xd0)
-> [<c0636b68>] (file_write_and_wait_range) from [<c0747af8>] (blkdev_fsync+0x54/0x84)
-> [<c0747af8>] (blkdev_fsync) from [<c0739dac>] (vfs_fsync_range+0x70/0xd4)
-> [<c0739dac>] (vfs_fsync_range) from [<c0739e98>] (do_fsync+0x4c/0x80)
-> [<c0739e98>] (do_fsync) from [<c073a26c>] (sys_fsync+0x1c/0x20)
-> [<c073a26c>] (sys_fsync) from [<c0401000>] (ret_fast_syscall+0x0/0x2c)
+> That seems to be the case, at least, the max number of minimum-sized
+> allocations would be less on ppc64 since the allocations are always at
+> least PAGE_SIZE in size. The init-time default also limits to INT_MAX,
+> so it seemed consistent to do that here too.
 > 
-> when trying to decode (the pfn) and map the object.
+>>
+>> Thanks for tracking this down. For some reason none of my ~10 test boxes
+>> have hit this, perhaps I don't have new enough userspace?
 > 
-> That happens because one architecture might not re-define
-> MAX_PHYSMEM_BITS, like in this ARM 32-bit w/ LPAE enabled example. For
-> 32-bit systems, if not re-defined, MAX_POSSIBLE_PHYSMEM_BITS will
-> default to BITS_PER_LONG (32) in most cases, and, with PAE enabled,
-> _PFN_BITS might be wrong: which may cause obj variable to overflow if
-> frame number is in HIGHMEM and referencing a page above the 4GB
-> watermark.
+> I'm not too sure, I would've thought things like the dhclient case in
+> the commit log would fail every time, but sometimes I need to reboot the
+> guest before I start seeing the behavior. Maybe there's something special
+> about when JIT allocations are actually done that can affect
+> reproducibility?
 > 
-> commit 6e00ec00b1a7 ("staging: zsmalloc: calculate MAX_PHYSMEM_BITS if
-> not defined") realized MAX_PHYSMEM_BITS depended on SPARSEMEM headers
-> and "fixed" it by calculating it using BITS_PER_LONG if SPARSEMEM wasn't
-> used, like in the example given above.
+> In my case at least the virtio-net networking timeout was consistent
+> enough for a bisect, but maybe it depends on the specific network
+> configuration (single NIC, basic DHCP through netplan/systemd in my case).
 > 
-> Systems with potential for PAE exist for a long time and assuming
-> BITS_PER_LONG seems inadequate. Defining MAX_PHYSMEM_BITS looks better,
-> however it is NOT a constant anymore for x86.
+>>
+>> You don't mention why you needed to add BPF_MIN(), I assume because the
+>> kernel version of min() has gotten too complicated to work here?
 > 
-> SO, instead, MAX_POSSIBLE_PHYSMEM_BITS should be defined by every
-> architecture using zsmalloc, together with a sanity check for
-> MAX_POSSIBLE_PHYSMEM_BITS being too big on 32-bit systems.
+> I wasn't sure if it was safe here or not, so I tried looking at other
+> users and came across:
 > 
-> Link: https://bugs.linaro.org/show_bug.cgi?id=3765#c17
-> Signed-off-by: Rafael David Tinoco <rafael.tinoco@linaro.org>
-> ---
->   arch/arm/include/asm/pgtable-2level-types.h |  2 ++
->   arch/arm/include/asm/pgtable-3level-types.h |  2 ++
->   arch/arm64/include/asm/pgtable-types.h      |  2 ++
->   arch/ia64/include/asm/page.h                |  2 ++
->   arch/mips/include/asm/page.h                |  2 ++
->   arch/powerpc/include/asm/mmu.h              |  2 ++
->   arch/s390/include/asm/page.h                |  2 ++
->   arch/sh/include/asm/page.h                  |  2 ++
->   arch/sparc/include/asm/page_32.h            |  2 ++
->   arch/sparc/include/asm/page_64.h            |  2 ++
->   arch/x86/include/asm/pgtable-2level_types.h |  2 ++
->   arch/x86/include/asm/pgtable-3level_types.h |  3 +-
->   arch/x86/include/asm/pgtable_64_types.h     |  4 +--
->   mm/zsmalloc.c                               | 35 +++++++++++----------
->   14 files changed, 45 insertions(+), 19 deletions(-)
+> mm/vmalloc.c:777:#define VMAP_MIN(x, y)		((x) < (y) ? (x) : (y)) /* can't use min() */
 > 
-> diff --git a/arch/arm/include/asm/pgtable-2level-types.h b/arch/arm/include/asm/pgtable-2level-types.h
-> index 66cb5b0e89c5..552dba411324 100644
-> --- a/arch/arm/include/asm/pgtable-2level-types.h
-> +++ b/arch/arm/include/asm/pgtable-2level-types.h
-> @@ -64,4 +64,6 @@ typedef pteval_t pgprot_t;
->   
->   #endif /* STRICT_MM_TYPECHECKS */
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 32
-> +
->   #endif	/* _ASM_PGTABLE_2LEVEL_TYPES_H */
-> diff --git a/arch/arm/include/asm/pgtable-3level-types.h b/arch/arm/include/asm/pgtable-3level-types.h
-> index 921aa30259c4..664c39e6517c 100644
-> --- a/arch/arm/include/asm/pgtable-3level-types.h
-> +++ b/arch/arm/include/asm/pgtable-3level-types.h
-> @@ -67,4 +67,6 @@ typedef pteval_t pgprot_t;
->   
->   #endif	/* STRICT_MM_TYPECHECKS */
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 36
+> I'm not sure what the reasoning was (or whether it still applies), but I
+> figured it was safer to do the same here. Maybe Nick still recalls?
+> 
+>>
+>> Daniel I assume you'll merge this via your tree?
+>>
+>> cheers
+>>
+>>> Fixes: ede95a63b5e8 ("bpf: add bpf_jit_limit knob to restrict unpriv allocations")
+>>> Cc: linuxppc-dev@ozlabs.org
+>>> Cc: Daniel Borkmann <daniel@iogearbox.net>
+>>> Cc: Sandipan Das <sandipan@linux.ibm.com>
+>>> Cc: Alexei Starovoitov <ast@kernel.org>
+>>> Signed-off-by: Michael Roth <mdroth@linux.vnet.ibm.com>
 
-Nit: with LPAE, physical addresses go up to 40 bits, not just 36.
+Thanks for the reports / fixes and sorry for my late reply (bit too
+swamped last week), some more thoughts below.
 
-Robin.
+>>>  kernel/bpf/core.c | 3 ++-
+>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+>>> index b1a3545d0ec8..55de4746cdfd 100644
+>>> --- a/kernel/bpf/core.c
+>>> +++ b/kernel/bpf/core.c
+>>> @@ -365,7 +365,8 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
+>>>  }
+>>>  
+>>>  #ifdef CONFIG_BPF_JIT
+>>> -# define BPF_JIT_LIMIT_DEFAULT       (PAGE_SIZE * 40000)
+>>> +# define BPF_MIN(x, y) ((x) < (y) ? (x) : (y))
+>>> +# define BPF_JIT_LIMIT_DEFAULT       BPF_MIN((PAGE_SIZE * 40000), INT_MAX)
+>>>  
+>>>  /* All BPF JIT sysctl knobs here. */
+>>>  int bpf_jit_enable   __read_mostly = IS_BUILTIN(CONFIG_BPF_JIT_ALWAYS_ON);
 
-> +
->   #endif	/* _ASM_PGTABLE_3LEVEL_TYPES_H */
-> diff --git a/arch/arm64/include/asm/pgtable-types.h b/arch/arm64/include/asm/pgtable-types.h
-> index 345a072b5856..45c3834eb4c8 100644
-> --- a/arch/arm64/include/asm/pgtable-types.h
-> +++ b/arch/arm64/include/asm/pgtable-types.h
-> @@ -64,4 +64,6 @@ typedef struct { pteval_t pgprot; } pgprot_t;
->   #include <asm-generic/5level-fixup.h>
->   #endif
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS CONFIG_ARM64_PA_BITS
-> +
->   #endif	/* __ASM_PGTABLE_TYPES_H */
-> diff --git a/arch/ia64/include/asm/page.h b/arch/ia64/include/asm/page.h
-> index 5798bd2b462c..a3e055979e46 100644
-> --- a/arch/ia64/include/asm/page.h
-> +++ b/arch/ia64/include/asm/page.h
-> @@ -235,4 +235,6 @@ get_order (unsigned long size)
->   
->   #define __HAVE_ARCH_GATE_AREA	1
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 50
-> +
->   #endif /* _ASM_IA64_PAGE_H */
-> diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
-> index e8cc328fce2d..f6a5dea1a66c 100644
-> --- a/arch/mips/include/asm/page.h
-> +++ b/arch/mips/include/asm/page.h
-> @@ -263,4 +263,6 @@ extern int __virt_addr_valid(const volatile void *kaddr);
->   #include <asm-generic/memory_model.h>
->   #include <asm-generic/getorder.h>
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 48
-> +
->   #endif /* _ASM_PAGE_H */
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index eb20eb3b8fb0..2ebc1d2d9a5c 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -324,6 +324,8 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
->   #define MAX_PHYSMEM_BITS        46
->   #endif
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYSMEM_BITS
-> +
->   #ifdef CONFIG_PPC_BOOK3S_64
->   #include <asm/book3s/64/mmu.h>
->   #else /* CONFIG_PPC_BOOK3S_64 */
-> diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
-> index a4d38092530a..8abec1461bf7 100644
-> --- a/arch/s390/include/asm/page.h
-> +++ b/arch/s390/include/asm/page.h
-> @@ -180,4 +180,6 @@ static inline int devmem_is_allowed(unsigned long pfn)
->   #include <asm-generic/memory_model.h>
->   #include <asm-generic/getorder.h>
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS CONFIG_MAX_PHYSMEM_BITS
-> +
->   #endif /* _S390_PAGE_H */
-> diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
-> index 5eef8be3e59f..40c7e12cf09e 100644
-> --- a/arch/sh/include/asm/page.h
-> +++ b/arch/sh/include/asm/page.h
-> @@ -205,4 +205,6 @@ typedef struct page *pgtable_t;
->   #define ARCH_SLAB_MINALIGN	8
->   #endif
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 32
-> +
->   #endif /* __ASM_SH_PAGE_H */
-> diff --git a/arch/sparc/include/asm/page_32.h b/arch/sparc/include/asm/page_32.h
-> index b76d59edec8c..14e9ca4659d7 100644
-> --- a/arch/sparc/include/asm/page_32.h
-> +++ b/arch/sparc/include/asm/page_32.h
-> @@ -139,4 +139,6 @@ extern unsigned long pfn_base;
->   #include <asm-generic/memory_model.h>
->   #include <asm-generic/getorder.h>
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 32
-> +
->   #endif /* _SPARC_PAGE_H */
-> diff --git a/arch/sparc/include/asm/page_64.h b/arch/sparc/include/asm/page_64.h
-> index e80f2d5bf62f..6d6f3654ead1 100644
-> --- a/arch/sparc/include/asm/page_64.h
-> +++ b/arch/sparc/include/asm/page_64.h
-> @@ -163,4 +163,6 @@ extern unsigned long PAGE_OFFSET;
->   
->   #include <asm-generic/getorder.h>
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYS_ADDRESS_BITS
-> +
->   #endif /* _SPARC64_PAGE_H */
-> diff --git a/arch/x86/include/asm/pgtable-2level_types.h b/arch/x86/include/asm/pgtable-2level_types.h
-> index 6deb6cd236e3..c2eae59e6505 100644
-> --- a/arch/x86/include/asm/pgtable-2level_types.h
-> +++ b/arch/x86/include/asm/pgtable-2level_types.h
-> @@ -38,4 +38,6 @@ typedef union {
->   /* This covers all VMSPLIT_* and VMSPLIT_*_OPT variants */
->   #define PGD_KERNEL_START	(CONFIG_PAGE_OFFSET >> PGDIR_SHIFT)
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 32
-> +
->   #endif /* _ASM_X86_PGTABLE_2LEVEL_DEFS_H */
-> diff --git a/arch/x86/include/asm/pgtable-3level_types.h b/arch/x86/include/asm/pgtable-3level_types.h
-> index 33845d36897c..5fce514a49a0 100644
-> --- a/arch/x86/include/asm/pgtable-3level_types.h
-> +++ b/arch/x86/include/asm/pgtable-3level_types.h
-> @@ -45,7 +45,8 @@ typedef union {
->    */
->   #define PTRS_PER_PTE	512
->   
-> -#define MAX_POSSIBLE_PHYSMEM_BITS	36
->   #define PGD_KERNEL_START	(CONFIG_PAGE_OFFSET >> PGDIR_SHIFT)
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS 36
-> +
->   #endif /* _ASM_X86_PGTABLE_3LEVEL_DEFS_H */
-> diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
-> index 84bd9bdc1987..d808cfde3d19 100644
-> --- a/arch/x86/include/asm/pgtable_64_types.h
-> +++ b/arch/x86/include/asm/pgtable_64_types.h
-> @@ -64,8 +64,6 @@ extern unsigned int ptrs_per_p4d;
->   #define P4D_SIZE		(_AC(1, UL) << P4D_SHIFT)
->   #define P4D_MASK		(~(P4D_SIZE - 1))
->   
-> -#define MAX_POSSIBLE_PHYSMEM_BITS	52
-> -
->   #else /* CONFIG_X86_5LEVEL */
->   
->   /*
-> @@ -154,4 +152,6 @@ extern unsigned int ptrs_per_p4d;
->   
->   #define PGD_KERNEL_START	((PAGE_SIZE / 2) / sizeof(pgd_t))
->   
-> +#define MAX_POSSIBLE_PHYSMEM_BITS (pgtable_l5_enabled() ? 52 : 46)
-> +
->   #endif /* _ASM_X86_PGTABLE_64_DEFS_H */
-> diff --git a/mm/zsmalloc.c b/mm/zsmalloc.c
-> index 0787d33b80d8..132c20b6fd4f 100644
-> --- a/mm/zsmalloc.c
-> +++ b/mm/zsmalloc.c
-> @@ -80,23 +80,7 @@
->    * as single (unsigned long) handle value.
->    *
->    * Note that object index <obj_idx> starts from 0.
-> - *
-> - * This is made more complicated by various memory models and PAE.
-> - */
-> -
-> -#ifndef MAX_POSSIBLE_PHYSMEM_BITS
-> -#ifdef MAX_PHYSMEM_BITS
-> -#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYSMEM_BITS
-> -#else
-> -/*
-> - * If this definition of MAX_PHYSMEM_BITS is used, OBJ_INDEX_BITS will just
-> - * be PAGE_SHIFT
->    */
-> -#define MAX_POSSIBLE_PHYSMEM_BITS BITS_PER_LONG
-> -#endif
-> -#endif
-> -
-> -#define _PFN_BITS		(MAX_POSSIBLE_PHYSMEM_BITS - PAGE_SHIFT)
->   
->   /*
->    * Memory for allocating for handle keeps object position by
-> @@ -116,6 +100,25 @@
->    */
->   #define OBJ_ALLOCATED_TAG 1
->   #define OBJ_TAG_BITS 1
-> +
-> +/*
-> + * MAX_POSSIBLE_PHYSMEM_BITS should be defined by all archs using zsmalloc:
-> + * Trying to guess it from MAX_PHYSMEM_BITS, or considering it BITS_PER_LONG,
-> + * proved to be wrong by not considering PAE capabilities, or using SPARSEMEM
-> + * only headers, leading to bad object encoding due to object index overflow.
-> + */
-> +#ifndef MAX_POSSIBLE_PHYSMEM_BITS
-> + #define MAX_POSSIBLE_PHYSMEM_BITS BITS_PER_LONG
-> + #error "MAX_POSSIBLE_PHYSMEM_BITS HAS to be defined by arch using zsmalloc";
-> +#else
-> + #ifndef CONFIG_64BIT
-> +  #if (MAX_POSSIBLE_PHYSMEM_BITS >= (BITS_PER_LONG + PAGE_SHIFT - OBJ_TAG_BITS))
-> +   #error "MAX_POSSIBLE_PHYSMEM_BITS is wrong for this arch";
-> +  #endif
-> + #endif
-> +#endif
-> +
-> +#define _PFN_BITS (MAX_POSSIBLE_PHYSMEM_BITS - PAGE_SHIFT)
->   #define OBJ_INDEX_BITS	(BITS_PER_LONG - _PFN_BITS - OBJ_TAG_BITS)
->   #define OBJ_INDEX_MASK	((_AC(1, UL) << OBJ_INDEX_BITS) - 1)
->   
-> 
+I would actually just like to get rid of the BPF_JIT_LIMIT_DEFAULT
+define also given for 4.21 arm64 will have its own dedicated area for
+JIT allocations where neither the above limit nor the MODULES_END/
+MODULES_VADDR one would fit and I don't want to make this even more
+ugly with adding further cases into the core. Would the below variant
+work for you?
+
+Thanks,
+Daniel
+
+From da9daf462d41ce5506c6b6318a9fa3d6d8a64f6c Mon Sep 17 00:00:00 2001
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Mon, 10 Dec 2018 14:30:27 +0100
+Subject: [PATCH bpf] bpf: fix bpf_jit_limit knob for PAGE_SIZE >= 64K
+
+Michael and Sandipan report:
+
+  Commit ede95a63b5 introduced a bpf_jit_limit tuneable to limit BPF
+  JIT allocations. At compile time it defaults to PAGE_SIZE * 40000,
+  and is adjusted again at init time if MODULES_VADDR is defined.
+
+  For ppc64 kernels, MODULES_VADDR isn't defined, so we're stuck with
+  the compile-time default at boot-time, which is 0x9c400000 when
+  using 64K page size. This overflows the signed 32-bit bpf_jit_limit
+  value:
+
+  root@ubuntu:/tmp# cat /proc/sys/net/core/bpf_jit_limit
+  -1673527296
+
+  and can cause various unexpected failures throughout the network
+  stack. In one case `strace dhclient eth0` reported:
+
+  setsockopt(5, SOL_SOCKET, SO_ATTACH_FILTER, {len=11, filter=0x105dd27f8},
+             16) = -1 ENOTSUPP (Unknown error 524)
+
+  and similar failures can be seen with tools like tcpdump. This doesn't
+  always reproduce however, and I'm not sure why. The more consistent
+  failure I've seen is an Ubuntu 18.04 KVM guest booted on a POWER9
+  host would time out on systemd/netplan configuring a virtio-net NIC
+  with no noticeable errors in the logs.
+
+Given this and also given that in near future some architectures like
+arm64 will have a custom area for BPF JIT image allocations we should
+get rid of the BPF_JIT_LIMIT_DEFAULT fallback / default entirely. For
+4.21, we have an overridable bpf_jit_alloc_exec(), bpf_jit_free_exec()
+so therefore add another overridable bpf_jit_alloc_exec_limit() helper
+function which returns the possible size of the memory area for deriving
+the default heuristic in bpf_jit_charge_init().
+
+Like bpf_jit_alloc_exec() and bpf_jit_free_exec(), the new
+bpf_jit_alloc_exec_limit() assumes that module_alloc() is the default
+JIT memory provider, and therefore in case archs implement their custom
+module_alloc() we use MODULES_{END,_VADDR} for limits and otherwise for
+vmalloc_exec() cases like on ppc64 we use VMALLOC_{END,_START}.
+
+Fixes: ede95a63b5e8 ("bpf: add bpf_jit_limit knob to restrict unpriv allocations")
+Reported-by: Sandipan Das <sandipan@linux.ibm.com>
+Reported-by: Michael Roth <mdroth@linux.vnet.ibm.com>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+---
+ kernel/bpf/core.c | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+index b1a3545..6c2332e 100644
+--- a/kernel/bpf/core.c
++++ b/kernel/bpf/core.c
+@@ -365,13 +365,11 @@ void bpf_prog_kallsyms_del_all(struct bpf_prog *fp)
+ }
+
+ #ifdef CONFIG_BPF_JIT
+-# define BPF_JIT_LIMIT_DEFAULT	(PAGE_SIZE * 40000)
+-
+ /* All BPF JIT sysctl knobs here. */
+ int bpf_jit_enable   __read_mostly = IS_BUILTIN(CONFIG_BPF_JIT_ALWAYS_ON);
+ int bpf_jit_harden   __read_mostly;
+ int bpf_jit_kallsyms __read_mostly;
+-int bpf_jit_limit    __read_mostly = BPF_JIT_LIMIT_DEFAULT;
++int bpf_jit_limit    __read_mostly;
+
+ static __always_inline void
+ bpf_get_prog_addr_region(const struct bpf_prog *prog,
+@@ -580,16 +578,27 @@ int bpf_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+
+ static atomic_long_t bpf_jit_current;
+
++/* Can be overridden by an arch's JIT compiler if it has a custom,
++ * dedicated BPF backend memory area, or if neither of the two
++ * below apply.
++ */
++u64 __weak bpf_jit_alloc_exec_limit(void)
++{
+ #if defined(MODULES_VADDR)
++	return MODULES_END - MODULES_VADDR;
++#else
++	return VMALLOC_END - VMALLOC_START;
++#endif
++}
++
+ static int __init bpf_jit_charge_init(void)
+ {
+ 	/* Only used as heuristic here to derive limit. */
+-	bpf_jit_limit = min_t(u64, round_up((MODULES_END - MODULES_VADDR) >> 2,
++	bpf_jit_limit = min_t(u64, round_up(bpf_jit_alloc_exec_limit() >> 2,
+ 					    PAGE_SIZE), INT_MAX);
+ 	return 0;
+ }
+ pure_initcall(bpf_jit_charge_init);
+-#endif
+
+ static int bpf_jit_charge_modmem(u32 pages)
+ {
+-- 
+2.9.5
+
