@@ -2,81 +2,89 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77DA1C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:57:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E26DEC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 20:00:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAC8F20821
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 19:57:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5ACE120821
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 20:00:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="X6qQ26h/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAC8F20821
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="BBiCVq/u"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5ACE120821
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DDPs43ShzDqkX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 06:57:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DDSw4xS3zDqpL
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 07:00:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="X6qQ26h/";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="BBiCVq/u";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::744; helo=mail-qk1-x744.google.com;
+ (client-ip=2607:f8b0:4864:20::742; helo=mail-qk1-x742.google.com;
  envelope-from=rafael.tinoco@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="X6qQ26h/"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="BBiCVq/u"; 
  dkim-atps=neutral
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com
- [IPv6:2607:f8b0:4864:20::744])
+Received: from mail-qk1-x742.google.com (mail-qk1-x742.google.com
+ [IPv6:2607:f8b0:4864:20::742])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43D4xv4Z8kzDqTg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 01:21:20 +1100 (AEDT)
-Received: by mail-qk1-x744.google.com with SMTP id n12so6516645qkh.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 06:21:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D8Cq6HFGzDqkm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 03:48:39 +1100 (AEDT)
+Received: by mail-qk1-x742.google.com with SMTP id r71so6844969qkr.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 08:48:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id:mime-version
+ h=cc:subject:to:references:from:organization:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=xOoTzdmKMdtBA2BpXbDLD0G8LWx+DyKy7zXrDUTZebs=;
- b=X6qQ26h/11V6sgU0OMygX4vB5jJmONTRHOEsU6ut2JkcQo8d/vOYEtraj4EuVGDJDl
- xl+RSTobeDhtn6BhYV1IhqxW0+fcf+/YpQKL5Hbq4ze+Bg6HZ/HvaqISS2qSEKvwgUkF
- tqPclHGXHvtrl0lxoOjXzfZ1JU1LG3NBUwSmo=
+ bh=jIu/NQdLrU30oMjYFo1Dv8/5GvUAOK5LaTrL/MaVmCg=;
+ b=BBiCVq/uyLE8Mcbj3/85rQLeTaF8vub5hoz5Kc5iSMv1QCR16Ef7AVjcegACWoNq2f
+ b9FdakseRmRV12Sg5KE2z2Tgr+3eYXlQss/vCtI7sbVB6qPTTYbOmgUDuEDF3HntoBcd
+ UQljs+6XDQ2PKvNkHy2raDh7Bhs4JA8gCN9E4=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=xOoTzdmKMdtBA2BpXbDLD0G8LWx+DyKy7zXrDUTZebs=;
- b=e4blu02iojVAhE14rKilebGs2scoACKnf1Kz9iOP2l+hh8JsnxL8iWz7rXUfX/V6Nc
- 8HpC4IImBmFr7iT8VVBKddNZnlJOVY/ZukiX2CkO6MFDtk2oEbAxXw/7Lcpk2QOIIrw2
- 3zloVzJTxAzvRMyYBQTPRChA95KhPWN+DFyeNuD4Fq6b1CAPkYY5oDNPGHrWhLkGBcnA
- XLcpT/KUhr8KbcYbnUSIOU2EoOvbzDj0f9Qwx5noSlJyMKKunjzBmk3++l0tU6k8rTJI
- F/ncuaX7EkLUSg5q60aSoKSEcvfXcvYW79/ih/+EngL86HW7biDR+3/A/sfh5zgSmDPV
- lD3Q==
-X-Gm-Message-State: AA+aEWbyKtNxEMeuWzCaVNrFSQOB4s96vICK+Yew8dt/14+L6IKcVOfm
- WKFnit4taNyocFobeOSdAnyixw==
-X-Google-Smtp-Source: AFSGD/WeUcd6n6p2wpz19wfnTScpG9IYRvhA34r/Km0TYh3/JrZAJKehAOriNmRVFL8wVHhWeyjrhA==
-X-Received: by 2002:a37:1ad9:: with SMTP id l86mr10676215qkh.54.1544451677506; 
- Mon, 10 Dec 2018 06:21:17 -0800 (PST)
-Received: from workstation.celeiro.br ([138.204.25.7])
- by smtp.gmail.com with ESMTPSA id x127sm10195473qkx.43.2018.12.10.06.21.07
+ h=x-gm-message-state:cc:subject:to:references:from:organization
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=jIu/NQdLrU30oMjYFo1Dv8/5GvUAOK5LaTrL/MaVmCg=;
+ b=Oe7QGtz+S+GKmpbMpQSnAo273UsITzKhIEonzwzvz4WhDA8B9yYvrro7B2GAQ+l/2u
+ 6bqfUt9hfxwNO5Pgmrte9ZgwDRf1Ru5yjdiTVjxriYctzKdzX/E8b1NZZjuGlhi31WfT
+ 3A3hSPl12axUCBYZyMoXHlhLacNagESR1rXUS5+qc/D3/mQZwJyZZwx52oaytqbKSXA/
+ przs4COeNgwLIFzer07xy7qEz21kxJFk5brBO9Cg8DOUqeJT8iupHOwJ6nEi5PJsnelS
+ UgdImawnR3NiLGSOQNw3Tts1lghm6BAle7sPQLskN8OMzBCZBiq6MSySfufDeWgdgoDU
+ mIzg==
+X-Gm-Message-State: AA+aEWah21fKpS80+TSe0dMiMydlhzv3eLSA12Tc5ikGaUb3UpiL5gLi
+ zjAWO1k93htwAy0ESBaEhOgitw==
+X-Google-Smtp-Source: AFSGD/VfFUo4Nn/T94zhYEFli0jTOMHkAuEvRfT+ju+BCOJQSu7CmgpI09H1hfGJ0mz5hl9C98/w6Q==
+X-Received: by 2002:a37:1f44:: with SMTP id f65mr11166603qkf.33.1544460517260; 
+ Mon, 10 Dec 2018 08:48:37 -0800 (PST)
+Received: from [192.168.49.18] ([138.204.25.7])
+ by smtp.gmail.com with ESMTPSA id l15sm6158986qtr.25.2018.12.10.08.48.27
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 10 Dec 2018 06:21:16 -0800 (PST)
+ Mon, 10 Dec 2018 08:48:36 -0800 (PST)
+Subject: Re: [PATCH] mm/zsmalloc.c: Fix zsmalloc 32-bit PAE support
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+References: <20181210142105.6750-1-rafael.tinoco@linaro.org>
+ <20181210151506.phyjkfcg3skogtyh@kshutemo-mobl1>
 From: Rafael David Tinoco <rafael.tinoco@linaro.org>
-To: Russell King <linux@armlinux.org.uk>
-Subject: [PATCH] mm/zsmalloc.c: Fix zsmalloc 32-bit PAE support
-Date: Mon, 10 Dec 2018 12:21:05 -0200
-Message-Id: <20181210142105.6750-1-rafael.tinoco@linaro.org>
-X-Mailer: git-send-email 2.20.0.rc1
+Organization: Linaro
+Message-ID: <32747ea1-7437-8055-a4f5-9f22378e57ae@linaro.org>
+Date: Mon, 10 Dec 2018 14:48:25 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
+In-Reply-To: <20181210151506.phyjkfcg3skogtyh@kshutemo-mobl1>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-Mailman-Approved-At: Tue, 11 Dec 2018 06:55:18 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -92,13 +100,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
  Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org,
  Khalid Aziz <khalid.aziz@oracle.com>, Paul Mackerras <paulus@samba.org>,
  "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
  linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
+ x86@kernel.org, Russell King <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, James Hogan <jhogan@kernel.org>,
  Anthony Yznaga <anthony.yznaga@oracle.com>, Nitin Gupta <ngupta@vflare.org>,
  Fenghua Yu <fenghua.yu@intel.com>, Joerg Roedel <jroedel@suse.de>,
  Rafael David Tinoco <rafael.tinoco@linaro.org>,
@@ -117,293 +126,79 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 32-bit systems, zsmalloc uses HIGHMEM and, when PAE is enabled, the
-physical frame number might be so big that zsmalloc obj encoding (to
-location) will break, causing:
+On 12/10/18 1:15 PM, Kirill A. Shutemov wrote:
+> On Mon, Dec 10, 2018 at 12:21:05PM -0200, Rafael David Tinoco wrote:
+>> diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+>> index 84bd9bdc1987..d808cfde3d19 100644
+>> --- a/arch/x86/include/asm/pgtable_64_types.h
+>> +++ b/arch/x86/include/asm/pgtable_64_types.h
+>> @@ -64,8 +64,6 @@ extern unsigned int ptrs_per_p4d;
+>>  #define P4D_SIZE		(_AC(1, UL) << P4D_SHIFT)
+>>  #define P4D_MASK		(~(P4D_SIZE - 1))
+>>  
+>> -#define MAX_POSSIBLE_PHYSMEM_BITS	52
+>> -
+>>  #else /* CONFIG_X86_5LEVEL */
+>>  
+>>  /*
+>> @@ -154,4 +152,6 @@ extern unsigned int ptrs_per_p4d;
+>>  
+>>  #define PGD_KERNEL_START	((PAGE_SIZE / 2) / sizeof(pgd_t))
+>>  
+>> +#define MAX_POSSIBLE_PHYSMEM_BITS (pgtable_l5_enabled() ? 52 : 46)
+>> +
+> 
+> ...
+> 
+>>  #endif /* _ASM_X86_PGTABLE_64_DEFS_H */
+>> diff --git a/mm/zsmalloc.c b/mm/zsmalloc.c
+>> index 0787d33b80d8..132c20b6fd4f 100644
+>> --- a/mm/zsmalloc.c
+>> +++ b/mm/zsmalloc.c
+> 
+> ...
+> 
+>> @@ -116,6 +100,25 @@
+>>   */
+>>  #define OBJ_ALLOCATED_TAG 1
+>>  #define OBJ_TAG_BITS 1
+>> +
+>> +/*
+>> + * MAX_POSSIBLE_PHYSMEM_BITS should be defined by all archs using zsmalloc:
+>> + * Trying to guess it from MAX_PHYSMEM_BITS, or considering it BITS_PER_LONG,
+>> + * proved to be wrong by not considering PAE capabilities, or using SPARSEMEM
+>> + * only headers, leading to bad object encoding due to object index overflow.
+>> + */
+>> +#ifndef MAX_POSSIBLE_PHYSMEM_BITS
+>> + #define MAX_POSSIBLE_PHYSMEM_BITS BITS_PER_LONG
+>> + #error "MAX_POSSIBLE_PHYSMEM_BITS HAS to be defined by arch using zsmalloc";
+>> +#else
+>> + #ifndef CONFIG_64BIT
+>> +  #if (MAX_POSSIBLE_PHYSMEM_BITS >= (BITS_PER_LONG + PAGE_SHIFT - OBJ_TAG_BITS))
+>> +   #error "MAX_POSSIBLE_PHYSMEM_BITS is wrong for this arch";
+>> +  #endif
+>> + #endif
+>> +#endif
+>> +
+>> +#define _PFN_BITS (MAX_POSSIBLE_PHYSMEM_BITS - PAGE_SHIFT)
+>>  #define OBJ_INDEX_BITS	(BITS_PER_LONG - _PFN_BITS - OBJ_TAG_BITS)
+>>  #define OBJ_INDEX_MASK	((_AC(1, UL) << OBJ_INDEX_BITS) - 1)
+> 
+> Have you tested it with CONFIG_X86_5LEVEL=y?
+> 
+> ASAICS, the patch makes OBJ_INDEX_BITS and what depends from it dynamic --
+> it depends what paging mode we are booting in. ZS_SIZE_CLASSES depends
+> indirectly on OBJ_INDEX_BITS and I don't see how struct zs_pool definition
+> can compile with dynamic ZS_SIZE_CLASSES.
+> 
+> Hm?
+> 
 
-BUG: KASAN: null-ptr-deref in zs_map_object+0xa4/0x2bc
-Read of size 4 at addr 00000000 by task mkfs.ext4/623
-CPU: 2 PID: 623 Comm: mkfs.ext4 Not tainted 4.19.0-rc8-00017-g8239bc6d3307-dirty #15
-Hardware name: Generic DT based system
-[<c0418f7c>] (unwind_backtrace) from [<c0410ca4>] (show_stack+0x20/0x24)
-[<c0410ca4>] (show_stack) from [<c16bd540>] (dump_stack+0xbc/0xe8)
-[<c16bd540>] (dump_stack) from [<c06cab74>] (kasan_report+0x248/0x390)
-[<c06cab74>] (kasan_report) from [<c06c94e8>] (__asan_load4+0x78/0xb4)
-[<c06c94e8>] (__asan_load4) from [<c06ddc24>] (zs_map_object+0xa4/0x2bc)
-[<c06ddc24>] (zs_map_object) from [<bf0bbbd8>] (zram_bvec_rw.constprop.2+0x324/0x8e4 [zram])
-[<bf0bbbd8>] (zram_bvec_rw.constprop.2 [zram]) from [<bf0bc3cc>] (zram_make_request+0x234/0x46c [zram])
-[<bf0bc3cc>] (zram_make_request [zram]) from [<c09aff9c>] (generic_make_request+0x304/0x63c)
-[<c09aff9c>] (generic_make_request) from [<c09b0320>] (submit_bio+0x4c/0x1c8)
-[<c09b0320>] (submit_bio) from [<c0743570>] (submit_bh_wbc.constprop.15+0x238/0x26c)
-[<c0743570>] (submit_bh_wbc.constprop.15) from [<c0746cf8>] (__block_write_full_page+0x524/0x76c)
-[<c0746cf8>] (__block_write_full_page) from [<c07472c4>] (block_write_full_page+0x1bc/0x1d4)
-[<c07472c4>] (block_write_full_page) from [<c0748eb4>] (blkdev_writepage+0x24/0x28)
-[<c0748eb4>] (blkdev_writepage) from [<c064a780>] (__writepage+0x44/0x78)
-[<c064a780>] (__writepage) from [<c064b50c>] (write_cache_pages+0x3b8/0x800)
-[<c064b50c>] (write_cache_pages) from [<c064dd78>] (generic_writepages+0x74/0xa0)
-[<c064dd78>] (generic_writepages) from [<c0748e64>] (blkdev_writepages+0x18/0x1c)
-[<c0748e64>] (blkdev_writepages) from [<c064e890>] (do_writepages+0x68/0x134)
-[<c064e890>] (do_writepages) from [<c06368a4>] (__filemap_fdatawrite_range+0xb0/0xf4)
-[<c06368a4>] (__filemap_fdatawrite_range) from [<c0636b68>] (file_write_and_wait_range+0x64/0xd0)
-[<c0636b68>] (file_write_and_wait_range) from [<c0747af8>] (blkdev_fsync+0x54/0x84)
-[<c0747af8>] (blkdev_fsync) from [<c0739dac>] (vfs_fsync_range+0x70/0xd4)
-[<c0739dac>] (vfs_fsync_range) from [<c0739e98>] (do_fsync+0x4c/0x80)
-[<c0739e98>] (do_fsync) from [<c073a26c>] (sys_fsync+0x1c/0x20)
-[<c073a26c>] (sys_fsync) from [<c0401000>] (ret_fast_syscall+0x0/0x2c)
+You're right, terribly sorry. This was a last time change.
 
-when trying to decode (the pfn) and map the object.
+mm/zsmalloc.c:256:21: error: variably modified ‘size_class’ at file scope
 
-That happens because one architecture might not re-define
-MAX_PHYSMEM_BITS, like in this ARM 32-bit w/ LPAE enabled example. For
-32-bit systems, if not re-defined, MAX_POSSIBLE_PHYSMEM_BITS will
-default to BITS_PER_LONG (32) in most cases, and, with PAE enabled,
-_PFN_BITS might be wrong: which may cause obj variable to overflow if
-frame number is in HIGHMEM and referencing a page above the 4GB
-watermark.
+I'll revisit the patch. Any other comments are welcome.
 
-commit 6e00ec00b1a7 ("staging: zsmalloc: calculate MAX_PHYSMEM_BITS if
-not defined") realized MAX_PHYSMEM_BITS depended on SPARSEMEM headers
-and "fixed" it by calculating it using BITS_PER_LONG if SPARSEMEM wasn't
-used, like in the example given above.
-
-Systems with potential for PAE exist for a long time and assuming
-BITS_PER_LONG seems inadequate. Defining MAX_PHYSMEM_BITS looks better,
-however it is NOT a constant anymore for x86.
-
-SO, instead, MAX_POSSIBLE_PHYSMEM_BITS should be defined by every
-architecture using zsmalloc, together with a sanity check for
-MAX_POSSIBLE_PHYSMEM_BITS being too big on 32-bit systems.
-
-Link: https://bugs.linaro.org/show_bug.cgi?id=3765#c17
-Signed-off-by: Rafael David Tinoco <rafael.tinoco@linaro.org>
----
- arch/arm/include/asm/pgtable-2level-types.h |  2 ++
- arch/arm/include/asm/pgtable-3level-types.h |  2 ++
- arch/arm64/include/asm/pgtable-types.h      |  2 ++
- arch/ia64/include/asm/page.h                |  2 ++
- arch/mips/include/asm/page.h                |  2 ++
- arch/powerpc/include/asm/mmu.h              |  2 ++
- arch/s390/include/asm/page.h                |  2 ++
- arch/sh/include/asm/page.h                  |  2 ++
- arch/sparc/include/asm/page_32.h            |  2 ++
- arch/sparc/include/asm/page_64.h            |  2 ++
- arch/x86/include/asm/pgtable-2level_types.h |  2 ++
- arch/x86/include/asm/pgtable-3level_types.h |  3 +-
- arch/x86/include/asm/pgtable_64_types.h     |  4 +--
- mm/zsmalloc.c                               | 35 +++++++++++----------
- 14 files changed, 45 insertions(+), 19 deletions(-)
-
-diff --git a/arch/arm/include/asm/pgtable-2level-types.h b/arch/arm/include/asm/pgtable-2level-types.h
-index 66cb5b0e89c5..552dba411324 100644
---- a/arch/arm/include/asm/pgtable-2level-types.h
-+++ b/arch/arm/include/asm/pgtable-2level-types.h
-@@ -64,4 +64,6 @@ typedef pteval_t pgprot_t;
- 
- #endif /* STRICT_MM_TYPECHECKS */
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
-+
- #endif	/* _ASM_PGTABLE_2LEVEL_TYPES_H */
-diff --git a/arch/arm/include/asm/pgtable-3level-types.h b/arch/arm/include/asm/pgtable-3level-types.h
-index 921aa30259c4..664c39e6517c 100644
---- a/arch/arm/include/asm/pgtable-3level-types.h
-+++ b/arch/arm/include/asm/pgtable-3level-types.h
-@@ -67,4 +67,6 @@ typedef pteval_t pgprot_t;
- 
- #endif	/* STRICT_MM_TYPECHECKS */
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 36
-+
- #endif	/* _ASM_PGTABLE_3LEVEL_TYPES_H */
-diff --git a/arch/arm64/include/asm/pgtable-types.h b/arch/arm64/include/asm/pgtable-types.h
-index 345a072b5856..45c3834eb4c8 100644
---- a/arch/arm64/include/asm/pgtable-types.h
-+++ b/arch/arm64/include/asm/pgtable-types.h
-@@ -64,4 +64,6 @@ typedef struct { pteval_t pgprot; } pgprot_t;
- #include <asm-generic/5level-fixup.h>
- #endif
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS CONFIG_ARM64_PA_BITS
-+
- #endif	/* __ASM_PGTABLE_TYPES_H */
-diff --git a/arch/ia64/include/asm/page.h b/arch/ia64/include/asm/page.h
-index 5798bd2b462c..a3e055979e46 100644
---- a/arch/ia64/include/asm/page.h
-+++ b/arch/ia64/include/asm/page.h
-@@ -235,4 +235,6 @@ get_order (unsigned long size)
- 
- #define __HAVE_ARCH_GATE_AREA	1
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 50
-+
- #endif /* _ASM_IA64_PAGE_H */
-diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
-index e8cc328fce2d..f6a5dea1a66c 100644
---- a/arch/mips/include/asm/page.h
-+++ b/arch/mips/include/asm/page.h
-@@ -263,4 +263,6 @@ extern int __virt_addr_valid(const volatile void *kaddr);
- #include <asm-generic/memory_model.h>
- #include <asm-generic/getorder.h>
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 48
-+
- #endif /* _ASM_PAGE_H */
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index eb20eb3b8fb0..2ebc1d2d9a5c 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -324,6 +324,8 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
- #define MAX_PHYSMEM_BITS        46
- #endif
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYSMEM_BITS
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/book3s/64/mmu.h>
- #else /* CONFIG_PPC_BOOK3S_64 */
-diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
-index a4d38092530a..8abec1461bf7 100644
---- a/arch/s390/include/asm/page.h
-+++ b/arch/s390/include/asm/page.h
-@@ -180,4 +180,6 @@ static inline int devmem_is_allowed(unsigned long pfn)
- #include <asm-generic/memory_model.h>
- #include <asm-generic/getorder.h>
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS CONFIG_MAX_PHYSMEM_BITS
-+
- #endif /* _S390_PAGE_H */
-diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
-index 5eef8be3e59f..40c7e12cf09e 100644
---- a/arch/sh/include/asm/page.h
-+++ b/arch/sh/include/asm/page.h
-@@ -205,4 +205,6 @@ typedef struct page *pgtable_t;
- #define ARCH_SLAB_MINALIGN	8
- #endif
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
-+
- #endif /* __ASM_SH_PAGE_H */
-diff --git a/arch/sparc/include/asm/page_32.h b/arch/sparc/include/asm/page_32.h
-index b76d59edec8c..14e9ca4659d7 100644
---- a/arch/sparc/include/asm/page_32.h
-+++ b/arch/sparc/include/asm/page_32.h
-@@ -139,4 +139,6 @@ extern unsigned long pfn_base;
- #include <asm-generic/memory_model.h>
- #include <asm-generic/getorder.h>
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
-+
- #endif /* _SPARC_PAGE_H */
-diff --git a/arch/sparc/include/asm/page_64.h b/arch/sparc/include/asm/page_64.h
-index e80f2d5bf62f..6d6f3654ead1 100644
---- a/arch/sparc/include/asm/page_64.h
-+++ b/arch/sparc/include/asm/page_64.h
-@@ -163,4 +163,6 @@ extern unsigned long PAGE_OFFSET;
- 
- #include <asm-generic/getorder.h>
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYS_ADDRESS_BITS
-+
- #endif /* _SPARC64_PAGE_H */
-diff --git a/arch/x86/include/asm/pgtable-2level_types.h b/arch/x86/include/asm/pgtable-2level_types.h
-index 6deb6cd236e3..c2eae59e6505 100644
---- a/arch/x86/include/asm/pgtable-2level_types.h
-+++ b/arch/x86/include/asm/pgtable-2level_types.h
-@@ -38,4 +38,6 @@ typedef union {
- /* This covers all VMSPLIT_* and VMSPLIT_*_OPT variants */
- #define PGD_KERNEL_START	(CONFIG_PAGE_OFFSET >> PGDIR_SHIFT)
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 32
-+
- #endif /* _ASM_X86_PGTABLE_2LEVEL_DEFS_H */
-diff --git a/arch/x86/include/asm/pgtable-3level_types.h b/arch/x86/include/asm/pgtable-3level_types.h
-index 33845d36897c..5fce514a49a0 100644
---- a/arch/x86/include/asm/pgtable-3level_types.h
-+++ b/arch/x86/include/asm/pgtable-3level_types.h
-@@ -45,7 +45,8 @@ typedef union {
-  */
- #define PTRS_PER_PTE	512
- 
--#define MAX_POSSIBLE_PHYSMEM_BITS	36
- #define PGD_KERNEL_START	(CONFIG_PAGE_OFFSET >> PGDIR_SHIFT)
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS 36
-+
- #endif /* _ASM_X86_PGTABLE_3LEVEL_DEFS_H */
-diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
-index 84bd9bdc1987..d808cfde3d19 100644
---- a/arch/x86/include/asm/pgtable_64_types.h
-+++ b/arch/x86/include/asm/pgtable_64_types.h
-@@ -64,8 +64,6 @@ extern unsigned int ptrs_per_p4d;
- #define P4D_SIZE		(_AC(1, UL) << P4D_SHIFT)
- #define P4D_MASK		(~(P4D_SIZE - 1))
- 
--#define MAX_POSSIBLE_PHYSMEM_BITS	52
--
- #else /* CONFIG_X86_5LEVEL */
- 
- /*
-@@ -154,4 +152,6 @@ extern unsigned int ptrs_per_p4d;
- 
- #define PGD_KERNEL_START	((PAGE_SIZE / 2) / sizeof(pgd_t))
- 
-+#define MAX_POSSIBLE_PHYSMEM_BITS (pgtable_l5_enabled() ? 52 : 46)
-+
- #endif /* _ASM_X86_PGTABLE_64_DEFS_H */
-diff --git a/mm/zsmalloc.c b/mm/zsmalloc.c
-index 0787d33b80d8..132c20b6fd4f 100644
---- a/mm/zsmalloc.c
-+++ b/mm/zsmalloc.c
-@@ -80,23 +80,7 @@
-  * as single (unsigned long) handle value.
-  *
-  * Note that object index <obj_idx> starts from 0.
-- *
-- * This is made more complicated by various memory models and PAE.
-- */
--
--#ifndef MAX_POSSIBLE_PHYSMEM_BITS
--#ifdef MAX_PHYSMEM_BITS
--#define MAX_POSSIBLE_PHYSMEM_BITS MAX_PHYSMEM_BITS
--#else
--/*
-- * If this definition of MAX_PHYSMEM_BITS is used, OBJ_INDEX_BITS will just
-- * be PAGE_SHIFT
-  */
--#define MAX_POSSIBLE_PHYSMEM_BITS BITS_PER_LONG
--#endif
--#endif
--
--#define _PFN_BITS		(MAX_POSSIBLE_PHYSMEM_BITS - PAGE_SHIFT)
- 
- /*
-  * Memory for allocating for handle keeps object position by
-@@ -116,6 +100,25 @@
-  */
- #define OBJ_ALLOCATED_TAG 1
- #define OBJ_TAG_BITS 1
-+
-+/*
-+ * MAX_POSSIBLE_PHYSMEM_BITS should be defined by all archs using zsmalloc:
-+ * Trying to guess it from MAX_PHYSMEM_BITS, or considering it BITS_PER_LONG,
-+ * proved to be wrong by not considering PAE capabilities, or using SPARSEMEM
-+ * only headers, leading to bad object encoding due to object index overflow.
-+ */
-+#ifndef MAX_POSSIBLE_PHYSMEM_BITS
-+ #define MAX_POSSIBLE_PHYSMEM_BITS BITS_PER_LONG
-+ #error "MAX_POSSIBLE_PHYSMEM_BITS HAS to be defined by arch using zsmalloc";
-+#else
-+ #ifndef CONFIG_64BIT
-+  #if (MAX_POSSIBLE_PHYSMEM_BITS >= (BITS_PER_LONG + PAGE_SHIFT - OBJ_TAG_BITS))
-+   #error "MAX_POSSIBLE_PHYSMEM_BITS is wrong for this arch";
-+  #endif
-+ #endif
-+#endif
-+
-+#define _PFN_BITS (MAX_POSSIBLE_PHYSMEM_BITS - PAGE_SHIFT)
- #define OBJ_INDEX_BITS	(BITS_PER_LONG - _PFN_BITS - OBJ_TAG_BITS)
- #define OBJ_INDEX_MASK	((_AC(1, UL) << OBJ_INDEX_BITS) - 1)
- 
--- 
-2.20.0.rc1
+Thank you
 
