@@ -2,71 +2,87 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DEA6C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:29:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18EF8C5CFFE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:32:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7DEEB2082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:29:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DEEB2082F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7CB6B2082F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 22:32:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CB6B2082F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DHn41PNbzDqhD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:29:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DHqy2h2XzDqnB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:31:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.51; helo=mail-ot1-f51.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ot1-f51.google.com (mail-ot1-f51.google.com
- [209.85.210.51])
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="aiSU2W/4"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com
+ [IPv6:2607:f8b0:4864:20::635])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DHkg2jY3zDqgX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:27:23 +1100 (AEDT)
-Received: by mail-ot1-f51.google.com with SMTP id t5so12122946otk.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:27:22 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DHmc0h8zzDqDy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:29:03 +1100 (AEDT)
+Received: by mail-pl1-x635.google.com with SMTP id k8so5900550pls.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:29:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wsolr/BoEZyboWroSACAY9B4LsiVLasYDYA2akxxAjs=;
+ b=aiSU2W/45r42N2qszl98h57eu8a3vdkfOVivvjJKGqTuU+g3oXL1+FAWK+MU+ELWwZ
+ UrlN5ax+r3/ZVdf1BWXAJd1g7PJjsMql1SV1tn3xg7a0zXH0C4KlxqsuqBcJJ7jUCOgM
+ wOssUZiM1WejiFq+eS6AWMvjQguIcumI6AQTey86FVrFIeg5/TEL3qYGsayQwN2gcSY/
+ s6wrIEvTuoaIPeeTgNoz+1/zF5T1/OKrX1t8jOhyv+uHA8dTn5T7UhsigWmpQI2/xAgG
+ J/FlN2mzakUZt1xJ0MrIN2c16oL4ePLuOfuk1oWfRDWEWdHQ3jsacaFVgIewUj1qRErX
+ +iBQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=NvRhIVVhr/cozyJX9RAjS/CB+7fBgUA/l3WWhv0euSk=;
- b=dEQGJG1KRswSl/P6oLU2T4mrH7otEFHQthhFZE6r64kH4zU7/PdHEXa5PjuF5d+FWo
- DJE9CCYykAizcBJKf8AoSPqgHOXPTfPJJtcs7V07MejTAxvALEZYdK8GY3mHB9xmmuMD
- mWPt2ya+fLNvZt4k/N4R8usSYaFcJ+QWmYpL+8VmP6iSWz+BPMzXRm2Dlho/3WMBF5na
- 9bejwCz8uDkJyo3OdURQSYyntmhE215rLLAjxl8qct2IwEGuYWS+cmCmO6NTct1L8/0k
- 3p87RtgKaFQco0lmiNuWc4OfneVo8/xbPQctKBbch+qXJZprRVuA8r7gdS5Q51gUaHlH
- gNxQ==
-X-Gm-Message-State: AA+aEWaR/OXNUiQD8xxG5tUDi3rIAiIOSxbvuAVrj/76WNc5im90/dZO
- /AVfbQZL0N8i67DAXlhdKA==
-X-Google-Smtp-Source: AFSGD/UddJoUUe90aa225QLWVvx6jXXsrkNO0JvtpOE/jl2a4WMPME28Jfk11g9sdE5mSwnpMhleLA==
-X-Received: by 2002:a9d:3208:: with SMTP id t8mr9630444otc.312.1544480841066; 
- Mon, 10 Dec 2018 14:27:21 -0800 (PST)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id s66sm9097817oia.55.2018.12.10.14.27.20
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=wsolr/BoEZyboWroSACAY9B4LsiVLasYDYA2akxxAjs=;
+ b=SUjsBV8Mou4rnzH8SEI3szvK4ZHRUwpDiawuQfRUqAE3FMlEEcr6BV/enrieSd9TVL
+ fipLD5/E4tba/HIDal7xM3BVSzwmhZpvyTmwOe76xMx6I+mI3j62J2UnVx8feI8n6nq1
+ xnmDPixxmpApDDOVQcP8Gf4edv1Ww7zbXhtlqB7nQ2LbvQHAwrJ5HLYTSnWSrmW7oLLw
+ 573I3dWgZwjXsa3mjirnGo3oIEPg7u1jide2Wh6tSusgC9lOwzBYOmfGNTnrRwmgeuIQ
+ 5vLIC5eD+YVpF/fQYFlc6jalTBLp57pKr6hKCQ1+vjxiRSnJ8ueqT08hxdp7a2AFwblj
+ NMbQ==
+X-Gm-Message-State: AA+aEWZFoYadQNx6eE+plhiAGziE0lfYxa/SASiFvHED6m9k+x6897ki
+ Q+Np5P20YK9JToAf2iLsrPtOjz+T
+X-Google-Smtp-Source: AFSGD/UYkC+mYPW69wlJhgRKYJLAZvX9uywE1eoqqWQd4YALwztx0ZfNVhrawdMNtPPvCXmTt2xOTg==
+X-Received: by 2002:a17:902:6848:: with SMTP id
+ f8mr13429924pln.300.1544480941517; 
+ Mon, 10 Dec 2018 14:29:01 -0800 (PST)
+Received: from aurora.jms.id.au ([45.124.203.15])
+ by smtp.gmail.com with ESMTPSA id j6sm20143821pfg.126.2018.12.10.14.28.58
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 10 Dec 2018 14:27:20 -0800 (PST)
-Date: Mon, 10 Dec 2018 16:27:19 -0600
-From: Rob Herring <robh@kernel.org>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCHv3 1/4] dt-bindings: add DT binding for the layerscape
- PCIe controller with EP mode
-Message-ID: <20181210222719.GA6506@bogus>
-References: <20181203103505.46885-1-xiaowei.bao@nxp.com>
+ Mon, 10 Dec 2018 14:29:00 -0800 (PST)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Tue, 11 Dec 2018 08:58:55 +1030
+From: Joel Stanley <joel@jms.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/3] powerpc: Add to linker script discards
+Date: Tue, 11 Dec 2018 08:58:51 +1030
+Message-Id: <20181210222854.21156-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181203103505.46885-1-xiaowei.bao@nxp.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,33 +94,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, kstewart@linuxfoundation.org,
- linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, minghuan.Lian@nxp.com,
- lorenzo.pieralisi@arm.com, kishon@ti.com, mingkai.hu@nxp.com,
- niklas.cassel@axis.com, devicetree@vger.kernel.org, arnd@arndb.de,
- linuxppc-dev@lists.ozlabs.org, robh+dt@kernel.org,
- cyrille.pitchen@free-electrons.com, bhelgaas@google.com,
- linux-arm-kernel@lists.infradead.org, roy.zang@nxp.com,
- Xiaowei Bao <xiaowei.bao@nxp.com>, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, leoyang.li@nxp.com, pombredanne@nexb.com,
- shawnguo@kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Alan Modra <amodra@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon,  3 Dec 2018 18:35:02 +0800, Xiaowei Bao wrote:
-> Add the documentation for the Device Tree binding for the layerscape PCIe
-> controller with EP mode.
-> 
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-> ---
-> v2:
->  - Add the SoC specific compatibles.
-> v3:
->  - modify the commit message.
-> 
->  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
+v3 fixes up the splitting of the patches, moving the dynstr hunk from
+patch 2 to patch 1.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+v2 pulls in the branch_lt patch too. No changes to the first two
+patches.
+
+Joel Stanley (3):
+  powerpc: Discard more sections in linker script
+  powerpc: Discard dynsym section for !PPC32
+  powerpc: Discard .branch_lt section
+
+ arch/powerpc/kernel/vmlinux.lds.S | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+-- 
+2.19.1
+
