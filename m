@@ -2,141 +2,59 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CB0FC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:53:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A228CC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 03:53:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A2122081C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 02:53:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="q+dhdwHN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A2122081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id DC1C92081F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 03:53:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC1C92081F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Cngj3881zDqrX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 13:53:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="q+dhdwHN";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="q+dhdwHN"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Cq1n2lD6zDqmF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 14:53:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Cnd113FRzDqbq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 13:50:44 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id s198so4269739pgs.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Dec 2018 18:50:44 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=CPZ6XZsalEZxpNPH4D/a/eeuPJx2NP37QswqZbyBJz8=;
- b=q+dhdwHNXrjXI8BazEBp6Nnjflk3+EbhEBZHAt4VreajsO3rpZnyAgicm7w+RBIYf3
- ej3KZlGKQlukcWGFZN/UcL8ZS2JL+Tl5BaFsN31yjhJPx5UHMEyDpu74v5IH2oP8CqBr
- FLTJaitwpi6h6HJwKzGIwEeg1abTgfmtnEtesXF2nSNzI4uIy32MAI+g2iGulQUBylhm
- HK9vhCENWgVMFMRoxPMfkqumWlCGML8y8+slU2dORyLR6pZ2xvzbPZKVAmnswx2xPeGL
- 0SAhLRwl24QvMlIi4xCcfphd2uIMhtUgcCiV9cUAnxNXBS6MjZ+xjbMuFdr9PQOLrnKy
- znmw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=CPZ6XZsalEZxpNPH4D/a/eeuPJx2NP37QswqZbyBJz8=;
- b=QLhnWyMJmBQP3T9b6j6w0d+ky/ia993Za3D0oDX9IEuEYGw7PdNju+8UD9seRWVJKx
- p5nvn/pelSuglJ3wiOAsB/em4tWsA7ryrq+IP5FEOUb4vTYA3lOgJGRpSnQEDprHHsrz
- 49Su2ulBJ2UGWvoDvBpwRp5EkZ3PE7Fdcv5eJnc3HlSfXu7q+KJGCAtABpG/BeMeaWOh
- 4Lk7s7u2mIZJlXUDKMpFlijCjORAYya5SplRa+hYffmrPDfsCFZbUAJNHa3ofhDVRVJU
- J9fYtFPkqIoRoCTTyiJm6Kbp6b1VbAu60WB4abr4ffwwESVcC09QpA+tU3321XBFcp4A
- DamA==
-X-Gm-Message-State: AA+aEWbyG2uP22JtEJN1yn/NbiFE/38WLubOhwQKZy035qljVCYckbML
- i3CfiJ+j+Tv3s574i8XsAe0SwQ==
-X-Google-Smtp-Source: AFSGD/WZZq/2eMwYb9X9OFZhKE08KRfCnXEhfGMqmKGa48bN6NHzsoAPF0xEwjx/Ia8dhst3dhVmtw==
-X-Received: by 2002:a63:df13:: with SMTP id u19mr9516941pgg.294.1544410242155; 
- Sun, 09 Dec 2018 18:50:42 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id p67sm15380404pfg.44.2018.12.09.18.50.36
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 09 Dec 2018 18:50:41 -0800 (PST)
-Subject: Re: [PATCH kernel v4 04/19] powerpc/powernv: Move npu struct from
- pnv_phb to pci_controller
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20181123055304.25116-1-aik@ozlabs.ru>
- <20181123055304.25116-5-aik@ozlabs.ru> <20181205051424.GB768@umbus.fritz.box>
- <e10bc868-154e-285c-05e9-906b7027dfaf@ozlabs.ru>
- <05cb6d97-9949-1d90-33e1-8d5cc1bb83f2@ozlabs.ru>
- <20181205224040.GJ768@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <af27ecf4-e73c-1b1d-487e-47da87570e2c@ozlabs.ru>
-Date: Mon, 10 Dec 2018 13:50:35 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43CpzH3P56zDqQ8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 14:51:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43Cpz75ClMz9s47;
+ Mon, 10 Dec 2018 14:51:31 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Murray <andrew.murray@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Borislav Petkov <bp@alien8.de>, Russell King <linux@armlinux.org.uk>,
+ suzuki.poulose@arm.com, robin.murphy@arm.com
+Subject: Re: [PATCH v3 09/12] powerpc: perf/core: use PERF_PMU_CAP_NO_EXCLUDE
+ for exclude incapable PMUs
+In-Reply-To: <1544114849-47266-10-git-send-email-andrew.murray@arm.com>
+References: <1544114849-47266-1-git-send-email-andrew.murray@arm.com>
+ <1544114849-47266-10-git-send-email-andrew.murray@arm.com>
+Date: Mon, 10 Dec 2018 14:51:31 +1100
+Message-ID: <87bm5uf398.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20181205224040.GJ768@umbus.fritz.box>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -148,175 +66,132 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>
+Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-alpha@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Andrew Murray <andrew.murray@arm.com> writes:
 
+> For PowerPC PMUs that do not support context exclusion let's
+> advertise the PERF_PMU_CAP_NO_EXCLUDE capability. This ensures that
+> perf will prevent us from handling events where any exclusion flags
+> are set. Let's also remove the now unnecessary check for exclusion
+> flags.
+>
+> Signed-off-by: Andrew Murray <andrew.murray@arm.com>
+> ---
+>  arch/powerpc/perf/hv-24x7.c | 10 +---------
+>  arch/powerpc/perf/hv-gpci.c | 10 +---------
+>  arch/powerpc/perf/imc-pmu.c | 19 +------------------
+>  3 files changed, 3 insertions(+), 36 deletions(-)
 
-On 06/12/2018 09:40, David Gibson wrote:
-> On Wed, Dec 05, 2018 at 05:17:57PM +1100, Alexey Kardashevskiy wrote:
->>
->>
->> On 05/12/2018 16:47, Alexey Kardashevskiy wrote:
->>>
->>>
->>> On 05/12/2018 16:14, David Gibson wrote:
->>>> On Fri, Nov 23, 2018 at 04:52:49PM +1100, Alexey Kardashevskiy wrote:
->>>>> The powernv PCI code stores NPU data in the pnv_phb struct. The latter
->>>>> is referenced by pci_controller::private_data. We are going to have NPU2
->>>>> support in the pseries platform as well but it does not store any
->>>>> private_data in in the pci_controller struct; and even if it did,
->>>>> it would be a different data structure.
->>>>>
->>>>> This makes npu a pointer and stores it one level higher in
->>>>> the pci_controller struct.
->>>>>
->>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>> ---
->>>>> Changes:
->>>>> v4:
->>>>> * changed subj from "powerpc/powernv: Detach npu struct from pnv_phb"
->>>>> * got rid of global list of npus - store them now in pci_controller
->>>>> * got rid of npdev_to_npu() helper
->>>>> ---
->>>>>  arch/powerpc/include/asm/pci-bridge.h    |  1 +
->>>>>  arch/powerpc/platforms/powernv/pci.h     | 16 -----
->>>>>  arch/powerpc/platforms/powernv/npu-dma.c | 81 ++++++++++++++++++------
->>>>>  3 files changed, 64 insertions(+), 34 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>> index 94d4490..aee4fcc 100644
->>>>> --- a/arch/powerpc/include/asm/pci-bridge.h
->>>>> +++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>> @@ -129,6 +129,7 @@ struct pci_controller {
->>>>>  #endif	/* CONFIG_PPC64 */
->>>>>  
->>>>>  	void *private_data;
->>>>> +	struct npu *npu;
->>>>>  };
->>>>>  
->>>>>  /* These are used for config access before all the PCI probing
->>>>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->>>>> index 2131373..f2d50974 100644
->>>>> --- a/arch/powerpc/platforms/powernv/pci.h
->>>>> +++ b/arch/powerpc/platforms/powernv/pci.h
->>>>> @@ -8,9 +8,6 @@
->>>>>  
->>>>>  struct pci_dn;
->>>>>  
->>>>> -/* Maximum possible number of ATSD MMIO registers per NPU */
->>>>> -#define NV_NMMU_ATSD_REGS 8
->>>>> -
->>>>>  enum pnv_phb_type {
->>>>>  	PNV_PHB_IODA1		= 0,
->>>>>  	PNV_PHB_IODA2		= 1,
->>>>> @@ -176,19 +173,6 @@ struct pnv_phb {
->>>>>  	unsigned int		diag_data_size;
->>>>>  	u8			*diag_data;
->>>>>  
->>>>> -	/* Nvlink2 data */
->>>>> -	struct npu {
->>>>> -		int index;
->>>>> -		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
->>>>> -		unsigned int mmio_atsd_count;
->>>>> -
->>>>> -		/* Bitmask for MMIO register usage */
->>>>> -		unsigned long mmio_atsd_usage;
->>>>> -
->>>>> -		/* Do we need to explicitly flush the nest mmu? */
->>>>> -		bool nmmu_flush;
->>>>> -	} npu;
->>>>> -
->>>>>  	int p2p_target_count;
->>>>>  };
->>>>>  
->>>>> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
->>>>> index 91d488f..7dd5c0e5 100644
->>>>> --- a/arch/powerpc/platforms/powernv/npu-dma.c
->>>>> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
->>>>> @@ -327,6 +327,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
->>>>>  	return gpe;
->>>>>  }
->>>>>  
->>>>> +/*
->>>>> + * NPU2 ATS
->>>>> + */
->>>>> +/* Maximum possible number of ATSD MMIO registers per NPU */
->>>>> +#define NV_NMMU_ATSD_REGS 8
->>>>> +
->>>>> +/* An NPU descriptor, valid for POWER9 only */
->>>>> +struct npu {
->>>>> +	int index;
->>>>> +	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
->>>>> +	unsigned int mmio_atsd_count;
->>>>> +
->>>>> +	/* Bitmask for MMIO register usage */
->>>>> +	unsigned long mmio_atsd_usage;
->>>>> +
->>>>> +	/* Do we need to explicitly flush the nest mmu? */
->>>>> +	bool nmmu_flush;
->>>>> +};
->>>>> +
->>>>>  /* Maximum number of nvlinks per npu */
->>>>>  #define NV_MAX_LINKS 6
->>>>>  
->>>>> @@ -478,7 +497,6 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
->>>>>  	int i, j;
->>>>>  	struct npu *npu;
->>>>>  	struct pci_dev *npdev;
->>>>> -	struct pnv_phb *nphb;
->>>>>  
->>>>>  	for (i = 0; i <= max_npu2_index; i++) {
->>>>>  		mmio_atsd_reg[i].reg = -1;
->>>>> @@ -493,8 +511,10 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
->>>>>  			if (!npdev)
->>>>>  				continue;
->>>>>  
->>>>> -			nphb = pci_bus_to_host(npdev->bus)->private_data;
->>>>> -			npu = &nphb->npu;
->>>>> +			npu = pci_bus_to_host(npdev->bus)->npu;
->>>>> +			if (!npu)
->>>>> +				continue;
->>>>
->>>> This patch changes a bunch of places that used to unconditionally
->>>> locate an NPU now have a failure path.
->>>>
->>>> Given that this used to always have an NPU, doesn't that mean that if
->>>> the NPU is not present something has already gone wrong, and we should
->>>> WARN_ON() or something?
->>>
->>>
->>>
->>> That means this is a leftover since I dropped that npdev_to_npu helper
->>> which could help but there was no real value in it. I'll remove the
->>> check here in the next respin.
->>
->>
->> Well, technically kmalloc() can fail in pnv_npu2_init() (but not later)
->> so can (in theory) end up with an NPU PHB and npu==NULL but it is sooo
->> unlikely...
-> 
-> More to the point, shouldn't you then fail immediately, rather than
-> leaving the NULL floating around for later code?
+Looks good.
 
-Not sure I am following. pnv_npu2_init() is called at boot time so
-failing-and-not-leaving-null-pointer here means panic and I definitely
-do not want that. I am adding !npu checks in the next respin though,
-pretty much replacing firmware_has_feature(FW_FEATURE_OPAL), do i miss
-anything here?
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
+cheers
 
-
-
--- 
-Alexey
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index 72238ee..d2b8e60 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -1306,15 +1306,6 @@ static int h_24x7_event_init(struct perf_event *event)
+>  		return -EINVAL;
+>  	}
+>  
+> -	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> -		return -EINVAL;
+> -
+>  	/* no branch sampling */
+>  	if (has_branch_stack(event))
+>  		return -EOPNOTSUPP;
+> @@ -1577,6 +1568,7 @@ static struct pmu h_24x7_pmu = {
+>  	.start_txn   = h_24x7_event_start_txn,
+>  	.commit_txn  = h_24x7_event_commit_txn,
+>  	.cancel_txn  = h_24x7_event_cancel_txn,
+> +	.capabilities = PERF_PMU_CAP_NO_EXCLUDE,
+>  };
+>  
+>  static int hv_24x7_init(void)
+> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+> index 43fabb3..735e77b 100644
+> --- a/arch/powerpc/perf/hv-gpci.c
+> +++ b/arch/powerpc/perf/hv-gpci.c
+> @@ -232,15 +232,6 @@ static int h_gpci_event_init(struct perf_event *event)
+>  		return -EINVAL;
+>  	}
+>  
+> -	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> -		return -EINVAL;
+> -
+>  	/* no branch sampling */
+>  	if (has_branch_stack(event))
+>  		return -EOPNOTSUPP;
+> @@ -285,6 +276,7 @@ static struct pmu h_gpci_pmu = {
+>  	.start       = h_gpci_event_start,
+>  	.stop        = h_gpci_event_stop,
+>  	.read        = h_gpci_event_update,
+> +	.capabilities = PERF_PMU_CAP_NO_EXCLUDE,
+>  };
+>  
+>  static int hv_gpci_init(void)
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index 1fafc32b..1dbb0ee 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -473,15 +473,6 @@ static int nest_imc_event_init(struct perf_event *event)
+>  	if (event->hw.sample_period)
+>  		return -EINVAL;
+>  
+> -	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> -		return -EINVAL;
+> -
+>  	if (event->cpu < 0)
+>  		return -EINVAL;
+>  
+> @@ -748,15 +739,6 @@ static int core_imc_event_init(struct perf_event *event)
+>  	if (event->hw.sample_period)
+>  		return -EINVAL;
+>  
+> -	/* unsupported modes and filters */
+> -	if (event->attr.exclude_user   ||
+> -	    event->attr.exclude_kernel ||
+> -	    event->attr.exclude_hv     ||
+> -	    event->attr.exclude_idle   ||
+> -	    event->attr.exclude_host   ||
+> -	    event->attr.exclude_guest)
+> -		return -EINVAL;
+> -
+>  	if (event->cpu < 0)
+>  		return -EINVAL;
+>  
+> @@ -1069,6 +1051,7 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+>  	pmu->pmu.stop = imc_event_stop;
+>  	pmu->pmu.read = imc_event_update;
+>  	pmu->pmu.attr_groups = pmu->attr_groups;
+> +	pmu->pmu.capabilities = PERF_PMU_CAP_NO_EXCLUDE;
+>  	pmu->attr_groups[IMC_FORMAT_ATTR] = &imc_format_group;
+>  
+>  	switch (pmu->domain) {
+> -- 
+> 2.7.4
