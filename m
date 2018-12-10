@@ -2,93 +2,75 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84673C6783B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 15:59:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5865C67839
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 16:01:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E2A52082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 15:59:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5F3A4204FD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 16:01:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="DPrHis/s"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E2A52082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VHPCCWjM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F3A4204FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43D76r3tBmzDqYJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 02:59:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43D79j2t0tzDr24
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 03:01:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="DPrHis/s";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="VHPCCWjM";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::5; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="DPrHis/s"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="VHPCCWjM"; 
  dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43D71H3TSDzDqnr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 02:54:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544457259;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=k5FlvYtcZbSWgNfy/0RzHE9EWAGcRRevSBSK6Qhcyrc=;
- b=DPrHis/sBX9iT58J7+CrZMInQqTzlfwK1jppsE4d2XD9QlxiajK04ZDMboLD6htz4/
- HoiuS0Hhs9MuHnXlhG8RteePbCEpVDQGge8hSMsii9I8cbMNMccnDJQh2fsX+iGNw0QE
- a0WaGOoQzLsstvyw2juKbGU1SRojknkwFmLw4Is7E2ZvjENgZ1XycteqPs2jUNuIwr5G
- WirMAkqHigS11p+Unbh8GOsqgghfRALltaDQQ3uGe2DMWHdWdnNcnV8WeA7TFrd+bgbS
- 05E6FQ/W0CdnZkN3fEVdmAk2fAi4zU5en/a7NGZ8DzMbLS477DEdWIVwlqaaPGbespUI
- ab1g==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkHhsM1Qi/lCjFQQnjJrDVy2NR8hA=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:887e:d9eb:b687:95ab]
- by smtp.strato.de (RZmta 44.6 AUTH) with ESMTPSA id 404b20uBAFs55if
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Mon, 10 Dec 2018 16:54:05 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
- <20181130105346.GB26765@lst.de>
- <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
- <20181130131056.GA5211@lst.de>
- <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
- <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
- <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
- <20181204142426.GA2743@lst.de>
- <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
- <20181205140550.GA27549@lst.de>
- <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
- <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
- <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
- <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
- <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
- <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
- <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
-Message-ID: <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
-Date: Mon, 10 Dec 2018 16:54:05 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43D72M093rzDqpM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 02:55:22 +1100 (AEDT)
+Received: from mail-qt1-f180.google.com (mail-qt1-f180.google.com
+ [209.85.160.180])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2C9542082F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 15:55:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1544457320;
+ bh=tdWexW1Em2QodRxbR0688bp4OOd6b37LaRogcjCXLQ8=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=VHPCCWjM+xyX0xQvBVkHWlE/CTNadjBibh+Fx6AaPoaXhV001GGtkgaew1uuYHopP
+ dLGv59342si/I1E9t5gCzNxmBKWmYbPfaYqzboxJnStHz+Cp/bOAkvkF3vM/LprAtQ
+ oUHRJ+sKgPM9iop4dHFYe+ghq1lMeYyqT8TazAFs=
+Received: by mail-qt1-f180.google.com with SMTP id t13so12814967qtn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 07:55:20 -0800 (PST)
+X-Gm-Message-State: AA+aEWbmL0P3zeF9lOVqLn5lJTzq5pB7EtvHPrQU6ujL46NCdxUbzNNd
+ c4BiLDdjgiKuGfykYlMg1BazjvKwOrcHfvRZDg==
+X-Google-Smtp-Source: AFSGD/WdL3jH1aB2r9XkwGH03MZ292O51eVgVHWN8vXa/0befR9IQoem6DmJxhW5WLlW09pkSQBDXEKgsydwEU2bHRM=
+X-Received: by 2002:ac8:6b18:: with SMTP id w24mr12721557qts.144.1544457319305; 
+ Mon, 10 Dec 2018 07:55:19 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+References: <20181203213223.16986-1-robh@kernel.org>
+ <20181203213223.16986-2-robh@kernel.org>
+ <CAK7LNARgyL+Pq+SCkUUKnMny4nDw1L4zEevdzqbyGGAoE+BXUA@mail.gmail.com>
+In-Reply-To: <CAK7LNARgyL+Pq+SCkUUKnMny4nDw1L4zEevdzqbyGGAoE+BXUA@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 10 Dec 2018 09:55:08 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqLhNq2LWffT5XK9nd+p_7oYacMmsQidP_cmjkd7DsNmNQ@mail.gmail.com>
+Message-ID: <CAL_JsqLhNq2LWffT5XK9nd+p_7oYacMmsQidP_cmjkd7DsNmNQ@mail.gmail.com>
+Subject: Re: [PATCH v2 01/34] kbuild: Add support for DT binding schema checks
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,83 +82,252 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
+ Sean Hudson <darknighte@darknighte.com>, Jonathan Corbet <corbet@lwn.net>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>, Grant Likely <grant.likely@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Next step: 64ecd2c160bbef31465c4d34efc0f076a2aad4df (powerpc/dma: use 
-phys_to_dma instead of get_dma_offset)
+On Fri, Dec 7, 2018 at 10:47 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> Hi Rob,
+>
+>
+> On Tue, Dec 4, 2018 at 6:32 AM Rob Herring <robh@kernel.org> wrote:
+> >
+> > This adds the build infrastructure for checking DT binding schema
+> > documents and validating dts files using the binding schema.
+> >
+> > Check DT binding schema documents:
+> > make dt_binding_check
+> >
+> > Build dts files and check using DT binding schema:
+> > make dtbs_check
+> >
+> > Optionally, DT_SCHEMA_FILES can passed in with a schema file(s) to use
+> > for validation. This makes it easier to find and fix errors generated by
+> > a specific schema.
+> >
+> > Currently, the validation targets are separate from a normal build to
+> > avoid a hard dependency on the external DT schema project and because
+> > there are lots of warnings generated.
+> >
+> > Cc: Jonathan Corbet <corbet@lwn.net>
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > Cc: Michal Marek <michal.lkml@markovi.net>
+> > Cc: linux-doc@vger.kernel.org
+> > Cc: devicetree@vger.kernel.org
+> > Cc: linux-kbuild@vger.kernel.org
+> > Signed-off-by: Rob Herring <robh@kernel.org>
+> > ---
+> >  .gitignore                                   |  1 +
+> >  Documentation/Makefile                       |  2 +-
+> >  Documentation/devicetree/bindings/.gitignore |  1 +
+> >  Documentation/devicetree/bindings/Makefile   | 33 ++++++++++++++++++++
+> >  Makefile                                     | 11 +++++--
+> >  scripts/Makefile.lib                         | 24 ++++++++++++--
+> >  6 files changed, 67 insertions(+), 5 deletions(-)
+> >  create mode 100644 Documentation/devicetree/bindings/.gitignore
+> >  create mode 100644 Documentation/devicetree/bindings/Makefile
+> >
+> > diff --git a/.gitignore b/.gitignore
+> > index 97ba6b79834c..a20ac26aa2f5 100644
+> > --- a/.gitignore
+> > +++ b/.gitignore
+> > @@ -15,6 +15,7 @@
+> >  *.bin
+> >  *.bz2
+> >  *.c.[012]*.*
+> > +*.dt.yaml
+> >  *.dtb
+> >  *.dtb.S
+> >  *.dwo
+> > diff --git a/Documentation/Makefile b/Documentation/Makefile
+> > index 2ca77ad0f238..9786957c6a35 100644
+> > --- a/Documentation/Makefile
+> > +++ b/Documentation/Makefile
+> > @@ -2,7 +2,7 @@
+> >  # Makefile for Sphinx documentation
+> >  #
+> >
+> > -subdir-y :=
+> > +subdir-y := devicetree/bindings/
+> >
+> >  # You can set these variables from the command line.
+> >  SPHINXBUILD   = sphinx-build
+> > diff --git a/Documentation/devicetree/bindings/.gitignore b/Documentation/devicetree/bindings/.gitignore
+> > new file mode 100644
+> > index 000000000000..d9194c02dd08
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/.gitignore
+> > @@ -0,0 +1 @@
+> > +*.example.dts
+> > diff --git a/Documentation/devicetree/bindings/Makefile b/Documentation/devicetree/bindings/Makefile
+> > new file mode 100644
+> > index 000000000000..ee0110dd8131
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/Makefile
+> > @@ -0,0 +1,33 @@
+> > +# SPDX-License-Identifier: GPL-2.0
+> > +DT_DOC_CHECKER ?= dt-doc-validate
+> > +DT_EXTRACT_EX ?= dt-extract-example
+> > +DT_MK_SCHEMA ?= dt-mk-schema
+> > +DT_MK_SCHEMA_FLAGS := $(if $(DT_SCHEMA_FILES), -u)
+> > +
+> > +quiet_cmd_chk_binding = CHKDT   $<
+> > +      cmd_chk_binding = (set -e; \
+> > +                         $(DT_DOC_CHECKER) $< ; \
+> > +                         mkdir -p $(dir $@) ; \
+> > +                         $(DT_EXTRACT_EX) $< > $@ )
+> > +
+> > +$(obj)/%.example.dts: $(src)/%.yaml FORCE
+> > +       $(call if_changed,chk_binding)
+> > +
+> > +DT_TMP_SCHEMA := .schema.yaml.tmp
+> > +extra-y += $(DT_TMP_SCHEMA)
+> > +
+> > +quiet_cmd_mk_schema = SCHEMA  $@
+> > +      cmd_mk_schema = mkdir -p $(obj); \
+> > +                      rm -f $@; \
+> > +                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $<
+>
+>
+> I think '$<' is wrong.
+>
+> '$<' is replaced with the first prerequisite.
 
-The P5020 board boots and the PASEMI onboard ethernet works.
+Indeed.
 
--- Christian
+> You can easily check what is happening here.
+>
+> $ cat   Documentation/devicetree/bindings/..schema.yaml.tmp.cmd
+> cmd_Documentation/devicetree/bindings/.schema.yaml.tmp := mkdir -p
+> Documentation/devicetree/bindings; rm -f
+> Documentation/devicetree/bindings/.schema.yaml.tmp; dt-mk-schema  -o
+> Documentation/devicetree/bindings/.schema.yaml.tmp
+> Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
+>
+>
+> So, the dt-validater will check only binding from ti,davinci.yaml,
+> which is almost useless.
+>
+>
+>
+> If I understand it correctly,
+> .schema.yaml.tmp should contain all binding yaml.
+>
+>
+> I fixed it up like follows:
+>
+> diff --git a/Documentation/devicetree/bindings/Makefile
+> b/Documentation/devicetree/bindings/Makefile
+> index ee0110d..267458f 100644
+> --- a/Documentation/devicetree/bindings/Makefile
+> +++ b/Documentation/devicetree/bindings/Makefile
+> @@ -19,7 +19,7 @@ extra-y += $(DT_TMP_SCHEMA)
+>  quiet_cmd_mk_schema = SCHEMA  $@
+>        cmd_mk_schema = mkdir -p $(obj); \
+>                        rm -f $@; \
+> -                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $<
+> +                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@
+> $(filter-out FORCE, $^)
 
+Thanks, I incorporated this fix.
 
-On 09 December 2018 at 7:26PM, Christian Zigotzky wrote:
-> Next step: c1bfcad4b0cf38ce5b00f7ad880d3a13484c123a (dma-mapping, 
-> powerpc: simplify the arch dma_set_mask override)
 >
-> Result: No problems with the PASEMI onboard ethernet and with booting 
-> the X5000 (P5020 board).
->
-> -- Christian
+>  DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
+>  DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
 >
 >
-> On 09 December 2018 at 3:20PM, Christian Zigotzky wrote:
->> Next step: 602307b034734ce77a05da4b99333a2eaf6b6482 (powerpc/fsl_pci: 
->> simplify fsl_pci_dma_set_mask)
->>
->> git checkout 602307b034734ce77a05da4b99333a2eaf6b6482
->>
->> The PASEMI onboard ethernet works and the X5000 boots.
->>
->> -- Christian
->>
->>
->> On 08 December 2018 at 2:47PM, Christian Zigotzky wrote:
->>> Next step: e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615 (powerpc/dma: 
->>> fix an off-by-one in dma_capable)
->>>
->>> git checkout e15cd8173ef85e9cc3e2a9c7cc2982f5c1355615
->>>
->>> The PASEMI onboard ethernet also works with this commit and the 
->>> X5000 boots without any problems.
->>>
->>> -- Christian
->>>
->>>
->>> On 08 December 2018 at 11:29AM, Christian Zigotzky wrote:
->>>> Next step: 7ebc44c535f6bd726d553756d38b137acc718443 (powerpc/dma: 
->>>> remove max_direct_dma_addr)
->>>>
->>>> git checkout 7ebc44c535f6bd726d553756d38b137acc718443
->>>>
->>>> OK, the PASEMI onboard ethernet works and the P5020 board boots.
->>>>
->>>> -- Christian
->>>>
->>>>
->>>> On 07 December 2018 at 7:33PM, Christian Zigotzky wrote:
->>>>> Next step: 13c1fdec5682b6e13257277fa16aa31f342d167d (powerpc/dma: 
->>>>> move pci_dma_dev_setup_swiotlb to fsl_pci.c)
->>>>>
->>>>> git checkout 13c1fdec5682b6e13257277fa16aa31f342d167d
->>>>>
->>>>> Result: The PASEMI onboard ethernet works and the P5020 board boots.
->>>>>
->>>>> — Christian
->>>>
->>>>
->>>>
->>>
->>>
->>
->>
 >
->
+> Then, I see another error.
 
+I fixed this with this change:
+
+@@ -27,7 +27,7 @@ DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
+ extra-y += $(patsubst $(src)/%.yaml,%.example.dts, $(DT_SCHEMA_FILES))
+ extra-y += $(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES))
+
+-$(obj)/$(DT_TMP_SCHEMA): $(addprefix $(obj)/,$(patsubst
+$(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES)))
++$(obj)/$(DT_TMP_SCHEMA): | $(addprefix $(obj)/,$(patsubst
+$(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES)))
+
+ $(obj)/$(DT_TMP_SCHEMA): $(addprefix $(srctree)/, $(DT_SCHEMA_FILES)) FORCE
+        $(call if_changed,mk_schema)
+
+>
+>
+>   SCHEMA  Documentation/devicetree/bindings/.schema.yaml.tmp
+> Traceback (most recent call last):
+>   File "/home/masahiro/ref/yaml-bindings/tools/dt-mk-schema", line 32,
+> in <module>
+>     schemas = dtschema.process_schemas(args.schemas, core_schema=(not
+> args.useronly))
+>   File "/usr/local/lib/python3.5/dist-packages/dtschema-0.0.1-py3.5.egg/dtschema/lib.py",
+> line 359, in process_schemas
+>     sch = process_schema(os.path.abspath(filename))
+>   File "/usr/local/lib/python3.5/dist-packages/dtschema-0.0.1-py3.5.egg/dtschema/lib.py",
+> line 314, in process_schema
+>     schema = load_schema(filename)
+>   File "/usr/local/lib/python3.5/dist-packages/dtschema-0.0.1-py3.5.egg/dtschema/lib.py",
+> line 80, in load_schema
+>     return yaml.load(f.read())
+>   File "/usr/lib/python3.5/codecs.py", line 321, in decode
+>     (result, consumed) = self._buffer_decode(data, self.errors, final)
+> UnicodeDecodeError: 'utf-8' codec can't decode byte 0xd0 in position
+> 0: invalid continuation byte
+> Documentation/devicetree/bindings/Makefile:33: recipe for target
+> 'Documentation/devicetree/bindings/.schema.yaml.tmp' failed
+> make[1]: *** [Documentation/devicetree/bindings/.schema.yaml.tmp] Error 1
+> Makefile:1278: recipe for target 'dt_binding_check' failed
+> make: *** [dt_binding_check] Error 2
+>
+>
+>
+>
+>
+>
+>
+> BTW, I cannot build *.dt.yaml
+>
+>
+>
+>   DTC     arch/arm/boot/dts/alpine-db.dt.yaml
+> FATAL ERROR: Unknown output format "yaml"
+> scripts/Makefile.lib:313: recipe for target
+> 'arch/arm/boot/dts/alpine-db.dt.yaml' failed
+> make[1]: *** [arch/arm/boot/dts/alpine-db.dt.yaml] Error 1
+> make[1]: *** Deleting file 'arch/arm/boot/dts/alpine-db.dt.yaml'
+> Makefile:1262: recipe for target 'dtbs_check' failed
+>
+>
+>
+>
+> I use linux-next.
+>
+>
+> script/dtc/dtc does not understand '-O yaml'
+>
+>
+> I also tried the upstream DTC project with no success.
+>
+>
+> Where can I get dtc with yaml support?
+
+You need libyaml and its headers. I'll try to make this a better error
+message. For now, libyaml is optional so we don't break everyone just
+building dtbs.
+
+Rob
