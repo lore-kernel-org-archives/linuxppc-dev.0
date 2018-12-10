@@ -2,67 +2,89 @@ Return-Path: <SRS0=HYLD=OT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1231CC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 06:52:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95E31C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 07:03:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 63C8F2081C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 06:52:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63C8F2081C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 008852081C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 07:03:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="QuDg/L9e"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 008852081C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Ctzd2xpmzDqnK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 17:52:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 43CvDC4H1MzDqPR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Dec 2018 18:03:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="QuDg/L9e";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (helo)
+ smtp.helo=out1-smtp.messagingengine.com (client-ip=66.111.4.25;
+ helo=out1-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="QuDg/L9e"; dkim-atps=neutral
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43CtxL690kzDqkp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 17:50:14 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43CtxF65dqz9v6LW;
- Mon, 10 Dec 2018 07:50:09 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7c8gn_KO7hqw; Mon, 10 Dec 2018 07:50:09 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43CtxF5W2Vz9v6LV;
- Mon, 10 Dec 2018 07:50:09 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2DDF38B79A;
- Mon, 10 Dec 2018 07:50:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id IcsyDM7uwaby; Mon, 10 Dec 2018 07:50:10 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A5828B74C;
- Mon, 10 Dec 2018 07:50:10 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C8242716D9; Mon, 10 Dec 2018 06:50:09 +0000 (UTC)
-Message-Id: <a9c14a1ca37b82dbe015d259cd60d8aea9e7847a.1544336305.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3] powerpc/uaccess: fix warning/error with access_ok()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Cv9F6gjPzDqst
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 18:00:33 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id 40F7A2073F;
+ Mon, 10 Dec 2018 02:00:31 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Mon, 10 Dec 2018 02:00:31 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :in-reply-to:message-id:mime-version:references:subject:to
+ :x-me-proxy:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=
+ fm1; bh=WuMQsQw9Zm0J7cVhI10l8/CcKE+X5cLFWxbKFpS/UJo=; b=QuDg/L9e
+ Q64EqnGq1IN8xkIO93lt5qVLlsUiTqWcdu+BYqmCzDKkSjLQPlFRMUsKGChi/n+y
+ /J6U2lSdzhT8oJC54vSFHABa8ENq7bqsALGQa78PmBN7UFIZx+t9Xw1unn86nBkR
+ ylLEnQoZzZRQ0b5/JfK/jqiGvEwMtSdo8PK6VjMais9LbBJrUp6x9b6Vn8KPfoU3
+ JU9vpk5WTyLThE/pFtkOJFCUJZTp2MLDPrYsdDo36AOQ897VWMRo8k51R7jS4Yxp
+ djh7jNAv/INJpBill76EdbO8JMS9kt0tQb7aIDA4hGx2hnBVX5Mk+NtSkvMLy7zQ
+ JMctXFVsKonz+w==
+X-ME-Sender: <xms:Dw8OXJDdMksa85-J49pcH4oZ162Lh5d9-dnOqgAtMFrnpzRblDEpZQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtkedrudeggedguddtiecutefuodetggdotefrod
+ ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthenuceurghilhhouhhtmecu
+ fedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvffufffkofgjfhgggfestd
+ ekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhr
+ sehruhhsshgvlhhlrdgttgeqnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrg
+ hmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushht
+ vghrufhiiigvpedu
+X-ME-Proxy: <xmx:Dw8OXIdabWFJCMurM8mUSSokELvkLiIguyB44GmRPdEL9RiXDTk-pQ>
+ <xmx:Dw8OXEbUPjGVUX-3uJfzdHO_kJeRuPYD8sX2oy3Pn3isv8GgqSWS-Q>
+ <xmx:Dw8OXOJj4VdX1P4qFb7JLbDSwZ8cC0T7OOe0VPlmCsqf3iIF0cL0HQ>
+ <xmx:Dw8OXOgbagBZCzkMGGWF9yNHOj9sPouJbwNpJs_BGzIXNkAfLxjGlQ>
+ <xmx:Dw8OXI-XVw3lRE2M7ESxo_wk7qvlOaA_AIIcTJvWOYlmQv1fkTlqSQ>
+ <xmx:Dw8OXHFBXjnOyw2jOoeXWs35wat99P59Fh2xVijPv1gxPr8drTNJAA>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 5267DE4445;
+ Mon, 10 Dec 2018 02:00:28 -0500 (EST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 2/3] powerpc/lib: Refactor __patch_instruction() to use
+ __put_user_asm()
+Date: Mon, 10 Dec 2018 18:00:43 +1100
+Message-Id: <20181210070044.27503-3-ruscur@russell.cc>
+X-Mailer: git-send-email 2.19.2
+In-Reply-To: <20181210070044.27503-1-ruscur@russell.cc>
+References: <20181210070044.27503-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 10 Dec 2018 06:50:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,48 +96,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: mikey@neuling.org, kernel-hardening@lists.openwall.com,
+ Russell Currey <ruscur@russell.cc>, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-With the following piece of code, the following compilation warning
-is encountered:
+__patch_instruction() is called in early boot, and uses
+__put_user_size(), which includes the locks and unlocks for KUAP,
+which could either be called too early, or in the Radix case, forced to
+use "early_" versions of functions just to safely handle this one case.
 
-	if (_IOC_DIR(ioc) != _IOC_NONE) {
-		int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
+__put_user_asm() does not do this, and thus is safe to use both in early
+boot, and later on since in this case it should only ever be touching
+kernel memory.
 
-		if (!access_ok(verify, ioarg, _IOC_SIZE(ioc))) {
+__patch_instruction() was previously refactored to use __put_user_size()
+in order to be able to return -EFAULT, which would allow the kernel to
+patch instructions in userspace, which should never happen.  This has
+the functional change of causing faults on userspace addresses if KUAP
+is turned on, which should never happen in practice.
 
-drivers/platform/test/dev.c: In function 'my_ioctl':
-drivers/platform/test/dev.c:219:7: warning: unused variable 'verify' [-Wunused-variable]
-   int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
+A future enhancement could be to double check the patch address is
+definitely allowed to be tampered with by the kernel.
 
-This patch fixes it by referencing 'type' in the macro allthough
-doing nothing with it.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- v3: not changing __access_ok() anymyre, only referencing type in access_ok()
+ arch/powerpc/lib/code-patching.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- v2: fixed the three direct users of __access_ok()
-
- arch/powerpc/include/asm/uaccess.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 15bea9a0f260..ebc0b916dcf9 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -63,7 +63,7 @@ static inline int __access_ok(unsigned long addr, unsigned long size,
- #endif
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index 89502cbccb1b..15e8c6339960 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -26,9 +26,9 @@
+ static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+ 			       unsigned int *patch_addr)
+ {
+-	int err;
++	int err = 0;
  
- #define access_ok(type, addr, size)		\
--	(__chk_user_ptr(addr),			\
-+	(__chk_user_ptr(addr), (void)(type),		\
- 	 __access_ok((__force unsigned long)(addr), (size), get_fs()))
+-	__put_user_size(instr, patch_addr, 4, err);
++	__put_user_asm(instr, patch_addr, err, "stw");
+ 	if (err)
+ 		return err;
  
- /*
 -- 
-2.13.3
+2.19.2
 
