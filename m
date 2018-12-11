@@ -2,125 +2,79 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AC3BC5CFFE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 15:29:28 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56B29C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 16:07:04 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9811920851
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 15:29:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9811920851
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A212D2081B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 16:07:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="OPczIJ4F"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A212D2081B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DkPx4XC3zDqc3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 02:29:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DlFK3sgfzDqdn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 03:07:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="OPczIJ4F";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="OPczIJ4F"; 
+ dkim-atps=neutral
+Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
+ [210.131.2.83])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DkMM1SFrzDq6W
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 02:27:10 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBBFOqsJ131761
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 10:27:06 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pafa324em-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 10:27:06 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 11 Dec 2018 15:27:04 -0000
-Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 11 Dec 2018 15:27:02 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBBFR1j315269940
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 11 Dec 2018 15:27:01 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1D1896E04E;
- Tue, 11 Dec 2018 15:27:01 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2B8BD6E050;
- Tue, 11 Dec 2018 15:27:00 +0000 (GMT)
-Received: from oc5000245537.ibm.com (unknown [9.53.179.223])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 11 Dec 2018 15:26:59 +0000 (GMT)
-Subject: Re: [PATCH v03] powerpc/mobility: Fix node detach/rename problem
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <a2d46622-a957-dffe-04d1-8087bbf0f8b5@linux.vnet.ibm.com>
- <871s6oxkdf.fsf@concordia.ellerman.id.au>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Tue, 11 Dec 2018 09:26:59 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Dl9l3rb2zDqcv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 03:03:54 +1100 (AEDT)
+Received: from mail-ua1-f46.google.com (mail-ua1-f46.google.com
+ [209.85.222.46]) (authenticated)
+ by conssluserg-04.nifty.com with ESMTP id wBBG3ZdB021559
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 01:03:35 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com wBBG3ZdB021559
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1544544216;
+ bh=yybUklpXv+i3ZvDZN0IW/BOVhtWK4rILiidGaAjhMpM=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=OPczIJ4FOYy580LZ7DS/3nKvrqqoOMHIZIKWccecRRjdvtFhKfsasloqP+Dao9mEm
+ yzIvnhZYIU23eLSWDkv5eknjQSTX81s+9ltfglUEI9fvClHdaKOOIV0hO2IbCPtae5
+ cU9qNLWUULDw8JVFXwonarCPtCbPoaKBO6MB1qZxmij13lnLAV6E9ZPLkrDQlccFhG
+ Nvs9c5jSADVSTLnT7pFwfBpGaFqq76gCdwKJ5HV/jPocJnHYkPkZ8QYjqAq0l478+r
+ Q0qx8ITQFTQfN63dUPdk+p7cMblUVHzDlDv83AUwvUQbE3b0yFbwuVZGN8cnpvfj0R
+ IO0sQl7AJbqKg==
+X-Nifty-SrcIP: [209.85.222.46]
+Received: by mail-ua1-f46.google.com with SMTP id u19so5314195uae.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 08:03:35 -0800 (PST)
+X-Gm-Message-State: AA+aEWb2WTnvaFqa3a8x8ARf5Gzajpke+qVJKMEL9eu9Pa+OwFBI8/1K
+ oQVfcuds2jiABfCzPx0a0u7vYqEjy16MSfuYkts=
+X-Google-Smtp-Source: AFSGD/XZc79/L4SuKcG1VJ0VKvjIawgbFQtNLlqIpxPcLm8VGbMkBdVTmt2/WSQVL+Vpd0inHxvZI+sz8UNKgKFxppM=
+X-Received: by 2002:ab0:849:: with SMTP id b9mr3720525uaf.93.1544544214488;
+ Tue, 11 Dec 2018 08:03:34 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <871s6oxkdf.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18121115-0036-0000-0000-00000A68EA62
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010213; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01130256; UDB=6.00587299; IPR=6.00910389; 
- MB=3.00024654; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-11 15:27:03
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121115-0037-0000-0000-000049F01902
-Message-Id: <a9c94cb8-094d-1083-7264-ecc0744635ad@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-11_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812110138
+References: <20181210203225.11179-1-robh@kernel.org>
+ <CAK7LNAThtAOy4PQiYZ2X0oWrHdcLi7on8ctSXJ=bfT0HNh7NFQ@mail.gmail.com>
+ <CAL_JsqL7n2sjLbJVieVDQ4YtKMi2COCaijO9ZNu7ggzmXXxLEg@mail.gmail.com>
+In-Reply-To: <CAL_JsqL7n2sjLbJVieVDQ4YtKMi2COCaijO9ZNu7ggzmXXxLEg@mail.gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 12 Dec 2018 01:02:58 +0900
+X-Gmail-Original-Message-ID: <CAK7LNARkr-g9ae+74QE6GMuxLM0JPgEqYOkwb0njXcb9-=nBdQ@mail.gmail.com>
+Message-ID: <CAK7LNARkr-g9ae+74QE6GMuxLM0JPgEqYOkwb0njXcb9-=nBdQ@mail.gmail.com>
+Subject: Re: [PATCH v3] kbuild: Add support for DT binding schema checks
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -132,146 +86,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org,
- Juliet Kim <minkim@us.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- frowand.list@gmail.com
+Cc: Mark Rutland <mark.rutland@arm.com>, DTML <devicetree@vger.kernel.org>,
+ Kumar Gala <kumar.gala@linaro.org>, arm-soc <arm@kernel.org>,
+ darknighte@darknighte.com, Jonathan Corbet <corbet@lwn.net>,
+ Frank Rowand <frowand.list@gmail.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Michal Marek <michal.lkml@markovi.net>, grant.likely@arm.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Dec 12, 2018 at 12:13 AM Rob Herring <robh@kernel.org> wrote:
+
+>
+> > > +$(obj)/%.example.dts: $(src)/%.yaml FORCE
+> > > +       $(call if_changed,chk_binding)
+> > > +
+> > > +DT_TMP_SCHEMA := .schema.yaml.tmp
+> >
+> >
+> > BTW, why does this file start with a period?
+> > What is the meaning of '.tmp' extension?
+>
+> Nothing really. Just named it something so it gets cleaned and ignored by git.
 
 
-On 12/11/2018 07:29 AM, Michael Ellerman wrote:
-> Hi Michael,
-> 
-> Please Cc the device tree folks on device tree patches, and also the
-> original author of the patch that added the code you're modifying.
-> 
-> So I've added:
->   robh+dt@kernel.org
->   frowand.list@gmail.com
->   devicetree@vger.kernel.org
->   linux-kernel@vger.kernel.org
+It is cleaned whatever file name you use.
 
-Thanks.
 
-> 
-> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->> The PPC mobility code receives RTAS requests to delete nodes with
->> platform-/hardware-specific attributes when restarting the kernel
->> after a migration.  My example is for migration between a P8 Alpine
->> and a P8 Brazos.   Nodes to be deleted include 'ibm,random-v1',
->> 'ibm,platform-facilities', 'ibm,sym-encryption-v1', and,
->> 'ibm,compression-v1'.
->>
->> The mobility.c code calls 'of_detach_node' for the nodes and their
->> children.  This makes calls to detach the properties and to remove
->> the associated sysfs/kernfs files.
->>
->> Then new copies of the same nodes are next provided by the PHYP,
->> local copies are built, and a pointer to the 'struct device_node'
->> is passed to of_attach_node.  Before the call to of_attach_node,
->> the phandle is initialized to 0 when the data structure is alloced.
->> During the call to of_attach_node, it calls __of_attach_node which
->> pulls the actual name and phandle from just created sub-properties
->> named something like 'name' and 'ibm,phandle'.
->>
->> This is all fine for the first migration.  The problem occurs with
->> the second and subsequent migrations when the PHYP on the new system
->> wants to replace the same set of nodes again, referenced with the
->> same names and phandle values.
->>
->> On the second and subsequent migrations, the PHYP tells the system
->> to again delete the nodes 'ibm,platform-facilities', 'ibm,random-v1',
->> 'ibm,compression-v1', 'ibm,sym-encryption-v1'.  It specifies these
->> nodes by its known set of phandle values -- the same handles used
->> by the PHYP on the source system are known on the target system.
->> The mobility.c code calls of_find_node_by_phandle() with these values
->> and ends up locating the first instance of each node that was added
->> during the original boot, instead of the second instance of each node
->> created after the first migration.  The detach during the second
->> migration fails with errors like,
->>
->> [ 4565.030704] WARNING: CPU: 3 PID: 4787 at drivers/of/dynamic.c:252 __of_detach_node+0x8/0xa0
->> [ 4565.030708] Modules linked in: nfsv3 nfs_acl nfs tcp_diag udp_diag inet_diag unix_diag af_packet_diag netlink_diag lockd grace fscache sunrpc xts vmx_crypto sg pseries_rng binfmt_misc ip_tables xfs libcrc32c sd_mod ibmveth ibmvscsi scsi_transport_srp dm_mirror dm_region_hash dm_log dm_mod
->> [ 4565.030733] CPU: 3 PID: 4787 Comm: drmgr Tainted: G        W         4.18.0-rc1-wi107836-v05-120+ #201
->> [ 4565.030737] NIP:  c0000000007c1ea8 LR: c0000000007c1fb4 CTR: 0000000000655170
->> [ 4565.030741] REGS: c0000003f302b690 TRAP: 0700   Tainted: G        W          (4.18.0-rc1-wi107836-v05-120+)
->> [ 4565.030745] MSR:  800000010282b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22288822  XER: 0000000a
->> [ 4565.030757] CFAR: c0000000007c1fb0 IRQMASK: 1
->> [ 4565.030757] GPR00: c0000000007c1fa4 c0000003f302b910 c00000000114bf00 c0000003ffff8e68
->> [ 4565.030757] GPR04: 0000000000000001 ffffffffffffffff 800000c008e0b4b8 ffffffffffffffff
->> [ 4565.030757] GPR08: 0000000000000000 0000000000000001 0000000080000003 0000000000002843
->> [ 4565.030757] GPR12: 0000000000008800 c00000001ec9ae00 0000000040000000 0000000000000000
->> [ 4565.030757] GPR16: 0000000000000000 0000000000000008 0000000000000000 00000000f6ffffff
->> [ 4565.030757] GPR20: 0000000000000007 0000000000000000 c0000003e9f1f034 0000000000000001
->> [ 4565.030757] GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->> [ 4565.030757] GPR28: c000000001549d28 c000000001134828 c0000003ffff8e68 c0000003f302b930
->> [ 4565.030804] NIP [c0000000007c1ea8] __of_detach_node+0x8/0xa0
->> [ 4565.030808] LR [c0000000007c1fb4] of_detach_node+0x74/0xd0
->> [ 4565.030811] Call Trace:
->> [ 4565.030815] [c0000003f302b910] [c0000000007c1fa4] of_detach_node+0x64/0xd0 (unreliable)
->> [ 4565.030821] [c0000003f302b980] [c0000000000c33c4] dlpar_detach_node+0xb4/0x150
->> [ 4565.030826] [c0000003f302ba10] [c0000000000c3ffc] delete_dt_node+0x3c/0x80
->> [ 4565.030831] [c0000003f302ba40] [c0000000000c4380] pseries_devicetree_update+0x150/0x4f0
->> [ 4565.030836] [c0000003f302bb70] [c0000000000c479c] post_mobility_fixup+0x7c/0xf0
->> [ 4565.030841] [c0000003f302bbe0] [c0000000000c4908] migration_store+0xf8/0x130
->> [ 4565.030847] [c0000003f302bc70] [c000000000998160] kobj_attr_store+0x30/0x60
->> [ 4565.030852] [c0000003f302bc90] [c000000000412f14] sysfs_kf_write+0x64/0xa0
->> [ 4565.030857] [c0000003f302bcb0] [c000000000411cac] kernfs_fop_write+0x16c/0x240
->> [ 4565.030862] [c0000003f302bd00] [c000000000355f20] __vfs_write+0x40/0x220
->> [ 4565.030867] [c0000003f302bd90] [c000000000356358] vfs_write+0xc8/0x240
->> [ 4565.030872] [c0000003f302bde0] [c0000000003566cc] ksys_write+0x5c/0x100
->> [ 4565.030880] [c0000003f302be30] [c00000000000b288] system_call+0x5c/0x70
->> [ 4565.030884] Instruction dump:
->> [ 4565.030887] 38210070 38600000 e8010010 eb61ffd8 eb81ffe0 eba1ffe8 ebc1fff0 ebe1fff8
->> [ 4565.030895] 7c0803a6 4e800020 e9230098 7929f7e2 <0b090000> 2f890000 4cde0020 e9030040
->> [ 4565.030903] ---[ end trace 5bd54cb1df9d2976 ]---
->>
->> The mobility.c code continues on during the second migration, accepts
->> the definitions of the new nodes from the PHYP and ends up renaming
->> the new properties e.g.
->>
->> [ 4565.827296] Duplicate name in base, renamed to "ibm,platform-facilities#1"
->>
->> There is no check like 'of_node_check_flag(np, OF_DETACHED)' within
->> of_find_node_by_phandle to skip nodes that are detached, but still
->> present due to caching or use count considerations.  Also, note that
->> of_find_node_by_phandle also uses a 'phandle_cache' which does not
->> appear to be updated when of_detach_node() is invoked.
-> 
-> This seems like the real bug. Since the phandle cache was added we can
-> now find detached nodes when we shouldn't be able to.
-> 
-> Does the patch below work?
-> 
-> cheers
-> 
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 09692c9b32a7..d8e4534c0686 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -1190,6 +1190,10 @@ struct device_node *of_find_node_by_phandle(phandle handle)
->  		if (phandle_cache[masked_handle] &&
->  		    handle == phandle_cache[masked_handle]->phandle)
->  			np = phandle_cache[masked_handle];
-> +
-> +		/* If we find a detached node, remove it */
-> +		if (of_node_check_flag(np, OF_DETACHED))
-> +			np = phandle_cache[masked_handle] = NULL;
->  	}
-> 
->  	if (!np) {
-> 
-> 
+See scripts/Makefile.clean
+
+__clean-files   := $(extra-y) $(extra-m) $(extra-)       \
+                   $(always) $(targets) $(clean-files)   \
+                   $(hostprogs-y) $(hostprogs-m) $(hostprogs-) \
+                   $(hostlibs-y) $(hostlibs-m) $(hostlibs-) \
+                   $(hostcxxlibs-y) $(hostcxxlibs-m)
+
+
+$(extra-y) is cleaned.
+
+
+
+You are adding *.example.dts to .gitignore
+
+Why not "schema.yaml" ?
+
+
+
+
+> > > +extra-y += $(DT_TMP_SCHEMA)
+> > > +
+> > > +quiet_cmd_mk_schema = SCHEMA  $@
+> > > +      cmd_mk_schema = mkdir -p $(obj); \
+> > > +                      rm -f $@; \
+> > > +                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $(filter-out FORCE, $^)
+> >
+> >
+> > "mkdir -p $(obj)" is redundant.
+> >
+> >
+> > Why is 'rm -f $@' necessary ?
+> > Can't dt-mk-schema overwrite the output file?
+>
+> It is for error case when the output file is not generated. I can
+> handle this within dt-mk-schema instead.
+> > > +DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
+> > > +DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
+> > > +
+> > > +extra-y += $(patsubst $(src)/%.yaml,%.example.dts, $(DT_SCHEMA_FILES))
+> > > +extra-y += $(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES))
+> >
+> >
+> >
+> > I assume you intentionally did not do like this:
+> >
+> > extra-y += $(patsubst %.yaml,%.example.dtb, $(DT_DOCS))
+> >
+> > From the commit description, DT_SCHEMA_FILES might be overridden by a user.
+> > So, I think this is OK.
+> >
+> >
+> >
+> >
+> > > +$(obj)/$(DT_TMP_SCHEMA): | $(addprefix $(obj)/,$(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES)))
+> >
+> > I do not understand this line.
+> > Why is it necessary?
+> >
+> > *.example.dtb files are generated anyway
+> > since they are listed in extra-y.
+>
+> It is enforcing the ordering. Without it, the binding checks and
+> building .schema.yaml.tmp happen in parallel because both only have
+> the source files as dependencies. The '|' keeps the dependencies out
+> of the dependency list($^).
+
+
+What kind problem would you see if
+the binding checks and building .schema.yaml.tmp
+happen in parallel?
+
+
 
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
-
+Best Regards
+Masahiro Yamada
