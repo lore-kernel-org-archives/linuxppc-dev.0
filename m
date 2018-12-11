@@ -2,62 +2,59 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-2.4 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB3CFC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 02:34:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF567C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 03:44:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC1A92064D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 02:34:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Wc6FcGZt"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC1A92064D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 08A8B2081B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 03:44:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08A8B2081B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DPCW4pgVzDqYJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 13:34:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DQmr3qH6zDqyv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 14:44:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Wc6FcGZt";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=bhe@redhat.com;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DP8r4GsQzDqRx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 13:31:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="Wc6FcGZt"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 43DP8r1jkwz9s47; Tue, 11 Dec 2018 13:31:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1544495516;
- bh=0I79HB28OFEhLNC2eCziVQulddpsw9SCz4tu2b1j3cQ=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=Wc6FcGZtCXGzc93GqCJWof/I03694sLTcbDtQUZRSqqXhsedAGnlf2rgxJ8QBzOi2
- lEIC42yDJmh0Pxr9nn5GApitzc5RuV8/fTqWFuAwDuHBfdR0/j0rnyS9LQFF6A79oZ
- pACD6QRrz4N8hxPJsqUG1kIapApChLwxlyCuAaSU=
-Date: Tue, 11 Dec 2018 13:31:51 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Leon Romanovsky <leon@kernel.org>
-Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
-Message-ID: <20181211023151.GH4261@umbus.fritz.box>
-References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
- <20181206064509.GM15544@mtr-leonro.mtl.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DQkH46tbzDqwF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 14:42:26 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 9FF323082193;
+ Tue, 11 Dec 2018 03:42:24 +0000 (UTC)
+Received: from localhost (ovpn-8-17.pek2.redhat.com [10.72.8.17])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id E707219C7F;
+ Tue, 11 Dec 2018 03:42:21 +0000 (UTC)
+Date: Tue, 11 Dec 2018 11:42:18 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Pingfan Liu <kernelfans@gmail.com>
+Subject: Re: Is it worth to fix the crashkernel reserved memory blocks the
+ hotplug issue?
+Message-ID: <20181211034218.GN17340@MiWiFi-R3L-srv>
+References: <CAFgQCTsn-v_OKWi72Fa1z0+8hOrSQr1UtoDGm2Ngrj_1GbscHA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="mVonZaCXjkyW6e25"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20181206064509.GM15544@mtr-leonro.mtl.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <CAFgQCTsn-v_OKWi72Fa1z0+8hOrSQr1UtoDGm2Ngrj_1GbscHA@mail.gmail.com>
+User-Agent: Mutt/1.9.1 (2017-09-22)
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.47]); Tue, 11 Dec 2018 03:42:24 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,85 +66,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, sbest@redhat.com, saeedm@mellanox.com,
- alex.williamson@redhat.com, paulus@samba.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com, ogerlitz@mellanox.com, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, tariqt@mellanox.com
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>, Dave Young <dyoung@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 12/10/18 at 12:08pm, Pingfan Liu wrote:
+> Hi,
+> I found in powerpc code, it is doable to reserve memory region in
+> movable zone, such as crashkernel does. But in x86 code, it checks the
+> hotpluggable attribute of memory, hence if manually specifying a
+> region in hotpluggable region, it will fail.
 
---mVonZaCXjkyW6e25
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, it is a problem. In x86, for crashkernel=xx@yy case to specify base
+address of crashkernel reservation, it will find the region firstly, if
+found region's base is not equal to specified base 'yy', means that
+region has been occupied. The reservation will fail. And memblock
+finding will only iterate unhotpluggable area, this will avoid reserving
+crashkernel memory on hotpluggable region. 
 
-On Thu, Dec 06, 2018 at 08:45:09AM +0200, Leon Romanovsky wrote:
-> On Thu, Dec 06, 2018 at 03:19:51PM +1100, David Gibson wrote:
-> > Mellanox ConnectX-5 IB cards (MT27800) seem to cause a call trace when
-> > unbound from their regular driver and attached to vfio-pci in order to =
-pass
-> > them through to a guest.
-> >
-> > This goes away if the disable_idle_d3 option is used, so it looks like a
-> > problem with the hardware handling D3 state.  To fix that more permanen=
-tly,
-> > use a device quirk to disable D3 state for these devices.
-> >
-> > We do this by renaming the existing quirk_no_ata_d3() more generally and
-> > attaching it to the ConnectX-[45] devices (0x15b3:0x1013).
-> >
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > ---
-> >  drivers/pci/quirks.c | 17 +++++++++++------
-> >  1 file changed, 11 insertions(+), 6 deletions(-)
-> >
->=20
-> Hi David,
->=20
-> Thank for your patch,
->=20
-> I would like to reproduce the calltrace before moving forward,
-> but have trouble to reproduce the original issue.
->=20
-> I'm working with vfio-pci and CX-4/5 cards on daily basis,
-> tried manually enter into D3 state now, and it worked for me.
->=20
-> Can you please post your full calltrace, and "lspci -s PCI_ID -vv"
-> output?
+In my opinion, it's worth fixing.
 
-Sorry, I may have jumped the gun on this.  Using disable_idle_d3 seems
-to do _something_ for these cards, but there are some other things
-going wrong which are confusing the issue.  This is on POWER, which
-might affect the situation.  I'll get back to you once I have some
-more information.
+Thanks
+Baoquan
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
 
---mVonZaCXjkyW6e25
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlwPIZQACgkQbDjKyiDZ
-s5IBRRAA2MqVAFyjHwo1FjE4IFA/HwOxHbo9qSkEOrFE10oGylCi9LVKhKeZ0RV4
-c6IrjliPYwy9Uy/B8fp+mCH1UeE73vSp+ieEqZ7TgMf1HqsO6vyYUcCO+JpcX1Ko
-9fiyQMCuEfvF3Z6A+XXzZ6Jp5MuGTF496Xv5n8j9672DAo6I1iFf75ayhORZcUVh
-ZrLGtGa7k88Mhizbk2ZV9TFUPWcYV1ekfWY/Wvdq59E2b7fNhyPQiNop2cbEIt4K
-BxD6MxGig0C+puFptKwdDNPMQB/nRNc843FtQ4JKUsKcSt3N0Wk7SHdINn6Kxjub
-fINnCEUAjTNOxyOU3lWgBc2BrI6xRpyYodMDlIzWQwM4/Kss40Qzg2zUWcpEkxIi
-KPpehbo/gMcj1SGZNJYV7NE1tuF+Z+kdfcN+ZM/D8sFTwWtMjKyiziDHXBgsc8WD
-wpH0wLZkqnPnluipNRaq2foShsiDTX5OLWR4tjmmcrIcF7BppMKz7/HIlaUXAqZ7
-6ViQMDhThPBU0CetZx9esXVW/PI+XPclAgFj6fRrKnVtDYQIkUO8NolTeYQjCWZA
-4wsPm9PX1a4/XxEVYn15PU2wADgdsRgkRRXtddl8/nmWsrY/0U2igsTWLuKF9ugW
-0V8raqIYkzdiHenfBMlsIod3G/xTBx+rMKbktPvefCIMlKNTcGE=
-=i2A1
------END PGP SIGNATURE-----
-
---mVonZaCXjkyW6e25--
+> The x86 code:
+> /* 0 means: find the address automatically */
+> if (crash_base <= 0) {
+> /*
+> * Set CRASH_ADDR_LOW_MAX upper bound for crash memory,
+> * as old kexec-tools loads bzImage below that, unless
+> * "crashkernel=size[KMG],high" is specified.
+> */
+> crash_base = memblock_find_in_range(CRASH_ALIGN,
+>    high ? CRASH_ADDR_HIGH_MAX
+> : CRASH_ADDR_LOW_MAX,
+>    crash_size, CRASH_ALIGN);
+> if (!crash_base) {
+> pr_info("crashkernel reservation failed - No suitable area found.\n");
+> return;
+> }
+> 
+> } else {
+> unsigned long long start;
+> 
+> start = memblock_find_in_range(crash_base,  --> this func will check
+> the hotpluggable attribute of memory and return failure if the
+> specifying region intersects with it.
+>       crash_base + crash_size,
+>       crash_size, 1 << 20);
+> if (start != crash_base) {
+> pr_info("crashkernel reservation failed - memory is in use.\n");
+> return;
+> }
+> }
+> 
+> Thanks,
+> Pingfan
