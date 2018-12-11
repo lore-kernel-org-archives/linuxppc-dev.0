@@ -2,59 +2,53 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5C8EC5CFFE
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:45:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E53D9C6783B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:50:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 28C7E2082F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:45:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 28C7E2082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6577B2084A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:50:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6577B2084A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Dc624ny8zDr1c
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 21:45:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DcCb5D38zDr49
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 21:50:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.76.65; helo=2.mo6.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
+ (client-ip=79.96.170.134; helo=cloudserver094114.home.pl;
+ envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 2.mo6.mail-out.ovh.net (2.mo6.mail-out.ovh.net [46.105.76.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Dc3H2qKwzDqmJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 21:42:51 +1100 (AEDT)
-Received: from player737.ha.ovh.net (unknown [10.109.146.53])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id 255AC19E82A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 11:05:03 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player737.ha.ovh.net (Postfix) with ESMTPSA id 6C38FD4F675;
- Tue, 11 Dec 2018 10:04:56 +0000 (UTC)
-Date: Tue, 11 Dec 2018 11:04:55 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH] ocxl: Simplify free_spa()
-Message-ID: <20181211110455.627226c0@bahia.lab.toulouse-stg.fr.ibm.com>
-In-Reply-To: <f8e42865-66d6-770d-d554-2365b6819aa6@au1.ibm.com>
-References: <154445490330.866942.2430705998072942471.stgit@bahia.lan>
- <43523da5-ca96-1a69-73a7-ab90306e9a98@au1.ibm.com>
- <20181211095749.63804184@bahia.lab.toulouse-stg.fr.ibm.com>
- <f8e42865-66d6-770d-d554-2365b6819aa6@au1.ibm.com>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ dmarc=none (p=none dis=none) header.from=rjwysocki.net
+X-Greylist: delayed 317 seconds by postgrey-1.36 at bilbo;
+ Tue, 11 Dec 2018 21:48:06 AEDT
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Dc9L5W4VzDqy9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 21:48:06 +1100 (AEDT)
+Received: from 79.184.252.35.ipv4.supernova.orange.pl (79.184.252.35) (HELO
+ aspire.rjw.lan)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.183)
+ id 7b48bb81d93096dd; Tue, 11 Dec 2018 11:48:03 +0100
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Yangtao Li <tiny.windzz@gmail.com>
+Subject: Re: [PATCH v2] cpufreq: pmac64: add of_node_put()
+Date: Tue, 11 Dec 2018 11:47:45 +0100
+Message-ID: <1962056.WEnsRsenr7@aspire.rjw.lan>
+In-Reply-To: <20181126060226.wsludir4g7bao4lk@vireshk-i7>
+References: <20181123133340.26849-1-tiny.windzz@gmail.com>
+ <20181126060226.wsludir4g7bao4lk@vireshk-i7>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 10074270892111927748
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtkedrudegjedguddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,32 +60,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 Dec 2018 20:13:21 +1100
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
-
-> On 11/12/18 7:57 pm, Greg Kurz wrote:
-> > I now realize that I should have mentioned the real motivation for this
-> > change. I'm working on refactoring the code so that we can use ocxl in a
-> > KVM guest. The concept of link can be shared by both powernv and pseries
-> > variants but the SPA is definitely a powernv only thingy. The benefit
-> > of this patch is hence to kick 'struct link' out of free_spa() so that
-> > it can be utimately moved to powernv specific code.
+On Monday, November 26, 2018 7:02:26 AM CET Viresh Kumar wrote:
+> On 23-11-18, 08:33, Yangtao Li wrote:
+> > of_find_node_by_path() acquires a reference to the node
+> > returned by it and that reference needs to be dropped by its caller.
+> > g5_neo2_cpufreq_init() doesn't do that, so fix it.
 > > 
-> > The initial version of this change was just moving the link->spa check
-> > and link->spa = NULL to the callers, where it was quite obvious they're
-> > not needed... Should I re-post this as two patches for clarity ?  
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> > Changes in v2:
+> > -update changelog
+> > ---
+> >  drivers/cpufreq/pmac64-cpufreq.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> > index be623dd7b9f2..1d32a863332d 100644
+> > --- a/drivers/cpufreq/pmac64-cpufreq.c
+> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> > @@ -411,6 +411,7 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
+> >  		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
+> >  		pfunc_vdnap0_complete =
+> >  			pmf_find_function(root, "slewing-done");
+> > +		of_node_put(root);
+> >  		if (pfunc_set_vdnap0 == NULL ||
+> >  		    pfunc_vdnap0_complete == NULL) {
+> >  			pr_err("Can't find required platform function\n");
 > 
-> Ah, that makes much more sense.
-> 
-> If that's the case, then why not go all the way and change the function 
-> signature while you're at it?
-> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Sure, will do.
+Patch applied, thanks!
+
