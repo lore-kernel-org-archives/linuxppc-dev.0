@@ -2,92 +2,55 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B49C07E85
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 05:26:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78C59C07E85
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 05:46:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2409720811
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 05:26:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="aP+PP6Ej"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2409720811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id A48EB2081B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 05:46:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A48EB2081B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DT2Z3ddszDqyP
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 16:26:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DTTj6TzmzDqyH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 16:46:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.b="aP+PP6Ej";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (helo)
- smtp.helo=out1-smtp.messagingengine.com (client-ip=66.111.4.25;
- helo=out1-smtp.messagingengine.com; envelope-from=ruscur@russell.cc;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="aP+PP6Ej"; dkim-atps=neutral
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gondor.apana.org.au
+ (client-ip=104.223.48.154; helo=deadmen.hmeau.com;
+ envelope-from=herbert@gondor.apana.org.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+X-Greylist: delayed 2202 seconds by postgrey-1.36 at bilbo;
+ Tue, 11 Dec 2018 16:44:45 AEDT
+Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DSzp40lmzDqwt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 16:24:22 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 9260C21AFB;
- Tue, 11 Dec 2018 00:24:19 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Tue, 11 Dec 2018 00:24:19 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=pMxm48d9UHOSlbEZYv6rkEmhC3bI8rIFomvnflUbk
- l4=; b=aP+PP6EjbmmeRsntvCr4m0DaMmsrtX39zSUPFEYkQOFJMkx4jlZhpuluy
- RCeXPNE7Kl8ldG+uLXBFGJAUga9dYMh8owI+3+MY6+B9cWhGNCLfL3d6TSw/Gih4
- o34I8XwZn00w2c570fjn0kh2qE9g1ZNFUgE7TpXxu27NGz6zHSO1SPCuTRXIsmyc
- u67fTYYFII/mAu5TUSt7EQiM0M4nZnYMO9ZItaQln6yXiTEQliFPbtNurH8w8I2z
- 2aZv0B86mQqSxl8cJVDukwuGr8nd1TwiVl1OtWXYptnDd6ibTI+HnMrWRkCPX885
- N5EFsCn/wPT01G4+ADEPtWsw6WZSQ==
-X-ME-Sender: <xms:AkoPXA4F4FZiiJhe-uoi_1NY5m1DYR3gmVx10-jf0YoGVMFy7XDFIQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtkedrudegiedgkeefucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfquhhtnecuuegrihhlohhuthemucef
- tddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfghrlhcuvffnffculdeftd
- dmnecujfgurhepkffuhffvffgjfhgtfggggfesthejredttderjeenucfhrhhomheptfhu
- shhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukf
- hppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgt
- uhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:AkoPXJZ3Mv8z812JtnvmQeWn5HXoFmy-V1iCFE-u4BN4iC9h8i3NwQ>
- <xmx:AkoPXA1l12Mx2W95ZuXxnVkP72MHAzUcjtPEIznohOLLYPTEQbCwlw>
- <xmx:AkoPXMqwgj7HRx9UDyQYgVthHE_WOYDZE7aaVWcv37dmfYcK9YzhNQ>
- <xmx:AkoPXPOofqbL7kbUOUdxqbBSFAbRKR7-HopiOwU17XjmNPDAiiCiQw>
- <xmx:AkoPXFp6Yp1ZJCLZ3Ne2uT_jDJmXxCuIKgl72INGWDvta298m6xptQ>
- <xmx:A0oPXLuF1ZHQk87iRwqWSFnWhSro6hkdKfWohWbZxzlbumj25IQeVA>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id A017EE450E;
- Tue, 11 Dec 2018 00:24:15 -0500 (EST)
-Message-ID: <a6dbd5284d8700d591614481fda242a25ca5a3b5.camel@russell.cc>
-Subject: Re: [RFC PATCH v2 11/11] powerpc/book3s32: Implement Kernel
- Userspace Access Protection
-From: Russell Currey <ruscur@russell.cc>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Date: Tue, 11 Dec 2018 16:25:07 +1100
-In-Reply-To: <98e37def51328f58d8c2ceb60edd4b3da7b6f2ef.1543356926.git.christophe.leroy@c-s.fr>
-References: <76d777b36e54e7b8d4c196405decc712fc5eaf45.1543356926.git.christophe.leroy@c-s.fr>
- <98e37def51328f58d8c2ceb60edd4b3da7b6f2ef.1543356926.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.2 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DTRK2tKvzDqxc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 16:44:45 +1100 (AEDT)
+Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
+ by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
+ id 1gWaGv-0004Hi-Sx; Tue, 11 Dec 2018 13:07:53 +0800
+Received: from herbert by gondobar with local (Exim 4.89)
+ (envelope-from <herbert@gondor.apana.org.au>)
+ id 1gWaGg-0002Rg-28; Tue, 11 Dec 2018 13:07:38 +0800
+Date: Tue, 11 Dec 2018 13:07:38 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Subject: Re: [PATCH] crypto/testmgr: fix skcipher test with CONFIG_VMAP_STACK
+Message-ID: <20181211050737.ubxpofoxj7gjmcs3@gondor.apana.org.au>
+References: <20181207173309.82A0E6D165@po14163vm.idsi0.si.c-s.fr>
+ <CAKv+Gu9gz0h2CFNPe9bgrSBzRe7iTVOMxiEEb6OXb75Acv7HUQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKv+Gu9gz0h2CFNPe9bgrSBzRe7iTVOMxiEEb6OXb75Acv7HUQ@mail.gmail.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,53 +62,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2018-11-28 at 09:27 +0000, Christophe Leroy wrote:
-> This patch implements Kernel Userspace Access Protection for
-> book3s/32.
+On Fri, Dec 07, 2018 at 09:26:15PM +0100, Ard Biesheuvel wrote:
+> On Fri, 7 Dec 2018 at 18:33, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+> >
+> > [    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
+> > [    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
+> > [    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
+> > [    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+> > [    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
+> > [    2.406669]
+> > [    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
+> > [    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
+> > [    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
+> > [    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
+> > [    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
+> > [    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
+> > [    2.451762] Call Trace:
+> > [    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
+> > [    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
+> > [    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
+> > [    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
+> > [    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
+> > [    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
+> > [    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
+> > [    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
+> > [    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
+> > [    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
+> > [    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+> > [    2.515532] Instruction dump:
+> > [    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
+> > [    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
+> > [    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
+> > [    2.539123] talitos ff020000.crypto: master data transfer error
+> > [    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
+> > [    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
+> >
+> > IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
+> > cannot be DMA mapped anymore.
+> >
+> > This patch allocates it with kmalloc()
+> >
 > 
-> Due to limitations of the processor page protection capabilities,
-> the protection is only against writing. read protection cannot be
-> achieved using page protection.
-> 
-> In order to provide the protection, Ku and Ks keys are modified in
-> Userspace Segment registers, and different PP bits are used to:
-> 
-> PP01 provides RW for Key 0 and RO for Key 1
-> PP10 provides RW for all
-> PP11 provides RO for all
-> 
-> Today PP10 is used for RW pages and PP11 for RO pages. This patch
-> modifies page protection to PP01 for RW pages.
-> 
-> Then segment registers are set to Ku 0 and Ks 1. When kernel needs
-> to write to RW pages, the associated segment register is changed to
-> Ks 0 in order to allow write access to the kernel.
-> 
-> In order to avoid having the read all segment registers when
-> locking/unlocking the access, some data is kept in the thread_struct
-> and saved on stack on exceptions. The field identifies both the
-> first unlocked segment and the first segment following the last
-> unlocked one. When no segment is unlocked, it contains value 0.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> This looks like a driver bug to me. Other accelerators in
+> drivers/crypto all take a copy of the IV before mapping it for DMA, so
+> it would be better if talitos did the same.
 
-Hey Christophe, I tried to test this and got a machine check after the
-kernel starts init.
+Yes please fix the driver.  In general, if a paramter is coming in
+as a pointer, you must assume that it may lie on the stack.
 
-Vector: 700 (Program Check) at [ef0b5e70]
-    pc: 00000ca4
-    lr: b7e1a030
-    sp: ef0b5f30
-   msr: 81002
-  current = 0xef0b8000
-    pid   = 1, comm = init
-
-Testing with mac99 model in qemu.
-
-- Russell
-
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
