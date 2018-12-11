@@ -2,23 +2,23 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5F3FC67839
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:38:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10D32C67839
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:43:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1013020672
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:38:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1013020672
+	by mail.kernel.org (Postfix) with ESMTPS id 881E720672
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:43:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 881E720672
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DvwZ0PgQzDqww
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:38:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Dw2H37zgzDqSs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:43:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,42 +29,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Dvt90xgVzDqgr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 09:36:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Dvzs4wnHzDq5Y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 09:40:57 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43Dvt552Hyz9v0sf;
- Tue, 11 Dec 2018 23:35:57 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43Dvzn5rc0z9v0sm;
+ Tue, 11 Dec 2018 23:40:53 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id NI1FU9vU4HYX; Tue, 11 Dec 2018 23:35:57 +0100 (CET)
+ with ESMTP id DRsE75rC7Ea9; Tue, 11 Dec 2018 23:40:53 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43Dvt54Kt9z9v0sd;
- Tue, 11 Dec 2018 23:35:57 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Dvzn4xyYz9v0sl;
+ Tue, 11 Dec 2018 23:40:53 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D6A0C8B818;
- Tue, 11 Dec 2018 23:35:57 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ECE8D8B818;
+ Tue, 11 Dec 2018 23:40:53 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id sEqgcCw2Vryf; Tue, 11 Dec 2018 23:35:57 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C20888B812;
- Tue, 11 Dec 2018 23:35:56 +0100 (CET)
-Subject: Re: [powerpc:next-test 70/71] arch/powerpc/include/asm/io.h:835:22:
- note: in expansion of macro 'page_to_pfn'
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <201812120556.nmhtmKEU%fengguang.wu@intel.com>
+ with ESMTP id VMz-VvTwKv-a; Tue, 11 Dec 2018 23:40:53 +0100 (CET)
+Received: from PO15451.localdomain (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A21A98B812;
+ Tue, 11 Dec 2018 23:40:53 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id 3E3CB71707; Tue, 11 Dec 2018 22:40:53 +0000 (UTC)
+Message-Id: <a42260e77d609a10667872c2e7bf14ceabcce050.1544562518.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <75eeb99c-9947-7c3d-ed81-1626de6befe6@c-s.fr>
-Date: Tue, 11 Dec 2018 23:35:55 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
-MIME-Version: 1.0
-In-Reply-To: <201812120556.nmhtmKEU%fengguang.wu@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v3] powerpc: implement CONFIG_DEBUG_VIRTUAL
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 11 Dec 2018 22:40:53 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,190 +70,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@01.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Missing linux/mm.h
+This patch implements CONFIG_DEBUG_VIRTUAL to warn about
+incorrect use of virt_to_phys() and page_to_phys()
 
-Will fix it in the coming patch.
+Below is the result of test_debug_virtual:
 
-Christophe
+[    1.438746] WARNING: CPU: 0 PID: 1 at ./arch/powerpc/include/asm/io.h:808 test_debug_virtual_init+0x3c/0xd4
+[    1.448156] CPU: 0 PID: 1 Comm: swapper Not tainted 4.20.0-rc5-00560-g6bfb52e23a00-dirty #532
+[    1.457259] NIP:  c066c550 LR: c0650ccc CTR: c066c514
+[    1.462257] REGS: c900bdb0 TRAP: 0700   Not tainted  (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+[    1.471184] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 48000422  XER: 20000000
+[    1.477811]
+[    1.477811] GPR00: c0650ccc c900be60 c60d0000 00000000 006000c0 c9000000 00009032 c7fa0020
+[    1.477811] GPR08: 00002400 00000001 09000000 00000000 c07b5d04 00000000 c00037d8 00000000
+[    1.477811] GPR16: 00000000 00000000 00000000 00000000 c0760000 c0740000 00000092 c0685bb0
+[    1.477811] GPR24: c065042c c068a734 c0685b8c 00000006 00000000 c0760000 c075c3c0 ffffffff
+[    1.512711] NIP [c066c550] test_debug_virtual_init+0x3c/0xd4
+[    1.518315] LR [c0650ccc] do_one_initcall+0x8c/0x1cc
+[    1.523163] Call Trace:
+[    1.525595] [c900be60] [c0567340] 0xc0567340 (unreliable)
+[    1.530954] [c900be90] [c0650ccc] do_one_initcall+0x8c/0x1cc
+[    1.536551] [c900bef0] [c0651000] kernel_init_freeable+0x1f4/0x2cc
+[    1.542658] [c900bf30] [c00037ec] kernel_init+0x14/0x110
+[    1.547913] [c900bf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+[    1.553971] Instruction dump:
+[    1.556909] 3ca50100 bfa10024 54a5000e 3fa0c076 7c0802a6 3d454000 813dc204 554893be
+[    1.564566] 7d294010 7d294910 90010034 39290001 <0f090000> 7c3e0b78 955e0008 3fe0c062
+[    1.572425] ---[ end trace 6f6984225b280ad6 ]---
+[    1.577467] PA: 0x09000000 for VA: 0xc9000000
+[    1.581799] PA: 0x061e8f50 for VA: 0xc61e8f50
 
-Le 11/12/2018 à 22:55, kbuild test robot a écrit :
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
-> head:   13fd174be1903cc069bb73b0d53a0420b8f6d778
-> commit: 3a0f466ce2402cc090c97ccc1285508f688d8a8e [70/71] powerpc: Implement CONFIG_DEBUG_VIRTUAL
-> config: powerpc-ps3_petitboot_nfs_defconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->          chmod +x ~/bin/make.cross
->          git checkout 3a0f466ce2402cc090c97ccc1285508f688d8a8e
->          # save the attached .config to linux build tree
->          GCC_VERSION=7.2.0 make.cross ARCH=powerpc
-> 
-> All warnings (new ones prefixed by >>):
-> 
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/thread_info.h:29,
->                      from include/linux/thread_info.h:38,
->                      from include/asm-generic/preempt.h:5,
->                      from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                      from include/linux/preempt.h:81,
->                      from include/linux/spinlock.h:51,
->                      from include/linux/seqlock.h:36,
->                      from include/linux/time.h:6,
->                      from include/linux/jiffies.h:9,
->                      from drivers/net/loopback.c:32:
->     arch/powerpc/include/asm/io.h: In function 'page_to_phys':
->     include/asm-generic/memory_model.h:64:14: error: implicit declaration of function 'page_to_section'; did you mean '__nr_to_section'? [-Werror=implicit-function-declaration]
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     In file included from include/linux/scatterlist.h:8:0,
->                      from include/linux/dma-mapping.h:11,
->                      from include/linux/skbuff.h:34,
->                      from include/net/net_namespace.h:36,
->                      from include/linux/inet.h:46,
->                      from drivers/net/loopback.c:46:
->     include/linux/mm.h: At top level:
->     include/linux/mm.h:1121:29: error: conflicting types for 'page_to_section'
->      static inline unsigned long page_to_section(const struct page *page)
->                                  ^~~~~~~~~~~~~~~
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/thread_info.h:29,
->                      from include/linux/thread_info.h:38,
->                      from include/asm-generic/preempt.h:5,
->                      from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                      from include/linux/preempt.h:81,
->                      from include/linux/spinlock.h:51,
->                      from include/linux/seqlock.h:36,
->                      from include/linux/time.h:6,
->                      from include/linux/jiffies.h:9,
->                      from drivers/net/loopback.c:32:
->     include/asm-generic/memory_model.h:64:14: note: previous implicit declaration of 'page_to_section' was here
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     cc1: some warnings being treated as errors
-> --
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/book3s/64/mmu.h:5,
->                      from arch/powerpc/include/asm/mmu.h:328,
->                      from arch/powerpc/include/asm/lppaca.h:36,
->                      from arch/powerpc/include/asm/paca.h:21,
->                      from arch/powerpc/include/asm/current.h:16,
->                      from include/linux/mutex.h:14,
->                      from include/linux/kernfs.h:13,
->                      from include/linux/sysfs.h:16,
->                      from include/linux/kobject.h:20,
->                      from include/linux/device.h:16,
->                      from drivers/of/irq.c:19:
->     arch/powerpc/include/asm/io.h: In function 'page_to_phys':
->     include/asm-generic/memory_model.h:64:14: error: implicit declaration of function 'page_to_section'; did you mean '__nr_to_section'? [-Werror=implicit-function-declaration]
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     cc1: some warnings being treated as errors
-> --
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/thread_info.h:29,
->                      from include/linux/thread_info.h:38,
->                      from include/asm-generic/preempt.h:5,
->                      from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                      from include/linux/preempt.h:81,
->                      from include/linux/hardirq.h:5,
->                      from arch/powerpc/kernel/mce.c:25:
->     arch/powerpc/include/asm/io.h: In function 'page_to_phys':
->     include/asm-generic/memory_model.h:64:14: error: implicit declaration of function 'page_to_section'; did you mean '__nr_to_section'? [-Werror=implicit-function-declaration]
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     In file included from include/linux/pid_namespace.h:7:0,
->                      from include/linux/ptrace.h:10,
->                      from arch/powerpc/kernel/mce.c:27:
->     include/linux/mm.h: At top level:
->     include/linux/mm.h:1121:29: error: conflicting types for 'page_to_section'
->      static inline unsigned long page_to_section(const struct page *page)
->                                  ^~~~~~~~~~~~~~~
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/thread_info.h:29,
->                      from include/linux/thread_info.h:38,
->                      from include/asm-generic/preempt.h:5,
->                      from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                      from include/linux/preempt.h:81,
->                      from include/linux/hardirq.h:5,
->                      from arch/powerpc/kernel/mce.c:25:
->     include/asm-generic/memory_model.h:64:14: note: previous implicit declaration of 'page_to_section' was here
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     cc1: all warnings being treated as errors
-> --
->     In file included from arch/powerpc/include/asm/page.h:339:0,
->                      from arch/powerpc/include/asm/book3s/64/mmu.h:5,
->                      from arch/powerpc/include/asm/mmu.h:328,
->                      from arch/powerpc/include/asm/lppaca.h:36,
->                      from arch/powerpc/include/asm/paca.h:21,
->                      from arch/powerpc/include/asm/current.h:16,
->                      from include/linux/sched.h:12,
->                      from arch/powerpc/kernel/cputable.c:14:
->     arch/powerpc/include/asm/io.h: In function 'page_to_phys':
->     include/asm-generic/memory_model.h:64:14: error: implicit declaration of function 'page_to_section'; did you mean '__nr_to_section'? [-Werror=implicit-function-declaration]
->       int __sec = page_to_section(__pg);   \
->                   ^
->     include/asm-generic/memory_model.h:81:21: note: in expansion of macro '__page_to_pfn'
->      #define page_to_pfn __page_to_pfn
->                          ^~~~~~~~~~~~~
->>> arch/powerpc/include/asm/io.h:835:22: note: in expansion of macro 'page_to_pfn'
->       unsigned long pfn = page_to_pfn(page);
->                           ^~~~~~~~~~~
->     cc1: all warnings being treated as errors
-> 
-> vim +/page_to_pfn +835 arch/powerpc/include/asm/io.h
-> 
->     829	
->     830	/*
->     831	 * Change "struct page" to physical address.
->     832	 */
->     833	static inline phys_addr_t page_to_phys(struct page *page)
->     834	{
->   > 835		unsigned long pfn = page_to_pfn(page);
->     836	
->     837		WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !pfn_valid(pfn));
->     838	
->     839		return PFN_PHYS(pfn);
->     840	}
->     841	
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v3: Added missing linux/mm.h
+     I realised that a driver may use DMA on stack after checking with virt_addr_valid(), so the new
+     verification might induce false positives. I remove it for now, will add it again later in a more
+     controled way.
+
+ v2: Using asm/pgtable.h to avoid build failure on ppc64e.
+     Added a verification that the object is not in stack to catch problems before activing VMAP_STACK.
+
+ arch/powerpc/Kconfig          |  1 +
+ arch/powerpc/include/asm/io.h | 13 ++++++++++++-
+ arch/powerpc/mm/pgtable_32.c  |  2 +-
+ 3 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e312e92e3381..94b46624068d 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -128,6 +128,7 @@ config PPC
+ 	#
+ 	# Please keep this list sorted alphabetically.
+ 	#
++	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 	select ARCH_HAS_ELF_RANDOMIZE
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e746becd9d6f..7f19fbd3ba55 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -29,12 +29,14 @@ extern struct pci_dev *isa_bridge_pcidev;
+ 
+ #include <linux/device.h>
+ #include <linux/compiler.h>
++#include <linux/mm.h>
+ #include <asm/page.h>
+ #include <asm/byteorder.h>
+ #include <asm/synch.h>
+ #include <asm/delay.h>
+ #include <asm/mmu.h>
+ #include <asm/ppc_asm.h>
++#include <asm/pgtable.h>
+ 
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+@@ -804,6 +806,8 @@ extern void __iounmap_at(void *ea, unsigned long size);
+  */
+ static inline unsigned long virt_to_phys(volatile void * address)
+ {
++	WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !virt_addr_valid(address));
++
+ 	return __pa((unsigned long)address);
+ }
+ 
+@@ -827,7 +831,14 @@ static inline void * phys_to_virt(unsigned long address)
+ /*
+  * Change "struct page" to physical address.
+  */
+-#define page_to_phys(page)	((phys_addr_t)page_to_pfn(page) << PAGE_SHIFT)
++static inline phys_addr_t page_to_phys(struct page *page)
++{
++	unsigned long pfn = page_to_pfn(page);
++
++	WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !pfn_valid(pfn));
++
++	return PFN_PHYS(pfn);
++}
+ 
+ /*
+  * 32 bits still uses virt_to_bus() for it's implementation of DMA
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 4fc77a99c9bf..68d204a45cd0 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -143,7 +143,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *call
+ 	 * Don't allow anybody to remap normal RAM that we're using.
+ 	 * mem_init() sets high_memory so only do the check after that.
+ 	 */
+-	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
++	if (slab_is_available() && virt_addr_valid(p) &&
+ 	    page_is_ram(__phys_to_pfn(p))) {
+ 		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+ 		       (unsigned long long)p, __builtin_return_address(0));
+-- 
+2.13.3
+
