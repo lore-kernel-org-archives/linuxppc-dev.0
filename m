@@ -2,23 +2,23 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E53D9C6783B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:50:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E260C5CFFE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:52:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6577B2084A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:50:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6577B2084A
+	by mail.kernel.org (Postfix) with ESMTPS id CA4C72081B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 10:52:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA4C72081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DcCb5D38zDr49
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 21:50:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DcFx61wbzDr11
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 21:52:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=rjwysocki.net
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=rjwysocki.net
@@ -26,26 +26,24 @@ Authentication-Results: lists.ozlabs.org;
  envelope-from=rjw@rjwysocki.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=rjwysocki.net
-X-Greylist: delayed 317 seconds by postgrey-1.36 at bilbo;
- Tue, 11 Dec 2018 21:48:06 AEDT
 Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
  [79.96.170.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Dc9L5W4VzDqy9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 21:48:06 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DcBv2M7KzDr4Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 21:49:26 +1100 (AEDT)
 Received: from 79.184.252.35.ipv4.supernova.orange.pl (79.184.252.35) (HELO
  aspire.rjw.lan)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.183)
- id 7b48bb81d93096dd; Tue, 11 Dec 2018 11:48:03 +0100
+ id 4f44a81357f83db7; Tue, 11 Dec 2018 11:42:43 +0100
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Viresh Kumar <viresh.kumar@linaro.org>, Yangtao Li <tiny.windzz@gmail.com>
-Subject: Re: [PATCH v2] cpufreq: pmac64: add of_node_put()
-Date: Tue, 11 Dec 2018 11:47:45 +0100
-Message-ID: <1962056.WEnsRsenr7@aspire.rjw.lan>
-In-Reply-To: <20181126060226.wsludir4g7bao4lk@vireshk-i7>
-References: <20181123133340.26849-1-tiny.windzz@gmail.com>
- <20181126060226.wsludir4g7bao4lk@vireshk-i7>
+Subject: Re: [PATCH v2] cpufreq: powernv: add of_node_put()
+Date: Tue, 11 Dec 2018 11:42:25 +0100
+Message-ID: <96539770.nKdoRIFDKn@aspire.rjw.lan>
+In-Reply-To: <20181121040204.yjlnxaulet3o5u3r@vireshk-i7>
+References: <20181120160530.21015-1-tiny.windzz@gmail.com>
+ <20181121040204.yjlnxaulet3o5u3r@vireshk-i7>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -66,33 +64,19 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Monday, November 26, 2018 7:02:26 AM CET Viresh Kumar wrote:
-> On 23-11-18, 08:33, Yangtao Li wrote:
-> > of_find_node_by_path() acquires a reference to the node
-> > returned by it and that reference needs to be dropped by its caller.
-> > g5_neo2_cpufreq_init() doesn't do that, so fix it.
+On Wednesday, November 21, 2018 5:02:04 AM CET Viresh Kumar wrote:
+> On 20-11-18, 11:05, Yangtao Li wrote:
+> > The of_find_node_by_path() returns a node pointer with refcount
+> > incremented,but there is the lack of use of the of_node_put() when
+> > done.Add the missing of_node_put() to release the refcount.
 > > 
 > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > ---
-> > Changes in v2:
+> > Changes in v2
 > > -update changelog
 > > ---
-> >  drivers/cpufreq/pmac64-cpufreq.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
-> > index be623dd7b9f2..1d32a863332d 100644
-> > --- a/drivers/cpufreq/pmac64-cpufreq.c
-> > +++ b/drivers/cpufreq/pmac64-cpufreq.c
-> > @@ -411,6 +411,7 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
-> >  		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
-> >  		pfunc_vdnap0_complete =
-> >  			pmf_find_function(root, "slewing-done");
-> > +		of_node_put(root);
-> >  		if (pfunc_set_vdnap0 == NULL ||
-> >  		    pfunc_vdnap0_complete == NULL) {
-> >  			pr_err("Can't find required platform function\n");
+> >  drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++------
+> >  1 file changed, 11 insertions(+), 6 deletions(-)
 > 
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
