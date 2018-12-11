@@ -2,60 +2,61 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DB3CC07E85
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 08:44:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85A2EC07E85
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:08:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A02A62081B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 08:44:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A02A62081B
+	by mail.kernel.org (Postfix) with ESMTPS id B729F2082F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 09:08:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B729F2082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DYQ81jwJzDqvV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 19:44:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DYyv48QRzDqh3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 20:08:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.118; helo=19.mo7.mail-out.ovh.net;
+ (client-ip=178.33.109.80; helo=2.mo177.mail-out.ovh.net;
  envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 19.mo7.mail-out.ovh.net (19.mo7.mail-out.ovh.net
- [178.33.251.118])
+X-Greylist: delayed 532 seconds by postgrey-1.36 at bilbo;
+ Tue, 11 Dec 2018 20:06:53 AEDT
+Received: from 2.mo177.mail-out.ovh.net (2.mo177.mail-out.ovh.net
+ [178.33.109.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DYMY3VLrzDqfY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 19:41:45 +1100 (AEDT)
-Received: from player773.ha.ovh.net (unknown [10.109.146.173])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id 388BAEF79C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:36:28 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DYwY4QPWzDqkZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 20:06:51 +1100 (AEDT)
+Received: from player763.ha.ovh.net (unknown [10.109.159.132])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id A9B0ED5195
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 09:57:57 +0100 (CET)
 Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
  [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player773.ha.ovh.net (Postfix) with ESMTPSA id 6D71EB2AA20;
- Tue, 11 Dec 2018 08:36:21 +0000 (UTC)
-Date: Tue, 11 Dec 2018 09:33:01 +0100
+ by player763.ha.ovh.net (Postfix) with ESMTPSA id 72851B472EC;
+ Tue, 11 Dec 2018 08:57:50 +0000 (UTC)
+Date: Tue, 11 Dec 2018 09:57:49 +0100
 From: Greg Kurz <groug@kaod.org>
 To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Subject: Re: [PATCH] ocxl: Fix endiannes bug in read_afu_name()
-Message-ID: <20181211093301.297a9ec4@bahia.lab.toulouse-stg.fr.ibm.com>
-In-Reply-To: <d1b81705-c5b3-80d8-4e4e-8717b530f179@au1.ibm.com>
-References: <154445465027.866316.3631489273007908874.stgit@bahia.lan>
- <761f925d-4dcb-8522-8a5e-b730cd2c58ad@au1.ibm.com>
- <d1b81705-c5b3-80d8-4e4e-8717b530f179@au1.ibm.com>
+Subject: Re: [PATCH] ocxl: Simplify free_spa()
+Message-ID: <20181211095749.63804184@bahia.lab.toulouse-stg.fr.ibm.com>
+In-Reply-To: <43523da5-ca96-1a69-73a7-ab90306e9a98@au1.ibm.com>
+References: <154445490330.866942.2430705998072942471.stgit@bahia.lan>
+ <43523da5-ca96-1a69-73a7-ab90306e9a98@au1.ibm.com>
 X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 8577949916552075716
+X-Ovh-Tracer-Id: 8941052637910440388
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtkedrudegiedguddvfecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtkedrudegiedguddvjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,37 +75,61 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 Dec 2018 11:24:08 +1100
+On Tue, 11 Dec 2018 12:05:49 +1100
 Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
 
-> On 11/12/18 11:05 am, Andrew Donnellan wrote:
-> > On 11/12/18 2:10 am, Greg Kurz wrote:  
-> >> The double word returned by read_afu_info(OCXL_DVSEC_TEMPL_NAME) contains
-> >> four characters of the AFU name, read from the PCI config space, hence
-> >> with a little-endian ordering. When composing the string, a big-endian
-> >> system must swap the bytes so that the characters appear in the right
-> >> order.
-> >>
-> >> Do this with le32_to_cpu().
-> >>
-> >> Signed-off-by: Greg Kurz <groug@kaod.org>  
+> On 11/12/18 2:15 am, Greg Kurz wrote:
+> > The only users of free_spa() are alloc_link() and free_link(), and
+> > in both cases:
 > > 
-> > snowpatch reports the following sparse warning:
+> > - link->spa != NULL
 > > 
-> > +drivers/misc/ocxl/config.c:321:24: warning: cast to restricted __le32
+> > - free_spa(link) is immediatly followed by kfree(link)
 > > 
-> > You probably need to change val from a u32 to a __le32.  
+> > The check isn't needed, and it doesn't bring much to clear the link->spa
+> > pointer. Drop both.
+> > 
+> > Signed-off-by: Greg Kurz <groug@kaod.org>  
+> 
+> I like defensive programming but for this case I don't really care too 
+> much either way
 > 
 
-You might be right, I'll look into this.
+I now realize that I should have mentioned the real motivation for this
+change. I'm working on refactoring the code so that we can use ocxl in a
+KVM guest. The concept of link can be shared by both powernv and pseries
+variants but the SPA is definitely a powernv only thingy. The benefit
+of this patch is hence to kick 'struct link' out of free_spa() so that
+it can be utimately moved to powernv specific code.
 
-> Also does this need to go to stable?
+The initial version of this change was just moving the link->spa check
+and link->spa = NULL to the callers, where it was quite obvious they're
+not needed... Should I re-post this as two patches for clarity ?
+
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> 
+> > ---
+> >   drivers/misc/ocxl/link.c |    7 ++-----
+> >   1 file changed, 2 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> > index 31695a078485..eed92055184d 100644
+> > --- a/drivers/misc/ocxl/link.c
+> > +++ b/drivers/misc/ocxl/link.c
+> > @@ -352,11 +352,8 @@ static void free_spa(struct link *link)
+> >   	pr_debug("Freeing SPA for %x:%x:%x\n", link->domain, link->bus,
+> >   		link->dev);
+> >   
+> > -	if (spa && spa->spa_mem) {
+> > -		free_pages((unsigned long) spa->spa_mem, spa->spa_order);
+> > -		kfree(spa);
+> > -		link->spa = NULL;
+> > -	}
+> > +	free_pages((unsigned long) spa->spa_mem, spa->spa_order);
+> > +	kfree(spa);
+> >   }
+> >   
+> >   static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+> >   
 > 
 
-Oops... this bug has been there since the beginning, so yes
-it does. I simply forgot to add the Cc: stable tag... :-\
-
-Cheers,
-
---
-Greg
