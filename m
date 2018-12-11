@@ -2,129 +2,73 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E2FEC6783C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:14:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59136C67839
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:17:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBBD82084E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:14:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBBD82084E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CE2422084E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 22:17:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE2422084E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DvPQ4R91zDqVD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:14:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DvTH5Cg0zDqyw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:17:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DvL13TChzDqkR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 09:11:37 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBBM8xnc004537
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 17:11:35 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pamu1jhyg-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 17:11:35 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 11 Dec 2018 22:11:33 -0000
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 11 Dec 2018 22:11:30 -0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBBMBT8420512828
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 11 Dec 2018 22:11:29 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8A3DE112066;
- Tue, 11 Dec 2018 22:11:29 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4D7B112065;
- Tue, 11 Dec 2018 22:11:28 +0000 (GMT)
-Received: from oc5000245537.ibm.com (unknown [9.53.179.223])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue, 11 Dec 2018 22:11:28 +0000 (GMT)
-Subject: Re: [PATCH] pseries/hotplug: Add more delay in pseries_cpu_die while
- waiting for rtas-stop
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-References: <1544095908-2414-1-git-send-email-ego@linux.vnet.ibm.com>
- <87a7li5zv2.fsf@morokweng.localdomain> <20181207104311.GA11431@in.ibm.com>
- <20181207120346.GB11431@in.ibm.com> <87va443fm3.fsf@morokweng.localdomain>
- <06dfb955-6af9-ae23-3919-9bee447cfcdc@linux.vnet.ibm.com>
- <87a7ld3yz4.fsf@morokweng.localdomain>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- xsBNBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAHNLU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPsLAeAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/Us7ATQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABwsBfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Tue, 11 Dec 2018 16:11:28 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DvQh1YqyzDqDY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 09:15:40 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43DvQc2388z9v0sP;
+ Tue, 11 Dec 2018 23:15:36 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id i4ZDwfpi6__X; Tue, 11 Dec 2018 23:15:36 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43DvQc1MzNz9v0sN;
+ Tue, 11 Dec 2018 23:15:36 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 67CBF8B818;
+ Tue, 11 Dec 2018 23:15:36 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id E5ORCR9wb88g; Tue, 11 Dec 2018 23:15:36 +0100 (CET)
+Received: from localhost.localdomain (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E65B08B812;
+ Tue, 11 Dec 2018 23:15:35 +0100 (CET)
+Subject: Re: [RFC PATCH v2 11/11] powerpc/book3s32: Implement Kernel Userspace
+ Access Protection
+To: Russell Currey <ruscur@russell.cc>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <76d777b36e54e7b8d4c196405decc712fc5eaf45.1543356926.git.christophe.leroy@c-s.fr>
+ <98e37def51328f58d8c2ceb60edd4b3da7b6f2ef.1543356926.git.christophe.leroy@c-s.fr>
+ <a6dbd5284d8700d591614481fda242a25ca5a3b5.camel@russell.cc>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <fa21d262-1d44-6303-94a5-37fe2f060132@c-s.fr>
+Date: Tue, 11 Dec 2018 20:46:24 +0000
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-In-Reply-To: <87a7ld3yz4.fsf@morokweng.localdomain>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <a6dbd5284d8700d591614481fda242a25ca5a3b5.camel@russell.cc>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 18121122-0040-0000-0000-000004A115AD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010214; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01130391; UDB=6.00577119; IPR=6.00910525; 
- MB=3.00024658; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-11 22:11:32
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121122-0041-0000-0000-000008AA3604
-Message-Id: <f93ec711-a7c6-e754-2002-2dad2a893005@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-11_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812110195
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -136,74 +80,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Note from Scott Mayes on latest crash:
 
-Michael,
 
-Since the partition crashed, I was able to get the last .2 seconds worth of RTAS call trace leading up to the crash.
-
-Best I could tell from that bit of trace was that the removal of a processor involved the following steps:
--- Call to stop-self for a given thread
--- Repeated calls to query-cpu-stopped-state (which eventually indicated the thread was stopped)
--- Call to get-sensor-state for the thread to check its entity-state (9003) sensor which returned 'dr-entity-present'
--- Call to set-indicator to set the isolation-state (9001) indicator to ISOLATE state
--- Call to set-indicator to set the allocation-state (9003) indicator to UNUSABLE state
-
-I noticed one example of thread x28 getting through all of these steps just fine, but for thread x20, although the
-query-cpu-stopped state returned 0 status (STOPPED), a subsequent call to set-indicator to ISOLATE
-failed.  This failure was near the end of the trace, but was not the very last RTAS call made in the trace.
-The set-indicator failure reported to Linux was a -9001 (Valid outstanding translation) which was mapped
-from a 0x502 (Invalid thread state) return code from PHYP's H_SET_DR_STATE h-call.
-
-On 12/10/2018 02:31 PM, Thiago Jung Bauermann wrote:
+On 12/11/2018 05:25 AM, Russell Currey wrote:
+> On Wed, 2018-11-28 at 09:27 +0000, Christophe Leroy wrote:
+>> This patch implements Kernel Userspace Access Protection for
+>> book3s/32.
+>>
+>> Due to limitations of the processor page protection capabilities,
+>> the protection is only against writing. read protection cannot be
+>> achieved using page protection.
+>>
+>> In order to provide the protection, Ku and Ks keys are modified in
+>> Userspace Segment registers, and different PP bits are used to:
+>>
+>> PP01 provides RW for Key 0 and RO for Key 1
+>> PP10 provides RW for all
+>> PP11 provides RO for all
+>>
+>> Today PP10 is used for RW pages and PP11 for RO pages. This patch
+>> modifies page protection to PP01 for RW pages.
+>>
+>> Then segment registers are set to Ku 0 and Ks 1. When kernel needs
+>> to write to RW pages, the associated segment register is changed to
+>> Ks 0 in order to allow write access to the kernel.
+>>
+>> In order to avoid having the read all segment registers when
+>> locking/unlocking the access, some data is kept in the thread_struct
+>> and saved on stack on exceptions. The field identifies both the
+>> first unlocked segment and the first segment following the last
+>> unlocked one. When no segment is unlocked, it contains value 0.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
-> Hello Michael,
-> 
-> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> 
->> I have asked Scott Mayes to take a look at one of these crashes from
->> the phyp side.  I will let you know if he finds anything notable.
-> 
-> Thanks! It might make sense to test whether booting with
-> cede_offline=off makes the bug go away.
+> Hey Christophe, I tried to test this and got a machine check after the
+> kernel starts init.
 
-Scott is looking at the system.  I will try once he is finished.
-
-> 
-> One suspicion I have is regarding the code handling CPU_STATE_INACTIVE.
->>From what I understand, it is a powerpc-specific CPU state and from the
-> perspective of the generic CPU hotplug state machine, inactive CPUs are
-> already fully offline. Which means that the locking performed by the
-> generic code state machine doesn't apply to transitioning CPUs from
-> INACTIVE to OFFLINE state. Perhaps the bug is that there is more than
-> one CPU making that transition at the same time? That would cause two
-> CPUs to call RTAS stop-self.
-> 
-> I haven't checked whether this is really possible or not, though. It's
-> just a conjecture.
-
-Michael
+A program check you mean ?
 
 > 
-> --
-> Thiago Jung Bauermann
-> IBM Linux Technology Center
+> Vector: 700 (Program Check) at [ef0b5e70]
+>      pc: 00000ca4
+>      lr: b7e1a030
+>      sp: ef0b5f30
+>     msr: 81002
+>    current = 0xef0b8000
+>      pid   = 1, comm = init
 > 
+> Testing with mac99 model in qemu.
+
+That's pretty surprising. At 0xca4 there is nothing particular for me. 
+This is a handler for system call. Do you have the same ?
+How can this trigger a program check ? According to the MSR, the check 
+is due to an illegal instruction (bit 12). An we are with MMU off.
+
+c0000c00 <SystemCall>:
+c0000c00:       7d 50 43 a6     mtsprg  0,r10
+c0000c04:       7d 71 43 a6     mtsprg  1,r11
+c0000c08:       7d 40 00 26     mfcr    r10
+c0000c0c:       7d 7b 02 a6     mfsrr1  r11
+c0000c10:       71 6b 40 00     andi.   r11,r11,16384
+c0000c14:       3d 61 40 00     addis   r11,r1,16384
+c0000c18:       41 82 00 14     beq     c0000c2c <SystemCall+0x2c>
+c0000c1c:       7d 73 42 a6     mfsprg  r11,3
+c0000c20:       81 6b fb d8     lwz     r11,-1064(r11)
+c0000c24:       39 6b 20 00     addi    r11,r11,8192
+c0000c28:       3d 6b 40 00     addis   r11,r11,16384
+c0000c2c:       39 6b ff 40     addi    r11,r11,-192
+c0000c30:       91 4b 00 a8     stw     r10,168(r11)
+c0000c34:       91 8b 00 40     stw     r12,64(r11)
+c0000c38:       91 2b 00 34     stw     r9,52(r11)
+c0000c3c:       7d 50 42 a6     mfsprg  r10,0
+c0000c40:       91 4b 00 38     stw     r10,56(r11)
+c0000c44:       7d 91 42 a6     mfsprg  r12,1
+c0000c48:       91 8b 00 3c     stw     r12,60(r11)
+c0000c4c:       7d 48 02 a6     mflr    r10
+c0000c50:       91 4b 00 a0     stw     r10,160(r11)
+c0000c54:       7d 9a 02 a6     mfsrr0  r12
+c0000c58:       7d 3b 02 a6     mfsrr1  r9
+c0000c5c:       90 2b 00 14     stw     r1,20(r11)
+c0000c60:       90 2b 00 00     stw     r1,0(r11)
+c0000c64:       3c 2b c0 00     addis   r1,r11,-16384
+c0000c68:       39 40 10 02     li      r10,4098
+c0000c6c:       7d 40 01 24     mtmsr   r10
+c0000c70:       90 0b 00 10     stw     r0,16(r11)
+c0000c74:       3d 40 72 65     lis     r10,29285
+c0000c78:       39 4a 67 73     addi    r10,r10,26483
+c0000c7c:       91 4b 00 08     stw     r10,8(r11)
+c0000c80:       90 6b 00 1c     stw     r3,28(r11)
+c0000c84:       90 8b 00 20     stw     r4,32(r11)
+c0000c88:       90 ab 00 24     stw     r5,36(r11)
+c0000c8c:       90 cb 00 28     stw     r6,40(r11)
+c0000c90:       90 eb 00 2c     stw     r7,44(r11)
+c0000c94:       91 0b 00 30     stw     r8,48(r11)
+c0000c98:       39 40 0c 01     li      r10,3073
+c0000c9c:       91 4b 00 b0     stw     r10,176(r11)
+c0000ca0:       39 40 10 32     li      r10,4146
+c0000ca4:       51 2a 04 20     rlwimi  r10,r9,0,16,16
+c0000ca8:       48 01 13 5d     bl      c0012004 <transfer_to_handler>
+
+Christophe
+
 > 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
-
+> - Russell
+> 
