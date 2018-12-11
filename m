@@ -2,76 +2,69 @@ Return-Path: <SRS0=mkti=OU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8162C67839
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 18:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEB50C6783B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 20:26:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3986E20855
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 18:38:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="OWQ81JFK"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3986E20855
+	by mail.kernel.org (Postfix) with ESMTPS id 39C9420851
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 20:26:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39C9420851
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Dpbp1JHHzDqWw
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 05:38:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ds0V164czDqp5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 07:26:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="OWQ81JFK";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="OWQ81JFK"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DpXs5krCzDqdq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 05:35:41 +1100 (AEDT)
-Received: from mail-qt1-f179.google.com (mail-qt1-f179.google.com
- [209.85.160.179])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
+ [209.85.210.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 921A920989
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 18:35:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544553339;
- bh=p8EYJ/W+tstdk9YOyWSoVKU0GF7Ar/LYqGAocqTKjN4=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=OWQ81JFKXZTiHWodKIjRr+PHBOP1poJulI2bqPwB6Dw9OgiKT9r5Bt9tJT9LED/ON
- qY6kCVSeQIrh7w35A/PMsdTz5nYfAaEsvglLfTQITTa4rdrM6DcR6z41Uvm9yEnPjh
- AwQ8ZkQpf4FXa0veSWmAmxFqskHCGIa1/xUXNrmE=
-Received: by mail-qt1-f179.google.com with SMTP id l11so17609210qtp.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 10:35:39 -0800 (PST)
-X-Gm-Message-State: AA+aEWYwUgZfucdYtN/xjZwb9bvK0eUaUiKr6/TfE07Z8HzG7w0picCb
- KV+1LlHb3HXIUy9ItXR34cQK8vNyBnMiVqdngA==
-X-Google-Smtp-Source: AFSGD/XseHpa+vQVxHR9GEAcS6cxLcCfOLfE/L6WOZfoUsMgmKGeQvPeV58OCxEJnc4x9BXpjTkrK4b0fW9kWb7Db+w=
-X-Received: by 2002:ac8:1712:: with SMTP id w18mr16930766qtj.76.1544553338724; 
- Tue, 11 Dec 2018 10:35:38 -0800 (PST)
-MIME-Version: 1.0
-References: <20181210203225.11179-1-robh@kernel.org>
- <CAK7LNAThtAOy4PQiYZ2X0oWrHdcLi7on8ctSXJ=bfT0HNh7NFQ@mail.gmail.com>
- <CAL_JsqL7n2sjLbJVieVDQ4YtKMi2COCaijO9ZNu7ggzmXXxLEg@mail.gmail.com>
- <CAK7LNARkr-g9ae+74QE6GMuxLM0JPgEqYOkwb0njXcb9-=nBdQ@mail.gmail.com>
-In-Reply-To: <CAK7LNARkr-g9ae+74QE6GMuxLM0JPgEqYOkwb0njXcb9-=nBdQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Dry32wrhzDqjk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 07:24:10 +1100 (AEDT)
+Received: by mail-ot1-f67.google.com with SMTP id w25so15331514otm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 12:24:10 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=qDEl5D7sjNExZPgDsPayoPbNtf9cuUrPusIJ99/11Fs=;
+ b=lL/v4zRCjSO/DDYs2py7CT38vg46w+gBpeH1QkuIa/M8m3yE5YMO2727B0hbklUYfT
+ IW+4jY2Cw/Il/zHzFbjYQCqwS905P8KtC+eg2H7w9bgKen/t8ZaetUNuSqGt6p6mlxvk
+ x3P1a2+ssKJGTkAfLjMUWTEmIQP/84XeFpkkk1inwc/uUdbtKoAT/oMqHrldffiZ3wFA
+ 86p6QijSPFfRHkJe6Fsk5pFWhGSSpp4oinTfaFPBW9in2B0Y0hFjf72bC2XARNj1lfxu
+ IwOy0aEk+qzfKctg1c2cFyltlI40TwMJpGhFZb7LVRfXE4u/o0LZLTredw1FW9+sU3mD
+ E2GQ==
+X-Gm-Message-State: AA+aEWY0zTj79DJGOUhxlmx6QgET0BuU+rYO1O60v7AwsEjSR/84No5+
+ n2wj35wycNBcZr1E0CAhDw==
+X-Google-Smtp-Source: AFSGD/Ub2SvNQ//jyxN7kG/dzI9pQIkB5mZMsjKnHNEQKUsianwAcKxOxEAWYW850wtYb3gHq/udiA==
+X-Received: by 2002:a05:6830:d:: with SMTP id
+ c13mr13187750otp.82.1544559848822; 
+ Tue, 11 Dec 2018 12:24:08 -0800 (PST)
+Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net.
+ [24.155.109.49])
+ by smtp.googlemail.com with ESMTPSA id z9sm7327127oiz.21.2018.12.11.12.24.07
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 11 Dec 2018 12:24:08 -0800 (PST)
 From: Rob Herring <robh@kernel.org>
-Date: Tue, 11 Dec 2018 12:35:26 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJ_1RukAZx5tCpp+X8mdNuOT6LTAdYOzN5UyhRK6SAo2Q@mail.gmail.com>
-Message-ID: <CAL_JsqJ_1RukAZx5tCpp+X8mdNuOT6LTAdYOzN5UyhRK6SAo2Q@mail.gmail.com>
-Subject: Re: [PATCH v3] kbuild: Add support for DT binding schema checks
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Content-Type: text/plain; charset="UTF-8"
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH v4] kbuild: Add support for DT binding schema checks
+Date: Tue, 11 Dec 2018 14:24:06 -0600
+Message-Id: <20181211202406.27721-1-robh@kernel.org>
+X-Mailer: git-send-email 2.19.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,153 +76,226 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Sean Hudson <darknighte@darknighte.com>, Jonathan Corbet <corbet@lwn.net>,
- Frank Rowand <frowand.list@gmail.com>,
- Linux Doc Mailing List <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+Cc: Mark Rutland <mark.rutland@arm.com>, Kumar Gala <kumar.gala@linaro.org>,
+ arm@kernel.org, Sean Hudson <darknighte@darknighte.com>,
+ Jonathan Corbet <corbet@lwn.net>, Frank Rowand <frowand.list@gmail.com>,
+ linux-doc@vger.kernel.org, linux-kbuild@vger.kernel.org,
  Michal Marek <michal.lkml@markovi.net>, Grant Likely <grant.likely@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 11, 2018 at 10:03 AM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
->
-> On Wed, Dec 12, 2018 at 12:13 AM Rob Herring <robh@kernel.org> wrote:
->
-> >
-> > > > +$(obj)/%.example.dts: $(src)/%.yaml FORCE
-> > > > +       $(call if_changed,chk_binding)
-> > > > +
-> > > > +DT_TMP_SCHEMA := .schema.yaml.tmp
-> > >
-> > >
-> > > BTW, why does this file start with a period?
-> > > What is the meaning of '.tmp' extension?
-> >
-> > Nothing really. Just named it something so it gets cleaned and ignored by git.
->
->
-> It is cleaned whatever file name you use.
->
->
-> See scripts/Makefile.clean
->
-> __clean-files   := $(extra-y) $(extra-m) $(extra-)       \
->                    $(always) $(targets) $(clean-files)   \
->                    $(hostprogs-y) $(hostprogs-m) $(hostprogs-) \
->                    $(hostlibs-y) $(hostlibs-m) $(hostlibs-) \
->                    $(hostcxxlibs-y) $(hostcxxlibs-m)
->
->
-> $(extra-y) is cleaned.
+This adds the build infrastructure for checking DT binding schema
+documents and validating dts files using the binding schema.
 
-True.
+Check DT binding schema documents:
+make dt_binding_check
 
->
->
-> You are adding *.example.dts to .gitignore
->
-> Why not "schema.yaml" ?
+Build dts files and check using DT binding schema:
+make dtbs_check
 
-Okay. I'll do "processed-schema.yaml" to give a bit better name of
-what it contains.
+Optionally, DT_SCHEMA_FILES can be passed in with a schema file(s) to
+use for validation. This makes it easier to find and fix errors
+generated by a specific schema.
 
->
-> > > > +extra-y += $(DT_TMP_SCHEMA)
-> > > > +
-> > > > +quiet_cmd_mk_schema = SCHEMA  $@
-> > > > +      cmd_mk_schema = mkdir -p $(obj); \
-> > > > +                      rm -f $@; \
-> > > > +                      $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $(filter-out FORCE, $^)
-> > >
-> > >
-> > > "mkdir -p $(obj)" is redundant.
-> > >
-> > >
-> > > Why is 'rm -f $@' necessary ?
-> > > Can't dt-mk-schema overwrite the output file?
-> >
-> > It is for error case when the output file is not generated. I can
-> > handle this within dt-mk-schema instead.
-> > > > +DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
-> > > > +DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
-> > > > +
-> > > > +extra-y += $(patsubst $(src)/%.yaml,%.example.dts, $(DT_SCHEMA_FILES))
-> > > > +extra-y += $(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES))
-> > >
-> > >
-> > >
-> > > I assume you intentionally did not do like this:
-> > >
-> > > extra-y += $(patsubst %.yaml,%.example.dtb, $(DT_DOCS))
-> > >
-> > > From the commit description, DT_SCHEMA_FILES might be overridden by a user.
-> > > So, I think this is OK.
-> > >
-> > >
-> > >
-> > >
-> > > > +$(obj)/$(DT_TMP_SCHEMA): | $(addprefix $(obj)/,$(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES)))
-> > >
-> > > I do not understand this line.
-> > > Why is it necessary?
-> > >
-> > > *.example.dtb files are generated anyway
-> > > since they are listed in extra-y.
-> >
-> > It is enforcing the ordering. Without it, the binding checks and
-> > building .schema.yaml.tmp happen in parallel because both only have
-> > the source files as dependencies. The '|' keeps the dependencies out
-> > of the dependency list($^).
->
->
-> What kind problem would you see if
-> the binding checks and building .schema.yaml.tmp
-> happen in parallel?
+Currently, the validation targets are separate from a normal build to
+avoid a hard dependency on the external DT schema project and because
+there are lots of warnings generated.
 
-In case of no errors in the binding docs, it doesn't matter. If there
-are errors, I don't want the dtbs validation to run if any schema
-doesn't validate. However, I played around with this a bit more and it
-seems like having the examples' dts/dtb in extra-y prevents that from
-happening. Does that match your expections? If so, then I think we can
-remove the dependency.
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Michal Marek <michal.lkml@markovi.net>
+Cc: linux-doc@vger.kernel.org
+Cc: devicetree@vger.kernel.org
+Cc: linux-kbuild@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+v4:
+- Rework libyaml check and error message with Masahiro's version
+- Simplify build rules and dependencies
 
-Here's an example.
 
-  SCHEMA  Documentation/devicetree/bindings/.schema.yaml.tmp
-  CHKDT   Documentation/devicetree/bindings/arm/vt8500.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/zte.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/altera/socfpga-clk-manager.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/ti/ti,davinci.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/ti/nspire.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/spear.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/altera.yaml
-warning: no schema found in file:
-../Documentation/devicetree/bindings/arm/xilinx.yaml
-/home/rob/proj/git/linux-2.6/Documentation/devicetree/bindings/arm/xilinx.yaml:
-ignoring, error in schema 'onOf'
-  CHKDT   Documentation/devicetree/bindings/arm/sti.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/qcom.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/primecell.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/cpus.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/sirf.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/calxeda.yaml
-  CHKDT   Documentation/devicetree/bindings/arm/xilinx.yaml
-  CHKDT   Documentation/devicetree/bindings/example-schema.yaml
-/home/rob/proj/git/linux-2.6/Documentation/devicetree/bindings/arm/xilinx.yaml:
-properties:compatible:onOf: 'onOf' is not one of ['$ref',
-'additionalItems', 'allOf', 'const', 'contains', 'default',
-'dependencies', 'description', 'enum', 'items', 'minItems', 'minimum',
-'maxItems', 'maximum', 'not', 'oneOf', 'pattern', 'patternProperties',
-'properties', 'required', 'type', 'typeSize']
-make[2]: *** [../Documentation/devicetree/bindings/Makefile:12:
-Documentation/devicetree/bindings/arm/xilinx.example.dts] Error 1
+ .gitignore                                   |  1 +
+ Documentation/Makefile                       |  2 +-
+ Documentation/devicetree/bindings/.gitignore |  2 ++
+ Documentation/devicetree/bindings/Makefile   | 27 ++++++++++++++++++++
+ Makefile                                     | 13 +++++++---
+ scripts/Makefile.lib                         | 24 +++++++++++++++--
+ scripts/dtc/Makefile                         |  4 +++
+ 7 files changed, 67 insertions(+), 6 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/.gitignore
+ create mode 100644 Documentation/devicetree/bindings/Makefile
 
-Rob
+diff --git a/.gitignore b/.gitignore
+index 97ba6b79834c..a20ac26aa2f5 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -15,6 +15,7 @@
+ *.bin
+ *.bz2
+ *.c.[012]*.*
++*.dt.yaml
+ *.dtb
+ *.dtb.S
+ *.dwo
+diff --git a/Documentation/Makefile b/Documentation/Makefile
+index 2ca77ad0f238..9786957c6a35 100644
+--- a/Documentation/Makefile
++++ b/Documentation/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for Sphinx documentation
+ #
+ 
+-subdir-y :=
++subdir-y := devicetree/bindings/
+ 
+ # You can set these variables from the command line.
+ SPHINXBUILD   = sphinx-build
+diff --git a/Documentation/devicetree/bindings/.gitignore b/Documentation/devicetree/bindings/.gitignore
+new file mode 100644
+index 000000000000..ef82fcfcccab
+--- /dev/null
++++ b/Documentation/devicetree/bindings/.gitignore
+@@ -0,0 +1,2 @@
++*.example.dts
++processed-schema.yaml
+diff --git a/Documentation/devicetree/bindings/Makefile b/Documentation/devicetree/bindings/Makefile
+new file mode 100644
+index 000000000000..6e5cef0ed6fb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/Makefile
+@@ -0,0 +1,27 @@
++# SPDX-License-Identifier: GPL-2.0
++DT_DOC_CHECKER ?= dt-doc-validate
++DT_EXTRACT_EX ?= dt-extract-example
++DT_MK_SCHEMA ?= dt-mk-schema
++DT_MK_SCHEMA_FLAGS := $(if $(DT_SCHEMA_FILES), -u)
++
++quiet_cmd_chk_binding = CHKDT   $(patsubst $(srctree)/%,%,$<)
++      cmd_chk_binding = $(DT_DOC_CHECKER) $< ; \
++                        $(DT_EXTRACT_EX) $< > $@
++
++$(obj)/%.example.dts: $(src)/%.yaml FORCE
++	$(call if_changed,chk_binding)
++
++DT_TMP_SCHEMA := processed-schema.yaml
++extra-y += $(DT_TMP_SCHEMA)
++
++quiet_cmd_mk_schema = SCHEMA  $@
++      cmd_mk_schema = $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $(filter-out FORCE, $^)
++
++DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
++DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
++
++extra-y += $(patsubst $(src)/%.yaml,%.example.dts, $(DT_SCHEMA_FILES))
++extra-y += $(patsubst $(src)/%.yaml,%.example.dtb, $(DT_SCHEMA_FILES))
++
++$(obj)/$(DT_TMP_SCHEMA): $(DT_SCHEMA_FILES) FORCE
++	$(call if_changed,mk_schema)
+diff --git a/Makefile b/Makefile
+index 2f36db897895..a3e2db2a3119 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1232,10 +1232,13 @@ ifneq ($(dtstree),)
+ %.dtb: prepare3 scripts_dtc
+ 	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
+ 
+-PHONY += dtbs dtbs_install
+-dtbs: prepare3 scripts_dtc
++PHONY += dtbs dtbs_install dt_binding_check
++dtbs dtbs_check: prepare3 scripts_dtc
+ 	$(Q)$(MAKE) $(build)=$(dtstree)
+ 
++dtbs_check: export CHECK_DTBS=1
++dtbs_check: dt_binding_check
++
+ dtbs_install:
+ 	$(Q)$(MAKE) $(dtbinst)=$(dtstree)
+ 
+@@ -1249,6 +1252,9 @@ PHONY += scripts_dtc
+ scripts_dtc: scripts_basic
+ 	$(Q)$(MAKE) $(build)=scripts/dtc
+ 
++dt_binding_check: scripts_dtc
++	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings
++
+ # ---------------------------------------------------------------------------
+ # Modules
+ 
+@@ -1611,7 +1617,8 @@ clean: $(clean-dirs)
+ 	$(call cmd,rmfiles)
+ 	@find $(if $(KBUILD_EXTMOD), $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
+ 		\( -name '*.[aios]' -o -name '*.ko' -o -name '.*.cmd' \
+-		-o -name '*.ko.*' -o -name '*.dtb' -o -name '*.dtb.S' \
++		-o -name '*.ko.*' \
++		-o -name '*.dtb' -o -name '*.dtb.S' -o -name '*.dt.yaml' \
+ 		-o -name '*.dwo' -o -name '*.lst' \
+ 		-o -name '*.su'  \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 8fe4468f9bda..723b33c942df 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -61,6 +61,11 @@ real-obj-m := $(foreach m, $(obj-m), $(if $(strip $($(m:.o=-objs)) $($(m:.o=-y))
+ extra-y				+= $(dtb-y)
+ extra-$(CONFIG_OF_ALL_DTBS)	+= $(dtb-)
+ 
++ifneq ($(CHECK_DTBS),)
++extra-y += $(patsubst %.dtb,%.dt.yaml, $(dtb-y))
++extra-$(CONFIG_OF_ALL_DTBS) += $(patsubst %.dtb,%.dt.yaml, $(dtb-))
++endif
++
+ # Add subdir path
+ 
+ extra-y		:= $(addprefix $(obj)/,$(extra-y))
+@@ -284,13 +289,28 @@ $(obj)/%.dtb.S: $(obj)/%.dtb FORCE
+ quiet_cmd_dtc = DTC     $@
+ cmd_dtc = mkdir -p $(dir ${dtc-tmp}) ; \
+ 	$(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
+-	$(DTC) -O dtb -o $@ -b 0 \
++	$(DTC) -O $(2) -o $@ -b 0 \
+ 		$(addprefix -i,$(dir $<) $(DTC_INCLUDE)) $(DTC_FLAGS) \
+ 		-d $(depfile).dtc.tmp $(dtc-tmp) ; \
+ 	cat $(depfile).pre.tmp $(depfile).dtc.tmp > $(depfile)
+ 
+ $(obj)/%.dtb: $(src)/%.dts $(DTC) FORCE
+-	$(call if_changed_dep,dtc)
++	$(call if_changed_dep,dtc,dtb)
++
++DT_CHECKER ?= dt-validate
++DT_BINDING_DIR := Documentation/devicetree/bindings
++DT_TMP_SCHEMA := $(objtree)/$(DT_BINDING_DIR)/processed-schema.yaml
++
++quiet_cmd_dtb_check =	CHECK   $@
++      cmd_dtb_check =	$(DT_CHECKER) -p $(DT_TMP_SCHEMA) $@ ;
++
++define rule_dtc_dt_yaml
++	$(call cmd_and_fixdep,dtc,yaml)		\
++	$(call echo-cmd,dtb_check) $(cmd_dtb_check)
++endef
++
++$(obj)/%.dt.yaml: $(src)/%.dts $(DTC) $(DT_TMP_SCHEMA) FORCE
++	$(call if_changed_rule,dtc_dt_yaml)
+ 
+ dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
+ 
+diff --git a/scripts/dtc/Makefile b/scripts/dtc/Makefile
+index 056d5da6c477..5f227d8d39d8 100644
+--- a/scripts/dtc/Makefile
++++ b/scripts/dtc/Makefile
+@@ -12,6 +12,10 @@ dtc-objs	+= dtc-lexer.lex.o dtc-parser.tab.o
+ HOST_EXTRACFLAGS := -I$(src)/libfdt
+ 
+ ifeq ($(wildcard /usr/include/yaml.h),)
++ifneq ($(CHECK_DTBS),)
++$(error dtc needs libyaml for DT schema validation support. \
++	Install the necessary libyaml development package.)
++endif
+ HOST_EXTRACFLAGS += -DNO_YAML
+ else
+ dtc-objs	+= yamltree.o
+-- 
+2.19.1
+
