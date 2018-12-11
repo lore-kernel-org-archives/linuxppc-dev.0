@@ -6,95 +6,56 @@ X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D47DC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 00:14:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6781CC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 00:16:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1ED922084E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 00:14:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1ED922084E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E1BF42087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 00:16:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E1BF42087F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DL6H1fbSzDqV7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 11:14:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=au1.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DL8h6jD4zDqV7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Dec 2018 11:16:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DL0r4YY2zDqXN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 11:09:48 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBB04Rvu004964
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 19:09:46 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2p9ypn694u-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2018 19:09:46 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 11 Dec 2018 00:09:44 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 11 Dec 2018 00:09:41 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBB09ecR49021088
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 11 Dec 2018 00:09:40 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C9B4CAE055;
- Tue, 11 Dec 2018 00:09:40 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 768E9AE058;
- Tue, 11 Dec 2018 00:09:40 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 11 Dec 2018 00:09:40 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DL1R5rVCzDqSl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 11:10:19 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5E861A0173;
- Tue, 11 Dec 2018 11:09:39 +1100 (AEDT)
-Subject: Re: [PATCH] ocxl/afu_irq: Don't include <asm/pnv-ocxl.h>
-To: Greg Kurz <groug@kaod.org>, linuxppc-dev@lists.ozlabs.org
-References: <154445481863.866755.12808062051385853487.stgit@bahia.lan>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 11 Dec 2018 11:09:39 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
+ by mx1.redhat.com (Postfix) with ESMTPS id E363C86668;
+ Tue, 11 Dec 2018 00:10:17 +0000 (UTC)
+Received: from x1.home (ovpn-116-92.phx2.redhat.com [10.3.116.92])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 0144F5D962;
+ Tue, 11 Dec 2018 00:10:16 +0000 (UTC)
+Date: Mon, 10 Dec 2018 17:10:16 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v4 18/19] vfio_pci: Allow regions to add own
+ capabilities
+Message-ID: <20181210171016.2710b763@x1.home>
+In-Reply-To: <20181123055304.25116-19-aik@ozlabs.ru>
+References: <20181123055304.25116-1-aik@ozlabs.ru>
+ <20181123055304.25116-19-aik@ozlabs.ru>
+Organization: Red Hat
 MIME-Version: 1.0
-In-Reply-To: <154445481863.866755.12808062051385853487.stgit@bahia.lan>
-Content-Language: en-AU
-X-TM-AS-GCONF: 00
-x-cbid: 18121100-0020-0000-0000-000002F5323B
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121100-0021-0000-0000-0000214555CB
-Message-Id: <59f00f99-0dcf-6da3-1672-b8614611db9b@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-10_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=777 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812110000
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.26]); Tue, 11 Dec 2018 00:10:18 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,38 +67,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: stable@vger.kernel.org, Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
+ Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Leonardo Augusto =?UTF-8?B?R3VpbWFyw6Nlcw==?= Garcia <lagarcia@br.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+On Fri, 23 Nov 2018 16:53:03 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On 11/12/18 2:13 am, Greg Kurz wrote:
-> The AFU irq code doesn't need to reach out to the platform.
+> VFIO regions already support region capabilities with a limited set of
+> fields. However the subdriver might have to report to the userspace
+> additional bits.
 > 
-> Signed-off-by: Greg Kurz <groug@kaod.org>
+> This adds an add_capability() hook to vfio_pci_regops.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
->   drivers/misc/ocxl/afu_irq.c |    1 -
->   1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
-> index e70cfa24577f..11ab996657a2 100644
-> --- a/drivers/misc/ocxl/afu_irq.c
-> +++ b/drivers/misc/ocxl/afu_irq.c
-> @@ -2,7 +2,6 @@
->   // Copyright 2017 IBM Corp.
->   #include <linux/interrupt.h>
->   #include <linux/eventfd.h>
-> -#include <asm/pnv-ocxl.h>
->   #include "ocxl_internal.h"
->   #include "trace.h"
->   
-> 
+> Changes:
+> v3:
+> * removed confusing rationale for the patch, the next patch makes
+> use of it anyway
+> ---
+>  drivers/vfio/pci/vfio_pci_private.h | 3 +++
+>  drivers/vfio/pci/vfio_pci.c         | 6 ++++++
+>  2 files changed, 9 insertions(+)
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+> index 86aab05..93c1738 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -62,6 +62,9 @@ struct vfio_pci_regops {
+>  	int	(*mmap)(struct vfio_pci_device *vdev,
+>  			struct vfio_pci_region *region,
+>  			struct vm_area_struct *vma);
+> +	int	(*add_capability)(struct vfio_pci_device *vdev,
+> +				  struct vfio_pci_region *region,
+> +				  struct vfio_info_cap *caps);
+>  };
+>  
+>  struct vfio_pci_region {
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index 4a6f7c0..6cb70cf 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -763,6 +763,12 @@ static long vfio_pci_ioctl(void *device_data,
+>  			if (ret)
+>  				return ret;
+>  
+> +			if (vdev->region[i].ops->add_capability) {
+> +				ret = vdev->region[i].ops->add_capability(vdev,
+> +						&vdev->region[i], &caps);
+> +				if (ret)
+> +					return ret;
+> +			}
+>  		}
+>  		}
+>  
 
