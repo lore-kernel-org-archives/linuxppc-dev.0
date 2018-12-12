@@ -2,96 +2,71 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2535C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 07:06:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10DC2C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 07:21:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8A0A20851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 07:06:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="jd6WKAI4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8A0A20851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 8B9212084E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 07:21:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B9212084E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43F7Cd4CKrzDr6S
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 18:06:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43F7XV3pkVzDqsZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 18:21:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="jd6WKAI4";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::10; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="jd6WKAI4"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43F77r596PzDqQ5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 18:03:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544598209;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=PcaQMij3IhasAIn1L/QX0knVHDE+RBFUQFsFKkzwR9Q=;
- b=jd6WKAI4D5HQhR+DinvZAReZsRIPcUAdvXEzdmEyXJQICxwZWkKNRjKOLkuBADp7m5
- gza5dSFwSCVW/AkLcODK5VxvUxiHlin4N2BNGrJQy661QChHo+fiTTgDiOEQE3XxjjTk
- biQc6HsOaDG8ykNdJ1jdcMxcAuBWBgEASopvOfWiiFDPVMlRpNWCg4R5rEOzn4TufG4Z
- vYTM4BQY3EVMZyUXMJcIyE3m7lg+QkdxqRp8osRDTMwFW4mo0osf9LW0byuGu88Hm1OK
- IiybGYM9gMrJRWrzW6Yj5/A6UsscIjDbZq6tl547fvAwvZGEH/98/M3IQ5Frs4lBzp+w
- r/iA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr44+gKiZpmhkMNrXaTDU="
-X-RZG-CLASS-ID: mo00
-Received: from [192.168.178.26] by smtp.strato.de (RZmta 44.7 DYNA|AUTH)
- with ESMTPSA id j074b8uBC73Q9yu
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Wed, 12 Dec 2018 08:03:26 +0100 (CET)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (1.0)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-X-Mailer: iPhone Mail (15G77)
-In-Reply-To: <d447ac4e18bddd030aa2f56a0547c0132b3f8dcd.camel@kernel.crashing.org>
-Date: Wed, 12 Dec 2018 08:03:26 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <D81A7627-474E-448B-B64C-B51A636730CC@xenosoft.de>
-References: <20181129170351.GC27951@lst.de>
- <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
- <20181130105346.GB26765@lst.de>
- <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
- <20181130131056.GA5211@lst.de>
- <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
- <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
- <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
- <20181204142426.GA2743@lst.de>
- <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
- <20181205140550.GA27549@lst.de>
- <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
- <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
- <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
- <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
- <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
- <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
- <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
- <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
- <4cfb3f26-74e1-db01-b014-759f188bb5a6@xenosoft.de>
- <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
- <d447ac4e18bddd030aa2f56a0547c0132b3f8dcd.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43F7V84DhRzDqcq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 18:19:27 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43F7V31tlnz9v0fb;
+ Wed, 12 Dec 2018 08:19:23 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id AiQMlPEefn9W; Wed, 12 Dec 2018 08:19:23 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43F7V317xXz9v0fZ;
+ Wed, 12 Dec 2018 08:19:23 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 125CF8B82A;
+ Wed, 12 Dec 2018 08:19:24 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id r5jEYM3B3tVG; Wed, 12 Dec 2018 08:19:23 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A2BCE8B825;
+ Wed, 12 Dec 2018 08:19:23 +0100 (CET)
+Subject: Re: [PATCH v3] powerpc: implement CONFIG_DEBUG_VIRTUAL
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <a42260e77d609a10667872c2e7bf14ceabcce050.1544562518.git.christophe.leroy@c-s.fr>
+ <87va3zwq1t.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <32b00148-214c-44db-e9cf-fa4caa2547e8@c-s.fr>
+Date: Wed, 12 Dec 2018 08:19:22 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
+MIME-Version: 1.0
+In-Reply-To: <87va3zwq1t.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,39 +78,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-> On 12. Dec 2018, at 01:47, Benjamin Herrenschmidt <benh@kernel.crashing.or=
-g> wrote:
->=20
->> On Tue, 2018-12-11 at 19:17 +0100, Christian Zigotzky wrote:
->> X5000 (P5020 board): U-Boot loads the kernel and the dtb file. Then the=20=
+Le 12/12/2018 à 01:23, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> This patch implements CONFIG_DEBUG_VIRTUAL to warn about
+>> incorrect use of virt_to_phys() and page_to_phys()
+>>
+>> Below is the result of test_debug_virtual:
+>>
+>> [    1.438746] WARNING: CPU: 0 PID: 1 at ./arch/powerpc/include/asm/io.h:808 test_debug_virtual_init+0x3c/0xd4
+>> [    1.448156] CPU: 0 PID: 1 Comm: swapper Not tainted 4.20.0-rc5-00560-g6bfb52e23a00-dirty #532
+>> [    1.457259] NIP:  c066c550 LR: c0650ccc CTR: c066c514
+>> [    1.462257] REGS: c900bdb0 TRAP: 0700   Not tainted  (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+>> [    1.471184] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 48000422  XER: 20000000
+>> [    1.477811]
+>> [    1.477811] GPR00: c0650ccc c900be60 c60d0000 00000000 006000c0 c9000000 00009032 c7fa0020
+>> [    1.477811] GPR08: 00002400 00000001 09000000 00000000 c07b5d04 00000000 c00037d8 00000000
+>> [    1.477811] GPR16: 00000000 00000000 00000000 00000000 c0760000 c0740000 00000092 c0685bb0
+>> [    1.477811] GPR24: c065042c c068a734 c0685b8c 00000006 00000000 c0760000 c075c3c0 ffffffff
+>> [    1.512711] NIP [c066c550] test_debug_virtual_init+0x3c/0xd4
+>> [    1.518315] LR [c0650ccc] do_one_initcall+0x8c/0x1cc
+>> [    1.523163] Call Trace:
+>> [    1.525595] [c900be60] [c0567340] 0xc0567340 (unreliable)
+>> [    1.530954] [c900be90] [c0650ccc] do_one_initcall+0x8c/0x1cc
+>> [    1.536551] [c900bef0] [c0651000] kernel_init_freeable+0x1f4/0x2cc
+>> [    1.542658] [c900bf30] [c00037ec] kernel_init+0x14/0x110
+>> [    1.547913] [c900bf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+>> [    1.553971] Instruction dump:
+>> [    1.556909] 3ca50100 bfa10024 54a5000e 3fa0c076 7c0802a6 3d454000 813dc204 554893be
+>> [    1.564566] 7d294010 7d294910 90010034 39290001 <0f090000> 7c3e0b78 955e0008 3fe0c062
+>> [    1.572425] ---[ end trace 6f6984225b280ad6 ]---
+>> [    1.577467] PA: 0x09000000 for VA: 0xc9000000
+>> [    1.581799] PA: 0x061e8f50 for VA: 0xc61e8f50
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   v3: Added missing linux/mm.h
+>>       I realised that a driver may use DMA on stack after checking with virt_addr_valid(), so the new
+>>       verification might induce false positives. I remove it for now, will add it again later in a more
+>>       controled way.
+> 
+> What is this comment referring to?
+> 
+> I can't see any difference to v2 except the linux/mm.h include.
 
->> kernel starts but it doesn't find any hard disks (partitions). That=20
->> means this is also the bad commit for the P5020 board.
->=20
-> What are the disks hanging off ? A PCIe device of some sort ?
->=20
-> Can you send good & bad dmesg logs ?
->=20
-> Ben.
->=20
->=20
-Unfortunately not. It doesn=E2=80=99t detect any hard disk. That means the k=
-ernel ring buffer won=E2=80=99t save to log files. I don=E2=80=99t have a se=
-rial null modem cable for seeing all output. We use SATA disks. I will inves=
-tigate more in this problem with rollback the files in the bad commit.
-
-=E2=80=94 Christian
+v2 was:
 
 
+@@ -804,6 +806,11 @@ extern void __iounmap_at(void *ea, unsigned long size);
+   */
+  static inline unsigned long virt_to_phys(volatile void * address)
+  {
++	if (IS_ENABLED(CONFIG_DEBUG_VIRTUAL) &&
++	    !WARN_ON(IS_ENABLED(CONFIG_HAVE_ARCH_VMAP_STACK) && current->pid &&
++		     object_is_on_stack((const void*)address)))
++			WARN_ON(!virt_addr_valid(address));
++
+  	return __pa((unsigned long)address);
+  }
 
+
+v3 is: (same as v1)
+
+
+@@ -804,6 +806,8 @@ extern void __iounmap_at(void *ea, unsigned long size);
+   */
+  static inline unsigned long virt_to_phys(volatile void * address)
+  {
++	WARN_ON(IS_ENABLED(CONFIG_DEBUG_VIRTUAL) && !virt_addr_valid(address));
++
+  	return __pa((unsigned long)address);
+  }
+
+
+The idea in v2 was to detect objects on stack used for DMA before 
+activating CONFIG_VMAP_STACK, but if the driver uses virt_addr_valid() 
+to decide if it can DMA map it, then we'll get false positives.
+So I think this should be added with a dedicated DEBUG CONFIG option, 
+not implicitely.
+
+Christophe
