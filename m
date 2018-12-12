@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3827C04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 14:05:57 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B108DC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 14:07:57 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2CA7A2084E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 14:05:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CA7A2084E
+	by mail.kernel.org (Postfix) with ESMTPS id 255762084E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 14:07:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 255762084E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FJW70qsCzDqRS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 01:05:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43FJYQ6TyqzDqQt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 01:07:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -29,24 +29,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43FJSS463gzDqQh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43FJSS5xD0zDqQj
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 01:03:33 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 5A63920028C;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 951F920028E;
  Wed, 12 Dec 2018 15:03:30 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 4BAAE20028B;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 88CEA20028B;
  Wed, 12 Dec 2018 15:03:30 +0100 (CET)
 Received: from fsr-ub1664-009.ea.freescale.net
  (fsr-ub1664-009.ea.freescale.net [10.171.71.77])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 1D689205E5;
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 5AC57205E5;
  Wed, 12 Dec 2018 15:03:30 +0100 (CET)
 From: Diana Craciun <diana.craciun@nxp.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 05/11] powerpc/fsl: Add nospectre_v2 command line argument
-Date: Wed, 12 Dec 2018 16:03:04 +0200
-Message-Id: <1544623390-18710-6-git-send-email-diana.craciun@nxp.com>
+Subject: [PATCH 06/11] powerpc/fsl: Flush the branch predictor at each kernel
+ entry (64bit)
+Date: Wed, 12 Dec 2018 16:03:05 +0200
+Message-Id: <1544623390-18710-7-git-send-email-diana.craciun@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1544623390-18710-1-git-send-email-diana.craciun@nxp.com>
 References: <1544623390-18710-1-git-send-email-diana.craciun@nxp.com>
@@ -67,70 +68,99 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the command line argument is present, the Spectre variant 2
-mitigations are disabled.
+In order to protect against speculation attacks on
+indirect branches, the branch predictor is flushed at
+kernel entry to protect for the following situations:
+- userspace process attacking another userspace process
+- userspace process attacking the kernel
+Basically when the privillege level change (i.e. the
+kernel is entered), the branch predictor state is flushed.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/include/asm/setup.h |  5 +++++
- arch/powerpc/kernel/security.c   | 21 +++++++++++++++++++++
- 2 files changed, 26 insertions(+)
+ arch/powerpc/kernel/entry_64.S       |  5 +++++
+ arch/powerpc/kernel/exceptions-64e.S | 26 +++++++++++++++++++++++++-
+ arch/powerpc/mm/tlb_low_64e.S        |  7 +++++++
+ 3 files changed, 37 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index c941c8c..65676e2 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -67,6 +67,11 @@ void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
- static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
- #endif
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 7b1693a..7c2032e 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -80,6 +80,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ 	std	r0,GPR0(r1)
+ 	std	r10,GPR1(r1)
+ 	beq	2f			/* if from kernel mode */
++#ifdef CONFIG_PPC_FSL_BOOK3E
++START_BTB_FLUSH_SECTION
++	BTB_FLUSH(r10)
++END_BTB_FLUSH_SECTION
++#endif
+ 	ACCOUNT_CPU_USER_ENTRY(r13, r10, r11)
+ 2:	std	r2,GPR2(r1)
+ 	std	r3,GPR3(r1)
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 6d6e144..afb6387 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -296,7 +296,8 @@ ret_from_mc_except:
+ 	andi.	r10,r11,MSR_PR;		/* save stack pointer */	    \
+ 	beq	1f;			/* branch around if supervisor */   \
+ 	ld	r1,PACAKSAVE(r13);	/* get kernel stack coming from usr */\
+-1:	cmpdi	cr1,r1,0;		/* check if SP makes sense */	    \
++1:	type##_BTB_FLUSH		\
++	cmpdi	cr1,r1,0;		/* check if SP makes sense */	    \
+ 	bge-	cr1,exc_##n##_bad_stack;/* bad stack (TODO: out of line) */ \
+ 	mfspr	r10,SPRN_##type##_SRR0;	/* read SRR0 before touching stack */
+ 
+@@ -328,6 +329,29 @@ ret_from_mc_except:
+ #define SPRN_MC_SRR0	SPRN_MCSRR0
+ #define SPRN_MC_SRR1	SPRN_MCSRR1
  
 +#ifdef CONFIG_PPC_FSL_BOOK3E
-+void setup_spectre_v2(void);
++#define GEN_BTB_FLUSH			\
++	START_BTB_FLUSH_SECTION		\
++		beq 1f;			\
++		BTB_FLUSH(r10)			\
++		1:		\
++	END_BTB_FLUSH_SECTION
++
++#define CRIT_BTB_FLUSH			\
++	START_BTB_FLUSH_SECTION		\
++		BTB_FLUSH(r10)		\
++	END_BTB_FLUSH_SECTION
++
++#define DBG_BTB_FLUSH CRIT_BTB_FLUSH
++#define MC_BTB_FLUSH CRIT_BTB_FLUSH
++#define GDBELL_BTB_FLUSH GEN_BTB_FLUSH
 +#else
-+static inline void setup_spectre_v2(void) {};
++#define GEN_BTB_FLUSH
++#define CRIT_BTB_FLUSH
++#define DBG_BTB_FLUSH
++#define GDBELL_BTB_FLUSH
 +#endif
- void do_btb_flush_fixups(void);
- 
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 1b395b8..4393a38 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -26,6 +26,10 @@ static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NO
- 
- bool barrier_nospec_enabled;
- static bool no_nospec;
-+static bool btb_flush_enabled;
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+static bool no_spectrev2;
-+#endif
- 
- static void enable_barrier_nospec(bool enable)
- {
-@@ -101,6 +105,23 @@ static __init int barrier_nospec_debugfs_init(void)
- device_initcall(barrier_nospec_debugfs_init);
- #endif /* CONFIG_DEBUG_FS */
- 
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+static int __init handle_nospectre_v2(char *p)
-+{
-+	no_spectrev2 = true;
 +
-+	return 0;
-+}
-+early_param("nospectre_v2", handle_nospectre_v2);
-+void setup_spectre_v2(void)
-+{
-+	if (no_spectrev2)
-+		do_btb_flush_fixups();
-+	else
-+		btb_flush_enabled = true;
-+}
-+#endif /* CONFIG_PPC_FSL_BOOK3E */
-+
- #ifdef CONFIG_PPC_BOOK3S_64
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
+ #define NORMAL_EXCEPTION_PROLOG(n, intnum, addition)			    \
+ 	EXCEPTION_PROLOG(n, intnum, GEN, addition##_GEN(n))
+ 
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index 7fd20c5..9ed9006 100644
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -70,6 +70,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ 	std	r15,EX_TLB_R15(r12)
+ 	std	r10,EX_TLB_CR(r12)
+ #ifdef CONFIG_PPC_FSL_BOOK3E
++START_BTB_FLUSH_SECTION
++	mfspr r11, SPRN_SRR1
++	andi. r10,r11,MSR_PR
++	beq 1f
++	BTB_FLUSH(r10)
++1:
++END_BTB_FLUSH_SECTION
+ 	std	r7,EX_TLB_R7(r12)
+ #endif
+ 	TLB_MISS_PROLOG_STATS
 -- 
 2.5.5
 
