@@ -2,77 +2,54 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D5D8C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 03:12:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12394C04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 04:50:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8D9420839
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 03:12:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="mzqSbOCk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8D9420839
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 58B6920811
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 04:50:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58B6920811
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43F21D3mFpzDqsX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 14:12:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nifty.com header.i=@nifty.com header.b="mzqSbOCk";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.83; helo=conssluserg-04.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="mzqSbOCk"; 
- dkim-atps=neutral
-Received: from conssluserg-04.nifty.com (conssluserg-04.nifty.com
- [210.131.2.83])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43F4B91hG1zDr2s
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 15:50:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43F4830TgCzDqsD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 15:48:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43F1tN1QQCzDqrX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 14:06:35 +1100 (AEDT)
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com
- [209.85.217.45]) (authenticated)
- by conssluserg-04.nifty.com with ESMTP id wBC36AZ8002116
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 12:06:11 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-04.nifty.com wBC36AZ8002116
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1544583971;
- bh=6N6RaQ3wOc5su8qLy+bJz8CBzbjrgjGBbfJL+Zs0A8I=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=mzqSbOCkOEqhbf4OQ0ewjDCoQoQA3IgGMlZn6sN4Ms0Dtjegs8WHUWfW5iVumz7EF
- WsAUNlQ6ZXf5IAqJZMnspq8yfyFQpF8NbOMDzQOEZ1lzjUNs+1Wov7ABnWEXpZQjDl
- F6stobTLy7H/XeLSRlyWCI2TTqqz8I58Ao2/PUvxoHjFRhnPLnCjRoBtSQRItqEILP
- +rrHSmsS5cfrnCPCrksPhcNT/WLjfOCH8qwbWcJW0F+tCgldZ0R29uGUnmJCtFShcX
- G4ADaFBvO9yHdlYyr/kmDxWAqrHYQXQTVl8lLCQ4HEfTzroBErKC3tTzNTu9SBS05g
- 8wRKpdiJXrF+w==
-X-Nifty-SrcIP: [209.85.217.45]
-Received: by mail-vs1-f45.google.com with SMTP id b74so10215297vsd.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2018 19:06:11 -0800 (PST)
-X-Gm-Message-State: AA+aEWaCsSUeeZpL6KBxnzSv6bVr/4wdkrzhNFCk5Tz7oTgG22frjf5k
- fiOL8pokvtMjSBKJCVdNzgud0tOTYCVVGCA9I9s=
-X-Google-Smtp-Source: AFSGD/VERKFbaF0SBtxWKtriGXKkGFdxuiwSlwd3i91soixgKZm5tqCgfSyRuHTxgC3c6MPKZTcle5pStFMzaQADVac=
-X-Received: by 2002:a67:f1d6:: with SMTP id v22mr8404903vsm.181.1544583970188; 
- Tue, 11 Dec 2018 19:06:10 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPSA id 43F4812KnBz9s0n;
+ Wed, 12 Dec 2018 15:48:33 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Murray <andrew.murray@arm.com>
+Subject: Re: [PATCH 10/10] perf/doc: update design.txt for
+ exclude_{host|guest} flags
+In-Reply-To: <20181211135903.GG13393@e119886-lin.cambridge.arm.com>
+References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
+ <1542363853-13849-11-git-send-email-andrew.murray@arm.com>
+ <87pnv00yuf.fsf@concordia.ellerman.id.au>
+ <20181120133202.GH35798@e119886-lin.cambridge.arm.com>
+ <87bm5sxqya.fsf@concordia.ellerman.id.au>
+ <20181211135903.GG13393@e119886-lin.cambridge.arm.com>
+Date: Wed, 12 Dec 2018 15:48:32 +1100
+Message-ID: <87sgz3wdsv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-References: <20181211202406.27721-1-robh@kernel.org>
-In-Reply-To: <20181211202406.27721-1-robh@kernel.org>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 12 Dec 2018 12:05:34 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQkR-V+tuhSytcdEhvBX6wosKQBuWo57Qo7fqdxyGFq_Q@mail.gmail.com>
-Message-ID: <CAK7LNAQkR-V+tuhSytcdEhvBX6wosKQBuWo57Qo7fqdxyGFq_Q@mail.gmail.com>
-Subject: Re: [PATCH v4] kbuild: Add support for DT binding schema checks
-To: Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,60 +61,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, DTML <devicetree@vger.kernel.org>,
- Kumar Gala <kumar.gala@linaro.org>, arm-soc <arm@kernel.org>,
- darknighte@darknighte.com, Jonathan Corbet <corbet@lwn.net>,
- Frank Rowand <frowand.list@gmail.com>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Michal Marek <michal.lkml@markovi.net>, grant.likely@arm.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Christoffer.Dall@arm.com,
+ Peter Zijlstra <peterz@infradead.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, linux-alpha@vger.kernel.org,
+ "paulus@samba.org" <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Joerg Roedel <joro@8bytes.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Dec 12, 2018 at 5:24 AM Rob Herring <robh@kernel.org> wrote:
+Andrew Murray <andrew.murray@arm.com> writes:
+> On Tue, Dec 11, 2018 at 10:06:53PM +1100, Michael Ellerman wrote:
+>> [ Reviving old thread. ]
+>>=20
+>> Andrew Murray <andrew.murray@arm.com> writes:
+>> > On Tue, Nov 20, 2018 at 10:31:36PM +1100, Michael Ellerman wrote:
+>> >> Andrew Murray <andrew.murray@arm.com> writes:
+>> >>=20
+>> >> > Update design.txt to reflect the presence of the exclude_host
+>> >> > and exclude_guest perf flags.
+>> >> >
+>> >> > Signed-off-by: Andrew Murray <andrew.murray@arm.com>
+>> >> > ---
+>> >> >  tools/perf/design.txt | 4 ++++
+>> >> >  1 file changed, 4 insertions(+)
+>> >> >
+>> >> > diff --git a/tools/perf/design.txt b/tools/perf/design.txt
+>> >> > index a28dca2..7de7d83 100644
+>> >> > --- a/tools/perf/design.txt
+>> >> > +++ b/tools/perf/design.txt
+>> >> > @@ -222,6 +222,10 @@ The 'exclude_user', 'exclude_kernel' and 'excl=
+ude_hv' bits provide a
+>> >> >  way to request that counting of events be restricted to times when=
+ the
+>> >> >  CPU is in user, kernel and/or hypervisor mode.
+>> >> >=20=20
+>> >> > +Furthermore the 'exclude_host' and 'exclude_guest' bits provide a =
+way
+>> >> > +to request counting of events restricted to guest and host context=
+s when
+>> >> > +using virtualisation.
+>> >>=20
+>> >> How does exclude_host differ from exclude_hv ?
+>> >
+>> > I believe exclude_host / exclude_guest are intented to distinguish
+>> > between host and guest in the hosted hypervisor context (KVM).
+>>=20
+>> OK yeah, from the perf-list man page:
+>>=20
+>>            u - user-space counting
+>>            k - kernel counting
+>>            h - hypervisor counting
+>>            I - non idle counting
+>>            G - guest counting (in KVM guests)
+>>            H - host counting (not in KVM guests)
+>>=20
+>> > Whereas exclude_hv allows to distinguish between guest and
+>> > hypervisor in the bare-metal type hypervisors.
+>>=20
+>> Except that's exactly not how we use them on powerpc :)
+>>=20
+>> We use exclude_hv to exclude "the hypervisor", regardless of whether
+>> it's KVM or PowerVM (which is a bare-metal hypervisor).
+>>=20
+>> We don't use exclude_host / exclude_guest at all, which I guess is a
+>> bug, except I didn't know they existed until this thread.
+>>=20
+>> eg, in a KVM guest:
+>>=20
+>>   $ perf record -e cycles:G /bin/bash -c "for i in {0..100000}; do :;don=
+e"
+>>   $ perf report -D | grep -Fc "dso: [hypervisor]"
+>>   16
+>>=20
+>>=20
+>> > In the case of arm64 - if VHE extensions are present then the host
+>> > kernel will run at a higher privilege to the guest kernel, in which
+>> > case there is no distinction between hypervisor and host so we ignore
+>> > exclude_hv. But where VHE extensions are not present then the host
+>> > kernel runs at the same privilege level as the guest and we use a
+>> > higher privilege level to switch between them - in this case we can
+>> > use exclude_hv to discount that hypervisor role of switching between
+>> > guests.
+>>=20
+>> I couldn't find any arm64 perf code using exclude_host/guest at all?
 >
-> This adds the build infrastructure for checking DT binding schema
-> documents and validating dts files using the binding schema.
+> Correct - but this is in flight as I am currently adding support for this
+> see [1].
+
+OK, so at least that will be consistent across arm64 & x86.
+
+>> And I don't see any x86 code using exclude_hv.
 >
-> Check DT binding schema documents:
-> make dt_binding_check
+> I can't find any either.
+
+I think that's because they don't need it, because they don't let guests
+program the PMU directly. It's all handled by the host and the host
+doesn't let the guest count host cycles anyway. But I could be wrong I'm
+no x86 expert.
+
+>> But maybe that's OK, I just worry this is confusing for users.
 >
-> Build dts files and check using DT binding schema:
-> make dtbs_check
->
-> Optionally, DT_SCHEMA_FILES can be passed in with a schema file(s) to
-> use for validation. This makes it easier to find and fix errors
-> generated by a specific schema.
->
-> Currently, the validation targets are separate from a normal build to
-> avoid a hard dependency on the external DT schema project and because
-> there are lots of warnings generated.
->
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Michal Marek <michal.lkml@markovi.net>
-> Cc: linux-doc@vger.kernel.org
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-kbuild@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
-> v4:
-> - Rework libyaml check and error message with Masahiro's version
-> - Simplify build rules and dependencies
->
+> There is some extra context regarding this where exclude_guest/exclude_ho=
+st
+> was added, see [2]
+
+Good find. I had looked at that commit, but the thread on the list is
+more informative.
+
+In fact there was even a man page update! Never occurred to me look
+there :P
+
+http://man7.org/linux/man-pages/man2/perf_event_open.2.html
+
+       exclude_host (since Linux 3.2)
+              When conducting measurements that include processes running VM
+              instances (i.e., have executed a KVM_RUN ioctl(2)), only mea=
+=E2=80=90
+              sure events happening inside a guest instance.  This is only
+              meaningful outside the guests; this setting does not change
+              counts gathered inside of a guest.  Currently, this function=
+=E2=80=90
+              ality is x86 only.
+
+       exclude_guest (since Linux 3.2)
+              When conducting measurements that include processes running VM
+              instances (i.e., have executed a KVM_RUN ioctl(2)), do not
+              measure events happening inside guest instances.  This is only
+              meaningful outside the guests; this setting does not change
+              counts gathered inside of a guest.  Currently, this function=
+=E2=80=90
+              ality is x86 only.
 
 
-Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Which makes things much clearer.
+
+Perhaps you want to add a reference to the man page in your text,
+something like?
+
+  Furthermore the 'exclude_host' and 'exclude_guest' bits provide a way
+  to request counting of events restricted to guest and host contexts when
+  using virtualisation. See the perf_event_open(2) man page for more
+  detail.
 
 
-Thanks.
-
-
--- 
-Best Regards
-Masahiro Yamada
+cheers
