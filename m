@@ -2,57 +2,74 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,T_MIXED_ES,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 984CDC04EB8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EE0AC04EB8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 10:01:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C926F20849
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 09:59:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C926F20849
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C433820849
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 10:01:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C433820849
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=hxt-semitech.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FC2K5W5tzDqHJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 20:59:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43FC4v5g3tzDqWg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 21:01:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=hxt-semitech.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=christoffer.dall@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43F8Z114KXzDqYj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 19:07:45 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3DFED80D;
- Wed, 12 Dec 2018 00:07:44 -0800 (PST)
-Received: from localhost (e113682-lin.copenhagen.arm.com [10.32.144.41])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CAE0F3F614;
- Wed, 12 Dec 2018 00:07:43 -0800 (PST)
-Date: Wed, 12 Dec 2018 09:07:42 +0100
-From: Christoffer Dall <christoffer.dall@arm.com>
-To: Andrew Murray <andrew.murray@arm.com>
-Subject: Re: [PATCH 10/10] perf/doc: update design.txt for
- exclude_{host|guest} flags
-Message-ID: <20181212080742.GA30263@e113682-lin.lund.arm.com>
-References: <1542363853-13849-1-git-send-email-andrew.murray@arm.com>
- <1542363853-13849-11-git-send-email-andrew.murray@arm.com>
- <87pnv00yuf.fsf@concordia.ellerman.id.au>
- <20181120133202.GH35798@e119886-lin.cambridge.arm.com>
- <87bm5sxqya.fsf@concordia.ellerman.id.au>
- <20181211135903.GG13393@e119886-lin.cambridge.arm.com>
+ spf=pass (mailfrom) smtp.mailfrom=hxt-semitech.com
+ (client-ip=223.203.96.7; helo=barracuda.hxt-semitech.com;
+ envelope-from=yanjiang.jin@hxt-semitech.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=hxt-semitech.com
+Received: from barracuda.hxt-semitech.com (mx01.hxt-semitech.com
+ [223.203.96.7])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43F9WD4mn1zDqj1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 19:50:31 +1100 (AEDT)
+X-ASG-Debug-ID: 1544603579-093b7e7c6213d20002-v7v7hK
+Received: from HXTBJIDCEMVIW02.hxtcorp.net ([10.128.0.15]) by
+ barracuda.hxt-semitech.com with ESMTP id 1Q6f355qG8b5diUP (version=TLSv1.2
+ cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NO);
+ Wed, 12 Dec 2018 16:33:00 +0800 (CST)
+X-Barracuda-Envelope-From: yanjiang.jin@hxt-semitech.com
+Received: from controller.hxtcorp.net (10.5.21.105) by
+ HXTBJIDCEMVIW02.hxtcorp.net (10.128.0.15) with Microsoft SMTP Server (TLS) id
+ 15.0.1395.4; Wed, 12 Dec 2018 16:32:07 +0800
+From: Yanjiang Jin <yanjiang.jin@hxt-semitech.com>
+To: <bhelgaas@google.com>, <keith.busch@intel.com>
+Subject: [PATCH] PCI/AER: only insert one element into kfifo
+Date: Wed, 12 Dec 2018 16:32:30 +0800
+X-ASG-Orig-Subj: [PATCH] PCI/AER: only insert one element into kfifo
+Message-ID: <1544603550-14208-2-git-send-email-yanjiang.jin@hxt-semitech.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1544603550-14208-1-git-send-email-yanjiang.jin@hxt-semitech.com>
+References: <1544603550-14208-1-git-send-email-yanjiang.jin@hxt-semitech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181211135903.GG13393@e119886-lin.cambridge.arm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain
+X-Originating-IP: [10.5.21.105]
+X-ClientProxiedBy: HXTBJIDCEMVIW01.hxtcorp.net (10.128.0.14) To
+ HXTBJIDCEMVIW02.hxtcorp.net (10.128.0.15)
+Content-Transfer-Encoding: quoted-printable
+X-Barracuda-Connect: UNKNOWN[10.128.0.15]
+X-Barracuda-Start-Time: 1544603580
+X-Barracuda-Encrypted: ECDHE-RSA-AES256-SHA384
+X-Barracuda-URL: https://192.168.50.101:443/cgi-mod/mark.cgi
+X-Virus-Scanned: by bsmtpd at hxt-semitech.com
+X-Barracuda-BRTS-Status: 1
+X-Barracuda-Bayes: INNOCENT GLOBAL 0.5000 1.0000 0.0000
+X-Barracuda-Spam-Score: 0.00
+X-Barracuda-Spam-Status: No, SCORE=0.00 using global scores of TAG_LEVEL=1000.0
+ QUARANTINE_LEVEL=1000.0 KILL_LEVEL=9.0 tests=
+X-Barracuda-Spam-Report: Code version 3.2, rules version 3.2.3.63648
+ Rule breakdown below
+ pts rule name              description
+ ---- ---------------------- --------------------------------------------------
 X-Mailman-Approved-At: Wed, 12 Dec 2018 20:56:40 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -65,145 +82,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-alpha@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "paulus@samba.org" <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- Joerg Roedel <joro@8bytes.org>, linux-arm-kernel@lists.infradead.org
+Cc: yanjiang.jin@hxt-semitech.com, sbobroff@linux.ibm.com,
+ linux-pci@vger.kernel.org, jinyanjiang@gmail.com, linux-kernel@vger.kernel.org,
+ oohall@gmail.com, linuxppc-dev@lists.ozlabs.org, yu.zheng@hxt-semitech.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 11, 2018 at 01:59:03PM +0000, Andrew Murray wrote:
-> On Tue, Dec 11, 2018 at 10:06:53PM +1100, Michael Ellerman wrote:
-> > [ Reviving old thread. ]
-> > 
-> > Andrew Murray <andrew.murray@arm.com> writes:
-> > > On Tue, Nov 20, 2018 at 10:31:36PM +1100, Michael Ellerman wrote:
-> > >> Andrew Murray <andrew.murray@arm.com> writes:
-> > >> 
-> > >> > Update design.txt to reflect the presence of the exclude_host
-> > >> > and exclude_guest perf flags.
-> > >> >
-> > >> > Signed-off-by: Andrew Murray <andrew.murray@arm.com>
-> > >> > ---
-> > >> >  tools/perf/design.txt | 4 ++++
-> > >> >  1 file changed, 4 insertions(+)
-> > >> >
-> > >> > diff --git a/tools/perf/design.txt b/tools/perf/design.txt
-> > >> > index a28dca2..7de7d83 100644
-> > >> > --- a/tools/perf/design.txt
-> > >> > +++ b/tools/perf/design.txt
-> > >> > @@ -222,6 +222,10 @@ The 'exclude_user', 'exclude_kernel' and 'exclude_hv' bits provide a
-> > >> >  way to request that counting of events be restricted to times when the
-> > >> >  CPU is in user, kernel and/or hypervisor mode.
-> > >> >  
-> > >> > +Furthermore the 'exclude_host' and 'exclude_guest' bits provide a way
-> > >> > +to request counting of events restricted to guest and host contexts when
-> > >> > +using virtualisation.
-> > >> 
-> > >> How does exclude_host differ from exclude_hv ?
-> > >
-> > > I believe exclude_host / exclude_guest are intented to distinguish
-> > > between host and guest in the hosted hypervisor context (KVM).
-> > 
-> > OK yeah, from the perf-list man page:
-> > 
-> >            u - user-space counting
-> >            k - kernel counting
-> >            h - hypervisor counting
-> >            I - non idle counting
-> >            G - guest counting (in KVM guests)
-> >            H - host counting (not in KVM guests)
-> > 
-> > > Whereas exclude_hv allows to distinguish between guest and
-> > > hypervisor in the bare-metal type hypervisors.
-> > 
-> > Except that's exactly not how we use them on powerpc :)
-> > 
-> > We use exclude_hv to exclude "the hypervisor", regardless of whether
-> > it's KVM or PowerVM (which is a bare-metal hypervisor).
-> > 
-> > We don't use exclude_host / exclude_guest at all, which I guess is a
-> > bug, except I didn't know they existed until this thread.
-> > 
-> > eg, in a KVM guest:
-> > 
-> >   $ perf record -e cycles:G /bin/bash -c "for i in {0..100000}; do :;done"
-> >   $ perf report -D | grep -Fc "dso: [hypervisor]"
-> >   16
-> > 
-> > 
-> > > In the case of arm64 - if VHE extensions are present then the host
-> > > kernel will run at a higher privilege to the guest kernel, in which
-> > > case there is no distinction between hypervisor and host so we ignore
-> > > exclude_hv. But where VHE extensions are not present then the host
-> > > kernel runs at the same privilege level as the guest and we use a
-> > > higher privilege level to switch between them - in this case we can
-> > > use exclude_hv to discount that hypervisor role of switching between
-> > > guests.
-> > 
-> > I couldn't find any arm64 perf code using exclude_host/guest at all?
-> 
-> Correct - but this is in flight as I am currently adding support for this
-> see [1].
-> 
-> > 
-> > And I don't see any x86 code using exclude_hv.
-> 
-> I can't find any either.
-> 
-> > 
-> > But maybe that's OK, I just worry this is confusing for users.
-> 
-> There is some extra context regarding this where exclude_guest/exclude_host
-> was added, see [2] and where exclude_hv was added, see [3]
-> 
-> Generally it seems that exclude_guest/exclude_host relies upon switching
-> counters off/on on guest/host switch code (which works well in the nested
-> virt case). Whereas exclude_hv tends to rely solely on hardware capability
-> based on privilege level (which works well in the bare metal case where
-> the guest doesn't run at same privilege as the host).
-> 
-> I think from the user perspective exclude_hv allows you to see your overhead
-> if you are a guest (i.e. work done by bare metal hypervisor associated with
-> you as the guest). Whereas exclude_guest/exclude_host doesn't allow you to
-> see events above you (i.e. the kernel hypervisor) if you are the guest...
-> 
-> At least that's how I read this, I've copied in others that may provide
-> more authoritative feedback.
-> 
-> [1] https://lists.cs.columbia.edu/pipermail/kvmarm/2018-December/033698.html
-> [2] https://www.spinics.net/lists/kvm/msg53996.html
-> [3] https://lore.kernel.org/patchwork/patch/143918/
-> 
+'commit ecae65e133f2 ("PCI/AER: Use kfifo_in_spinlocked() to
+insert locked elements")' replace kfifo_put() with kfifo_in_spinlocked().
 
-I'll try to answer this in a different way, based on previous
-discussions with Joerg et al. who introduced these flags.  Assume no
-support for nested virtualization as a first approximation:
+But as "kfifo_in(fifo, buf, n)" describes:
+" * @n: number of elements to be added".
 
-  If you are running as a guest:
-    - exclude_hv: stop counting events when the hypervisor runs
-    - exclude_host: has no effect
-    - exclude_guest: has no effect
-  
-  If you are running as a host/hypervisor:
-   - exclude_hv: has no effect
-   - exclude_host: only count events when the guest is running
-   - exclude_guest: only count events when the host is running
+We want to insert only one element into kfifo, not "sizeof(entry) =3D 16".
+Without this patch, we would get 15 uninitialized elements.
 
-With nested virtualization, you get the natural union of the above.
+Signed-off-by: Yanjiang Jin <yanjiang.jin@hxt-semitech.com>
+---
+ drivers/pci/pcie/aer.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-**This has nothing to do with the design of the hypervisor such as the
-ARM non-VHE KVM which splits its execution across EL1 and EL2 -- those
-are both considered host from the point of view of Linux as a hypervisor
-using KVM, and both considered hypervisor from the point of view of a
-guest.**
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index a90a919..fed29de 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -1064,7 +1064,7 @@ void aer_recover_queue(int domain, unsigned int bus, =
+unsigned int devfn,
+                .regs           =3D aer_regs,
+        };
+
+-       if (kfifo_in_spinlocked(&aer_recover_ring, &entry, sizeof(entry),
++       if (kfifo_in_spinlocked(&aer_recover_ring, &entry, 1,
+                                 &aer_recover_ring_lock))
+                schedule_work(&aer_recover_work);
+        else
+--
+1.8.3.1
 
 
-Thanks,
 
-    Christoffer
+
+This email is intended only for the named addressee. It may contain informa=
+tion that is confidential/private, legally privileged, or copyright-protect=
+ed, and you should handle it accordingly. If you are not the intended recip=
+ient, you do not have legal rights to retain, copy, or distribute this emai=
+l or its contents, and should promptly delete the email and all electronic =
+copies in your system; do not retain copies in any media. If you have recei=
+ved this email in error, please notify the sender promptly. Thank you.
+
+
