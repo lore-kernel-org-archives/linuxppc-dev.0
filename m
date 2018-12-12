@@ -2,61 +2,69 @@ Return-Path: <SRS0=1eNT=OV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4942CC67839
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 00:40:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E891AC67839
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 00:49:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD09120851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 00:40:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="SYYS8Vfs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD09120851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 40C1C20851
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 00:49:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40C1C20851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43DydT6SK8zDqyb
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 11:40:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="SYYS8Vfs";
-	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43DyZl3CV1zDqrC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 11:37:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43DyrJ1mHwzDr1Q
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Dec 2018 11:49:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="SYYS8Vfs"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 43DyZk6qyjz9s47; Wed, 12 Dec 2018 11:37:50 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1544575070;
- bh=vUiGKvYaVVCrNhOnq8YxGEvqhpKSI/AAuTcLp+f9B0w=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=SYYS8Vfs1DWy6xQreHsDTPuB/A9JCjiqKZ+03SHMNfMqgqCKHP7Ufiy/WdgteWINN
- GjxhtQhl3ajiH+k4pU86AwFa0wV32Imtr6++ohLfE66CUfKGiK3DUVLxHQHUnHT72R
- i5D3zVp8wNYV99NNnbrM2a0YSwswZx0UOalSG0No=
-Date: Wed, 12 Dec 2018 11:22:34 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
-Message-ID: <20181212002234.GC2719@umbus.fritz.box>
-References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
- <20181211140143.GD99796@google.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="qtZFehHsKgwS5rPz"
-Content-Disposition: inline
-In-Reply-To: <20181211140143.GD99796@google.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Dyp52b62zDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 11:47:40 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wBC0lGgF022066;
+ Tue, 11 Dec 2018 18:47:17 -0600
+Message-ID: <d447ac4e18bddd030aa2f56a0547c0132b3f8dcd.camel@kernel.crashing.org>
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>, Christoph Hellwig <hch@lst.de>
+Date: Wed, 12 Dec 2018 11:47:16 +1100
+In-Reply-To: <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
+References: <20181129170351.GC27951@lst.de>
+ <d0e04a85-f17d-414e-6fea-971414417430@xenosoft.de>
+ <20181130105346.GB26765@lst.de>
+ <8694431d-c669-b7b9-99fa-e99db5d45a7d@xenosoft.de>
+ <20181130131056.GA5211@lst.de>
+ <25999587-2d91-a63c-ed38-c3fb0075d9f1@xenosoft.de>
+ <c5202d29-863d-1377-0e2d-762203b317e2@xenosoft.de>
+ <58c61afb-290f-6196-c72c-ac7b61b84718@xenosoft.de>
+ <20181204142426.GA2743@lst.de>
+ <ef56d279-f75d-008e-71ba-7068c1b37c48@xenosoft.de>
+ <20181205140550.GA27549@lst.de>
+ <1948cf84-49ab-543c-472c-d18e27751903@xenosoft.de>
+ <5a2ea855-b4b0-e48a-5c3e-c859a8451ca2@xenosoft.de>
+ <7B6DDB28-8BF6-4589-84ED-F1D4D13BFED6@xenosoft.de>
+ <8a2c4581-0c85-8065-f37e-984755eb31ab@xenosoft.de>
+ <424bb228-c9e5-6593-1ab7-5950d9b2bd4e@xenosoft.de>
+ <c86d76b4-b199-557e-bc64-4235729c1e72@xenosoft.de>
+ <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
+ <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
+ <4cfb3f26-74e1-db01-b014-759f188bb5a6@xenosoft.de>
+ <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,59 +76,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: leon@kernel.org, linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, sbest@redhat.com, saeedm@mellanox.com,
- alex.williamson@redhat.com, paulus@samba.org, linux-pci@vger.kernel.org,
- ogerlitz@mellanox.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- tariqt@mellanox.com
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, 2018-12-11 at 19:17 +0100, Christian Zigotzky wrote:
+> X5000 (P5020 board): U-Boot loads the kernel and the dtb file. Then the 
+> kernel starts but it doesn't find any hard disks (partitions). That 
+> means this is also the bad commit for the P5020 board.
 
---qtZFehHsKgwS5rPz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What are the disks hanging off ? A PCIe device of some sort ?
 
-On Tue, Dec 11, 2018 at 08:01:43AM -0600, Bjorn Helgaas wrote:
-> Hi David,
->=20
-> I see you're still working on this, but if you do end up going this
-> direction eventually, would you mind splitting this into two patches:
-> 1) rename the quirk to make it more generic (but not changing any
-> behavior), and 2) add the ConnectX devices to the quirk.  That way
-> the ConnectX change is smaller and more easily
-> understood/reverted/etc.
+Can you send good & bad dmesg logs ?
 
-Sure.  Would it make sense to send (1) as an independent cleanup,
-while I'm still working out exactly what (if anything) we need for
-(2)?
+Ben.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
 
---qtZFehHsKgwS5rPz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlwQVMoACgkQbDjKyiDZ
-s5L+cw/+KM764cq7FAR/lTsfb87oC6lgM+U63FC2WIKnaxcJodoYFkg4eYhjc7B9
-OfAliLU6kk4A/cowrU/TZRHtvW3LcaZU4qTlQBKuPoFq6ApOmCv8ftr4jbdcXD/U
-2R/RS4QgRInfPg1g3de5DuveWiVI8gIzfcOKPh53yAkcdbsi937ZMFICwSYfln9X
-hmONBWM0BfrVvx8AFxhyc2lczWNzXHpFTTBqcV+lZnGUlB51K/+WQOIx6BNVssQs
-UfiJqHQixhdJA9pzkMEykEiS5A9hdOLJ4XyYO6jt1S9ZdB4dp1ckPrej8zgXt2l1
-HRG11NfawSntxutiu4CLM4Ra0aykkRw6ws2n2joV0Tb7+jZMGTeCzJSACdIbZM48
-RLKIS+b5PjAziH/QzZ4rSau6vRsaB7NY80fMPuvmM4/P3o5NrqmJm6trUX6LWOFZ
-FnUjMvXlFmO/5E7pmclcUxqvG6n5alBbMg+vJRo5ljZbp2MeFAVR/BWnXA5iTARQ
-JmjIIbUMQhie1ykQuWiZ0rqpCB/rEXDWfWDSyPvdYdXyNK2R/ZLi58G/PU/DQi3D
-By4mlrRHhZCcRoxXK7RznAj/bR9nKI/NsGm+8eaqaTf5foVQ7jW+PQpz+Jiy3nrg
-O/MBa8cWSsV9VH9xCbGAFHTjC6WtICnGk9xscxqcWlwnMWIr3sk=
-=7iRq
------END PGP SIGNATURE-----
-
---qtZFehHsKgwS5rPz--
