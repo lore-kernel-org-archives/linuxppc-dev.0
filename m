@@ -6,81 +6,81 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED389C67839
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:24:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 511A6C67839
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:26:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6F93720870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:24:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F93720870
+	by mail.kernel.org (Postfix) with ESMTPS id C201520870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:26:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C201520870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Fcvg24p0zDqXW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:24:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fcxx4ShPzDqVk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:26:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43FccF2MylzDqVp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBD23svQ134829
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:23 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pb9t03v7t-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43FccM092hzDqVk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:30 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBD23jfR112231
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:28 -0500
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2pbbdj7h2k-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:23 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:28 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 13 Dec 2018 02:11:22 -0000
+ Thu, 13 Dec 2018 02:11:27 -0000
 Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
+ by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 13 Dec 2018 02:11:17 -0000
+ Thu, 13 Dec 2018 02:11:22 -0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
  by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBD2BFAd8585356
+ wBD2BLbg20316180
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 13 Dec 2018 02:11:15 GMT
+ Thu, 13 Dec 2018 02:11:21 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BCE32C6061;
- Thu, 13 Dec 2018 02:11:15 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 46469C6067;
+ Thu, 13 Dec 2018 02:11:21 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8346FC605B;
- Thu, 13 Dec 2018 02:11:11 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 31EBFC6055;
+ Thu, 13 Dec 2018 02:11:17 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.80.227.60])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 13 Dec 2018 02:11:11 +0000 (GMT)
+ Thu, 13 Dec 2018 02:11:16 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: linux-integrity@vger.kernel.org
-Subject: [PATCH v9 05/14] integrity: Introduce integrity_keyring_from_id()
-Date: Thu, 13 Dec 2018 00:08:58 -0200
+Subject: [PATCH v9 06/14] integrity: Introduce asymmetric_sig_has_known_key()
+Date: Thu, 13 Dec 2018 00:08:59 -0200
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20181213020907.13601-1-bauerman@linux.ibm.com>
 References: <20181213020907.13601-1-bauerman@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18121302-0020-0000-0000-00000E98FB5E
+x-cbid: 18121302-0016-0000-0000-00000963A3F0
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010217; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000270; SDB=6.01130951; UDB=6.00587714; IPR=6.00911085; 
- MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:21
+ MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:27
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121302-0021-0000-0000-000064081C8B
-Message-Id: <20181213020907.13601-6-bauerman@linux.ibm.com>
+x-cbparentid: 18121302-0017-0000-0000-00004162A097
+Message-Id: <20181213020907.13601-7-bauerman@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-12_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -115,93 +115,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-IMA will need to obtain the keyring used to verify file signatures so that
-it can verify the module-style signature appended to files.
+IMA will only look for a modsig if the xattr sig references a key which is
+not in the expected kernel keyring. To that end, introduce
+asymmetric_sig_has_known_key().
+
+The logic of extracting the key used in the xattr sig is factored out from
+asymmetric_verify() so that it can be used by the new function.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
 ---
- security/integrity/digsig.c    | 28 +++++++++++++++++++++-------
- security/integrity/integrity.h |  6 ++++++
- 2 files changed, 27 insertions(+), 7 deletions(-)
+ security/integrity/digsig_asymmetric.c | 44 +++++++++++++++++++-------
+ security/integrity/integrity.h         |  8 +++++
+ 2 files changed, 41 insertions(+), 11 deletions(-)
 
-diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
-index 71c3200521d6..bbfa3085d1b5 100644
---- a/security/integrity/digsig.c
-+++ b/security/integrity/digsig.c
-@@ -44,11 +44,10 @@ static const char * const keyring_name[INTEGRITY_KEYRING_MAX] = {
- #define restrict_link_to_ima restrict_link_by_builtin_trusted
- #endif
+diff --git a/security/integrity/digsig_asymmetric.c b/security/integrity/digsig_asymmetric.c
+index d775e03fbbcc..4c3c49f919f5 100644
+--- a/security/integrity/digsig_asymmetric.c
++++ b/security/integrity/digsig_asymmetric.c
+@@ -79,26 +79,48 @@ static struct key *request_asymmetric_key(struct key *keyring, uint32_t keyid)
+ 	return key;
+ }
  
--int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
--			    const char *digest, int digestlen)
-+struct key *integrity_keyring_from_id(const unsigned int id)
+-int asymmetric_verify(struct key *keyring, const char *sig,
+-		      int siglen, const char *data, int datalen)
++static struct key *asymmetric_key_from_sig(struct key *keyring, const char *sig,
++					   int siglen)
  {
--	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
--		return -EINVAL;
-+	if (id >= INTEGRITY_KEYRING_MAX)
-+		return ERR_PTR(-EINVAL);
+-	struct public_key_signature pks;
+-	struct signature_v2_hdr *hdr = (struct signature_v2_hdr *)sig;
+-	struct key *key;
+-	int ret = -ENOMEM;
++	const struct signature_v2_hdr *hdr = (struct signature_v2_hdr *) sig;
  
- 	if (!keyring[id]) {
- 		keyring[id] =
-@@ -57,17 +56,32 @@ int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
- 			int err = PTR_ERR(keyring[id]);
- 			pr_err("no %s keyring: %d\n", keyring_name[id], err);
- 			keyring[id] = NULL;
--			return err;
-+			return ERR_PTR(err);
- 		}
- 	}
+ 	if (siglen <= sizeof(*hdr))
+-		return -EBADMSG;
++		return ERR_PTR(-EBADMSG);
  
-+	return keyring[id];
+ 	siglen -= sizeof(*hdr);
+ 
+ 	if (siglen != be16_to_cpu(hdr->sig_size))
+-		return -EBADMSG;
++		return ERR_PTR(-EBADMSG);
+ 
+ 	if (hdr->hash_algo >= HASH_ALGO__LAST)
+-		return -ENOPKG;
++		return ERR_PTR(-ENOPKG);
++
++	return request_asymmetric_key(keyring, be32_to_cpu(hdr->keyid));
 +}
 +
-+int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
-+			    const char *digest, int digestlen)
++bool asymmetric_sig_has_known_key(struct key *keyring, const char *sig,
++				  int siglen)
 +{
-+	struct key *keyring;
++	struct key *key;
 +
-+	if (siglen < 2)
-+		return -EINVAL;
++	key = asymmetric_key_from_sig(keyring, sig, siglen);
++	if (IS_ERR_OR_NULL(key))
++		return false;
 +
-+	keyring = integrity_keyring_from_id(id);
-+	if (IS_ERR(keyring))
-+		return PTR_ERR(keyring);
++	key_put(key);
 +
- 	switch (sig[1]) {
- 	case 1:
- 		/* v1 API expect signature without xattr type */
--		return digsig_verify(keyring[id], sig + 1, siglen - 1,
-+		return digsig_verify(keyring, sig + 1, siglen - 1,
- 				     digest, digestlen);
- 	case 2:
--		return asymmetric_verify(keyring[id], sig, siglen,
-+		return asymmetric_verify(keyring, sig, siglen,
- 					 digest, digestlen);
- 	}
++	return true;
++}
++
++int asymmetric_verify(struct key *keyring, const char *sig,
++		      int siglen, const char *data, int datalen)
++{
++	struct public_key_signature pks;
++	struct signature_v2_hdr *hdr = (struct signature_v2_hdr *)sig;
++	struct key *key;
++	int ret = -ENOMEM;
  
+-	key = request_asymmetric_key(keyring, be32_to_cpu(hdr->keyid));
++	key = asymmetric_key_from_sig(keyring, sig, siglen);
+ 	if (IS_ERR(key))
+ 		return PTR_ERR(key);
+ 
+@@ -110,7 +132,7 @@ int asymmetric_verify(struct key *keyring, const char *sig,
+ 	pks.digest = (u8 *)data;
+ 	pks.digest_size = datalen;
+ 	pks.s = hdr->sig;
+-	pks.s_size = siglen;
++	pks.s_size = siglen - sizeof(*hdr);
+ 	ret = verify_signature(key, &pks);
+ 	key_put(key);
+ 	pr_debug("%s() = %d\n", __func__, ret);
 diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
-index 2bf0fc51752b..6f657260a964 100644
+index 6f657260a964..dec5ab8cf9e9 100644
 --- a/security/integrity/integrity.h
 +++ b/security/integrity/integrity.h
-@@ -155,6 +155,7 @@ extern struct dentry *integrity_dir;
- 
- #ifdef CONFIG_INTEGRITY_SIGNATURE
- 
-+struct key *integrity_keyring_from_id(const unsigned int id);
- int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
- 			    const char *digest, int digestlen);
- 
-@@ -164,6 +165,11 @@ int __init integrity_load_cert(const unsigned int id, const char *source,
- 			       const void *data, size_t len, key_perm_t perm);
+@@ -194,12 +194,20 @@ static inline int __init integrity_load_cert(const unsigned int id,
+ #ifdef CONFIG_INTEGRITY_ASYMMETRIC_KEYS
+ int asymmetric_verify(struct key *keyring, const char *sig,
+ 		      int siglen, const char *data, int datalen);
++bool asymmetric_sig_has_known_key(struct key *keyring, const char *sig,
++				  int siglen);
  #else
- 
-+static inline struct key *integrity_keyring_from_id(const unsigned int id)
-+{
-+	return ERR_PTR(-EINVAL);
-+}
+ static inline int asymmetric_verify(struct key *keyring, const char *sig,
+ 				    int siglen, const char *data, int datalen)
+ {
+ 	return -EOPNOTSUPP;
+ }
 +
- static inline int integrity_digsig_verify(const unsigned int id,
- 					  const char *sig, int siglen,
- 					  const char *digest, int digestlen)
++static inline bool asymmetric_sig_has_known_key(struct key *keyring,
++						const char *sig, int siglen)
++{
++	return false;
++}
+ #endif
+ 
+ #ifdef CONFIG_IMA_LOAD_X509
 
