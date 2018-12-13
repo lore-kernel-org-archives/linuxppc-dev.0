@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09365C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:41:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA777C65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:43:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8928120849
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:41:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8928120849
+	by mail.kernel.org (Postfix) with ESMTPS id 4285620849
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:43:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4285620849
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Fkbb54ZDzDr02
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:41:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fkf41cJwzDqgS
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:43:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5b0FXtzDqcv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5b0FWjzDqcp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:42 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id F2992AE805A4;
- Thu, 13 Dec 2018 01:18:38 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C3A3CAE80492;
+ Thu, 13 Dec 2018 01:18:08 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v5 16/20] powerpc/powernv/npu: Check mmio_atsd array
- bounds when populating
-Date: Thu, 13 Dec 2018 17:17:30 +1100
-Message-Id: <20181213061734.16651-17-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 07/20] powerpc/pseries/npu: Enable platform support
+Date: Thu, 13 Dec 2018 17:17:21 +1100
+Message-Id: <20181213061734.16651-8-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181213061734.16651-1-aik@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
@@ -64,30 +63,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A broken device tree might contain more than 8 values and introduce hard
-to debug memory corruption bug. This adds the boundary check.
+We already changed NPU API for GPUs to not to call OPAL and the remaining
+bit is initializing NPU structures.
+
+This searches for POWER9 NVLinks attached to any device on a PHB and
+initializes an NPU structure if any found.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Changes:
+v5:
+* added WARN_ON_ONCE
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 31dfc11..2c405a4 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -1179,8 +1179,9 @@ int pnv_npu2_init(struct pci_controller *hose)
+v4:
+* dropped "IBM,npu-vphb" compatible type on PHB and use the type of NVLink
+---
+ arch/powerpc/platforms/pseries/pci.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index 41d8a4d..7725825 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -29,6 +29,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/prom.h>
+ #include <asm/ppc-pci.h>
++#include <asm/pci.h>
+ #include "pseries.h"
  
- 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
+ #if 0
+@@ -237,6 +238,8 @@ static void __init pSeries_request_regions(void)
  
--	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
--							i, &mmio_atsd); i++)
-+	for (i = 0; i < ARRAY_SIZE(npu->mmio_atsd_regs) &&
-+			!of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
-+				i, &mmio_atsd); i++)
- 		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
+ void __init pSeries_final_fixup(void)
+ {
++	struct pci_controller *hose;
++
+ 	pSeries_request_regions();
  
- 	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
+ 	eeh_probe_devices();
+@@ -246,6 +249,25 @@ void __init pSeries_final_fixup(void)
+ 	ppc_md.pcibios_sriov_enable = pseries_pcibios_sriov_enable;
+ 	ppc_md.pcibios_sriov_disable = pseries_pcibios_sriov_disable;
+ #endif
++	list_for_each_entry(hose, &hose_list, list_node) {
++		struct device_node *dn = hose->dn, *nvdn;
++
++		while (1) {
++			dn = of_find_all_nodes(dn);
++			if (!dn)
++				break;
++			nvdn = of_parse_phandle(dn, "ibm,nvlink", 0);
++			if (!nvdn)
++				continue;
++			if (!of_device_is_compatible(nvdn, "ibm,npu-link"))
++				continue;
++			if (!of_device_is_compatible(nvdn->parent,
++						"ibm,power9-npu"))
++				continue;
++			WARN_ON_ONCE(pnv_npu2_init(hose));
++			break;
++		}
++	}
+ }
+ 
+ /*
 -- 
 2.17.1
 
