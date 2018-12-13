@@ -2,23 +2,23 @@ Return-Path: <SRS0=2g3y=OW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,T_MIXED_ES,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDCF2C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:21:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B36EC65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:23:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0786120870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:21:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0786120870
+	by mail.kernel.org (Postfix) with ESMTPS id C3A6F20870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:23:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A6F20870
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Fk8F4h1yzDqdV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:21:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43FkBc4zXlzDqcD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:23:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,18 +27,20 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Fk4Y5xYjzDqHb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:17:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Fk4r21gzzDqcF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:03 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 25286AE800EB;
- Thu, 13 Dec 2018 01:17:44 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id B860FAE80381;
+ Thu, 13 Dec 2018 01:17:58 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v5 00/20] powerpc/powernv/npu,
- vfio: NVIDIA V100 + P9 passthrough
-Date: Thu, 13 Dec 2018 17:17:14 +1100
-Message-Id: <20181213061734.16651-1-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 04/20] powerpc/powernv: Move npu struct from pnv_phb
+ to pci_controller
+Date: Thu, 13 Dec 2018 17:17:18 +1100
+Message-Id: <20181213061734.16651-5-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20181213061734.16651-1-aik@ozlabs.ru>
+References: <20181213061734.16651-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,82 +64,245 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The powernv PCI code stores NPU data in the pnv_phb struct. The latter
+is referenced by pci_controller::private_data. We are going to have NPU2
+support in the pseries platform as well but it does not store any
+private_data in in the pci_controller struct; and even if it did,
+it would be a different data structure.
 
-This is for passing through NVIDIA V100 GPUs on POWER9 systems.
-20/20 has the details of hardware setup.
+This makes npu a pointer and stores it one level higher in
+the pci_controller struct.
 
-This implements support for NVIDIA V100 GPU with coherent memory and
-NPU/ATS support available in the POWER9 CPU. The aim is to support
-unmodified vendor driver in the guest.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+Changes:
+v5:
+* removed !npu checks as this is out of scope of this patch
+* added WARN_ON_ONCE in WARN_ON_ONCE(pnv_npu2_init(phb))
 
-This is pushed to (both guest and host kernels):
-https://github.com/aik/linux/tree/nv2
+v4:
+* changed subj from "powerpc/powernv: Detach npu struct from pnv_phb"
+* got rid of global list of npus - store them now in pci_controller
+* got rid of npdev_to_npu() helper
+---
+ arch/powerpc/include/asm/pci-bridge.h     |  1 +
+ arch/powerpc/platforms/powernv/pci.h      | 16 -----
+ arch/powerpc/platforms/powernv/npu-dma.c  | 74 +++++++++++++++++------
+ arch/powerpc/platforms/powernv/pci-ioda.c |  2 +-
+ 4 files changed, 58 insertions(+), 35 deletions(-)
 
-Matching qemu is pushed to github:
-https://github.com/aik/qemu/tree/nv2
-
-Skiboot bits are here:
-https://github.com/aik/skiboot/tree/nv2
-
-The individual patches have changelogs. Some were dropped as not required
-or quite useless.
-
-
-Please comment. Thanks.
-
-
-
-Alexey Kardashevskiy (20):
-  powerpc/ioda/npu: Call skiboot's hot reset hook when disabling NPU2
-  powerpc/mm/iommu/vfio_spapr_tce: Change mm_iommu_get to reference a
-    region
-  powerpc/vfio/iommu/kvm: Do not pin device memory
-  powerpc/powernv: Move npu struct from pnv_phb to pci_controller
-  powerpc/powernv/npu: Move OPAL calls away from context manipulation
-  powerpc/pseries/iommu: Use memory@ nodes in max RAM address
-    calculation
-  powerpc/pseries/npu: Enable platform support
-  powerpc/pseries: Remove IOMMU API support for non-LPAR systems
-  powerpc/powernv/pseries: Rework device adding to IOMMU groups
-  powerpc/iommu_api: Move IOMMU groups setup to a single place
-  powerpc/powernv: Reference iommu_table while it is linked to a group
-  powerpc/powernv/npu: Move single TVE handling to NPU PE
-  powerpc/powernv/npu: Convert NPU IOMMU helpers to
-    iommu_table_group_ops
-  powerpc/powernv/npu: Add compound IOMMU groups
-  powerpc/powernv/npu: Add release_ownership hook
-  powerpc/powernv/npu: Check mmio_atsd array bounds when populating
-  powerpc/powernv/npu: Fault user page into the hypervisor's pagetable
-  vfio_pci: Allow mapping extra regions
-  vfio_pci: Allow regions to add own capabilities
-  vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] subdriver
-
- drivers/vfio/pci/Makefile                     |   1 +
- arch/powerpc/include/asm/iommu.h              |  17 +-
- arch/powerpc/include/asm/mmu_context.h        |   9 +-
- arch/powerpc/include/asm/pci-bridge.h         |   1 +
- arch/powerpc/include/asm/pci.h                |   4 +
- arch/powerpc/platforms/powernv/pci.h          |  30 +-
- drivers/vfio/pci/trace.h                      | 102 ++++
- drivers/vfio/pci/vfio_pci_private.h           |  20 +
- include/uapi/linux/vfio.h                     |  39 ++
- arch/powerpc/kernel/iommu.c                   |  69 +--
- arch/powerpc/kvm/book3s_64_vio.c              |  18 +-
- arch/powerpc/mm/mmu_context_iommu.c           | 110 +++-
- arch/powerpc/platforms/powernv/npu-dma.c      | 549 +++++++++++++++---
- arch/powerpc/platforms/powernv/pci-ioda-tce.c |   3 +-
- arch/powerpc/platforms/powernv/pci-ioda.c     | 237 ++++----
- arch/powerpc/platforms/powernv/pci.c          |  43 +-
- arch/powerpc/platforms/pseries/iommu.c        |  88 ++-
- arch/powerpc/platforms/pseries/pci.c          |  22 +
- drivers/vfio/pci/vfio_pci.c                   |  42 +-
- drivers/vfio/pci/vfio_pci_nvlink2.c           | 473 +++++++++++++++
- drivers/vfio/vfio_iommu_spapr_tce.c           |  64 +-
- drivers/vfio/pci/Kconfig                      |   6 +
- 22 files changed, 1556 insertions(+), 391 deletions(-)
- create mode 100644 drivers/vfio/pci/trace.h
- create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
-
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 94d4490..aee4fcc 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -129,6 +129,7 @@ struct pci_controller {
+ #endif	/* CONFIG_PPC64 */
+ 
+ 	void *private_data;
++	struct npu *npu;
+ };
+ 
+ /* These are used for config access before all the PCI probing
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 2131373..f2d50974 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -8,9 +8,6 @@
+ 
+ struct pci_dn;
+ 
+-/* Maximum possible number of ATSD MMIO registers per NPU */
+-#define NV_NMMU_ATSD_REGS 8
+-
+ enum pnv_phb_type {
+ 	PNV_PHB_IODA1		= 0,
+ 	PNV_PHB_IODA2		= 1,
+@@ -176,19 +173,6 @@ struct pnv_phb {
+ 	unsigned int		diag_data_size;
+ 	u8			*diag_data;
+ 
+-	/* Nvlink2 data */
+-	struct npu {
+-		int index;
+-		__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
+-		unsigned int mmio_atsd_count;
+-
+-		/* Bitmask for MMIO register usage */
+-		unsigned long mmio_atsd_usage;
+-
+-		/* Do we need to explicitly flush the nest mmu? */
+-		bool nmmu_flush;
+-	} npu;
+-
+ 	int p2p_target_count;
+ };
+ 
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 91d488f..5e66439 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -327,6 +327,25 @@ struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe)
+ 	return gpe;
+ }
+ 
++/*
++ * NPU2 ATS
++ */
++/* Maximum possible number of ATSD MMIO registers per NPU */
++#define NV_NMMU_ATSD_REGS 8
++
++/* An NPU descriptor, valid for POWER9 only */
++struct npu {
++	int index;
++	__be64 *mmio_atsd_regs[NV_NMMU_ATSD_REGS];
++	unsigned int mmio_atsd_count;
++
++	/* Bitmask for MMIO register usage */
++	unsigned long mmio_atsd_usage;
++
++	/* Do we need to explicitly flush the nest mmu? */
++	bool nmmu_flush;
++};
++
+ /* Maximum number of nvlinks per npu */
+ #define NV_MAX_LINKS 6
+ 
+@@ -478,7 +497,6 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+ 	int i, j;
+ 	struct npu *npu;
+ 	struct pci_dev *npdev;
+-	struct pnv_phb *nphb;
+ 
+ 	for (i = 0; i <= max_npu2_index; i++) {
+ 		mmio_atsd_reg[i].reg = -1;
+@@ -493,8 +511,7 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+ 			if (!npdev)
+ 				continue;
+ 
+-			nphb = pci_bus_to_host(npdev->bus)->private_data;
+-			npu = &nphb->npu;
++			npu = pci_bus_to_host(npdev->bus)->npu;
+ 			mmio_atsd_reg[i].npu = npu;
+ 			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+ 			while (mmio_atsd_reg[i].reg < 0) {
+@@ -662,6 +679,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	struct pnv_phb *nphb;
+ 	struct npu *npu;
+ 	struct npu_context *npu_context;
++	struct pci_controller *hose;
+ 
+ 	/*
+ 	 * At present we don't support GPUs connected to multiple NPUs and I'm
+@@ -689,8 +707,9 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	nphb = pci_bus_to_host(npdev->bus)->private_data;
+-	npu = &nphb->npu;
++	hose = pci_bus_to_host(npdev->bus);
++	nphb = hose->private_data;
++	npu = hose->npu;
+ 
+ 	/*
+ 	 * Setup the NPU context table for a particular GPU. These need to be
+@@ -764,7 +783,7 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	 */
+ 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], npdev);
+ 
+-	if (!nphb->npu.nmmu_flush) {
++	if (!npu->nmmu_flush) {
+ 		/*
+ 		 * If we're not explicitly flushing ourselves we need to mark
+ 		 * the thread for global flushes
+@@ -802,6 +821,7 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+ 	struct device_node *nvlink_dn;
+ 	u32 nvlink_index;
++	struct pci_controller *hose;
+ 
+ 	if (WARN_ON(!npdev))
+ 		return;
+@@ -809,8 +829,9 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 	if (!firmware_has_feature(FW_FEATURE_OPAL))
+ 		return;
+ 
+-	nphb = pci_bus_to_host(npdev->bus)->private_data;
+-	npu = &nphb->npu;
++	hose = pci_bus_to_host(npdev->bus);
++	nphb = hose->private_data;
++	npu = hose->npu;
+ 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+ 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+ 							&nvlink_index)))
+@@ -888,9 +909,15 @@ int pnv_npu2_init(struct pnv_phb *phb)
+ 	struct pci_dev *gpdev;
+ 	static int npu_index;
+ 	uint64_t rc = 0;
++	struct pci_controller *hose = phb->hose;
++	struct npu *npu;
++	int ret;
+ 
+-	phb->npu.nmmu_flush =
+-		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
++	npu = kzalloc(sizeof(*npu), GFP_KERNEL);
++	if (!npu)
++		return -ENOMEM;
++
++	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
+ 	for_each_child_of_node(phb->hose->dn, dn) {
+ 		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
+ 		if (gpdev) {
+@@ -904,18 +931,29 @@ int pnv_npu2_init(struct pnv_phb *phb)
+ 		}
+ 	}
+ 
+-	for (i = 0; !of_property_read_u64_index(phb->hose->dn, "ibm,mmio-atsd",
++	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
+ 							i, &mmio_atsd); i++)
+-		phb->npu.mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
++		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
+ 
+-	pr_info("NPU%lld: Found %d MMIO ATSD registers", phb->opal_id, i);
+-	phb->npu.mmio_atsd_count = i;
+-	phb->npu.mmio_atsd_usage = 0;
++	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
++	npu->mmio_atsd_count = i;
++	npu->mmio_atsd_usage = 0;
+ 	npu_index++;
+-	if (WARN_ON(npu_index >= NV_MAX_NPUS))
+-		return -ENOSPC;
++	if (WARN_ON(npu_index >= NV_MAX_NPUS)) {
++		ret = -ENOSPC;
++		goto fail_exit;
++	}
+ 	max_npu2_index = npu_index;
+-	phb->npu.index = npu_index;
++	npu->index = npu_index;
++	hose->npu = npu;
+ 
+ 	return 0;
++
++fail_exit:
++	for (i = 0; i < npu->mmio_atsd_count; ++i)
++		iounmap(npu->mmio_atsd_regs[i]);
++
++	kfree(npu);
++
++	return ret;
+ }
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 29c6837..8528fb9 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1283,7 +1283,7 @@ static void pnv_pci_ioda_setup_PEs(void)
+ 			pnv_ioda_reserve_pe(phb, 0);
+ 			pnv_ioda_setup_npu_PEs(hose->bus);
+ 			if (phb->model == PNV_PHB_MODEL_NPU2)
+-				pnv_npu2_init(phb);
++				WARN_ON_ONCE(pnv_npu2_init(phb));
+ 		}
+ 		if (phb->type == PNV_PHB_NPU_OCAPI) {
+ 			bus = hose->bus;
 -- 
 2.17.1
 
