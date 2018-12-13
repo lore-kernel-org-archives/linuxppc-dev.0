@@ -2,24 +2,23 @@ Return-Path: <SRS0=2g3y=OW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.9 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,T_MIXED_ES,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31DF9C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:29:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5982FC65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:31:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A8AF720870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:29:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8AF720870
+	by mail.kernel.org (Postfix) with ESMTPS id D685420870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:31:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D685420870
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FkKm6jNQzDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:29:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43FkN65hQszDqMt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:31:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -28,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5C26t1zDqcD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5G3G5yzDqcH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:26 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 79A90AE802FA;
- Thu, 13 Dec 2018 01:17:48 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 0D3CBAE80337;
+ Thu, 13 Dec 2018 01:17:51 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v5 01/20] powerpc/ioda/npu: Call skiboot's hot reset
- hook when disabling NPU2
-Date: Thu, 13 Dec 2018 17:17:15 +1100
-Message-Id: <20181213061734.16651-2-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 02/20] powerpc/mm/iommu/vfio_spapr_tce: Change
+ mm_iommu_get to reference a region
+Date: Thu, 13 Dec 2018 17:17:16 +1100
+Message-Id: <20181213061734.16651-3-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181213061734.16651-1-aik@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
@@ -65,59 +64,209 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The skiboot firmware has a hot reset handler which fences the NVIDIA V100
-GPU RAM on Witherspoons and makes accesses no-op instead of throwing HMIs:
-https://github.com/open-power/skiboot/commit/fca2b2b839a67
+Normally mm_iommu_get() should add a reference and mm_iommu_put() should
+remove it. However historically mm_iommu_find() does the referencing and
+mm_iommu_get() is doing allocation and referencing.
 
-Now we are going to pass V100 via VFIO which most certainly involves
-KVM guests which are often terminated without getting a chance to offline
-GPU RAM so we end up with a running machine with misconfigured memory.
-Accessing this memory produces hardware management interrupts (HMI)
-which bring the host down.
+We are going to add another helper to preregister device memory so
+instead of having mm_iommu_new() (which pre-registers the normal memory
+and references the region), we need separate helpers for pre-registering
+and referencing.
 
-To suppress HMIs, this wires up this hot reset hook to vfio_pci_disable()
-via pci_disable_device() which switches NPU2 to a safe mode and prevents
-HMIs.
+This renames:
+- mm_iommu_get to mm_iommu_new;
+- mm_iommu_find to mm_iommu_get.
+
+This changes mm_iommu_get() to reference the region so the name now
+reflects what it does.
+
+This removes the check for exact match from mm_iommu_new() as we want it
+to fail on existing regions; mm_iommu_get() should be used instead.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Alistair Popple <alistair@popple.id.au>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 Changes:
-v2:
-* updated the commit log
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+v5:
+* fixed a bug with uninitialized @found in tce_iommu_unregister_pages()
+* reworded the commit log
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 9ee7a30..29c6837 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3676,6 +3676,15 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
- 		pnv_ioda_release_pe(pe);
+v4:
+* squashed "powerpc/mm/iommu: Make mm_iommu_new() fail on existing regions" into this
+
+v2:
+* merged 2 patches into one
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 +--
+ arch/powerpc/mm/mmu_context_iommu.c    | 19 +++++++-------
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 35 +++++++++++++++++---------
+ 3 files changed, 34 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index c05efd2..268e112 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -21,7 +21,7 @@ struct mm_iommu_table_group_mem_t;
+ 
+ extern int isolate_lru_page(struct page *page);	/* from internal.h */
+ extern bool mm_iommu_preregistered(struct mm_struct *mm);
+-extern long mm_iommu_get(struct mm_struct *mm,
++extern long mm_iommu_new(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem);
+ extern long mm_iommu_put(struct mm_struct *mm,
+@@ -32,7 +32,7 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long size);
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
+ 		struct mm_struct *mm, unsigned long ua, unsigned long size);
+-extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++extern struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 0741d90..25a4b7f7 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -89,7 +89,7 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
+ }
+ EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
+ 
+-long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
++long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 		struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+@@ -100,12 +100,6 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 
+ 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list,
+ 			next) {
+-		if ((mem->ua == ua) && (mem->entries == entries)) {
+-			++mem->used;
+-			*pmem = mem;
+-			goto unlock_exit;
+-		}
+-
+ 		/* Overlap? */
+ 		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
+ 				(ua < (mem->ua +
+@@ -192,7 +186,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(mm_iommu_get);
++EXPORT_SYMBOL_GPL(mm_iommu_new);
+ 
+ static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+ {
+@@ -308,21 +302,26 @@ struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(struct mm_struct *mm,
+ 	return ret;
  }
  
-+static void pnv_npu_disable_device(struct pci_dev *pdev)
-+{
-+	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
-+	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
-+
-+	if (eehpe && eeh_ops && eeh_ops->reset)
-+		eeh_ops->reset(eehpe, EEH_RESET_HOT);
-+}
-+
- static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+-struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
++struct mm_iommu_table_group_mem_t *mm_iommu_get(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries)
  {
- 	struct pnv_phb *phb = hose->private_data;
-@@ -3720,6 +3729,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
- 	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
- 	.dma_set_mask		= pnv_npu_dma_set_mask,
- 	.shutdown		= pnv_pci_ioda_shutdown,
-+	.disable_device		= pnv_npu_disable_device,
- };
+ 	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
  
- static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
++	mutex_lock(&mem_list_mutex);
++
+ 	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
+ 		if ((mem->ua == ua) && (mem->entries == entries)) {
+ 			ret = mem;
++			++mem->used;
+ 			break;
+ 		}
+ 	}
+ 
++	mutex_unlock(&mem_list_mutex);
++
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(mm_iommu_find);
++EXPORT_SYMBOL_GPL(mm_iommu_get);
+ 
+ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index ad63725..1d8b889 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -152,11 +152,12 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	struct tce_iommu_prereg *tcemem;
+ 	bool found = false;
++	long ret;
+ 
+ 	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+ 		return -EINVAL;
+ 
+-	mem = mm_iommu_find(container->mm, vaddr, size >> PAGE_SHIFT);
++	mem = mm_iommu_get(container->mm, vaddr, size >> PAGE_SHIFT);
+ 	if (!mem)
+ 		return -ENOENT;
+ 
+@@ -168,9 +169,13 @@ static long tce_iommu_unregister_pages(struct tce_container *container,
+ 	}
+ 
+ 	if (!found)
+-		return -ENOENT;
++		ret = -ENOENT;
++	else
++		ret = tce_iommu_prereg_free(container, tcemem);
+ 
+-	return tce_iommu_prereg_free(container, tcemem);
++	mm_iommu_put(container->mm, mem);
++
++	return ret;
+ }
+ 
+ static long tce_iommu_register_pages(struct tce_container *container,
+@@ -185,22 +190,24 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 			((vaddr + size) < vaddr))
+ 		return -EINVAL;
+ 
+-	mem = mm_iommu_find(container->mm, vaddr, entries);
++	mem = mm_iommu_get(container->mm, vaddr, entries);
+ 	if (mem) {
+ 		list_for_each_entry(tcemem, &container->prereg_list, next) {
+-			if (tcemem->mem == mem)
+-				return -EBUSY;
++			if (tcemem->mem == mem) {
++				ret = -EBUSY;
++				goto put_exit;
++			}
+ 		}
++	} else {
++		ret = mm_iommu_new(container->mm, vaddr, entries, &mem);
++		if (ret)
++			return ret;
+ 	}
+ 
+-	ret = mm_iommu_get(container->mm, vaddr, entries, &mem);
+-	if (ret)
+-		return ret;
+-
+ 	tcemem = kzalloc(sizeof(*tcemem), GFP_KERNEL);
+ 	if (!tcemem) {
+-		mm_iommu_put(container->mm, mem);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto put_exit;
+ 	}
+ 
+ 	tcemem->mem = mem;
+@@ -209,6 +216,10 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	container->enabled = true;
+ 
+ 	return 0;
++
++put_exit:
++	mm_iommu_put(container->mm, mem);
++	return ret;
+ }
+ 
+ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
 -- 
 2.17.1
 
