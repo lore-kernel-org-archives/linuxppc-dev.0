@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EECF4C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:39:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09365C65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:41:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A3FF20849
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:39:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A3FF20849
+	by mail.kernel.org (Postfix) with ESMTPS id 8928120849
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 06:41:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8928120849
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FkY069mkzDr6x
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:39:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fkbb54ZDzDr02
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 17:41:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5W3wxMzDqcY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Fk5b0FXtzDqcv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 17:18:43 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 93DE4AE805A3;
- Thu, 13 Dec 2018 01:18:35 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id F2992AE805A4;
+ Thu, 13 Dec 2018 01:18:38 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v5 15/20] powerpc/powernv/npu: Add release_ownership
- hook
-Date: Thu, 13 Dec 2018 17:17:29 +1100
-Message-Id: <20181213061734.16651-16-aik@ozlabs.ru>
+Subject: [PATCH kernel v5 16/20] powerpc/powernv/npu: Check mmio_atsd array
+ bounds when populating
+Date: Thu, 13 Dec 2018 17:17:30 +1100
+Message-Id: <20181213061734.16651-17-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181213061734.16651-1-aik@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
@@ -64,106 +64,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to make ATS work and translate addresses for arbitrary
-LPID and PID, we need to program an NPU with LPID and allow PID wildcard
-matching with a specific MSR mask.
-
-This implements a helper to assign a GPU to LPAR and program the NPU
-with a wildcard for PID and a helper to do clean-up. The helper takes
-MSR (only DR/HV/PR/SF bits are allowed) to program them into NPU2 for
-ATS checkout requests support.
-
-This exports pnv_npu2_unmap_lpar_dev() as following patches will use it
-from the VFIO driver.
+A broken device tree might contain more than 8 values and introduce hard
+to debug memory corruption bug. This adds the boundary check.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v5:
-* removed opal_purge_cache as it is a part of reset in skiboot now
----
- arch/powerpc/platforms/powernv/npu-dma.c | 51 ++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ arch/powerpc/platforms/powernv/npu-dma.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 3468eaa..31dfc11 100644
+index 31dfc11..2c405a4 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -300,6 +300,7 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 			table_group);
- 	struct pnv_phb *phb = npe->phb;
- 	int64_t rc;
-+	struct pci_dev *gpdev = NULL;
+@@ -1179,8 +1179,9 @@ int pnv_npu2_init(struct pci_controller *hose)
  
- 	/*
- 	 * Note: NPU has just a single TVE in the hardware which means that
-@@ -321,12 +322,28 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 		return;
- 	}
- 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_unmap_lpar_dev(gpdev);
-+}
-+
-+static void pnv_npu_release_ownership(struct iommu_table_group *table_group)
-+{
-+	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
-+			table_group);
-+	struct pci_dev *gpdev = NULL;
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_map_lpar_dev(gpdev, 0, MSR_DR | MSR_PR | MSR_HV);
- }
+ 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
  
- static struct iommu_table_group_ops pnv_pci_npu_ops = {
- 	.set_window = pnv_npu_set_window,
- 	.unset_window = pnv_npu_unset_window,
- 	.take_ownership = pnv_npu_take_ownership,
-+	.release_ownership = pnv_npu_release_ownership,
- };
- #endif /* !CONFIG_IOMMU_API */
+-	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
+-							i, &mmio_atsd); i++)
++	for (i = 0; i < ARRAY_SIZE(npu->mmio_atsd_regs) &&
++			!of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
++				i, &mmio_atsd); i++)
+ 		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
  
-@@ -1237,3 +1254,37 @@ void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
- 	list_for_each_entry(gpdev, &gpe->pbus->devices, bus_list)
- 		pnv_npu2_map_lpar_dev(gpdev, 0, msr);
- }
-+
-+int pnv_npu2_unmap_lpar_dev(struct pci_dev *gpdev)
-+{
-+	int ret;
-+	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
-+	struct pci_controller *hose;
-+	struct pnv_phb *nphb;
-+
-+	if (!npdev)
-+		return -ENODEV;
-+
-+	hose = pci_bus_to_host(npdev->bus);
-+	nphb = hose->private_data;
-+
-+	dev_dbg(&gpdev->dev, "destroy context opalid=%llu\n",
-+			nphb->opal_id);
-+	ret = opal_npu_destroy_context(nphb->opal_id, 0/*__unused*/,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-+	if (ret < 0) {
-+		dev_err(&gpdev->dev, "Failed to destroy context: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* Set LPID to 0 anyway, just to be safe */
-+	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=0\n", nphb->opal_id);
-+	ret = opal_npu_map_lpar(nphb->opal_id,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn), 0 /*LPID*/,
-+			0 /* LPCR bits */);
-+	if (ret)
-+		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pnv_npu2_unmap_lpar_dev);
+ 	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
 -- 
 2.17.1
 
