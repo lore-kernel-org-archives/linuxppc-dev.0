@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03AB0C6786C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:22:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED389C67839
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:24:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 800ED20870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:22:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 800ED20870
+	by mail.kernel.org (Postfix) with ESMTPS id 6F93720870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:24:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F93720870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FcsB2RzBzDqCY
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:22:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fcvg24p0zDqXW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:24:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
@@ -30,57 +30,57 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Fcc81xhpzDqVf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:19 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43FccF2MylzDqVp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:25 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBD23g52024585
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:17 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pbbktf1n1-1
+ wBD23svQ134829
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:23 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pb9t03v7t-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:17 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:23 -0500
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 13 Dec 2018 02:11:16 -0000
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
+ Thu, 13 Dec 2018 02:11:22 -0000
+Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
+ by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 13 Dec 2018 02:11:11 -0000
+ Thu, 13 Dec 2018 02:11:17 -0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBD2BAIr27525352
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBD2BFAd8585356
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 13 Dec 2018 02:11:10 GMT
+ Thu, 13 Dec 2018 02:11:15 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 228ADC6059;
- Thu, 13 Dec 2018 02:11:10 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id BCE32C6061;
+ Thu, 13 Dec 2018 02:11:15 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A8DF4C605A;
- Thu, 13 Dec 2018 02:11:05 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8346FC605B;
+ Thu, 13 Dec 2018 02:11:11 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.80.227.60])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 13 Dec 2018 02:11:05 +0000 (GMT)
+ Thu, 13 Dec 2018 02:11:11 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: linux-integrity@vger.kernel.org
-Subject: [PATCH v9 04/14] integrity: Introduce struct evm_xattr
-Date: Thu, 13 Dec 2018 00:08:57 -0200
+Subject: [PATCH v9 05/14] integrity: Introduce integrity_keyring_from_id()
+Date: Thu, 13 Dec 2018 00:08:58 -0200
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20181213020907.13601-1-bauerman@linux.ibm.com>
 References: <20181213020907.13601-1-bauerman@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18121302-0012-0000-0000-000016E90EC7
+x-cbid: 18121302-0020-0000-0000-00000E98FB5E
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010217; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01130951; UDB=6.00587714; IPR=6.00911084; 
- MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:15
+ PH=3.00000004; SC=3.00000270; SDB=6.01130951; UDB=6.00587714; IPR=6.00911085; 
+ MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:21
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121302-0013-0000-0000-0000556F7F5F
-Message-Id: <20181213020907.13601-5-bauerman@linux.ibm.com>
+x-cbparentid: 18121302-0021-0000-0000-000064081C8B
+Message-Id: <20181213020907.13601-6-bauerman@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-12_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -115,118 +115,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Even though struct evm_ima_xattr_data includes a fixed-size array to hold a
-SHA1 digest, most of the code ignores the array and uses the struct to mean
-"type indicator followed by data of unspecified size" and tracks the real
-size of what the struct represents in a separate length variable.
-
-The only exception to that is the EVM code, which correctly uses the
-definition of struct evm_ima_xattr_data.
-
-So make this explicit in the code by removing the length specification from
-the array in struct evm_ima_xattr_data. Also, change the name of the
-element from digest to data since in most places the array doesn't hold a
-digest.
-
-A separate struct evm_xattr is introduced, with the original definition of
-evm_ima_xattr_data to be used in the places that actually expect that
-definition, specifically the EVM HMAC code.
+IMA will need to obtain the keyring used to verify file signatures so that
+it can verify the module-style signature appended to files.
 
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
+Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
 ---
- security/integrity/evm/evm_main.c     | 8 ++++----
- security/integrity/ima/ima_appraise.c | 7 ++++---
- security/integrity/integrity.h        | 6 ++++++
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ security/integrity/digsig.c    | 28 +++++++++++++++++++++-------
+ security/integrity/integrity.h |  6 ++++++
+ 2 files changed, 27 insertions(+), 7 deletions(-)
 
-diff --git a/security/integrity/evm/evm_main.c b/security/integrity/evm/evm_main.c
-index 7f3f54d89a6e..a1b42d10efc7 100644
---- a/security/integrity/evm/evm_main.c
-+++ b/security/integrity/evm/evm_main.c
-@@ -169,7 +169,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
- 	/* check value type */
- 	switch (xattr_data->type) {
- 	case EVM_XATTR_HMAC:
--		if (xattr_len != sizeof(struct evm_ima_xattr_data)) {
-+		if (xattr_len != sizeof(struct evm_xattr)) {
- 			evm_status = INTEGRITY_FAIL;
- 			goto out;
- 		}
-@@ -179,7 +179,7 @@ static enum integrity_status evm_verify_hmac(struct dentry *dentry,
- 				   xattr_value_len, &digest);
- 		if (rc)
- 			break;
--		rc = crypto_memneq(xattr_data->digest, digest.digest,
-+		rc = crypto_memneq(xattr_data->data, digest.digest,
- 				   SHA1_DIGEST_SIZE);
- 		if (rc)
- 			rc = -EINVAL;
-@@ -523,7 +523,7 @@ int evm_inode_init_security(struct inode *inode,
- 				 const struct xattr *lsm_xattr,
- 				 struct xattr *evm_xattr)
+diff --git a/security/integrity/digsig.c b/security/integrity/digsig.c
+index 71c3200521d6..bbfa3085d1b5 100644
+--- a/security/integrity/digsig.c
++++ b/security/integrity/digsig.c
+@@ -44,11 +44,10 @@ static const char * const keyring_name[INTEGRITY_KEYRING_MAX] = {
+ #define restrict_link_to_ima restrict_link_by_builtin_trusted
+ #endif
+ 
+-int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+-			    const char *digest, int digestlen)
++struct key *integrity_keyring_from_id(const unsigned int id)
  {
--	struct evm_ima_xattr_data *xattr_data;
-+	struct evm_xattr *xattr_data;
- 	int rc;
+-	if (id >= INTEGRITY_KEYRING_MAX || siglen < 2)
+-		return -EINVAL;
++	if (id >= INTEGRITY_KEYRING_MAX)
++		return ERR_PTR(-EINVAL);
  
- 	if (!evm_key_loaded() || !evm_protected_xattr(lsm_xattr->name))
-@@ -533,7 +533,7 @@ int evm_inode_init_security(struct inode *inode,
- 	if (!xattr_data)
- 		return -ENOMEM;
+ 	if (!keyring[id]) {
+ 		keyring[id] =
+@@ -57,17 +56,32 @@ int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+ 			int err = PTR_ERR(keyring[id]);
+ 			pr_err("no %s keyring: %d\n", keyring_name[id], err);
+ 			keyring[id] = NULL;
+-			return err;
++			return ERR_PTR(err);
+ 		}
+ 	}
  
--	xattr_data->type = EVM_XATTR_HMAC;
-+	xattr_data->data.type = EVM_XATTR_HMAC;
- 	rc = evm_init_hmac(inode, lsm_xattr, xattr_data->digest);
- 	if (rc < 0)
- 		goto out;
-diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
-index f6ac405daabb..dcb8226972cf 100644
---- a/security/integrity/ima/ima_appraise.c
-+++ b/security/integrity/ima/ima_appraise.c
-@@ -167,7 +167,8 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
- 		return sig->hash_algo;
- 		break;
- 	case IMA_XATTR_DIGEST_NG:
--		ret = xattr_value->digest[0];
-+		/* first byte contains algorithm id */
-+		ret = xattr_value->data[0];
- 		if (ret < HASH_ALGO__LAST)
- 			return ret;
- 		break;
-@@ -175,7 +176,7 @@ enum hash_algo ima_get_hash_algo(struct evm_ima_xattr_data *xattr_value,
- 		/* this is for backward compatibility */
- 		if (xattr_len == 21) {
- 			unsigned int zero = 0;
--			if (!memcmp(&xattr_value->digest[16], &zero, 4))
-+			if (!memcmp(&xattr_value->data[16], &zero, 4))
- 				return HASH_ALGO_MD5;
- 			else
- 				return HASH_ALGO_SHA1;
-@@ -274,7 +275,7 @@ int ima_appraise_measurement(enum ima_hooks func,
- 			/* xattr length may be longer. md5 hash in previous
- 			   version occupied 20 bytes in xattr, instead of 16
- 			 */
--			rc = memcmp(&xattr_value->digest[hash_start],
-+			rc = memcmp(&xattr_value->data[hash_start],
- 				    iint->ima_hash->digest,
- 				    iint->ima_hash->length);
- 		else
++	return keyring[id];
++}
++
++int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
++			    const char *digest, int digestlen)
++{
++	struct key *keyring;
++
++	if (siglen < 2)
++		return -EINVAL;
++
++	keyring = integrity_keyring_from_id(id);
++	if (IS_ERR(keyring))
++		return PTR_ERR(keyring);
++
+ 	switch (sig[1]) {
+ 	case 1:
+ 		/* v1 API expect signature without xattr type */
+-		return digsig_verify(keyring[id], sig + 1, siglen - 1,
++		return digsig_verify(keyring, sig + 1, siglen - 1,
+ 				     digest, digestlen);
+ 	case 2:
+-		return asymmetric_verify(keyring[id], sig, siglen,
++		return asymmetric_verify(keyring, sig, siglen,
+ 					 digest, digestlen);
+ 	}
+ 
 diff --git a/security/integrity/integrity.h b/security/integrity/integrity.h
-index 3517d2852a07..2bf0fc51752b 100644
+index 2bf0fc51752b..6f657260a964 100644
 --- a/security/integrity/integrity.h
 +++ b/security/integrity/integrity.h
-@@ -79,6 +79,12 @@ enum evm_ima_xattr_type {
+@@ -155,6 +155,7 @@ extern struct dentry *integrity_dir;
  
- struct evm_ima_xattr_data {
- 	u8 type;
-+	u8 data[];
-+} __packed;
+ #ifdef CONFIG_INTEGRITY_SIGNATURE
+ 
++struct key *integrity_keyring_from_id(const unsigned int id);
+ int integrity_digsig_verify(const unsigned int id, const char *sig, int siglen,
+ 			    const char *digest, int digestlen);
+ 
+@@ -164,6 +165,11 @@ int __init integrity_load_cert(const unsigned int id, const char *source,
+ 			       const void *data, size_t len, key_perm_t perm);
+ #else
+ 
++static inline struct key *integrity_keyring_from_id(const unsigned int id)
++{
++	return ERR_PTR(-EINVAL);
++}
 +
-+/* Only used in the EVM HMAC code. */
-+struct evm_xattr {
-+	struct evm_ima_xattr_data data;
- 	u8 digest[SHA1_DIGEST_SIZE];
- } __packed;
- 
+ static inline int integrity_digsig_verify(const unsigned int id,
+ 					  const char *sig, int siglen,
+ 					  const char *digest, int digestlen)
 
