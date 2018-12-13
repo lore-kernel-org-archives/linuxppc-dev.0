@@ -2,88 +2,114 @@ Return-Path: <SRS0=2g3y=OW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A407EC65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 21:56:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 40FA0C65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 22:53:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 735F520811
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 21:56:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3FE392086D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 22:53:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="U12db4Dq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 735F520811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="JS7zdCGC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FE392086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=amd.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43G6vp2LV7zDr3b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 08:56:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by lists.ozlabs.org (Postfix) with ESMTP id 43G89p1fXyzDqSB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:53:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="U12db4Dq";
+	dkim=pass (1024-bit key; unprotected) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="JS7zdCGC";
 	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (helo)
+ smtp.helo=nam04-sn1-obe.outbound.protection.outlook.com
+ (client-ip=40.107.70.48; helo=nam04-sn1-obe.outbound.protection.outlook.com;
+ envelope-from=thomas.lendacky@amd.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::10; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="U12db4Dq"; 
+ dmarc=none (p=none dis=none) header.from=amd.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=amdcloud.onmicrosoft.com
+ header.i=@amdcloud.onmicrosoft.com header.b="JS7zdCGC"; 
  dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from NAM04-SN1-obe.outbound.protection.outlook.com
+ (mail-eopbgr700048.outbound.protection.outlook.com [40.107.70.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43G6s01TWszDr2k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 08:54:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544738047;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=ZKqclJmHoMKJBmhJti9Mhv0VswdREJZBNmEoAQY3cxc=;
- b=U12db4DqSXppJk4Cbp+oBPeB1ERDFOb0zuJ+QjAHoA5qol8QyGRgLLe2+pEJB7jdOB
- auuV6tXa0zw3ZN+/0aIDic89gg7xFCynPC+SRZDYCoTUF1T4OCK7xTqJx0MfJohuYNBM
- Nr7FgEP+40oDl/ezYRMq0z1vdTnWw3XTZ5ztkPEXUlKqn0QExKl8AkSwtjzohhVKvxf+
- goHMzDqAdwFNKhfbO8KDdpieyCzlgiX/fzYDNcINJaqFidAUJFWUDPLTyCEWMZnZ0+hm
- tq0u802HfHgwvRc7+UfFR9Xzn/6Fka2mF7li+bJiGIYCmUEtarpiD0E+vLiFx005X6Ul
- yrTA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkN3cZasVJIwxL1+pu11P25ZgVYiw=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:2c23:64bc:d5e2:ce82]
- by smtp.strato.de (RZmta 44.8 AUTH) with ESMTPSA id e03c1euBDLrl4TC
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Thu, 13 Dec 2018 22:53:47 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
- <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
- <4cfb3f26-74e1-db01-b014-759f188bb5a6@xenosoft.de>
- <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
- <20181212141556.GA4801@lst.de>
- <2242B4B2-6311-492E-BFF9-6740E36EC6D4@xenosoft.de>
- <84558d7f-5a7f-5219-0c3a-045e6b4c494f@xenosoft.de>
- <20181213091021.GA2106@lst.de>
- <835bd119-081e-a5ea-1899-189d439c83d6@xenosoft.de>
- <76bc684a-b4d2-1d26-f18d-f5c9ba65978c@xenosoft.de>
- <20181213112511.GA4574@lst.de>
- <e109de27-f4af-147d-dc0e-067c8bafb29b@xenosoft.de>
- <ad5a5a8a-d232-d523-a6f7-e9377fc3857b@xenosoft.de>
-Message-ID: <e60d6ca3-860c-f01d-8860-c5e022ec7179@xenosoft.de>
-Date: Thu, 13 Dec 2018 22:53:47 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43G86x5bmMzDr1X
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 09:51:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amdcloud.onmicrosoft.com; s=selector1-amd-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=EZ13NgBdxOnFKX1ViClP+b8HpgQ0r6BC0pmboxTEr2w=;
+ b=JS7zdCGCVctBw1voClXgr2pFzsxZ2WYRGCwM+rKujIhxdTi0wbNJkaQnDBxZYsQr4Fm2xt1jRdW00aBLtcT+asVau+D45F9v165ihyEZEWLV1WraqWPp1gMEFGYOZXpZDnxb25DfKri201PWXz6pFJ8MJ56uzeTsjtBLOXQ0X8k=
+Received: from SN1PR12MB0175.namprd12.prod.outlook.com (10.162.3.15) by
+ SN1PR12MB0767.namprd12.prod.outlook.com (10.164.26.29) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1425.20; Thu, 13 Dec 2018 22:51:12 +0000
+Received: from SN1PR12MB0175.namprd12.prod.outlook.com
+ ([fe80::bc0e:7f7f:ee65:e2d5]) by SN1PR12MB0175.namprd12.prod.outlook.com
+ ([fe80::bc0e:7f7f:ee65:e2d5%6]) with mapi id 15.20.1425.016; Thu, 13 Dec 2018
+ 22:51:12 +0000
+From: "Lendacky, Thomas" <Thomas.Lendacky@amd.com>
+To: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+Subject: [PATCH] kernel/dma/direct: Do not include SME mask in the DMA
+ supported check
+Thread-Topic: [PATCH] kernel/dma/direct: Do not include SME mask in the DMA
+ supported check
+Thread-Index: AQHUkzZYZbIHsqBVPUqwArkjtx2NOg==
+Date: Thu, 13 Dec 2018 22:51:12 +0000
+Message-ID: <20181213225110.6567.69313.stgit@tlendack-t1.amdoffice.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: SN4PR0201CA0053.namprd02.prod.outlook.com
+ (2603:10b6:803:20::15) To SN1PR12MB0175.namprd12.prod.outlook.com
+ (2a01:111:e400:5143::15)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Thomas.Lendacky@amd.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [165.204.77.1]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; SN1PR12MB0767;
+ 20:I0ZpezcbJNdqj30zr2Uk8wzlqMd6lYFagxzTY8CoEbD1S9cp7PavofUTKOzamIsgTa5fEiYaJPeccZP/HVsEgYsZbfs+j6I137MwwAfYmthmllRTHuA4ciAIB8DFxxjN79OyQ9TPWAMER7qmoYh+/3tLamhKuZhfmxNMp7mrxIEJg2UEJ0oqlBVjeBI0eyH/3Ui/8+218yf3gxGzKl1Cy2WrT1XVNv2i6lqZk+gy4jNfUOU7TkGYvTFVckfXVO20
+x-ms-office365-filtering-correlation-id: afb0eaa0-c299-4a0f-5dc0-08d6614d7aee
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390098)(7020095)(4652040)(8989299)(5600074)(711020)(4618075)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7153060)(7193020);
+ SRVR:SN1PR12MB0767; 
+x-ms-traffictypediagnostic: SN1PR12MB0767:
+x-microsoft-antispam-prvs: <SN1PR12MB076713C09A51434CF0A31E2FECA00@SN1PR12MB0767.namprd12.prod.outlook.com>
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(3230021)(999002)(6040522)(2401047)(8121501046)(5005006)(823302103)(10201501046)(3002001)(3231475)(944501520)(52105112)(93006095)(93001095)(6055026)(148016)(149066)(150057)(6041310)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(20161123562045)(20161123558120)(20161123564045)(20161123560045)(201708071742011)(7699051)(76991095);
+ SRVR:SN1PR12MB0767; BCL:0; PCL:0; RULEID:; SRVR:SN1PR12MB0767; 
+x-forefront-prvs: 088552DE73
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(376002)(346002)(366004)(39860400002)(396003)(136003)(189003)(199004)(3846002)(6116002)(97746001)(1076002)(5660300001)(6436002)(2906002)(316002)(6916009)(106356001)(478600001)(476003)(66066001)(68736007)(97736004)(103116003)(14444005)(256004)(71190400001)(71200400001)(486006)(99286004)(33896004)(5640700003)(575784001)(86362001)(6512007)(8936002)(53936002)(186003)(9686003)(305945005)(7736002)(2351001)(25786009)(2501003)(6506007)(386003)(26005)(54906003)(8676002)(39060400002)(4326008)(81166006)(1730700003)(81156014)(52116002)(14454004)(102836004)(105586002)(6486002)(72206003);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:SN1PR12MB0767;
+ H:SN1PR12MB0175.namprd12.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: amd.com does not designate
+ permitted sender hosts)
+x-microsoft-antispam-message-info: 6zkrdLhunDhEwPYdxiqOZJI2zTutKZEe0qlQtWotPx63GixHJdVs+EyBXKcP67Pa47VUZhkHFOD4aKI0lrs1hAzqP7n6+uotfWfd35R1SwLwn7VonJlt0J9eRSqZ/YTEsfDv1iv99SuyvXlA8LYbobSteteBFFoIRj7qk3QjX0fii9d5GIa8LU5Ux2Xoan5aegrNmJEKA5hdiAAqcLaz1f3Q81s+ikUgCOZvPoEYBZKtOnFQwMjUlLNq3Vcy+KgOJETKDLC6iLZTI9cQ3g7p2YgAABujBy7mxZb1qBVV+o+sav1980yiiLoY0m9eWwuv
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <4D87B982A8810C41AD4B5C04C918B735@namprd12.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-In-Reply-To: <ad5a5a8a-d232-d523-a6f7-e9377fc3857b@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: afb0eaa0-c299-4a0f-5dc0-08d6614d7aee
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Dec 2018 22:51:12.7435 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN1PR12MB0767
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,58 +121,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Duyck <alexander.duyck@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Greg KH <gregkh@linuxfoundation.org>, Robin Murphy <robin.murphy@arm.com>,
+ Christoph Hellwig <hch@lst.de>, Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 13 December 2018 at 6:48PM, Christian Zigotzky wrote:
-> On 13 December 2018 at 2:34PM, Christian Zigotzky wrote:
->> On 13 December 2018 at 12:25PM, Christoph Hellwig wrote:
->>> On Thu, Dec 13, 2018 at 12:19:26PM +0100, Christian Zigotzky wrote:
->>>> I tried it again but I get the following error message:
->>>>
->>>> MODPOST vmlinux.o
->>>> arch/powerpc/kernel/dma-iommu.o: In function 
->>>> `.dma_iommu_get_required_mask':
->>>> (.text+0x274): undefined reference to `.dma_direct_get_required_mask'
->>>> make: *** [vmlinux] Error 1
->>> Sorry, you need this one liner before all the patches posted last time:
->>>
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index d8819e3a1eb1..7e78c2798f2f 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -154,6 +154,7 @@ config PPC
->>>       select CLONE_BACKWARDS
->>>       select DCACHE_WORD_ACCESS        if PPC64 && CPU_LITTLE_ENDIAN
->>>       select DYNAMIC_FTRACE            if FUNCTION_TRACER
->>> +    select DMA_DIRECT_OPS
->>>       select EDAC_ATOMIC_SCRUB
->>>       select EDAC_SUPPORT
->>>       select GENERIC_ATOMIC64            if PPC32
->>>
->> Thanks. Result: PASEMI onboard ethernet works and the X5000 (P5020 
->> board) boots with the patch '0001-get_required_mask.patch'.
->>
->> -- Christian
->>
->>
-> Next patch: '0002-swiotlb-dma_supported.patch' for the last good 
-> commit (977706f9755d2d697aa6f45b4f9f0e07516efeda).
->
-> The PASEMI onboard ethernet works and the X5000 (P5020 board) boots.
->
-> -- Christian
->
->
-Next patch: '0003-nommu-dma_supported.patch'
-
-No problems with the PASEMI onboard ethernet and the P5020 board boots.
-
--- Christian
-
+VGhlIGRtYV9kaXJlY3Rfc3VwcG9ydGVkKCkgZnVuY3Rpb24gaW50ZW5kcyB0byBjaGVjayB0aGUg
+RE1BIG1hc2sgYWdhaW5zdA0Kc3BlY2lmaWMgdmFsdWVzLiBIb3dldmVyLCB0aGUgcGh5c190b19k
+bWEoKSBmdW5jdGlvbiBpbmNsdWRlcyB0aGUgU01FDQplbmNyeXB0aW9uIG1hc2ssIHdoaWNoIGRl
+ZmVhdHMgdGhlIGludGVuZGVkIHB1cnBvc2Ugb2YgdGhlIGNoZWNrLiBUaGlzDQpyZXN1bHRzIGlu
+IGRyaXZlcnMgdGhhdCBzdXBwb3J0IGxlc3MgdGhhbiA0OC1iaXQgRE1BIChTTUUgZW5jcnlwdGlv
+biBtYXNrDQppcyBiaXQgNDcpIGZyb20gYmVpbmcgYWJsZSB0byBzZXQgdGhlIERNQSBtYXNrIHN1
+Y2Nlc3NmdWxseSB3aGVuIFNNRSBpcw0KYWN0aXZlLCB3aGljaCByZXN1bHRzIGluIHRoZSBkcml2
+ZXIgZmFpbGluZyB0byBpbml0aWFsaXplLg0KDQpDaGFuZ2UgdGhlIGZ1bmN0aW9uIHVzZWQgdG8g
+Y2hlY2sgdGhlIG1hc2sgZnJvbSBwaHlzX3RvX2RtYSgpIHRvDQpfX3BoeXNfdG9fZG1hKCkgc28g
+dGhhdCB0aGUgU01FIGVuY3J5cHRpb24gbWFzayBpcyBub3QgcGFydCBvZiB0aGUgY2hlY2suDQoN
+CkZpeGVzOiBjMWQwYWYxYTFkNWQgKCJrZXJuZWwvZG1hL2RpcmVjdDogdGFrZSBETUEgb2Zmc2V0
+IGludG8gYWNjb3VudCBpbiBkbWFfZGlyZWN0X3N1cHBvcnRlZCIpDQpTaWduZWQtb2ZmLWJ5OiBU
+b20gTGVuZGFja3kgPHRob21hcy5sZW5kYWNreUBhbWQuY29tPg0KLS0tDQoga2VybmVsL2RtYS9k
+aXJlY3QuYyB8ICAgIDcgKysrKysrLQ0KIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKyks
+IDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2tlcm5lbC9kbWEvZGlyZWN0LmMgYi9rZXJu
+ZWwvZG1hL2RpcmVjdC5jDQppbmRleCAyMmExMmFiLi4zNzVjNzdlIDEwMDY0NA0KLS0tIGEva2Vy
+bmVsL2RtYS9kaXJlY3QuYw0KKysrIGIva2VybmVsL2RtYS9kaXJlY3QuYw0KQEAgLTMwOSw3ICsz
+MDksMTIgQEAgaW50IGRtYV9kaXJlY3Rfc3VwcG9ydGVkKHN0cnVjdCBkZXZpY2UgKmRldiwgdTY0
+IG1hc2spDQogDQogCW1pbl9tYXNrID0gbWluX3QodTY0LCBtaW5fbWFzaywgKG1heF9wZm4gLSAx
+KSA8PCBQQUdFX1NISUZUKTsNCiANCi0JcmV0dXJuIG1hc2sgPj0gcGh5c190b19kbWEoZGV2LCBt
+aW5fbWFzayk7DQorCS8qDQorCSAqIFRoaXMgY2hlY2sgbmVlZHMgdG8gYmUgYWdhaW5zdCB0aGUg
+YWN0dWFsIGJpdCBtYXNrIHZhbHVlLCBzbw0KKwkgKiB1c2UgX19waHlzX3RvX2RtYSgpIGhlcmUg
+c28gdGhhdCB0aGUgU01FIGVuY3J5cHRpb24gbWFzayBpc24ndA0KKwkgKiBwYXJ0IG9mIHRoZSBj
+aGVjay4NCisJICovDQorCXJldHVybiBtYXNrID49IF9fcGh5c190b19kbWEoZGV2LCBtaW5fbWFz
+ayk7DQogfQ0KIA0KIGludCBkbWFfZGlyZWN0X21hcHBpbmdfZXJyb3Ioc3RydWN0IGRldmljZSAq
+ZGV2LCBkbWFfYWRkcl90IGRtYV9hZGRyKQ0KDQo=
