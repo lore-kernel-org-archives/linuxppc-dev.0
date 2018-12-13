@@ -6,89 +6,88 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 735DCC67839
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:29:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82EF8C67839
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:31:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C560320870
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:29:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C560320870
+	by mail.kernel.org (Postfix) with ESMTPS id EA49520870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 02:31:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA49520870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Fd0m5gX3zDqP8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:29:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fd350m4WzDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:31:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43FccV6kHrzDqVj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:38 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBD251QJ012926
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:36 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pbb228b9n-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Fccc5kmVzDqVR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 13:11:43 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBD23jTG112215
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:42 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2pbbdj7hb1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2018 21:11:41 -0500
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 13 Dec 2018 02:11:35 -0000
+ Thu, 13 Dec 2018 02:11:41 -0000
 Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
+ by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 13 Dec 2018 02:11:29 -0000
+ Thu, 13 Dec 2018 02:11:35 -0000
 Received: from b03ledav006.gho.boulder.ibm.com
  (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
  by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBD2BSx122020116
+ wBD2BYEO26083338
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 13 Dec 2018 02:11:28 GMT
+ Thu, 13 Dec 2018 02:11:34 GMT
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 55033C6057;
- Thu, 13 Dec 2018 02:11:28 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id EEC39C6061;
+ Thu, 13 Dec 2018 02:11:33 +0000 (GMT)
 Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CBABFC6066;
- Thu, 13 Dec 2018 02:11:22 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C2F14C605F;
+ Thu, 13 Dec 2018 02:11:29 +0000 (GMT)
 Received: from morokweng.localdomain.com (unknown [9.80.227.60])
  by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 13 Dec 2018 02:11:22 +0000 (GMT)
+ Thu, 13 Dec 2018 02:11:29 +0000 (GMT)
 From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 To: linux-integrity@vger.kernel.org
-Subject: [PATCH v9 07/14] integrity: Select CONFIG_KEYS instead of depending
- on it
-Date: Thu, 13 Dec 2018 00:09:00 -0200
+Subject: [PATCH v9 08/14] ima: Introduce is_signed()
+Date: Thu, 13 Dec 2018 00:09:01 -0200
 X-Mailer: git-send-email 2.17.2
 In-Reply-To: <20181213020907.13601-1-bauerman@linux.ibm.com>
 References: <20181213020907.13601-1-bauerman@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18121302-0020-0000-0000-00000E98FB61
+x-cbid: 18121302-0012-0000-0000-000016E90ECE
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010217; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000270; SDB=6.01130951; UDB=6.00587714; IPR=6.00911085; 
- MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:33
+ PH=3.00000004; SC=3.00000270; SDB=6.01130951; UDB=6.00587714; IPR=6.00911084; 
+ MB=3.00024674; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-13 02:11:39
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121302-0021-0000-0000-000064081CAC
-Message-Id: <20181213020907.13601-8-bauerman@linux.ibm.com>
+x-cbparentid: 18121302-0013-0000-0000-0000556F7FA0
+Message-Id: <20181213020907.13601-9-bauerman@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-12_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=928 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1812130017
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -116,29 +115,77 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This avoids a dependency cycle in soon-to-be-introduced
-CONFIG_IMA_APPRAISE_MODSIG: it will select CONFIG_MODULE_SIG_FORMAT
-which in turn selects CONFIG_KEYS. Kconfig then complains that
-CONFIG_INTEGRITY_SIGNATURE depends on CONFIG_KEYS.
+With the introduction of another IMA signature type (modsig), some places
+will need to check for both of them. It is cleaner to do that if there's a
+helper function to tell whether an xattr_value represents an IMA
+signature.
 
+Suggested-by: Mimi Zohar <zohar@linux.ibm.com>
 Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Signed-off-by: Mimi Zohar <zohar@linux.ibm.com>
 ---
- security/integrity/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ security/integrity/ima/ima.h              | 5 +++++
+ security/integrity/ima/ima_appraise.c     | 7 +++----
+ security/integrity/ima/ima_template_lib.c | 2 +-
+ 3 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/security/integrity/Kconfig b/security/integrity/Kconfig
-index 4b4d2aeef539..176905bef20a 100644
---- a/security/integrity/Kconfig
-+++ b/security/integrity/Kconfig
-@@ -17,8 +17,8 @@ if INTEGRITY
+diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
+index cc12f3449a72..e4f72b30cb28 100644
+--- a/security/integrity/ima/ima.h
++++ b/security/integrity/ima/ima.h
+@@ -154,6 +154,11 @@ unsigned long ima_get_binary_runtime_size(void);
+ int ima_init_template(void);
+ void ima_init_template_list(void);
  
- config INTEGRITY_SIGNATURE
- 	bool "Digital signature verification using multiple keyrings"
--	depends on KEYS
- 	default n
-+	select KEYS
- 	select SIGNATURE
- 	help
- 	  This option enables digital signature verification support
++static inline bool is_signed(const struct evm_ima_xattr_data *xattr_value)
++{
++	return xattr_value && xattr_value->type == EVM_IMA_XATTR_DIGSIG;
++}
++
+ /*
+  * used to protect h_table and sha_table
+  */
+diff --git a/security/integrity/ima/ima_appraise.c b/security/integrity/ima/ima_appraise.c
+index dcb8226972cf..085386c77b0b 100644
+--- a/security/integrity/ima/ima_appraise.c
++++ b/security/integrity/ima/ima_appraise.c
+@@ -335,15 +335,14 @@ int ima_appraise_measurement(enum ima_hooks func,
+ 	} else if (status != INTEGRITY_PASS) {
+ 		/* Fix mode, but don't replace file signatures. */
+ 		if ((ima_appraise & IMA_APPRAISE_FIX) &&
+-		    (!xattr_value ||
+-		     xattr_value->type != EVM_IMA_XATTR_DIGSIG)) {
++		    !is_signed(xattr_value)) {
+ 			if (!ima_fix_xattr(dentry, iint))
+ 				status = INTEGRITY_PASS;
+ 		}
+ 
+ 		/* Permit new files with file signatures, but without data. */
+ 		if (inode->i_size == 0 && iint->flags & IMA_NEW_FILE &&
+-		    xattr_value && xattr_value->type == EVM_IMA_XATTR_DIGSIG) {
++		    is_signed(xattr_value)) {
+ 			status = INTEGRITY_PASS;
+ 		}
+ 
+@@ -458,7 +457,7 @@ int ima_inode_setxattr(struct dentry *dentry, const char *xattr_name,
+ 		if (!xattr_value_len || (xvalue->type >= IMA_XATTR_LAST))
+ 			return -EINVAL;
+ 		ima_reset_appraise_flags(d_backing_inode(dentry),
+-			xvalue->type == EVM_IMA_XATTR_DIGSIG);
++					 is_signed(xvalue));
+ 		result = 0;
+ 	}
+ 	return result;
+diff --git a/security/integrity/ima/ima_template_lib.c b/security/integrity/ima/ima_template_lib.c
+index 43752002c222..300912914b17 100644
+--- a/security/integrity/ima/ima_template_lib.c
++++ b/security/integrity/ima/ima_template_lib.c
+@@ -382,7 +382,7 @@ int ima_eventsig_init(struct ima_event_data *event_data,
+ {
+ 	struct evm_ima_xattr_data *xattr_value = event_data->xattr_value;
+ 
+-	if ((!xattr_value) || (xattr_value->type != EVM_IMA_XATTR_DIGSIG))
++	if (!is_signed(xattr_value))
+ 		return 0;
+ 
+ 	return ima_write_template_field_data(xattr_value, event_data->xattr_len,
 
