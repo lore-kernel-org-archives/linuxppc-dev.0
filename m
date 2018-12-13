@@ -2,63 +2,68 @@ Return-Path: <SRS0=2g3y=OW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78DC0C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 03:28:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CDCFC67839
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:33:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A080720811
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 03:28:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6C29320882
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:33:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="QS0y30Vj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A080720811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="eplC+xQR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C29320882
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43FfJb1JwtzDqX2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 14:27:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fgm65G40zDqR2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 15:33:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="QS0y30Vj";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="eplC+xQR";
 	dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43FfFq70P5zDqSN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 14:25:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="QS0y30Vj"; 
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="eplC+xQR"; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 43FfFq2xxbz9s9G; Thu, 13 Dec 2018 14:25:35 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1544671535; bh=oSJNgUCmi5w/QyYKzqvpbDEts4HNxo9omJ345IOYsak=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=QS0y30VjQclEs40pYFL7lhgZFLXisiDK58jVqqAWypCyQ7q26MWbvL5YjkWXYKS5C
- /FTMMXoUEY8+2zLKTk9dfnYXfftpkF81b7D34rMWSGTUX421VmbL8krM3ZkVC7bQIp
- lBN+65NSbmbEfjQdEwiygSeH24M9ntPwzUiOmNpipiKNXvbO7LWKDnDD9oIF7ljRLa
- fbZ+2JkiCJuv22wYJ493zYgu0kQS//bcaCePvZJCmeNeXyYl4JbI7hz45brtxHRq8c
- O/9w5t8K8NxX23Jh2nz5bwZROifnNW4gqAcBRM4bJD0zw3w44RucV/cHHL6kZHLev6
- qBvKvQkiIGSAQ==
-Date: Thu, 13 Dec 2018 14:25:32 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v4 03/19] powerpc/vfio/iommu/kvm: Do not pin
- device memory
-Message-ID: <20181213032532.GA7078@blackberry>
-References: <20181123055304.25116-1-aik@ozlabs.ru>
- <20181123055304.25116-4-aik@ozlabs.ru>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Fggb2MpXzDqbW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 15:29:31 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 590D420873;
+ Thu, 13 Dec 2018 04:29:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1544675369;
+ bh=JQkWJvSjDhcS980OrOd4JY5ud14P3Z+MVkpLjfU7wNs=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=eplC+xQRBk9jEITVzGtnRZN+WJ5AhYM3BF6dTtQN2MWm8IF8Y6r7sXVix2Xw7H3jn
+ S3F3md8Cx7oj0yeZ3Rcr5iytyzCDWNKpukbgQ26aznCCPQ25xyL0BHgyuML6Bxo+PY
+ 5Ogcs2icp0dlQCSAzYe7B8iMSx0xhQKYxz3WkcC4=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.19 31/73] ide: pmac: add of_node_put()
+Date: Wed, 12 Dec 2018 23:27:56 -0500
+Message-Id: <20181213042838.75160-31-sashal@kernel.org>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20181213042838.75160-1-sashal@kernel.org>
+References: <20181213042838.75160-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181123055304.25116-4-aik@ozlabs.ru>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,53 +75,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Leonardo Augusto =?iso-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: Yangtao Li <tiny.windzz@gmail.com>, Sasha Levin <sashal@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>,
+ linux-ide@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Nov 23, 2018 at 04:52:48PM +1100, Alexey Kardashevskiy wrote:
-> This new memory does not have page structs as it is not plugged to
-> the host so gup() will fail anyway.
-> 
-> This adds 2 helpers:
-> - mm_iommu_newdev() to preregister the "memory device" memory so
-> the rest of API can still be used;
-> - mm_iommu_is_devmem() to know if the physical address is one of thise
-> new regions which we must avoid unpinning of.
-> 
-> This adds @mm to tce_page_is_contained() and iommu_tce_xchg() to test
-> if the memory is device memory to avoid pfn_to_page().
-> 
-> This adds a check for device memory in mm_iommu_ua_mark_dirty_rm() which
-> does delayed pages dirtying.
+From: Yangtao Li <tiny.windzz@gmail.com>
 
-This mostly looks good, but I have one concern:
+[ Upstream commit a51921c0db3fd26c4ed83dc0ec5d32988fa02aa5 ]
 
-> -static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-> +static bool tce_page_is_contained(struct mm_struct *mm, unsigned long hpa,
-> +		unsigned int page_shift)
->  {
-> +	struct page *page;
-> +
-> +	if (mm_iommu_is_devmem(mm, hpa, page_shift))
-> +		return true;
-> +
-> +	page = pfn_to_page(hpa >> PAGE_SHIFT);
+use of_node_put() to release the refcount.
 
-Is it possible for userspace or a guest to cause us to get here with
-hpa value that is bogus?  If so what does pfn_to_page do with that
-pfn, and do we handle that correctly?
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/ide/pmac.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-(I realize that if there is a problem here, it's a problem that
-already exists in the code without this patch.)
+diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
+index c5b902b86b44..203ed4adc04a 100644
+--- a/drivers/ide/pmac.c
++++ b/drivers/ide/pmac.c
+@@ -920,6 +920,7 @@ static u8 pmac_ide_cable_detect(ide_hwif_t *hwif)
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	const char *model = of_get_property(root, "model", NULL);
+ 
++	of_node_put(root);
+ 	/* Get cable type from device-tree. */
+ 	if (cable && !strncmp(cable, "80-", 3)) {
+ 		/* Some drives fail to detect 80c cable in PowerBook */
+-- 
+2.19.1
 
-Paul.
