@@ -2,70 +2,86 @@ Return-Path: <SRS0=2g3y=OW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FA84C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 12:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE54C65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:38:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF49420645
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 12:21:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF49420645
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 7D3CD20879
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 13:38:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="CgIC7TL9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D3CD20879
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Ft7f4RzNzDqts
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 23:21:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 43FvsV0KY5zDqZQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 00:38:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="CgIC7TL9";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::8; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="CgIC7TL9"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Ft3n25ZszDqQG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 23:17:40 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43Ft3h0zlGz9v0cQ;
- Thu, 13 Dec 2018 13:17:36 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id kgbHqzO4B0lF; Thu, 13 Dec 2018 13:17:36 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43Ft3h0Ny3z9v0ZK;
- Thu, 13 Dec 2018 13:17:36 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 38FF88B871;
- Thu, 13 Dec 2018 13:17:37 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DACdrZTjoSEZ; Thu, 13 Dec 2018 13:17:37 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AFDC88B86E;
- Thu, 13 Dec 2018 13:17:36 +0100 (CET)
-Subject: Re: [PATCH v1 03/13] powerpc/mm/32s: rework mmu_mapin_ram()
-To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>
-References: <cover.1543517818.git.christophe.leroy@c-s.fr>
- <8835330baa77d88e0267b0b1215b78c991e6d17a.1543517818.git.christophe.leroy@c-s.fr>
- <20181203215558.GK15324@latitude>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <84624899-bbda-9f08-2527-151fddbd1b01@c-s.fr>
-Date: Thu, 13 Dec 2018 12:16:00 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Fvn76Vc8zDqxm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 00:35:06 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544708102;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=yA2jmna+fcSzxSQBVMdo/qEy3WhSYh8nh4G0IYOjPGc=;
+ b=CgIC7TL9NPBdrF0CMlFNGq72q69CVpp/gLtFryvfbaWAX4Ltbu7vzDyLqHCZER98/3
+ atl3HySpmMJ+TH2Twjs9qXtcxLlK4D9NaMgWOGtRV1rKJP4ezarruXemySOuLsCe+GSS
+ KMcafE33OP3XylbmZT/HJWbDQzeW8LJaHxgqP+3nqMRckRfBs+ZdY4Y4azwrA2GVZykA
+ FkUyfossxM/LtBm9uv60+bCb5u+z9QB+ge5OyQO2hOXzmSX6pxlSPrVxxjbsmZYzVXSG
+ uL36nQ5FgvsmuDObz/dKGlSoHvZtOnvaf9DlCub+rCB5lq+XxM4jCxFMDRsP4ZpZhkbg
+ KXew==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkG2pemksDZxkJaUFnRbOB2TdqZ2g=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:9dbf:d1fd:eaf4:ea5d]
+ by smtp.strato.de (RZmta 44.8 AUTH) with ESMTPSA id e03c1euBDDYo27i
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Thu, 13 Dec 2018 14:34:50 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+To: Christoph Hellwig <hch@lst.de>
+References: <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
+ <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
+ <4cfb3f26-74e1-db01-b014-759f188bb5a6@xenosoft.de>
+ <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
+ <20181212141556.GA4801@lst.de>
+ <2242B4B2-6311-492E-BFF9-6740E36EC6D4@xenosoft.de>
+ <84558d7f-5a7f-5219-0c3a-045e6b4c494f@xenosoft.de>
+ <20181213091021.GA2106@lst.de>
+ <835bd119-081e-a5ea-1899-189d439c83d6@xenosoft.de>
+ <76bc684a-b4d2-1d26-f18d-f5c9ba65978c@xenosoft.de>
+ <20181213112511.GA4574@lst.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <e109de27-f4af-147d-dc0e-067c8bafb29b@xenosoft.de>
+Date: Thu, 13 Dec 2018 14:34:49 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
 MIME-Version: 1.0
-In-Reply-To: <20181203215558.GK15324@latitude>
+In-Reply-To: <20181213112511.GA4574@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,67 +93,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
-
-On 12/03/2018 09:55 PM, Jonathan Neuschäfer wrote:
-> Hi,
-> 
-> On Thu, Nov 29, 2018 at 07:00:16PM +0000, Christophe Leroy wrote:
->> This patch reworks mmu_mapin_ram() to be more generic and map as much
->> blocks as possible. It now supports blocks not starting at address 0.
+On 13 December 2018 at 12:25PM, Christoph Hellwig wrote:
+> On Thu, Dec 13, 2018 at 12:19:26PM +0100, Christian Zigotzky wrote:
+>> I tried it again but I get the following error message:
 >>
->> It scans DBATs array to find free ones instead of forcing the use of
->> BAT2 and BAT3.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
-> 
-> I've just tested this series on my Wii, and starting from this patch
-> (03/13), it hangs at the following lines of output:
-> 
-> [    0.000000] printk: bootconsole [udbg0] enabled
-> [    0.000000] Total memory = 319MB; using 1024kB for hash table (at (ptrval))
-> 
-> Before this patch it looks like this and boots to userspace:
-> 
-> [    0.000000] printk: bootconsole [udbg0] enabled
-> [    0.000000] Total memory = 319MB; using 1024kB for hash table (at (ptrval))
-> [    0.000000] Linux version 4.20.0-rc5-wii-00022-gfbb911b84755 (jn@longitude) (gcc version 8.2.0 (Debian 8.2.0-9)) #1337 PREEMPT Mon Dec 3 21:49:02 CET 2018
-> ug_udbg_init: early -> final
-> usbgecko_udbg: ready
-> [    0.000000] Using wii machine description
+>> MODPOST vmlinux.o
+>> arch/powerpc/kernel/dma-iommu.o: In function `.dma_iommu_get_required_mask':
+>> (.text+0x274): undefined reference to `.dma_direct_get_required_mask'
+>> make: *** [vmlinux] Error 1
+> Sorry, you need this one liner before all the patches posted last time:
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index d8819e3a1eb1..7e78c2798f2f 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -154,6 +154,7 @@ config PPC
+>   	select CLONE_BACKWARDS
+>   	select DCACHE_WORD_ACCESS		if PPC64 && CPU_LITTLE_ENDIAN
+>   	select DYNAMIC_FTRACE			if FUNCTION_TRACER
+> +	select DMA_DIRECT_OPS
+>   	select EDAC_ATOMIC_SCRUB
+>   	select EDAC_SUPPORT
+>   	select GENERIC_ATOMIC64			if PPC32
+>
+Thanks. Result: PASEMI onboard ethernet works and the X5000 (P5020 
+board) boots with the patch '0001-get_required_mask.patch'.
 
-Can you tell/provide the .config and dts used ?
+-- Christian
 
-You seem to have 319MB RAM wherease arch/powerpc/boot/dts/wii.dts only 
-has 88MB Memory:
-
-	memory {
-		device_type = "memory";
-		reg = <0x00000000 0x01800000	/* MEM1 24MB 1T-SRAM */
-		       0x10000000 0x04000000>;	/* MEM2 64MB GDDR3 */
-	};
-
-Christophe
-
-> ...
-> 
-> I've tested at patch 1, 2, 3, 4, and 13, so I don't know if it works
-> somewhere in the middle, but probably not.
-> 
-> (And in case you're wondering about the 22 in the version string: Those
-> are mostly patches that give me a serial console.)
-> 
-> I'm not sure what is going on, because I haven't looked closely at the
-> patches or tried to debug the problem. If you have some debugging tips,
-> I can try them.
-> 
-> 
-> Jonathan Neuschäfer
-> 
