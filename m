@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B8D5C67839
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E909C65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:48:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C0BF20849
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:45:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B2D4F20849
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 04:48:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EsoxpyA0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C0BF20849
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Daav3HrZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B2D4F20849
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Fh1Z0bWhzDqdV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 15:45:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Fh5Y4ZzmzDqdh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Dec 2018 15:48:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="EsoxpyA0";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Daav3HrZ";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,35 +32,35 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="EsoxpyA0"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Daav3HrZ"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Fgm45rtqzDqK6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 15:33:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Fgmq2zC2zDqRp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 15:34:03 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id B8EFF20672;
- Thu, 13 Dec 2018 04:33:21 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id BBD6C20879;
+ Thu, 13 Dec 2018 04:34:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1544675602;
- bh=aJ6UTfMqfn17j0KJGywYqmuL6Yb/GSoL3bZEf3Cn5JU=;
+ s=default; t=1544675641;
+ bh=wdfcexcZYASQVRuDzli3ZTJ32WLBmi7IERAAHuPfl4Y=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=EsoxpyA050y08FsFUq+ySiis5v8yBDCHLkcwvGQ1tvubgDo/2R2aMsRoCkKUbP3ac
- /C/SrSf4/cbV7WFN8vXrpgQt3TqS2srkZOwk3VjW3G7IV9axhdEjVcQDtqMyeKmFyR
- WlmDN8IPiOaJVzuLuXKRIZMyqse/q901KHWg6u/c=
+ b=Daav3HrZYJa0Kge361bn28DGggjnMIP6ypbzYMYgwvkc6lh9Hz7rYdg4v2YzQy7d2
+ iWZIgRCzs4fuFlg2neW2UQ0prUe0IZhvl5BxA17YVwREpU0hUdEqIw0w5InVScSE82
+ MNy1i/0s55NsfH85rNkYkyDXO18nMbAv0HKdbEhY=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 13/23] ide: pmac: add of_node_put()
-Date: Wed, 12 Dec 2018 23:32:49 -0500
-Message-Id: <20181213043259.76643-13-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 3.18 10/16] ide: pmac: add of_node_put()
+Date: Wed, 12 Dec 2018 23:33:37 -0500
+Message-Id: <20181213043343.76896-10-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20181213043259.76643-1-sashal@kernel.org>
-References: <20181213043259.76643-1-sashal@kernel.org>
+In-Reply-To: <20181213043343.76896-1-sashal@kernel.org>
+References: <20181213043343.76896-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -96,7 +96,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/ide/pmac.c b/drivers/ide/pmac.c
-index 96a345248224..0add5bb3cee8 100644
+index 2db803cd095c..57a0bd00789f 100644
 --- a/drivers/ide/pmac.c
 +++ b/drivers/ide/pmac.c
 @@ -920,6 +920,7 @@ static u8 pmac_ide_cable_detect(ide_hwif_t *hwif)
