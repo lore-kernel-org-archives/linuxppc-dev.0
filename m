@@ -2,23 +2,23 @@ Return-Path: <SRS0=7E7R=OX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39C89C6786C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 10:29:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AED3C67839
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 10:40:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 826622086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 10:29:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 826622086D
+	by mail.kernel.org (Postfix) with ESMTPS id 8B1F32146E
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 10:40:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B1F32146E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GRct2c75zDrJ5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:29:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GRrZ3trLzDrHl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:39:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,37 +29,44 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GRZc5gjbzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 21:27:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GRpL0zxKzDrFl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 21:38:02 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43GRZV74PgzB09ZX;
- Fri, 14 Dec 2018 11:27:46 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43GRpF4STsz9v0tP;
+ Fri, 14 Dec 2018 11:37:57 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 36XgWSyIgkCL; Fri, 14 Dec 2018 11:27:46 +0100 (CET)
+ with ESMTP id 66xo2yDZCMVl; Fri, 14 Dec 2018 11:37:57 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43GRZV6YDKzB09ZV;
- Fri, 14 Dec 2018 11:27:46 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43GRpF3TgPz9v0t1;
+ Fri, 14 Dec 2018 11:37:57 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CFC798B8AE;
- Fri, 14 Dec 2018 11:27:47 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 9EE778B8B0;
+ Fri, 14 Dec 2018 11:37:58 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Me0Y8NP_9X8p; Fri, 14 Dec 2018 11:27:47 +0100 (CET)
-Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AE97C8B8AC;
- Fri, 14 Dec 2018 11:27:47 +0100 (CET)
-Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 850E87170A; Fri, 14 Dec 2018 10:27:47 +0000 (UTC)
-Message-Id: <a138aa8f635f3d9e49e8aa5e3fcfe271bf669b4d.1544749037.git.christophe.leroy@c-s.fr>
+ with ESMTP id ReCGMNRBk1YG; Fri, 14 Dec 2018 11:37:58 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C0228B8AF;
+ Fri, 14 Dec 2018 11:37:58 +0100 (CET)
+Subject: Re: [PATCH] powerpc/prom: fix early DEBUG messages
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <531e7e818b5c4867148412c7902a9cbeee5745ee.1544709040.git.christophe.leroy@c-s.fr>
+ <87pnu4vd94.fsf@concordia.ellerman.id.au>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/prom: fix early DEBUG messages
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 14 Dec 2018 10:27:47 +0000 (UTC)
+Message-ID: <0cde4fdd-9d16-732f-ebf8-b06127929e63@c-s.fr>
+Date: Fri, 14 Dec 2018 11:37:58 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
+MIME-Version: 1.0
+In-Reply-To: <87pnu4vd94.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,49 +83,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch fixes early DEBUG messages in prom.c:
-- Use %px instead of %p to see the addresses
-- Cast memblock_phys_mem_size() with (unsigned long long) to
-avoid build failure when phys_addr_t is not 64 bits.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: cast instead of #ifdef %llx/%x
 
- arch/powerpc/kernel/prom.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Le 14/12/2018 à 07:22, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+>> index fe758cedb93f..d8e56e03c9c6 100644
+>> --- a/arch/powerpc/kernel/prom.c
+>> +++ b/arch/powerpc/kernel/prom.c
+>> @@ -749,7 +749,11 @@ void __init early_init_devtree(void *params)
+>>   	memblock_allow_resize();
+>>   	memblock_dump_all();
+>>   
+>> +#ifdef CONFIG_PHYS_64BIT
+>>   	DBG("Phys. mem: %llx\n", memblock_phys_mem_size());
+>> +#else
+>> +	DBG("Phys. mem: %x\n", memblock_phys_mem_size());
+>> +#endif
+> 
+> Can we just do:
+> 
+>    	DBG("Phys. mem: %llx\n", (unsigned long long)memblock_phys_mem_size());
+> 
+> ?
+> 
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index fe758cedb93f..87a68e2dc531 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -129,7 +129,7 @@ static void __init move_device_tree(void)
- 		p = __va(memblock_phys_alloc(size, PAGE_SIZE));
- 		memcpy(p, initial_boot_params, size);
- 		initial_boot_params = p;
--		DBG("Moved device tree to 0x%p\n", p);
-+		DBG("Moved device tree to 0x%px\n", p);
- 	}
- 
- 	DBG("<- move_device_tree\n");
-@@ -689,7 +689,7 @@ void __init early_init_devtree(void *params)
- {
- 	phys_addr_t limit;
- 
--	DBG(" -> early_init_devtree(%p)\n", params);
-+	DBG(" -> early_init_devtree(%px)\n", params);
- 
- 	/* Too early to BUG_ON(), do it by hand */
- 	if (!early_init_dt_verify(params))
-@@ -749,7 +749,7 @@ void __init early_init_devtree(void *params)
- 	memblock_allow_resize();
- 	memblock_dump_all();
- 
--	DBG("Phys. mem: %llx\n", memblock_phys_mem_size());
-+	DBG("Phys. mem: %llx\n", (unsigned long long)memblock_phys_mem_size());
- 
- 	/* We may need to relocate the flat tree, do it now.
- 	 * FIXME .. and the initrd too? */
--- 
-2.13.3
-
+Yes that's obviously better, especially as we don't fix the length of 
+the displayed value.
+Christophe
