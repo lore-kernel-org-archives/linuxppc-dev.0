@@ -2,23 +2,23 @@ Return-Path: <SRS0=7E7R=OX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E939C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 495C5C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 22:02:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B04C22080F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:59:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B04C22080F
+	by mail.kernel.org (Postfix) with ESMTPS id 375A02080F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 22:02:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 375A02080F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Gkwb1kNmzDrF2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 08:59:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GkzW3zbkzDqkp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 09:01:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
@@ -30,47 +30,49 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Gksc08ZDzDqdn
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 08:56:51 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Gkw226GDzDqv9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 08:58:58 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBELsBMC066694
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 16:56:49 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2pckg239cw-1
+ wBELwljp116551
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 16:58:55 -0500
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2pcmjggr9q-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 16:56:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 16:58:55 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 14 Dec 2018 21:56:48 -0000
+ Fri, 14 Dec 2018 21:58:54 -0000
 Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 14 Dec 2018 21:56:46 -0000
+ Fri, 14 Dec 2018 21:58:52 -0000
 Received: from b03ledav004.gho.boulder.ibm.com
  (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
  by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBELujJS23330998
+ wBELwpHx20709458
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 14 Dec 2018 21:56:45 GMT
+ Fri, 14 Dec 2018 21:58:52 GMT
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DA387805C;
- Fri, 14 Dec 2018 21:56:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DFB1D78060;
+ Fri, 14 Dec 2018 21:58:51 +0000 (GMT)
 Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7FB7C7805E;
- Fri, 14 Dec 2018 21:56:43 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 4F1B17805E;
+ Fri, 14 Dec 2018 21:58:50 +0000 (GMT)
 Received: from oc5000245537.ibm.com (unknown [9.80.196.120])
  by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 14 Dec 2018 21:56:43 +0000 (GMT)
-Subject: Re: [PATCH 2/2] of: __of_detach_node() - remove node from phandle
- cache
-To: Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
-References: <1544769771-5468-1-git-send-email-frowand.list@gmail.com>
- <1544769771-5468-3-git-send-email-frowand.list@gmail.com>
- <CAL_JsqJN69kbLX=Fn-hYh1FwWoU-S+sB7wHjG-9H5=ihbo3hcg@mail.gmail.com>
+ Fri, 14 Dec 2018 21:58:50 +0000 (GMT)
+Subject: Re: [PATCH v03] powerpc/mobility: Fix node detach/rename problem
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>
+References: <a2d46622-a957-dffe-04d1-8087bbf0f8b5@linux.vnet.ibm.com>
+ <871s6oxkdf.fsf@concordia.ellerman.id.au>
+ <CAL_Jsq+t--486MiSsHnKcVy=q2wVvJgUmtAV6Vy2WwSNKymELA@mail.gmail.com>
+ <48aa028d-b786-7704-70ff-75a6d2321474@gmail.com>
+ <877egew2ur.fsf@concordia.ellerman.id.au>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
@@ -98,31 +100,31 @@ Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
  IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
  53/hcWvxHVs=
 Organization: IBM Linux Technology Center
-Date: Fri, 14 Dec 2018 15:56:42 -0600
+Date: Fri, 14 Dec 2018 15:58:49 -0600
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqJN69kbLX=Fn-hYh1FwWoU-S+sB7wHjG-9H5=ihbo3hcg@mail.gmail.com>
+In-Reply-To: <877egew2ur.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18121421-8235-0000-0000-00000E38DF0C
+x-cbid: 18121421-0020-0000-0000-00000E99FBAA
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010226; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000271; SDB=6.01131826; UDB=6.00588239; IPR=6.00911957; 
- MB=3.00024694; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-14 21:56:47
+ PH=3.00000004; SC=3.00000271; SDB=6.01131827; UDB=6.00588240; IPR=6.00911958; 
+ MB=3.00024694; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-14 21:58:54
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121421-8236-0000-0000-000043B59D96
-Message-Id: <68a9e834-b11d-8b9f-1669-466709257f37@linux.vnet.ibm.com>
+x-cbparentid: 18121421-0021-0000-0000-0000640E9D8E
+Message-Id: <90fba2b5-139d-ec05-5708-0f0b656b142a@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-14_13:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812140186
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812140187
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -142,87 +144,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/14/2018 11:20 AM, Rob Herring wrote:
-> On Fri, Dec 14, 2018 at 12:43 AM <frowand.list@gmail.com> wrote:
+On 12/12/2018 08:57 PM, Michael Ellerman wrote:
+> Frank Rowand <frowand.list@gmail.com> writes:
+>> On 12/11/18 8:07 AM, Rob Herring wrote:
+>>> On Tue, Dec 11, 2018 at 7:29 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> ...
+>>>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>>>> index 09692c9b32a7..d8e4534c0686 100644
+>>>> --- a/drivers/of/base.c
+>>>> +++ b/drivers/of/base.c
+>>>> @@ -1190,6 +1190,10 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+>>>>                 if (phandle_cache[masked_handle] &&
+>>>>                     handle == phandle_cache[masked_handle]->phandle)
+>>>>                         np = phandle_cache[masked_handle];
+>>>> +
+>>>> +               /* If we find a detached node, remove it */
+>>>> +               if (of_node_check_flag(np, OF_DETACHED))
+>>>> +                       np = phandle_cache[masked_handle] = NULL;
 >>
->> From: Frank Rowand <frank.rowand@sony.com>
->>
->> Non-overlay dynamic devicetree node removal may leave the node in
->> the phandle cache.  Subsequent calls to of_find_node_by_phandle()
->> will incorrectly find the stale entry.  Remove the node from the
->> cache.
->>
->> Add paranoia checks in of_find_node_by_phandle() as a second level
->> of defense (do not return cached node if detached, do not add node
->> to cache if detached).
->>
->> Reported-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> Signed-off-by: Frank Rowand <frank.rowand@sony.com>
->> ---
->>  drivers/of/base.c       | 29 ++++++++++++++++++++++++++++-
->>  drivers/of/dynamic.c    |  3 +++
->>  drivers/of/of_private.h |  4 ++++
->>  3 files changed, 35 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index d599367cb92a..34a5125713c8 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -162,6 +162,27 @@ int of_free_phandle_cache(void)
->>  late_initcall_sync(of_free_phandle_cache);
->>  #endif
->>
->> +/*
->> + * Caller must hold devtree_lock.
->> + */
->> +void __of_free_phandle_cache_entry(phandle handle)
->> +{
->> +       phandle masked_handle;
->> +
->> +       if (!handle)
->> +               return;
->> +
->> +       masked_handle = handle & phandle_cache_mask;
->> +
->> +       if (phandle_cache) {
->> +               if (phandle_cache[masked_handle] &&
->> +                   handle == phandle_cache[masked_handle]->phandle) {
->> +                       of_node_put(phandle_cache[masked_handle]);
->> +                       phandle_cache[masked_handle] = NULL;
->> +               }
->> +       }
->> +}
->> +
->>  void of_populate_phandle_cache(void)
->>  {
->>         unsigned long flags;
->> @@ -1209,11 +1230,17 @@ struct device_node *of_find_node_by_phandle(phandle handle)
->>                 if (phandle_cache[masked_handle] &&
->>                     handle == phandle_cache[masked_handle]->phandle)
->>                         np = phandle_cache[masked_handle];
->> +               if (np && of_node_check_flag(np, OF_DETACHED)) {
->> +                       of_node_put(np);
->> +                       phandle_cache[masked_handle] = NULL;
+>> The bug you found exposes a couple of different issues, a little bit
+>> deeper than the proposed fix.  I'll work on a fuller fix tonight or
+>> tomorrow.
 > 
-> This should never happen, right? Any time we set OF_DETACHED, the
-> entry should get removed from the cache. I think we want a WARN here
-> in case we're in an unexpected state.
+> OK thanks.
+> 
+>>> I'm wondering if we should explicitly remove the node from the cache
+>>> when we set OF_DETACHED. Otherwise, it could be possible that the node
+>>> pointer has been freed already. Or maybe we need both?
+>>
+>> Yes, it should be explicitly removed.  I may also add in a paranoia check in
+>> of_find_node_by_phandle().
+> 
+> That seems best to me.
 
-We don't actually remove the pointer from the phandle cache when we set
-OF_DETACHED in drivers/of/dynamic.c:__of_detach_node.  The phandle cache
-is currently static within drivers/of/base.c.  There are a couple of
-calls to of_populate_phandle_cache / of_free_phandle_cache within
-drivers/of/overlay.c, but these are not involved in the device tree
-updates that occur during LPAR migration.  A WARN here would only make
-sense, if we also arrange to clear the handle.
+I agree that we should do both.
 
 > 
-> Rob
+> cheers
 
 Michael
-
-> 
-> 
 
 -- 
 Michael W. Bringmann
