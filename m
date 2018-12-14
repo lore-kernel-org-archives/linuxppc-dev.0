@@ -2,41 +2,46 @@ Return-Path: <SRS0=7E7R=OX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.9 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AEC4C43179
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:12:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61C44C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:28:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B8F98208D5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:04:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8F98208D5
+	by mail.kernel.org (Postfix) with ESMTPS id 018D8206BA
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:28:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 018D8206BA
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GXNB4xg6zDr8V
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 01:04:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GXwb1YN9zDqdV
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 01:28:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GXDJ6xSPzDrJY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 00:57:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GXst4jbPzDrMC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 01:26:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 43GXDJ64Zsz9s3q; Sat, 15 Dec 2018 00:57:20 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 43GXDJ5fXBz9sB5; Sat, 15 Dec 2018 00:57:20 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43GXss1xrMz9sB5;
+ Sat, 15 Dec 2018 01:26:25 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/configs: Don't enable PPC_EARLY_DEBUG in defconfigs
-Date: Sat, 15 Dec 2018 00:57:11 +1100
-Message-Id: <20181214135711.10552-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.17.2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.20-4 tag
+Date: Sat, 15 Dec 2018 01:26:19 +1100
+Message-ID: <87ftv0uqus.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,99 +53,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alistair@popple.id.au
+Cc: radu.rendec@gmail.com, linux-kernel@vger.kernel.org,
+ lineprinter@altlinux.org, oohall@gmail.com, sandipan@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reverts the remains of commit b9ef7d6b11c1 ("powerpc: Update
-default configurations").
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-That commit was proceeded by a commit which added a config option to
-control use of BOOTX for early debug, ie. PPC_EARLY_DEBUG_BOOTX, and
-then the update of the defconfigs was intended to not change behaviour
-by then enabling the new config option.
+Hi Linus,
 
-However enabling PPC_EARLY_DEBUG had other consequences, notably
-causing us to register the udbg console at the end of udbg_early_init().
+Please pull some more powerpc fixes for 4.20:
 
-This means on a system which doesn't have anything that BOOTX can
-use (most systems), we register the udbg console very early but the
-bootx code just throws everything away, meaning early boot messages
-are never printed to the console.
+The following changes since commit b2fed34a628df6118b5d4e13f49a33e15f704fa9:
 
-What we want to happen is for the udbg console to only be registered
-later (from setup_arch()) once we've setup udbg_putc, and then all
-early boot messages will be replayed.
+  selftests/powerpc: Adjust wild_bctr to build with old binutils (2018-11-15 23:05:17 +1100)
 
-Fixes: b9ef7d6b11c1 ("powerpc: Update default configurations")
-Reported-by: Torsten Duwe <duwe@lst.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/configs/g5_defconfig     | 1 -
- arch/powerpc/configs/maple_defconfig  | 1 -
- arch/powerpc/configs/pmac32_defconfig | 1 -
- arch/powerpc/configs/ppc64_defconfig  | 1 -
- arch/powerpc/configs/ppc6xx_defconfig | 1 -
- 5 files changed, 5 deletions(-)
+are available in the git repository at:
 
-diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
-index f686cc1eac0b..ceb3c770786f 100644
---- a/arch/powerpc/configs/g5_defconfig
-+++ b/arch/powerpc/configs/g5_defconfig
-@@ -246,7 +246,6 @@ CONFIG_DEBUG_KERNEL=y
- CONFIG_DEBUG_MUTEXES=y
- CONFIG_LATENCYTOP=y
- CONFIG_BOOTX_TEXT=y
--CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_CRYPTO_TEST=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
-diff --git a/arch/powerpc/configs/maple_defconfig b/arch/powerpc/configs/maple_defconfig
-index f71eddafb02f..c5f2005005d3 100644
---- a/arch/powerpc/configs/maple_defconfig
-+++ b/arch/powerpc/configs/maple_defconfig
-@@ -108,7 +108,6 @@ CONFIG_LATENCYTOP=y
- CONFIG_XMON=y
- CONFIG_XMON_DEFAULT=y
- CONFIG_BOOTX_TEXT=y
--CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_CRYPTO_ECB=m
- CONFIG_CRYPTO_PCBC=m
- # CONFIG_CRYPTO_HW is not set
-diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
-index 62948d198d7f..50b610b48914 100644
---- a/arch/powerpc/configs/pmac32_defconfig
-+++ b/arch/powerpc/configs/pmac32_defconfig
-@@ -297,7 +297,6 @@ CONFIG_LATENCYTOP=y
- CONFIG_XMON=y
- CONFIG_XMON_DEFAULT=y
- CONFIG_BOOTX_TEXT=y
--CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MD4=m
- CONFIG_CRYPTO_SHA512=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index 294a0b9d6038..91fdb619b484 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -376,4 +376,3 @@ CONFIG_FTR_FIXUP_SELFTEST=y
- CONFIG_MSI_BITMAP_SELFTEST=y
- CONFIG_XMON=y
- CONFIG_BOOTX_TEXT=y
--CONFIG_PPC_EARLY_DEBUG=y
-diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
-index 7ee736f20774..53687c3a70c4 100644
---- a/arch/powerpc/configs/ppc6xx_defconfig
-+++ b/arch/powerpc/configs/ppc6xx_defconfig
-@@ -1155,7 +1155,6 @@ CONFIG_STACK_TRACER=y
- CONFIG_BLK_DEV_IO_TRACE=y
- CONFIG_XMON=y
- CONFIG_BOOTX_TEXT=y
--CONFIG_PPC_EARLY_DEBUG=y
- CONFIG_SECURITY=y
- CONFIG_SECURITY_NETWORK=y
- CONFIG_SECURITY_NETWORK_XFRM=y
--- 
-2.17.2
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.20-4
 
+for you to fetch changes up to a225f1567405558fb5410e9b2b90805819df1c67:
+
+  powerpc/ptrace: replace ptrace_report_syscall() with a tracehook call (2018-12-10 15:19:58 +1100)
+
+- ------------------------------------------------------------------
+powerpc fixes for 4.20 #4
+
+One notable fix for our change to split pt_regs between user/kernel, we forgot
+to update BPF to use the user-visible type which was an ABI break for BPF
+programs.
+
+A slightly ugly but minimal fix to do_syscall_trace_enter() so that we use
+tracehook_report_syscall_entry() properly. We'll rework the code in next to
+avoid the empty if body.
+
+Seven commits fixing bugs in the new papr_scm (Storage Class Memory) driver.
+The driver was finally able to be tested on the other hypervisor which exposed
+several bugs. The fixes are all fairly minimal at least.
+
+Fix a crash in our MSI code if an MSI-capable device is plugged into a non-MSI
+capable PHB, only seen on older hardware (MPC8378).
+
+Fix our legacy serial code to look for "stdout-path" since the device trees were
+updated to use that instead of "linux,stdout-path".
+
+A change to the COFF zImage code to fix booting old powermacs.
+
+A couple of minor build fixes.
+
+Thanks to:
+  Benjamin Herrenschmidt, Daniel Axtens, Dmitry V. Levin, Elvira Khabirova,
+  Oliver O'Halloran, Paul Mackerras, Radu Rendec, Rob Herring, Sandipan Das.
+
+- ------------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc: Look for "stdout-path" when setting up legacy consoles
+
+Elvira Khabirova (1):
+      powerpc/ptrace: replace ptrace_report_syscall() with a tracehook call
+
+Michael Ellerman (2):
+      powerpc/mm: Fix linux page tables build with some configs
+      powerpc/boot: Fix build failures with -j 1
+
+Oliver O'Halloran (7):
+      powerpc/papr_scm: Use depend instead of select
+      powerpc/papr_scm: Fix resource end address
+      powerpc/papr_scm: Update DT properties
+      powerpc/papr_scm: Remove endian conversions
+      powerpc/papr_scm: Fix DIMM device registration race
+      powerpc/papr_scm: Use ibm,unit-guid as the iset cookie
+      powerpc/mm: Fallback to RAM if the altmap is unusable
+
+Paul Mackerras (1):
+      powerpc: Fix COFF zImage booting on old powermacs
+
+Radu Rendec (1):
+      powerpc/msi: Fix NULL pointer access in teardown code
+
+Sandipan Das (1):
+      powerpc/bpf: Fix broken uapi for BPF_PROG_TYPE_PERF_EVENT
+
+
+ arch/powerpc/boot/Makefile                     |  2 +-
+ arch/powerpc/boot/crt0.S                       |  4 ++-
+ arch/powerpc/include/asm/perf_event.h          |  2 ++
+ arch/powerpc/include/uapi/asm/Kbuild           |  1 -
+ arch/powerpc/include/uapi/asm/bpf_perf_event.h |  9 ++++++
+ arch/powerpc/kernel/legacy_serial.c            |  6 +++-
+ arch/powerpc/kernel/msi.c                      |  7 ++++-
+ arch/powerpc/kernel/ptrace.c                   |  7 ++++-
+ arch/powerpc/mm/dump_linuxpagetables.c         |  1 +
+ arch/powerpc/mm/init_64.c                      | 19 +++++++++++--
+ arch/powerpc/platforms/pseries/Kconfig         |  3 +-
+ arch/powerpc/platforms/pseries/papr_scm.c      | 39 ++++++++++++++++++++------
+ 12 files changed, 80 insertions(+), 20 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/bpf_perf_event.h
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJcE71eAAoJEFHr6jzI4aWAQUkP/0Z1YlNpl2Zf9GG1J1QsBCtj
+H2KS/a01GciH6TO16ULovjFhJppcwPGOCYKU/elnge4cqC+c7sZDDLeXrB6byzfP
+9jYbuC3QZ0ct1d34x7vzg/kplutMu1HClxUBU5g7QF9l2b70rB6UWf1WSJnCLgCg
+MEwQscEPymJJpLO5r0B1/pCijLN2Rpy0vMbZbOoQW4/G/6qQ3d4ygDdWrh4lJNFf
+LwWYLXi5SZ/1jFIb6/wYuomT4WIfD+JCaGsH3THAm7sfC7qx+nUOCGtA81vHGUaK
+nW14snebk0viL8STJ4MO1IFJ9x3MsQAylpyyfcdzQ3Q3+rRkaPWwHrvOcnNavwfw
++PKDyqV+Ot9+2Es79ZDGeF68q7L7Q4qtZIIL9ARh5pokvMiycsYPOcMQW3IIbkZQ
+aFS3SAQalGaSAlNp5NDnNoZ4rhb+tlR3k6fCbHkuPehj3IAvVzzc6XY3w2rr0wFy
+ZAgnv+54aI7CNcasRiu+KStLYflr2xorjrRHWigli9KtyB+uZbx6IzDDGgQpPHAd
+rUoJujp7G/GUclFJ42LF6MBDKTGU2XJP0rogEkNhmCY8RwbDPsvw52CYosEJmrMo
+rMgVbO35eRmCmF+cbaRvRzsVXYVuPFZfTt8wF2SYwDzSx49b2tW696Xr5+mkUGw6
+vu2XQ1BG1C/0mbIjgjKm
+=ABj8
+-----END PGP SIGNATURE-----
