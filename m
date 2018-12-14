@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0BD3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 20:59:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F8ADC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:01:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5DC0A2086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 20:59:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5DC0A2086D
+	by mail.kernel.org (Postfix) with ESMTPS id 88FEE2086D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 21:01:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88FEE2086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Gjb30kHmzDrSq
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 07:59:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GjdV0DtRzDrC8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Dec 2018 08:01:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
@@ -30,49 +30,50 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GjPl0x4SzDr3S
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 07:51:06 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GjQ25MgCzDrPN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2018 07:51:22 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBEKmuQm139071
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 15:51:05 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pcgp27w3d-1
+ wBEKmvgp145655
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 15:51:21 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pcj6u41sy-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 15:51:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 15:51:20 -0500
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 14 Dec 2018 20:51:04 -0000
+ Fri, 14 Dec 2018 20:51:20 -0000
 Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 14 Dec 2018 20:51:01 -0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ Fri, 14 Dec 2018 20:51:16 -0000
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
  by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBEKp0K210878982
+ wBEKpFmP24051918
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 14 Dec 2018 20:51:00 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 874BC78064;
- Fri, 14 Dec 2018 20:51:00 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 661BA7805E;
- Fri, 14 Dec 2018 20:51:00 +0000 (GMT)
+ Fri, 14 Dec 2018 20:51:15 GMT
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CBE776E04C;
+ Fri, 14 Dec 2018 20:51:15 +0000 (GMT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A6CA16E053;
+ Fri, 14 Dec 2018 20:51:15 +0000 (GMT)
 Received: from powerkvm6.aus.stglabs.ibm.com (unknown [9.40.192.78])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri, 14 Dec 2018 20:51:00 +0000 (GMT)
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri, 14 Dec 2018 20:51:15 +0000 (GMT)
 Received: from powerkvm6.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 1300440E516A;
- Fri, 14 Dec 2018 14:51:00 -0600 (CST)
-Subject: [RFC 3/6] pseries/drcinfo: Pseries impl of arch_find_drc_info
+ by powerkvm6.aus.stglabs.ibm.com (Postfix) with ESMTP id 4A89E40E516A;
+ Fri, 14 Dec 2018 14:51:15 -0600 (CST)
+Subject: [RFC 4/6] powerpc/pseries: Use common drcinfo parsing
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Rob Herring <robh@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Fri, 14 Dec 2018 14:51:00 -0600
+Date: Fri, 14 Dec 2018 14:51:15 -0600
 In-Reply-To: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
 References: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
 User-Agent: StGit/0.18-105-g416a-dirty
@@ -80,21 +81,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 18121420-0016-0000-0000-000009649E9D
+x-cbid: 18121420-0004-0000-0000-000014C26383
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010225; HX=3.00000242; KW=3.00000007;
  PH=3.00000004; SC=3.00000271; SDB=6.01131804; UDB=6.00588226; IPR=6.00911936; 
- MB=3.00024694; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-14 20:51:03
+ MB=3.00024694; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-14 20:51:18
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121420-0017-0000-0000-0000416902C5
-Message-Id: <20181214205047.16435.19045.stgit@powerkvm6.aus.stglabs.ibm.com>
+x-cbparentid: 18121420-0005-0000-0000-000089DB7A23
+Message-Id: <20181214205105.16435.65395.stgit@powerkvm6.aus.stglabs.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-14_12:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=953 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1812140176
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,371 +114,344 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch provides a common interface to parse ibm,drc-indexes,
-ibm,drc-names, ibm,drc-types, ibm,drc-power-domains, or ibm,drc-info.
-The generic interface arch_find_drc_match is provided which accepts
-callback functions that may be applied to examine the data for each
-entry.
+The implementation of the pseries-specific drc info properties
+is currently implemented in pseries-specific and non-pseries-specific
+files.  This patch set uses a new implementation of the device-tree
+parsing code for the properties.
+
+This patch refactors parsing of the drc-info properties out of
+pseries_energy.c and hotplug-cpu.c to use the common parser.
+Changes include creating appropriate callback functions and
+passing callback-specific data blocks into arch_find_drc_match.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/prom.h             |    3 
- arch/powerpc/platforms/pseries/of_helpers.c |  299 +++++++++++++++++++++++++++
- include/linux/topology.h                    |    2 
- 3 files changed, 298 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   83 +++++++-----
+ arch/powerpc/platforms/pseries/pseries_energy.c |  157 ++++++++---------------
+ 2 files changed, 107 insertions(+), 133 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index b04c5ce..910d1dc 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -91,9 +91,6 @@ struct of_drc_info {
- 	u32 last_drc_index;
- };
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 2f8e621..ee3028c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -411,23 +411,29 @@ static bool dlpar_cpu_exists(struct device_node *parent, u32 drc_index)
+ 	return found;
+ }
  
--extern int of_read_drc_info_cell(struct property **prop,
--			const __be32 **curval, struct of_drc_info *data);
+-static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
++struct cpu_drc_index_struct {
++	u32 drc_index;
++};
++
++bool cpu_drc_index_cb(struct device_node *dn,
++			u32 drc_index, char *drc_name,
++			char *drc_type, u32 drc_power_domain,
++			void *data)
+ {
+-	bool found = false;
+-	int rc, index;
++	struct cpu_drc_index_struct *cdata = data;
+ 
+-	index = 0;
+-	while (!found) {
+-		u32 drc;
++	if (drc_index == cdata->drc_index)
++		return true;
++	return false;
++}
+ 
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
+-						index++, &drc);
+-		if (rc)
+-			break;
++static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
++{
++	struct cpu_drc_index_struct cdata = { drc_index };
++	bool found = false;
+ 
+-		if (drc == drc_index)
+-			found = true;
+-	}
++	found = arch_find_drc_match(parent, cpu_drc_index_cb,
++			"CPU", NULL, false, false, &cdata);
+ 
+ 	return found;
+ }
+@@ -721,11 +727,34 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+ 	return rc;
+ }
+ 
++struct cpus_to_add_cb_struct {
++	struct device_node *parent;
++	u32 *cpu_drcs;
++	u32 cpus_to_add;
++	u32 cpus_found;
++};
++
++static bool cpus_to_add_cb(struct device_node *dn,
++			u32 drc_index, char *drc_name,
++			char *drc_type, u32 drc_power_domain,
++			void *data)
++{
++	struct cpus_to_add_cb_struct *cdata = data;
++
++	if (cdata->cpus_found < cdata->cpus_to_add) {
++		if (!dlpar_cpu_exists(cdata->parent, drc_index))
++			cdata->cpu_drcs[cdata->cpus_found++] = drc_index;
++	}
++
++	return !(cdata->cpus_found < cdata->cpus_to_add);
++}
++
+ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
+ {
+ 	struct device_node *parent;
+-	int cpus_found = 0;
+-	int index, rc;
++	struct cpus_to_add_cb_struct cdata = {
++		NULL, cpu_drcs, cpus_to_add, 0 };
++	int cpus_found;
+ 
+ 	parent = of_find_node_by_path("/cpus");
+ 	if (!parent) {
+@@ -734,25 +763,13 @@ static int find_dlpar_cpus_to_add(u32 *cpu_drcs, u32 cpus_to_add)
+ 		return -1;
+ 	}
+ 
+-	/* Search the ibm,drc-indexes array for possible CPU drcs to
+-	 * add. Note that the format of the ibm,drc-indexes array is
+-	 * the number of entries in the array followed by the array
+-	 * of drc values so we start looking at index = 1.
++	/* Search the appropriate property for possible CPU drcs
++	 * to add.
+ 	 */
+-	index = 1;
+-	while (cpus_found < cpus_to_add) {
+-		u32 drc;
 -
+-		rc = of_property_read_u32_index(parent, "ibm,drc-indexes",
+-						index++, &drc);
+-		if (rc)
+-			break;
+-
+-		if (dlpar_cpu_exists(parent, drc))
+-			continue;
+-
+-		cpu_drcs[cpus_found++] = drc;
+-	}
++	cdata.parent = parent;
++	arch_find_drc_match(parent, cpus_to_add_cb, "CPU",
++			NULL, false, false, &cdata);
++	cpus_found = cdata.cpus_found;
  
- /*
-  * There are two methods for telling firmware what our capabilities are.
-diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 0185e50..11c90cd 100644
---- a/arch/powerpc/platforms/pseries/of_helpers.c
-+++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -1,5 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
+ 	of_node_put(parent);
+ 	return cpus_found;
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index 6ed2212..f7b9d86 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -23,6 +23,7 @@
+ #include <asm/hvcall.h>
+ #include <asm/firmware.h>
+ #include <asm/prom.h>
++#include <asm/topology.h>
  
-+#define pr_fmt(fmt) "drc: " fmt
-+
- #include <linux/string.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-@@ -11,6 +13,12 @@
  
- #define	MAX_DRC_NAME_LEN 64
- 
-+static int drc_debug;
-+#define dbg(args...) if (drc_debug) { printk(KERN_DEBUG args); }
-+#define err(arg...) printk(KERN_ERR args);
-+#define info(arg...) printk(KERN_INFO args);
-+#define warn(arg...) printk(KERN_WARNING args);
-+
- /**
-  * pseries_of_derive_parent - basically like dirname(1)
-  * @path:  the full_name of a node to be added to the tree
-@@ -46,7 +54,8 @@ struct device_node *pseries_of_derive_parent(const char *path)
+ #define MODULE_VERS "1.0"
+@@ -36,60 +37,43 @@
  
  /* Helper Routines to convert between drc_index to cpu numbers */
  
--int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
-+static int of_read_drc_info_cell(struct property **prop,
-+			const __be32 **curval,
- 			struct of_drc_info *data)
- {
- 	const char *p;
-@@ -90,4 +99,290 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
- 
- 	return 0;
- }
--EXPORT_SYMBOL(of_read_drc_info_cell);
-+
-+static int walk_drc_info(struct device_node *dn,
-+		bool (*usercb)(struct of_drc_info *drc,
-+				void *data,
-+				int *ret_code),
-+		char *opt_drc_type,
-+		void *data)
-+{
-+	struct property *info;
-+	unsigned int entries;
-+	struct of_drc_info drc;
-+	const __be32 *value;
-+	int j, ret_code = -EINVAL;
-+	bool done = false;
-+
-+	info = of_find_property(dn, "ibm,drc-info", NULL);
-+	if (info == NULL)
-+		return -EINVAL;
-+
-+	value = info->value;
-+	entries = of_read_number(value++, 1);
-+
-+	for (j = 0, done = 0; (j < entries) && (!done); j++) {
-+		of_read_drc_info_cell(&info, &value, &drc);
-+
-+		if (opt_drc_type && strcmp(opt_drc_type, drc.drc_type))
-+			continue;
-+
-+		done = usercb(&drc, data, &ret_code);
-+	}
-+
-+	return ret_code;
-+}
-+
-+static int get_children_props(struct device_node *dn, const int **drc_indexes,
-+		const int **drc_names, const int **drc_types,
-+		const int **drc_power_domains)
-+{
-+	const int *indexes, *names, *types, *domains;
-+
-+	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-+	names = of_get_property(dn, "ibm,drc-names", NULL);
-+	types = of_get_property(dn, "ibm,drc-types", NULL);
-+	domains = of_get_property(dn, "ibm,drc-power-domains", NULL);
-+
-+	if (!indexes || !names || !types || !domains) {
-+		/* Slot does not have dynamically-removable children */
-+		return -EINVAL;
-+	}
-+	if (drc_indexes)
-+		*drc_indexes = indexes;
-+	if (drc_names)
-+		/* &drc_names[1] contains NULL terminated slot names */
-+		*drc_names = names;
-+	if (drc_types)
-+		/* &drc_types[1] contains NULL terminated slot types */
-+		*drc_types = types;
-+	if (drc_power_domains)
-+		*drc_power_domains = domains;
-+
-+	return 0;
-+}
-+
-+static int is_php_type(char *drc_type)
-+{
-+	unsigned long value;
-+	char *endptr;
-+
-+	/* PCI Hotplug nodes have an integer for drc_type */
-+	value = simple_strtoul(drc_type, &endptr, 10);
-+	if (endptr == drc_type)
-+		return 0;
-+
-+	return 1;
-+}
-+
-+/**
-+ * is_php_dn() - return 1 if this is a hotpluggable pci slot, else 0
-+ * @dn: target &device_node
-+ * @indexes: passed to get_children_props()
-+ * @names: passed to get_children_props()
-+ * @types: returned from get_children_props()
-+ * @power_domains:
-+ *
-+ * This routine will return true only if the device node is
-+ * a hotpluggable slot. This routine will return false
-+ * for built-in pci slots (even when the built-in slots are
-+ * dlparable.)
-+ */
-+static int is_php_dn(struct device_node *dn, const int **indexes,
-+		const int **names, const int **types,
-+		const int **power_domains)
-+{
-+	const int *drc_types;
-+	int rc;
-+
-+	rc = get_children_props(dn, indexes, names, &drc_types,
-+				power_domains);
-+	if (rc < 0)
-+		return 0;
-+
-+	if (!is_php_type((char *) &drc_types[1]))
-+		return 0;
-+
-+	*types = drc_types;
-+	return 1;
-+}
-+
-+struct find_drc_match_cb_struct {
-+	struct device_node *dn;
-+	bool (*usercb)(struct device_node *dn,
-+			u32 drc_index, char *drc_name,
-+			char *drc_type, u32 drc_power_domain,
-+			void *data);
-+	char *drc_type;
-+	char *drc_name;
-+	u32 drc_index;
-+	bool match_drc_index;
-+	bool add_slot;
-+	void *data;
++struct cpu_to_drc_index_struct {
++	u32	thread_index;
++	u32	drc_index;
++	int	counter;
 +};
 +
-+static int find_drc_match_v1(struct device_node *dn, void *data)
++static bool cpu_to_drc_index_cb(struct device_node *dn,
++				u32 drc_index, char *drc_name,
++				char *drc_type, u32 drc_power_domain,
++				void *data)
 +{
-+	struct find_drc_match_cb_struct *cdata = data;
-+	int i, retval = 0;
-+	const int *indexes, *names, *types, *domains;
-+	char *name, *type;
-+	struct device_node *root = dn;
++	struct cpu_to_drc_index_struct *cdata = data;
 +
-+	if (cdata->match_drc_index)
-+		root = dn->parent;
-+
-+	if (cdata->add_slot) {
-+		/* If this is not a hotplug slot, return without doing
-+		 * anything.
-+		 */
-+		if (!is_php_dn(root, &indexes, &names, &types, &domains))
-+			return 0;
-+	} else {
-+		if (get_children_props(root, &indexes, &names, &types,
-+			&domains) < 0)
-+			return 0;
++	if (cdata->thread_index == cdata->counter++) {
++		cdata->drc_index = drc_index;
++		return true;
 +	}
-+
-+	dbg("Entry %s: dn=%pOF\n", __func__, dn);
-+
-+	name = (char *) &names[1];
-+	type = (char *) &types[1];
-+	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
-+
-+		if (cdata->match_drc_index &&
-+			((unsigned int) indexes[i + 1] != cdata->drc_index)) {
-+			name += strlen(name) + 1;
-+			type += strlen(type) + 1;
-+			continue;
-+		}
-+
-+		if (((cdata->drc_name == NULL) ||
-+		     (cdata->drc_name && !strcmp(cdata->drc_name, name))) &&
-+		    ((cdata->drc_type == NULL) ||
-+		     (cdata->drc_type && !strcmp(cdata->drc_type, type)))) {
-+
-+			if (cdata->usercb) {
-+				retval = cdata->usercb(dn,
-+					be32_to_cpu(indexes[i + 1]),
-+					name, type,
-+					be32_to_cpu(domains[i + 1]),
-+					cdata->data);
-+				if (!retval)
-+					return retval;
-+			} else {
-+				return 0;
-+			}
-+		}
-+
-+		name += strlen(name) + 1;
-+		type += strlen(type) + 1;
-+	}
-+
-+	dbg("%s - Exit: rc[%d]\n", __func__, retval);
-+
-+	/* XXX FIXME: reports a failure only if last entry in loop failed */
-+	return retval;
-+}
-+
-+static bool find_drc_match_v2_cb(struct of_drc_info *drc, void *data,
-+				int *ret_code)
-+{
-+	struct find_drc_match_cb_struct *cdata = data;
-+	u32 drc_index;
-+	char drc_name[MAX_DRC_NAME_LEN];
-+	int i, retval;
-+
-+	(*ret_code) = -EINVAL;
-+
-+	/* This set not a PHP type? */
-+	if (cdata->add_slot) {
-+		if (!is_php_type((char *) drc->drc_type)) {
-+			return false;
-+		}
-+	}
-+
-+	/* Anything to use from this set? */
-+	if (cdata->match_drc_index && (cdata->drc_index > drc->last_drc_index))
-+		return false;
-+	if ((cdata->drc_type && strcmp(cdata->drc_type, drc->drc_type))
-+		return false;
-+
-+	/* Check the drc-index entries of this set */
-+	for (i = 0, drc_index = drc->drc_index_start;
-+		i < drc->num_sequential_elems; i++, drc_index++) {
-+
-+		if (cdata->match_drc_index && (cdata->drc_index != drc_index))
-+			continue;
-+
-+		sprintf(drc_name, "%s%d", drc->drc_name_prefix,
-+			drc_index - drc->drc_index_start +
-+			drc->drc_name_suffix_start);
-+
-+		if ((cdata->drc_name == NULL) ||
-+		    (cdata->drc_name && !strcmp(cdata->drc_name, drc_name))) {
-+
-+			if (cdata->usercb) {
-+				retval = cdata->usercb(cdata->dn,
-+						drc_index, drc_name,
-+						drc->drc_type,
-+						drc->drc_power_domain,
-+						cdata->data);
-+				if (!retval) {
-+					(*ret_code) = retval;
-+					return true;
-+				}
-+			} else {
-+				(*ret_code) = 0;
-+				return true;
-+			}
-+		}
-+	}
-+
-+	(*ret_code) = retval;
 +	return false;
 +}
 +
-+static int find_drc_match_v2(struct device_node *dn, void *data)
-+{
-+	struct find_drc_match_cb_struct *cdata = data;
-+	struct device_node *root = cdata->dn;
+ static u32 cpu_to_drc_index(int cpu)
+ {
+ 	struct device_node *dn = NULL;
+-	int thread_index;
++	struct cpu_to_drc_index_struct cdata = { 0, 0, 0 };
+ 	int rc = 1;
+-	u32 ret = 0;
+ 
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+ 
+ 	/* Convert logical cpu number to core number */
+-	thread_index = cpu_core_index_of_thread(cpu);
+-
+-	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+-		struct property *info = NULL;
+-		struct of_drc_info drc;
+-		int j;
+-		u32 num_set_entries;
+-		const __be32 *value;
+-
+-		info = of_find_property(dn, "ibm,drc-info", NULL);
+-		if (info == NULL)
+-			goto err_of_node_put;
+-
+-		value = of_prop_next_u32(info, NULL, &num_set_entries);
+-		if (!value)
+-			goto err_of_node_put;
+-
+-		for (j = 0; j < num_set_entries; j++) {
+-
+-			of_read_drc_info_cell(&info, &value, &drc);
+-			if (strncmp(drc.drc_type, "CPU", 3))
+-				goto err;
+-
+-			if (thread_index < drc.last_drc_index)
+-				break;
+-		}
+-
+-		ret = drc.drc_index_start + (thread_index * drc.sequential_inc);
+-	} else {
+-		const __be32 *indexes;
+-
+-		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-		if (indexes == NULL)
+-			goto err_of_node_put;
+-
+-		/*
+-		 * The first element indexes[0] is the number of drc_indexes
+-		 * returned in the list.  Hence thread_index+1 will get the
+-		 * drc_index corresponding to core number thread_index.
+-		 */
+-		ret = indexes[thread_index + 1];
+-	}
++	cdata.thread_index = cpu_core_index_of_thread(cpu);
 +
-+	if (!cdata->add_slot) {
-+		if (!cdata->drc_type ||
-+			(cdata->drc_type && strcmp(cdata->drc_type, "SLOT")))
-+			root = dn->parent;
-+	}
-+
-+	return walk_drc_info(root, find_drc_match_v2_cb, NULL, data);
++	rc = arch_find_drc_match(dn, cpu_to_drc_index_cb,
++			"CPU", NULL, false, false, &cdata);
++	if (rc < 0)
++		goto err_of_node_put;
+ 
+ 	rc = 0;
+ 
+@@ -98,78 +82,51 @@ static u32 cpu_to_drc_index(int cpu)
+ err:
+ 	if (rc)
+ 		printk(KERN_WARNING "cpu_to_drc_index(%d) failed", cpu);
+-	return ret;
++	return cdata.drc_index;
 +}
 +
-+int arch_find_drc_match(struct device_node *dn,
-+			bool (*usercb)(struct device_node *dn,
++struct drc_index_to_cpu_struct {
++	u32	drc_index;
++	u32	thread_index;
++	int	counter;
++};
++
++static bool drc_index_to_cpu_cb(struct device_node *dn,
 +				u32 drc_index, char *drc_name,
 +				char *drc_type, u32 drc_power_domain,
-+				void *data),
-+			char *opt_drc_type, char *opt_drc_name,
-+			bool match_drc_index, bool add_slot,
-+			void *data)
++				void *data)
 +{
-+	struct find_drc_match_cb_struct cdata = { dn, usercb,
-+			opt_drc_type, opt_drc_name, 0,
-+			match_drc_index, add_slot, data };
++	struct drc_index_to_cpu_struct *cdata = data;
 +
-+	if (match_drc_index) {
-+		const int *my_index =
-+			of_get_property(dn, "ibm,my-drc-index", NULL);
-+		if (!my_index) {
-+			/* Node isn't DLPAR/hotplug capable */
-+			return -EINVAL;
-+		}
-+		cdata.drc_index = *my_index;
++	if (cdata->drc_index == drc_index) {
++		cdata->thread_index = cpu_first_thread_of_core(cdata->counter);
++		return true;
 +	}
++	cdata->counter++;
 +
-+	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
-+		return find_drc_match_v2(dn, &cdata);
-+	else
-+		return find_drc_match_v1(dn, &cdata);
-+}
-+EXPORT_SYMBOL(arch_find_drc_match);
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index df97f5f..c3dfa53 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -50,7 +50,7 @@ int arch_find_drc_match(struct device_node *dn,
- 				char *drc_type, u32 drc_power_domain,
- 				void *data),
- 			char *opt_drc_type, char *opt_drc_name,
--			bool match_drc_index, bool ck_php_type,
-+			bool match_drc_index, bool add_slot,
- 			void *data);
++	return false;
+ }
  
- /* Conform to ACPI 2.0 SLIT distance definitions */
+ static int drc_index_to_cpu(u32 drc_index)
+ {
+ 	struct device_node *dn = NULL;
+-	const int *indexes;
+-	int thread_index = 0, cpu = 0;
++	struct drc_index_to_cpu_struct cdata = {
++			drc_index, 0, 0 };
+ 	int rc = 1;
+ 
+ 	dn = of_find_node_by_path("/cpus");
+ 	if (dn == NULL)
+ 		goto err;
+ 
+-	if (firmware_has_feature(FW_FEATURE_DRC_INFO)) {
+-		struct property *info = NULL;
+-		struct of_drc_info drc;
+-		int j;
+-		u32 num_set_entries;
+-		const __be32 *value;
+-
+-		info = of_find_property(dn, "ibm,drc-info", NULL);
+-		if (info == NULL)
+-			goto err_of_node_put;
+-
+-		value = of_prop_next_u32(info, NULL, &num_set_entries);
+-		if (!value)
+-			goto err_of_node_put;
+-
+-		for (j = 0; j < num_set_entries; j++) {
+-
+-			of_read_drc_info_cell(&info, &value, &drc);
+-			if (strncmp(drc.drc_type, "CPU", 3))
+-				goto err;
++	rc = arch_find_drc_match(dn, drc_index_to_cpu_cb,
++		   "CPU", NULL, false, false, &cdata);
+ 
+-			if (drc_index > drc.last_drc_index) {
+-				cpu += drc.num_sequential_elems;
+-				continue;
+-			}
+-			cpu += ((drc_index - drc.drc_index_start) /
+-				drc.sequential_inc);
+-
+-			thread_index = cpu_first_thread_of_core(cpu);
+-			rc = 0;
+-			break;
+-		}
+-	} else {
+-		unsigned long int i;
+-
+-		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-		if (indexes == NULL)
+-			goto err_of_node_put;
+-		/*
+-		 * First element in the array is the number of drc_indexes
+-		 * returned.  Search through the list to find the matching
+-		 * drc_index and get the core number
+-		 */
+-		for (i = 0; i < indexes[0]; i++) {
+-			if (indexes[i + 1] == drc_index)
+-				break;
+-		}
+-		/* Convert core number to logical cpu number */
+-		thread_index = cpu_first_thread_of_core(i);
+-		rc = 0;
+-	}
+-
+-err_of_node_put:
+ 	of_node_put(dn);
++
+ err:
+ 	if (rc)
+ 		printk(KERN_WARNING "drc_index_to_cpu(%d) failed", drc_index);
+-	return thread_index;
++	return cdata.thread_index;
+ }
+ 
+ /*
 
