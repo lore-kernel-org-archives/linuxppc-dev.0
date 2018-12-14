@@ -5,79 +5,81 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,T_MIXED_ES,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D7E8C65BAE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 03:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 797CCC65BAE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 03:21:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0AD72086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 03:19:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E8A9020870
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 03:21:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lxR198Pi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0AD72086D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="q6ygmytX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8A9020870
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GG3l4Dj1zDr1X
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:18:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GG6f759yzDr3Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 14:21:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="lxR198Pi";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="q6ygmytX";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
  envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="lxR198Pi"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="q6ygmytX"; 
  dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GFv73wc5zDr68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 14:11:31 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id g9so2033844plo.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 19:11:31 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GFvD36ZSzDr6Y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 14:11:36 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id 101so2030515pld.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2018 19:11:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=LvmJuwwziss2COckjTxUbK8p0ozKauVVNTpVJ1JHZwE=;
- b=lxR198PigJvuE5IhDNlzXrA8TlcbjZFBjWcWrvRvQMNuoTcfFLjc7gX9Cljve87TEx
- fntxyFeO+RTRZf5AadqAUbz9ErckvcBGtppQzJdE/B41PsMPF/wt7k7cHFx46sDHIXzK
- Ohe9s1v94iWdNeofuvFmdixh80Rmr63NmszcUM8oZ/rwR2rHMnSKS/mlwgnbR8eWLIAG
- UK/E1uHSy8ysOjc0Av5XeSmSqY9jSxtcePFSznRQUkpHekULmptoeArdXiP6/6Micorw
- xgbj9NsKKhNpf3aRy6L/vvq8ckaSZiHboGXO4cvFEFRn4Mvnii1D48TmfTjMOJqWy4I2
- lE0w==
+ bh=8HeWXUBwSnhJhwa0lSBGy+RixzwB2qy89KlhIMg333A=;
+ b=q6ygmytXIoTLDyYI23RuzIwuqfFIqJS8JQQXwui9+AaTqUZ2obTR3wEP8ElDj5FVcQ
+ 2Ibh/V5JicBFbWFAWu5b75swBSKSEOfpzB8ZFzwdrr7JKe0LVqeizLS38jklR3CQLgK0
+ Ysa+d6My8N8S5zck2oTLcbJeVuLxvRvJjJ5gdUZ7ejwMis6bxejq9JDTWnXnevowUe55
+ loDi/cU/QKGFD6lEJc/ltcomKVtoK8bwU305kAcsIwkLOYpL9dlG90CJlCGOMFGvW8RX
+ Nxeo6M8uRGosSomJ6akOcaCVp12kJsadCK6StwnzTqoU9fKyNQQaj7KGixYID9ouiqcZ
+ rWIg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=LvmJuwwziss2COckjTxUbK8p0ozKauVVNTpVJ1JHZwE=;
- b=EoFAuQzAVt4JsuWXdELOS2Gk/Ov0SGceoi5FWUN8Zq0s3QRwaE+Kr6EjF+MnYrd6UU
- 2nvTJ8tmKB+eWohnV47f7tTc5rTRhAUf1z9SRd5fDm6LOV4CDz4WTPx6/RVkjj8OOskM
- X7YGPkCCX4lXw6aoHYICXuTdh0R9LDsUnrRfTgQxX9QJeEUr47hlx2KjwomFB22l1Ksp
- v//VKynr/5F7WS/sxpFfI/HrKzzx1edF8kSAPjXtF6y4e1r88satysa71GXxtuLNNcHA
- fS1TTu/CpBY9IGAwec4AzUdh3xcVPllrUf9WjOblFXhEMsNN03NQI/CXoosAyAhP99Qm
- LthQ==
-X-Gm-Message-State: AA+aEWait5PKY+BjY+I7R3FaVnK/4AZvFuEJQno/QqVLnu0Kkw0YI36Z
- 4j2x8Zq+JG8NL4Ue3jNEoTU=
-X-Google-Smtp-Source: AFSGD/WJZy9RzJOV+jL4k5ICJ7kZ1CzWq+6x7jJN1ucZNsJpNBpQgjqr7vN0rmP8j4AodFtivOSEsg==
-X-Received: by 2002:a17:902:e290:: with SMTP id
- cf16mr1364030plb.81.1544757089677; 
- Thu, 13 Dec 2018 19:11:29 -0800 (PST)
+ bh=8HeWXUBwSnhJhwa0lSBGy+RixzwB2qy89KlhIMg333A=;
+ b=kSuelFIfRRyGAaoCT3l8tLj3e0gBItgkguyh2E9nXSNq+sddKA+mJsjlf9oAi01oWr
+ 36Rb6eLmcmy0VSBxnVPDExRlSatRpANq4mGKVk6z7zLvsiH1v8rdUTT2fZ77s7nxKmZQ
+ rQx/nZgqin3nNcl0KlRfUimKEG/y0vQh8WjHkA1U/sNpTMHozO8bYuEPoh10zOcuu82x
+ LMgxm1JHyAeWhHdKDeIddiKH8EUDMP+Rqj0nfL0VNoQIazlXWU8vy1bi7I4eNG2tC3W7
+ Qw2tspRbiqyjOcofp63VizEYMmfUPwyWDZ+j+8mZSB+TxIVbEKbppoQhy/9Txa/am2DT
+ ruFw==
+X-Gm-Message-State: AA+aEWZlehTp2WIDDAjuAg2xXping0XBEY5UFEU6L+wphZl5aAWcCOrN
+ +Y1+o823rxQbr3jrw+7WpZg=
+X-Google-Smtp-Source: AFSGD/U6HRjgLNe+FgClglYS67/+/BjfX6LHcbX55OnuBYWCIg2pIkcD1P9iyfpRXWMwAbBoqw4Org==
+X-Received: by 2002:a17:902:4624:: with SMTP id
+ o33mr1290120pld.289.1544757093898; 
+ Thu, 13 Dec 2018 19:11:33 -0800 (PST)
 Received: from surajjs2.ozlabs.ibm.com.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id e188sm4079326pfg.130.2018.12.13.19.11.25
+ by smtp.gmail.com with ESMTPSA id e188sm4079326pfg.130.2018.12.13.19.11.30
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 13 Dec 2018 19:11:28 -0800 (PST)
+ Thu, 13 Dec 2018 19:11:33 -0800 (PST)
 From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH V3 2/8] KVM: PPC: Book3S HV: Add function kvmhv_vcpu_is_radix()
-Date: Fri, 14 Dec 2018 14:11:03 +1100
-Message-Id: <20181214031109.14464-3-sjitindarsingh@gmail.com>
+Subject: [PATCH V3 3/8] KVM: PPC: Book3S HV: Implement functions to access
+ quadrants 1 & 2
+Date: Fri, 14 Dec 2018 14:11:04 +1100
+Message-Id: <20181214031109.14464-4-sjitindarsingh@gmail.com>
 X-Mailer: git-send-email 2.13.6
 In-Reply-To: <20181214031109.14464-1-sjitindarsingh@gmail.com>
 References: <20181214031109.14464-1-sjitindarsingh@gmail.com>
@@ -98,64 +100,229 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-There exists a function kvm_is_radix() which is used to determine if a
-kvm instance is using the radix mmu. However this only applies to the
-first level (L1) guest. Add a function kvmhv_vcpu_is_radix() which can
-be used to determine if the current execution context of the vcpu is
-radix, accounting for if the vcpu is running a nested guest.
+The POWER9 radix mmu has the concept of quadrants. The quadrant number
+is the two high bits of the effective address and determines the fully
+qualified address to be used for the translation. The fully qualified
+address consists of the effective lpid, the effective pid and the
+effective address. This gives then 4 possible quadrants 0, 1, 2, and 3.
 
-Currently all nested guests must be radix but this may change in the
-future.
+When accessing these quadrants the fully qualified address is obtained
+as follows:
+
+Quadrant		| Hypervisor		| Guest
+--------------------------------------------------------------------------
+			| EA[0:1] = 0b00	| EA[0:1] = 0b00
+0			| effLPID = 0		| effLPID = LPIDR
+			| effPID  = PIDR	| effPID  = PIDR
+--------------------------------------------------------------------------
+			| EA[0:1] = 0b01	|
+1			| effLPID = LPIDR	| Invalid Access
+			| effPID  = PIDR	|
+--------------------------------------------------------------------------
+			| EA[0:1] = 0b10	|
+2			| effLPID = LPIDR	| Invalid Access
+			| effPID  = 0		|
+--------------------------------------------------------------------------
+			| EA[0:1] = 0b11	| EA[0:1] = 0b11
+3			| effLPID = 0		| effLPID = LPIDR
+			| effPID  = 0		| effPID  = 0
+--------------------------------------------------------------------------
+
+In the Guest;
+Quadrant 3 is normally used to address the operating system since this
+uses effPID=0 and effLPID=LPIDR, meaning the PID register doesn't need to
+be switched.
+Quadrant 0 is normally used to address user space since the effLPID and
+effPID are taken from the corresponding registers.
+
+In the Host;
+Quadrant 0 and 3 are used as above, however the effLPID is always 0 to
+address the host.
+
+Quadrants 1 and 2 can be used by the host to address guest memory using
+a guest effective address. Since the effLPID comes from the LPID register,
+the host loads the LPID of the guest it would like to access (and the
+PID of the process) and can perform accesses to a guest effective
+address.
+
+This means quadrant 1 can be used to address the guest user space and
+quadrant 2 can be used to address the guest operating system from the
+hypervisor, using a guest effective address.
+
+Access to the quadrants can cause a Hypervisor Data Storage Interrupt
+(HDSI) due to being unable to perform partition scoped translation.
+Previously this could only be generated from a guest and so the code
+path expects us to take the KVM trampoline in the interrupt handler.
+This is no longer the case so we modify the handler to call
+bad_page_fault() to check if we were expecting this fault so we can
+handle it gracefully and just return with an error code. In the hash mmu
+case we still raise an unknown exception since quadrants aren't defined
+for the hash mmu.
 
 Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h | 13 +++++++++++++
- arch/powerpc/kvm/book3s_hv_nested.c      |  1 +
- 2 files changed, 14 insertions(+)
+ arch/powerpc/include/asm/kvm_book3s.h  |  4 ++
+ arch/powerpc/kernel/exceptions-64s.S   |  9 ++++
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 97 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/mm/fault.c                |  1 +
+ 4 files changed, 111 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 6d298145d564..7a9e472f2872 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -55,6 +55,7 @@ struct kvm_nested_guest {
- 	cpumask_t need_tlb_flush;
- 	cpumask_t cpu_in_guest;
- 	short prev_cpu[NR_CPUS];
-+	u8 radix;			/* is this nested guest radix */
- };
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 09f8e9ba69bc..5883fcce7009 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -188,6 +188,10 @@ extern int kvmppc_book3s_hcall_implemented(struct kvm *kvm, unsigned long hc);
+ extern int kvmppc_book3s_radix_page_fault(struct kvm_run *run,
+ 			struct kvm_vcpu *vcpu,
+ 			unsigned long ea, unsigned long dsisr);
++extern long kvmhv_copy_from_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
++					void *to, unsigned long n);
++extern long kvmhv_copy_to_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
++				      void *from, unsigned long n);
+ extern int kvmppc_mmu_walk_radix_tree(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 				      struct kvmppc_pte *gpte, u64 root,
+ 				      u64 *pte_ret_p);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 89d32bb79d5e..db2691ff4c0b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -995,7 +995,16 @@ EXC_COMMON_BEGIN(h_data_storage_common)
+ 	bl      save_nvgprs
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD
++BEGIN_MMU_FTR_SECTION
++	ld	r4,PACA_EXGEN+EX_DAR(r13)
++	lwz	r5,PACA_EXGEN+EX_DSISR(r13)
++	std	r4,_DAR(r1)
++	std	r5,_DSISR(r1)
++	li	r5,SIGSEGV
++	bl      bad_page_fault
++MMU_FTR_SECTION_ELSE
+ 	bl      unknown_exception
++ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_TYPE_RADIX)
+ 	b       ret_from_except
  
- /*
-@@ -150,6 +151,18 @@ static inline bool kvm_is_radix(struct kvm *kvm)
- 	return kvm->arch.radix;
- }
  
-+static inline bool kvmhv_vcpu_is_radix(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index d68162ee159b..e1e3ef710bd0 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -29,6 +29,103 @@
+  */
+ static int p9_supported_radix_bits[4] = { 5, 9, 9, 13 };
+ 
++static unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
++					gva_t eaddr, void *to, void *from,
++					unsigned long n)
 +{
-+	bool radix;
++	unsigned long quadrant, ret = n;
++	int old_pid, old_lpid;
++	bool is_load = !!to;
 +
-+	if (vcpu->arch.nested)
-+		radix = vcpu->arch.nested->radix;
++	/* Can't access quadrants 1 or 2 in non-HV mode */
++	if (kvmhv_on_pseries()) {
++		/* TODO h-call */
++		return -EPERM;
++	}
++
++	quadrant = 1;
++	if (!pid)
++		quadrant = 2;
++	if (is_load)
++		from = (void *) (eaddr | (quadrant << 62));
 +	else
-+		radix = kvm_is_radix(vcpu->kvm);
++		to = (void *) (eaddr | (quadrant << 62));
 +
-+	return radix;
++	preempt_disable();
++
++	/* switch the lpid first to avoid running host with unallocated pid */
++	old_lpid = mfspr(SPRN_LPID);
++	if (old_lpid != lpid)
++		mtspr(SPRN_LPID, lpid);
++	if (quadrant == 1) {
++		old_pid = mfspr(SPRN_PID);
++		if (old_pid != pid)
++			mtspr(SPRN_PID, pid);
++	}
++	isync();
++
++	pagefault_disable();
++	if (is_load)
++		ret = raw_copy_from_user(to, from, n);
++	else
++		ret = raw_copy_to_user(to, from, n);
++	pagefault_enable();
++
++	/* switch the pid first to avoid running host with unallocated pid */
++	if (quadrant == 1 && pid != old_pid)
++		mtspr(SPRN_PID, old_pid);
++	if (lpid != old_lpid)
++		mtspr(SPRN_LPID, old_lpid);
++	isync();
++
++	preempt_enable();
++
++	return ret;
 +}
 +
- #define KVM_DEFAULT_HPT_ORDER	24	/* 16MB HPT by default */
- #endif
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index 401d2ecbebc5..4fca462e54c4 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -480,6 +480,7 @@ struct kvm_nested_guest *kvmhv_alloc_nested(struct kvm *kvm, unsigned int lpid)
- 	if (shadow_lpid < 0)
- 		goto out_free2;
- 	gp->shadow_lpid = shadow_lpid;
-+	gp->radix = 1;
- 
- 	memset(gp->prev_cpu, -1, sizeof(gp->prev_cpu));
- 
++static long kvmhv_copy_tofrom_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr,
++					  void *to, void *from, unsigned long n)
++{
++	int lpid = vcpu->kvm->arch.lpid;
++	int pid = vcpu->arch.pid;
++
++	/* This would cause a data segment intr so don't allow the access */
++	if (eaddr & (0x3FFUL << 52))
++		return -EINVAL;
++
++	/* Should we be using the nested lpid */
++	if (vcpu->arch.nested)
++		lpid = vcpu->arch.nested->shadow_lpid;
++
++	/* If accessing quadrant 3 then pid is expected to be 0 */
++	if (((eaddr >> 62) & 0x3) == 0x3)
++		pid = 0;
++
++	eaddr &= ~(0xFFFUL << 52);
++
++	return __kvmhv_copy_tofrom_guest_radix(lpid, pid, eaddr, to, from, n);
++}
++
++long kvmhv_copy_from_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr, void *to,
++				 unsigned long n)
++{
++	long ret;
++
++	ret = kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, to, NULL, n);
++	if (ret > 0)
++		memset(to + (n - ret), 0, ret);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(kvmhv_copy_from_guest_radix);
++
++long kvmhv_copy_to_guest_radix(struct kvm_vcpu *vcpu, gva_t eaddr, void *from,
++			       unsigned long n)
++{
++	return kvmhv_copy_tofrom_guest_radix(vcpu, eaddr, NULL, from, n);
++}
++EXPORT_SYMBOL_GPL(kvmhv_copy_to_guest_radix);
++
+ int kvmppc_mmu_walk_radix_tree(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 			       struct kvmppc_pte *gpte, u64 root,
+ 			       u64 *pte_ret_p)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 1697e903bbf2..2e6fb1d758c3 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -636,6 +636,7 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 	switch (TRAP(regs)) {
+ 	case 0x300:
+ 	case 0x380:
++	case 0xe00:
+ 		printk(KERN_ALERT "Unable to handle kernel paging request for "
+ 			"data at address 0x%08lx\n", regs->dar);
+ 		break;
 -- 
 2.13.6
 
