@@ -2,54 +2,89 @@ Return-Path: <SRS0=7E7R=OX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.7 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B9F5C67839
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 11:33:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2E8C6786C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 12:05:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABCE720892
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 11:33:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABCE720892
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 52787214AE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 12:05:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="QBGzPRf4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52787214AE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GT1y0mkBzDrTM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 22:33:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GTlQ6L7LzDqYh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 23:05:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="QBGzPRf4";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::8; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="QBGzPRf4"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::8])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GSXx1MD9zDrHg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 22:11:29 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 4E53487643;
- Fri, 14 Dec 2018 11:11:27 +0000 (UTC)
-Received: from t460s.redhat.com (ovpn-117-139.ams2.redhat.com [10.36.117.139])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 49F465DA2A;
- Fri, 14 Dec 2018 11:11:21 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v1 9/9] mm: better document PG_reserved
-Date: Fri, 14 Dec 2018 12:10:14 +0100
-Message-Id: <20181214111014.15672-10-david@redhat.com>
-In-Reply-To: <20181214111014.15672-1-david@redhat.com>
-References: <20181214111014.15672-1-david@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.26]); Fri, 14 Dec 2018 11:11:27 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GTdy1q93zDrC1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 23:00:52 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1544788848;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=xBTeoa4ZN9PkmfHkyE6pTdQ3wVl6WnvOhCxnUoeERI0=;
+ b=QBGzPRf4taEXqwQSy1/Pe/fK2AdH+vNeI9pjDJy7/9/xPK6MeChIGv7lAQ8gGZxj1b
+ CRL1yx36KV2m4/Z7fhscytxelioMQl39GVwlEDkN0e+HCrIiO/zyC1WhKSAsTJoJyCFe
+ JrAXfXZxln6Vj364bo2tNSFOTQab+E/fHv6dLsqP13GX2EfqH0ulcSOizkl8U8ZaWEUm
+ 7qA49v/kjqav0eOwk3TRp55sNn+zlVw8nTwT49GZvZt4/ZY6Z5w0etDSMPIsxAMOOxap
+ gc1a7aIGyYzNqRHd9vkQu614lbCPh8LVpWNahOjZU1VPz9pfxXOHIrm1XDa/jz5/kRk7
+ d+ZA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkGiwyXDxjMeBKNVg1uDFdnFXWLiw=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:95fc:25d2:69b8:b3cf]
+ by smtp.strato.de (RZmta 44.8 AUTH) with ESMTPSA id e03c1euBEC0R7e2
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Fri, 14 Dec 2018 13:00:27 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <1ecb7692-f3fb-a246-91f9-2db1b9496305@xenosoft.de>
+ <6c997c03-e072-97a9-8ae0-38a4363df919@xenosoft.de>
+ <4cfb3f26-74e1-db01-b014-759f188bb5a6@xenosoft.de>
+ <82879d3f-83de-6438-c1d6-49c571dcb671@xenosoft.de>
+ <20181212141556.GA4801@lst.de>
+ <2242B4B2-6311-492E-BFF9-6740E36EC6D4@xenosoft.de>
+ <84558d7f-5a7f-5219-0c3a-045e6b4c494f@xenosoft.de>
+ <20181213091021.GA2106@lst.de>
+ <835bd119-081e-a5ea-1899-189d439c83d6@xenosoft.de>
+ <76bc684a-b4d2-1d26-f18d-f5c9ba65978c@xenosoft.de>
+ <20181213112511.GA4574@lst.de>
+ <e109de27-f4af-147d-dc0e-067c8bafb29b@xenosoft.de>
+ <ad5a5a8a-d232-d523-a6f7-e9377fc3857b@xenosoft.de>
+ <e60d6ca3-860c-f01d-8860-c5e022ec7179@xenosoft.de>
+Message-ID: <008c981e-bdd2-21a7-f5f7-c57e4850ae9a@xenosoft.de>
+Date: Fri, 14 Dec 2018 13:00:26 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
+MIME-Version: 1.0
+In-Reply-To: <e60d6ca3-860c-f01d-8860-c5e022ec7179@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,91 +96,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- Miles Chen <miles.chen@mediatek.com>, David Hildenbrand <david@redhat.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
- Matthew Wilcox <willy@infradead.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, yi.z.zhang@linux.intel.com,
- linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
- Anthony Yznaga <anthony.yznaga@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The usage of PG_reserved and how PG_reserved pages are to be treated is
-buried deep down in different parts of the kernel. Let's shine some light
-onto these details by documenting current users and expected
-behavior.
+On 12 December 2018 at 3:15PM, Christoph Hellwig wrote:
+ > Thanks for bisecting.  I've spent some time going over the conversion
+ > but can't really pinpoint it.  I have three little patches that switch
+ > parts of the code to the generic version.  This is on top of the
+ > last good commmit (977706f9755d2d697aa6f45b4f9f0e07516efeda).
+ >
+ > Can you check with whіch one things stop working?
 
-Especially, clarify on the "Some of them might not even exist" case.
-These are physical memory gaps that will never be dumped as they
-are not marked as IORESOURCE_SYSRAM. PG_reserved does in general not
-hinder anybody from dumping or swapping. In some cases, these pages
-will not be stored in the hibernation image.
+Hello Christoph,
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
-Cc: Miles Chen <miles.chen@mediatek.com>
-Cc: yi.z.zhang@linux.intel.com
-Cc: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- include/linux/page-flags.h | 33 +++++++++++++++++++++++++++++++--
- 1 file changed, 31 insertions(+), 2 deletions(-)
+Great news! All your patches work!
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 808b4183e30d..9de2e941cbd5 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -17,8 +17,37 @@
- /*
-  * Various page->flags bits:
-  *
-- * PG_reserved is set for special pages, which can never be swapped out. Some
-- * of them might not even exist...
-+ * PG_reserved is set for special pages. The "struct page" of such a page
-+ * should in general not be touched (e.g. set dirty) except by their owner.
-+ * Pages marked as PG_reserved include:
-+ * - Pages part of the kernel image (including vDSO) and similar (e.g. BIOS,
-+ *   initrd, HW tables)
-+ * - Pages reserved or allocated early during boot (before the page allocator
-+ *   was initialized). This includes (depending on the architecture) the
-+ *   initial vmmap, initial page tables, crashkernel, elfcorehdr, and much
-+ *   much more. Once (if ever) freed, PG_reserved is cleared and they will
-+ *   be given to the page allocator.
-+ * - Pages falling into physical memory gaps - not IORESOURCE_SYSRAM. Trying
-+ *   to read/write these pages might end badly. Don't touch!
-+ * - The zero page(s)
-+ * - Pages not added to the page allocator when onlining a section because
-+ *   they were excluded via the online_page_callback() or because they are
-+ *   PG_hwpoison.
-+ * - Pages allocated in the context of kexec/kdump (loaded kernel image,
-+ *   control pages, vmcoreinfo)
-+ * - MMIO/DMA pages. Some architectures don't allow to ioremap pages that are
-+ *   not marked PG_reserved (as they might be in use by somebody else who does
-+ *   not respect the caching strategy).
-+ * - Pages part of an offline section (struct pages of offline sections should
-+ *   not be trusted as they will be initialized when first onlined).
-+ * - MCA pages on ia64
-+ * - Pages holding CPU notes for POWER Firmware Assisted Dump
-+ * - Device memory (e.g. PMEM, DAX, HMM)
-+ * Some PG_reserved pages will be excluded from the hibernation image.
-+ * PG_reserved does in general not hinder anybody from dumping or swapping
-+ * and is no longer required for remap_pfn_range(). ioremap might require it.
-+ * Consequently, PG_reserved for a page mapped into user space can indicate
-+ * the zero page, the vDSO, MMIO pages or device memory.
-  *
-  * The PG_private bitflag is set on pagecache pages if they contain filesystem
-  * specific data (which is normally at page->private). It can be used by
--- 
-2.17.2
+I tested all your patches (including the patch '0004-alloc-free.patch' 
+today) and the PASEMI onboard ethernet works and the P5020 board boots 
+without any problems. Thank you for your work!
+I have a few days off. That means, I will work less and only for the 
+A-EON first level Linux support. I can test again on Thursday next week.
 
+Have a nice weekend!
+
+Cheers,
+Christian
