@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A83BC67839
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:20:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E36DC6786C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:22:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4D6E2086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:20:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4D6E2086D
+	by mail.kernel.org (Postfix) with ESMTPS id 06E1920866
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:22:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06E1920866
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GQ4N4ZyqzDrPL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 20:20:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GQ726HwRzDrLb
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 20:22:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
@@ -30,54 +30,53 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GPtg5jTyzDrDl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 20:11:39 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GPtm0xDgzDrF2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 20:11:43 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBE99XxF115320
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:36 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pc9j1g9ba-1
+ wBE998dW076053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:42 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pc5rwsd63-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:36 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:42 -0500
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Fri, 14 Dec 2018 09:11:34 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Fri, 14 Dec 2018 09:11:39 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 14 Dec 2018 09:11:32 -0000
+ Fri, 14 Dec 2018 09:11:36 -0000
 Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
  [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBE9BVSm6750576
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBE9BZM937617772
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 14 Dec 2018 09:11:31 GMT
+ Fri, 14 Dec 2018 09:11:35 GMT
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E88654C062;
- Fri, 14 Dec 2018 09:11:30 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8E66D4C058;
+ Fri, 14 Dec 2018 09:11:35 +0000 (GMT)
 Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E4D584C044;
- Fri, 14 Dec 2018 09:11:29 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 8A2314C04A;
+ Fri, 14 Dec 2018 09:11:34 +0000 (GMT)
 Received: from localhost.in.ibm.com (unknown [9.124.31.22])
  by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 14 Dec 2018 09:11:29 +0000 (GMT)
+ Fri, 14 Dec 2018 09:11:34 +0000 (GMT)
 From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/5] powerpc/perf: Add privileged access check for
- thread_imc
-Date: Fri, 14 Dec 2018 14:41:20 +0530
+Subject: [PATCH v2 5/5] powerpc/perf: Trace imc PMU functions
+Date: Fri, 14 Dec 2018 14:41:22 +0530
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181214091122.20992-1-anju@linux.vnet.ibm.com>
 References: <20181214091122.20992-1-anju@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 18121409-0012-0000-0000-000002D8EAE7
+x-cbid: 18121409-4275-0000-0000-000002F0623D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121409-0013-0000-0000-0000210E7531
-Message-Id: <20181214091122.20992-4-anju@linux.vnet.ibm.com>
+x-cbparentid: 18121409-4276-0000-0000-000037FD9192
+Message-Id: <20181214091122.20992-6-anju@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2018-12-14_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -103,32 +102,206 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Add PMU functions to support trace-imc.
 
-Add code to restrict user access to thread_imc pmu since
-some event report privilege level information.
-
-Fixes: f74c89bd80fb3 ('powerpc/perf: Add thread IMC PMU support')
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/imc-pmu.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/perf/imc-pmu.c | 175 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 175 insertions(+)
 
 diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 3bef46f8417d..5ca80545a849 100644
+index 1f09265c8fb0..32ff0e449fca 100644
 --- a/arch/powerpc/perf/imc-pmu.c
 +++ b/arch/powerpc/perf/imc-pmu.c
-@@ -877,6 +877,9 @@ static int thread_imc_event_init(struct perf_event *event)
- 	if (event->attr.type != event->pmu->type)
- 		return -ENOENT;
+@@ -1120,6 +1120,173 @@ static int trace_imc_cpu_init(void)
+ 			  ppc_trace_imc_cpu_offline);
+ }
  
++static u64 get_trace_imc_event_base_addr(void)
++{
++	return (u64)per_cpu(trace_imc_mem, smp_processor_id());
++}
++
++/*
++ * Function to parse trace-imc data obtained
++ * and to prepare the perf sample.
++ */
++static int trace_imc_prepare_sample(struct trace_imc_data *mem,
++				    struct perf_sample_data *data,
++				    u64 *prev_tb,
++				    struct perf_event_header *header,
++				    struct perf_event *event)
++{
++	/* Sanity checks for a valid record */
++	if (be64_to_cpu(READ_ONCE(mem->tb1)) > *prev_tb)
++		*prev_tb = be64_to_cpu(READ_ONCE(mem->tb1));
++	else
++		return -EINVAL;
++
++	if ((be64_to_cpu(READ_ONCE(mem->tb1)) & IMC_TRACE_RECORD_TB1_MASK) !=
++			 be64_to_cpu(READ_ONCE(mem->tb2)))
++		return -EINVAL;
++
++	/* Prepare perf sample */
++	data->ip =  be64_to_cpu(READ_ONCE(mem->ip));
++	data->period = event->hw.last_period;
++
++	header->type = PERF_RECORD_SAMPLE;
++	header->size = sizeof(*header) + event->header_size;
++	header->misc = 0;
++
++	if (is_kernel_addr(data->ip))
++		header->misc |= PERF_RECORD_MISC_KERNEL;
++	else
++		header->misc |= PERF_RECORD_MISC_USER;
++
++	perf_event_header__init_id(header, data, event);
++
++	return 0;
++}
++
++static void dump_trace_imc_data(struct perf_event *event)
++{
++	struct trace_imc_data *mem;
++	int i, ret;
++	u64 prev_tb = 0;
++
++	mem = (struct trace_imc_data *)get_trace_imc_event_base_addr();
++	for (i = 0; i < (trace_imc_mem_size / sizeof(struct trace_imc_data));
++		i++, mem++) {
++		struct perf_sample_data data;
++		struct perf_event_header header;
++
++		ret = trace_imc_prepare_sample(mem, &data, &prev_tb, &header, event);
++		if (ret) /* Exit, if not a valid record */
++			break;
++		else {
++			/* If this is a valid record, create the sample */
++			struct perf_output_handle handle;
++
++			if (perf_output_begin(&handle, event, header.size))
++				return;
++
++			perf_output_sample(&handle, &header, &data, event);
++			perf_output_end(&handle);
++		}
++	}
++}
++
++static int trace_imc_event_add(struct perf_event *event, int flags)
++{
++	/* Enable the sched_task to start the engine */
++       perf_sched_cb_inc(event->ctx->pmu);
++       return 0;
++}
++
++static void trace_imc_event_read(struct perf_event *event)
++{
++	dump_trace_imc_data(event);
++}
++
++static void trace_imc_event_stop(struct perf_event *event, int flags)
++{
++	trace_imc_event_read(event);
++}
++
++static void trace_imc_event_start(struct perf_event *event, int flags)
++{
++	return;
++}
++
++static void trace_imc_event_del(struct perf_event *event, int flags)
++{
++	perf_sched_cb_dec(event->ctx->pmu);
++}
++
++void trace_imc_pmu_sched_task(struct perf_event_context *ctx,
++				bool sched_in)
++{
++	int core_id = smp_processor_id() / threads_per_core;
++	struct imc_pmu_ref *ref;
++	u64 local_mem, ldbar_value;
++
++	/* Set trace-imc bit in ldbar and load ldbar with per-thread memory address */
++	local_mem = get_trace_imc_event_base_addr();
++	ldbar_value = ((u64)local_mem & THREAD_IMC_LDBAR_MASK) | TRACE_IMC_ENABLE;
++
++	ref = &core_imc_refc[core_id];
++	if (!ref)
++		return;
++
++	if (sched_in) {
++		mtspr(SPRN_LDBAR, ldbar_value);
++		mutex_lock(&ref->lock);
++		if (ref->refc == 0) {
++			if (opal_imc_counters_start(OPAL_IMC_COUNTERS_TRACE,
++					get_hard_smp_processor_id(smp_processor_id()))) {
++				mutex_unlock(&ref->lock);
++				pr_err("trace-imc: Unable to start the counters for core %d\n", core_id);
++				mtspr(SPRN_LDBAR, 0);
++				return;
++			}
++		}
++		++ref->refc;
++		mutex_unlock(&ref->lock);
++	} else {
++		mtspr(SPRN_LDBAR, 0);
++		mutex_lock(&ref->lock);
++		ref->refc--;
++		if (ref->refc == 0) {
++			if (opal_imc_counters_stop(OPAL_IMC_COUNTERS_TRACE,
++					get_hard_smp_processor_id(smp_processor_id()))) {
++				mutex_unlock(&ref->lock);
++				pr_err("trace-imc: Unable to stop the counters for core %d\n", core_id);
++				return;
++			}
++		} else if (ref->refc < 0) {
++			ref->refc = 0;
++		}
++		mutex_unlock(&ref->lock);
++	}
++	return;
++}
++
++static int trace_imc_event_init(struct perf_event *event)
++{
++	struct task_struct *target;
++
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
 +	if (!capable(CAP_SYS_ADMIN))
 +		return -EACCES;
 +
- 	/* Sampling not supported */
- 	if (event->hw.sample_period)
- 		return -EINVAL;
++	/* Return if this is a couting event */
++	if (event->attr.sample_period == 0)
++		return -ENOENT;
++
++	event->hw.idx = -1;
++	target = event->hw.target;
++
++	event->pmu->task_ctx_nr = perf_hw_context;
++	return 0;
++}
++
+ /* update_pmu_ops : Populate the appropriate operations for "pmu" */
+ static int update_pmu_ops(struct imc_pmu *pmu)
+ {
+@@ -1149,6 +1316,14 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+ 		pmu->pmu.cancel_txn = thread_imc_pmu_cancel_txn;
+ 		pmu->pmu.commit_txn = thread_imc_pmu_commit_txn;
+ 		break;
++	case IMC_DOMAIN_TRACE:
++		pmu->pmu.event_init = trace_imc_event_init;
++		pmu->pmu.add = trace_imc_event_add;
++		pmu->pmu.del = trace_imc_event_del;
++		pmu->pmu.start = trace_imc_event_start;
++		pmu->pmu.stop = trace_imc_event_stop;
++		pmu->pmu.read = trace_imc_event_read;
++		pmu->pmu.sched_task = trace_imc_pmu_sched_task;
+ 	default:
+ 		break;
+ 	}
 -- 
 2.17.1
 
