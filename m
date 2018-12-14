@@ -2,72 +2,87 @@ Return-Path: <SRS0=7E7R=OX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-7.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2ECDC67839
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 08:04:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF8B0C6786C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:14:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0DEFA2080F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 08:04:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DEFA2080F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 100F320866
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 09:14:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 100F320866
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43GNNl6h3rzDrJs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 19:04:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by lists.ozlabs.org (Postfix) with ESMTP id 43GPxM4cnJzDrDZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Dec 2018 20:13:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43GNLG46M2zDrDq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 19:01:57 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43GNL74xnwz9vGy9;
- Fri, 14 Dec 2018 09:01:51 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 1YohcOmq4HKZ; Fri, 14 Dec 2018 09:01:51 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43GNL74CS4z9vGy8;
- Fri, 14 Dec 2018 09:01:51 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 88AF98B89E;
- Fri, 14 Dec 2018 09:01:52 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gaXjU-IdF9US; Fri, 14 Dec 2018 09:01:52 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 48D898B89B;
- Fri, 14 Dec 2018 09:01:52 +0100 (CET)
-Subject: Re: [PATCH] powerpc/mm: make NULL pointer deferences explicit on bad
- page faults.
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-References: <42e7e2e9b74af526523fb5a1451fdb29cfe2687a.1539060806.git.christophe.leroy@c-s.fr>
- <87zht9udqh.fsf@concordia.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <276439ce-aad9-e72f-7bc9-c57fb4a59339@c-s.fr>
-Date: Fri, 14 Dec 2018 09:01:52 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
-MIME-Version: 1.0
-In-Reply-To: <87zht9udqh.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43GPtY0cfyzDrD2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 20:11:32 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBE992WX041445
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:28 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2pc9c2rtc2-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2018 04:11:28 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 14 Dec 2018 09:11:26 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 14 Dec 2018 09:11:25 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBE9BOWa57671860
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 14 Dec 2018 09:11:24 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 065794C058;
+ Fri, 14 Dec 2018 09:11:24 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0ADAB4C04A;
+ Fri, 14 Dec 2018 09:11:23 +0000 (GMT)
+Received: from localhost.in.ibm.com (unknown [9.124.31.22])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 14 Dec 2018 09:11:22 +0000 (GMT)
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/5] powerpc/perf: IMC trace-mode support
+Date: Fri, 14 Dec 2018 14:41:17 +0530
+X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 18121409-4275-0000-0000-000002F0623B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18121409-4276-0000-0000-000037FD9190
+Message-Id: <20181214091122.20992-1-anju@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-14_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=861 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812140085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,141 +94,179 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anju@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael,
+IMC (In-Memory collection counters) is a hardware monitoring facility      
+that collects large number of hardware performance events.                 
+POWER9 support two modes for IMC which are the Accumulation mode and       
+Trace mode. In Accumulation mode, event counts are accumulated in system   
+Memory. Hypervisor then reads the posted counts periodically or when       
+requested. In IMC Trace mode, event counted is fixed for cycles and on     
+each overflow, hardware snapshots the program counter along with other     
+details and writes into memory pointed by LDBAR(ring buffer memory,        
+hardware wraps around). LDBAR has bit which indicates the IMC trace-mode.               
+								    
+Trace-IMC Implementation:                                                  
+--------------------------                                                 
+To enable trace-imc, we need to                                            
+								    
+* Add trace node in the DTS file for power9, so that the new trace node can
+be discovered by the kernel.                                               
+								    
+Information included in the DTS file are as follows, (a snippet from      
+the ima-catalog)                                                           
+								    
+TRACE_IMC: trace-events {                                                  
+     #address-cells = <0x1>;                                        
+     #size-cells = <0x1>;                                           
+     event@10200000 {                                               
+	 event-name = "cycles" ;                                    
+	 reg = <0x10200000 0x8>;                                    
+	 desc = "Reference cycles" ;                                
+     };                                                             
+ };                                                                 
+ trace@0 {                                                          
+	 compatible = "ibm,imc-counters";                           
+	 events-prefix = "trace_";                                  
+	 reg = <0x0 0x8>;                                           
+	 events = < &TRACE_IMC >;                                   
+	 type = <0x2>;                                              
+	 size = <0x40000>;                                          
+ };                                                                 
+								    
+OP-BUILD changes needed to include the "trace node" is already pulled in   
+to the ima-catalog repo.                                                   
+								    
+ps://github.com/open-power/op-build/commit/d3e75dc26d1283d7d5eb444bff1ec9e40d5dfc07
+								    
+* Enchance the opal_imc_counters_* calls to support this new trace mode    
+in imc. Add support to initialize the trace-mode scom.                     
+								    
+TRACE_IMC_SCOM bit representation:                                         
+								    
+0:1     : SAMPSEL                                                          
+2:33    : CPMC_LOAD                                                        
+34:40   : CPMC1SEL                                                         
+41:47   : CPMC2SEL                                                         
+48:50   : BUFFERSIZE                                                       
+51:63   : RESERVED                                                         
+								    
+CPMC_LOAD contains the sampling duration. SAMPSEL and CPMC*SEL determines  
+the event to count. BUFFRSIZE indicates the memory range. On each overflow,
+hardware snapshots program counter along with other details and update the 
+memory and reloads the CMPC_LOAD value for the next sampling duration.     
+IMC hardware does not support exceptions, so it quietly wraps around if    
+memory buffer reaches the end.                                             
 
-Le 14/12/2018 à 01:57, Michael Ellerman a écrit :
-> Hi Christophe,
-> 
-> You know it's the trivial patches that are going to get lots of review
-> comments :)
+Link to the skiboot patches to enhance the opal_imc_counters_* calls:
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012878.html
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012879.html
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012882.html
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012880.html
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012881.html
+https://lists.ozlabs.org/pipermail/skiboot/2018-December/012883.html
 
-I'm so happy to get comments.
+* Set LDBAR spr to enable imc-trace mode.
 
-> 
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> As several other arches including x86, this patch makes it explicit
->> that a bad page fault is a NULL pointer dereference when the fault
->> address is lower than PAGE_SIZE
-> 
-> I'm being pedantic, but it's not necessarily a NULL pointer dereference.
-> It might just be a direct access to a low address, eg:
-> 
->   char *p = 0x100;
->   *p = 0;
-> 
-> That's not a NULL pointer dereference.
-> 
-> But other arches do print this so I guess it's OK to add, and in most
-> cases it will be an actual NULL pointer dereference.
-> 
-> I wonder though if we should use 4096 rather than PAGE_SIZE, given
-> that's the actual value other arches are using. We support 256K pages on
-> some systems, which is getting quite large.
+LDBAR Layout:
 
-Those invalid accesses are catched because the first page is marked non 
-present or non accessible in the page table, so I thing using PAGE_SIZE 
-here is valid regardless of the page size.
+0     : Enable/Disable
+1     : 0 -> Accumulation Mode
+      	1 -> Trace Mode
+2:3   : Reserved
+4-6   : PB scope
+7     : Reserved
+8:50  : Counter Address
+51:63 : Reserved
 
-Looks like the arches have PAGE_SHIFT ranging from 12 to 16 mainly.
+----------------                                                           
+								    
+Key benefit of imc trace-mode is, each sample record contains the address
+pointer along with other information. So that, we can profile the IP
+without interrupting the application.
+								    
+Performance data using 'perf top' with and without trace-imc event:        
+								    
+When the application is monitored with trace-imc event, we dont take any   
+PMI interrupts.                                                            
+								    
+PMI interrupts count when `perf top` command is executed without trac-imc event.
+								    
+# perf top                                      
+12.53%  [kernel]       [k] arch_cpu_idle                               
+11.32%  [kernel]       [k] rcu_idle_enter                              
+10.76%  [kernel]       [k] __next_timer_interrupt                      
+ 9.49%  [kernel]       [k] find_next_bit                               
+ 8.06%  [kernel]       [k] rcu_dynticks_eqs_exit                       
+ 7.82%  [kernel]       [k] do_idle                                     
+ 5.71%  [kernel]       [k] tick_nohz_idle_stop_tic                     
+     [-----------------------]                                      
+# cat /proc/interrupts  (a snippet from the output)                        
+9944      1072        804        804       1644        804       1306      
+804        804        804        804        804        804        804      
+804        804       1961       1602        804        804       1258      
+[-----------------------------------------------------------------]        
+803        803        803        803        803        803        803      
+803        803        803        803        804        804        804     
+804        804        804        804        804        804        803     
+803        803        803        803        803       1306        803     
+803   Performance monitoring interrupts                                   
+								    
+								    
+`perf top` with trace-imc (right after 'perf top' without trace-imc event):
+								    
+# perf top -e trace_imc/trace_cycles/                                      
+12.50%  [kernel]          [k] arch_cpu_idle                            
+11.81%  [kernel]          [k] __next_timer_interrupt                   
+11.22%  [kernel]          [k] rcu_idle_enter                           
+10.25%  [kernel]          [k] find_next_bit                            
+ 7.91%  [kernel]          [k] do_idle                                  
+ 7.69%  [kernel]          [k] rcu_dynticks_eqs_exit                    
+ 5.20%  [kernel]          [k] tick_nohz_idle_stop_tick                 
+     [-----------------------]                                      
+								    
+# cat /proc/interrupts (a snippet from the output)                         
+								    
+9944      1072        804        804       1644        804       1306      
+804        804        804        804        804        804        804      
+804        804       1961       1602        804        804       1258      
+[-----------------------------------------------------------------]        
+803        803        803        803        803        803        803      
+803        803        803        804        804        804        804
+804        804        804        804        804        804        803     
+803        803        803        803        803       1306        803     
+803   Performance monitoring interrupts                                   
+								    
+The PMI interrupts count remains the same.  
 
-> 
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index d51cf5f4e45e..501a1eadb3e9 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -631,13 +631,16 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
->>   	switch (TRAP(regs)) {
->>   	case 0x300:
->>   	case 0x380:
->> -		printk(KERN_ALERT "Unable to handle kernel paging request for "
->> -			"data at address 0x%08lx\n", regs->dar);
->> +		pr_alert("Unable to handle kernel %s for data at address 0x%08lx\n",
->> +			 regs->dar < PAGE_SIZE ? "NULL pointer dereference" :
->> +						 "paging request",
->> +			 regs->dar);
-> 
-> This is now too long I think, with printk time you get:
-> 
-> [ 1096.450711] Unable to handle kernel NULL pointer dereference for data at address 0x00000000
-> 
-> Which is 93 columns. It's true on many systems it doesn't really matter
-> any more, but it would still be good if it was shorter.
-> 
-> I like that on x86 they prefix it with "BUG:", just to avoid any confusion.
-> 
-> What if we had for the NULL pointer case:
-> 
->    BUG: Kernel NULL pointer dereference at 0x00000000
-> 
-> And for the normal case:
-> 
->    BUG: Unable to handle kernel data access at 0x00000000
-> 
-> Note on the very next line we print:
->    Faulting instruction address: 0xc000000000795cc8
-> 
-> So there should be no confusion about whether "at" refers to the data
-> address or the instruction address.
+Changelog:
 
-Agreed
+From v1 -> v2
+--------------
 
-> 
->>   	case 0x400:
->>   	case 0x480:
->> -		printk(KERN_ALERT "Unable to handle kernel paging request for "
->> -			"instruction fetch\n");
->> +		pr_alert("Unable to handle kernel %s for instruction fetch\n",
->> +			 regs->nip < PAGE_SIZE ? "NULL pointer dereference" :
->> +						 "paging request");
-> 
-> I don't really like using "NULL pointer dereference" here, that
-> terminology makes me think of a load/store, I think it confuses things
-> rather than making it clearer.
-> 
-> What about:
-> 
->    BUG: Unable to handle kernel instruction fetch at 0x00000000
+* Added privileged access check for thread-imc and trace-imc
 
-I think we still need to make it explicit that we jumped there due to a 
-NULL function pointer, allthought I don't have a good text idea yet for 
-this.
+Suggestions/comments are welcome.
 
-> 
-> 
->>   		break;
->>   	case 0x600:
->>   		printk(KERN_ALERT "Unable to handle kernel paging request for "
-> 
-> It would be good to clean up these other cases as well. They seem to be
-> trying to use the "page request for" terminology which leads to them
-> being very wordy. I assume that was done to help people grepping kernel
-> logs for errors, but I think we should not worry about that if we have
-> the "BUG:" prefix.
-> 
-> So we have:
-> 	printk(KERN_ALERT "Unable to handle kernel paging request for "
-> 		"unaligned access at address 0x%08lx\n", regs->dar);
-> 
-> What about:
-> 
->    BUG: Unable to handle kernel unaligned access at 0x00000000
-> 
-> And:
-> 	printk(KERN_ALERT "Unable to handle kernel paging request for "
-> 		"unknown fault\n");
-> 
-> What about:
-> 
->    BUG: Unable to handle unknown paging fault at 0x00000000
-> 
-> 
-> Thoughts?
+Anju T Sudhakar (4):
+  powerpc/include: Add data structures and macros for IMC trace mode
+  powerpc/perf: Rearrange setting of ldbar for thread-imc
+  powerpc/perf: Trace imc events detection and cpuhotplug
+  powerpc/perf: Trace imc PMU functions
 
-Looks like good ideas I'll carry on.
+Madhavan Srinivasan (1):
+  powerpc/perf: Add privileged access check for thread_imc
 
-Christophe
+ arch/powerpc/include/asm/imc-pmu.h        |  39 +++
+ arch/powerpc/include/asm/opal-api.h       |   1 +
+ arch/powerpc/perf/imc-pmu.c               | 297 +++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/opal-imc.c |   3 +
+ include/linux/cpuhotplug.h                |   1 +
+ 5 files changed, 330 insertions(+), 11 deletions(-)
+-- 
+2.17.1
+
