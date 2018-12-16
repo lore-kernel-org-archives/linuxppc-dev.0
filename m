@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E736AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Dec 2018 17:39:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DDDEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Dec 2018 17:42:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B49D2082F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Dec 2018 17:39:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 91E732082F
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Dec 2018 17:42:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dVWrp8+U"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B49D2082F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="OqWGJ0KD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91E732082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Hs3p0nR3zDqLW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 04:39:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Hs6b3RRfzDqG8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 04:41:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="dVWrp8+U";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="OqWGJ0KD";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
@@ -35,36 +35,35 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="dVWrp8+U"; dkim-atps=neutral
+ header.b="OqWGJ0KD"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Hrdg12WKzDqNC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 04:20:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Hrdh3NfHzDqMG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 04:20:24 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=jlApsI+ExhZJZ5enIYAW66982PY3ED2ZTa8ANJu28F8=; b=dVWrp8+UqSvnxG0A8TkWGusCL5
- Rkcr+iyL0BlEl7ngVKBqVqlGU6TFyZZNyR/jPY5698SeOsjUpcybw+yDBlLU+0yVES0jefN9eDCmj
- pUouAjIiQa1NbxpPFR+1x5XTzPitLw7/oVEG0sV+CAyaX6Cpiy5xplj32ge4ejaaiiSrOxQY6WjiV
- YEdwcV3qiWE98lLyvy64ILDqL8brQimc65ME7S8mIIhBVnfcswRHODf1xwPiJv6yVz4NKd5je0d4x
- yBWdtfkUQLp+pJQL3V67YY28Kugsu+BpYqtOh/1Czo7/6RBUSEiezEes1hnS43iEzqa+cNx7QD9S3
- IKOzJuyg==;
+ bh=Nt5AAnyce7M0MpBb5WRcRQF/WwRJu51s7yjQqfDneo8=; b=OqWGJ0KDFDQl8SeiJkpQX4y+bW
+ u9/TyZxvmTnK4nCNKV4UzctOqu1SO6qY3s8ogzvA7qDWL+psuCcunVjCn+Z6xKMploEKh1Z35xQ/1
+ q92IUrc8qCl3ix5wcbtun7AH33y2+RdWY5zhz3dE744Q2YxhFjflpjb0Q3fcS+YMbX4UG433DluFs
+ QTzG3jpAuGzHsn4xzLa1T7ib+F863uOaBUYM/synHfxSzm9lZbCUVrC5R/9SryxcdsiPazVUq5HIx
+ 3UjdBPZJDLRUihHd0dJAIXD2b9ATKrwYbjQWxzO3onOd+ExTWZL+JqIx1BSvyPAkyIn3TzdpkpJPX
+ DhJnpRew==;
 Received: from 089144198147.atnat0007.highway.a1.net ([89.144.198.147]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gYa5L-0005fb-Cg; Sun, 16 Dec 2018 17:20:11 +0000
+ id 1gYa5N-0005fo-VC; Sun, 16 Dec 2018 17:20:14 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 7/8] powerpc/dma: split the two __dma_alloc_coherent
- implementations
-Date: Sun, 16 Dec 2018 18:19:50 +0100
-Message-Id: <20181216171951.31306-8-hch@lst.de>
+Subject: [PATCH 8/8] cxl: drop the dma_set_mask callback from vphb
+Date: Sun, 16 Dec 2018 18:19:51 +0100
+Message-Id: <20181216171951.31306-9-hch@lst.de>
 X-Mailer: git-send-email 2.19.2
 In-Reply-To: <20181216171951.31306-1-hch@lst.de>
 References: <20181216171951.31306-1-hch@lst.de>
@@ -88,166 +87,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The implemementation for the CONFIG_NOT_COHERENT_CACHE case doesn't share
-any code with the one for systems with coherent caches.  Split it off
-and merge it with the helpers in dma-noncoherent.c that have no other
-callers.
+The CXL code never even looks at the dma mask, so there is no good
+reason for this sanity check.  Remove it because it gets in the way
+of the dma ops refactoring.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/include/asm/dma-mapping.h |  5 -----
- arch/powerpc/kernel/dma.c              | 14 ++------------
- arch/powerpc/mm/dma-noncoherent.c      | 15 +++++++--------
- arch/powerpc/platforms/44x/warp.c      |  2 +-
- 4 files changed, 10 insertions(+), 26 deletions(-)
+ drivers/misc/cxl/vphb.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index f2a4a7142b1e..dacd0f93f2b2 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -39,9 +39,6 @@ extern int dma_nommu_mmap_coherent(struct device *dev,
-  * to ensure it is consistent.
-  */
- struct device;
--extern void *__dma_alloc_coherent(struct device *dev, size_t size,
--				  dma_addr_t *handle, gfp_t gfp);
--extern void __dma_free_coherent(size_t size, void *vaddr);
- extern void __dma_sync(void *vaddr, size_t size, int direction);
- extern void __dma_sync_page(struct page *page, unsigned long offset,
- 				 size_t size, int direction);
-@@ -52,8 +49,6 @@ extern unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr);
-  * Cache coherent cores.
-  */
+diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+index 7908633d9204..49da2f744bbf 100644
+--- a/drivers/misc/cxl/vphb.c
++++ b/drivers/misc/cxl/vphb.c
+@@ -11,17 +11,6 @@
+ #include <misc/cxl.h>
+ #include "cxl.h"
  
--#define __dma_alloc_coherent(dev, gfp, size, handle)	NULL
--#define __dma_free_coherent(size, addr)		((void)0)
- #define __dma_sync(addr, size, rw)		((void)0)
- #define __dma_sync_page(pg, off, sz, rw)	((void)0)
- 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index d442d23e182b..270b2911c437 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -62,18 +62,12 @@ static int dma_nommu_dma_supported(struct device *dev, u64 mask)
- #endif
- }
- 
-+#ifndef CONFIG_NOT_COHERENT_CACHE
- void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
- 				  dma_addr_t *dma_handle, gfp_t flag,
- 				  unsigned long attrs)
+-static int cxl_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+-{
+-	if (dma_mask < DMA_BIT_MASK(64)) {
+-		pr_info("%s only 64bit DMA supported on CXL", __func__);
+-		return -EIO;
+-	}
+-
+-	*(pdev->dev.dma_mask) = dma_mask;
+-	return 0;
+-}
+-
+ static int cxl_pci_probe_mode(struct pci_bus *bus)
  {
- 	void *ret;
--#ifdef CONFIG_NOT_COHERENT_CACHE
--	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
--	if (ret == NULL)
--		return NULL;
--	*dma_handle += get_dma_offset(dev);
--	return ret;
--#else
- 	struct page *page;
- 	int node = dev_to_node(dev);
- #ifdef CONFIG_FSL_SOC
-@@ -113,19 +107,15 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
- 	*dma_handle = __pa(ret) + get_dma_offset(dev);
+ 	return PCI_PROBE_NORMAL;
+@@ -220,7 +209,6 @@ static struct pci_controller_ops cxl_pci_controller_ops =
+ 	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
+ 	.setup_msi_irqs = cxl_setup_msi_irqs,
+ 	.teardown_msi_irqs = cxl_teardown_msi_irqs,
+-	.dma_set_mask = cxl_dma_set_mask,
+ };
  
- 	return ret;
--#endif
- }
- 
- void __dma_nommu_free_coherent(struct device *dev, size_t size,
- 				void *vaddr, dma_addr_t dma_handle,
- 				unsigned long attrs)
- {
--#ifdef CONFIG_NOT_COHERENT_CACHE
--	__dma_free_coherent(size, vaddr);
--#else
- 	free_pages((unsigned long)vaddr, get_order(size));
--#endif
- }
-+#endif /* !CONFIG_NOT_COHERENT_CACHE */
- 
- static void *dma_nommu_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag,
-diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-index b6e7b5952ab5..e955539686a4 100644
---- a/arch/powerpc/mm/dma-noncoherent.c
-+++ b/arch/powerpc/mm/dma-noncoherent.c
-@@ -29,7 +29,7 @@
- #include <linux/string.h>
- #include <linux/types.h>
- #include <linux/highmem.h>
--#include <linux/dma-mapping.h>
-+#include <linux/dma-direct.h>
- #include <linux/export.h>
- 
- #include <asm/tlbflush.h>
-@@ -151,8 +151,8 @@ static struct ppc_vm_region *ppc_vm_region_find(struct ppc_vm_region *head, unsi
-  * Allocate DMA-coherent memory space and return both the kernel remapped
-  * virtual and bus address for that space.
-  */
--void *
--__dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t gfp)
-+void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
-+		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
- {
- 	struct page *page;
- 	struct ppc_vm_region *c;
-@@ -223,7 +223,7 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
- 		/*
- 		 * Set the "dma handle"
- 		 */
--		*handle = page_to_phys(page);
-+		*dma_handle = phys_to_dma(dev, page_to_phys(page));
- 
- 		do {
- 			SetPageReserved(page);
-@@ -249,12 +249,12 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
-  no_page:
- 	return NULL;
- }
--EXPORT_SYMBOL(__dma_alloc_coherent);
- 
- /*
-  * free a page as defined by the above mapping.
-  */
--void __dma_free_coherent(size_t size, void *vaddr)
-+void __dma_nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
-+		dma_addr_t dma_handle, unsigned long attrs)
- {
- 	struct ppc_vm_region *c;
- 	unsigned long flags, addr;
-@@ -309,7 +309,6 @@ void __dma_free_coherent(size_t size, void *vaddr)
- 	       __func__, vaddr);
- 	dump_stack();
- }
--EXPORT_SYMBOL(__dma_free_coherent);
- 
- /*
-  * make an area consistent.
-@@ -401,7 +400,7 @@ EXPORT_SYMBOL(__dma_sync_page);
- 
- /*
-  * Return the PFN for a given cpu virtual address returned by
-- * __dma_alloc_coherent. This is used by dma_mmap_coherent()
-+ * __dma_nommu_alloc_coherent. This is used by dma_mmap_coherent()
-  */
- unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr)
- {
-diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-index a886c2c22097..7e4f8ca19ce8 100644
---- a/arch/powerpc/platforms/44x/warp.c
-+++ b/arch/powerpc/platforms/44x/warp.c
-@@ -47,7 +47,7 @@ static int __init warp_probe(void)
- 	if (!of_machine_is_compatible("pika,warp"))
- 		return 0;
- 
--	/* For __dma_alloc_coherent */
-+	/* For __dma_nommu_alloc_coherent */
- 	ISA_DMA_THRESHOLD = ~0L;
- 
- 	return 1;
+ int cxl_pci_vphb_add(struct cxl_afu *afu)
 -- 
 2.19.2
 
