@@ -2,23 +2,24 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3716C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:36:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC7BDC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:38:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 637C620672
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:36:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 637C620672
+	by mail.kernel.org (Postfix) with ESMTPS id 7BFB220672
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:38:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BFB220672
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43JCdb2GjCzDqZp
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 18:36:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JCgw4yk3zDqB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 18:38:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=lst.de
@@ -29,24 +30,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JCbK211JzDqTw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 18:34:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43JCcg4wvNzDqjQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 18:35:46 +1100 (AEDT)
 Received: by newverein.lst.de (Postfix, from userid 2407)
- id 1FA7768DD3; Mon, 17 Dec 2018 08:34:34 +0100 (CET)
-Date: Mon, 17 Dec 2018 08:34:34 +0100
+ id D30D168DD6; Mon, 17 Dec 2018 08:35:43 +0100 (CET)
+Date: Mon, 17 Dec 2018 08:35:43 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 2/8] powerpc/dma: properly wire up the unmap_page and
- unmap_sg methods
-Message-ID: <20181217073434.GC1933@lst.de>
+Subject: Re: [PATCH 7/8] powerpc/dma: split the two __dma_alloc_coherent
+ implementations
+Message-ID: <20181217073543.GD1933@lst.de>
 References: <20181216171951.31306-1-hch@lst.de>
- <20181216171951.31306-3-hch@lst.de>
- <ea83ba21-feee-9776-ab0a-5bc78b237e4c@c-s.fr>
+ <20181216171951.31306-8-hch@lst.de>
+ <de3d6e75-70d6-e1af-f733-b1aeed99d6c5@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <ea83ba21-feee-9776-ab0a-5bc78b237e4c@c-s.fr>
+In-Reply-To: <de3d6e75-70d6-e1af-f733-b1aeed99d6c5@c-s.fr>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -65,34 +66,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Dec 17, 2018 at 07:41:54AM +0100, Christophe Leroy wrote:
+On Mon, Dec 17, 2018 at 07:51:05AM +0100, Christophe Leroy wrote:
 >
 >
-> Le 16/12/2018 Ã  18:19, Christoph Hellwig a Ã©critÂ :
->> The unmap methods need to transfer memory ownership back from the device
->> to the cpu by identical means as dma_sync_*_to_cpu.  I'm not sure powerpc
->> needs to do any work in this transfer direction, but given that it does
->> invalidate the caches in dma_sync_*_to_cpu already we should make sure
->> we also do so on unmapping.
+> Le 16/12/2018 à 18:19, Christoph Hellwig a écrit :
+>> The implemementation for the CONFIG_NOT_COHERENT_CACHE case doesn't share
+>> any code with the one for systems with coherent caches.  Split it off
+>> and merge it with the helpers in dma-noncoherent.c that have no other
+>> callers.
+>>
+>> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> ---
+>>   arch/powerpc/include/asm/dma-mapping.h |  5 -----
+>>   arch/powerpc/kernel/dma.c              | 14 ++------------
 >
-> Why do we have to do that on unmapping ? If we are unmapping it means we 
-> are retiring the area, so why would we need to use CPU for syncing an area 
-> than won't be used anymore ?
+> Instead of all the ifdefs in dma.c, couldn't we split it
+> in two files, ie dma.c for common parts and dma-coherence.c for specific 
+> stuff ?
 
-So in general we need the cache maintaince only at map time if the CPUs
-gurantee to never Ñ•peculate into memory that might be under DMA, which
-for modern CPUs is increasingly rate.  If the CPUs could speculate into
-the area that was DMA mapped we need to do another round of cache
-maintainance on unmap to make sure we really do not have any data
-in the cache.  powerpc currently does that for dma_sync_*_to_cpu, but
-not for the unmap case, which not only looks odd but also seems to be
-worked around in drivers (see the ppc44x crypto patch).
+The end goal is to kill dma.c and keep dma-noncoherent.c only with most
+of the code moving to common code.  Here is the current state of that:
 
-Note that there are some way to optimize the amount of cache flushing
-done even when the cpu speculates, see:
+http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.5
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/arc/mm/dma.c#n93
-
-But for that I need help with people that actually understand the
-non-coherent powerpc SOCs and who can test it.  For now this patch
-is conservative.
+But it still has issues on two tested platforms and isn't ready yet.
