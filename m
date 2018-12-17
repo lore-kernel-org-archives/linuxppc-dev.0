@@ -2,98 +2,74 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0CA4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 17:32:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 915F0C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 17:38:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FA3620675
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 17:32:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FA3620675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0E73920675
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 17:38:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="S8UdykSu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E73920675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43JSsK03NNzDqpd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 04:32:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JT0B6mcbzDqVD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 04:38:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sebott@linux.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=infradead.org header.i=@infradead.org header.b="S8UdykSu";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+f285e7ccc7f72256db92+5594+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JSpv6ZWmzDqWH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 04:30:30 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBHHSVxZ081026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 12:30:28 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pef79k6y7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 12:30:28 -0500
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sebott@linux.ibm.com>;
- Mon, 17 Dec 2018 17:30:25 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 17 Dec 2018 17:30:21 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBHHUKGF131406
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 17 Dec 2018 17:30:20 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 76C8A52054;
- Mon, 17 Dec 2018 17:30:20 +0000 (GMT)
-Received: from sig-9-145-45-130.uk.ibm.com (unknown [9.145.45.130])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 8B20D52052;
- Mon, 17 Dec 2018 17:30:19 +0000 (GMT)
-Date: Mon, 17 Dec 2018 18:30:18 +0100 (CET)
-From: Sebastian Ott <sebott@linux.ibm.com>
-X-X-Sender: sebott@schleppi
-To: Christoph Hellwig <hch@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43JSxP2DGkzDqXM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 04:36:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=JmBmThrp855oOtumKAAjqsJEcOKvJL8IthTlNgmmRsI=; b=S8UdykSusuB8NWUm7zK4FEJth
+ 600mTxEKqdPjkgY5cL4D8Uiy7xJGksiMZHXnEHfLFnEkzb6RHGlWqftWKOtjfEfR1oLDGXjM57p6O
+ b0H0oyvg3Pj4gBCkB8+RJuwoiS3X5DlGaA4UjZG0Ar/bUhsblR+uATnN3r9Quxge/HD4mQ083TJqF
+ wltiJA//ueGWYT6xPFIv8JdGp+mPKtKBy9WJh/MExxs10iL3pOMaDAOgb0LVd+LFr6HsB5SuwNrw3
+ FsSDN7zK4cmXLG0+bwJ2Qw1krVvB72FY2QW2Q9Rm1DfQrcHX632Rrti4V2gMwukJ5cE7qYZorWmqU
+ kbyIB8ong==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gYwny-0002XH-AC; Mon, 17 Dec 2018 17:35:46 +0000
+Date: Mon, 17 Dec 2018 09:35:46 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Sebastian Ott <sebott@linux.ibm.com>
 Subject: Re: [PATCH 2/2] s390/pci: handle function enumeration after sriov
  enablement
-In-Reply-To: <20181214131802.GA13950@infradead.org>
+Message-ID: <20181217173546.GA4106@infradead.org>
 References: <20181212215453.GJ99796@google.com>
  <20181213175428.87520-2-sebott@linux.ibm.com>
- <20181214131245.GB2606@infradead.org> <20181214131802.GA13950@infradead.org>
-User-Agent: Alpine 2.21 (LFD 202 2017-01-01)
-Organization: =?ISO-8859-15?Q?=22IBM_Deutschland_Research_&_Development_GmbH?=
- =?ISO-8859-15?Q?_=2F_Vorsitzende_des_Aufsichtsrats=3A_Matthias?=
- =?ISO-8859-15?Q?_Hartmann_Gesch=E4ftsf=FChrung=3A_Dirk_Wittkopp?=
- =?ISO-8859-15?Q?_Sitz_der_Gesellschaft=3A_B=F6blingen_=2F_Reg?=
- =?ISO-8859-15?Q?istergericht=3A_Amtsgericht_Stuttgart=2C_HRB_2432?=
- =?ISO-8859-15?Q?94=22?=
+ <20181214131245.GB2606@infradead.org>
+ <20181214131802.GA13950@infradead.org>
+ <alpine.LFD.2.21.1812171806330.28490@schleppi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-TM-AS-GCONF: 00
-x-cbid: 18121717-0012-0000-0000-000002DA5F35
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121717-0013-0000-0000-0000210FF450
-Message-Id: <alpine.LFD.2.21.1812171806330.28490@schleppi>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-17_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812170155
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.21.1812171806330.28490@schleppi>
+User-Agent: Mutt/1.9.2 (2017-12-15)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,40 +82,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Bjorn Helgaas <helgaas@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+ Christoph Hellwig <hch@infradead.org>, Paul Mackerras <paulus@samba.org>,
+ Bjorn Helgaas <helgaas@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 14 Dec 2018, Christoph Hellwig wrote:
-> On Fri, Dec 14, 2018 at 05:12:45AM -0800, Christoph Hellwig wrote:
-> > On Thu, Dec 13, 2018 at 06:54:28PM +0100, Sebastian Ott wrote:
-> > > Implement pcibios_sriov_{add|del}_vfs as empty functions. VF
-> > > creation will be triggered by the hotplug code.
-> > 
-> > And instead of having the arch suplply a no-op arch override I
-> > think it would be better to have the config option just stub it
-> > out in common code.
-> 
-> Or in fact maybe even a runtime flag in struct pci_dev.  Who knows
-> if all future s390 PCIe busses will have exactly the same behavior
-> or if we eventually get the standards compliant behvior back?
+On Mon, Dec 17, 2018 at 06:30:18PM +0100, Sebastian Ott wrote:
+> Something like this:
+> https://lore.kernel.org/linux-pci/20181212215453.GJ99796@google.com/T/#m649d86ea3c65f669c74d048f89afbaf473876ac3
 
-Something like this:
-https://lore.kernel.org/linux-pci/20181212215453.GJ99796@google.com/T/#m649d86ea3c65f669c74d048f89afbaf473876ac3
-
-Not a runtime flag, but a function pointer in struct pci_host_bridge.
-This would provide the requested flexibility. The problem with this
-approach is that it requires other patches that are not yet upstream
-(https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/log/?h=pci-probe-rework).
-
-Since this discussion is going on since a few months and I want to
-have this code upstream and in distributions for HW enablement I've
-asked Bjorn to go with the initial approach (weak functions) and
-promised to move that to struct pci_host_bridge once Arnd's patches
-are upstream. Would that be OK for you too?
-
-Regards,
-Sebastian
-
+No, I literally meant a flag to skip the work.  Think about it: there
+is a standard way to probe VFs, which comes from what is defined in the
+PCIe spec itself.  It just turns out s390 for some weird reason decides
+to already let the VFs show up basically like PFs.  There really should
+be no reason to branch out into per-arch code here as there really
+isn't much to do on a per-arch level.  More just a quirk for the
+firmware is buggy and already reports the VFs to us, so skip the
+probing.
