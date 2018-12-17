@@ -2,51 +2,64 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C0F4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 13:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 811D2C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 14:20:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D84CD20656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 13:09:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D84CD20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C636220874
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 14:20:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C636220874
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43JM1M4NDhzDqv4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 00:09:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JNc04fxczDqhR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 01:20:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JLyr343SzDqcK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 00:07:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43JLyp4dPQz9sCh;
- Tue, 18 Dec 2018 00:06:58 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Firoz Khan <firoz.khan@linaro.org>
-Subject: Re: [PATCH v5 0/5] powerpc: system call table generation support
-In-Reply-To: <CALxhOnh5a86pBi4rD1YzhVGq7KPs56du9+G8vkt7zVAqbGkLEw@mail.gmail.com>
-References: <1544691770-8938-1-git-send-email-firoz.khan@linaro.org>
- <20181217080846.GA28424@sathnaga86.in.ibm.com>
- <877eg8v40t.fsf@concordia.ellerman.id.au>
- <CALxhOnh5a86pBi4rD1YzhVGq7KPs56du9+G8vkt7zVAqbGkLEw@mail.gmail.com>
-Date: Tue, 18 Dec 2018 00:06:53 +1100
-Message-ID: <87ftuwti8i.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43JNYM6wbbzDqfF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 01:18:31 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43JNYH0wGLz9vBmj;
+ Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id gsX6KHNEOgGm; Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43JNYH0NtDz9vBmh;
+ Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E6EB58B7E1;
+ Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 6vO1qeMetE85; Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CCE828B7CB;
+ Mon, 17 Dec 2018 15:18:27 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id A63F47170C; Mon, 17 Dec 2018 14:18:27 +0000 (UTC)
+Message-Id: <9e06c82e76e8e29cb1ae0b989f3bbbb6b2099e03.1545053638.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/prom: move the device tree if not in declared memory.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 17 Dec 2018 14:18:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,35 +71,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Linux-Arch <linux-arch@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- y2038 Mailman List <y2038@lists.linaro.org>, Boqun Feng <boqun.feng@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>, Ram Pai <linuxram@us.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Marcin Juszkiewicz <marcin.juszkiewicz@linaro.org>,
- Breno Leitao <leitao@debian.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Firoz Khan <firoz.khan@linaro.org> writes:
+If the device tree doesn't reside in the memory which is declared
+inside it, it has to be moved as well as this memory will not be
+mapped by the kernel.
 
-> Hi Michael,
->
-> On Mon, 17 Dec 2018 at 16:01, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> No it's fine if it applies on next.
->>
->> I can also fix up minor merge conflicts if there are any.
->
-> Ohh. I already rebased and sent v6.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/prom.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-That's OK.
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 87a68e2dc531..4181ec715f88 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -124,8 +124,8 @@ static void __init move_device_tree(void)
+ 	size = fdt_totalsize(initial_boot_params);
+ 
+ 	if ((memory_limit && (start + size) > PHYSICAL_START + memory_limit) ||
+-			overlaps_crashkernel(start, size) ||
+-			overlaps_initrd(start, size)) {
++	    !memblock_is_memory(start + size - 1) ||
++	    overlaps_crashkernel(start, size) || overlaps_initrd(start, size)) {
+ 		p = __va(memblock_phys_alloc(size, PAGE_SIZE));
+ 		memcpy(p, initial_boot_params, size);
+ 		initial_boot_params = p;
+-- 
+2.13.3
 
-cheers
