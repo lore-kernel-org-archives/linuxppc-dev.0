@@ -2,87 +2,92 @@ Return-Path: <SRS0=wNeI=O2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D43BAC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 08:04:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D590C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 08:11:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F21F204FD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 08:04:32 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PsSxbB6w"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F21F204FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B7A9A20645
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 08:11:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7A9A20645
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43JDFp1x5NzDq63
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 19:04:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JDPV56qTzDqcH
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 19:11:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="PsSxbB6w";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="PsSxbB6w"; 
- dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JD560gwCzDqZQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 18:56:57 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id w7so5703180pgp.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Dec 2018 23:56:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=au8EiM8byvG0y1Hv7QLp0mVhGQvk710Vc9STgbc0N48=;
- b=PsSxbB6wTE0H5YQel8vnGmdkBREnOOdX8oEXQV5qc4BPK9ICS3ZUIkqSzgfXDJWA9g
- P7zC+UyxG+QZb1UZXKBYY6kvIHG+2VJZY1OOc1dGLe0ImXR4Dx/huuuFSdCTaZspGQ9u
- Otqq8R0osb9hgOmUdLad3l200yl25gE5KIWQPVz/Hdbtqlrogx2nYoXkRaVOJ9wjCEyl
- JkvDF17KCT8l4v+F7TDAe7qkHLA37awgSAUUslMdCKROfYlH8v7Vpf+eYBq9xy9U17Iv
- MCZMPUb+PDDg1TiTWOuLJvB3H5qotK6oj/Y245vK/u6kpxd+e/vk60Irnv3BfbPs78xl
- hwVA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=au8EiM8byvG0y1Hv7QLp0mVhGQvk710Vc9STgbc0N48=;
- b=JkaZzRubhbN2GXYa97MQFGYuFyFdq9xaI/fre17dQ/hAPgOjrlI0JB0wSWAFnxzBXU
- Xlqq6ndP8pf/KGsSDG0riqE1nOAqpTnul9zK17DEr3NKRfXcYLU/UQTnly7DKteZYkUg
- HxCUGZBgV0NXYqfXGk3YnRngOMUjC75aGiY9ebglqHK7jvzFYLH8cNMQvK2sQtcBlyfH
- 4roYU//AGU3imCkdabIKlkWvP2zGkYPjVen0bbCsE1i9DH8tauSe7ww9oSmsg3M7wyvz
- cGMglNoqbMjGwaDI1liuZtL1YuzV85YsCrS/bCRpb9N0qo2ekox09fCifGfN8JoCE8oB
- A5eQ==
-X-Gm-Message-State: AA+aEWbqApUzgFpQnvJ86m6hvMA8cTqNNgAoSCHrAaIcZjvv1PXhlfUc
- 5z9KEoAt4L7Fl9T6lKOcmPQ=
-X-Google-Smtp-Source: AFSGD/VITzx/iT2E843sYjhHKQvhXFgUaF/GLt0spXhxUmG9dVpChMUCC1mF6fbGF5mDYuwFW11zVA==
-X-Received: by 2002:a62:220d:: with SMTP id i13mr11892705pfi.162.1545033415905; 
- Sun, 16 Dec 2018 23:56:55 -0800 (PST)
-Received: from localhost.localdomain (c-24-6-192-50.hsd1.ca.comcast.net.
- [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id r8sm14216610pgr.48.2018.12.16.23.56.54
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Sun, 16 Dec 2018 23:56:55 -0800 (PST)
-From: frowand.list@gmail.com
-To: robh+dt@kernel.org, Michael Bringmann <mwb@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/2] of: __of_detach_node() - remove node from phandle cache
-Date: Sun, 16 Dec 2018 23:56:36 -0800
-Message-Id: <1545033396-24485-3-git-send-email-frowand.list@gmail.com>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1545033396-24485-1-git-send-email-frowand.list@gmail.com>
-References: <1545033396-24485-1-git-send-email-frowand.list@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43JDM54bNZzDqHp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 19:09:05 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBH83Z4Q136939
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 03:09:03 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pe7f1hkbd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 03:09:03 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
+ Mon, 17 Dec 2018 08:09:00 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 17 Dec 2018 08:08:54 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBH88rBq42336288
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 17 Dec 2018 08:08:53 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C6D74A4054;
+ Mon, 17 Dec 2018 08:08:53 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 67F40A405C;
+ Mon, 17 Dec 2018 08:08:49 +0000 (GMT)
+Received: from sathnaga86.in.ibm.com (unknown [9.193.110.82])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 17 Dec 2018 08:08:49 +0000 (GMT)
+Date: Mon, 17 Dec 2018 13:38:46 +0530
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+To: Firoz Khan <firoz.khan@linaro.org>
+Subject: Re: [PATCH v5 0/5] powerpc: system call table generation support
+References: <1544691770-8938-1-git-send-email-firoz.khan@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1544691770-8938-1-git-send-email-firoz.khan@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 18121708-0028-0000-0000-0000032B911E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18121708-0029-0000-0000-000023E7E6ED
+Message-Id: <20181217080846.GA28424@sathnaga86.in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-17_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812170077
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,117 +99,152 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Juliet Kim <minkim@us.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, linux-arch@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ y2038@lists.linaro.org, Boqun Feng <boqun.feng@gmail.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>, Ram Pai <linuxram@us.ibm.com>,
+ linux-kernel@vger.kernel.org, marcin.juszkiewicz@linaro.org,
+ Breno Leitao <leitao@debian.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ deepa.kernel@gmail.com, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+Hi Firoz,
 
-Non-overlay dynamic devicetree node removal may leave the node in
-the phandle cache.  Subsequent calls to of_find_node_by_phandle()
-will incorrectly find the stale entry.  Remove the node from the
-cache.
+On Thu, Dec 13, 2018 at 02:32:45PM +0530, Firoz Khan wrote:
+> The purpose of this patch series is, we can easily
+> add/modify/delete system call table support by cha-
+> nging entry in syscall.tbl file instead of manually
+> changing many files. The other goal is to unify the 
+> system call table generation support implementation 
+> across all the architectures. 
+> 
+> The system call tables are in different format in 
+> all architecture. It will be difficult to manually
+> add, modify or delete the system calls in the resp-
+> ective files manually. To make it easy by keeping a 
+> script and which'll generate uapi header file and 
+> syscall table file.
+> 
+> syscall.tbl contains the list of available system 
+> calls along with system call number and correspond-
+> ing entry point. Add a new system call in this arch-
+> itecture will be possible by adding new entry in 
+> the syscall.tbl file.
+> 
+> Adding a new table entry consisting of:
+>         - System call number.
+>         - ABI.
+>         - System call name.
+>         - Entry point name.
+> 	- Compat entry name, if required.
+> 	- spu entry name, if required.
+> 
+> ARM, s390 and x86 architecuture does exist the sim-
+> ilar support. I leverage their implementation to 
+> come up with a generic solution.
+> 
+> I have done the same support for work for alpha, 
+> ia64, m68k, microblaze, mips, parisc, sh, sparc, 
+> and xtensa. Below mentioned git repository contains
+> more details about the workflow.
+> 
+> https://github.com/frzkhn/system_call_table_generator/
+> 
+> Finally, this is the ground work to solve the Y2038
+> issue. We need to add two dozen of system calls to 
+> solve Y2038 issue. So this patch series will help to
+> add new system calls easily by adding new entry in the
+> syscall.tbl.
+> 
+> Changes since v4:
+>  - DOTSYM macro removed for ppc32, which was causing
+>    the compilation error.
+> 
+> Changes since v3:
+>  - split compat syscall table out from native table.
+>  - modified the script to add new line in the generated
+>    file.
+> 
+> Changes since v2:
+>  - modified/optimized the syscall.tbl to avoid duplicate
+>    for the spu entries.
+>  - updated the syscalltbl.sh to meet the above point.
+> 
+> Changes since v1:
+>  - optimized/updated the syscall table generation 
+>    scripts.
+>  - fixed all mixed indentation issues in syscall.tbl.
+>  - added "comments" in syscall_*.tbl.
+>  - changed from generic-y to generated-y in Kbuild.
+> 
+> Firoz Khan (5):
+>   powerpc: add __NR_syscalls along with NR_syscalls
+>   powerpc: move macro definition from asm/systbl.h
+>   powerpc: add system call table generation support
+>   powerpc: split compat syscall table out from native table
+>   powerpc: generate uapi header and system call table files
 
-Add paranoia checks in of_find_node_by_phandle() as a second level
-of defense (do not return cached node if detached, do not add node
-to cache if detached).
+Tried to apply on linus "master" and linuxppc-dev(https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git) "merge" branch,
+both failed to apply series.
 
-Reported-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
----
+# git am mbox
+Applying: powerpc: add __NR_syscalls along with NR_syscalls
+Applying: powerpc: move macro definition from asm/systbl.h
+Applying: powerpc: add system call table generation support
+Applying: powerpc: split compat syscall table out from native table
+Applying: powerpc: generate uapi header and system call table files
+error: patch failed: arch/powerpc/include/uapi/asm/Kbuild:1
+error: arch/powerpc/include/uapi/asm/Kbuild: patch does not apply
+Patch failed at 0005 powerpc: generate uapi header and system call table files
+Use 'git am --show-current-patch' to see the failed patch
+When you have resolved this problem, run "git am --continue".
+If you prefer to skip this patch, run "git am --skip" instead.
+To restore the original branch and stop patching, run "git am --abort".
 
-changes since v1:
-  - add WARN_ON(1) for unexpected condition in of_find_node_by_phandle()
+Then, tried with linuxppc-dev(https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git) "next" branch,
+patch got applied, compiled with ppc64le_defconfig and booted on IBM Power8 box.
 
- drivers/of/base.c       | 30 +++++++++++++++++++++++++++++-
- drivers/of/dynamic.c    |  3 +++
- drivers/of/of_private.h |  4 ++++
- 3 files changed, 36 insertions(+), 1 deletion(-)
+# uname -r
+4.20.0-rc2-gdd2690d2c
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 6c33d63361b8..ad71864cecf5 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -162,6 +162,27 @@ int of_free_phandle_cache(void)
- late_initcall_sync(of_free_phandle_cache);
- #endif
- 
-+/*
-+ * Caller must hold devtree_lock.
-+ */
-+void __of_free_phandle_cache_entry(phandle handle)
-+{
-+	phandle masked_handle;
-+
-+	if (!handle)
-+		return;
-+
-+	masked_handle = handle & phandle_cache_mask;
-+
-+	if (phandle_cache) {
-+		if (phandle_cache[masked_handle] &&
-+		    handle == phandle_cache[masked_handle]->phandle) {
-+			of_node_put(phandle_cache[masked_handle]);
-+			phandle_cache[masked_handle] = NULL;
-+		}
-+	}
-+}
-+
- void of_populate_phandle_cache(void)
- {
- 	unsigned long flags;
-@@ -1209,11 +1230,18 @@ struct device_node *of_find_node_by_phandle(phandle handle)
- 		if (phandle_cache[masked_handle] &&
- 		    handle == phandle_cache[masked_handle]->phandle)
- 			np = phandle_cache[masked_handle];
-+		if (np && of_node_check_flag(np, OF_DETACHED)) {
-+			WARN_ON(1);
-+			of_node_put(np);
-+			phandle_cache[masked_handle] = NULL;
-+			np = NULL;
-+		}
- 	}
- 
- 	if (!np) {
- 		for_each_of_allnodes(np)
--			if (np->phandle == handle) {
-+			if (np->phandle == handle &&
-+			    !of_node_check_flag(np, OF_DETACHED)) {
- 				if (phandle_cache) {
- 					/* will put when removed from cache */
- 					of_node_get(np);
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index f4f8ed9b5454..ecea92f68c87 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -268,6 +268,9 @@ void __of_detach_node(struct device_node *np)
- 	}
- 
- 	of_node_set_flag(np, OF_DETACHED);
-+
-+	/* race with of_find_node_by_phandle() prevented by devtree_lock */
-+	__of_free_phandle_cache_entry(np->phandle);
- }
- 
- /**
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 5d1567025358..24786818e32e 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -84,6 +84,10 @@ static inline void __of_detach_node_sysfs(struct device_node *np) {}
- int of_resolve_phandles(struct device_node *tree);
- #endif
- 
-+#if defined(CONFIG_OF_DYNAMIC)
-+void __of_free_phandle_cache_entry(phandle handle);
-+#endif
-+
- #if defined(CONFIG_OF_OVERLAY)
- void of_overlay_mutex_lock(void);
- void of_overlay_mutex_unlock(void);
--- 
-Frank Rowand <frank.rowand@sony.com>
+Looks like patch series needs a rebase against the latest kernel versions.
+
+
+Thanks,
+-Satheesh.
+
+> 
+>  arch/powerpc/Makefile                       |   3 +
+>  arch/powerpc/include/asm/Kbuild             |   4 +
+>  arch/powerpc/include/asm/syscall.h          |   3 +-
+>  arch/powerpc/include/asm/systbl.h           | 396 --------------------------
+>  arch/powerpc/include/asm/unistd.h           |   3 +-
+>  arch/powerpc/include/uapi/asm/Kbuild        |   2 +
+>  arch/powerpc/include/uapi/asm/unistd.h      | 389 +------------------------
+>  arch/powerpc/kernel/Makefile                |  10 -
+>  arch/powerpc/kernel/entry_64.S              |   7 +-
+>  arch/powerpc/kernel/syscalls/Makefile       |  63 ++++
+>  arch/powerpc/kernel/syscalls/syscall.tbl    | 427 ++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/syscalls/syscallhdr.sh  |  37 +++
+>  arch/powerpc/kernel/syscalls/syscalltbl.sh  |  36 +++
+>  arch/powerpc/kernel/systbl.S                |  40 ++-
+>  arch/powerpc/kernel/systbl_chk.c            |  60 ----
+>  arch/powerpc/kernel/vdso.c                  |   7 +-
+>  arch/powerpc/platforms/cell/spu_callbacks.c |  17 +-
+>  17 files changed, 606 insertions(+), 898 deletions(-)
+>  delete mode 100644 arch/powerpc/include/asm/systbl.h
+>  create mode 100644 arch/powerpc/kernel/syscalls/Makefile
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscall.tbl
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
+>  create mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
+>  delete mode 100644 arch/powerpc/kernel/systbl_chk.c
+> 
+> -- 
+> 1.9.1
+> 
 
