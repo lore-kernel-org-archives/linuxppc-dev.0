@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 262B9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 06:53:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 083DFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:11:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9FF5F20675
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 06:53:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FF5F20675
+	by mail.kernel.org (Postfix) with ESMTPS id 53E552084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 07:11:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 53E552084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43JBgN46PPzDqSR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 17:53:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JC4l0G7mzDqSh
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Dec 2018 18:11:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
@@ -29,42 +29,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JBdB6wBNzDqQf
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 17:51:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43JC2K4YZ8zDqSh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2018 18:09:29 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43JBd47132z9v08m;
- Mon, 17 Dec 2018 07:51:04 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43JC2G055jz9v04n;
+ Mon, 17 Dec 2018 08:09:26 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 6vLb5HBjnK5F; Mon, 17 Dec 2018 07:51:04 +0100 (CET)
+ with ESMTP id Ubn8Xvl2dJhm; Mon, 17 Dec 2018 08:09:25 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43JBd463BGz9v08l;
- Mon, 17 Dec 2018 07:51:04 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43JC2F6bgZz9v04m;
+ Mon, 17 Dec 2018 08:09:25 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 289858B7B4;
- Mon, 17 Dec 2018 07:51:05 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4400E8B7B5;
+ Mon, 17 Dec 2018 08:09:26 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ESh-zCJmRMgp; Mon, 17 Dec 2018 07:51:05 +0100 (CET)
+ with ESMTP id PeU9_6U6hM81; Mon, 17 Dec 2018 08:09:26 +0100 (CET)
 Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E931D8B74B;
- Mon, 17 Dec 2018 07:51:04 +0100 (CET)
-Subject: Re: [PATCH 7/8] powerpc/dma: split the two __dma_alloc_coherent
- implementations
-To: Christoph Hellwig <hch@lst.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20181216171951.31306-1-hch@lst.de>
- <20181216171951.31306-8-hch@lst.de>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 201F88B74B;
+ Mon, 17 Dec 2018 08:09:26 +0100 (CET)
+Subject: Re: [PATCH v2 2/3] powerpc/lib: Refactor __patch_instruction() to use
+ __put_user_asm()
+To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+References: <20181210070044.27503-1-ruscur@russell.cc>
+ <20181210070044.27503-3-ruscur@russell.cc>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <de3d6e75-70d6-e1af-f733-b1aeed99d6c5@c-s.fr>
-Date: Mon, 17 Dec 2018 07:51:05 +0100
+Message-ID: <3b213170-9b93-cb71-b0c2-220ea31dbdea@c-s.fr>
+Date: Mon, 17 Dec 2018 08:09:26 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.3
 MIME-Version: 1.0
-In-Reply-To: <20181216171951.31306-8-hch@lst.de>
+In-Reply-To: <20181210070044.27503-3-ruscur@russell.cc>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -79,179 +77,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christian Lamparter <chunkeey@gmail.com>
+Cc: mikey@neuling.org, kernel-hardening@lists.openwall.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi Russel,
+
+Le 10/12/2018 à 08:00, Russell Currey a écrit :
+> __patch_instruction() is called in early boot, and uses
+> __put_user_size(), which includes the locks and unlocks for KUAP,
+> which could either be called too early, or in the Radix case, forced to
+> use "early_" versions of functions just to safely handle this one case.
+
+Looking at x86, I see that __put_user_size() doesn't includes the locks. 
+The lock/unlock is do by callers. I'll do the same.
 
 
-Le 16/12/2018 à 18:19, Christoph Hellwig a écrit :
-> The implemementation for the CONFIG_NOT_COHERENT_CACHE case doesn't share
-> any code with the one for systems with coherent caches.  Split it off
-> and merge it with the helpers in dma-noncoherent.c that have no other
-> callers.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->   arch/powerpc/include/asm/dma-mapping.h |  5 -----
->   arch/powerpc/kernel/dma.c              | 14 ++------------
+> __put_user_asm() does not do this, and thus is safe to use both in early
+> boot, and later on since in this case it should only ever be touching
+> kernel memory.
+> 
+> __patch_instruction() was previously refactored to use __put_user_size()
+> in order to be able to return -EFAULT, which would allow the kernel to
+> patch instructions in userspace, which should never happen.  This has
+> the functional change of causing faults on userspace addresses if KUAP
+> is turned on, which should never happen in practice.
+> 
+> A future enhancement could be to double check the patch address is
+> definitely allowed to be tampered with by the kernel.
 
-Instead of all the ifdefs in dma.c, couldn't we split it
-in two files, ie dma.c for common parts and dma-coherence.c for specific 
-stuff ?
+This makes me realise that we are calling lock_user_access() with kernel 
+addresses. That most likely breaks protection on kernel addresses for 
+book3s/32. I'll have to work around it.
+
+Another thing I realised also is that get_user() at least is called in 
+some exceptions/trap handlers. Which means it can be called nested with 
+an ongoing user access. It means that get_paca()->user_access_allowed 
+might be modified during those exceptions/traps.
 
 Christophe
 
->   arch/powerpc/mm/dma-noncoherent.c      | 15 +++++++--------
->   arch/powerpc/platforms/44x/warp.c      |  2 +-
->   4 files changed, 10 insertions(+), 26 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index f2a4a7142b1e..dacd0f93f2b2 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -39,9 +39,6 @@ extern int dma_nommu_mmap_coherent(struct device *dev,
->    * to ensure it is consistent.
->    */
->   struct device;
-> -extern void *__dma_alloc_coherent(struct device *dev, size_t size,
-> -				  dma_addr_t *handle, gfp_t gfp);
-> -extern void __dma_free_coherent(size_t size, void *vaddr);
->   extern void __dma_sync(void *vaddr, size_t size, int direction);
->   extern void __dma_sync_page(struct page *page, unsigned long offset,
->   				 size_t size, int direction);
-> @@ -52,8 +49,6 @@ extern unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr);
->    * Cache coherent cores.
->    */
->   
-> -#define __dma_alloc_coherent(dev, gfp, size, handle)	NULL
-> -#define __dma_free_coherent(size, addr)		((void)0)
->   #define __dma_sync(addr, size, rw)		((void)0)
->   #define __dma_sync_page(pg, off, sz, rw)	((void)0)
->   
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index d442d23e182b..270b2911c437 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -62,18 +62,12 @@ static int dma_nommu_dma_supported(struct device *dev, u64 mask)
->   #endif
->   }
->   
-> +#ifndef CONFIG_NOT_COHERENT_CACHE
->   void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
->   				  dma_addr_t *dma_handle, gfp_t flag,
->   				  unsigned long attrs)
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>   arch/powerpc/lib/code-patching.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+> index 89502cbccb1b..15e8c6339960 100644
+> --- a/arch/powerpc/lib/code-patching.c
+> +++ b/arch/powerpc/lib/code-patching.c
+> @@ -26,9 +26,9 @@
+>   static int __patch_instruction(unsigned int *exec_addr, unsigned int instr,
+>   			       unsigned int *patch_addr)
 >   {
->   	void *ret;
-> -#ifdef CONFIG_NOT_COHERENT_CACHE
-> -	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
-> -	if (ret == NULL)
-> -		return NULL;
-> -	*dma_handle += get_dma_offset(dev);
-> -	return ret;
-> -#else
->   	struct page *page;
->   	int node = dev_to_node(dev);
->   #ifdef CONFIG_FSL_SOC
-> @@ -113,19 +107,15 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
->   	*dma_handle = __pa(ret) + get_dma_offset(dev);
+> -	int err;
+> +	int err = 0;
 >   
->   	return ret;
-> -#endif
->   }
+> -	__put_user_size(instr, patch_addr, 4, err);
+> +	__put_user_asm(instr, patch_addr, err, "stw");
+>   	if (err)
+>   		return err;
 >   
->   void __dma_nommu_free_coherent(struct device *dev, size_t size,
->   				void *vaddr, dma_addr_t dma_handle,
->   				unsigned long attrs)
->   {
-> -#ifdef CONFIG_NOT_COHERENT_CACHE
-> -	__dma_free_coherent(size, vaddr);
-> -#else
->   	free_pages((unsigned long)vaddr, get_order(size));
-> -#endif
->   }
-> +#endif /* !CONFIG_NOT_COHERENT_CACHE */
->   
->   static void *dma_nommu_alloc_coherent(struct device *dev, size_t size,
->   				       dma_addr_t *dma_handle, gfp_t flag,
-> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-> index b6e7b5952ab5..e955539686a4 100644
-> --- a/arch/powerpc/mm/dma-noncoherent.c
-> +++ b/arch/powerpc/mm/dma-noncoherent.c
-> @@ -29,7 +29,7 @@
->   #include <linux/string.h>
->   #include <linux/types.h>
->   #include <linux/highmem.h>
-> -#include <linux/dma-mapping.h>
-> +#include <linux/dma-direct.h>
->   #include <linux/export.h>
->   
->   #include <asm/tlbflush.h>
-> @@ -151,8 +151,8 @@ static struct ppc_vm_region *ppc_vm_region_find(struct ppc_vm_region *head, unsi
->    * Allocate DMA-coherent memory space and return both the kernel remapped
->    * virtual and bus address for that space.
->    */
-> -void *
-> -__dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t gfp)
-> +void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
-> +		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
->   {
->   	struct page *page;
->   	struct ppc_vm_region *c;
-> @@ -223,7 +223,7 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
->   		/*
->   		 * Set the "dma handle"
->   		 */
-> -		*handle = page_to_phys(page);
-> +		*dma_handle = phys_to_dma(dev, page_to_phys(page));
->   
->   		do {
->   			SetPageReserved(page);
-> @@ -249,12 +249,12 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
->    no_page:
->   	return NULL;
->   }
-> -EXPORT_SYMBOL(__dma_alloc_coherent);
->   
->   /*
->    * free a page as defined by the above mapping.
->    */
-> -void __dma_free_coherent(size_t size, void *vaddr)
-> +void __dma_nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
-> +		dma_addr_t dma_handle, unsigned long attrs)
->   {
->   	struct ppc_vm_region *c;
->   	unsigned long flags, addr;
-> @@ -309,7 +309,6 @@ void __dma_free_coherent(size_t size, void *vaddr)
->   	       __func__, vaddr);
->   	dump_stack();
->   }
-> -EXPORT_SYMBOL(__dma_free_coherent);
->   
->   /*
->    * make an area consistent.
-> @@ -401,7 +400,7 @@ EXPORT_SYMBOL(__dma_sync_page);
->   
->   /*
->    * Return the PFN for a given cpu virtual address returned by
-> - * __dma_alloc_coherent. This is used by dma_mmap_coherent()
-> + * __dma_nommu_alloc_coherent. This is used by dma_mmap_coherent()
->    */
->   unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr)
->   {
-> diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-> index a886c2c22097..7e4f8ca19ce8 100644
-> --- a/arch/powerpc/platforms/44x/warp.c
-> +++ b/arch/powerpc/platforms/44x/warp.c
-> @@ -47,7 +47,7 @@ static int __init warp_probe(void)
->   	if (!of_machine_is_compatible("pika,warp"))
->   		return 0;
->   
-> -	/* For __dma_alloc_coherent */
-> +	/* For __dma_nommu_alloc_coherent */
->   	ISA_DMA_THRESHOLD = ~0L;
->   
->   	return 1;
 > 
