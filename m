@@ -2,49 +2,48 @@ Return-Path: <SRS0=nim+=O3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01A46C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 13:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E30F9C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 14:08:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4551421871
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 13:49:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4551421871
+	by mail.kernel.org (Postfix) with ESMTPS id 3F566217D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 14:08:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F566217D7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Jzsm6zB3zDqV1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 00:49:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43K0Hn2RYfzDqTn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 01:08:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JzqK6c2BzDqSh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 00:47:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43K0Dh0bWNzDqMB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 01:06:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43JzqH4lV2z9sC7;
- Wed, 19 Dec 2018 00:47:39 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43K0Dg4LFBz9s3Z;
+ Wed, 19 Dec 2018 01:06:11 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, akpm@linux-foundation.org,
- Michal Hocko <mhocko@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH V4 1/3] mm: Add get_user_pages_cma_migrate
-In-Reply-To: <20181121092259.16482-2-aneesh.kumar@linux.ibm.com>
-References: <20181121092259.16482-1-aneesh.kumar@linux.ibm.com>
- <20181121092259.16482-2-aneesh.kumar@linux.ibm.com>
-Date: Wed, 19 Dec 2018 00:47:39 +1100
-Message-ID: <871s6ft090.fsf@concordia.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3] powerpc: implement CONFIG_DEBUG_VIRTUAL
+In-Reply-To: <a42260e77d609a10667872c2e7bf14ceabcce050.1544562518.git.christophe.leroy@c-s.fr>
+References: <a42260e77d609a10667872c2e7bf14ceabcce050.1544562518.git.christophe.leroy@c-s.fr>
+Date: Wed, 19 Dec 2018 01:06:11 +1100
+Message-ID: <87y38nrkto.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -58,216 +57,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> This helper does a get_user_pages_fast and if it find pages in the CMA area
-> it will try to migrate them before taking page reference. This makes sure that
-> we don't keep non-movable pages (due to page reference count) in the CMA area.
-> Not able to move pages out of CMA area result in CMA allocation failures.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  include/linux/hugetlb.h |   2 +
->  include/linux/migrate.h |   3 +
->  mm/hugetlb.c            |   4 +-
->  mm/migrate.c            | 132 ++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 139 insertions(+), 2 deletions(-)
+> This patch implements CONFIG_DEBUG_VIRTUAL to warn about
+> incorrect use of virt_to_phys() and page_to_phys()
 
-I'd rather not merge this much mm/ code via the powerpc tree without
-acks.
+This commit is breaking my p5020ds booting a 32-bit kernel with:
 
-Anyone?
+  smp: Bringing up secondary CPUs ...
+  __ioremap(): phys addr 0x7fef5000 is RAM lr ioremap_coherent
+  Unable to handle kernel paging request for data at address 0x00000000
+  Faulting instruction address: 0xc002e950
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  BE SMP NR_CPUS=24 CoreNet Generic
+  Modules linked in:
+  CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc2-gcc-7.0.1-00138-g9a0380d299e9 #148
+  NIP:  c002e950 LR: c002eb20 CTR: 00000001
+  REGS: e804bd20 TRAP: 0300   Not tainted  (4.20.0-rc2-gcc-7.0.1-00138-g9a0380d299e9)
+  MSR:  00021002 <CE,ME>  CR: 28004222  XER: 00000000
+  DEAR: 00000000 ESR: 00000000 
+  GPR00: c002eb20 e804bdd0 e8050000 00000000 00021002 00000000 00000050 00021002 
+  GPR08: 2d3f0000 00000001 00000000 00000004 24000842 00000000 c00026d0 00000000 
+  GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000001 
+  GPR24: 00029002 7fef5140 30000000 00000000 00000000 00000040 00000001 00000000 
+  NIP [c002e950] smp_85xx_kick_cpu+0x120/0x410
+  LR [c002eb20] smp_85xx_kick_cpu+0x2f0/0x410
+  Call Trace:
+  [e804bdd0] [c002eb20] smp_85xx_kick_cpu+0x2f0/0x410 (unreliable)
+  [e804be20] [c0012e38] __cpu_up+0xc8/0x230
+  [e804be50] [c0040b34] bringup_cpu+0x34/0x110
+  [e804be70] [c00418a8] cpu_up+0x128/0x250
+  [e804beb0] [c0b84b14] smp_init+0xc4/0x10c
+  [e804bee0] [c0b75c1c] kernel_init_freeable+0xc8/0x250
+  [e804bf20] [c00026e8] kernel_init+0x18/0x120
+  [e804bf40] [c0011298] ret_from_kernel_thread+0x14/0x1c
+  Instruction dump:
+  7fb3e850 57bdd1be 2e1d0000 41d20250 57bd3032 393dffc0 7e6a9b78 5529d1be 
+  39290001 7d2903a6 60000000 60000000 <7c0050ac> 394a0040 4200fff8 7c0004ac 
+  ---[ end trace edcab2a1dfd5b38c ]---
+
+
+Which is obviously this hunk:
+
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> index 4fc77a99c9bf..68d204a45cd0 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -143,7 +143,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *call
+>  	 * Don't allow anybody to remap normal RAM that we're using.
+>  	 * mem_init() sets high_memory so only do the check after that.
+>  	 */
+> -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
+> +	if (slab_is_available() && virt_addr_valid(p) &&
+>  	    page_is_ram(__phys_to_pfn(p))) {
+>  		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+>  		       (unsigned long long)p, __builtin_return_address(0));
+
+
+I'll try and come up with a fix tomorrow.
 
 cheers
 
-
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 087fd5f48c91..1eed0cdaec0e 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -371,6 +371,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
->  				nodemask_t *nmask);
->  struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct *vma,
->  				unsigned long address);
-> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-> +				     int nid, nodemask_t *nmask);
->  int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
->  			pgoff_t idx);
->  
-> diff --git a/include/linux/migrate.h b/include/linux/migrate.h
-> index f2b4abbca55e..d82b35afd2eb 100644
-> --- a/include/linux/migrate.h
-> +++ b/include/linux/migrate.h
-> @@ -286,6 +286,9 @@ static inline int migrate_vma(const struct migrate_vma_ops *ops,
->  }
->  #endif /* IS_ENABLED(CONFIG_MIGRATE_VMA_HELPER) */
->  
-> +extern int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
-> +				      struct page **pages);
-> +
->  #endif /* CONFIG_MIGRATION */
->  
->  #endif /* _LINUX_MIGRATE_H */
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 7f2a28ab46d5..faf3102ae45e 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1585,8 +1585,8 @@ static struct page *alloc_surplus_huge_page(struct hstate *h, gfp_t gfp_mask,
->  	return page;
->  }
->  
-> -static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-> -		int nid, nodemask_t *nmask)
-> +struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-> +				     int nid, nodemask_t *nmask)
->  {
->  	struct page *page;
->  
-> diff --git a/mm/migrate.c b/mm/migrate.c
-> index f7e4bfdc13b7..b0e47e2c5347 100644
-> --- a/mm/migrate.c
-> +++ b/mm/migrate.c
-> @@ -2946,3 +2946,135 @@ int migrate_vma(const struct migrate_vma_ops *ops,
->  }
->  EXPORT_SYMBOL(migrate_vma);
->  #endif /* defined(MIGRATE_VMA_HELPER) */
-> +
-> +static struct page *new_non_cma_page(struct page *page, unsigned long private)
-> +{
-> +	/*
-> +	 * We want to make sure we allocate the new page from the same node
-> +	 * as the source page.
-> +	 */
-> +	int nid = page_to_nid(page);
-> +	gfp_t gfp_mask = GFP_USER | __GFP_THISNODE;
-> +
-> +	if (PageHighMem(page))
-> +		gfp_mask |= __GFP_HIGHMEM;
-> +
-> +#ifdef CONFIG_HUGETLB_PAGE
-> +	if (PageHuge(page)) {
-> +		struct hstate *h = page_hstate(page);
-> +		/*
-> +		 * We don't want to dequeue from the pool because pool pages will
-> +		 * mostly be from the CMA region.
-> +		 */
-> +		return alloc_migrate_huge_page(h, gfp_mask, nid, NULL);
-> +	}
-> +#endif
-> +	if (PageTransHuge(page)) {
-> +		struct page *thp;
-> +		gfp_t thp_gfpmask = GFP_TRANSHUGE | __GFP_THISNODE;
-> +
-> +		/*
-> +		 * Remove the movable mask so that we don't allocate from
-> +		 * CMA area again.
-> +		 */
-> +		thp_gfpmask &= ~__GFP_MOVABLE;
-> +		thp = __alloc_pages_node(nid, thp_gfpmask, HPAGE_PMD_ORDER);
-> +		if (!thp)
-> +			return NULL;
-> +		prep_transhuge_page(thp);
-> +		return thp;
-> +	}
-> +
-> +	return __alloc_pages_node(nid, gfp_mask, 0);
-> +}
-> +
-> +/**
-> + * get_user_pages_cma_migrate() - pin user pages in memory by migrating pages in CMA region
-> + * @start:	starting user address
-> + * @nr_pages:	number of pages from start to pin
-> + * @write:	whether pages will be written to
-> + * @pages:	array that receives pointers to the pages pinned.
-> + *		Should be at least nr_pages long.
-> + *
-> + * Attempt to pin user pages in memory without taking mm->mmap_sem.
-> + * If not successful, it will fall back to taking the lock and
-> + * calling get_user_pages().
-> + *
-> + * If the pinned pages are backed by CMA region, we migrate those pages out,
-> + * allocating new pages from non-CMA region. This helps in avoiding keeping
-> + * pages pinned in the CMA region for a long time thereby resulting in
-> + * CMA allocation failures.
-> + *
-> + * Returns number of pages pinned. This may be fewer than the number
-> + * requested. If nr_pages is 0 or negative, returns 0. If no pages
-> + * were pinned, returns -errno.
-> + */
-> +
-> +int get_user_pages_cma_migrate(unsigned long start, int nr_pages, int write,
-> +			       struct page **pages)
-> +{
-> +	int i, ret;
-> +	bool drain_allow = true;
-> +	bool migrate_allow = true;
-> +	LIST_HEAD(cma_page_list);
-> +
-> +get_user_again:
-> +	ret = get_user_pages_fast(start, nr_pages, write, pages);
-> +	if (ret <= 0)
-> +		return ret;
-> +
-> +	for (i = 0; i < ret; ++i) {
-> +		/*
-> +		 * If we get a page from the CMA zone, since we are going to
-> +		 * be pinning these entries, we might as well move them out
-> +		 * of the CMA zone if possible.
-> +		 */
-> +		if (is_migrate_cma_page(pages[i]) && migrate_allow) {
-> +
-> +			struct page *head = compound_head(pages[i]);
-> +
-> +			if (PageHuge(head))
-> +				isolate_huge_page(head, &cma_page_list);
-> +			else {
-> +				if (!PageLRU(head) && drain_allow) {
-> +					lru_add_drain_all();
-> +					drain_allow = false;
-> +				}
-> +
-> +				if (!isolate_lru_page(head)) {
-> +					list_add_tail(&head->lru, &cma_page_list);
-> +					mod_node_page_state(page_pgdat(head),
-> +							    NR_ISOLATED_ANON +
-> +							    page_is_file_cache(head),
-> +							    hpage_nr_pages(head));
-> +				}
-> +			}
-> +		}
-> +	}
-> +	if (!list_empty(&cma_page_list)) {
-> +		/*
-> +		 * drop the above get_user_pages reference.
-> +		 */
-> +		for (i = 0; i < ret; ++i)
-> +			put_page(pages[i]);
-> +
-> +		if (migrate_pages(&cma_page_list, new_non_cma_page,
-> +				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
-> +			/*
-> +			 * some of the pages failed migration. Do get_user_pages
-> +			 * without migration.
-> +			 */
-> +			migrate_allow = false;
-> +
-> +			if (!list_empty(&cma_page_list))
-> +				putback_movable_pages(&cma_page_list);
-> +		}
-> +		/*
-> +		 * We did migrate all the pages, Try to get the page references again
-> +		 * migrating any new CMA pages which we failed to isolate earlier.
-> +		 */
-> +		drain_allow = true;
-> +		goto get_user_again;
-> +	}
-> +	return ret;
-> +}
-> -- 
-> 2.17.2
