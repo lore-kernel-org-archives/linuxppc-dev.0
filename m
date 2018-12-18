@@ -2,97 +2,47 @@ Return-Path: <SRS0=nim+=O3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2447BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 09:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D289C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 10:15:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B38821841
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 09:55:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B38821841
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id EAFE9217D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 10:15:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EAFE9217D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Jtg25mRFzDqQG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 20:55:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Jv6B4qp5zDqRp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 21:15:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43JtNP0npTzDqQB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 20:42:28 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBI9dPo5047587
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 04:42:27 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2peufdgd96-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 04:42:26 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 18 Dec 2018 09:42:26 -0000
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 18 Dec 2018 09:42:21 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBI9gKbM25755856
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 18 Dec 2018 09:42:20 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C25A46E050;
- Tue, 18 Dec 2018 09:42:20 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6D4C26E04E;
- Tue, 18 Dec 2018 09:42:17 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.88.39])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 18 Dec 2018 09:42:17 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, akpm@linux-foundation.org, x86@kernel.org
-Subject: [PATCH V4 5/5] arch/powerpc/mm/hugetlb: NestMMU workaround for
- hugetlb mprotect RW upgrade
-Date: Tue, 18 Dec 2018 15:11:37 +0530
-X-Mailer: git-send-email 2.19.2
-In-Reply-To: <20181218094137.13732-1-aneesh.kumar@linux.ibm.com>
-References: <20181218094137.13732-1-aneesh.kumar@linux.ibm.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 18121809-0020-0000-0000-00000E9C09BA
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010242; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000271; SDB=6.01133443; UDB=6.00589233; IPR=6.00913618; 
- MB=3.00024731; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-18 09:42:24
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121809-0021-0000-0000-000064183EA3
-Message-Id: <20181218094137.13732-6-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-18_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=507 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812180086
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Jv2j0wlbzDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 21:12:12 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3D596A78;
+ Tue, 18 Dec 2018 02:12:10 -0800 (PST)
+Received: from p8cg001049571a15.blr.arm.com (p8cg001049571a15.blr.arm.com
+ [10.162.41.146])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 30B2F3F5C0;
+ Tue, 18 Dec 2018 02:12:01 -0800 (PST)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH V3 0/2] Replace all open encodings for NUMA_NO_NODE
+Date: Tue, 18 Dec 2018 15:42:11 +0530
+Message-Id: <1545127933-10711-1-git-send-email-anshuman.khandual@arm.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,111 +54,106 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: linux-fbdev@vger.kernel.org, linux-ia64@vger.kernel.org, david@redhat.com,
+ dri-devel@lists.freedesktop.org, hverkuil@xs4all.nl,
+ sparclinux@vger.kernel.org, sfr@canb.auug.org.au, linux-rdma@vger.kernel.org,
+ iommu@lists.linux-foundation.org, dledford@redhat.com,
+ intel-wired-lan@lists.osuosl.org, jeffrey.t.kirsher@intel.com,
+ jiangqi903@gmail.com, linux-media@vger.kernel.org, linux-block@vger.kernel.org,
+ axboe@kernel.dk, netdev@vger.kernel.org, vkoul@kernel.org,
+ linux-alpha@vger.kernel.org, dmaengine@vger.kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ ocfs2-devel@oss.oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-NestMMU requires us to mark the pte invalid and flush the tlb when we do a
-RW upgrade of pte. We fixed a variant of this in the fault path in commit
-Fixes: bd5050e38aec ("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
+Changes in V3:
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 12 +++++++++
- arch/powerpc/mm/hugetlbpage-hash64.c         | 27 ++++++++++++++++++++
- arch/powerpc/mm/hugetlbpage-radix.c          | 17 ++++++++++++
- 3 files changed, 56 insertions(+)
+- Dropped all references to NUMA_NO_NODE as per Lubomir Rinetl
+- Split the patch into two creating a new one specifically for tools
+- Folded Stephen's linux-next build fix into the second patch
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 5b0177733994..66c1e4f88d65 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -13,6 +13,10 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 				unsigned long len, unsigned long pgoff,
- 				unsigned long flags);
- 
-+extern void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
-+						unsigned long addr, pte_t *ptep,
-+						pte_t old_pte, pte_t pte);
-+
- static inline int hstate_get_psize(struct hstate *hstate)
- {
- 	unsigned long shift;
-@@ -42,4 +46,12 @@ static inline bool gigantic_page_supported(void)
- /* hugepd entry valid bit */
- #define HUGEPD_VAL_BITS		(0x8000000000000000UL)
- 
-+#define huge_ptep_modify_prot_start huge_ptep_modify_prot_start
-+extern pte_t huge_ptep_modify_prot_start(struct vm_area_struct *vma,
-+					 unsigned long addr, pte_t *ptep);
-+
-+#define huge_ptep_modify_prot_commit huge_ptep_modify_prot_commit
-+extern void huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
-+					 unsigned long addr, pte_t *ptep,
-+					 pte_t old_pte, pte_t new_pte);
- #endif
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 2e6a8f9345d3..48fe74bfeab1 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -121,3 +121,30 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 	*ptep = __pte(new_pte & ~H_PAGE_BUSY);
- 	return 0;
- }
-+
-+pte_t huge_ptep_modify_prot_start(struct vm_area_struct *vma,
-+				  unsigned long addr, pte_t *ptep)
-+{
-+	unsigned long pte_val;
-+	/*
-+	 * Clear the _PAGE_PRESENT so that no hardware parallel update is
-+	 * possible. Also keep the pte_present true so that we don't take
-+	 * wrong fault.
-+	 */
-+	pte_val = pte_update(vma->vm_mm, addr, ptep,
-+			     _PAGE_PRESENT, _PAGE_INVALID, 1);
-+
-+	return __pte(pte_val);
-+}
-+EXPORT_SYMBOL(huge_ptep_modify_prot_start);
-+
-+void huge_ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr,
-+				  pte_t *ptep, pte_t old_pte, pte_t pte)
-+{
-+
-+	if (radix_enabled())
-+		return radix__huge_ptep_modify_prot_commit(vma, addr, ptep,
-+							   old_pte, pte);
-+	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
-+}
-+EXPORT_SYMBOL(huge_ptep_modify_prot_commit);
-diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-index 2486bee0f93e..11d9ea28a816 100644
---- a/arch/powerpc/mm/hugetlbpage-radix.c
-+++ b/arch/powerpc/mm/hugetlbpage-radix.c
-@@ -90,3 +90,20 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 
- 	return vm_unmapped_area(&info);
- }
-+
-+void radix__huge_ptep_modify_prot_commit(struct vm_area_struct *vma,
-+					 unsigned long addr, pte_t *ptep,
-+					 pte_t old_pte, pte_t pte)
-+{
-+	struct mm_struct *mm = vma->vm_mm;
-+
-+	/*
-+	 * To avoid NMMU hang while relaxing access we need to flush the tlb before
-+	 * we set the new value.
-+	 */
-+	if (is_pte_rw_upgrade(pte_val(old_pte), pte_val(pte)) &&
-+	    (atomic_read(&mm->context.copros) > 0))
-+		radix__flush_hugetlb_page(vma, addr);
-+
-+	set_huge_pte_at(vma->vm_mm, addr, ptep, pte);
-+}
+Changes in V2: (https://patchwork.kernel.org/patch/10698089/)
+
+- Added inclusion of 'numa.h' header at various places per Andrew
+- Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
+
+Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
+
+- Dropped OCFS2 changes per Joseph
+- Dropped media/video drivers changes per Hans
+
+RFC - https://patchwork.kernel.org/patch/10678035/
+
+Build tested this with multiple cross compiler options like alpha, sparc,
+arm64, x86, powerpc, powerpc64le etc with their default config which might
+not have compiled tested all driver related changes. I will appreciate
+folks giving this a test in their respective build environments.
+
+All these places for replacement were found by running the following grep
+patterns on the entire kernel code. Please let me know if this might have
+missed some instances. This might also have replaced some false positives.
+I will appreciate suggestions, inputs and review.
+
+1. git grep "nid == -1"
+2. git grep "node == -1"
+3. git grep "nid = -1"
+4. git grep "node = -1"
+
+NOTE: I can still split the first patch into multiple ones - one for each
+subsystem as suggested by Lubomir if that would be better.
+
+Anshuman Khandual (1):
+  mm: Replace all open encodings for NUMA_NO_NODE
+
+Stephen Rothwell (1):
+  Tools: Replace open encodings for NUMA_NO_NODE
+
+ arch/alpha/include/asm/topology.h             |  3 ++-
+ arch/ia64/kernel/numa.c                       |  2 +-
+ arch/ia64/mm/discontig.c                      |  6 +++---
+ arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
+ arch/powerpc/kernel/paca.c                    |  3 ++-
+ arch/powerpc/kernel/pci-common.c              |  3 ++-
+ arch/powerpc/mm/numa.c                        | 14 +++++++-------
+ arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
+ arch/sparc/kernel/pci_fire.c                  |  3 ++-
+ arch/sparc/kernel/pci_schizo.c                |  3 ++-
+ arch/sparc/kernel/psycho_common.c             |  3 ++-
+ arch/sparc/kernel/sbus.c                      |  3 ++-
+ arch/sparc/mm/init_64.c                       |  6 +++---
+ arch/x86/include/asm/pci.h                    |  3 ++-
+ arch/x86/kernel/apic/x2apic_uv_x.c            |  7 ++++---
+ arch/x86/kernel/smpboot.c                     |  3 ++-
+ drivers/block/mtip32xx/mtip32xx.c             |  5 +++--
+ drivers/dma/dmaengine.c                       |  4 +++-
+ drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
+ drivers/infiniband/hw/hfi1/init.c             |  3 ++-
+ drivers/iommu/dmar.c                          |  5 +++--
+ drivers/iommu/intel-iommu.c                   |  3 ++-
+ drivers/misc/sgi-xp/xpc_uv.c                  |  3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  5 +++--
+ include/linux/device.h                        |  2 +-
+ init/init_task.c                              |  3 ++-
+ kernel/kthread.c                              |  3 ++-
+ kernel/sched/fair.c                           | 15 ++++++++-------
+ lib/cpumask.c                                 |  3 ++-
+ mm/huge_memory.c                              | 13 +++++++------
+ mm/hugetlb.c                                  |  3 ++-
+ mm/ksm.c                                      |  2 +-
+ mm/memory.c                                   |  7 ++++---
+ mm/memory_hotplug.c                           | 12 ++++++------
+ mm/mempolicy.c                                |  2 +-
+ mm/page_alloc.c                               |  4 ++--
+ mm/page_ext.c                                 |  2 +-
+ net/core/pktgen.c                             |  3 ++-
+ net/qrtr/qrtr.c                               |  3 ++-
+ tools/include/linux/numa.h                    | 16 ++++++++++++++++
+ tools/perf/bench/numa.c                       |  6 +++---
+ 41 files changed, 123 insertions(+), 77 deletions(-)
+ create mode 100644 tools/include/linux/numa.h
+
 -- 
-2.19.2
+2.7.4
 
