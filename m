@@ -2,88 +2,63 @@ Return-Path: <SRS0=nim+=O3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E906C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 06:22:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4DACC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 06:56:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D4B3F217D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 06:22:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4B3F217D8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2122A214C6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 06:56:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2122A214C6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Jny51cT2zDqb9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 17:22:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43JphF320xzDq6J
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 17:55:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Jnvn6jX6zDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 17:20:53 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBI6JPjg120617
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 01:20:51 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2peqnxgg48-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 01:20:50 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
- Tue, 18 Dec 2018 06:20:48 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 18 Dec 2018 06:20:47 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBI6KkVs55967744
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 18 Dec 2018 06:20:46 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C65D11C050;
- Tue, 18 Dec 2018 06:20:46 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6FADE11C04C;
- Tue, 18 Dec 2018 06:20:45 +0000 (GMT)
-Received: from localhost.localdomain.com (unknown [9.145.56.43])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Tue, 18 Dec 2018 06:20:45 +0000 (GMT)
-From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2] powerpc/perf: Fix loop exit condition in
- nest_imc_event_init
-Date: Tue, 18 Dec 2018 11:50:41 +0530
-X-Mailer: git-send-email 2.17.1
-X-TM-AS-GCONF: 00
-x-cbid: 18121806-4275-0000-0000-000002F21FD9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18121806-4276-0000-0000-00003800205A
-Message-Id: <20181218062041.25198-1-anju@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-18_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812180056
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Jpdl4vRxzDqPP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 17:53:47 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43Jpdd3XqFz9v0WH;
+ Tue, 18 Dec 2018 07:53:41 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Sebt5yWSJfvP; Tue, 18 Dec 2018 07:53:41 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Jpdd2yWcz9v0WG;
+ Tue, 18 Dec 2018 07:53:41 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 47FF08B81B;
+ Tue, 18 Dec 2018 07:53:42 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id CEIgW4Z-8_o3; Tue, 18 Dec 2018 07:53:42 +0100 (CET)
+Received: from PO15451.localdomain (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 283388B754;
+ Tue, 18 Dec 2018 07:53:42 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id D0FBB716C2; Tue, 18 Dec 2018 06:53:41 +0000 (UTC)
+Message-Id: <8e172be53248cbc3297b345ae2ce7ddda6d5f0c5.1545070330.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/setup: display reason for not booting
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 18 Dec 2018 06:53:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,59 +70,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- anju@linux.vnet.ibm.com, dan.carpenter@oracle.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The data structure (i.e struct imc_mem_info) to hold the memory address
-information for nest imc units is allocated based on the number of nodes
-in the system.
+When no machine description matches, display it clearly
+before looping forever.
 
-nest_imc_event_init() traverse this struct array to calculate the memory
-base address for the event-cpu. If we fail to find a match for the event
-cpu's chip-id in imc_mem_info struct array, then the do-while loop will
-iterate until we crash.
-
-Fix this by changing the loop exit condition based on the number of 
-non zero vbase elements in the array, since the allocation is done for
-nr_chips + 1.
-
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com> 
-Fixes: 885dcd709ba91 ( powerpc/perf: Add nest IMC PMU support)
-Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/perf/imc-pmu.c               | 2 +-
- arch/powerpc/platforms/powernv/opal-imc.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
-index 4f34c75..d1009fe 100644
---- a/arch/powerpc/perf/imc-pmu.c
-+++ b/arch/powerpc/perf/imc-pmu.c
-@@ -508,7 +508,7 @@ static int nest_imc_event_init(struct perf_event *event)
- 			break;
- 		}
- 		pcni++;
--	} while (pcni);
-+	} while (pcni->vbase != 0);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 4fe7740917a7..ef7fb60534a8 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -634,7 +634,7 @@ void probe_machine(void)
+ 	}
+ 	/* What can we do if we didn't find ? */
+ 	if (machine_id >= &__machine_desc_end) {
+-		DBG("No suitable machine found !\n");
++		pr_err("No suitable machine description found !\n");
+ 		for (;;);
+ 	}
  
- 	if (!flag)
- 		return -ENODEV;
-diff --git a/arch/powerpc/platforms/powernv/opal-imc.c b/arch/powerpc/platforms/powernv/opal-imc.c
-index 58a0794..3d27f02 100644
---- a/arch/powerpc/platforms/powernv/opal-imc.c
-+++ b/arch/powerpc/platforms/powernv/opal-imc.c
-@@ -127,7 +127,7 @@ static int imc_get_mem_addr_nest(struct device_node *node,
- 								nr_chips))
- 		goto error;
- 
--	pmu_ptr->mem_info = kcalloc(nr_chips, sizeof(*pmu_ptr->mem_info),
-+	pmu_ptr->mem_info = kcalloc(nr_chips + 1, sizeof(*pmu_ptr->mem_info),
- 				    GFP_KERNEL);
- 	if (!pmu_ptr->mem_info)
- 		goto error;
 -- 
-1.8.3.1
+2.13.3
 
