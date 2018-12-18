@@ -2,122 +2,60 @@ Return-Path: <SRS0=nim+=O3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2141C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 21:09:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC8C8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 22:39:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4A46D217D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 21:09:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="Hr7SVC9S"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A46D217D9
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id C85892184C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 22:39:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C85892184C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43K9cq2RhnzDqY2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 08:09:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KCcg5V6czDqdf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:39:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.b="Hr7SVC9S";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.8.75; helo=eur04-vi1-obe.outbound.protection.outlook.com;
- envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="Hr7SVC9S"; 
- dkim-atps=neutral
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com
- (mail-eopbgr80075.outbound.protection.outlook.com [40.107.8.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43K3Qr047dzDqVB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 03:30:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=u2qh2MhGFhtrXA0UhsHL5Qp3GeWZyd9WNpOv8t7L9aU=;
- b=Hr7SVC9S8eWPMFR2m35YTMAGTO68qF1ccns++2F47fd4QU2TAo0DcquygUcxgl4qbG5SD4uDO+ymDZ3FXHXDP9urMj+ORL0PdAWbcvqe6J27Eb0wKEG58ljBk+tHxbej1WrWVPyRsh2vv6HCAtBTSGXHNoeCsagdKh6gaR8IeR0=
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com (20.177.48.157) by
- VI1PR04MB4384.eurprd04.prod.outlook.com (20.177.55.97) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1446.17; Tue, 18 Dec 2018 16:30:01 +0000
-Received: from VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::e945:403f:af97:d8aa]) by VI1PR04MB4704.eurprd04.prod.outlook.com
- ([fe80::e945:403f:af97:d8aa%4]) with mapi id 15.20.1425.023; Tue, 18 Dec 2018
- 16:30:01 +0000
-From: Viorel Suman <viorel.suman@nxp.com>
-To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob
- Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jaroslav
- Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
- <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
- <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Viorel Suman
- <viorel.suman@nxp.com>, Daniel Baluta <daniel.baluta@nxp.com>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, dl-linux-imx
- <linux-imx@nxp.com>
-Subject: [RFC PATCH] ASoC: fsl: Add Audio Mixer CPU DAI driver
-Thread-Topic: [RFC PATCH] ASoC: fsl: Add Audio Mixer CPU DAI driver
-Thread-Index: AQHUlu7sas942UE1M06TLvqfe6BTxw==
-Date: Tue, 18 Dec 2018 16:30:01 +0000
-Message-ID: <1545150569-14897-1-git-send-email-viorel.suman@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: AM5PR0701CA0012.eurprd07.prod.outlook.com
- (2603:10a6:203:51::22) To VI1PR04MB4704.eurprd04.prod.outlook.com
- (2603:10a6:803:52::29)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=viorel.suman@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [95.76.156.53]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; VI1PR04MB4384;
- 6:i14rQVo4ffDVE6EOHxN6UK77tRNZNqaCPOxLz3QNJ9DM5fJ7BhAZD7q13ak0kn6WMwXImXKVL6vG35vEg++ig6vCIrJhm2Xyt55QnbakIy0k3b4kRrluVS/zwGWkzkUQW3EN+bSSr1UzQKRFFhPXXZro0PJyZ2lPa4aDxjvLywEh9ItwAKUtrKnqDGnus6zTZFu0cotEV4qru0D+iFmWhrwTcG351BjKmz64oZ9ct+0adhHtEafDlkDWAhaFp1GpcZaaUoF+uCIOZK7sjiYGDvY890ER2b4dZbM44n0uXUv4KdfidWc1tuyl6xiOWJKs22zP/MHRIYwzpOS0idCJlWt8Fj9xqPtRx1NE8V+R0+31ewf+4NYci8k7M1XwlQbw68JVvHKhTeZFCJUbPBrBOPnUSGWIc1vw8DEzMDE1sdzfwIz9XXOOBpEzhIMQ5aIE334gdDfddEjKF4Ji8KSz9A==;
- 5:KmW8Evk7kaqIqSPx5yCmD6C0zi2Ha1A3I1uI/rKM9FmDcCsKNGEQUe4OHNdR87v8/4hL96dMg29ghFA+O4TxmTKozeok1TTiulFB/NDgwkA8J/UFslaPUieP+ipDYmIkKbUKf//yHtEu8aL79Iw2YRGNEi6fEUzrlfiuvMLvvgA=;
- 7:GhbRF87JFsX9Jpq+A+qlNuI9cBGHE63bb3QO/0HpxXJJbePMHbYdMSe1+s6Yil5OjB7xhVo5YyLhJ9QUfSM73oWfCu7weUUV03J0RydUX1mmLW8ntmz7Y+bxHqt4lH/E3aTDKCAro6THkGUPthWgjA==
-x-ms-office365-filtering-correlation-id: 3071de59-dc44-4fbe-393b-08d665060ecb
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600074)(711020)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:VI1PR04MB4384; 
-x-ms-traffictypediagnostic: VI1PR04MB4384:
-x-microsoft-antispam-prvs: <VI1PR04MB438455823B47EA487FEA424C92BD0@VI1PR04MB4384.eurprd04.prod.outlook.com>
-x-ms-exchange-senderadcheck: 1
-x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
- RULEID:(8211001083)(3230021)(999002)(6040522)(2401047)(5005006)(8121501046)(3231475)(944501520)(52105112)(93006095)(93001095)(10201501046)(3002001)(6055026)(148016)(149066)(150057)(6041310)(20161123562045)(20161123564045)(20161123560045)(20161123558120)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051)(76991095);
- SRVR:VI1PR04MB4384; BCL:0; PCL:0; RULEID:; SRVR:VI1PR04MB4384; 
-x-forefront-prvs: 08902E536D
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(979002)(396003)(136003)(376002)(346002)(366004)(39860400002)(199004)(189003)(2906002)(6506007)(386003)(52116002)(217873002)(14444005)(39060400002)(256004)(316002)(2501003)(8676002)(8936002)(4744004)(81156014)(81166006)(6116002)(71190400001)(97736004)(71200400001)(3846002)(110136005)(486006)(2616005)(476003)(102836004)(26005)(186003)(99286004)(44832011)(25786009)(7416002)(478600001)(5660300001)(305945005)(2201001)(6512007)(6306002)(966005)(14454004)(53946003)(7736002)(86362001)(575784001)(6636002)(53936002)(66066001)(68736007)(6486002)(6436002)(106356001)(105586002)(36756003)(921003)(1121003)(559001)(579004)(969003)(989001)(999001)(1009001)(1019001);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB4384;
- H:VI1PR04MB4704.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-microsoft-antispam-message-info: Pu1FQhY6zqmSscnGxaMJSl0Zz2mw0huNjMXD6dYX3ZuhxnWPvka95lXT2EXlMHKNLJR7H5GYktTRVe6HaJRI3JPDvXe3RSY7UjQoUhElDD8s0tQ9CT7YlxEDhOksEPZWaHw25mckPVdzoh1cn/wrtmcDAokBF0INyJGR3sr3jx4D7CjzuybBxsV7NdYGIuc4YqQLNAvaTV6Dmy9VXmDolWxmV+9Gy0uSzu6ARfsUsBqvEnYr0GdrTNjTTCMoVbZlp1gyc1wx7FeoUa8PWzBZmC85x/do+lKY6eQaPUVEZTNp5FONooUqoY1la8V6JP86
-spamdiagnosticoutput: 1:99
-spamdiagnosticmetadata: NSPM
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43KCZG09PJzDqXm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 09:37:08 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id EF5672C976D;
+ Tue, 18 Dec 2018 22:37:04 +0000 (UTC)
+Received: from x1.home (ovpn-116-92.phx2.redhat.com [10.3.116.92])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 8CD325DD65;
+ Tue, 18 Dec 2018 22:37:02 +0000 (UTC)
+Date: Tue, 18 Dec 2018 15:37:01 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v5 20/20] vfio_pci: Add NVIDIA GV100GL [Tesla
+ V100 SXM2] subdriver
+Message-ID: <20181218153701.56ef37de@x1.home>
+In-Reply-To: <20181213061734.16651-21-aik@ozlabs.ru>
+References: <20181213061734.16651-1-aik@ozlabs.ru>
+ <20181213061734.16651-21-aik@ozlabs.ru>
+Organization: Red Hat
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3071de59-dc44-4fbe-393b-08d665060ecb
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Dec 2018 16:30:01.5835 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB4384
-X-Mailman-Approved-At: Wed, 19 Dec 2018 08:05:39 +1100
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Tue, 18 Dec 2018 22:37:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,801 +67,318 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
+ Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
+ Leonardo Augusto =?UTF-8?B?R3VpbWFyw6Nlcw==?= Garcia <lagarcia@br.ibm.com>,
+ Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch implements Audio Mixer CPU DAI driver for NXP iMX8 SOCs.
-The Audio Mixer is a on-chip functional module that allows mixing of
-two audio streams into a single audio stream.
+On Thu, 13 Dec 2018 17:17:34 +1100
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-Audio Mixer datasheet is available here:
-https://www.nxp.com/docs/en/reference-manual/IMX8DQXPRM.pdf
+> POWER9 Witherspoon machines come with 4 or 6 V100 GPUs which are not
+> pluggable PCIe devices but still have PCIe links which are used
+> for config space and MMIO. In addition to that the GPUs have 6 NVLinks
+> which are connected to other GPUs and the POWER9 CPU. POWER9 chips
+> have a special unit on a die called an NPU which is an NVLink2 host bus
+> adapter with p2p connections to 2 to 3 GPUs, 3 or 2 NVLinks to each.
+> These systems also support ATS (address translation services) which is
+> a part of the NVLink2 protocol. Such GPUs also share on-board RAM
+> (16GB or 32GB) to the system via the same NVLink2 so a CPU has
+> cache-coherent access to a GPU RAM.
+> 
+> This exports GPU RAM to the userspace as a new VFIO device region. This
+> preregisters the new memory as device memory as it might be used for DMA.
+> This inserts pfns from the fault handler as the GPU memory is not onlined
+> until the vendor driver is loaded and trained the NVLinks so doing this
+> earlier causes low level errors which we fence in the firmware so
+> it does not hurt the host system but still better be avoided; for the same
+> reason this does not map GPU RAM into the host kernel (usual thing for
+> emulated access otherwise).
+> 
+> This exports an ATSD (Address Translation Shootdown) register of NPU which
+> allows TLB invalidations inside GPU for an operating system. The register
+> conveniently occupies a single 64k page. It is also presented to
+> the userspace as a new VFIO device region. One NPU has 8 ATSD registers,
+> each of them can be used for TLB invalidation in a GPU linked to this NPU.
+> This allocates one ATSD register per an NVLink bridge allowing passing
+> up to 6 registers. Due to the host firmware bug (just recently fixed),
+> only 1 ATSD register per NPU was actually advertised to the host system
+> so this passes that alone register via the first NVLink bridge device in
+> the group which is still enough as QEMU collects them all back and
+> presents to the guest via vPHB to mimic the emulated NPU PHB on the host.
+> 
+> In order to provide the userspace with the information about GPU-to-NVLink
+> connections, this exports an additional capability called "tgt"
+> (which is an abbreviated host system bus address). The "tgt" property
+> tells the GPU its own system address and allows the guest driver to
+> conglomerate the routing information so each GPU knows how to get directly
+> to the other GPUs.
+> 
+> For ATS to work, the nest MMU (an NVIDIA block in a P9 CPU) needs to
+> know LPID (a logical partition ID or a KVM guest hardware ID in other
+> words) and PID (a memory context ID of a userspace process, not to be
+> confused with a linux pid). This assigns a GPU to LPID in the NPU and
+> this is why this adds a listener for KVM on an IOMMU group. A PID comes
+> via NVLink from a GPU and NPU uses a PID wildcard to pass it through.
+> 
+> This requires coherent memory and ATSD to be available on the host as
+> the GPU vendor only supports configurations with both features enabled
+> and other configurations are known not to work. Because of this and
+> because of the ways the features are advertised to the host system
+> (which is a device tree with very platform specific properties),
+> this requires enabled POWERNV platform.
+> 
+> The V100 GPUs do not advertise any of these capabilities via the config
+> space and there are more than just one device ID so this relies on
+> the platform to tell whether these GPUs have special abilities such as
+> NVLinks.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v5:
+> * do not memremap GPU RAM for emulation, map it only when it is needed
+> * allocate 1 ATSD register per NVLink bridge, if none left, then expose
+> the region with a zero size
+> * separate caps per device type
+> * addressed AW review comments
+> 
+> v4:
+> * added nvlink-speed to the NPU bridge capability as this turned out to
+> be not a constant value
+> * instead of looking at the exact device ID (which also changes from system
+> to system), now this (indirectly) looks at the device tree to know
+> if GPU and NPU support NVLink
+> 
+> v3:
+> * reworded the commit log about tgt
+> * added tracepoints (do we want them enabled for entire vfio-pci?)
+> * added code comments
+> * added write|mmap flags to the new regions
+> * auto enabled VFIO_PCI_NVLINK2 config option
+> * added 'tgt' capability to a GPU so QEMU can recreate ibm,npu and ibm,gpu
+> references; there are required by the NVIDIA driver
+> * keep notifier registered only for short time
+> ---
+>  drivers/vfio/pci/Makefile           |   1 +
+>  drivers/vfio/pci/trace.h            | 102 ++++++
+>  drivers/vfio/pci/vfio_pci_private.h |  14 +
+>  include/uapi/linux/vfio.h           |  39 +++
+>  drivers/vfio/pci/vfio_pci.c         |  27 +-
+>  drivers/vfio/pci/vfio_pci_nvlink2.c | 473 ++++++++++++++++++++++++++++
+>  drivers/vfio/pci/Kconfig            |   6 +
+>  7 files changed, 660 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/vfio/pci/trace.h
+>  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
+> 
+> diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
+> index 76d8ec0..9662c06 100644
+> --- a/drivers/vfio/pci/Makefile
+> +++ b/drivers/vfio/pci/Makefile
+> @@ -1,5 +1,6 @@
+>  
+>  vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
+>  vfio-pci-$(CONFIG_VFIO_PCI_IGD) += vfio_pci_igd.o
+> +vfio-pci-$(CONFIG_VFIO_PCI_NVLINK2) += vfio_pci_nvlink2.o
+>  
+>  obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
+> diff --git a/drivers/vfio/pci/trace.h b/drivers/vfio/pci/trace.h
+> new file mode 100644
+> index 0000000..b80d2d3
+> --- /dev/null
+> +++ b/drivers/vfio/pci/trace.h
+> @@ -0,0 +1,102 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * VFIO PCI mmap/mmap_fault tracepoints
+> + *
+> + * Copyright (C) 2018 IBM Corp.  All rights reserved.
+> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM vfio_pci
+> +
+> +#if !defined(_TRACE_VFIO_PCI_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_VFIO_PCI_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +TRACE_EVENT(vfio_pci_nvgpu_mmap_fault,
+> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
+> +			vm_fault_t ret),
+> +	TP_ARGS(pdev, hpa, ua, ret),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(const char *, name)
+> +		__field(unsigned long, hpa)
+> +		__field(unsigned long, ua)
+> +		__field(int, ret)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->name = dev_name(&pdev->dev),
+> +		__entry->hpa = hpa;
+> +		__entry->ua = ua;
+> +		__entry->ret = ret;
+> +	),
+> +
+> +	TP_printk("%s: %lx -> %lx ret=%d", __entry->name, __entry->hpa,
+> +			__entry->ua, __entry->ret)
+> +);
+> +
+> +TRACE_EVENT(vfio_pci_nvgpu_mmap,
+> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
+> +			unsigned long size, int ret),
+> +	TP_ARGS(pdev, hpa, ua, size, ret),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(const char *, name)
+> +		__field(unsigned long, hpa)
+> +		__field(unsigned long, ua)
+> +		__field(unsigned long, size)
+> +		__field(int, ret)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->name = dev_name(&pdev->dev),
+> +		__entry->hpa = hpa;
+> +		__entry->ua = ua;
+> +		__entry->size = size;
+> +		__entry->ret = ret;
+> +	),
+> +
+> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
+> +			__entry->ua, __entry->size, __entry->ret)
+> +);
+> +
+> +TRACE_EVENT(vfio_pci_npu2_mmap,
+> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
+> +			unsigned long size, int ret),
+> +	TP_ARGS(pdev, hpa, ua, size, ret),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(const char *, name)
+> +		__field(unsigned long, hpa)
+> +		__field(unsigned long, ua)
+> +		__field(unsigned long, size)
+> +		__field(int, ret)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->name = dev_name(&pdev->dev),
+> +		__entry->hpa = hpa;
+> +		__entry->ua = ua;
+> +		__entry->size = size;
+> +		__entry->ret = ret;
+> +	),
+> +
+> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
+> +			__entry->ua, __entry->size, __entry->ret)
+> +);
+> +
+> +#endif /* _TRACE_SUBSYS_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#define TRACE_INCLUDE_PATH .
+> +#undef TRACE_INCLUDE_FILE
+> +#define TRACE_INCLUDE_FILE trace
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+> index 93c1738..127071b 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -163,4 +163,18 @@ static inline int vfio_pci_igd_init(struct vfio_pci_device *vdev)
+>  	return -ENODEV;
+>  }
+>  #endif
+> +#ifdef CONFIG_VFIO_PCI_NVLINK2
+> +extern int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev);
+> +extern int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev);
+> +#else
+> +static inline int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
+> +{
+> +	return -ENODEV;
+> +}
+> +
+> +static inline int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
+> +{
+> +	return -ENODEV;
+> +}
+> +#endif
+>  #endif /* VFIO_PCI_PRIVATE_H */
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index 8131028..ce28d39 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -353,6 +353,21 @@ struct vfio_region_gfx_edid {
+>  #define VFIO_DEVICE_GFX_LINK_STATE_DOWN  2
+>  };
+>  
+> +/*
+> + * 10de vendor sub-type
+> + *
+> + * NVIDIA GPU NVlink2 RAM is coherent RAM mapped onto the host address space.
+> + */
+> +#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM	(1)
+> +
+> +/*
+> + * 1014 vendor sub-type
+> + *
+> + * IBM NPU NVlink2 ATSD (Address Translation Shootdown) register of NPU
+> + * to do TLB invalidation on a GPU.
+> + */
+> +#define VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD	(1)
+> +
+>  /*
+>   * The MSIX mappable capability informs that MSIX data of a BAR can be mmapped
+>   * which allows direct access to non-MSIX registers which happened to be within
+> @@ -363,6 +378,30 @@ struct vfio_region_gfx_edid {
+>   */
+>  #define VFIO_REGION_INFO_CAP_MSIX_MAPPABLE	3
+>  
+> +/*
+> + * Capability with compressed real address (aka SSA - small system address)
+> + * where GPU RAM is mapped on a system bus. Used by a GPU for DMA routing.
+> + */
+> +#define VFIO_REGION_INFO_CAP_NVIDIA_NVLINK2	4
+> +
+> +struct vfio_region_info_cap_nvidia_nvlink2 {
+> +	struct vfio_info_cap_header header;
+> +	__u64 tgt;
+> +};
+> +
+> +/*
+> + * Capability with compressed real address (aka SSA - small system address),
+> + * used to match the NVLink bridge with a GPU. Also contains a link speed.
+> + */
+> +#define VFIO_REGION_INFO_CAP_IBM_NPU2		5
+> +
+> +struct vfio_region_info_cap_ibm_npu2 {
+> +	struct vfio_info_cap_header header;
+> +	__u64 tgt;
+> +	__u32 link_speed;
+> +	__u32 __pad;
+> +};
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
----
- .../devicetree/bindings/sound/fsl,amix.txt         |  45 ++
- sound/soc/fsl/Kconfig                              |   7 +
- sound/soc/fsl/Makefile                             |   3 +
- sound/soc/fsl/fsl_amix.c                           | 554 +++++++++++++++++=
-++++
- sound/soc/fsl/fsl_amix.h                           | 101 ++++
- 5 files changed, 710 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/sound/fsl,amix.txt
- create mode 100644 sound/soc/fsl/fsl_amix.c
- create mode 100644 sound/soc/fsl/fsl_amix.h
+Another option here would be to have one capability expose tgt used by
+both devices and another capability expose link_speed used only by the
+NPU.  Perhaps VFIO_REGION_INFO_CAP_NVLINK2_SSATGT and
+VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD.  We don't necessarily need to make
+each capability specific to a device and we can stack multiple
+together.  Is there some association between tgt and link_speed that
+requires them together?  We could also simply expose the link_speed as
+a __u64 rather than introduce padding.  Thanks,
 
-diff --git a/Documentation/devicetree/bindings/sound/fsl,amix.txt b/Documen=
-tation/devicetree/bindings/sound/fsl,amix.txt
-new file mode 100644
-index 0000000..049144f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/sound/fsl,amix.txt
-@@ -0,0 +1,45 @@
-+NXP Audio Mixer (AMIX).
-+
-+The Audio Mixer is a on-chip functional module that allows mixing of two
-+audio streams into a single audio stream. Audio Mixer has two input serial
-+audio interfaces. These are driven by two Synchronous Audio interface
-+modules (SAI). Each input serial interface carries 8 audio channels in its
-+frame in TDM manner. Mixer mixes audio samples of corresponding channels
-+from two interfaces into a single sample. Before mixing, audio samples of
-+two inputs can be attenuated based on configuration. The output of the
-+Audio Mixer is also a serial audio interface. Like input interfaces it has
-+the same TDM frame format. This output is used to drive the serial DAC TDM
-+interface of audio codec and also sent to the external pins along with the
-+receive path of normal audio SAI module for readback by the CPU.
-+
-+The output of Audio mixer can be selected from any of the three streams
-+ - serial audio input 1
-+ - serial audio input 2
-+ - Mixed audio
-+
-+Mixing operation is independent of audio sample rate but the two audio
-+input streams must have same audio sample rate with same number of channel=
-s
-+in TDM frame to be eligible for mixing.
-+
-+Device driver required properties:
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+  - compatible		: Compatible list, contains "fsl,imx8qm-amix"
-+
-+  - reg			: Offset and length of the register set for the device.
-+
-+  - clocks		: Must contain an entry for each entry in clock-names.
-+
-+  - clock-names		: Must include the "ipg" for register access.
-+
-+  - power-domains	: Must contain the phandle to the AMIX power domain node
-+
-+Device driver configuration example:
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+  amix: amix@59840000 {
-+    compatible =3D "fsl,imx8qm-amix";
-+    reg =3D <0x0 0x59840000 0x0 0x10000>;
-+    clocks =3D <&clk IMX8QXP_AUD_AMIX_IPG>;
-+    clock-names =3D "ipg";
-+    power-domains =3D <&pd_amix>;
-+  };
-+
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index 2e75b5bc..0b08eb2 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -24,6 +24,13 @@ config SND_SOC_FSL_SAI
- 	  This option is only useful for out-of-tree drivers since
- 	  in-tree drivers select it automatically.
-=20
-+config SND_SOC_FSL_AMIX
-+	tristate "Audio Mixer (AMIX) module support"
-+	select REGMAP_MMIO
-+	help
-+	  Say Y if you want to add Audio Mixer (AMIX)
-+	  support for the NXP iMX CPUs.
-+
- config SND_SOC_FSL_SSI
- 	tristate "Synchronous Serial Interface module (SSI) support"
- 	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC !=3D n
-diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
-index de94fa0..3263634 100644
---- a/sound/soc/fsl/Makefile
-+++ b/sound/soc/fsl/Makefile
-@@ -12,6 +12,7 @@ snd-soc-p1022-rdk-objs :=3D p1022_rdk.o
- obj-$(CONFIG_SND_SOC_P1022_RDK) +=3D snd-soc-p1022-rdk.o
-=20
- # Freescale SSI/DMA/SAI/SPDIF Support
-+snd-soc-fsl-amix-objs :=3D fsl_amix.o
- snd-soc-fsl-asoc-card-objs :=3D fsl-asoc-card.o
- snd-soc-fsl-asrc-objs :=3D fsl_asrc.o fsl_asrc_dma.o
- snd-soc-fsl-sai-objs :=3D fsl_sai.o
-@@ -21,6 +22,8 @@ snd-soc-fsl-spdif-objs :=3D fsl_spdif.o
- snd-soc-fsl-esai-objs :=3D fsl_esai.o
- snd-soc-fsl-utils-objs :=3D fsl_utils.o
- snd-soc-fsl-dma-objs :=3D fsl_dma.o
-+
-+obj-$(CONFIG_SND_SOC_FSL_AMIX) +=3D snd-soc-fsl-amix.o
- obj-$(CONFIG_SND_SOC_FSL_ASOC_CARD) +=3D snd-soc-fsl-asoc-card.o
- obj-$(CONFIG_SND_SOC_FSL_ASRC) +=3D snd-soc-fsl-asrc.o
- obj-$(CONFIG_SND_SOC_FSL_SAI) +=3D snd-soc-fsl-sai.o
-diff --git a/sound/soc/fsl/fsl_amix.c b/sound/soc/fsl/fsl_amix.c
-new file mode 100644
-index 0000000..d752029
---- /dev/null
-+++ b/sound/soc/fsl/fsl_amix.c
-@@ -0,0 +1,554 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * NXP AMIX ALSA SoC Digital Audio Interface (DAI) driver
-+ *
-+ * Copyright 2017 NXP
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/pm_runtime.h>
-+#include <sound/soc.h>
-+#include <sound/pcm_params.h>
-+
-+#include "fsl_amix.h"
-+
-+#define SOC_ENUM_SINGLE_S(xreg, xshift, xtexts) \
-+	SOC_ENUM_SINGLE(xreg, xshift, ARRAY_SIZE(xtexts), xtexts)
-+
-+static const char
-+	*tdm_sel[] =3D { "TDM1", "TDM2", },
-+	*mode_sel[] =3D { "Disabled", "TDM1", "TDM2", "Mixed", },
-+	*width_sel[] =3D { "16b", "18b", "20b", "24b", "32b", },
-+	*pol_sel[] =3D { "Positive edge", "Negative edge", },
-+	*endis_sel[] =3D { "Disabled", "Enabled", },
-+	*updn_sel[] =3D { "Downward", "Upward", },
-+	*mask_sel[] =3D { "Unmask", "Mask", };
-+
-+static const struct soc_enum fsl_amix_enum[] =3D {
-+/* FSL_AMIX_CTR enums */
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_MIXCLK_SHIFT, tdm_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_OUTSRC_SHIFT, mode_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_OUTWIDTH_SHIFT, width_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_OUTCKPOL_SHIFT, pol_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_MASKRTDF_SHIFT, mask_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_MASKCKDF_SHIFT, mask_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_SYNCMODE_SHIFT, endis_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_CTR, FSL_AMIX_CTR_SYNCSRC_SHIFT, tdm_sel),
-+/* FSL_AMIX_ATCR0 enums */
-+SOC_ENUM_SINGLE_S(FSL_AMIX_ATCR0, 0, endis_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_ATCR0, 1, updn_sel),
-+/* FSL_AMIX_ATCR1 enums */
-+SOC_ENUM_SINGLE_S(FSL_AMIX_ATCR1, 0, endis_sel),
-+SOC_ENUM_SINGLE_S(FSL_AMIX_ATCR1, 1, updn_sel),
-+};
-+
-+struct fsl_amix_state {
-+	u8 tdms;
-+	u8 clk;
-+	char msg[64];
-+};
-+
-+static const struct fsl_amix_state prms[4][4] =3D {{
-+	/* DIS->DIS, do nothing */
-+	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
-+	/* DIS->TDM1*/
-+	{ .tdms =3D 1, .clk =3D 1, .msg =3D "DIS->TDM1: TDM1 not started!\n" },
-+	/* DIS->TDM2*/
-+	{ .tdms =3D 2, .clk =3D 2, .msg =3D "DIS->TDM2: TDM2 not started!\n" },
-+	/* DIS->MIX */
-+	{ .tdms =3D 3, .clk =3D 0, .msg =3D "DIS->MIX: Please start both TDMs!\n"=
- }
-+}, {	/* TDM1->DIS */
-+	{ .tdms =3D 1, .clk =3D 0, .msg =3D "TDM1->DIS: TDM1 not started!\n" },
-+	/* TDM1->TDM1, do nothing */
-+	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
-+	/* TDM1->TDM2 */
-+	{ .tdms =3D 3, .clk =3D 2, .msg =3D "TDM1->TDM2: Please start both TDMs!\=
-n" },
-+	/* TDM1->MIX */
-+	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM1->MIX: Please start both TDMs!\n=
-" }
-+}, {	/* TDM2->DIS */
-+	{ .tdms =3D 2, .clk =3D 0, .msg =3D "TDM2->DIS: TDM2 not started!\n" },
-+	/* TDM2->TDM1 */
-+	{ .tdms =3D 3, .clk =3D 1, .msg =3D "TDM2->TDM1: Please start both TDMs!\=
-n" },
-+	/* TDM2->TDM2, do nothing */
-+	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
-+	/* TDM2->MIX */
-+	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM2->MIX: Please start both TDMs!\n=
-" }
-+}, {	/* MIX->DIS */
-+	{ .tdms =3D 3, .clk =3D 0, .msg =3D "MIX->DIS: Please start both TDMs!\n"=
- },
-+	/* MIX->TDM1 */
-+	{ .tdms =3D 3, .clk =3D 1, .msg =3D "MIX->TDM1: Please start both TDMs!\n=
-" },
-+	/* MIX->TDM2 */
-+	{ .tdms =3D 3, .clk =3D 2, .msg =3D "MIX->TDM2: Please start both TDMs!\n=
-" },
-+	/* MIX->MIX, do nothing */
-+	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" }
-+}, };
-+
-+static int fsl_amix_state_trans(struct snd_soc_component *comp,
-+				unsigned int *mask, unsigned int *ctr,
-+				const struct fsl_amix_state prm)
-+{
-+	struct fsl_amix *priv =3D snd_soc_component_get_drvdata(comp);
-+	/* Enforce all required TDMs are started */
-+	if ((priv->tdms & prm.tdms) !=3D prm.tdms) {
-+		dev_dbg(comp->dev, prm.msg);
-+		return -EINVAL;
-+	}
-+
-+	switch (prm.clk) {
-+	case 1:
-+	case 2:
-+		/* Set mix clock */
-+		(*mask) |=3D FSL_AMIX_CTR_MIXCLK_MASK;
-+		(*ctr)  |=3D FSL_AMIX_CTR_MIXCLK(prm.clk - 1);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int fsl_amix_put_mix_clk_src(struct snd_kcontrol *kcontrol,
-+				    struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
-+	struct fsl_amix *priv =3D snd_soc_component_get_drvdata(comp);
-+	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
-+	unsigned int *item =3D ucontrol->value.enumerated.item;
-+	unsigned int reg_val, val, mix_clk;
-+	int ret =3D 0;
-+
-+	/* Get current state */
-+	ret =3D snd_soc_component_read(comp, FSL_AMIX_CTR, &reg_val);
-+	if (ret)
-+		return ret;
-+
-+	mix_clk =3D ((reg_val & FSL_AMIX_CTR_MIXCLK_MASK)
-+			>> FSL_AMIX_CTR_MIXCLK_SHIFT);
-+	val =3D snd_soc_enum_item_to_val(e, item[0]);
-+
-+	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
-+
-+	/**
-+	 * Ensure the current selected mixer clock is available
-+	 * for configuration propagation
-+	 */
-+	if (!(priv->tdms & BIT(mix_clk))) {
-+		dev_err(comp->dev,
-+			"Started TDM%d needed for config propagation!\n",
-+			mix_clk + 1);
-+		return -EINVAL;
-+	}
-+
-+	if (!(priv->tdms & BIT(val))) {
-+		dev_err(comp->dev,
-+			"The selected clock source has no TDM%d enabled!\n",
-+			val + 1);
-+		return -EINVAL;
-+	}
-+
-+	return snd_soc_put_enum_double(kcontrol, ucontrol);
-+}
-+
-+static int fsl_amix_put_out_src(struct snd_kcontrol *kcontrol,
-+				struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
-+	struct fsl_amix *priv =3D snd_soc_component_get_drvdata(comp);
-+	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
-+	unsigned int *item =3D ucontrol->value.enumerated.item;
-+	u32 out_src, mix_clk;
-+	unsigned int reg_val, val, mask =3D 0, ctr =3D 0;
-+	int ret =3D 0;
-+
-+	/* Get current state */
-+	ret =3D snd_soc_component_read(comp, FSL_AMIX_CTR, &reg_val);
-+	if (ret)
-+		return ret;
-+
-+	/* "From" state */
-+	out_src =3D ((reg_val & FSL_AMIX_CTR_OUTSRC_MASK)
-+			>> FSL_AMIX_CTR_OUTSRC_SHIFT);
-+	mix_clk =3D ((reg_val & FSL_AMIX_CTR_MIXCLK_MASK)
-+			>> FSL_AMIX_CTR_MIXCLK_SHIFT);
-+
-+	/* "To" state */
-+	val =3D snd_soc_enum_item_to_val(e, item[0]);
-+
-+	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
-+
-+	/* Check if state is changing ... */
-+	if (out_src =3D=3D val)
-+		return 0;
-+	/**
-+	 * Ensure the current selected mixer clock is available
-+	 * for configuration propagation
-+	 */
-+	if (!(priv->tdms & BIT(mix_clk))) {
-+		dev_err(comp->dev,
-+			"Started TDM%d needed for config propagation!\n",
-+			mix_clk + 1);
-+		return -EINVAL;
-+	}
-+
-+	/* Check state transition constraints */
-+	ret =3D fsl_amix_state_trans(comp, &mask, &ctr, prms[out_src][val]);
-+	if (ret)
-+		return ret;
-+
-+	/* Complete transition to new state */
-+	mask |=3D FSL_AMIX_CTR_OUTSRC_MASK;
-+	ctr  |=3D FSL_AMIX_CTR_OUTSRC(val);
-+
-+	return snd_soc_component_update_bits(comp, FSL_AMIX_CTR, mask, ctr);
-+}
-+
-+static const struct snd_kcontrol_new fsl_amix_snd_controls[] =3D {
-+	/* FSL_AMIX_CTR controls */
-+	SOC_ENUM_EXT("Mixing Clock Source", fsl_amix_enum[0],
-+		     snd_soc_get_enum_double, fsl_amix_put_mix_clk_src),
-+	SOC_ENUM_EXT("Output Source", fsl_amix_enum[1],
-+		     snd_soc_get_enum_double, fsl_amix_put_out_src),
-+	SOC_ENUM("Output Width", fsl_amix_enum[2]),
-+	SOC_ENUM("Output Clock Polarity", fsl_amix_enum[3]),
-+	SOC_ENUM("Frame Rate Diff Error", fsl_amix_enum[4]),
-+	SOC_ENUM("Clock Freq Diff Error", fsl_amix_enum[5]),
-+	SOC_ENUM("Sync Mode Config", fsl_amix_enum[6]),
-+	SOC_ENUM("Sync Mode Clk Source", fsl_amix_enum[7]),
-+	/* TDM1 Attenuation controls */
-+	SOC_ENUM("TDM1 Attenuation", fsl_amix_enum[8]),
-+	SOC_ENUM("TDM1 Attenuation Direction", fsl_amix_enum[9]),
-+	SOC_SINGLE("TDM1 Attenuation Step Divider", FSL_AMIX_ATCR0,
-+		   2, 0x00fff, 0),
-+	SOC_SINGLE("TDM1 Attenuation Initial Value", FSL_AMIX_ATIVAL0,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM1 Attenuation Step Up Factor", FSL_AMIX_ATSTPUP0,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM1 Attenuation Step Down Factor", FSL_AMIX_ATSTPDN0,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM1 Attenuation Step Target", FSL_AMIX_ATSTPTGT0,
-+		   0, 0x3ffff, 0),
-+	/* TDM2 Attenuation controls */
-+	SOC_ENUM("TDM2 Attenuation", fsl_amix_enum[10]),
-+	SOC_ENUM("TDM2 Attenuation Direction", fsl_amix_enum[11]),
-+	SOC_SINGLE("TDM2 Attenuation Step Divider", FSL_AMIX_ATCR1,
-+		   2, 0x00fff, 0),
-+	SOC_SINGLE("TDM2 Attenuation Initial Value", FSL_AMIX_ATIVAL1,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM2 Attenuation Step Up Factor", FSL_AMIX_ATSTPUP1,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM2 Attenuation Step Down Factor", FSL_AMIX_ATSTPDN1,
-+		   0, 0x3ffff, 0),
-+	SOC_SINGLE("TDM2 Attenuation Step Target", FSL_AMIX_ATSTPTGT1,
-+		   0, 0x3ffff, 0),
-+};
-+
-+static int fsl_amix_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fmt)
-+{
-+	struct snd_soc_component *comp =3D dai->component;
-+	u32 mask =3D 0, ctr =3D 0;
-+
-+	/* AMIX is working in DSP_A format only */
-+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-+	case SND_SOC_DAIFMT_DSP_A:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* For playback the AMIX is slave, and for record is master */
-+	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-+	case SND_SOC_DAIFMT_CBM_CFM:
-+	case SND_SOC_DAIFMT_CBS_CFS:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
-+	case SND_SOC_DAIFMT_IB_NF:
-+		/* Output data will be written on positive edge of the clock */
-+		ctr |=3D FSL_AMIX_CTR_OUTCKPOL(0);
-+		break;
-+	case SND_SOC_DAIFMT_NB_NF:
-+		/* Output data will be written on negative edge of the clock */
-+		ctr |=3D FSL_AMIX_CTR_OUTCKPOL(1);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	mask |=3D FSL_AMIX_CTR_OUTCKPOL_MASK;
-+
-+	return snd_soc_component_update_bits(comp, FSL_AMIX_CTR, mask, ctr);
-+}
-+
-+static int fsl_amix_dai_trigger(struct snd_pcm_substream *substream, int c=
-md,
-+				struct snd_soc_dai *dai)
-+{
-+	struct fsl_amix *priv =3D snd_soc_dai_get_drvdata(dai);
-+
-+	/* Capture stream shall not be handled */
-+	if (substream->stream =3D=3D SNDRV_PCM_STREAM_CAPTURE)
-+		return 0;
-+
-+	switch (cmd) {
-+	case SNDRV_PCM_TRIGGER_START:
-+	case SNDRV_PCM_TRIGGER_RESUME:
-+	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
-+		priv->tdms |=3D BIT(dai->driver->id);
-+		break;
-+	case SNDRV_PCM_TRIGGER_STOP:
-+	case SNDRV_PCM_TRIGGER_SUSPEND:
-+	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-+		priv->tdms &=3D ~BIT(dai->driver->id);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct snd_soc_dai_ops fsl_amix_dai_ops =3D {
-+	.set_fmt      =3D fsl_amix_dai_set_fmt,
-+	.trigger      =3D fsl_amix_dai_trigger,
-+};
-+
-+static struct snd_soc_dai_driver fsl_amix_dai[] =3D {
-+	{
-+		.id   =3D 0,
-+		.name =3D "amix-0",
-+		.playback =3D {
-+			.stream_name =3D "AMIX-Playback-0",
-+			.channels_min =3D 8,
-+			.channels_max =3D 8,
-+			.rate_min =3D 8000,
-+			.rate_max =3D 96000,
-+			.rates =3D SNDRV_PCM_RATE_8000_96000,
-+			.formats =3D FSL_AMIX_FORMATS,
-+		},
-+		.capture =3D {
-+			.stream_name =3D "AMIX-Capture-0",
-+			.channels_min =3D 8,
-+			.channels_max =3D 8,
-+			.rate_min =3D 8000,
-+			.rate_max =3D 96000,
-+			.rates =3D SNDRV_PCM_RATE_8000_96000,
-+			.formats =3D FSL_AMIX_FORMATS,
-+		},
-+		.ops =3D &fsl_amix_dai_ops,
-+	},
-+	{
-+		.id   =3D 1,
-+		.name =3D "amix-1",
-+		.playback =3D {
-+			.stream_name =3D "AMIX-Playback-1",
-+			.channels_min =3D 8,
-+			.channels_max =3D 8,
-+			.rate_min =3D 8000,
-+			.rate_max =3D 96000,
-+			.rates =3D SNDRV_PCM_RATE_8000_96000,
-+			.formats =3D FSL_AMIX_FORMATS,
-+		},
-+		.capture =3D {
-+			.stream_name =3D "AMIX-Capture-1",
-+			.channels_min =3D 8,
-+			.channels_max =3D 8,
-+			.rate_min =3D 8000,
-+			.rate_max =3D 96000,
-+			.rates =3D SNDRV_PCM_RATE_8000_96000,
-+			.formats =3D FSL_AMIX_FORMATS,
-+		},
-+		.ops =3D &fsl_amix_dai_ops,
-+	},
-+};
-+
-+static const struct snd_soc_component_driver fsl_amix_component =3D {
-+	.name		  =3D "fsl-amix-dai",
-+	.controls	  =3D fsl_amix_snd_controls,
-+	.num_controls	  =3D ARRAY_SIZE(fsl_amix_snd_controls),
-+};
-+
-+static bool fsl_amix_readable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case FSL_AMIX_CTR:
-+	case FSL_AMIX_STR:
-+	case FSL_AMIX_ATCR0:
-+	case FSL_AMIX_ATIVAL0:
-+	case FSL_AMIX_ATSTPUP0:
-+	case FSL_AMIX_ATSTPDN0:
-+	case FSL_AMIX_ATSTPTGT0:
-+	case FSL_AMIX_ATTNVAL0:
-+	case FSL_AMIX_ATSTP0:
-+	case FSL_AMIX_ATCR1:
-+	case FSL_AMIX_ATIVAL1:
-+	case FSL_AMIX_ATSTPUP1:
-+	case FSL_AMIX_ATSTPDN1:
-+	case FSL_AMIX_ATSTPTGT1:
-+	case FSL_AMIX_ATTNVAL1:
-+	case FSL_AMIX_ATSTP1:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static bool fsl_amix_writeable_reg(struct device *dev, unsigned int reg)
-+{
-+	switch (reg) {
-+	case FSL_AMIX_CTR:
-+	case FSL_AMIX_ATCR0:
-+	case FSL_AMIX_ATIVAL0:
-+	case FSL_AMIX_ATSTPUP0:
-+	case FSL_AMIX_ATSTPDN0:
-+	case FSL_AMIX_ATSTPTGT0:
-+	case FSL_AMIX_ATCR1:
-+	case FSL_AMIX_ATIVAL1:
-+	case FSL_AMIX_ATSTPUP1:
-+	case FSL_AMIX_ATSTPDN1:
-+	case FSL_AMIX_ATSTPTGT1:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
-+static const struct reg_default fsl_amix_reg[] =3D {
-+	{ FSL_AMIX_CTR,       0x00060 },
-+	{ FSL_AMIX_STR,       0x00003 },
-+	{ FSL_AMIX_ATCR0,     0x00000 },
-+	{ FSL_AMIX_ATIVAL0,   0x3FFFF },
-+	{ FSL_AMIX_ATSTPUP0,  0x2AAAA },
-+	{ FSL_AMIX_ATSTPDN0,  0x30000 },
-+	{ FSL_AMIX_ATSTPTGT0, 0x00010 },
-+	{ FSL_AMIX_ATTNVAL0,  0x00000 },
-+	{ FSL_AMIX_ATSTP0,    0x00000 },
-+	{ FSL_AMIX_ATCR1,     0x00000 },
-+	{ FSL_AMIX_ATIVAL1,   0x3FFFF },
-+	{ FSL_AMIX_ATSTPUP1,  0x2AAAA },
-+	{ FSL_AMIX_ATSTPDN1,  0x30000 },
-+	{ FSL_AMIX_ATSTPTGT1, 0x00010 },
-+	{ FSL_AMIX_ATTNVAL1,  0x00000 },
-+	{ FSL_AMIX_ATSTP1,    0x00000 },
-+};
-+
-+static const struct regmap_config fsl_amix_regmap_config =3D {
-+	.reg_bits =3D 32,
-+	.reg_stride =3D 4,
-+	.val_bits =3D 32,
-+	.max_register =3D FSL_AMIX_ATSTP1,
-+	.reg_defaults =3D fsl_amix_reg,
-+	.num_reg_defaults =3D ARRAY_SIZE(fsl_amix_reg),
-+	.readable_reg =3D fsl_amix_readable_reg,
-+	.writeable_reg =3D fsl_amix_writeable_reg,
-+	.cache_type =3D REGCACHE_FLAT,
-+};
-+
-+static int fsl_amix_probe(struct platform_device *pdev)
-+{
-+	struct fsl_amix *priv;
-+	struct resource *res;
-+	void __iomem *regs;
-+	int ret;
-+
-+	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->pdev =3D pdev;
-+
-+	/* Get the addresses */
-+	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	regs =3D devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(regs))
-+		return PTR_ERR(regs);
-+
-+	priv->regmap =3D devm_regmap_init_mmio_clk(&pdev->dev, "ipg", regs,
-+						 &fsl_amix_regmap_config);
-+	if (IS_ERR(priv->regmap)) {
-+		dev_err(&pdev->dev, "failed to init regmap\n");
-+		return PTR_ERR(priv->regmap);
-+	}
-+
-+	priv->ipg_clk =3D devm_clk_get(&pdev->dev, "ipg");
-+	if (IS_ERR(priv->ipg_clk)) {
-+		dev_err(&pdev->dev, "failed to get ipg clock\n");
-+		return PTR_ERR(priv->ipg_clk);
-+	}
-+
-+	platform_set_drvdata(pdev, priv);
-+	pm_runtime_enable(&pdev->dev);
-+
-+	ret =3D devm_snd_soc_register_component(&pdev->dev, &fsl_amix_component,
-+					      fsl_amix_dai,
-+					      ARRAY_SIZE(fsl_amix_dai));
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int fsl_amix_runtime_resume(struct device *dev)
-+{
-+	struct fsl_amix *priv =3D dev_get_drvdata(dev);
-+	int ret;
-+
-+	ret =3D clk_prepare_enable(priv->ipg_clk);
-+	if (ret) {
-+		dev_err(dev, "Failed to enable IPG clock: %d\n", ret);
-+		return ret;
-+	}
-+
-+	regcache_cache_only(priv->regmap, false);
-+	regcache_mark_dirty(priv->regmap);
-+
-+	return regcache_sync(priv->regmap);
-+}
-+
-+static int fsl_amix_runtime_suspend(struct device *dev)
-+{
-+	struct fsl_amix *priv =3D dev_get_drvdata(dev);
-+
-+	regcache_cache_only(priv->regmap, true);
-+
-+	clk_disable_unprepare(priv->ipg_clk);
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PM */
-+
-+static const struct dev_pm_ops fsl_amix_pm =3D {
-+	SET_RUNTIME_PM_OPS(fsl_amix_runtime_suspend,
-+			   fsl_amix_runtime_resume,
-+			   NULL)
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				pm_runtime_force_resume)
-+};
-+
-+static const struct of_device_id fsl_amix_ids[] =3D {
-+	{ .compatible =3D "fsl,imx8qm-amix", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, fsl_amix_ids);
-+
-+static struct platform_driver fsl_amix_driver =3D {
-+	.probe =3D fsl_amix_probe,
-+	.driver =3D {
-+		.name =3D "fsl-amix",
-+		.of_match_table =3D fsl_amix_ids,
-+		.pm =3D &fsl_amix_pm,
-+	},
-+};
-+module_platform_driver(fsl_amix_driver);
-+
-+MODULE_DESCRIPTION("NXP AMIX ASoC DAI driver");
-+MODULE_AUTHOR("Viorel Suman <viorel.suman@nxp.com>");
-+MODULE_ALIAS("platform:fsl-amix");
-+MODULE_LICENSE("GPL v2");
-diff --git a/sound/soc/fsl/fsl_amix.h b/sound/soc/fsl/fsl_amix.h
-new file mode 100644
-index 0000000..5312683
---- /dev/null
-+++ b/sound/soc/fsl/fsl_amix.h
-@@ -0,0 +1,101 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * NXP AMIX ALSA SoC Digital Audio Interface (DAI) driver
-+ *
-+ * Copyright 2017 NXP
-+ */
-+
-+#ifndef __FSL_AMIX_H
-+#define __FSL_AMIX_H
-+
-+#define FSL_AMIX_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
-+			SNDRV_PCM_FMTBIT_S24_LE |\
-+			SNDRV_PCM_FMTBIT_S32_LE)
-+/* AMIX Registers */
-+#define FSL_AMIX_CTR		0x200 /* Control */
-+#define FSL_AMIX_STR		0x204 /* Status */
-+
-+#define FSL_AMIX_ATCR0		0x208 /* Attenuation Control */
-+#define FSL_AMIX_ATIVAL0	0x20c /* Attenuation Initial Value */
-+#define FSL_AMIX_ATSTPUP0	0x210 /* Attenuation step up factor */
-+#define FSL_AMIX_ATSTPDN0	0x214 /* Attenuation step down factor */
-+#define FSL_AMIX_ATSTPTGT0	0x218 /* Attenuation step target */
-+#define FSL_AMIX_ATTNVAL0	0x21c /* Attenuation Value */
-+#define FSL_AMIX_ATSTP0		0x220 /* Attenuation step number */
-+
-+#define FSL_AMIX_ATCR1		0x228 /* Attenuation Control */
-+#define FSL_AMIX_ATIVAL1	0x22c /* Attenuation Initial Value */
-+#define FSL_AMIX_ATSTPUP1	0x230 /* Attenuation step up factor */
-+#define FSL_AMIX_ATSTPDN1	0x234 /* Attenuation step down factor */
-+#define FSL_AMIX_ATSTPTGT1	0x238 /* Attenuation step target */
-+#define FSL_AMIX_ATTNVAL1	0x23c /* Attenuation Value */
-+#define FSL_AMIX_ATSTP1		0x240 /* Attenuation step number */
-+
-+/* AMIX Control Register */
-+#define FSL_AMIX_CTR_MIXCLK_SHIFT	0
-+#define FSL_AMIX_CTR_MIXCLK_MASK	BIT(FSL_AMIX_CTR_MIXCLK_SHIFT)
-+#define FSL_AMIX_CTR_MIXCLK(i)		((i) << FSL_AMIX_CTR_MIXCLK_SHIFT)
-+#define FSL_AMIX_CTR_OUTSRC_SHIFT	1
-+#define FSL_AMIX_CTR_OUTSRC_MASK	(0x3 << FSL_AMIX_CTR_OUTSRC_SHIFT)
-+#define FSL_AMIX_CTR_OUTSRC(i)		(((i) << FSL_AMIX_CTR_OUTSRC_SHIFT) \
-+					      & FSL_AMIX_CTR_OUTSRC_MASK)
-+#define FSL_AMIX_CTR_OUTWIDTH_SHIFT	3
-+#define FSL_AMIX_CTR_OUTWIDTH_MASK	(0x7 << FSL_AMIX_CTR_OUTWIDTH_SHIFT)
-+#define FSL_AMIX_CTR_OUTWIDTH(i)	(((i) << FSL_AMIX_CTR_OUTWIDTH_SHIFT) \
-+					      & FSL_AMIX_CTR_OUTWIDTH_MASK)
-+#define FSL_AMIX_CTR_OUTCKPOL_SHIFT	6
-+#define FSL_AMIX_CTR_OUTCKPOL_MASK	BIT(FSL_AMIX_CTR_OUTCKPOL_SHIFT)
-+#define FSL_AMIX_CTR_OUTCKPOL(i)	((i) << FSL_AMIX_CTR_OUTCKPOL_SHIFT)
-+#define FSL_AMIX_CTR_MASKRTDF_SHIFT	7
-+#define FSL_AMIX_CTR_MASKRTDF_MASK	BIT(FSL_AMIX_CTR_MASKRTDF_SHIFT)
-+#define FSL_AMIX_CTR_MASKRTDF(i)	((i) << FSL_AMIX_CTR_MASKRTDF_SHIFT)
-+#define FSL_AMIX_CTR_MASKCKDF_SHIFT	8
-+#define FSL_AMIX_CTR_MASKCKDF_MASK	BIT(FSL_AMIX_CTR_MASKCKDF_SHIFT)
-+#define FSL_AMIX_CTR_MASKCKDF(i)	((i) << FSL_AMIX_CTR_MASKCKDF_SHIFT)
-+#define FSL_AMIX_CTR_SYNCMODE_SHIFT	9
-+#define FSL_AMIX_CTR_SYNCMODE_MASK	BIT(FSL_AMIX_CTR_SYNCMODE_SHIFT)
-+#define FSL_AMIX_CTR_SYNCMODE(i)	((i) << FSL_AMIX_CTR_SYNCMODE_SHIFT)
-+#define FSL_AMIX_CTR_SYNCSRC_SHIFT	10
-+#define FSL_AMIX_CTR_SYNCSRC_MASK	BIT(FSL_AMIX_CTR_SYNCSRC_SHIFT)
-+#define FSL_AMIX_CTR_SYNCSRC(i)		((i) << FSL_AMIX_CTR_SYNCSRC_SHIFT)
-+
-+/* AMIX Status Register */
-+#define FSL_AMIX_STR_RATEDIFF		BIT(0)
-+#define FSL_AMIX_STR_CLKDIFF		BIT(1)
-+#define FSL_AMIX_STR_MIXSTAT_SHIFT	2
-+#define FSL_AMIX_STR_MIXSTAT_MASK	(0x3 << FSL_AMIX_STR_MIXSTAT_SHIFT)
-+#define FSL_AMIX_STR_MIXSTAT(i)		((i & FSL_AMIX_STR_MIXSTAT_MASK) \
-+					   >> FSL_AMIX_STR_MIXSTAT_SHIFT)
-+/* AMIX Attenuation Control Register */
-+#define FSL_AMIX_ATCR_AT_EN		BIT(0)
-+#define FSL_AMIX_ATCR_AT_UPDN		BIT(1)
-+#define FSL_AMIX_ATCR_ATSTPDIF_SHIFT	2
-+#define FSL_AMIX_ATCR_ATSTPDFI_MASK	(0xfff << FSL_AMIX_ATCR_ATSTPDIF_SHIFT=
-)
-+
-+/* AMIX Attenuation Initial Value Register */
-+#define FSL_AMIX_ATIVAL_ATINVAL_MASK	0x3FFFF
-+
-+/* AMIX Attenuation Step Up Factor Register */
-+#define FSL_AMIX_ATSTPUP_ATSTEPUP_MASK	0x3FFFF
-+
-+/* AMIX Attenuation Step Down Factor Register */
-+#define FSL_AMIX_ATSTPDN_ATSTEPDN_MASK	0x3FFFF
-+
-+/* AMIX Attenuation Step Target Register */
-+#define FSL_AMIX_ATSTPTGT_ATSTPTG_MASK	0x3FFFF
-+
-+/* AMIX Attenuation Value Register */
-+#define FSL_AMIX_ATTNVAL_ATCURVAL_MASK	0x3FFFF
-+
-+/* AMIX Attenuation Step Number Register */
-+#define FSL_AMIX_ATSTP_STPCTR_MASK	0x3FFFF
-+
-+#define FSL_AMIX_MAX_DAIS		2
-+struct fsl_amix {
-+	struct platform_device *pdev;
-+	struct regmap *regmap;
-+	struct clk *ipg_clk;
-+	u8 tdms;
-+};
-+
-+#endif /* __FSL_AMIX_H */
---=20
-2.7.4
-
+Alex
