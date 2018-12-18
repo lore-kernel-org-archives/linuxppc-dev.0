@@ -8,78 +8,79 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37086C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 19:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 660B2C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 19:54:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 925DC21841
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 19:51:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B00FC2184C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 19:54:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EvdIx7sW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 925DC21841
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oMesuXgO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B00FC2184C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43K7tf3Dt6zDqQD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:51:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43K7yn71vqzDqLT
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:54:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="EvdIx7sW";
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="oMesuXgO";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=frowand.list@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="EvdIx7sW"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="oMesuXgO"; 
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43K7fN07sFzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 06:40:27 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id i12so8604327pfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 11:40:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43K7fL1MhNzDqPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 06:40:25 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id g62so8586170pfd.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 11:40:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=QpdzDwSrsWE9LXF201TGBe/ML0bWOkO30Z8/kF7nPbI=;
- b=EvdIx7sWsnq7Qd2RW6u2Z4I/D44oPaP+GN0NKdh4xQu/pkczHfeotGbP3nFcVxvMsG
- OPcLpMUsddriRtjWdND7o4rcEx1DqEGmg0ILZRsfUAhC/nNiEustJdyjZjMb+aMkGIQU
- 3U9g13bmUnCk1GmBZMZ3XLoMc4W1NT2Ck+P2R2NbV9BDbLLir4KtUzwyBAANz8QRk3+Y
- mZiPI4TZ497fQaSLNk9bNZWlkkigj6xXjwTcBy9dvxJAEtZ5k8a0GQ37UrTUhl/fXF4/
- /WPO1QykFrvQEAEY6qhkucoLrA3jQZk7zpU5KS42Afdm7PTRHHA1WTBGDBcilmlmxX8K
- slRA==
+ bh=FFIR56EPPMtxpRI59NyRK3PwR1fe0YI9MbaLl494NEI=;
+ b=oMesuXgOxh3rffuZdb2VG3kMN2EgZm0eenELSQ9/8FZLHdrikxwu3pPoGFWqqSN/Ne
+ O4AfSIWfCfUxfQAq6De1Shrzkh74aUdEqGlFNEExVweVkbp+12LftWeOKEsdorQI/tVI
+ 94eMIt0dIyjhs4F4jIQ1GWGT55XeCupedkYFOLZTpFpvrXhq9G0Agj96LR62Wcx6fTFs
+ xiVo2kTW1/ZgopJ1OfxUrkmmEThEud9IIp8KJjchWEJAV46INdfFZgqJhxJgMVn6qirT
+ BPzoHYALpjGYQZXt4x17F1KQnaY8XXS2Vuen1KqfREZoPwTPsOArF7pecLnrJWctsPIl
+ Oo9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=QpdzDwSrsWE9LXF201TGBe/ML0bWOkO30Z8/kF7nPbI=;
- b=WdFU+3zzbpr1h9QWhZK6ysO8YnQgN2uzCr8mObnQmQ4lngH0tt7fJpFMRPACnUdlWD
- 81SuOKWQP0M34arK+kZi5qZwWlmyzoVW82SoNxy3Ywrfey3W9I8QMBukYcVD9cEyy4IO
- kQ0Oj3eZHKzLdb3pmreGhrBNQXQTS6iqqzYt2J3gM4nhEMU8NY3ovYxn0tOknInVlqLU
- hGDkL3xVU8kj0KhV+zFCd1wwBs41nacfUGRdzcbmpCGN9nKNovGXusE2Vj5wAq55R6Fs
- +eAnmP++gSib8zbMpXP2sUiQeS779U9S9EpOwqX6qVplNUGfodnNTbuWY1P6nzCXAobx
- +d5A==
-X-Gm-Message-State: AA+aEWbjNppUPYo2CBVciAm/ASd6YB7AyluszTPJa7lUnnSMf3BXANmS
- dZy121P6tAr66Upk4bQH6Dg=
-X-Google-Smtp-Source: AFSGD/X7r9rnl1lgUNF7y1OGGMPqwJhmkVLN4/TzO8AAq32RmiBacasxsRfARiAyiD939uyB5i3dhg==
-X-Received: by 2002:a63:4b60:: with SMTP id k32mr422078pgl.186.1545162025672; 
- Tue, 18 Dec 2018 11:40:25 -0800 (PST)
+ bh=FFIR56EPPMtxpRI59NyRK3PwR1fe0YI9MbaLl494NEI=;
+ b=ro1fOGzxfr61M45GHmRLhDJslcC5NyGUrszHKdN7u2qj/W/C/ZklKsclyNRlQYNV6f
+ AFml/MihLGOZrSzryMRH9HDRLle/P/zjzq+tzh21ZMOFz0iCKFZu4TjhOBIiXZaH9uiY
+ QlYFoYiyrSIrgIXPHLcmzTKQKwnbGgtdBLKMXC16shxQh5lIIbW5f/XsRmEo9OTYz2Ja
+ jUb+SiUAzlTKDS1V0anxb75JJFkZ2hBLjrC13UiboQzBv1c2EkarRBENe/M2fMNEuxYu
+ SJonlm472I7dV1OPWivKaS0TjtG5dvgTgpPLgEoSivKZ72ch9nS9XGu4c1u2OES3k9x8
+ 693w==
+X-Gm-Message-State: AA+aEWZ6cVunHiFHeamtmOii/bhkA10buXoeEdhEPPH089GyoqFoelTA
+ +4ujIILIK30AK8JnNWdA1Gg=
+X-Google-Smtp-Source: AFSGD/XB5RxrA+Vo26Mis+VOsHyU9tLICH1XvHi0jMUo+CSL4elZ1+OfbPs5sTmWiZ1ddzmSKaS9ug==
+X-Received: by 2002:a62:de06:: with SMTP id h6mr18383172pfg.158.1545162024350; 
+ Tue, 18 Dec 2018 11:40:24 -0800 (PST)
 Received: from localhost.localdomain (c-24-6-192-50.hsd1.ca.comcast.net.
  [24.6.192.50])
- by smtp.gmail.com with ESMTPSA id b202sm29493069pfb.88.2018.12.18.11.40.24
+ by smtp.gmail.com with ESMTPSA id b202sm29493069pfb.88.2018.12.18.11.40.23
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Tue, 18 Dec 2018 11:40:25 -0800 (PST)
+ Tue, 18 Dec 2018 11:40:23 -0800 (PST)
 From: frowand.list@gmail.com
 To: robh+dt@kernel.org, Michael Bringmann <mwb@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/2] of: __of_detach_node() - remove node from phandle cache
-Date: Tue, 18 Dec 2018 11:40:03 -0800
-Message-Id: <1545162003-11577-3-git-send-email-frowand.list@gmail.com>
+Subject: [PATCH v3 1/2] of: of_node_get()/of_node_put() nodes held in phandle
+ cache
+Date: Tue, 18 Dec 2018 11:40:02 -0800
+Message-Id: <1545162003-11577-2-git-send-email-frowand.list@gmail.com>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1545162003-11577-1-git-send-email-frowand.list@gmail.com>
 References: <1545162003-11577-1-git-send-email-frowand.list@gmail.com>
@@ -103,17 +104,13 @@ Sender: "Linuxppc-dev"
 
 From: Frank Rowand <frank.rowand@sony.com>
 
-Non-overlay dynamic devicetree node removal may leave the node in
-the phandle cache.  Subsequent calls to of_find_node_by_phandle()
-will incorrectly find the stale entry.  Remove the node from the
-cache.
-
-Add paranoia checks in of_find_node_by_phandle() as a second level
-of defense (do not return cached node if detached, do not add node
-to cache if detached).
+The phandle cache contains struct device_node pointers.  The refcount
+of the pointers was not incremented while in the cache, allowing use
+after free error after kfree() of the node.  Add the proper increment
+and decrement of the use count.
 
 Fixes: 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of of_find_node_by_phandle()")
-Reported-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+
 Signed-off-by: Frank Rowand <frank.rowand@sony.com>
 ---
 
@@ -124,99 +121,125 @@ do not "cc: stable", unless the following commits are also in stable:
   commit 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of of_find_node_by_phandle()")
 
 
-Changes since v2:
-  - add temporary variable np in __of_free_phandle_cache_entry() to improve
-    readability
-  - explain reason for WARN_ON() in comment
-  - add Fixes tag in patch comment
-
- drivers/of/base.c       | 31 ++++++++++++++++++++++++++++++-
- drivers/of/dynamic.c    |  3 +++
- drivers/of/of_private.h |  4 ++++
- 3 files changed, 37 insertions(+), 1 deletion(-)
+ drivers/of/base.c | 70 ++++++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 6c33d63361b8..6d20b6dcf034 100644
+index 09692c9b32a7..6c33d63361b8 100644
 --- a/drivers/of/base.c
 +++ b/drivers/of/base.c
-@@ -162,6 +162,28 @@ int of_free_phandle_cache(void)
- late_initcall_sync(of_free_phandle_cache);
+@@ -116,9 +116,6 @@ int __weak of_node_to_nid(struct device_node *np)
+ }
  #endif
  
+-static struct device_node **phandle_cache;
+-static u32 phandle_cache_mask;
+-
+ /*
+  * Assumptions behind phandle_cache implementation:
+  *   - phandle property values are in a contiguous range of 1..n
+@@ -127,6 +124,44 @@ int __weak of_node_to_nid(struct device_node *np)
+  *   - the phandle lookup overhead reduction provided by the cache
+  *     will likely be less
+  */
++
++static struct device_node **phandle_cache;
++static u32 phandle_cache_mask;
++
 +/*
 + * Caller must hold devtree_lock.
 + */
-+void __of_free_phandle_cache_entry(phandle handle)
++static void __of_free_phandle_cache(void)
 +{
-+	phandle masked_handle;
-+	struct device_node *np;
++	u32 cache_entries = phandle_cache_mask + 1;
++	u32 k;
 +
-+	if (!handle)
++	if (!phandle_cache)
 +		return;
 +
-+	masked_handle = handle & phandle_cache_mask;
++	for (k = 0; k < cache_entries; k++)
++		of_node_put(phandle_cache[k]);
 +
-+	if (phandle_cache) {
-+		np = phandle_cache[masked_handle];
-+		if (np && handle == np->phandle) {
-+			of_node_put(np);
-+			phandle_cache[masked_handle] = NULL;
-+		}
-+	}
++	kfree(phandle_cache);
++	phandle_cache = NULL;
 +}
++
++int of_free_phandle_cache(void)
++{
++	unsigned long flags;
++
++	raw_spin_lock_irqsave(&devtree_lock, flags);
++
++	__of_free_phandle_cache();
++
++	raw_spin_unlock_irqrestore(&devtree_lock, flags);
++
++	return 0;
++}
++#if !defined(CONFIG_MODULES)
++late_initcall_sync(of_free_phandle_cache);
++#endif
 +
  void of_populate_phandle_cache(void)
  {
  	unsigned long flags;
-@@ -1209,11 +1231,18 @@ struct device_node *of_find_node_by_phandle(phandle handle)
- 		if (phandle_cache[masked_handle] &&
- 		    handle == phandle_cache[masked_handle]->phandle)
- 			np = phandle_cache[masked_handle];
-+		if (np && of_node_check_flag(np, OF_DETACHED)) {
-+			WARN_ON(1); /* did not uncache np on node removal */
-+			of_node_put(np);
-+			phandle_cache[masked_handle] = NULL;
-+			np = NULL;
+@@ -136,8 +171,7 @@ void of_populate_phandle_cache(void)
+ 
+ 	raw_spin_lock_irqsave(&devtree_lock, flags);
+ 
+-	kfree(phandle_cache);
+-	phandle_cache = NULL;
++	__of_free_phandle_cache();
+ 
+ 	for_each_of_allnodes(np)
+ 		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
+@@ -155,30 +189,15 @@ void of_populate_phandle_cache(void)
+ 		goto out;
+ 
+ 	for_each_of_allnodes(np)
+-		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL)
++		if (np->phandle && np->phandle != OF_PHANDLE_ILLEGAL) {
++			of_node_get(np);
+ 			phandle_cache[np->phandle & phandle_cache_mask] = np;
 +		}
- 	}
  
- 	if (!np) {
- 		for_each_of_allnodes(np)
--			if (np->phandle == handle) {
-+			if (np->phandle == handle &&
-+			    !of_node_check_flag(np, OF_DETACHED)) {
- 				if (phandle_cache) {
- 					/* will put when removed from cache */
- 					of_node_get(np);
-diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
-index f4f8ed9b5454..ecea92f68c87 100644
---- a/drivers/of/dynamic.c
-+++ b/drivers/of/dynamic.c
-@@ -268,6 +268,9 @@ void __of_detach_node(struct device_node *np)
- 	}
- 
- 	of_node_set_flag(np, OF_DETACHED);
-+
-+	/* race with of_find_node_by_phandle() prevented by devtree_lock */
-+	__of_free_phandle_cache_entry(np->phandle);
+ out:
+ 	raw_spin_unlock_irqrestore(&devtree_lock, flags);
  }
  
- /**
-diff --git a/drivers/of/of_private.h b/drivers/of/of_private.h
-index 5d1567025358..24786818e32e 100644
---- a/drivers/of/of_private.h
-+++ b/drivers/of/of_private.h
-@@ -84,6 +84,10 @@ static inline void __of_detach_node_sysfs(struct device_node *np) {}
- int of_resolve_phandles(struct device_node *tree);
- #endif
- 
-+#if defined(CONFIG_OF_DYNAMIC)
-+void __of_free_phandle_cache_entry(phandle handle);
-+#endif
-+
- #if defined(CONFIG_OF_OVERLAY)
- void of_overlay_mutex_lock(void);
- void of_overlay_mutex_unlock(void);
+-int of_free_phandle_cache(void)
+-{
+-	unsigned long flags;
+-
+-	raw_spin_lock_irqsave(&devtree_lock, flags);
+-
+-	kfree(phandle_cache);
+-	phandle_cache = NULL;
+-
+-	raw_spin_unlock_irqrestore(&devtree_lock, flags);
+-
+-	return 0;
+-}
+-#if !defined(CONFIG_MODULES)
+-late_initcall_sync(of_free_phandle_cache);
+-#endif
+-
+ void __init of_core_init(void)
+ {
+ 	struct device_node *np;
+@@ -1195,8 +1214,11 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+ 	if (!np) {
+ 		for_each_of_allnodes(np)
+ 			if (np->phandle == handle) {
+-				if (phandle_cache)
++				if (phandle_cache) {
++					/* will put when removed from cache */
++					of_node_get(np);
+ 					phandle_cache[masked_handle] = np;
++				}
+ 				break;
+ 			}
+ 	}
 -- 
 Frank Rowand <frank.rowand@sony.com>
 
