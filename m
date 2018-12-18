@@ -3,47 +3,47 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DB10C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:36:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E82E3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:38:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAFA321873
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:36:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAFA321873
+	by mail.kernel.org (Postfix) with ESMTPS id 64E942184C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:38:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 64E942184C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KDtc48cFzDqWs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 10:36:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KDx13ykZzDqf8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 10:38:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43KDqr6Y89zDqZR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 10:34:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43KDsW2hnCzDqc3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 10:35:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43KDqq5fXbz9s3Z;
- Wed, 19 Dec 2018 10:33:59 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43KDsW17cqz9s7W;
+ Wed, 19 Dec 2018 10:35:27 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH kernel v5 03/20] powerpc/vfio/iommu/kvm: Do not pin device
- memory
-In-Reply-To: <20181213061734.16651-4-aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v5 10/20] powerpc/iommu_api: Move IOMMU groups
+ setup to a single place
+In-Reply-To: <20181213061734.16651-11-aik@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
- <20181213061734.16651-4-aik@ozlabs.ru>
-Date: Wed, 19 Dec 2018 10:33:57 +1100
-Message-ID: <87va3qs93u.fsf@concordia.ellerman.id.au>
+ <20181213061734.16651-11-aik@ozlabs.ru>
+Date: Wed, 19 Dec 2018 10:35:27 +1100
+Message-ID: <87sgyus91c.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,49 +70,52 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index f0dc680..cbcc615 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -993,15 +994,19 @@ int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
->  }
->  EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
->  
-> -long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
-> -		unsigned long *hpa, enum dma_data_direction *direction)
-> +long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
-> +		unsigned long entry, unsigned long *hpa,
-> +		enum dma_data_direction *direction)
->  {
->  	long ret;
-> +	unsigned long size = 0;
->  
->  	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
->  
->  	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
-> -			(*direction == DMA_BIDIRECTIONAL)))
-> +			(*direction == DMA_BIDIRECTIONAL)) &&
-> +			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift,
-> +					&size))
 
-This is breaking a bunch of configs with:
-
-  arch/powerpc/kernel/iommu.c:1008:5: error: implicit declaration of function 'mm_iommu_is_devmem'; did you mean 'iommu_del_device'? [-Werror=implicit-function-declaration]
-
-eg: http://kisskb.ellerman.id.au/kisskb/buildresult/13623063/
-
-> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-> index 25a4b7f7..06fdbd3 100644
-> --- a/arch/powerpc/mm/mmu_context_iommu.c
-> +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> @@ -384,6 +432,33 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned long ua)
->  	*pa |= MM_IOMMU_TABLE_GROUP_PAGE_DIRTY;
->  }
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index b86a6e0..1168b185 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2735,12 +2733,68 @@ static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
+>  	.release_ownership = pnv_ioda2_release_ownership,
+>  };
 >  
-> +extern bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
-> +		unsigned int pageshift, unsigned long *size)
+> +static void pnv_ioda_setup_bus_iommu_group_add_devices(struct pnv_ioda_pe *pe,
+> +		struct pci_bus *bus)
 > +{
+> +	struct pci_dev *dev;
+> +
+> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+> +		iommu_add_device(&pe->table_group, &dev->dev);
+> +
+> +		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+> +			pnv_ioda_setup_bus_iommu_group_add_devices(pe,
+> +					dev->subordinate);
+> +	}
+> +}
+> +
+> +static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe)
+> +{
+> +	if (!pnv_pci_ioda_pe_dma_weight(pe))
+> +		return;
+> +
+> +	iommu_register_group(&pe->table_group, pe->phb->hose->global_number,
+> +			pe->pe_number);
+> +
+> +	/*
+> +	 * set_iommu_table_base(&pe->pdev->dev, tbl) should have been called
+> +	 * by now
+> +	 */
+> +	if (pe->flags & PNV_IODA_PE_DEV)
+> +		iommu_add_device(&pe->table_group, &pe->pdev->dev);
+> +	else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+> +		pnv_ioda_setup_bus_iommu_group_add_devices(pe, pe->pbus);
+> +}
+> +
 
-You shouldn't need extern in a C file.
+This breaks skiroot_defconfig with:
+
+arch/powerpc/platforms/powernv/pci-ioda.c:2731:13: error: 'pnv_ioda_setup_bus_iommu_group' defined but not used [-Werror=unused-function]
+
+  http://kisskb.ellerman.id.au/kisskb/buildresult/13623033/
 
 cheers
