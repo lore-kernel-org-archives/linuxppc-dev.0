@@ -2,60 +2,50 @@ Return-Path: <SRS0=nim+=O3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC8C8C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 22:39:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DB10C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:36:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C85892184C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 22:39:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C85892184C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id BAFA321873
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Dec 2018 23:36:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAFA321873
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KCcg5V6czDqdf
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:39:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KDtc48cFzDqWs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 10:36:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43KCZG09PJzDqXm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 09:37:08 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43KDqr6Y89zDqZR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 10:34:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id EF5672C976D;
- Tue, 18 Dec 2018 22:37:04 +0000 (UTC)
-Received: from x1.home (ovpn-116-92.phx2.redhat.com [10.3.116.92])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 8CD325DD65;
- Tue, 18 Dec 2018 22:37:02 +0000 (UTC)
-Date: Tue, 18 Dec 2018 15:37:01 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v5 20/20] vfio_pci: Add NVIDIA GV100GL [Tesla
- V100 SXM2] subdriver
-Message-ID: <20181218153701.56ef37de@x1.home>
-In-Reply-To: <20181213061734.16651-21-aik@ozlabs.ru>
+ by ozlabs.org (Postfix) with ESMTPSA id 43KDqq5fXbz9s3Z;
+ Wed, 19 Dec 2018 10:33:59 +1100 (AEDT)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH kernel v5 03/20] powerpc/vfio/iommu/kvm: Do not pin device
+ memory
+In-Reply-To: <20181213061734.16651-4-aik@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
- <20181213061734.16651-21-aik@ozlabs.ru>
-Organization: Red Hat
+ <20181213061734.16651-4-aik@ozlabs.ru>
+Date: Wed, 19 Dec 2018 10:33:57 +1100
+Message-ID: <87va3qs93u.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.29]); Tue, 18 Dec 2018 22:37:06 +0000 (UTC)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,317 +58,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Leonardo Augusto =?UTF-8?B?R3VpbWFyw6Nlcw==?= Garcia <lagarcia@br.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Alistair Popple <alistair@popple.id.au>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ Piotr Jaroszynski <pjaroszynski@nvidia.com>, kvm-ppc@vger.kernel.org,
+ Sam Bobroff <sbobroff@linux.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Leonardo Augusto =?utf-8?Q?Guimar=C3=A3es?= Garcia <lagarcia@br.ibm.com>,
  Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 13 Dec 2018 17:17:34 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> POWER9 Witherspoon machines come with 4 or 6 V100 GPUs which are not
-> pluggable PCIe devices but still have PCIe links which are used
-> for config space and MMIO. In addition to that the GPUs have 6 NVLinks
-> which are connected to other GPUs and the POWER9 CPU. POWER9 chips
-> have a special unit on a die called an NPU which is an NVLink2 host bus
-> adapter with p2p connections to 2 to 3 GPUs, 3 or 2 NVLinks to each.
-> These systems also support ATS (address translation services) which is
-> a part of the NVLink2 protocol. Such GPUs also share on-board RAM
-> (16GB or 32GB) to the system via the same NVLink2 so a CPU has
-> cache-coherent access to a GPU RAM.
-> 
-> This exports GPU RAM to the userspace as a new VFIO device region. This
-> preregisters the new memory as device memory as it might be used for DMA.
-> This inserts pfns from the fault handler as the GPU memory is not onlined
-> until the vendor driver is loaded and trained the NVLinks so doing this
-> earlier causes low level errors which we fence in the firmware so
-> it does not hurt the host system but still better be avoided; for the same
-> reason this does not map GPU RAM into the host kernel (usual thing for
-> emulated access otherwise).
-> 
-> This exports an ATSD (Address Translation Shootdown) register of NPU which
-> allows TLB invalidations inside GPU for an operating system. The register
-> conveniently occupies a single 64k page. It is also presented to
-> the userspace as a new VFIO device region. One NPU has 8 ATSD registers,
-> each of them can be used for TLB invalidation in a GPU linked to this NPU.
-> This allocates one ATSD register per an NVLink bridge allowing passing
-> up to 6 registers. Due to the host firmware bug (just recently fixed),
-> only 1 ATSD register per NPU was actually advertised to the host system
-> so this passes that alone register via the first NVLink bridge device in
-> the group which is still enough as QEMU collects them all back and
-> presents to the guest via vPHB to mimic the emulated NPU PHB on the host.
-> 
-> In order to provide the userspace with the information about GPU-to-NVLink
-> connections, this exports an additional capability called "tgt"
-> (which is an abbreviated host system bus address). The "tgt" property
-> tells the GPU its own system address and allows the guest driver to
-> conglomerate the routing information so each GPU knows how to get directly
-> to the other GPUs.
-> 
-> For ATS to work, the nest MMU (an NVIDIA block in a P9 CPU) needs to
-> know LPID (a logical partition ID or a KVM guest hardware ID in other
-> words) and PID (a memory context ID of a userspace process, not to be
-> confused with a linux pid). This assigns a GPU to LPID in the NPU and
-> this is why this adds a listener for KVM on an IOMMU group. A PID comes
-> via NVLink from a GPU and NPU uses a PID wildcard to pass it through.
-> 
-> This requires coherent memory and ATSD to be available on the host as
-> the GPU vendor only supports configurations with both features enabled
-> and other configurations are known not to work. Because of this and
-> because of the ways the features are advertised to the host system
-> (which is a device tree with very platform specific properties),
-> this requires enabled POWERNV platform.
-> 
-> The V100 GPUs do not advertise any of these capabilities via the config
-> space and there are more than just one device ID so this relies on
-> the platform to tell whether these GPUs have special abilities such as
-> NVLinks.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v5:
-> * do not memremap GPU RAM for emulation, map it only when it is needed
-> * allocate 1 ATSD register per NVLink bridge, if none left, then expose
-> the region with a zero size
-> * separate caps per device type
-> * addressed AW review comments
-> 
-> v4:
-> * added nvlink-speed to the NPU bridge capability as this turned out to
-> be not a constant value
-> * instead of looking at the exact device ID (which also changes from system
-> to system), now this (indirectly) looks at the device tree to know
-> if GPU and NPU support NVLink
-> 
-> v3:
-> * reworded the commit log about tgt
-> * added tracepoints (do we want them enabled for entire vfio-pci?)
-> * added code comments
-> * added write|mmap flags to the new regions
-> * auto enabled VFIO_PCI_NVLINK2 config option
-> * added 'tgt' capability to a GPU so QEMU can recreate ibm,npu and ibm,gpu
-> references; there are required by the NVIDIA driver
-> * keep notifier registered only for short time
-> ---
->  drivers/vfio/pci/Makefile           |   1 +
->  drivers/vfio/pci/trace.h            | 102 ++++++
->  drivers/vfio/pci/vfio_pci_private.h |  14 +
->  include/uapi/linux/vfio.h           |  39 +++
->  drivers/vfio/pci/vfio_pci.c         |  27 +-
->  drivers/vfio/pci/vfio_pci_nvlink2.c | 473 ++++++++++++++++++++++++++++
->  drivers/vfio/pci/Kconfig            |   6 +
->  7 files changed, 660 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/vfio/pci/trace.h
->  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
-> 
-> diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
-> index 76d8ec0..9662c06 100644
-> --- a/drivers/vfio/pci/Makefile
-> +++ b/drivers/vfio/pci/Makefile
-> @@ -1,5 +1,6 @@
->  
->  vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
->  vfio-pci-$(CONFIG_VFIO_PCI_IGD) += vfio_pci_igd.o
-> +vfio-pci-$(CONFIG_VFIO_PCI_NVLINK2) += vfio_pci_nvlink2.o
->  
->  obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
-> diff --git a/drivers/vfio/pci/trace.h b/drivers/vfio/pci/trace.h
-> new file mode 100644
-> index 0000000..b80d2d3
-> --- /dev/null
-> +++ b/drivers/vfio/pci/trace.h
-> @@ -0,0 +1,102 @@
-> +/* SPDX-License-Identifier: GPL-2.0+ */
-> +/*
-> + * VFIO PCI mmap/mmap_fault tracepoints
-> + *
-> + * Copyright (C) 2018 IBM Corp.  All rights reserved.
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM vfio_pci
-> +
-> +#if !defined(_TRACE_VFIO_PCI_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_VFIO_PCI_H
-> +
-> +#include <linux/tracepoint.h>
-> +
-> +TRACE_EVENT(vfio_pci_nvgpu_mmap_fault,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			vm_fault_t ret),
-> +	TP_ARGS(pdev, hpa, ua, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->ret)
-> +);
-> +
-> +TRACE_EVENT(vfio_pci_nvgpu_mmap,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			unsigned long size, int ret),
-> +	TP_ARGS(pdev, hpa, ua, size, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(unsigned long, size)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->size = size;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->size, __entry->ret)
-> +);
-> +
-> +TRACE_EVENT(vfio_pci_npu2_mmap,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			unsigned long size, int ret),
-> +	TP_ARGS(pdev, hpa, ua, size, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(unsigned long, size)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->size = size;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->size, __entry->ret)
-> +);
-> +
-> +#endif /* _TRACE_SUBSYS_H */
-> +
-> +#undef TRACE_INCLUDE_PATH
-> +#define TRACE_INCLUDE_PATH .
-> +#undef TRACE_INCLUDE_FILE
-> +#define TRACE_INCLUDE_FILE trace
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
-> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
-> index 93c1738..127071b 100644
-> --- a/drivers/vfio/pci/vfio_pci_private.h
-> +++ b/drivers/vfio/pci/vfio_pci_private.h
-> @@ -163,4 +163,18 @@ static inline int vfio_pci_igd_init(struct vfio_pci_device *vdev)
->  	return -ENODEV;
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index f0dc680..cbcc615 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -993,15 +994,19 @@ int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
 >  }
->  #endif
-> +#ifdef CONFIG_VFIO_PCI_NVLINK2
-> +extern int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev);
-> +extern int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev);
-> +#else
-> +static inline int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
-> +{
-> +	return -ENODEV;
-> +}
-> +
-> +static inline int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
-> +{
-> +	return -ENODEV;
-> +}
-> +#endif
->  #endif /* VFIO_PCI_PRIVATE_H */
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index 8131028..ce28d39 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -353,6 +353,21 @@ struct vfio_region_gfx_edid {
->  #define VFIO_DEVICE_GFX_LINK_STATE_DOWN  2
->  };
+>  EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
 >  
-> +/*
-> + * 10de vendor sub-type
-> + *
-> + * NVIDIA GPU NVlink2 RAM is coherent RAM mapped onto the host address space.
-> + */
-> +#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM	(1)
-> +
-> +/*
-> + * 1014 vendor sub-type
-> + *
-> + * IBM NPU NVlink2 ATSD (Address Translation Shootdown) register of NPU
-> + * to do TLB invalidation on a GPU.
-> + */
-> +#define VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD	(1)
-> +
->  /*
->   * The MSIX mappable capability informs that MSIX data of a BAR can be mmapped
->   * which allows direct access to non-MSIX registers which happened to be within
-> @@ -363,6 +378,30 @@ struct vfio_region_gfx_edid {
->   */
->  #define VFIO_REGION_INFO_CAP_MSIX_MAPPABLE	3
+> -long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+> -		unsigned long *hpa, enum dma_data_direction *direction)
+> +long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
+> +		unsigned long entry, unsigned long *hpa,
+> +		enum dma_data_direction *direction)
+>  {
+>  	long ret;
+> +	unsigned long size = 0;
 >  
-> +/*
-> + * Capability with compressed real address (aka SSA - small system address)
-> + * where GPU RAM is mapped on a system bus. Used by a GPU for DMA routing.
-> + */
-> +#define VFIO_REGION_INFO_CAP_NVIDIA_NVLINK2	4
-> +
-> +struct vfio_region_info_cap_nvidia_nvlink2 {
-> +	struct vfio_info_cap_header header;
-> +	__u64 tgt;
-> +};
-> +
-> +/*
-> + * Capability with compressed real address (aka SSA - small system address),
-> + * used to match the NVLink bridge with a GPU. Also contains a link speed.
-> + */
-> +#define VFIO_REGION_INFO_CAP_IBM_NPU2		5
-> +
-> +struct vfio_region_info_cap_ibm_npu2 {
-> +	struct vfio_info_cap_header header;
-> +	__u64 tgt;
-> +	__u32 link_speed;
-> +	__u32 __pad;
-> +};
+>  	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
+>  
+>  	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+> -			(*direction == DMA_BIDIRECTIONAL)))
+> +			(*direction == DMA_BIDIRECTIONAL)) &&
+> +			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift,
+> +					&size))
 
-Another option here would be to have one capability expose tgt used by
-both devices and another capability expose link_speed used only by the
-NPU.  Perhaps VFIO_REGION_INFO_CAP_NVLINK2_SSATGT and
-VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD.  We don't necessarily need to make
-each capability specific to a device and we can stack multiple
-together.  Is there some association between tgt and link_speed that
-requires them together?  We could also simply expose the link_speed as
-a __u64 rather than introduce padding.  Thanks,
+This is breaking a bunch of configs with:
 
-Alex
+  arch/powerpc/kernel/iommu.c:1008:5: error: implicit declaration of function 'mm_iommu_is_devmem'; did you mean 'iommu_del_device'? [-Werror=implicit-function-declaration]
+
+eg: http://kisskb.ellerman.id.au/kisskb/buildresult/13623063/
+
+> diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+> index 25a4b7f7..06fdbd3 100644
+> --- a/arch/powerpc/mm/mmu_context_iommu.c
+> +++ b/arch/powerpc/mm/mmu_context_iommu.c
+> @@ -384,6 +432,33 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned long ua)
+>  	*pa |= MM_IOMMU_TABLE_GROUP_PAGE_DIRTY;
+>  }
+>  
+> +extern bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+> +		unsigned int pageshift, unsigned long *size)
+> +{
+
+You shouldn't need extern in a C file.
+
+cheers
