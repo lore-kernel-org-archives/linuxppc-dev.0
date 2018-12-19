@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD986C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 08:59:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25E2EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:02:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0A2EA20656
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 08:59:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A2EA20656
+	by mail.kernel.org (Postfix) with ESMTPS id 97E0320874
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:02:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97E0320874
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KTMy1sl1zDqly
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 19:59:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KTRm44wXzDqjN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:02:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43KTDc6fNnzDqjj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:52:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43KTDk4cmRzDqkK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:52:54 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id D2B20AE802F9;
- Wed, 19 Dec 2018 03:52:44 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id E7332AE8032F;
+ Wed, 19 Dec 2018 03:52:50 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 03/20] powerpc/vfio/iommu/kvm: Do not pin device
- memory
-Date: Wed, 19 Dec 2018 19:52:15 +1100
-Message-Id: <20181219085232.103441-4-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 05/20] powerpc/powernv/npu: Move OPAL calls away
+ from context manipulation
+Date: Wed, 19 Dec 2018 19:52:17 +1100
+Message-Id: <20181219085232.103441-6-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181219085232.103441-1-aik@ozlabs.ru>
 References: <20181219085232.103441-1-aik@ozlabs.ru>
@@ -64,497 +64,332 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This new memory does not have page structs as it is not plugged to
-the host so gup() will fail anyway.
+When introduced, the NPU context init/destroy helpers called OPAL which
+enabled/disabled PID (a userspace memory context ID) filtering in an NPU
+per a GPU; this was a requirement for P9 DD1.0. However newer chip
+revision added a PID wildcard support so there is no more need to
+call OPAL every time a new context is initialized. Also, since the PID
+wildcard support was added, skiboot does not clear wildcard entries
+in the NPU so these remain in the hardware till the system reboot.
 
-This adds 2 helpers:
-- mm_iommu_newdev() to preregister the "memory device" memory so
-the rest of API can still be used;
-- mm_iommu_is_devmem() to know if the physical address is one of thise
-new regions which we must avoid unpinning of.
+This moves LPID and wildcard programming to the PE setup code which
+executes once during the booting process so NPU2 context init/destroy
+won't need to do additional configuration.
 
-This adds @mm to tce_page_is_contained() and iommu_tce_xchg() to test
-if the memory is device memory to avoid pfn_to_page().
+This replaces the check for FW_FEATURE_OPAL with a check for npu!=NULL as
+this is the way to tell if the NPU support is present and configured.
 
-This adds a check for device memory in mm_iommu_ua_mark_dirty_rm() which
-does delayed pages dirtying.
+This moves pnv_npu2_init() declaration as pseries should be able to use it.
+This keeps pnv_npu2_map_lpar() in powernv as pseries is not allowed to
+call that. This exports pnv_npu2_map_lpar_dev() as following patches
+will use it from the VFIO driver.
+
+While at it, replace redundant list_for_each_entry_safe() with
+a simpler list_for_each_entry().
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
 Changes:
-v6:
-* added dummy mm_iommu_is_devmem() for !CONFIG_SPAPR_TCE_IOMMU
-* removed "extern" from c file
-
 v5:
-* mm_iommu_is_devmem() now returns the actual size which might me smaller
-than the pageshift so  tce_page_is_contained() won't do pfn_to_page()
-if @hpa..@hpa+64K is preregistered but page_shift is bigger than 16
-* removed David's r-by because of the change in mm_iommu_is_devmem
+* add few checks for npu!=NULL
 
 v4:
-* added device memory check in the real mode path
+* add flags check in pnv_npu2_init_context()
 ---
- arch/powerpc/include/asm/iommu.h       |  5 +-
- arch/powerpc/include/asm/mmu_context.h | 11 +++
- arch/powerpc/kernel/iommu.c            | 11 ++-
- arch/powerpc/kvm/book3s_64_vio.c       | 18 ++---
- arch/powerpc/mm/mmu_context_iommu.c    | 93 +++++++++++++++++++++++---
- drivers/vfio/vfio_iommu_spapr_tce.c    | 29 +++++---
- 6 files changed, 135 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/pci.h            |   3 +
+ arch/powerpc/platforms/powernv/pci.h      |   2 +-
+ arch/powerpc/platforms/powernv/npu-dma.c  | 111 ++++++++++++----------
+ arch/powerpc/platforms/powernv/pci-ioda.c |  15 ++-
+ 4 files changed, 77 insertions(+), 54 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 35db0cb..a8aeac0 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -218,8 +218,9 @@ extern void iommu_register_group(struct iommu_table_group *table_group,
- extern int iommu_add_device(struct device *dev);
- extern void iommu_del_device(struct device *dev);
- extern int __init tce_iommu_bus_notifier_init(void);
--extern long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
--		unsigned long *hpa, enum dma_data_direction *direction);
-+extern long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
-+		unsigned long entry, unsigned long *hpa,
-+		enum dma_data_direction *direction);
- #else
- static inline void iommu_register_group(struct iommu_table_group *table_group,
- 					int pci_domain_number,
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 268e112..c50bd6a 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -24,6 +24,9 @@ extern bool mm_iommu_preregistered(struct mm_struct *mm);
- extern long mm_iommu_new(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries,
- 		struct mm_iommu_table_group_mem_t **pmem);
-+extern long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
-+		unsigned long entries, unsigned long dev_hpa,
-+		struct mm_iommu_table_group_mem_t **pmem);
- extern long mm_iommu_put(struct mm_struct *mm,
- 		struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_init(struct mm_struct *mm);
-@@ -39,8 +42,16 @@ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
- extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned long ua);
-+extern bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
-+		unsigned int pageshift, unsigned long *size);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
-+#else
-+static inline bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
-+		unsigned int pageshift, unsigned long *size)
-+{
-+	return false;
-+}
- #endif
- extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
- extern void set_context(unsigned long id, pgd_t *pgd);
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index f0dc680..cbcc615 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -47,6 +47,7 @@
- #include <asm/fadump.h>
- #include <asm/vio.h>
- #include <asm/tce.h>
-+#include <asm/mmu_context.h>
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index 2af9ded..baf2886 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -129,5 +129,8 @@ extern void pcibios_scan_phb(struct pci_controller *hose);
  
- #define DBG(...)
+ extern struct pci_dev *pnv_pci_get_gpu_dev(struct pci_dev *npdev);
+ extern struct pci_dev *pnv_pci_get_npu_dev(struct pci_dev *gpdev, int index);
++extern int pnv_npu2_init(struct pci_controller *hose);
++extern int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
++		unsigned long msr);
  
-@@ -993,15 +994,19 @@ int iommu_tce_check_gpa(unsigned long page_shift, unsigned long gpa)
- }
- EXPORT_SYMBOL_GPL(iommu_tce_check_gpa);
+ #endif /* __ASM_POWERPC_PCI_H */
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index f2d50974..ddb4f02 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -190,6 +190,7 @@ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_init_npu_phb(struct device_node *np);
+ extern void pnv_pci_init_npu2_opencapi_phb(struct device_node *np);
++extern void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr);
+ extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
+ extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
  
--long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
--		unsigned long *hpa, enum dma_data_direction *direction)
-+long iommu_tce_xchg(struct mm_struct *mm, struct iommu_table *tbl,
-+		unsigned long entry, unsigned long *hpa,
-+		enum dma_data_direction *direction)
- {
- 	long ret;
-+	unsigned long size = 0;
+@@ -220,7 +221,6 @@ extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ extern long pnv_npu_unset_window(struct pnv_ioda_pe *npe, int num);
+ extern void pnv_npu_take_ownership(struct pnv_ioda_pe *npe);
+ extern void pnv_npu_release_ownership(struct pnv_ioda_pe *npe);
+-extern int pnv_npu2_init(struct pnv_phb *phb);
  
- 	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
+ /* pci-ioda-tce.c */
+ #define POWERNV_IOMMU_DEFAULT_LEVELS	1
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 5e66439..ef1457f 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -512,6 +512,9 @@ static void acquire_atsd_reg(struct npu_context *npu_context,
+ 				continue;
  
- 	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
--			(*direction == DMA_BIDIRECTIONAL)))
-+			(*direction == DMA_BIDIRECTIONAL)) &&
-+			!mm_iommu_is_devmem(mm, *hpa, tbl->it_page_shift,
-+					&size))
- 		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
- 
- 	/* if (unlikely(ret))
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 62a8d03..532ab797 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -397,12 +397,13 @@ static long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *stt,
- 	return H_SUCCESS;
- }
- 
--static void kvmppc_clear_tce(struct iommu_table *tbl, unsigned long entry)
-+static void kvmppc_clear_tce(struct mm_struct *mm, struct iommu_table *tbl,
-+		unsigned long entry)
- {
- 	unsigned long hpa = 0;
- 	enum dma_data_direction dir = DMA_NONE;
- 
--	iommu_tce_xchg(tbl, entry, &hpa, &dir);
-+	iommu_tce_xchg(mm, tbl, entry, &hpa, &dir);
- }
- 
- static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
-@@ -433,7 +434,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
- 	unsigned long hpa = 0;
- 	long ret;
- 
--	if (WARN_ON_ONCE(iommu_tce_xchg(tbl, entry, &hpa, &dir)))
-+	if (WARN_ON_ONCE(iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir)))
- 		return H_TOO_HARD;
- 
- 	if (dir == DMA_NONE)
-@@ -441,7 +442,7 @@ static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
- 
- 	ret = kvmppc_tce_iommu_mapped_dec(kvm, tbl, entry);
- 	if (ret != H_SUCCESS)
--		iommu_tce_xchg(tbl, entry, &hpa, &dir);
-+		iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir);
- 
- 	return ret;
- }
-@@ -487,7 +488,7 @@ long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 	if (mm_iommu_mapped_inc(mem))
- 		return H_TOO_HARD;
- 
--	ret = iommu_tce_xchg(tbl, entry, &hpa, &dir);
-+	ret = iommu_tce_xchg(kvm->mm, tbl, entry, &hpa, &dir);
- 	if (WARN_ON_ONCE(ret)) {
- 		mm_iommu_mapped_dec(mem);
- 		return H_TOO_HARD;
-@@ -566,7 +567,7 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 					entry, ua, dir);
- 
- 		if (ret != H_SUCCESS) {
--			kvmppc_clear_tce(stit->tbl, entry);
-+			kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl, entry);
- 			goto unlock_exit;
- 		}
- 	}
-@@ -655,7 +656,8 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 					iommu_tce_direction(tce));
- 
- 			if (ret != H_SUCCESS) {
--				kvmppc_clear_tce(stit->tbl, entry);
-+				kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl,
-+						entry);
- 				goto unlock_exit;
- 			}
- 		}
-@@ -704,7 +706,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
- 				return ret;
- 
- 			WARN_ON_ONCE(1);
--			kvmppc_clear_tce(stit->tbl, entry);
-+			kvmppc_clear_tce(vcpu->kvm->mm, stit->tbl, entry);
- 		}
- 	}
- 
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 25a4b7f7..dd9f1ca 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -47,6 +47,8 @@ struct mm_iommu_table_group_mem_t {
- 		struct page **hpages;	/* vmalloc'ed */
- 		phys_addr_t *hpas;
- 	};
-+#define MM_IOMMU_TABLE_INVALID_HPA	((uint64_t)-1)
-+	u64 dev_hpa;		/* Device memory base address */
- };
- 
- static long mm_iommu_adjust_locked_vm(struct mm_struct *mm,
-@@ -89,7 +91,8 @@ bool mm_iommu_preregistered(struct mm_struct *mm)
- }
- EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
- 
--long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
-+static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
-+		unsigned long entries, unsigned long dev_hpa,
- 		struct mm_iommu_table_group_mem_t **pmem)
- {
- 	struct mm_iommu_table_group_mem_t *mem;
-@@ -110,11 +113,13 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 
- 	}
- 
--	ret = mm_iommu_adjust_locked_vm(mm, entries, true);
--	if (ret)
--		goto unlock_exit;
-+	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA) {
-+		ret = mm_iommu_adjust_locked_vm(mm, entries, true);
-+		if (ret)
-+			goto unlock_exit;
- 
--	locked_entries = entries;
-+		locked_entries = entries;
-+	}
- 
- 	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
- 	if (!mem) {
-@@ -122,6 +127,13 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		goto unlock_exit;
- 	}
- 
-+	if (dev_hpa != MM_IOMMU_TABLE_INVALID_HPA) {
-+		mem->pageshift = __ffs(dev_hpa | (entries << PAGE_SHIFT));
-+		mem->dev_hpa = dev_hpa;
-+		goto good_exit;
-+	}
-+	mem->dev_hpa = MM_IOMMU_TABLE_INVALID_HPA;
+ 			npu = pci_bus_to_host(npdev->bus)->npu;
++			if (!npu)
++				continue;
 +
+ 			mmio_atsd_reg[i].npu = npu;
+ 			mmio_atsd_reg[i].reg = get_mmio_atsd_reg(npu);
+ 			while (mmio_atsd_reg[i].reg < 0) {
+@@ -676,7 +679,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	u32 nvlink_index;
+ 	struct device_node *nvlink_dn;
+ 	struct mm_struct *mm = current->mm;
+-	struct pnv_phb *nphb;
+ 	struct npu *npu;
+ 	struct npu_context *npu_context;
+ 	struct pci_controller *hose;
+@@ -687,13 +689,14 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	 */
+ 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+ 
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return ERR_PTR(-ENODEV);
+-
+ 	if (!npdev)
+ 		/* No nvlink associated with this GPU device */
+ 		return ERR_PTR(-ENODEV);
+ 
++	/* We only support DR/PR/HV in pnv_npu2_map_lpar_dev() */
++	if (flags & ~(MSR_DR | MSR_PR | MSR_HV))
++		return ERR_PTR(-EINVAL);
++
+ 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+ 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+ 							&nvlink_index)))
+@@ -708,20 +711,9 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 	}
+ 
+ 	hose = pci_bus_to_host(npdev->bus);
+-	nphb = hose->private_data;
+ 	npu = hose->npu;
+-
+-	/*
+-	 * Setup the NPU context table for a particular GPU. These need to be
+-	 * per-GPU as we need the tables to filter ATSDs when there are no
+-	 * active contexts on a particular GPU. It is safe for these to be
+-	 * called concurrently with destroy as the OPAL call takes appropriate
+-	 * locks and refcounts on init/destroy.
+-	 */
+-	rc = opal_npu_init_context(nphb->opal_id, mm->context.id, flags,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+-	if (rc < 0)
+-		return ERR_PTR(-ENOSPC);
++	if (!npu)
++		return ERR_PTR(-ENODEV);
+ 
  	/*
- 	 * For a starting point for a maximum page size calculation
- 	 * we use @ua and @entries natural alignment to allow IOMMU pages
-@@ -170,6 +182,7 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 	 * We store the npu pci device so we can more easily get at the
+@@ -733,9 +725,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
+ 		if (npu_context->release_cb != cb ||
+ 			npu_context->priv != priv) {
+ 			spin_unlock(&npu_context_lock);
+-			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+-						PCI_DEVID(gpdev->bus->number,
+-							gpdev->devfn));
+ 			return ERR_PTR(-EINVAL);
+ 		}
  
- 	}
+@@ -761,9 +750,6 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
  
-+good_exit:
- 	atomic64_set(&mem->mapped, 1);
- 	mem->used = 1;
- 	mem->ua = ua;
-@@ -186,13 +199,31 @@ long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 		if (rc) {
+ 			kfree(npu_context);
+-			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
+-					PCI_DEVID(gpdev->bus->number,
+-						gpdev->devfn));
+ 			return ERR_PTR(rc);
+ 		}
  
- 	return ret;
- }
-+
-+long mm_iommu_new(struct mm_struct *mm, unsigned long ua, unsigned long entries,
-+		struct mm_iommu_table_group_mem_t **pmem)
-+{
-+	return mm_iommu_do_alloc(mm, ua, entries, MM_IOMMU_TABLE_INVALID_HPA,
-+			pmem);
-+}
- EXPORT_SYMBOL_GPL(mm_iommu_new);
- 
-+long mm_iommu_newdev(struct mm_struct *mm, unsigned long ua,
-+		unsigned long entries, unsigned long dev_hpa,
-+		struct mm_iommu_table_group_mem_t **pmem)
-+{
-+	return mm_iommu_do_alloc(mm, ua, entries, dev_hpa, pmem);
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_newdev);
-+
- static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
+@@ -816,7 +802,6 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 			struct pci_dev *gpdev)
  {
- 	long i;
- 	struct page *page = NULL;
- 
-+	if (!mem->hpas)
-+		return;
-+
- 	for (i = 0; i < mem->entries; ++i) {
- 		if (!mem->hpas[i])
- 			continue;
-@@ -234,6 +265,7 @@ static void mm_iommu_release(struct mm_iommu_table_group_mem_t *mem)
- long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- {
- 	long ret = 0;
-+	unsigned long entries, dev_hpa;
- 
- 	mutex_lock(&mem_list_mutex);
- 
-@@ -255,9 +287,12 @@ long mm_iommu_put(struct mm_struct *mm, struct mm_iommu_table_group_mem_t *mem)
- 	}
- 
- 	/* @mapped became 0 so now mappings are disabled, release the region */
-+	entries = mem->entries;
-+	dev_hpa = mem->dev_hpa;
- 	mm_iommu_release(mem);
- 
--	mm_iommu_adjust_locked_vm(mm, mem->entries, false);
-+	if (dev_hpa == MM_IOMMU_TABLE_INVALID_HPA)
-+		mm_iommu_adjust_locked_vm(mm, entries, false);
- 
- unlock_exit:
- 	mutex_unlock(&mem_list_mutex);
-@@ -327,7 +362,7 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
--	u64 *va = &mem->hpas[entry];
-+	u64 *va;
- 
- 	if (entry >= mem->entries)
- 		return -EFAULT;
-@@ -335,6 +370,12 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 	if (pageshift > mem->pageshift)
- 		return -EFAULT;
- 
-+	if (!mem->hpas) {
-+		*hpa = mem->dev_hpa + (ua - mem->ua);
-+		return 0;
-+	}
-+
-+	va = &mem->hpas[entry];
- 	*hpa = (*va & MM_IOMMU_TABLE_GROUP_PAGE_MASK) | (ua & ~PAGE_MASK);
- 
- 	return 0;
-@@ -345,7 +386,6 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
- 		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
--	void *va = &mem->hpas[entry];
- 	unsigned long *pa;
- 
- 	if (entry >= mem->entries)
-@@ -354,7 +394,12 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
- 	if (pageshift > mem->pageshift)
- 		return -EFAULT;
- 
--	pa = (void *) vmalloc_to_phys(va);
-+	if (!mem->hpas) {
-+		*hpa = mem->dev_hpa + (ua - mem->ua);
-+		return 0;
-+	}
-+
-+	pa = (void *) vmalloc_to_phys(&mem->hpas[entry]);
- 	if (!pa)
- 		return -EFAULT;
- 
-@@ -374,6 +419,9 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned long ua)
- 	if (!mem)
+ 	int removed;
+-	struct pnv_phb *nphb;
+ 	struct npu *npu;
+ 	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
+ 	struct device_node *nvlink_dn;
+@@ -826,19 +811,15 @@ void pnv_npu2_destroy_context(struct npu_context *npu_context,
+ 	if (WARN_ON(!npdev))
  		return;
  
-+	if (mem->dev_hpa != MM_IOMMU_TABLE_INVALID_HPA)
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return;
+-
+ 	hose = pci_bus_to_host(npdev->bus);
+-	nphb = hose->private_data;
+ 	npu = hose->npu;
++	if (!npu)
 +		return;
-+
- 	entry = (ua - mem->ua) >> PAGE_SHIFT;
- 	va = &mem->hpas[entry];
+ 	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
+ 	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
+ 							&nvlink_index)))
+ 		return;
+ 	WRITE_ONCE(npu_context->npdev[npu->index][nvlink_index], NULL);
+-	opal_npu_destroy_context(nphb->opal_id, npu_context->mm->context.id,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn));
+ 	spin_lock(&npu_context_lock);
+ 	removed = kref_put(&npu_context->kref, pnv_npu2_release_context);
+ 	spin_unlock(&npu_context_lock);
+@@ -870,9 +851,6 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 	/* mmap_sem should be held so the struct_mm must be present */
+ 	struct mm_struct *mm = context->mm;
  
-@@ -384,6 +432,33 @@ extern void mm_iommu_ua_mark_dirty_rm(struct mm_struct *mm, unsigned long ua)
- 	*pa |= MM_IOMMU_TABLE_GROUP_PAGE_DIRTY;
+-	if (!firmware_has_feature(FW_FEATURE_OPAL))
+-		return -ENODEV;
+-
+ 	WARN_ON(!rwsem_is_locked(&mm->mmap_sem));
+ 
+ 	for (i = 0; i < count; i++) {
+@@ -901,15 +879,11 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
  }
+ EXPORT_SYMBOL(pnv_npu2_handle_fault);
  
-+bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
-+		unsigned int pageshift, unsigned long *size)
-+{
-+	struct mm_iommu_table_group_mem_t *mem;
-+	unsigned long end;
-+
-+	list_for_each_entry_rcu(mem, &mm->context.iommu_group_mem_list, next) {
-+		if (mem->dev_hpa == MM_IOMMU_TABLE_INVALID_HPA)
-+			continue;
-+
-+		end = mem->dev_hpa + (mem->entries << PAGE_SHIFT);
-+		if ((mem->dev_hpa <= hpa) && (hpa < end)) {
-+			/*
-+			 * Since the IOMMU page size might be bigger than
-+			 * PAGE_SIZE, the amount of preregistered memory
-+			 * starting from @hpa might be smaller than 1<<pageshift
-+			 * and the caller needs to distinguish this situation.
-+			 */
-+			*size = min(1UL << pageshift, end - hpa);
-+			return true;
-+		}
-+	}
-+
-+	return false;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_is_devmem);
-+
- long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem)
+-int pnv_npu2_init(struct pnv_phb *phb)
++int pnv_npu2_init(struct pci_controller *hose)
  {
- 	if (atomic64_inc_not_zero(&mem->mapped))
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 1d8b889..c424913 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -222,8 +222,16 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	unsigned int i;
+ 	u64 mmio_atsd;
+-	struct device_node *dn;
+-	struct pci_dev *gpdev;
+ 	static int npu_index;
+-	uint64_t rc = 0;
+-	struct pci_controller *hose = phb->hose;
+ 	struct npu *npu;
+ 	int ret;
+ 
+@@ -918,18 +892,6 @@ int pnv_npu2_init(struct pnv_phb *phb)
+ 		return -ENOMEM;
+ 
+ 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
+-	for_each_child_of_node(phb->hose->dn, dn) {
+-		gpdev = pnv_pci_get_gpu_dev(get_pci_dev(dn));
+-		if (gpdev) {
+-			rc = opal_npu_map_lpar(phb->opal_id,
+-				PCI_DEVID(gpdev->bus->number, gpdev->devfn),
+-				0, 0);
+-			if (rc)
+-				dev_err(&gpdev->dev,
+-					"Error %lld mapping device to LPAR\n",
+-					rc);
+-		}
+-	}
+ 
+ 	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
+ 							i, &mmio_atsd); i++)
+@@ -957,3 +919,52 @@ int pnv_npu2_init(struct pnv_phb *phb)
+ 
  	return ret;
  }
- 
--static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-+static bool tce_page_is_contained(struct mm_struct *mm, unsigned long hpa,
-+		unsigned int page_shift)
- {
-+	struct page *page;
-+	unsigned long size = 0;
 +
-+	if (mm_iommu_is_devmem(mm, hpa, page_shift, &size))
-+		return size == (1UL << page_shift);
++int pnv_npu2_map_lpar_dev(struct pci_dev *gpdev, unsigned int lparid,
++		unsigned long msr)
++{
++	int ret;
++	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
++	struct pci_controller *hose;
++	struct pnv_phb *nphb;
 +
-+	page = pfn_to_page(hpa >> PAGE_SHIFT);
- 	/*
- 	 * Check that the TCE table granularity is not bigger than the size of
- 	 * a page we just found. Otherwise the hardware can get access to
-@@ -499,7 +507,8 @@ static int tce_iommu_clear(struct tce_container *container,
++	if (!npdev)
++		return -ENODEV;
++
++	hose = pci_bus_to_host(npdev->bus);
++	nphb = hose->private_data;
++
++	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=%u\n",
++			nphb->opal_id, lparid);
++	/*
++	 * Currently we only support radix and non-zero LPCR only makes sense
++	 * for hash tables so skiboot expects the LPCR parameter to be a zero.
++	 */
++	ret = opal_npu_map_lpar(nphb->opal_id,
++			PCI_DEVID(gpdev->bus->number, gpdev->devfn), lparid,
++			0 /* LPCR bits */);
++	if (ret) {
++		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
++		return ret;
++	}
++
++	dev_dbg(&gpdev->dev, "init context opalid=%llu msr=%lx\n",
++			nphb->opal_id, msr);
++	ret = opal_npu_init_context(nphb->opal_id, 0/*__unused*/, msr,
++			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
++	if (ret < 0)
++		dev_err(&gpdev->dev, "Failed to init context: %d\n", ret);
++	else
++		ret = 0;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pnv_npu2_map_lpar_dev);
++
++void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
++{
++	struct pci_dev *gpdev;
++
++	list_for_each_entry(gpdev, &gpe->pbus->devices, bus_list)
++		pnv_npu2_map_lpar_dev(gpdev, 0, msr);
++}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8528fb9..ec4ce35 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1271,19 +1271,20 @@ static void pnv_ioda_setup_npu_PEs(struct pci_bus *bus)
  
- 		direction = DMA_NONE;
- 		oldhpa = 0;
--		ret = iommu_tce_xchg(tbl, entry, &oldhpa, &direction);
-+		ret = iommu_tce_xchg(container->mm, tbl, entry, &oldhpa,
-+				&direction);
- 		if (ret)
- 			continue;
- 
-@@ -537,7 +546,6 @@ static long tce_iommu_build(struct tce_container *container,
- 		enum dma_data_direction direction)
+ static void pnv_pci_ioda_setup_PEs(void)
  {
- 	long i, ret = 0;
--	struct page *page;
- 	unsigned long hpa;
- 	enum dma_data_direction dirtmp;
+-	struct pci_controller *hose, *tmp;
++	struct pci_controller *hose;
+ 	struct pnv_phb *phb;
+ 	struct pci_bus *bus;
+ 	struct pci_dev *pdev;
++	struct pnv_ioda_pe *pe;
  
-@@ -548,15 +556,16 @@ static long tce_iommu_build(struct tce_container *container,
- 		if (ret)
- 			break;
- 
--		page = pfn_to_page(hpa >> PAGE_SHIFT);
--		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-+		if (!tce_page_is_contained(container->mm, hpa,
-+				tbl->it_page_shift)) {
- 			ret = -EPERM;
- 			break;
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
++	list_for_each_entry(hose, &hose_list, list_node) {
+ 		phb = hose->private_data;
+ 		if (phb->type == PNV_PHB_NPU_NVLINK) {
+ 			/* PE#0 is needed for error reporting */
+ 			pnv_ioda_reserve_pe(phb, 0);
+ 			pnv_ioda_setup_npu_PEs(hose->bus);
+ 			if (phb->model == PNV_PHB_MODEL_NPU2)
+-				WARN_ON_ONCE(pnv_npu2_init(phb));
++				WARN_ON_ONCE(pnv_npu2_init(hose));
  		}
- 
- 		hpa |= offset;
- 		dirtmp = direction;
--		ret = iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
-+		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
-+				&dirtmp);
- 		if (ret) {
- 			tce_iommu_unuse_page(container, hpa);
- 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
-@@ -583,7 +592,6 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 		enum dma_data_direction direction)
- {
- 	long i, ret = 0;
--	struct page *page;
- 	unsigned long hpa;
- 	enum dma_data_direction dirtmp;
- 
-@@ -596,8 +604,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 		if (ret)
- 			break;
- 
--		page = pfn_to_page(hpa >> PAGE_SHIFT);
--		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-+		if (!tce_page_is_contained(container->mm, hpa,
-+				tbl->it_page_shift)) {
- 			ret = -EPERM;
- 			break;
+ 		if (phb->type == PNV_PHB_NPU_OCAPI) {
+ 			bus = hose->bus;
+@@ -1291,6 +1292,14 @@ static void pnv_pci_ioda_setup_PEs(void)
+ 				pnv_ioda_setup_dev_PE(pdev);
  		}
-@@ -610,7 +618,8 @@ static long tce_iommu_build_v2(struct tce_container *container,
- 		if (mm_iommu_mapped_inc(mem))
- 			break;
+ 	}
++	list_for_each_entry(hose, &hose_list, list_node) {
++		phb = hose->private_data;
++		if (phb->type != PNV_PHB_IODA2)
++			continue;
++
++		list_for_each_entry(pe, &phb->ioda.pe_list, list)
++			pnv_npu2_map_lpar(pe, MSR_DR | MSR_PR | MSR_HV);
++	}
+ }
  
--		ret = iommu_tce_xchg(tbl, entry + i, &hpa, &dirtmp);
-+		ret = iommu_tce_xchg(container->mm, tbl, entry + i, &hpa,
-+				&dirtmp);
- 		if (ret) {
- 			/* dirtmp cannot be DMA_NONE here */
- 			tce_iommu_unuse_page_v2(container, tbl, entry + i);
+ #ifdef CONFIG_PCI_IOV
 -- 
 2.17.1
 
