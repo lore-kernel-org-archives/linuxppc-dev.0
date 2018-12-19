@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E077C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:22:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F047C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:24:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F3DC217D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:22:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F3DC217D9
+	by mail.kernel.org (Postfix) with ESMTPS id 83446217D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:24:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83446217D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KTtR3TjdzDqxG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:22:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KTwq0xWqzDr1c
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:24:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43KTFQ1YZLzDqbk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43KTFT6cJJzDqgN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:33 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7FD40AE8054B;
- Wed, 19 Dec 2018 03:53:26 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id ED077AE80381;
+ Wed, 19 Dec 2018 03:52:59 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 17/20] powerpc/powernv/npu: Fault user page into the
- hypervisor's pagetable
-Date: Wed, 19 Dec 2018 19:52:29 +1100
-Message-Id: <20181219085232.103441-18-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 08/20] powerpc/pseries: Remove IOMMU API support for
+ non-LPAR systems
+Date: Wed, 19 Dec 2018 19:52:20 +1100
+Message-Id: <20181219085232.103441-9-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181219085232.103441-1-aik@ozlabs.ru>
 References: <20181219085232.103441-1-aik@ozlabs.ru>
@@ -64,59 +64,54 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When a page fault happens in a GPU, the GPU signals the OS and the GPU
-driver calls the fault handler which populated a page table; this allows
-the GPU to complete an ATS request.
-
-On the bare metal get_user_pages() is enough as it adds a pte to
-the kernel page table but under KVM the partition scope tree does not get
-updated so ATS will still fail.
-
-This reads a byte from an effective address which causes HV storage
-interrupt and KVM updates the partition scope tree.
+The pci_dma_bus_setup_pSeries and pci_dma_dev_setup_pSeries hooks are
+registered for the pseries platform which does not have FW_FEATURE_LPAR;
+these would be pre-powernv platforms which we never supported PCI pass
+through for anyway so remove it.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 2c405a4..ed81426 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -1133,6 +1133,8 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
- 	u64 rc = 0, result = 0;
- 	int i, is_write;
- 	struct page *page[1];
-+	const char __user *u;
-+	char c;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index cbcc8ce..2783cb7 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -645,7 +645,6 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	tbl->it_ops = &iommu_table_pseries_ops;
+ 	iommu_init_table(tbl, pci->phb->node);
+-	iommu_register_group(pci->table_group, pci_domain_nr(bus), 0);
  
- 	/* mmap_sem should be held so the struct_mm must be present */
- 	struct mm_struct *mm = context->mm;
-@@ -1145,18 +1147,17 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
- 					is_write ? FOLL_WRITE : 0,
- 					page, NULL, NULL);
- 
--		/*
--		 * To support virtualised environments we will have to do an
--		 * access to the page to ensure it gets faulted into the
--		 * hypervisor. For the moment virtualisation is not supported in
--		 * other areas so leave the access out.
--		 */
- 		if (rc != 1) {
- 			status[i] = rc;
- 			result = -EFAULT;
- 			continue;
- 		}
- 
-+		/* Make sure partition scoped tree gets a pte */
-+		u = page_address(page[0]);
-+		if (__get_user(c, u))
-+			result = -EFAULT;
-+
- 		status[i] = 0;
- 		put_page(page[0]);
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -756,10 +755,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		tbl->it_ops = &iommu_table_pseries_ops;
+ 		iommu_init_table(tbl, phb->node);
+-		iommu_register_group(PCI_DN(dn)->table_group,
+-				pci_domain_nr(phb->bus), 0);
+ 		set_iommu_table_base(&dev->dev, tbl);
+-		iommu_add_device(&dev->dev);
+ 		return;
  	}
+ 
+@@ -770,11 +766,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 	while (dn && PCI_DN(dn) && PCI_DN(dn)->table_group == NULL)
+ 		dn = dn->parent;
+ 
+-	if (dn && PCI_DN(dn)) {
++	if (dn && PCI_DN(dn))
+ 		set_iommu_table_base(&dev->dev,
+ 				PCI_DN(dn)->table_group->tables[0]);
+-		iommu_add_device(&dev->dev);
+-	} else
++	else
+ 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
+ 		       pci_name(dev));
+ }
 -- 
 2.17.1
 
