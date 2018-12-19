@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B62CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:37:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61EC8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:40:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1F71221850
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:37:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1F71221850
+	by mail.kernel.org (Postfix) with ESMTPS id DC7A021850
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:40:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC7A021850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KVDh04XWzDr6f
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:37:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KVHB6tWgzDqG8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:40:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,16 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43KTFx0rBtzDqkW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43KTG33S3TzDqgC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:54:03 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 8CD5BAE80549;
- Wed, 19 Dec 2018 03:53:23 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 78125AE8059D;
+ Wed, 19 Dec 2018 03:53:29 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 16/20] powerpc/powernv/npu: Check mmio_atsd array
- bounds when populating
-Date: Wed, 19 Dec 2018 19:52:28 +1100
-Message-Id: <20181219085232.103441-17-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 18/20] vfio_pci: Allow mapping extra regions
+Date: Wed, 19 Dec 2018 19:52:30 +1100
+Message-Id: <20181219085232.103441-19-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181219085232.103441-1-aik@ozlabs.ru>
 References: <20181219085232.103441-1-aik@ozlabs.ru>
@@ -64,30 +63,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A broken device tree might contain more than 8 values and introduce hard
-to debug memory corruption bug. This adds the boundary check.
+So far we only allowed mapping of MMIO BARs to the userspace. However
+there are GPUs with on-board coherent RAM accessible via side
+channels which we also want to map to the userspace. The first client
+for this is NVIDIA V100 GPU with NVLink2 direct links to a POWER9
+NPU-enabled CPU; such GPUs have 16GB RAM which is coherently mapped
+to the system address space, we are going to export these as an extra
+PCI region.
+
+We already support extra PCI regions and this adds support for mapping
+them to the userspace.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Changes:
+v2:
+* reverted one of mistakenly removed error checks
+---
+ drivers/vfio/pci/vfio_pci_private.h | 3 +++
+ drivers/vfio/pci/vfio_pci.c         | 9 +++++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 31dfc11..2c405a4 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -1179,8 +1179,9 @@ int pnv_npu2_init(struct pci_controller *hose)
+diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+index cde3b5d..86aab05 100644
+--- a/drivers/vfio/pci/vfio_pci_private.h
++++ b/drivers/vfio/pci/vfio_pci_private.h
+@@ -59,6 +59,9 @@ struct vfio_pci_regops {
+ 		      size_t count, loff_t *ppos, bool iswrite);
+ 	void	(*release)(struct vfio_pci_device *vdev,
+ 			   struct vfio_pci_region *region);
++	int	(*mmap)(struct vfio_pci_device *vdev,
++			struct vfio_pci_region *region,
++			struct vm_area_struct *vma);
+ };
  
- 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
- 
--	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
--							i, &mmio_atsd); i++)
-+	for (i = 0; i < ARRAY_SIZE(npu->mmio_atsd_regs) &&
-+			!of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
-+				i, &mmio_atsd); i++)
- 		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
- 
- 	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
+ struct vfio_pci_region {
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index fef5002..4a6f7c0 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -1130,6 +1130,15 @@ static int vfio_pci_mmap(void *device_data, struct vm_area_struct *vma)
+ 		return -EINVAL;
+ 	if ((vma->vm_flags & VM_SHARED) == 0)
+ 		return -EINVAL;
++	if (index >= VFIO_PCI_NUM_REGIONS) {
++		int regnum = index - VFIO_PCI_NUM_REGIONS;
++		struct vfio_pci_region *region = vdev->region + regnum;
++
++		if (region && region->ops && region->ops->mmap &&
++		    (region->flags & VFIO_REGION_INFO_FLAG_MMAP))
++			return region->ops->mmap(vdev, region, vma);
++		return -EINVAL;
++	}
+ 	if (index >= VFIO_PCI_ROM_REGION_INDEX)
+ 		return -EINVAL;
+ 	if (!vdev->bar_mmap_supported[index])
 -- 
 2.17.1
 
