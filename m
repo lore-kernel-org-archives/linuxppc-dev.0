@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D08B8C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:19:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E077C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:22:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 543B9217D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:19:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 543B9217D9
+	by mail.kernel.org (Postfix) with ESMTPS id 7F3DC217D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:22:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F3DC217D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KTqh2CpKzDqwP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:19:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KTtR3TjdzDqxG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:22:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43KTFH4D4hzDqfG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43KTFQ1YZLzDqbk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:30 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 99C57AE80546;
- Wed, 19 Dec 2018 03:53:20 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id 7FD40AE8054B;
+ Wed, 19 Dec 2018 03:53:26 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 15/20] powerpc/powernv/npu: Add release_ownership
- hook
-Date: Wed, 19 Dec 2018 19:52:27 +1100
-Message-Id: <20181219085232.103441-16-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 17/20] powerpc/powernv/npu: Fault user page into the
+ hypervisor's pagetable
+Date: Wed, 19 Dec 2018 19:52:29 +1100
+Message-Id: <20181219085232.103441-18-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181219085232.103441-1-aik@ozlabs.ru>
 References: <20181219085232.103441-1-aik@ozlabs.ru>
@@ -64,106 +64,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In order to make ATS work and translate addresses for arbitrary
-LPID and PID, we need to program an NPU with LPID and allow PID wildcard
-matching with a specific MSR mask.
+When a page fault happens in a GPU, the GPU signals the OS and the GPU
+driver calls the fault handler which populated a page table; this allows
+the GPU to complete an ATS request.
 
-This implements a helper to assign a GPU to LPAR and program the NPU
-with a wildcard for PID and a helper to do clean-up. The helper takes
-MSR (only DR/HV/PR/SF bits are allowed) to program them into NPU2 for
-ATS checkout requests support.
+On the bare metal get_user_pages() is enough as it adds a pte to
+the kernel page table but under KVM the partition scope tree does not get
+updated so ATS will still fail.
 
-This exports pnv_npu2_unmap_lpar_dev() as following patches will use it
-from the VFIO driver.
+This reads a byte from an effective address which causes HV storage
+interrupt and KVM updates the partition scope tree.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v5:
-* removed opal_purge_cache as it is a part of reset in skiboot now
----
- arch/powerpc/platforms/powernv/npu-dma.c | 51 ++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ arch/powerpc/platforms/powernv/npu-dma.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index 3468eaa..31dfc11 100644
+index 2c405a4..ed81426 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -300,6 +300,7 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 			table_group);
- 	struct pnv_phb *phb = npe->phb;
- 	int64_t rc;
-+	struct pci_dev *gpdev = NULL;
+@@ -1133,6 +1133,8 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 	u64 rc = 0, result = 0;
+ 	int i, is_write;
+ 	struct page *page[1];
++	const char __user *u;
++	char c;
  
- 	/*
- 	 * Note: NPU has just a single TVE in the hardware which means that
-@@ -321,12 +322,28 @@ static void pnv_npu_take_ownership(struct iommu_table_group *table_group)
- 		return;
+ 	/* mmap_sem should be held so the struct_mm must be present */
+ 	struct mm_struct *mm = context->mm;
+@@ -1145,18 +1147,17 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 					is_write ? FOLL_WRITE : 0,
+ 					page, NULL, NULL);
+ 
+-		/*
+-		 * To support virtualised environments we will have to do an
+-		 * access to the page to ensure it gets faulted into the
+-		 * hypervisor. For the moment virtualisation is not supported in
+-		 * other areas so leave the access out.
+-		 */
+ 		if (rc != 1) {
+ 			status[i] = rc;
+ 			result = -EFAULT;
+ 			continue;
+ 		}
+ 
++		/* Make sure partition scoped tree gets a pte */
++		u = page_address(page[0]);
++		if (__get_user(c, u))
++			result = -EFAULT;
++
+ 		status[i] = 0;
+ 		put_page(page[0]);
  	}
- 	pnv_pci_ioda2_tce_invalidate_entire(npe->phb, false);
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_unmap_lpar_dev(gpdev);
-+}
-+
-+static void pnv_npu_release_ownership(struct iommu_table_group *table_group)
-+{
-+	struct pnv_ioda_pe *npe = container_of(table_group, struct pnv_ioda_pe,
-+			table_group);
-+	struct pci_dev *gpdev = NULL;
-+
-+	get_gpu_pci_dev_and_pe(npe, &gpdev);
-+	if (gpdev)
-+		pnv_npu2_map_lpar_dev(gpdev, 0, MSR_DR | MSR_PR | MSR_HV);
- }
- 
- static struct iommu_table_group_ops pnv_pci_npu_ops = {
- 	.set_window = pnv_npu_set_window,
- 	.unset_window = pnv_npu_unset_window,
- 	.take_ownership = pnv_npu_take_ownership,
-+	.release_ownership = pnv_npu_release_ownership,
- };
- #endif /* !CONFIG_IOMMU_API */
- 
-@@ -1237,3 +1254,37 @@ void pnv_npu2_map_lpar(struct pnv_ioda_pe *gpe, unsigned long msr)
- 	list_for_each_entry(gpdev, &gpe->pbus->devices, bus_list)
- 		pnv_npu2_map_lpar_dev(gpdev, 0, msr);
- }
-+
-+int pnv_npu2_unmap_lpar_dev(struct pci_dev *gpdev)
-+{
-+	int ret;
-+	struct pci_dev *npdev = pnv_pci_get_npu_dev(gpdev, 0);
-+	struct pci_controller *hose;
-+	struct pnv_phb *nphb;
-+
-+	if (!npdev)
-+		return -ENODEV;
-+
-+	hose = pci_bus_to_host(npdev->bus);
-+	nphb = hose->private_data;
-+
-+	dev_dbg(&gpdev->dev, "destroy context opalid=%llu\n",
-+			nphb->opal_id);
-+	ret = opal_npu_destroy_context(nphb->opal_id, 0/*__unused*/,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn));
-+	if (ret < 0) {
-+		dev_err(&gpdev->dev, "Failed to destroy context: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* Set LPID to 0 anyway, just to be safe */
-+	dev_dbg(&gpdev->dev, "Map LPAR opalid=%llu lparid=0\n", nphb->opal_id);
-+	ret = opal_npu_map_lpar(nphb->opal_id,
-+			PCI_DEVID(gpdev->bus->number, gpdev->devfn), 0 /*LPID*/,
-+			0 /* LPCR bits */);
-+	if (ret)
-+		dev_err(&gpdev->dev, "Error %d mapping device to LPAR\n", ret);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pnv_npu2_unmap_lpar_dev);
 -- 
 2.17.1
 
