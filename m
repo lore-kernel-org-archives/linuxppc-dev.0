@@ -2,170 +2,72 @@ Return-Path: <SRS0=IY60=O4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C397DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:57:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 156DEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:59:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13C93217D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:57:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="tc/r+oKN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13C93217D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id 838C721841
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 06:59:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 838C721841
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KQgK02wYzDqFY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 17:57:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KQk93g84zDqNb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 17:59:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="tc/r+oKN";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="tc/r+oKN"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43KQcS5x70zDqDc
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 17:54:48 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id z11so9040322pgu.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2018 22:54:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=0Iar6KLtpBP2LvyXK/Yl20mG957KZw8d6V7LN10jGpw=;
- b=tc/r+oKNGCOO+eZIapuFMYggOJwnabiR2YtZvqPyywry5h3AffVh3Cx1jQa9KD/Btp
- Lh8rtL4coW+Xv+LVheaFCye9Z+7dN2Cei9clddnaVDit5q+nXAWLkaxYzIXaS8nEmWcp
- ZUetIWF7Om7v6MCXtASYONVy2AXadttpwCIwgSxtqm56uU2Ncdj/BzR6CtqcsRL+6QPN
- YPy6hVOnBtOX2Xrlj2VedB14VNERBM40w5CfGpPkZYJroSSje7yTvYHUavujSNFEJmbw
- IpGNOnny9D49CxGF32ujAb+gEmugRn2QlA2OWIR9zWeXAesjqyXjrzJ15BQ0cc2xfXHS
- 0+8A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=0Iar6KLtpBP2LvyXK/Yl20mG957KZw8d6V7LN10jGpw=;
- b=t1BxzXXHKrkyUxUh+GG8IWL/Zujk+oikj9v+9gkBS5CAwwUpVsQUX1FU2pu0lBpW8u
- vn+VrMJPwVdRyOZeVGV33sHCm+0hgU7151POiQ42KMjYrO+BXZs6MwV1WKiO1ZQ3Ky8X
- oq4cGRsPWyt25HZFxnsfpS749WuSVpPxRMt6NePcg1ZZfZ98I20DiaW8hFyFVIMxjl6x
- 4RUHajr0kFIzG7RG7CL5Fzf7QsIeaoziuvn7VKNcO3P84FNVBhSVwjS3Poqp4oJ3LBBL
- 5bTPGW3q3G5oxMzKLgUQGaqJUkQUf0MIRbpTp30choYyu618FdJ4zjmp1ryqrUqXA9vb
- nx3A==
-X-Gm-Message-State: AA+aEWYQoBcdhpAyHZFJevTl9WYLTO2yfhgj+XD1xe+bTt6gPSjoebQl
- OPKEyAbbA+YJe7lA6I3EpCWN7g==
-X-Google-Smtp-Source: AFSGD/WQtkLHPSfLMWecWBlDJTgJ4k4/i3TuK6d2pms7Li18ujvS3aomKhSMwM9dtLbCcSENMDfTfQ==
-X-Received: by 2002:a63:1a4b:: with SMTP id a11mr18449087pgm.254.1545202483952; 
- Tue, 18 Dec 2018 22:54:43 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 7sm54518808pfm.8.2018.12.18.22.54.38
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 18 Dec 2018 22:54:43 -0800 (PST)
-Subject: Re: [PATCH kernel v5 14/20] powerpc/powernv/npu: Add compound IOMMU
- groups
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20181213061734.16651-1-aik@ozlabs.ru>
- <20181213061734.16651-15-aik@ozlabs.ru>
- <87ftuus732.fsf@concordia.ellerman.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <3a3f83d5-aac4-7823-a230-234d025c5faf@ozlabs.ru>
-Date: Wed, 19 Dec 2018 17:54:35 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43KQgy5hk1zDqDM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 17:57:50 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43KQgr3jmdz9v0bM;
+ Wed, 19 Dec 2018 07:57:44 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id yZAvX9HLZ8KX; Wed, 19 Dec 2018 07:57:44 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43KQgr2y48z9v0bL;
+ Wed, 19 Dec 2018 07:57:44 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 406BC8B85D;
+ Wed, 19 Dec 2018 07:57:45 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id BkxrEO5HQSXt; Wed, 19 Dec 2018 07:57:45 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0FAC78B754;
+ Wed, 19 Dec 2018 07:57:45 +0100 (CET)
+Subject: Re: [PATCH v3] powerpc: implement CONFIG_DEBUG_VIRTUAL
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <a42260e77d609a10667872c2e7bf14ceabcce050.1544562518.git.christophe.leroy@c-s.fr>
+ <87y38nrkto.fsf@concordia.ellerman.id.au>
+ <87a7l2s6p3.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <f725ff38-4dd8-0657-6023-4b0b5b0d5f4e@c-s.fr>
+Date: Wed, 19 Dec 2018 07:57:44 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.3
 MIME-Version: 1.0
-In-Reply-To: <87ftuus732.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <87a7l2s6p3.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -177,90 +79,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- =?UTF-8?Q?Leonardo_Augusto_Guimar=c3=a3es_Garcia?= <lagarcia@br.ibm.com>,
- Reza Arbab <arbab@linux.ibm.com>, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
 
-On 19/12/2018 11:17, Michael Ellerman wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
->> index dc629ee..3468eaa 100644
->> --- a/arch/powerpc/platforms/powernv/npu-dma.c
->> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
->> @@ -372,8 +358,263 @@ struct npu {
-> ...
->> +
->> +static void pnv_comp_attach_table_group(struct npu_comp *npucomp,
->> +		struct pnv_ioda_pe *pe)
->> +{
->> +	if (WARN_ON(npucomp->pe_num == NV_NPU_MAX_PE_NUM))
->> +		return;
->> +
->> +	npucomp->pe[npucomp->pe_num] = pe;
->> +	++npucomp->pe_num;
->> +}
->> +
->> +struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
->> +{
->> +	struct iommu_table_group *table_group;
->> +	struct npu_comp *npucomp;
->> +	struct pci_dev *gpdev = NULL;
->> +	struct pci_controller *hose;
->> +	struct pci_dev *npdev;
->> +
->> +	list_for_each_entry(gpdev, &pe->pbus->devices, bus_list) {
->> +		npdev = pnv_pci_get_npu_dev(gpdev, 0);
->> +		if (npdev)
->> +			break;
->> +	}
->> +
->> +	if (!npdev)
->> +		/* It is not an NPU attached device, skip */
->> +		return NULL;
+Le 19/12/2018 à 01:26, Michael Ellerman a écrit :
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>
+>>> This patch implements CONFIG_DEBUG_VIRTUAL to warn about
+>>> incorrect use of virt_to_phys() and page_to_phys()
+>>
+>> This commit is breaking my p5020ds booting a 32-bit kernel with:
+>>
+>>    smp: Bringing up secondary CPUs ...
+>>    __ioremap(): phys addr 0x7fef5000 is RAM lr ioremap_coherent
+>>    Unable to handle kernel paging request for data at address 0x00000000
+>>    Faulting instruction address: 0xc002e950
+>>    Oops: Kernel access of bad area, sig: 11 [#1]
+>>    BE SMP NR_CPUS=24 CoreNet Generic
+>>    Modules linked in:
+>>    CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc2-gcc-7.0.1-00138-g9a0380d299e9 #148
+>>    NIP:  c002e950 LR: c002eb20 CTR: 00000001
+>>    REGS: e804bd20 TRAP: 0300   Not tainted  (4.20.0-rc2-gcc-7.0.1-00138-g9a0380d299e9)
+>>    MSR:  00021002 <CE,ME>  CR: 28004222  XER: 00000000
+>>    DEAR: 00000000 ESR: 00000000
+>>    GPR00: c002eb20 e804bdd0 e8050000 00000000 00021002 00000000 00000050 00021002
+>>    GPR08: 2d3f0000 00000001 00000000 00000004 24000842 00000000 c00026d0 00000000
+>>    GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000001
+>>    GPR24: 00029002 7fef5140 30000000 00000000 00000000 00000040 00000001 00000000
+>>    NIP [c002e950] smp_85xx_kick_cpu+0x120/0x410
+>>    LR [c002eb20] smp_85xx_kick_cpu+0x2f0/0x410
+>>    Call Trace:
+>>    [e804bdd0] [c002eb20] smp_85xx_kick_cpu+0x2f0/0x410 (unreliable)
+>>    [e804be20] [c0012e38] __cpu_up+0xc8/0x230
+>>    [e804be50] [c0040b34] bringup_cpu+0x34/0x110
+>>    [e804be70] [c00418a8] cpu_up+0x128/0x250
+>>    [e804beb0] [c0b84b14] smp_init+0xc4/0x10c
+>>    [e804bee0] [c0b75c1c] kernel_init_freeable+0xc8/0x250
+>>    [e804bf20] [c00026e8] kernel_init+0x18/0x120
+>>    [e804bf40] [c0011298] ret_from_kernel_thread+0x14/0x1c
+>>    Instruction dump:
+>>    7fb3e850 57bdd1be 2e1d0000 41d20250 57bd3032 393dffc0 7e6a9b78 5529d1be
+>>    39290001 7d2903a6 60000000 60000000 <7c0050ac> 394a0040 4200fff8 7c0004ac
+>>    ---[ end trace edcab2a1dfd5b38c ]---
+>>
+>>
+>> Which is obviously this hunk:
+>>
+>>> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+>>> index 4fc77a99c9bf..68d204a45cd0 100644
+>>> --- a/arch/powerpc/mm/pgtable_32.c
+>>> +++ b/arch/powerpc/mm/pgtable_32.c
+>>> @@ -143,7 +143,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, pgprot_t prot, void *call
+>>>   	 * Don't allow anybody to remap normal RAM that we're using.
+>>>   	 * mem_init() sets high_memory so only do the check after that.
+>>>   	 */
+>>> -	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
+>>> +	if (slab_is_available() && virt_addr_valid(p) &&
+>>>   	    page_is_ram(__phys_to_pfn(p))) {
+>>>   		printk("__ioremap(): phys addr 0x%llx is RAM lr %ps\n",
+>>>   		       (unsigned long long)p, __builtin_return_address(0));
+>>
+>>
+>> I'll try and come up with a fix tomorrow.
 > 
-> This breaks some configs with:
+> Actually I think that change is just wrong. virt_addr_valid() takes a
+> virtual address, but p is a physical address.
 > 
->   arch/powerpc/platforms/powernv/npu-dma.c:550:5: error: 'npdev' may be used uninitialized in this function [-Werror=uninitialized]
+> So I'll drop this hunk for now, which makes the patch a no-op when
+> DEBUG_VIRTUAL is n which is probably the way it should be.
 
+The hunk is obviously wrong for sure. Anyway there's a problem, most 
+likely high_memory is not a valid virtual address, so without this hunk 
+I get the following warning at every ioremap():
 
-gcc 5, 7 and 8 do not warn about this, I have to disable
-list_for_each_entry() above to recreate this.
+[    0.000000] WARNING: CPU: 0 PID: 0 at 
+./arch/powerpc/include/asm/io.h:809 __ioremap_caller+0x9c/0x180
+[    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 
+4.20.0-rc6-s3k-dev-00677-g9c98dcab6203-dirty #615
+[    0.000000] NIP:  c000fcd0 LR: c000fc64 CTR: 00000000
+[    0.000000] REGS: c073de50 TRAP: 0700   Not tainted 
+(4.20.0-rc6-s3k-dev-00677-g9c98dcab6203-dirty)
+[    0.000000] MSR:  00021032 <ME,IR,DR,RI>  CR: 28944422  XER: 0000f940
+[    0.000000]
+[    0.000000] GPR00: c000fe04 c073df00 c06e1450 00000001 00004023 
+c073df38 c0018f50 00000001
+[    0.000000] GPR08: 00002000 08000000 00002000 00000000 88944224 
+00600000 00000000 07ff9580
+[    0.000000] GPR16: 00000000 07ffb94c 00000000 00000000 00000000 
+00000000 00000000 00000000
+[    0.000000] GPR24: 00000000 c0760000 0000019f ff000000 ff000000 
+c000fe04 00004000 c0018f50
+[    0.000000] NIP [c000fcd0] __ioremap_caller+0x9c/0x180
+[    0.000000] LR [c000fc64] __ioremap_caller+0x30/0x180
+[    0.000000] Call Trace:
+[    0.000000] [c073df00] [c02fc23c] of_address_to_resource+0x114/0x154 
+(unreliable)
+[    0.000000] [c073df30] [c000fe04] ioremap_wt+0x20/0x30
+[    0.000000] [c073df40] [c0018f50] mpc8xx_pic_init+0x70/0xf8
+[    0.000000] [c073df80] [c0655b84] mpc8xx_pics_init+0x10/0x6c
+[    0.000000] [c073df90] [c0675080] cmpc885_pics_init+0x14/0x118
+[    0.000000] [c073dfa0] [c0652eb0] init_IRQ+0x24/0x38
+[    0.000000] [c073dfb0] [c0650b10] start_kernel+0x2a8/0x3d4
+[    0.000000] [c073dff0] [c0002258] start_here+0x44/0x98
+[    0.000000] Instruction dump:
+[    0.000000] 419e00b8 7f83e378 480013fd 7c7d1b79 41820030 576304be 
+7c63ea14 80010034
+[    0.000000] bb410018 7c0803a6 38210030 4e800020 <0fe00000> 7f9c4840 
+409cffc4 480000a8
+[    0.000000] random: get_random_bytes called from 
+print_oops_end_marker+0x60/0x84 with crng_init=0
+[    0.000000] ---[ end trace 25d7f28ce013ad37 ]---
 
-I even compiled gcc 5.5 which some of your buildmachines use and yet no
-error on this:
+I'll try and come with solution during the day.
 
-make O=/home/aik/pbuild/kernel-le/ KCFLAGS=-Werror=all ARCH=powerpc
-CROSS_COMPILE=/opt/cross/gcc-powerpc64le-linux-5.5.0-nolibc/bin/powerpc64le-linux-
-arch/powerpc/platforms/powernv/npu-dma.o
+Christophe
 
-
-
-I only get an error when I do:
-
-@@ -525,6 +525,7 @@ struct iommu_table_group
-*pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
-        struct pci_controller *hose;
-        struct pci_dev *npdev;
-
-+       if (0)
-        list_for_each_entry(gpdev, &pe->pbus->devices, bus_list) {
-
-                npdev = pnv_pci_get_npu_dev(gpdev, 0);
-                if (npdev)
-
-
-
-How do you compile?
-
-
--- 
-Alexey
+> 
+> cheers
+> 
