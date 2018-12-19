@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AAE2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:06:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8007C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:08:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EC7720874
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:06:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EC7720874
+	by mail.kernel.org (Postfix) with ESMTPS id 449D520874
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:08:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 449D520874
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KTXQ3BNPzDqs6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:06:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KTZj0gCVzDqqD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:08:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,16 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43KTDq716pzDqjT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:52:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43KTF42jTGzDqhD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 19:53:12 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 04BCFAE8035E;
- Wed, 19 Dec 2018 03:52:56 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id CAA00AE80492;
+ Wed, 19 Dec 2018 03:53:08 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 07/20] powerpc/pseries/npu: Enable platform support
-Date: Wed, 19 Dec 2018 19:52:19 +1100
-Message-Id: <20181219085232.103441-8-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 11/20] powerpc/powernv: Reference iommu_table while
+ it is linked to a group
+Date: Wed, 19 Dec 2018 19:52:23 +1100
+Message-Id: <20181219085232.103441-12-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181219085232.103441-1-aik@ozlabs.ru>
 References: <20181219085232.103441-1-aik@ozlabs.ru>
@@ -63,71 +64,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We already changed NPU API for GPUs to not to call OPAL and the remaining
-bit is initializing NPU structures.
-
-This searches for POWER9 NVLinks attached to any device on a PHB and
-initializes an NPU structure if any found.
+The iommu_table pointer stored in iommu_table_group may get stale
+by accident, this adds referencing and removes a redundant comment
+about this.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v5:
-* added WARN_ON_ONCE
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c | 3 ++-
+ arch/powerpc/platforms/powernv/pci-ioda.c     | 4 ----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-v4:
-* dropped "IBM,npu-vphb" compatible type on PHB and use the type of NVLink
----
- arch/powerpc/platforms/pseries/pci.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 41d8a4d..7725825 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -29,6 +29,7 @@
- #include <asm/pci-bridge.h>
- #include <asm/prom.h>
- #include <asm/ppc-pci.h>
-+#include <asm/pci.h>
- #include "pseries.h"
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+index 7639b21..697449a 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+@@ -368,6 +368,7 @@ void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
+ 	found = false;
+ 	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+ 		if (table_group->tables[i] == tbl) {
++			iommu_tce_table_put(tbl);
+ 			table_group->tables[i] = NULL;
+ 			found = true;
+ 			break;
+@@ -393,7 +394,7 @@ long pnv_pci_link_table_and_group(int node, int num,
+ 	tgl->table_group = table_group;
+ 	list_add_rcu(&tgl->next, &tbl->it_group_list);
  
- #if 0
-@@ -237,6 +238,8 @@ static void __init pSeries_request_regions(void)
+-	table_group->tables[num] = tbl;
++	table_group->tables[num] = iommu_tce_table_get(tbl);
  
- void __init pSeries_final_fixup(void)
- {
-+	struct pci_controller *hose;
-+
- 	pSeries_request_regions();
- 
- 	eeh_probe_devices();
-@@ -246,6 +249,25 @@ void __init pSeries_final_fixup(void)
- 	ppc_md.pcibios_sriov_enable = pseries_pcibios_sriov_enable;
- 	ppc_md.pcibios_sriov_disable = pseries_pcibios_sriov_disable;
- #endif
-+	list_for_each_entry(hose, &hose_list, list_node) {
-+		struct device_node *dn = hose->dn, *nvdn;
-+
-+		while (1) {
-+			dn = of_find_all_nodes(dn);
-+			if (!dn)
-+				break;
-+			nvdn = of_parse_phandle(dn, "ibm,nvlink", 0);
-+			if (!nvdn)
-+				continue;
-+			if (!of_device_is_compatible(nvdn, "ibm,npu-link"))
-+				continue;
-+			if (!of_device_is_compatible(nvdn->parent,
-+						"ibm,power9-npu"))
-+				continue;
-+			WARN_ON_ONCE(pnv_npu2_init(hose));
-+			break;
-+		}
-+	}
+ 	return 0;
  }
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index f6ab13d..a5879ab 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2719,10 +2719,6 @@ static long pnv_pci_ioda2_npu_unset_window(
  
- /*
+ static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+ {
+-	/*
+-	 * Detach NPU first as pnv_ioda2_take_ownership() will destroy
+-	 * the iommu_table if 32bit DMA is enabled.
+-	 */
+ 	pnv_npu_take_ownership(gpe_table_group_to_npe(table_group));
+ 	pnv_ioda2_take_ownership(table_group);
+ }
 -- 
 2.17.1
 
