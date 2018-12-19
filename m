@@ -6,46 +6,46 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6173FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:55:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29318C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 10:03:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCB7521873
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 09:55:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCB7521873
+	by mail.kernel.org (Postfix) with ESMTPS id 6CEDC21871
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 10:03:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CEDC21871
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43KVcp0271zDqQW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 20:55:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43KVnk1jRTzDqNn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Dec 2018 21:03:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43KVXb0TYQzDqLP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 20:51:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43KVl848WKzDqKL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 21:00:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43KVXZ2W6Pz9s3Z;
- Wed, 19 Dec 2018 20:51:42 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43KVl81PJBz9s2P;
+ Wed, 19 Dec 2018 21:00:52 +1100 (AEDT)
 Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH kernel v5 10/20] powerpc/iommu_api: Move IOMMU groups
- setup to a single place
-In-Reply-To: <163432c4-70f2-41f4-1726-e8ede99ef32e@ozlabs.ru>
+Subject: Re: [PATCH kernel v5 14/20] powerpc/powernv/npu: Add compound IOMMU
+ groups
+In-Reply-To: <3a3f83d5-aac4-7823-a230-234d025c5faf@ozlabs.ru>
 References: <20181213061734.16651-1-aik@ozlabs.ru>
- <20181213061734.16651-11-aik@ozlabs.ru>
- <87sgyus91c.fsf@concordia.ellerman.id.au>
- <163432c4-70f2-41f4-1726-e8ede99ef32e@ozlabs.ru>
-Date: Wed, 19 Dec 2018 20:51:42 +1100
-Message-ID: <87sgytrgi9.fsf@concordia.ellerman.id.au>
+ <20181213061734.16651-15-aik@ozlabs.ru>
+ <87ftuus732.fsf@concordia.ellerman.id.au>
+ <3a3f83d5-aac4-7823-a230-234d025c5faf@ozlabs.ru>
+Date: Wed, 19 Dec 2018 21:00:52 +1100
+Message-ID: <87pntxrg2z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -71,62 +71,80 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> On 19/12/2018 10:35, Michael Ellerman wrote:
+> On 19/12/2018 11:17, Michael Ellerman wrote:
 >> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->> 
->>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> index b86a6e0..1168b185 100644
->>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> @@ -2735,12 +2733,68 @@ static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
->>>  	.release_ownership = pnv_ioda2_release_ownership,
->>>  };
->>>  
->>> +static void pnv_ioda_setup_bus_iommu_group_add_devices(struct pnv_ioda_pe *pe,
->>> +		struct pci_bus *bus)
+>>> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> index dc629ee..3468eaa 100644
+>>> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+>>> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+>>> @@ -372,8 +358,263 @@ struct npu {
+>> ...
+>>> +
+>>> +static void pnv_comp_attach_table_group(struct npu_comp *npucomp,
+>>> +		struct pnv_ioda_pe *pe)
 >>> +{
->>> +	struct pci_dev *dev;
->>> +
->>> +	list_for_each_entry(dev, &bus->devices, bus_list) {
->>> +		iommu_add_device(&pe->table_group, &dev->dev);
->>> +
->>> +		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
->>> +			pnv_ioda_setup_bus_iommu_group_add_devices(pe,
->>> +					dev->subordinate);
->>> +	}
->>> +}
->>> +
->>> +static void pnv_ioda_setup_bus_iommu_group(struct pnv_ioda_pe *pe)
->>> +{
->>> +	if (!pnv_pci_ioda_pe_dma_weight(pe))
+>>> +	if (WARN_ON(npucomp->pe_num == NV_NPU_MAX_PE_NUM))
 >>> +		return;
 >>> +
->>> +	iommu_register_group(&pe->table_group, pe->phb->hose->global_number,
->>> +			pe->pe_number);
->>> +
->>> +	/*
->>> +	 * set_iommu_table_base(&pe->pdev->dev, tbl) should have been called
->>> +	 * by now
->>> +	 */
->>> +	if (pe->flags & PNV_IODA_PE_DEV)
->>> +		iommu_add_device(&pe->table_group, &pe->pdev->dev);
->>> +	else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
->>> +		pnv_ioda_setup_bus_iommu_group_add_devices(pe, pe->pbus);
+>>> +	npucomp->pe[npucomp->pe_num] = pe;
+>>> +	++npucomp->pe_num;
 >>> +}
 >>> +
+>>> +struct iommu_table_group *pnv_try_setup_npu_table_group(struct pnv_ioda_pe *pe)
+>>> +{
+>>> +	struct iommu_table_group *table_group;
+>>> +	struct npu_comp *npucomp;
+>>> +	struct pci_dev *gpdev = NULL;
+>>> +	struct pci_controller *hose;
+>>> +	struct pci_dev *npdev;
+>>> +
+>>> +	list_for_each_entry(gpdev, &pe->pbus->devices, bus_list) {
+>>> +		npdev = pnv_pci_get_npu_dev(gpdev, 0);
+>>> +		if (npdev)
+>>> +			break;
+>>> +	}
+>>> +
+>>> +	if (!npdev)
+>>> +		/* It is not an NPU attached device, skip */
+>>> +		return NULL;
 >> 
->> This breaks skiroot_defconfig with:
+>> This breaks some configs with:
 >> 
->> arch/powerpc/platforms/powernv/pci-ioda.c:2731:13: error: 'pnv_ioda_setup_bus_iommu_group' defined but not used [-Werror=unused-function]
->> 
->>   http://kisskb.ellerman.id.au/kisskb/buildresult/13623033/
+>>   arch/powerpc/platforms/powernv/npu-dma.c:550:5: error: 'npdev' may be used uninitialized in this function [-Werror=uninitialized]
 >
 >
-> How do you enable these warnings? I do not get them no matter what I do.
+> gcc 5, 7 and 8 do not warn about this, I have to disable
+> list_for_each_entry() above to recreate this.
+>
+> I even compiled gcc 5.5 which some of your buildmachines use and yet no
+> error on this:
+>
+> make O=/home/aik/pbuild/kernel-le/ KCFLAGS=-Werror=all ARCH=powerpc
+> CROSS_COMPILE=/opt/cross/gcc-powerpc64le-linux-5.5.0-nolibc/bin/powerpc64le-linux-
+> arch/powerpc/platforms/powernv/npu-dma.o
 
-Just build skiroot_defconfig ?
+Odd. That error is from kisskb like the others.
 
-Or turn off CONFIG_SPAPR_TCE_IOMMU, CONFIG_IOMMU_SUPPORT,
-CONFIG_IOMMU_API etc.
+http://kisskb.ellerman.id.au/kisskb/buildresult/13622793/
+
+Seems it's GCC 4.6.3 that is producing that one. Not sure why newer
+compilers aren't warning about it.
+
+
+It's pretty obviously correct though, unless you can prove that the list
+is never empty?
+
+	struct pci_dev *npdev;
+
+	list_for_each_entry(gpdev, &pe->pbus->devices, bus_list) {
+		npdev = pnv_pci_get_npu_dev(gpdev, 0);
+		if (npdev)
+			break;
+	}
+
+	if (!npdev)
+		/* It is not an NPU attached device, skip */
+		return NULL;
+
 
 cheers
