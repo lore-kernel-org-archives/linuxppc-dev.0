@@ -2,49 +2,81 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FROM,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E0A0C43612
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:41:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CB1FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:53:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 662A020811
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:41:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 662A020811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8C78D2084A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:53:50 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cawo/LZy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C78D2084A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43L6Fs1wk9zDqsh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:41:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43L6XX2zzRzDr0y
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:53:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="cawo/LZy";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=kernelfans@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="cawo/LZy"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43L6Bj3mVxzDqmM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 20:38:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43L6Bh3bjHz9s8r;
- Thu, 20 Dec 2018 20:38:20 +1100 (AEDT)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH kernel v7 00/20] powerpc/powernv/npu,
- vfio: NVIDIA V100 + P9 passthrough
-In-Reply-To: <20181220082350.58113-1-aik@ozlabs.ru>
-References: <20181220082350.58113-1-aik@ozlabs.ru>
-Date: Thu, 20 Dec 2018 20:38:20 +1100
-Message-ID: <87h8f8r10z.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43L6TQ1zpczDqwB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 20:51:05 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id c123so670644pfb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 01:51:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=K9zzrRbAs14lLTCZYoWS/52u0ibfEdXn3/6zg6/SpNU=;
+ b=cawo/LZyFHw0a9nn79FtBaUQ4o0n02ATimLl1BHixK3isAls4RqYinMz0vcvIlMupq
+ US65dSQcksi+YlpEzqhBUDGpTcOWu99AOU6d4YCrQfaMFNNowj8LJNVcBjytOp55d2rC
+ jA2NR2zDNO37sI78CvvxYGn/TVhdDq/O800R4jbUs3YNCfRiGhAYudWfvajTPt3PDqA4
+ WBeM+MHNpYQo8UDXnV7tY4UAYHIubUHuSRKlVD/BYET0z5jUdBOHaVrXqDY7TPhNrQm9
+ gQAsHC4H6DcXUUB7axSlNp8KYdJ996WGibUN/grzctgkeln2nxWQi6yP/mQF7LYklsOS
+ UMeg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=K9zzrRbAs14lLTCZYoWS/52u0ibfEdXn3/6zg6/SpNU=;
+ b=dDs74NFXc1AIaD43G+CfpcizVxkMVf5uZ3g+4X20nTrfcbs4rgO0fKjXUOwGyVzLGh
+ UdFtTTczLyYohlgtVYNCm+choSGObL6fiVgO2UUh6oPo9EGZunD54DdH8tFyuj9YBiFV
+ W5lvTa1zcZUZKTQklKDOVbd+Hw//FY1daE6/SQ2MtRgSj5N45m5TrcX6dt4vZxoZ5qG9
+ Sr01FfBESRJxK3HKSf3bY09qlHXIxfd1zyYl7NT8fmLAuXPNgnViYggvSOtpiS/ipo3R
+ 2lPvGEO/isimed3OW/CG/VBp6tGOa5FCv5tiC+cAGvOzta5q5I2AbZNsKZFAlNBCN7FS
+ jEhg==
+X-Gm-Message-State: AA+aEWb1WyLdeaS/xqpoLNIfQEb8OidK5+LI6Cy43dAVGhIxpREgEmBg
+ qBlXDnKsGFnzC2UtJJ3FnA==
+X-Google-Smtp-Source: AFSGD/XeJOApkGvdkxd48eaI/6391uyxOM9NiHU/74wjWx2he8cZDiD+k3ub8z+DYADUJDzUDyikXQ==
+X-Received: by 2002:a63:5518:: with SMTP id j24mr22083194pgb.208.1545299463150; 
+ Thu, 20 Dec 2018 01:51:03 -0800 (PST)
+Received: from mylaptop.redhat.com ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id 125sm33355206pfx.159.2018.12.20.01.50.55
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 20 Dec 2018 01:51:02 -0800 (PST)
+From: Pingfan Liu <kernelfans@gmail.com>
+To: linux-mm@kvack.org
+Subject: [PATCHv2 0/3] mm: bugfix for NULL reference in mm on all archs
+Date: Thu, 20 Dec 2018 17:50:36 +0800
+Message-Id: <1545299439-31370-1-git-send-email-kernelfans@gmail.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,102 +88,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>, kvm@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Sam Bobroff <sbobroff@linux.ibm.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Leonardo Augusto =?utf-8?Q?Guimar?= =?utf-8?Q?=C3=A3es?= Garcia
- <lagarcia@br.ibm.com>, Reza Arbab <arbab@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Michal Hocko <mhocko@suse.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Pingfan Liu <kernelfans@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, David Rientjes <rientjes@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+This bug is original reported at https://lore.kernel.org/patchwork/patch/1020838/
+In a short word, this bug should affect all archs, where a machine with a
+numa-node having no memory, if nr_cpus prevents the instance of nodeA, and the
+device on nodeA tries to allocate memory with device->numa_node info.
+And node_zonelist(preferred_nid, gfp_mask) will panic due to uninstanced nodeA.
 
-> My bad, I was not cc-ing everyone but now with v7 I am, sorry about that.
+And there are two alternative methods to fix it.
+-1st. Fix it in mm system
+-2nd. Fix it in all archs independently, by online all possible nodes.
 
-I've already applied v6, I'll assume this is unchanged from that unless
-you tell me otherwise.
+Originaly, I tries to fix it by the 1st method, while Michal suggests the 2nd one.
+This series [1-2/3] tries to resolve some defect in v1, pointed out by Michal.
+For discussion purpose, I send [3/3] in this thread, which tries to show e.g of
+the 2nd method on powerpc platform.
+For x86, I still help Michal to verify his patch on my test machine, please see:
+https://lore.kernel.org/patchwork/comment/1208479/
+https://lore.kernel.org/patchwork/comment/1210452/
 
-cheers
+It has already cost a little long time to find a solution, cc x86 and ppc mailing list
+and hope their maintainers to give some suggestion to speed up the final solution.
 
-> This is for passing through NVIDIA V100 GPUs on POWER9 systems.
-> 20/20 has the details of hardware setup.
->
-> This implements support for NVIDIA V100 GPU with coherent memory and
-> NPU/ATS support available in the POWER9 CPU. The aim is to support
-> unmodified vendor driver in the guest.
->
-> This is pushed to (both guest and host kernels):
-> https://github.com/aik/linux/tree/nv2
->
-> Matching qemu is pushed to github:
-> https://github.com/aik/qemu/tree/nv2
->
-> Skiboot bits are here:
-> https://github.com/aik/skiboot/tree/nv2
->
-> The individual patches have changelogs. v7 fixes compile warning
-> and updates a VFIO capability comment in 20/20.
->
-> Please comment. Thanks.
->
->
->
-> Alexey Kardashevskiy (20):
->   powerpc/ioda/npu: Call skiboot's hot reset hook when disabling NPU2
->   powerpc/mm/iommu/vfio_spapr_tce: Change mm_iommu_get to reference a
->     region
->   powerpc/vfio/iommu/kvm: Do not pin device memory
->   powerpc/powernv: Move npu struct from pnv_phb to pci_controller
->   powerpc/powernv/npu: Move OPAL calls away from context manipulation
->   powerpc/pseries/iommu: Use memory@ nodes in max RAM address
->     calculation
->   powerpc/pseries/npu: Enable platform support
->   powerpc/pseries: Remove IOMMU API support for non-LPAR systems
->   powerpc/powernv/pseries: Rework device adding to IOMMU groups
->   powerpc/iommu_api: Move IOMMU groups setup to a single place
->   powerpc/powernv: Reference iommu_table while it is linked to a group
->   powerpc/powernv/npu: Move single TVE handling to NPU PE
->   powerpc/powernv/npu: Convert NPU IOMMU helpers to
->     iommu_table_group_ops
->   powerpc/powernv/npu: Add compound IOMMU groups
->   powerpc/powernv/npu: Add release_ownership hook
->   powerpc/powernv/npu: Check mmio_atsd array bounds when populating
->   powerpc/powernv/npu: Fault user page into the hypervisor's pagetable
->   vfio_pci: Allow mapping extra regions
->   vfio_pci: Allow regions to add own capabilities
->   vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] subdriver
->
->  drivers/vfio/pci/Makefile                     |   1 +
->  arch/powerpc/include/asm/iommu.h              |  17 +-
->  arch/powerpc/include/asm/mmu_context.h        |  15 +-
->  arch/powerpc/include/asm/pci-bridge.h         |   1 +
->  arch/powerpc/include/asm/pci.h                |   4 +
->  arch/powerpc/platforms/powernv/pci.h          |  30 +-
->  drivers/vfio/pci/trace.h                      | 102 ++++
->  drivers/vfio/pci/vfio_pci_private.h           |  20 +
->  include/uapi/linux/vfio.h                     |  37 ++
->  arch/powerpc/kernel/iommu.c                   |  69 +--
->  arch/powerpc/kvm/book3s_64_vio.c              |  18 +-
->  arch/powerpc/mm/mmu_context_iommu.c           | 110 +++-
->  arch/powerpc/platforms/powernv/npu-dma.c      | 549 +++++++++++++++---
->  arch/powerpc/platforms/powernv/pci-ioda-tce.c |   3 +-
->  arch/powerpc/platforms/powernv/pci-ioda.c     | 237 ++++----
->  arch/powerpc/platforms/powernv/pci.c          |  43 +-
->  arch/powerpc/platforms/pseries/iommu.c        |  88 ++-
->  arch/powerpc/platforms/pseries/pci.c          |  22 +
->  drivers/vfio/pci/vfio_pci.c                   |  42 +-
->  drivers/vfio/pci/vfio_pci_nvlink2.c           | 482 +++++++++++++++
->  drivers/vfio/vfio_iommu_spapr_tce.c           |  64 +-
->  drivers/vfio/pci/Kconfig                      |   6 +
->  22 files changed, 1569 insertions(+), 391 deletions(-)
->  create mode 100644 drivers/vfio/pci/trace.h
->  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
->
-> -- 
-> 2.17.1
+Pingfan Liu (3):
+  mm/numa: change the topo of build_zonelist_xx()
+  mm/numa: build zonelist when alloc for device on offline node
+  powerpc/numa: make all possible node be instanced against NULL
+    reference in node_zonelist()
+
+ arch/powerpc/mm/numa.c | 13 ++++++--
+ include/linux/gfp.h    | 10 +++++-
+ mm/page_alloc.c        | 85 ++++++++++++++++++++++++++++++++++++--------------
+ 3 files changed, 81 insertions(+), 27 deletions(-)
+
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+-- 
+2.7.4
+
