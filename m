@@ -2,98 +2,69 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E8DAC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:32:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF234C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:39:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B9F3221773
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:32:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B9F3221773
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 44DC521773
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:39:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44DC521773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LHNg5KmLzDqxg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 03:32:35 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43LHXf1KmzzDr0d
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 03:39:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=muriloo@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43LHLL2SY4zDr1F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 03:30:29 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBKGTX7w064371
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 11:30:26 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2pgd3mmhke-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 11:30:25 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Thu, 20 Dec 2018 16:30:24 -0000
-Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 20 Dec 2018 16:30:20 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBKGUJw218612404
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 20 Dec 2018 16:30:19 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EA051C6059;
- Thu, 20 Dec 2018 16:30:18 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1EFE4C6055;
- Thu, 20 Dec 2018 16:30:08 +0000 (GMT)
-Received: from localhost (unknown [9.18.235.107])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu, 20 Dec 2018 16:30:07 +0000 (GMT)
-Date: Thu, 20 Dec 2018 14:30:06 -0200
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v7 20/20] vfio_pci: Add NVIDIA GV100GL [Tesla V100
- SXM2] subdriver
-References: <20181220082350.58113-1-aik@ozlabs.ru>
- <20181220082350.58113-21-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43LHVP0LLBzDqwD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 03:37:32 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43LHVH16Tpz9v2CS;
+ Thu, 20 Dec 2018 17:37:27 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id RXiMX8FNPIL2; Thu, 20 Dec 2018 17:37:27 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43LHVH0QK7z9v2CH;
+ Thu, 20 Dec 2018 17:37:27 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A790F8B8D5;
+ Thu, 20 Dec 2018 17:37:28 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id CVSYjuI97nZz; Thu, 20 Dec 2018 17:37:28 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1A0528B8AF;
+ Thu, 20 Dec 2018 17:37:28 +0100 (CET)
+Subject: Re: [RFC/WIP] powerpc: Fix 32-bit handling of MSR_EE on exceptions
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <fe3a79e078c644d9c1379ef5f8c431d787b6d0c8.camel@kernel.crashing.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <cbce315b-82f9-c748-92e4-97bb819c9098@c-s.fr>
+Date: Thu, 20 Dec 2018 16:33:56 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181220082350.58113-21-aik@ozlabs.ru>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 18122016-0004-0000-0000-000014C54170
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010255; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000272; SDB=6.01134539; UDB=6.00589891; IPR=6.00914712; 
- MB=3.00024770; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-20 16:30:23
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18122016-0005-0000-0000-000089ED7DA8
-Message-Id: <20181220163006.GA31987@kermit-br-ibm-com.br.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-20_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=52 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812200134
+In-Reply-To: <fe3a79e078c644d9c1379ef5f8c431d787b6d0c8.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,875 +76,636 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Reza Arbab <arbab@linux.ibm.com>,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Jose Ricardo Ziviani <joserz@linux.ibm.com>, kvm@vger.kernel.org,
- Sam Bobroff <sbobroff@linux.ibm.com>, Alistair Popple <alistair@popple.id.au>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- Alex Williamson <alex.williamson@redhat.com>,
- Leonardo Augusto =?iso-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Diana Craciun <diana.craciun@nxp.com>, Scott Wood <oss@buserror.net>,
+ Nick Piggin <npiggin@au1.ibm.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Dec 20, 2018 at 07:23:50PM +1100, Alexey Kardashevskiy wrote:
-> POWER9 Witherspoon machines come with 4 or 6 V100 GPUs which are not
-> pluggable PCIe devices but still have PCIe links which are used
-> for config space and MMIO. In addition to that the GPUs have 6 NVLinks
-> which are connected to other GPUs and the POWER9 CPU. POWER9 chips
-> have a special unit on a die called an NPU which is an NVLink2 host bus
-> adapter with p2p connections to 2 to 3 GPUs, 3 or 2 NVLinks to each.
-> These systems also support ATS (address translation services) which is
-> a part of the NVLink2 protocol. Such GPUs also share on-board RAM
-> (16GB or 32GB) to the system via the same NVLink2 so a CPU has
-> cache-coherent access to a GPU RAM.
+
+
+On 12/20/2018 05:40 AM, Benjamin Herrenschmidt wrote:
+> Hi folks !
 > 
-> This exports GPU RAM to the userspace as a new VFIO device region. This
-> preregisters the new memory as device memory as it might be used for DMA.
-> This inserts pfns from the fault handler as the GPU memory is not onlined
-> until the vendor driver is loaded and trained the NVLinks so doing this
-> earlier causes low level errors which we fence in the firmware so
-> it does not hurt the host system but still better be avoided; for the same
-> reason this does not map GPU RAM into the host kernel (usual thing for
-> emulated access otherwise).
+> Why trying to figure out why we had occasionally lockdep barf about
+> interrupt state on ppc32 (440 in my case but I could reproduce on e500
+> as well using qemu), I realized that we are still doing something
+> rather gothic and wrong on 32-bit which we stopped doing on 64-bit
+> a while ago.
 > 
-> This exports an ATSD (Address Translation Shootdown) register of NPU which
-> allows TLB invalidations inside GPU for an operating system. The register
-> conveniently occupies a single 64k page. It is also presented to
-> the userspace as a new VFIO device region. One NPU has 8 ATSD registers,
-> each of them can be used for TLB invalidation in a GPU linked to this NPU.
-> This allocates one ATSD register per an NVLink bridge allowing passing
-> up to 6 registers. Due to the host firmware bug (just recently fixed),
-> only 1 ATSD register per NPU was actually advertised to the host system
-> so this passes that alone register via the first NVLink bridge device in
-> the group which is still enough as QEMU collects them all back and
-> presents to the guest via vPHB to mimic the emulated NPU PHB on the host.
+> We have that thing where some handlers "copy" the EE value from the
+> original stack frame into the new MSR before transferring to the
+> handler.
 > 
-> In order to provide the userspace with the information about GPU-to-NVLink
-> connections, this exports an additional capability called "tgt"
-> (which is an abbreviated host system bus address). The "tgt" property
-> tells the GPU its own system address and allows the guest driver to
-> conglomerate the routing information so each GPU knows how to get directly
-> to the other GPUs.
+> Thus for a number of exceptions, we enter the handlers with interrupts
+> enabled.
 > 
-> For ATS to work, the nest MMU (an NVIDIA block in a P9 CPU) needs to
-> know LPID (a logical partition ID or a KVM guest hardware ID in other
-> words) and PID (a memory context ID of a userspace process, not to be
-> confused with a linux pid). This assigns a GPU to LPID in the NPU and
-> this is why this adds a listener for KVM on an IOMMU group. A PID comes
-> via NVLink from a GPU and NPU uses a PID wildcard to pass it through.
+> This is rather fishy, some of the stuff that handlers might do early
+> on such as irq_enter/exit or user_exit, context tracking, etc... should
+> be run with interrupts off afaik.
 > 
-> This requires coherent memory and ATSD to be available on the host as
-> the GPU vendor only supports configurations with both features enabled
-> and other configurations are known not to work. Because of this and
-> because of the ways the features are advertised to the host system
-> (which is a device tree with very platform specific properties),
-> this requires enabled POWERNV platform.
+> Generally our handlers know when to re-enable interrupts if needed
+> (though some of the FSL specific SPE ones don't).
 > 
-> The V100 GPUs do not advertise any of these capabilities via the config
-> space and there are more than just one device ID so this relies on
-> the platform to tell whether these GPUs have special abilities such as
-> NVLinks.
+> The problem we were having is that we assumed these interrupts would
+> return with interrupts enabled. However that isn't the case.
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Instead, this changes things so that we always enter exception handlers
+> with interrupts *off* with the notable exception of syscalls which are
+> special (and get a fast path).
+> 
+> Currently, the patch only changes BookE (440 and E5xx tested in qemu),
+> the same recipe needs to be applied to 6xx, 8xx and 40x.
+> 
+> Also I'm not sure whether we need to create a stack frame around some
+> of the calls to trace_hardirqs_* in asm. ppc64 does it, due to problems
+> with the irqsoff tracer, but I haven't managed to reproduce those
+> issues. We need to look into it a bit more.
+> 
+> I'll work more on this in the next few days, comments appreciated.
+> 
+> Not-signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
 > ---
-> Changes:
-> v6.1:
-> * fixed outdated comment about VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD
+>   arch/powerpc/kernel/entry_32.S       | 113 ++++++++++++++++++++++-------------
+>   arch/powerpc/kernel/head_44x.S       |   9 +--
+>   arch/powerpc/kernel/head_booke.h     |  34 ++++-------
+>   arch/powerpc/kernel/head_fsl_booke.S |  28 ++++-----
+>   arch/powerpc/kernel/traps.c          |   8 +++
+>   5 files changed, 111 insertions(+), 81 deletions(-)
 > 
-> v6:
-> * reworked capabilities - tgt for nvlink and gpu and link-speed
-> for nvlink only
-> 
-> v5:
-> * do not memremap GPU RAM for emulation, map it only when it is needed
-> * allocate 1 ATSD register per NVLink bridge, if none left, then expose
-> the region with a zero size
-> * separate caps per device type
-> * addressed AW review comments
-> 
-> v4:
-> * added nvlink-speed to the NPU bridge capability as this turned out to
-> be not a constant value
-> * instead of looking at the exact device ID (which also changes from system
-> to system), now this (indirectly) looks at the device tree to know
-> if GPU and NPU support NVLink
-> 
-> v3:
-> * reworded the commit log about tgt
-> * added tracepoints (do we want them enabled for entire vfio-pci?)
-> * added code comments
-> * added write|mmap flags to the new regions
-> * auto enabled VFIO_PCI_NVLINK2 config option
-> * added 'tgt' capability to a GPU so QEMU can recreate ibm,npu and ibm,gpu
-> references; there are required by the NVIDIA driver
-> * keep notifier registered only for short time
-> ---
->  drivers/vfio/pci/Makefile           |   1 +
->  drivers/vfio/pci/trace.h            | 102 ++++++
->  drivers/vfio/pci/vfio_pci_private.h |  14 +
->  include/uapi/linux/vfio.h           |  37 +++
->  drivers/vfio/pci/vfio_pci.c         |  27 +-
->  drivers/vfio/pci/vfio_pci_nvlink2.c | 482 ++++++++++++++++++++++++++++
->  drivers/vfio/pci/Kconfig            |   6 +
->  7 files changed, 667 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/vfio/pci/trace.h
->  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
-> 
-> diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
-> index 76d8ec0..9662c06 100644
-> --- a/drivers/vfio/pci/Makefile
-> +++ b/drivers/vfio/pci/Makefile
-> @@ -1,5 +1,6 @@
->  
->  vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
->  vfio-pci-$(CONFIG_VFIO_PCI_IGD) += vfio_pci_igd.o
-> +vfio-pci-$(CONFIG_VFIO_PCI_NVLINK2) += vfio_pci_nvlink2.o
->  
->  obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
-> diff --git a/drivers/vfio/pci/trace.h b/drivers/vfio/pci/trace.h
-> new file mode 100644
-> index 0000000..b80d2d3
-> --- /dev/null
-> +++ b/drivers/vfio/pci/trace.h
-> @@ -0,0 +1,102 @@
-> +/* SPDX-License-Identifier: GPL-2.0+ */
-> +/*
-> + * VFIO PCI mmap/mmap_fault tracepoints
-> + *
-> + * Copyright (C) 2018 IBM Corp.  All rights reserved.
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#undef TRACE_SYSTEM
-> +#define TRACE_SYSTEM vfio_pci
-> +
-> +#if !defined(_TRACE_VFIO_PCI_H) || defined(TRACE_HEADER_MULTI_READ)
-> +#define _TRACE_VFIO_PCI_H
-> +
-> +#include <linux/tracepoint.h>
-> +
-> +TRACE_EVENT(vfio_pci_nvgpu_mmap_fault,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			vm_fault_t ret),
-> +	TP_ARGS(pdev, hpa, ua, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->ret)
-> +);
-> +
-> +TRACE_EVENT(vfio_pci_nvgpu_mmap,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			unsigned long size, int ret),
-> +	TP_ARGS(pdev, hpa, ua, size, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(unsigned long, size)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->size = size;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->size, __entry->ret)
-> +);
-> +
-> +TRACE_EVENT(vfio_pci_npu2_mmap,
-> +	TP_PROTO(struct pci_dev *pdev, unsigned long hpa, unsigned long ua,
-> +			unsigned long size, int ret),
-> +	TP_ARGS(pdev, hpa, ua, size, ret),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(const char *, name)
-> +		__field(unsigned long, hpa)
-> +		__field(unsigned long, ua)
-> +		__field(unsigned long, size)
-> +		__field(int, ret)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->name = dev_name(&pdev->dev),
-> +		__entry->hpa = hpa;
-> +		__entry->ua = ua;
-> +		__entry->size = size;
-> +		__entry->ret = ret;
-> +	),
-> +
-> +	TP_printk("%s: %lx -> %lx size=%lx ret=%d", __entry->name, __entry->hpa,
-> +			__entry->ua, __entry->size, __entry->ret)
-> +);
-> +
-> +#endif /* _TRACE_SUBSYS_H */
-
-I think it's too late but this line I guess should read:
-
-  #endif /* _TRACE_VFIO_PCI_H */
-
-> +
-> +#undef TRACE_INCLUDE_PATH
-> +#define TRACE_INCLUDE_PATH .
-> +#undef TRACE_INCLUDE_FILE
-> +#define TRACE_INCLUDE_FILE trace
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
-> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
-> index 93c1738..127071b 100644
-> --- a/drivers/vfio/pci/vfio_pci_private.h
-> +++ b/drivers/vfio/pci/vfio_pci_private.h
-> @@ -163,4 +163,18 @@ static inline int vfio_pci_igd_init(struct vfio_pci_device *vdev)
->  	return -ENODEV;
->  }
->  #endif
-> +#ifdef CONFIG_VFIO_PCI_NVLINK2
-> +extern int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev);
-> +extern int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev);
-> +#else
-> +static inline int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
-> +{
-> +	return -ENODEV;
-> +}
-> +
-> +static inline int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
-> +{
-> +	return -ENODEV;
-> +}
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 3841d74..39b4cb5 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -34,6 +34,9 @@
+>   #include <asm/ftrace.h>
+>   #include <asm/ptrace.h>
+>   #include <asm/export.h>
+> +#include <asm/feature-fixups.h>
+> +#include <asm/barrier.h>
+> +#include <asm/bug.h>
+>   
+>   /*
+>    * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+> @@ -205,20 +208,46 @@ transfer_to_handler_cont:
+>   	mflr	r9
+>   	lwz	r11,0(r9)		/* virtual address of handler */
+>   	lwz	r9,4(r9)		/* where to go when done */
+> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
+> +	mtspr	SPRN_NRI, r0
 > +#endif
->  #endif /* VFIO_PCI_PRIVATE_H */
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index 8131028..5562587 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -353,6 +353,21 @@ struct vfio_region_gfx_edid {
->  #define VFIO_DEVICE_GFX_LINK_STATE_DOWN  2
->  };
->  
-> +/*
-> + * 10de vendor sub-type
-> + *
-> + * NVIDIA GPU NVlink2 RAM is coherent RAM mapped onto the host address space.
-> + */
-> +#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM	(1)
+
+That's not part of your patch, it's already in the tree.
+
 > +
-> +/*
-> + * 1014 vendor sub-type
-> + *
-> + * IBM NPU NVlink2 ATSD (Address Translation Shootdown) register of NPU
-> + * to do TLB invalidation on a GPU.
-> + */
-> +#define VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD	(1)
-> +
->  /*
->   * The MSIX mappable capability informs that MSIX data of a BAR can be mmapped
->   * which allows direct access to non-MSIX registers which happened to be within
-> @@ -363,6 +378,28 @@ struct vfio_region_gfx_edid {
->   */
->  #define VFIO_REGION_INFO_CAP_MSIX_MAPPABLE	3
->  
-> +/*
-> + * Capability with compressed real address (aka SSA - small system address)
-> + * where GPU RAM is mapped on a system bus. Used by a GPU for DMA routing.
-> + */
-> +#define VFIO_REGION_INFO_CAP_NVLINK2_SSATGT	4
-> +
-> +struct vfio_region_info_cap_nvlink2_ssatgt {
-> +	struct vfio_info_cap_header header;
-> +	__u64 tgt;
-> +};
-> +
-> +/*
-> + * Capability with an NVLink link speed.
-> + */
-> +#define VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD	5
-> +
-> +struct vfio_region_info_cap_nvlink2_lnkspd {
-> +	struct vfio_info_cap_header header;
-> +	__u32 link_speed;
-> +	__u32 __pad;
-> +};
-> +
->  /**
->   * VFIO_DEVICE_GET_IRQ_INFO - _IOWR(VFIO_TYPE, VFIO_BASE + 9,
->   *				    struct vfio_irq_info)
-> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-> index 6cb70cf..67c03f2 100644
-> --- a/drivers/vfio/pci/vfio_pci.c
-> +++ b/drivers/vfio/pci/vfio_pci.c
-> @@ -302,14 +302,37 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
->  		if (ret) {
->  			dev_warn(&vdev->pdev->dev,
->  				 "Failed to setup Intel IGD regions\n");
-> -			vfio_pci_disable(vdev);
-> -			return ret;
-> +			goto disable_exit;
-> +		}
-> +	}
-> +
-> +	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA &&
-> +	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {
-> +		ret = vfio_pci_nvdia_v100_nvlink2_init(vdev);
-> +		if (ret && ret != -ENODEV) {
-> +			dev_warn(&vdev->pdev->dev,
-> +				 "Failed to setup NVIDIA NV2 RAM region\n");
-> +			goto disable_exit;
-> +		}
-> +	}
-> +
-> +	if (pdev->vendor == PCI_VENDOR_ID_IBM &&
-> +	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {
-> +		ret = vfio_pci_ibm_npu2_init(vdev);
-> +		if (ret && ret != -ENODEV) {
-> +			dev_warn(&vdev->pdev->dev,
-> +					"Failed to setup NVIDIA NV2 ATSD region\n");
-> +			goto disable_exit;
->  		}
->  	}
->  
->  	vfio_pci_probe_mmaps(vdev);
->  
->  	return 0;
-> +
-> +disable_exit:
-> +	vfio_pci_disable(vdev);
-> +	return ret;
->  }
->  
->  static void vfio_pci_disable(struct vfio_pci_device *vdev)
-> diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
-> new file mode 100644
-> index 0000000..054a2cf
-> --- /dev/null
-> +++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
-> @@ -0,0 +1,482 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +/*
-> + * VFIO PCI NVIDIA Whitherspoon GPU support a.k.a. NVLink2.
-> + *
-> + * Copyright (C) 2018 IBM Corp.  All rights reserved.
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Register an on-GPU RAM region for cacheable access.
-> + *
-> + * Derived from original vfio_pci_igd.c:
-> + * Copyright (C) 2016 Red Hat, Inc.  All rights reserved.
-> + *	Author: Alex Williamson <alex.williamson@redhat.com>
-> + */
-> +
-> +#include <linux/io.h>
-> +#include <linux/pci.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/vfio.h>
-> +#include <linux/sched/mm.h>
-> +#include <linux/mmu_context.h>
-> +#include <asm/kvm_ppc.h>
-> +#include "vfio_pci_private.h"
-> +
-> +#define CREATE_TRACE_POINTS
-> +#include "trace.h"
-> +
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_nvgpu_mmap_fault);
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_nvgpu_mmap);
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(vfio_pci_npu2_mmap);
-> +
-> +struct vfio_pci_nvgpu_data {
-> +	unsigned long gpu_hpa; /* GPU RAM physical address */
-> +	unsigned long gpu_tgt; /* TGT address of corresponding GPU RAM */
-> +	unsigned long useraddr; /* GPU RAM userspace address */
-> +	unsigned long size; /* Size of the GPU RAM window (usually 128GB) */
-> +	struct mm_struct *mm;
-> +	struct mm_iommu_table_group_mem_t *mem; /* Pre-registered RAM descr. */
-> +	struct pci_dev *gpdev;
-> +	struct notifier_block group_notifier;
-> +};
-> +
-> +static size_t vfio_pci_nvgpu_rw(struct vfio_pci_device *vdev,
-> +		char __user *buf, size_t count, loff_t *ppos, bool iswrite)
-> +{
-> +	unsigned int i = VFIO_PCI_OFFSET_TO_INDEX(*ppos) - VFIO_PCI_NUM_REGIONS;
-> +	struct vfio_pci_nvgpu_data *data = vdev->region[i].data;
-> +	loff_t pos = *ppos & VFIO_PCI_OFFSET_MASK;
-> +	loff_t posaligned = pos & PAGE_MASK, posoff = pos & ~PAGE_MASK;
-> +	size_t sizealigned;
-> +	void __iomem *ptr;
-> +
-> +	if (pos >= vdev->region[i].size)
-> +		return -EINVAL;
-> +
-> +	count = min(count, (size_t)(vdev->region[i].size - pos));
-> +
+>   #ifdef CONFIG_TRACE_IRQFLAGS
 > +	/*
-> +	 * We map only a bit of GPU RAM for a short time instead of mapping it
-> +	 * for the guest lifetime as:
+> +	 * When tracing IRQ state (lockdep) we enable the MMU before we call
+> +	 * the IRQ tracing functions as they might access vmalloc space or
+> +	 * perform IOs for console output.
 > +	 *
-> +	 * 1) we do not know GPU RAM size, only aperture which is 4-8 times
-> +	 *    bigger than actual RAM size (16/32GB RAM vs. 128GB aperture);
-> +	 * 2) mapping GPU RAM allows CPU to prefetch and if this happens
-> +	 *    before NVLink bridge is reset (which fences GPU RAM),
-> +	 *    hardware management interrupts (HMI) might happen, this
-> +	 *    will freeze NVLink bridge.
-> +	 *
-> +	 * This is not fast path anyway.
+> +	 * To speed up the syscall path where interrupts stay on, let's check
+> +	 * first if we are changing the MSR value at all.
 > +	 */
-> +	sizealigned = _ALIGN_UP(posoff + count, PAGE_SIZE);
-> +	ptr = ioremap_cache(data->gpu_hpa + posaligned, sizealigned);
-> +	if (!ptr)
-> +		return -EFAULT;
+> +	lwz	r12,_MSR(r1)
+> +	xor	r0,r10,r12
+> +	andi.	r0,r0,MSR_EE
+> +	bne	1f
 > +
-> +	if (iswrite) {
-> +		if (copy_from_user(ptr + posoff, buf, count))
-> +			count = -EFAULT;
-> +		else
-> +			*ppos += count;
-> +	} else {
-> +		if (copy_to_user(buf, ptr + posoff, count))
-> +			count = -EFAULT;
-> +		else
-> +			*ppos += count;
-> +	}
+> +	/* MSR isn't changing, just transition directly */
+> +	lwz	r0,GPR0(r1)
+> +	mtspr	SPRN_SRR0,r11
+> +	mtspr	SPRN_SRR1,r10
+> +	mtlr	r9
+> +	SYNC
+> +	RFI
 > +
-> +	iounmap(ptr);
-> +
-> +	return count;
-> +}
-> +
-> +static void vfio_pci_nvgpu_release(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region)
-> +{
-> +	struct vfio_pci_nvgpu_data *data = region->data;
-> +	long ret;
-> +
-> +	/* If there were any mappings at all... */
-> +	if (data->mm) {
-> +		ret = mm_iommu_put(data->mm, data->mem);
-> +		WARN_ON(ret);
-> +
-> +		mmdrop(data->mm);
-> +	}
-> +
-> +	vfio_unregister_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
-> +			&data->group_notifier);
-> +
-> +	pnv_npu2_unmap_lpar_dev(data->gpdev);
-> +
-> +	kfree(data);
-> +}
-> +
-> +static vm_fault_t vfio_pci_nvgpu_mmap_fault(struct vm_fault *vmf)
-> +{
-> +	vm_fault_t ret;
-> +	struct vm_area_struct *vma = vmf->vma;
-> +	struct vfio_pci_region *region = vma->vm_private_data;
-> +	struct vfio_pci_nvgpu_data *data = region->data;
-> +	unsigned long vmf_off = (vmf->address - vma->vm_start) >> PAGE_SHIFT;
-> +	unsigned long nv2pg = data->gpu_hpa >> PAGE_SHIFT;
-> +	unsigned long vm_pgoff = vma->vm_pgoff &
-> +		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
-> +	unsigned long pfn = nv2pg + vm_pgoff + vmf_off;
-> +
-> +	ret = vmf_insert_pfn(vma, vmf->address, pfn);
-> +	trace_vfio_pci_nvgpu_mmap_fault(data->gpdev, pfn << PAGE_SHIFT,
-> +			vmf->address, ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct vm_operations_struct vfio_pci_nvgpu_mmap_vmops = {
-> +	.fault = vfio_pci_nvgpu_mmap_fault,
-> +};
-> +
-> +static int vfio_pci_nvgpu_mmap(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region, struct vm_area_struct *vma)
-> +{
-> +	int ret;
-> +	struct vfio_pci_nvgpu_data *data = region->data;
-> +
-> +	if (data->useraddr)
-> +		return -EPERM;
-> +
-> +	if (vma->vm_end - vma->vm_start > data->size)
-> +		return -EINVAL;
-> +
-> +	vma->vm_private_data = region;
-> +	vma->vm_flags |= VM_PFNMAP;
-> +	vma->vm_ops = &vfio_pci_nvgpu_mmap_vmops;
-> +
-> +	/*
-> +	 * Calling mm_iommu_newdev() here once as the region is not
-> +	 * registered yet and therefore right initialization will happen now.
-> +	 * Other places will use mm_iommu_find() which returns
-> +	 * registered @mem and does not go gup().
+> +1:	/* MSR is changing, re-enable MMU so we can notify lockdep. We need to
+> +	 * keep interrupts disabled at this point otherwise we might risk
+> +	 * taking an interrupt before we tell lockdep they are enabled.
 > +	 */
-> +	data->useraddr = vma->vm_start;
-> +	data->mm = current->mm;
+>   	lis	r12,reenable_mmu@h
+>   	ori	r12,r12,reenable_mmu@l
+> +	lis	r0,MSR_KERNEL@h
+> +	ori	r0,r0,MSR_KERNEL@l
+>   	mtspr	SPRN_SRR0,r12
+> -	mtspr	SPRN_SRR1,r10
+> +	mtspr	SPRN_SRR1,r0
+>   	SYNC
+>   	RFI
+> -reenable_mmu:				/* re-enable mmu so we can */
+> -	mfmsr	r10
+> -	lwz	r12,_MSR(r1)
+> -	xor	r10,r10,r12
+> -	andi.	r10,r10,MSR_EE		/* Did EE change? */
+> -	beq	1f
+>   
+> +reenable_mmu:
+>   	/*
+>   	 * The trace_hardirqs_off will use CALLER_ADDR0 and CALLER_ADDR1.
+>   	 * If from user mode there is only one stack frame on the stack, and
+> @@ -239,8 +268,29 @@ reenable_mmu:				/* re-enable mmu so we can */
+>   	stw	r3,16(r1)
+>   	stw	r4,20(r1)
+>   	stw	r5,24(r1)
+> -	bl	trace_hardirqs_off
+> -	lwz	r5,24(r1)
 > +
-> +	atomic_inc(&data->mm->mm_count);
-> +	ret = (int) mm_iommu_newdev(data->mm, data->useraddr,
-> +			(vma->vm_end - vma->vm_start) >> PAGE_SHIFT,
-> +			data->gpu_hpa, &data->mem);
+> +	/* Are we enabling or disabling interrupts ? */
+> +	andi.	r0,r10,MSR_EE
+> +	beq	1f
 > +
-> +	trace_vfio_pci_nvgpu_mmap(vdev->pdev, data->gpu_hpa, data->useraddr,
-> +			vma->vm_end - vma->vm_start, ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static int vfio_pci_nvgpu_add_capability(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region, struct vfio_info_cap *caps)
-> +{
-> +	struct vfio_pci_nvgpu_data *data = region->data;
-> +	struct vfio_region_info_cap_nvlink2_ssatgt cap = { 0 };
-> +
-> +	cap.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT;
-> +	cap.header.version = 1;
-> +	cap.tgt = data->gpu_tgt;
-> +
-> +	return vfio_info_add_capability(caps, &cap.header, sizeof(cap));
-> +}
-> +
-> +static const struct vfio_pci_regops vfio_pci_nvgpu_regops = {
-> +	.rw = vfio_pci_nvgpu_rw,
-> +	.release = vfio_pci_nvgpu_release,
-> +	.mmap = vfio_pci_nvgpu_mmap,
-> +	.add_capability = vfio_pci_nvgpu_add_capability,
-> +};
-> +
-> +static int vfio_pci_nvgpu_group_notifier(struct notifier_block *nb,
-> +		unsigned long action, void *opaque)
-> +{
-> +	struct kvm *kvm = opaque;
-> +	struct vfio_pci_nvgpu_data *data = container_of(nb,
-> +			struct vfio_pci_nvgpu_data,
-> +			group_notifier);
-> +
-> +	if (action == VFIO_GROUP_NOTIFY_SET_KVM && kvm &&
-> +			pnv_npu2_map_lpar_dev(data->gpdev,
-> +				kvm->arch.lpid, MSR_DR | MSR_PR))
-> +		return NOTIFY_BAD;
-> +
-> +	return NOTIFY_OK;
-> +}
-> +
-> +int vfio_pci_nvdia_v100_nvlink2_init(struct vfio_pci_device *vdev)
-> +{
-> +	int ret;
-> +	u64 reg[2];
-> +	u64 tgt = 0;
-> +	struct device_node *npu_node, *mem_node;
-> +	struct pci_dev *npu_dev;
-> +	struct vfio_pci_nvgpu_data *data;
-> +	uint32_t mem_phandle = 0;
-> +	unsigned long events = VFIO_GROUP_NOTIFY_SET_KVM;
-> +
-> +	/*
-> +	 * PCI config space does not tell us about NVLink presense but
-> +	 * platform does, use this.
+> +	/* If we are enabling interrupt, this is a syscall. They shouldn't
+> +	 * happen while interrupts are disabled, so let's do a warning here.
 > +	 */
-> +	npu_dev = pnv_pci_get_npu_dev(vdev->pdev, 0);
-> +	if (!npu_dev)
-> +		return -ENODEV;
+> +0:	trap
+> +	EMIT_BUG_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
+> +	bl	trace_hardirqs_on
 > +
-> +	npu_node = pci_device_to_OF_node(npu_dev);
-> +	if (!npu_node)
-> +		return -EINVAL;
+> +	/* Now enable for real */
+> +	mfmsr	r10
+> +	ori	r10,r10,MSR_EE
+> +	mtmsr	r10
+> +	b	2f
 > +
-> +	if (of_property_read_u32(npu_node, "memory-region", &mem_phandle))
-> +		return -EINVAL;
-> +
-> +	mem_node = of_find_node_by_phandle(mem_phandle);
-> +	if (!mem_node)
-> +		return -EINVAL;
-> +
-> +	if (of_property_read_variable_u64_array(mem_node, "reg", reg,
-> +				ARRAY_SIZE(reg), ARRAY_SIZE(reg)) !=
-> +			ARRAY_SIZE(reg))
-> +		return -EINVAL;
-> +
-> +	if (of_property_read_u64(npu_node, "ibm,device-tgt-addr", &tgt)) {
-> +		dev_warn(&vdev->pdev->dev, "No ibm,device-tgt-addr found\n");
-> +		return -EFAULT;
-> +	}
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	data->gpu_hpa = reg[0];
-> +	data->gpu_tgt = tgt;
-> +	data->size = reg[1];
-> +
-> +	dev_dbg(&vdev->pdev->dev, "%lx..%lx\n", data->gpu_hpa,
-> +			data->gpu_hpa + data->size - 1);
-> +
-> +	data->gpdev = vdev->pdev;
-> +	data->group_notifier.notifier_call = vfio_pci_nvgpu_group_notifier;
-> +
-> +	ret = vfio_register_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
-> +			&events, &data->group_notifier);
-> +	if (ret)
-> +		goto free_exit;
-> +
-> +	/*
-> +	 * We have just set KVM, we do not need the listener anymore.
-> +	 * Also, keeping it registered means that if more than one GPU is
-> +	 * assigned, we will get several similar notifiers notifying about
-> +	 * the same device again which does not help with anything.
+> +	/* If we are disabling interrupts (normal case), simply log it with
+> +	 * lockdep
 > +	 */
-> +	vfio_unregister_notifier(&data->gpdev->dev, VFIO_GROUP_NOTIFY,
-> +			&data->group_notifier);
+> +1:	bl	trace_hardirqs_off
+> +2:	lwz	r5,24(r1)
+>   	lwz	r4,20(r1)
+>   	lwz	r3,16(r1)
+>   	lwz	r11,12(r1)
+> @@ -250,7 +300,7 @@ reenable_mmu:				/* re-enable mmu so we can */
+>   	lwz	r6,GPR6(r1)
+>   	lwz	r7,GPR7(r1)
+>   	lwz	r8,GPR8(r1)
+> -1:	mtctr	r11
+> +	mtctr	r11
+>   	mtlr	r9
+>   	bctr				/* jump to handler */
+>   #else /* CONFIG_TRACE_IRQFLAGS */
+> @@ -312,31 +362,19 @@ _GLOBAL(DoSyscall)
+>   	lwz	r11,_CCR(r1)	/* Clear SO bit in CR */
+>   	rlwinm	r11,r11,0,4,2
+>   	stw	r11,_CCR(r1)
 > +
-> +	ret = vfio_pci_register_dev_region(vdev,
-> +			PCI_VENDOR_ID_NVIDIA | VFIO_REGION_TYPE_PCI_VENDOR_TYPE,
-> +			VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2_RAM,
-> +			&vfio_pci_nvgpu_regops,
-> +			data->size,
-> +			VFIO_REGION_INFO_FLAG_READ |
-> +			VFIO_REGION_INFO_FLAG_WRITE |
-> +			VFIO_REGION_INFO_FLAG_MMAP,
-> +			data);
-> +	if (ret)
-> +		goto free_exit;
+>   #ifdef CONFIG_TRACE_IRQFLAGS
+> -	/* Return from syscalls can (and generally will) hard enable
+> -	 * interrupts. You aren't supposed to call a syscall with
+> -	 * interrupts disabled in the first place. However, to ensure
+> -	 * that we get it right vs. lockdep if it happens, we force
+> -	 * that hard enable here with appropriate tracing if we see
+> -	 * that we have been called with interrupts off
+> -	 */
+> +	/* Make sure interrupts are enabled */
+>   	mfmsr	r11
+>   	andi.	r12,r11,MSR_EE
+>   	bne+	1f
+> -	/* We came in with interrupts disabled, we enable them now */
+> -	bl	trace_hardirqs_on
+> -	mfmsr	r11
+> -	lwz	r0,GPR0(r1)
+> -	lwz	r3,GPR3(r1)
+> -	lwz	r4,GPR4(r1)
+> -	ori	r11,r11,MSR_EE
+> -	lwz	r5,GPR5(r1)
+> -	lwz	r6,GPR6(r1)
+> -	lwz	r7,GPR7(r1)
+> -	lwz	r8,GPR8(r1)
+> -	mtmsr	r11
+> +	/* We came in with interrupts disabled, we WARN and mark them enabled
+> +	 * for lockdep now */
+> +0:	trap
+> +	EMIT_BUG_ENTRY 0b,__FILE__,__LINE__, BUGFLAG_WARNING
+>   1:
+>   #endif /* CONFIG_TRACE_IRQFLAGS */
 > +
-> +	return 0;
-> +free_exit:
-> +	kfree(data);
+>   	CURRENT_THREAD_INFO(r10, r1)
+>   	lwz	r11,TI_FLAGS(r10)
+>   	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
+> @@ -375,8 +413,7 @@ syscall_exit_cont:
+>   	lwz	r8,_MSR(r1)
+>   #ifdef CONFIG_TRACE_IRQFLAGS
+>   	/* If we are going to return from the syscall with interrupts
+> -	 * off, we trace that here. It shouldn't happen though but we
+> -	 * want to catch the bugger if it does right ?
+> +	 * off, we trace that here. It shouldn't normally happen.
+>   	 */
+>   	andi.	r10,r8,MSR_EE
+>   	bne+	1f
+> @@ -881,13 +918,6 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_47x)
+>   	 * off in this assembly code while peeking at TI_FLAGS() and such. However
+>   	 * we need to inform it if the exception turned interrupts off, and we
+>   	 * are about to trun them back on.
+> -	 *
+> -	 * The problem here sadly is that we don't know whether the exceptions was
+> -	 * one that turned interrupts off or not. So we always tell lockdep about
+> -	 * turning them on here when we go back to wherever we came from with EE
+> -	 * on, even if that may meen some redudant calls being tracked. Maybe later
+> -	 * we could encode what the exception did somewhere or test the exception
+> -	 * type in the pt_regs but that sounds overkill
+>   	 */
+>   	andi.	r10,r9,MSR_EE
+>   	beq	1f
+> @@ -1175,9 +1205,10 @@ do_work:			/* r10 contains MSR_KERNEL here */
+>   	beq	do_user_signal
+>   
+>   do_resched:			/* r10 contains MSR_KERNEL here */
+> -	/* Note: We don't need to inform lockdep that we are enabling
+> -	 * interrupts here. As far as it knows, they are already enabled
+> -	 */
+> +#ifdef CONFIG_TRACE_IRQFLAGS
+> +	bl	trace_hardirqs_on
+> +	mfmsr	r10
+> +#endif
+>   	ori	r10,r10,MSR_EE
+>   	SYNC
+>   	MTMSRD(r10)		/* hard-enable interrupts */
+> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+> index 37e4a7c..891a048 100644
+> --- a/arch/powerpc/kernel/head_44x.S
+> +++ b/arch/powerpc/kernel/head_44x.S
+> @@ -40,6 +40,7 @@
+>   #include <asm/ptrace.h>
+>   #include <asm/synch.h>
+>   #include <asm/export.h>
 > +
-> +	return ret;
-> +}
+>   #include "head_booke.h"
+>   
+>   
+> @@ -277,16 +278,16 @@ interrupt_base:
+>   	FP_UNAVAILABLE_EXCEPTION
+>   #else
+>   	EXCEPTION(0x2010, BOOKE_INTERRUPT_FP_UNAVAIL, \
+> -		  FloatingPointUnavailable, unknown_exception, EXC_XFER_EE)
+> +		  FloatingPointUnavailable, unknown_exception, EXC_XFER_STD)
+>   #endif
+>   	/* System Call Interrupt */
+>   	START_EXCEPTION(SystemCall)
+>   	NORMAL_EXCEPTION_PROLOG(BOOKE_INTERRUPT_SYSCALL)
+> -	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+> +	EXC_XFER_SYS(0x0c00, DoSyscall)
+>   
+>   	/* Auxiliary Processor Unavailable Interrupt */
+>   	EXCEPTION(0x2020, BOOKE_INTERRUPT_AP_UNAVAIL, \
+> -		  AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_EE)
+> +		  AuxillaryProcessorUnavailable, unknown_exception, EXC_XFER_STD)
+>   
+>   	/* Decrementer Interrupt */
+>   	DECREMENTER_EXCEPTION
+> @@ -294,7 +295,7 @@ interrupt_base:
+>   	/* Fixed Internal Timer Interrupt */
+>   	/* TODO: Add FIT support */
+>   	EXCEPTION(0x1010, BOOKE_INTERRUPT_FIT, FixedIntervalTimer, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   
+>   	/* Watchdog Timer Interrupt */
+>   	/* TODO: Add watchdog support */
+> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/kernel/head_booke.h
+> index a620203..46be533 100644
+> --- a/arch/powerpc/kernel/head_booke.h
+> +++ b/arch/powerpc/kernel/head_booke.h
+> @@ -210,8 +210,7 @@
+>   	CRITICAL_EXCEPTION_PROLOG(intno);				\
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD;				\
+>   	EXC_XFER_TEMPLATE(hdlr, n+2, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+> -			  NOCOPY, crit_transfer_to_handler, \
+> -			  ret_from_crit_exc)
+> +			  crit_transfer_to_handler, ret_from_crit_exc)
+>   
+>   #define MCHECK_EXCEPTION(n, label, hdlr)			\
+>   	START_EXCEPTION(label);					\
+> @@ -220,36 +219,27 @@
+>   	stw	r5,_ESR(r11);					\
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+>   	EXC_XFER_TEMPLATE(hdlr, n+4, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+> -			  NOCOPY, mcheck_transfer_to_handler,   \
+> -			  ret_from_mcheck_exc)
+> +			  mcheck_transfer_to_handler, ret_from_mcheck_exc)
+>   
+> -#define EXC_XFER_TEMPLATE(hdlr, trap, msr, copyee, tfer, ret)	\
+> +#define EXC_XFER_TEMPLATE(hdlr, trap, msr, tfer, ret)	\
+>   	li	r10,trap;					\
+>   	stw	r10,_TRAP(r11);					\
+>   	lis	r10,msr@h;					\
+>   	ori	r10,r10,msr@l;					\
+> -	copyee(r10, r9);					\
+>   	bl	tfer;		 				\
+>   	.long	hdlr;						\
+>   	.long	ret
+>   
+> -#define COPY_EE(d, s)		rlwimi d,s,0,16,16
+> -#define NOCOPY(d, s)
+> -
+>   #define EXC_XFER_STD(n, hdlr)		\
+> -	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, NOCOPY, transfer_to_handler_full, \
+> +	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, transfer_to_handler_full, \
+>   			  ret_from_except_full)
+>   
+> -#define EXC_XFER_LITE(n, hdlr)		\
+> -	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, NOCOPY, transfer_to_handler, \
+> +#define EXC_XFER_SYS(n, hdlr)						\
+> +	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL | MSR_EE, transfer_to_handler, \
+>   			  ret_from_except)
+>   
+> -#define EXC_XFER_EE(n, hdlr)		\
+> -	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, COPY_EE, transfer_to_handler_full, \
+> -			  ret_from_except_full)
+> -
+> -#define EXC_XFER_EE_LITE(n, hdlr)	\
+> -	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, COPY_EE, transfer_to_handler, \
+> +#define EXC_XFER_LITE(n, hdlr)		\
+> +	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, transfer_to_handler, \
+>   			  ret_from_except)
+>   
+>   /* Check for a single step debug exception while in an exception
+> @@ -316,7 +306,7 @@
+>   	/* continue normal handling for a debug exception... */		      \
+>   2:	mfspr	r4,SPRN_DBSR;						      \
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+> -	EXC_XFER_TEMPLATE(DebugException, 0x2008, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, debug_transfer_to_handler, ret_from_debug_exc)
+> +	EXC_XFER_TEMPLATE(DebugException, 0x2008, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), debug_transfer_to_handler, ret_from_debug_exc)
+>   
+>   #define DEBUG_CRIT_EXCEPTION						      \
+>   	START_EXCEPTION(DebugCrit);					      \
+> @@ -369,7 +359,7 @@
+>   	/* continue normal handling for a critical exception... */	      \
+>   2:	mfspr	r4,SPRN_DBSR;						      \
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+> -	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
+> +	EXC_XFER_TEMPLATE(DebugException, 0x2002, (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), crit_transfer_to_handler, ret_from_crit_exc)
+>   
+>   #define DATA_STORAGE_EXCEPTION						      \
+>   	START_EXCEPTION(DataStorage)					      \
+> @@ -394,7 +384,7 @@
+>   	mfspr   r4,SPRN_DEAR;           /* Grab the DEAR and save it */	      \
+>   	stw     r4,_DEAR(r11);						      \
+>   	addi    r3,r1,STACK_FRAME_OVERHEAD;				      \
+> -	EXC_XFER_EE(0x0600, alignment_exception)
+> +	EXC_XFER_STD(0x0600, alignment_exception)
+>   
+>   #define PROGRAM_EXCEPTION						      \
+>   	START_EXCEPTION(Program)					      \
+> @@ -419,7 +409,7 @@
+>   	bl	load_up_fpu;		/* if from user, just load it up */   \
+>   	b	fast_exception_return;					      \
+>   1:	addi	r3,r1,STACK_FRAME_OVERHEAD;				      \
+> -	EXC_XFER_EE_LITE(0x800, kernel_fp_unavailable_exception)
+> +	EXC_XFER_STD(0x800, kernel_fp_unavailable_exception)
+>   
+>   #ifndef __ASSEMBLY__
+>   struct exception_regs {
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> index bf4c602..556cffb 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -385,7 +385,7 @@ interrupt_base:
+>   	EXC_XFER_LITE(0x0300, handle_page_fault)
+>   1:
+>   	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	EXC_XFER_EE_LITE(0x0300, CacheLockingException)
+> +	EXC_XFER_LITE(0x0300, CacheLockingException)
+>   
+>   	/* Instruction Storage Interrupt */
+>   	INSTRUCTION_STORAGE_EXCEPTION
+> @@ -406,21 +406,21 @@ interrupt_base:
+>   #ifdef CONFIG_E200
+>   	/* E200 treats 'normal' floating point instructions as FP Unavail exception */
+>   	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
+> -		  program_check_exception, EXC_XFER_EE)
+> +		  program_check_exception, EXC_XFER_STD)
+>   #else
+>   	EXCEPTION(0x0800, FP_UNAVAIL, FloatingPointUnavailable, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   #endif
+>   #endif
+>   
+>   	/* System Call Interrupt */
+>   	START_EXCEPTION(SystemCall)
+>   	NORMAL_EXCEPTION_PROLOG(SYSCALL)
+> -	EXC_XFER_EE_LITE(0x0c00, DoSyscall)
+> +	EXC_XFER_SYS(0x0c00, DoSyscall)
+>   
+>   	/* Auxiliary Processor Unavailable Interrupt */
+>   	EXCEPTION(0x2900, AP_UNAVAIL, AuxillaryProcessorUnavailable, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   
+>   	/* Decrementer Interrupt */
+>   	DECREMENTER_EXCEPTION
+> @@ -428,7 +428,7 @@ interrupt_base:
+>   	/* Fixed Internal Timer Interrupt */
+>   	/* TODO: Add FIT support */
+>   	EXCEPTION(0x3100, FIT, FixedIntervalTimer, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   
+>   	/* Watchdog Timer Interrupt */
+>   #ifdef CONFIG_BOOKE_WDT
+> @@ -623,25 +623,25 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+>   	bl	load_up_spe
+>   	b	fast_exception_return
+>   1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	EXC_XFER_EE_LITE(0x2010, KernelSPE)
+> +	EXC_XFER_LITE(0x2010, KernelSPE)
+>   #elif defined(CONFIG_SPE_POSSIBLE)
+>   	EXCEPTION(0x2020, SPE_UNAVAIL, SPEUnavailable, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   #endif /* CONFIG_SPE_POSSIBLE */
+>   
+>   	/* SPE Floating Point Data */
+>   #ifdef CONFIG_SPE
+>   	EXCEPTION(0x2030, SPE_FP_DATA, SPEFloatingPointData,
+> -		  SPEFloatingPointException, EXC_XFER_EE)
+> +		  SPEFloatingPointException, EXC_XFER_STD)
+>   
+>   	/* SPE Floating Point Round */
+>   	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
+> -		  SPEFloatingPointRoundException, EXC_XFER_EE)
+> +		  SPEFloatingPointRoundException, EXC_XFER_STD)
+>   #elif defined(CONFIG_SPE_POSSIBLE)
+>   	EXCEPTION(0x2040, SPE_FP_DATA, SPEFloatingPointData,
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   	EXCEPTION(0x2050, SPE_FP_ROUND, SPEFloatingPointRound, \
+> -		  unknown_exception, EXC_XFER_EE)
+> +		  unknown_exception, EXC_XFER_STD)
+>   #endif /* CONFIG_SPE_POSSIBLE */
+>   
+>   
+> @@ -664,10 +664,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+>   			   unknown_exception)
+>   
+>   	/* Hypercall */
+> -	EXCEPTION(0, HV_SYSCALL, Hypercall, unknown_exception, EXC_XFER_EE)
+> +	EXCEPTION(0, HV_SYSCALL, Hypercall, unknown_exception, EXC_XFER_STD)
+>   
+>   	/* Embedded Hypervisor Privilege */
+> -	EXCEPTION(0, HV_PRIV, Ehvpriv, unknown_exception, EXC_XFER_EE)
+> +	EXCEPTION(0, HV_PRIV, Ehvpriv, unknown_exception, EXC_XFER_STD)
+>   
+>   interrupt_end:
+>   
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 023a462..5ee0b90 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1858,6 +1858,10 @@ void SPEFloatingPointException(struct pt_regs *regs)
+>   	int code = 0;
+>   	int err;
+>   
+> +	/* We restore the interrupt state now */
+> +	if (!arch_irq_disabled_regs(regs))
+> +		local_irq_enable();
 > +
-> +/*
-> + * IBM NPU2 bridge
-> + */
-> +struct vfio_pci_npu2_data {
-> +	void *base; /* ATSD register virtual address, for emulated access */
-> +	unsigned long mmio_atsd; /* ATSD physical address */
-> +	unsigned long gpu_tgt; /* TGT address of corresponding GPU RAM */
-> +	unsigned int link_speed; /* The link speed from DT's ibm,nvlink-speed */
-> +};
+>   	flush_spe_to_thread(current);
+>   
+>   	spefscr = current->thread.spefscr;
+> @@ -1903,6 +1907,10 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
+>   	extern int speround_handler(struct pt_regs *regs);
+>   	int err;
+>   
+> +	/* We restore the interrupt state now */
+> +	if (!arch_irq_disabled_regs(regs))
+> +		local_irq_enable();
 > +
-> +static size_t vfio_pci_npu2_rw(struct vfio_pci_device *vdev,
-> +		char __user *buf, size_t count, loff_t *ppos, bool iswrite)
-> +{
-> +	unsigned int i = VFIO_PCI_OFFSET_TO_INDEX(*ppos) - VFIO_PCI_NUM_REGIONS;
-> +	struct vfio_pci_npu2_data *data = vdev->region[i].data;
-> +	loff_t pos = *ppos & VFIO_PCI_OFFSET_MASK;
-> +
-> +	if (pos >= vdev->region[i].size)
-> +		return -EINVAL;
-> +
-> +	count = min(count, (size_t)(vdev->region[i].size - pos));
-> +
-> +	if (iswrite) {
-> +		if (copy_from_user(data->base + pos, buf, count))
-> +			return -EFAULT;
-> +	} else {
-> +		if (copy_to_user(buf, data->base + pos, count))
-> +			return -EFAULT;
-> +	}
-> +	*ppos += count;
-> +
-> +	return count;
-> +}
-> +
-> +static int vfio_pci_npu2_mmap(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region, struct vm_area_struct *vma)
-> +{
-> +	int ret;
-> +	struct vfio_pci_npu2_data *data = region->data;
-> +	unsigned long req_len = vma->vm_end - vma->vm_start;
-> +
-> +	if (req_len != PAGE_SIZE)
-> +		return -EINVAL;
-> +
-> +	vma->vm_flags |= VM_PFNMAP;
-> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> +
-> +	ret = remap_pfn_range(vma, vma->vm_start, data->mmio_atsd >> PAGE_SHIFT,
-> +			req_len, vma->vm_page_prot);
-> +	trace_vfio_pci_npu2_mmap(vdev->pdev, data->mmio_atsd, vma->vm_start,
-> +			vma->vm_end - vma->vm_start, ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static void vfio_pci_npu2_release(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region)
-> +{
-> +	struct vfio_pci_npu2_data *data = region->data;
-> +
-> +	memunmap(data->base);
-> +	kfree(data);
-> +}
-> +
-> +static int vfio_pci_npu2_add_capability(struct vfio_pci_device *vdev,
-> +		struct vfio_pci_region *region, struct vfio_info_cap *caps)
-> +{
-> +	struct vfio_pci_npu2_data *data = region->data;
-> +	struct vfio_region_info_cap_nvlink2_ssatgt captgt = { 0 };
-> +	struct vfio_region_info_cap_nvlink2_lnkspd capspd = { 0 };
-> +	int ret;
-> +
-> +	captgt.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT;
-> +	captgt.header.version = 1;
-> +	captgt.tgt = data->gpu_tgt;
-> +
-> +	capspd.header.id = VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD;
-> +	capspd.header.version = 1;
-> +	capspd.link_speed = data->link_speed;
-> +
-> +	ret = vfio_info_add_capability(caps, &captgt.header, sizeof(captgt));
-> +	if (ret)
-> +		return ret;
-> +
-> +	return vfio_info_add_capability(caps, &capspd.header, sizeof(capspd));
-> +}
-> +
-> +static const struct vfio_pci_regops vfio_pci_npu2_regops = {
-> +	.rw = vfio_pci_npu2_rw,
-> +	.mmap = vfio_pci_npu2_mmap,
-> +	.release = vfio_pci_npu2_release,
-> +	.add_capability = vfio_pci_npu2_add_capability,
-> +};
-> +
-> +int vfio_pci_ibm_npu2_init(struct vfio_pci_device *vdev)
-> +{
-> +	int ret;
-> +	struct vfio_pci_npu2_data *data;
-> +	struct device_node *nvlink_dn;
-> +	u32 nvlink_index = 0;
-> +	struct pci_dev *npdev = vdev->pdev;
-> +	struct device_node *npu_node = pci_device_to_OF_node(npdev);
-> +	struct pci_controller *hose = pci_bus_to_host(npdev->bus);
-> +	u64 mmio_atsd = 0;
-> +	u64 tgt = 0;
-> +	u32 link_speed = 0xff;
-> +
-> +	/*
-> +	 * PCI config space does not tell us about NVLink presense but
-> +	 * platform does, use this.
-> +	 */
-> +	if (!pnv_pci_get_gpu_dev(vdev->pdev))
-> +		return -ENODEV;
-> +
-> +	/*
-> +	 * NPU2 normally has 8 ATSD registers (for concurrency) and 6 links
-> +	 * so we can allocate one register per link, using nvlink index as
-> +	 * a key.
-> +	 * There is always at least one ATSD register so as long as at least
-> +	 * NVLink bridge #0 is passed to the guest, ATSD will be available.
-> +	 */
-> +	nvlink_dn = of_parse_phandle(npdev->dev.of_node, "ibm,nvlink", 0);
-> +	if (WARN_ON(of_property_read_u32(nvlink_dn, "ibm,npu-link-index",
-> +			&nvlink_index)))
-> +		return -ENODEV;
-> +
-> +	if (of_property_read_u64_index(hose->dn, "ibm,mmio-atsd", nvlink_index,
-> +			&mmio_atsd)) {
-> +		dev_warn(&vdev->pdev->dev, "No available ATSD found\n");
-> +		mmio_atsd = 0;
-> +	}
-> +
-> +	if (of_property_read_u64(npu_node, "ibm,device-tgt-addr", &tgt)) {
-> +		dev_warn(&vdev->pdev->dev, "No ibm,device-tgt-addr found\n");
-> +		return -EFAULT;
-> +	}
-> +
-> +	if (of_property_read_u32(npu_node, "ibm,nvlink-speed", &link_speed)) {
-> +		dev_warn(&vdev->pdev->dev, "No ibm,nvlink-speed found\n");
-> +		return -EFAULT;
-> +	}
-> +
-> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	data->mmio_atsd = mmio_atsd;
-> +	data->gpu_tgt = tgt;
-> +	data->link_speed = link_speed;
-> +	if (data->mmio_atsd) {
-> +		data->base = memremap(data->mmio_atsd, SZ_64K, MEMREMAP_WT);
-> +		if (!data->base) {
-> +			ret = -ENOMEM;
-> +			goto free_exit;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * We want to expose the capability even if this specific NVLink
-> +	 * did not get its own ATSD register because capabilities
-> +	 * belong to VFIO regions and normally there will be ATSD register
-> +	 * assigned to the NVLink bridge.
-> +	 */
-> +	ret = vfio_pci_register_dev_region(vdev,
-> +			PCI_VENDOR_ID_IBM |
-> +			VFIO_REGION_TYPE_PCI_VENDOR_TYPE,
-> +			VFIO_REGION_SUBTYPE_IBM_NVLINK2_ATSD,
-> +			&vfio_pci_npu2_regops,
-> +			data->mmio_atsd ? PAGE_SIZE : 0,
-> +			VFIO_REGION_INFO_FLAG_READ |
-> +			VFIO_REGION_INFO_FLAG_WRITE |
-> +			VFIO_REGION_INFO_FLAG_MMAP,
-> +			data);
-> +	if (ret)
-> +		goto free_exit;
-> +
-> +	return 0;
-> +
-> +free_exit:
-> +	kfree(data);
-> +
-> +	return ret;
-> +}
-> diff --git a/drivers/vfio/pci/Kconfig b/drivers/vfio/pci/Kconfig
-> index 42dc1d3..d0f8e4f 100644
-> --- a/drivers/vfio/pci/Kconfig
-> +++ b/drivers/vfio/pci/Kconfig
-> @@ -38,3 +38,9 @@ config VFIO_PCI_IGD
->  	  and LPC bridge config space.
->  
->  	  To enable Intel IGD assignment through vfio-pci, say Y.
-> +
-> +config VFIO_PCI_NVLINK2
-> +	def_bool y
-> +	depends on VFIO_PCI && PPC_POWERNV
-> +	help
-> +	  VFIO PCI support for P9 Witherspoon machine with NVIDIA V100 GPUs
-> -- 
-> 2.17.1
+>   	preempt_disable();
+>   	if (regs->msr & MSR_SPE)
+>   		giveup_spe(current);
 > 
 
--- 
-Murilo
+I tested it on the 8xx with the below changes in addition. No issue seen 
+so far.
 
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index b171b7c0a0e7..6944b0969125 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -187,33 +187,29 @@ label:						\
+  	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
+  	xfer(n, hdlr)
+
+-#define EXC_XFER_TEMPLATE(n, hdlr, trap, copyee, tfer, ret)	\
++#define EXC_XFER_TEMPLATE(n, hdlr, trap, setee, tfer, ret)	\
+  	li	r10,trap;					\
+  	stw	r10,_TRAP(r11);					\
+  	li	r10,MSR_KERNEL;					\
+-	copyee(r10, r9);					\
++	setee(r10);						\
+  	bl	tfer;						\
+  i##n:								\
+  	.long	hdlr;						\
+  	.long	ret
+
+-#define COPY_EE(d, s)		rlwimi d,s,0,16,16
+-#define NOCOPY(d, s)
++#define SET_EE(d)		oris	d, d, MSR_EE
++#define NO_EE(d)
+
+  #define EXC_XFER_STD(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n, NOCOPY, transfer_to_handler_full,	\
++	EXC_XFER_TEMPLATE(n, hdlr, n, NO_EE, transfer_to_handler_full,	\
+  			  ret_from_except_full)
+
+  #define EXC_XFER_LITE(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n+1, NOCOPY, transfer_to_handler, \
++	EXC_XFER_TEMPLATE(n, hdlr, n+1, NO_EE, transfer_to_handler, \
+  			  ret_from_except)
+
+-#define EXC_XFER_EE(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n, COPY_EE, transfer_to_handler_full, \
+-			  ret_from_except_full)
+-
+-#define EXC_XFER_EE_LITE(n, hdlr)	\
+-	EXC_XFER_TEMPLATE(n, hdlr, n+1, COPY_EE, transfer_to_handler, \
++#define EXC_XFER_SYS(n, hdlr)	\
++	EXC_XFER_TEMPLATE(n, hdlr, n+1, SET_EE, transfer_to_handler, \
+  			  ret_from_except)
+
+  /* System reset */
+@@ -258,7 +254,7 @@ Alignment:
+  	mfspr	r5,SPRN_DSISR
+  	stw	r5,_DSISR(r11)
+  	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	EXC_XFER_EE(0x600, alignment_exception)
++	EXC_XFER_STD(0x600, alignment_exception)
+
+  /* Program check exception */
+  	EXCEPTION(0x700, ProgramCheck, program_check_exception, EXC_XFER_STD)
+@@ -270,19 +266,19 @@ Alignment:
+  /* Decrementer */
+  	EXCEPTION(0x900, Decrementer, timer_interrupt, EXC_XFER_LITE)
+
+-	EXCEPTION(0xa00, Trap_0a, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0xb00, Trap_0b, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0xa00, Trap_0a, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0xb00, Trap_0b, unknown_exception, EXC_XFER_STD)
+
+  /* System call */
+  	. = 0xc00
+  SystemCall:
+  	EXCEPTION_PROLOG
+-	EXC_XFER_EE_LITE(0xc00, DoSyscall)
++	EXC_XFER_SYS(0xc00, DoSyscall)
+
+  /* Single step - not used on 601 */
+  	EXCEPTION(0xd00, SingleStep, single_step_exception, EXC_XFER_STD)
+-	EXCEPTION(0xe00, Trap_0e, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0xf00, Trap_0f, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0xe00, Trap_0e, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0xf00, Trap_0f, unknown_exception, EXC_XFER_STD)
+
+  /* On the MPC8xx, this is a software emulation interrupt.  It occurs
+   * for all unimplemented and illegal instructions.
+@@ -582,13 +578,13 @@ dtlbie:
+  	/* 0x300 is DataAccess exception, needed by bad_page_fault() */
+  	EXC_XFER_LITE(0x300, handle_page_fault)
+
+-	EXCEPTION(0x1500, Trap_15, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1600, Trap_16, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1700, Trap_17, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1800, Trap_18, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1900, Trap_19, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1a00, Trap_1a, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1b00, Trap_1b, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x1500, Trap_15, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1600, Trap_16, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1700, Trap_17, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1800, Trap_18, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1900, Trap_19, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1a00, Trap_1a, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1b00, Trap_1b, unknown_exception, EXC_XFER_STD)
+
+  /* On the MPC8xx, these next four traps are used for development
+   * support of breakpoints and such.  Someday I will get around to
+@@ -610,7 +606,7 @@ DataBreakpoint:
+  	mfspr	r4,SPRN_BAR
+  	stw	r4,_DAR(r11)
+  	mfspr	r5,SPRN_DSISR
+-	EXC_XFER_EE(0x1c00, do_break)
++	EXC_XFER_STD(0x1c00, do_break)
+  11:
+  	mtcr	r10
+  	mfspr	r10, SPRN_SPRG_SCRATCH0
+@@ -630,10 +626,10 @@ InstructionBreakpoint:
+  	mfspr	r10, SPRN_SPRG_SCRATCH0
+  	rfi
+  #else
+-	EXCEPTION(0x1d00, Trap_1d, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x1d00, Trap_1d, unknown_exception, EXC_XFER_STD)
+  #endif
+-	EXCEPTION(0x1e00, Trap_1e, unknown_exception, EXC_XFER_EE)
+-	EXCEPTION(0x1f00, Trap_1f, unknown_exception, EXC_XFER_EE)
++	EXCEPTION(0x1e00, Trap_1e, unknown_exception, EXC_XFER_STD)
++	EXCEPTION(0x1f00, Trap_1f, unknown_exception, EXC_XFER_STD)
+
+  	. = 0x2000
+
+
+
+Christophe
