@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.3 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A92C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79123C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:04:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EF972176F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:02:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EF972176F
+	by mail.kernel.org (Postfix) with ESMTPS id ED6D82176F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 09:04:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED6D82176F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43L5Pk18RFzDqw1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:02:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43L5Rx6rMNzDr9w
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:04:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
@@ -27,17 +27,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43L4Yz31HXzDqst
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 19:24:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43L4Z26ZshzDqy9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 19:24:58 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 38ADAAE8035F;
- Thu, 20 Dec 2018 03:24:51 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id B5A2DAE80381;
+ Thu, 20 Dec 2018 03:24:54 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v7 16/20] powerpc/powernv/npu: Check mmio_atsd array
- bounds when populating
-Date: Thu, 20 Dec 2018 19:23:46 +1100
-Message-Id: <20181220082350.58113-17-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 17/20] powerpc/powernv/npu: Fault user page into the
+ hypervisor's pagetable
+Date: Thu, 20 Dec 2018 19:23:47 +1100
+Message-Id: <20181220082350.58113-18-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20181220082350.58113-1-aik@ozlabs.ru>
 References: <20181220082350.58113-1-aik@ozlabs.ru>
@@ -65,30 +65,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-A broken device tree might contain more than 8 values and introduce hard
-to debug memory corruption bug. This adds the boundary check.
+When a page fault happens in a GPU, the GPU signals the OS and the GPU
+driver calls the fault handler which populated a page table; this allows
+the GPU to complete an ATS request.
+
+On the bare metal get_user_pages() is enough as it adds a pte to
+the kernel page table but under KVM the partition scope tree does not get
+updated so ATS will still fail.
+
+This reads a byte from an effective address which causes HV storage
+interrupt and KVM updates the partition scope tree.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/npu-dma.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/npu-dma.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index e06043b..c6163b9 100644
+index c6163b9..12b8421 100644
 --- a/arch/powerpc/platforms/powernv/npu-dma.c
 +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -1179,8 +1179,9 @@ int pnv_npu2_init(struct pci_controller *hose)
+@@ -1133,6 +1133,8 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 	u64 rc = 0, result = 0;
+ 	int i, is_write;
+ 	struct page *page[1];
++	const char __user *u;
++	char c;
  
- 	npu->nmmu_flush = of_property_read_bool(hose->dn, "ibm,nmmu-flush");
+ 	/* mmap_sem should be held so the struct_mm must be present */
+ 	struct mm_struct *mm = context->mm;
+@@ -1145,18 +1147,17 @@ int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
+ 					is_write ? FOLL_WRITE : 0,
+ 					page, NULL, NULL);
  
--	for (i = 0; !of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
--							i, &mmio_atsd); i++)
-+	for (i = 0; i < ARRAY_SIZE(npu->mmio_atsd_regs) &&
-+			!of_property_read_u64_index(hose->dn, "ibm,mmio-atsd",
-+				i, &mmio_atsd); i++)
- 		npu->mmio_atsd_regs[i] = ioremap(mmio_atsd, 32);
+-		/*
+-		 * To support virtualised environments we will have to do an
+-		 * access to the page to ensure it gets faulted into the
+-		 * hypervisor. For the moment virtualisation is not supported in
+-		 * other areas so leave the access out.
+-		 */
+ 		if (rc != 1) {
+ 			status[i] = rc;
+ 			result = -EFAULT;
+ 			continue;
+ 		}
  
- 	pr_info("NPU%d: Found %d MMIO ATSD registers", hose->global_number, i);
++		/* Make sure partition scoped tree gets a pte */
++		u = page_address(page[0]);
++		if (__get_user(c, u))
++			result = -EFAULT;
++
+ 		status[i] = 0;
+ 		put_page(page[0]);
+ 	}
 -- 
 2.17.1
 
