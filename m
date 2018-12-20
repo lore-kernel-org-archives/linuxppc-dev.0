@@ -6,54 +6,54 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 656B2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD93EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 17:19:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E0F9420869
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:50:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0F9420869
+	by mail.kernel.org (Postfix) with ESMTPS id 496FD217D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 17:19:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 496FD217D9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LHnR51FszDr1N
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 03:50:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43LJRF0fB7zDr5y
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 04:19:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=87.98.179.142; helo=17.mo1.mail-out.ovh.net;
+ (client-ip=188.165.33.202; helo=13.mo3.mail-out.ovh.net;
  envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 5402 seconds by postgrey-1.36 at bilbo;
- Fri, 21 Dec 2018 03:46:55 AEDT
-Received: from 17.mo1.mail-out.ovh.net (17.mo1.mail-out.ovh.net
- [87.98.179.142])
+X-Greylist: delayed 4201 seconds by postgrey-1.36 at bilbo;
+ Fri, 21 Dec 2018 04:17:57 AEDT
+Received: from 13.mo3.mail-out.ovh.net (13.mo3.mail-out.ovh.net
+ [188.165.33.202])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43LHjC2zcPzDqVr
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 03:46:54 +1100 (AEDT)
-Received: from player772.ha.ovh.net (unknown [10.109.159.159])
- by mo1.mail-out.ovh.net (Postfix) with ESMTP id 554F313F4BD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 15:51:49 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43LJP12G06zDqmQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 04:17:55 +1100 (AEDT)
+Received: from player715.ha.ovh.net (unknown [10.109.159.73])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 3B2E71EED73
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 15:52:39 +0100 (CET)
 Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
  [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player772.ha.ovh.net (Postfix) with ESMTPSA id 4DAD91048A82;
- Thu, 20 Dec 2018 14:51:42 +0000 (UTC)
-Date: Thu, 20 Dec 2018 15:51:41 +0100
+ by player715.ha.ovh.net (Postfix) with ESMTPSA id B567CFAEC5B;
+ Thu, 20 Dec 2018 14:52:33 +0000 (UTC)
+Date: Thu, 20 Dec 2018 15:52:32 +0100
 From: Greg Kurz <groug@kaod.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] ocxl/afu_irq: Don't include <asm/pnv-ocxl.h>
-Message-ID: <20181220155141.5fc73089@bahia.lan>
-In-Reply-To: <59f00f99-0dcf-6da3-1672-b8614611db9b@au1.ibm.com>
-References: <154445481863.866755.12808062051385853487.stgit@bahia.lan>
- <59f00f99-0dcf-6da3-1672-b8614611db9b@au1.ibm.com>
+Subject: Re: [PATCH] ocxl: Clarify error path in setup_xsl_irq()
+Message-ID: <20181220155232.31e8a778@bahia.lan>
+In-Reply-To: <4e803758-08af-d774-9e50-1c64fb8545ff@au1.ibm.com>
+References: <154445509294.867383.14905585855902294361.stgit@bahia.lan>
+ <4e803758-08af-d774-9e50-1c64fb8545ff@au1.ibm.com>
 X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 12431342348081863089
+X-Ovh-Tracer-Id: 12445416098029672881
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtkedrudejfedgjeduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -68,41 +68,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Frederic Barrat <fbarrat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 11 Dec 2018 11:09:39 +1100
+On Tue, 11 Dec 2018 11:19:55 +1100
 Andrew Donnellan <andrew.donnellan@au1.ibm.com> wrote:
 
+> On 11/12/18 2:18 am, Greg Kurz wrote:
+> > Implementing rollback with goto and labels is a common practice that
+> > leads to prettier and more maintainable code. FWIW, this design pattern
+> > is already being used in alloc_link() a few lines below in this file.
+> > 
+> > Do the same in setup_xsl_irq().
+> > 
+> > Signed-off-by: Greg Kurz <groug@kaod.org>  
+> 
+> This is good, thanks.
+> 
 > Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 > 
 
 Friendly ping before Xmas break :)
 
-> On 11/12/18 2:13 am, Greg Kurz wrote:
-> > The AFU irq code doesn't need to reach out to the platform.
-> > 
-> > Signed-off-by: Greg Kurz <groug@kaod.org>
 > > ---
-> >   drivers/misc/ocxl/afu_irq.c |    1 -
-> >   1 file changed, 1 deletion(-)
+> >   drivers/misc/ocxl/link.c |   23 ++++++++++++++---------
+> >   1 file changed, 14 insertions(+), 9 deletions(-)
 > > 
-> > diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
-> > index e70cfa24577f..11ab996657a2 100644
-> > --- a/drivers/misc/ocxl/afu_irq.c
-> > +++ b/drivers/misc/ocxl/afu_irq.c
-> > @@ -2,7 +2,6 @@
-> >   // Copyright 2017 IBM Corp.
-> >   #include <linux/interrupt.h>
-> >   #include <linux/eventfd.h>
-> > -#include <asm/pnv-ocxl.h>
-> >   #include "ocxl_internal.h"
-> >   #include "trace.h"
+> > diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> > index eed92055184d..659977a17405 100644
+> > --- a/drivers/misc/ocxl/link.c
+> > +++ b/drivers/misc/ocxl/link.c
+> > @@ -273,9 +273,9 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> >   	spa->irq_name = kasprintf(GFP_KERNEL, "ocxl-xsl-%x-%x-%x",
+> >   				link->domain, link->bus, link->dev);
+> >   	if (!spa->irq_name) {
+> > -		unmap_irq_registers(spa);
+> >   		dev_err(&dev->dev, "Can't allocate name for xsl interrupt\n");
+> > -		return -ENOMEM;
+> > +		rc = -ENOMEM;
+> > +		goto err_xsl;
+> >   	}
+> >   	/*
+> >   	 * At some point, we'll need to look into allowing a higher
+> > @@ -283,11 +283,10 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> >   	 */
+> >   	spa->virq = irq_create_mapping(NULL, hwirq);
+> >   	if (!spa->virq) {
+> > -		kfree(spa->irq_name);
+> > -		unmap_irq_registers(spa);
+> >   		dev_err(&dev->dev,
+> >   			"irq_create_mapping failed for translation interrupt\n");
+> > -		return -EINVAL;
+> > +		rc = -EINVAL;
+> > +		goto err_name;
+> >   	}
 > >   
+> >   	dev_dbg(&dev->dev, "hwirq %d mapped to virq %d\n", hwirq, spa->virq);
+> > @@ -295,15 +294,21 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> >   	rc = request_irq(spa->virq, xsl_fault_handler, 0, spa->irq_name,
+> >   			link);
+> >   	if (rc) {
+> > -		irq_dispose_mapping(spa->virq);
+> > -		kfree(spa->irq_name);
+> > -		unmap_irq_registers(spa);
+> >   		dev_err(&dev->dev,
+> >   			"request_irq failed for translation interrupt: %d\n",
+> >   			rc);
+> > -		return -EINVAL;
+> > +		rc = -EINVAL;
+> > +		goto err_mapping;
+> >   	}
+> >   	return 0;
+> > +
+> > +err_mapping:
+> > +	irq_dispose_mapping(spa->virq);
+> > +err_name:
+> > +	kfree(spa->irq_name);
+> > +err_xsl:
+> > +	unmap_irq_registers(spa);
+> > +	return rc;
+> >   }
+> >   
+> >   static void release_xsl_irq(struct link *link)
 > >   
 > 
+
