@@ -2,105 +2,66 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55D95C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 06:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E558C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 06:42:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C922D20815
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 06:28:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C922D20815
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CA1F52176F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 06:42:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA1F52176F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43L1zs4ZSKzDqmJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 17:28:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43L2J94j3zzDqyv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 17:42:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43L1xb0tYwzDqXv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 17:26:42 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBK6O941077746
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 01:26:41 -0500
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pg59psfyx-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 01:26:40 -0500
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 20 Dec 2018 06:26:39 -0000
-Received: from b01cxnp22035.gho.pok.ibm.com (9.57.198.25)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 20 Dec 2018 06:26:37 -0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBK6Qaoq23593008
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 20 Dec 2018 06:26:36 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 18DC1AC05B;
- Thu, 20 Dec 2018 06:26:36 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 216A4AC059;
- Thu, 20 Dec 2018 06:26:32 +0000 (GMT)
-Received: from [9.85.68.89] (unknown [9.85.68.89])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 20 Dec 2018 06:26:32 +0000 (GMT)
-Subject: Re: [PATCH V5 1/3] mm: Add get_user_pages_cma_migrate
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, akpm@linux-foundation.org,
- Michal Hocko <mhocko@kernel.org>, mpe@ellerman.id.au, paulus@samba.org,
- David Gibson <david@gibson.dropbear.id.au>
-References: <20181219034047.16305-1-aneesh.kumar@linux.ibm.com>
- <20181219034047.16305-2-aneesh.kumar@linux.ibm.com>
- <e9c9b68a-a31b-ab59-902a-73401a89f72a@ozlabs.ru>
- <b316eb1c-36dc-49e0-f46f-e610f29b6058@linux.ibm.com>
- <23cae5a6-4370-224c-523c-ab6ee940cf87@ozlabs.ru>
- <ba05bde5-5ef9-6e96-b15c-cebb9631a84b@linux.ibm.com>
- <406cbd85-c64e-428f-772d-7afb23eb92ec@ozlabs.ru>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Thu, 20 Dec 2018 11:56:31 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
-MIME-Version: 1.0
-In-Reply-To: <406cbd85-c64e-428f-772d-7afb23eb92ec@ozlabs.ru>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 18122006-0052-0000-0000-0000036A7B0D
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010253; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000271; SDB=6.01134338; UDB=6.00589770; IPR=6.00914510; 
- MB=3.00024763; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-20 06:26:39
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18122006-0053-0000-0000-00005F2BDAD3
-Message-Id: <ba73bd95-4372-e527-9159-1de95b05d08c@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-20_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=18 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812200054
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43L2Fh0m4XzDqmd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 17:40:40 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43L2Fb6GPXz9vBJf;
+ Thu, 20 Dec 2018 07:40:35 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id d8bPf8iozh3q; Thu, 20 Dec 2018 07:40:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43L2Fb5nhPz9vB1r;
+ Thu, 20 Dec 2018 07:40:35 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A63338B796;
+ Thu, 20 Dec 2018 07:40:36 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 0ZEHRBIZ2AOo; Thu, 20 Dec 2018 07:40:36 +0100 (CET)
+Received: from po14163vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 77D5C8B755;
+ Thu, 20 Dec 2018 07:40:36 +0100 (CET)
+Received: by po14163vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 55EF371733; Thu, 20 Dec 2018 06:40:36 +0000 (UTC)
+Message-Id: <55ad0e6a00ba8abc008664fa8e367c1e2ce1f4cd.1545287470.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1545287470.git.christophe.leroy@c-s.fr>
+References: <cover.1545287470.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [RFC PATCH v2 1/3] powerpc/mm: prepare kernel for KAsan on PPC32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ npiggin@gmail.com, aneesh.kumar@linux.ibm.com
+Date: Thu, 20 Dec 2018 06:40:36 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,74 +73,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/20/18 11:50 AM, Alexey Kardashevskiy wrote:
-> 
-> 
-> On 20/12/2018 16:52, Aneesh Kumar K.V wrote:
->> On 12/20/18 11:18 AM, Alexey Kardashevskiy wrote:
->>>
->>>
->>> On 20/12/2018 16:22, Aneesh Kumar K.V wrote:
->>>> On 12/20/18 9:49 AM, Alexey Kardashevskiy wrote:
->>>>>
->>>>>
->>>>> On 19/12/2018 14:40, Aneesh Kumar K.V wrote:
->>>>>> This helper does a get_user_pages_fast and if it find pages in the
->>>>>> CMA area
->>>>>> it will try to migrate them before taking page reference. This makes
->>>>>> sure that
->>>>>> we don't keep non-movable pages (due to page reference count) in the
->>>>>> CMA area.
->>>>>> Not able to move pages out of CMA area result in CMA allocation
->>>>>> failures.
->>>>>>
->>>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->>>>>
->>>>
->>>> .....
->>>>>> +         * We did migrate all the pages, Try to get the page
->>>>>> references again
->>>>>> +         * migrating any new CMA pages which we failed to isolate
->>>>>> earlier.
->>>>>> +         */
->>>>>> +        drain_allow = true;
->>>>>> +        goto get_user_again;
->>>>>
->>>>>
->>>>> So it is possible to have pages pinned, then successfully migrated
->>>>> (migrate_pages() returned 0), then pinned again, then some pages may
->>>>> end
->>>>> up in CMA again and migrate again and nothing seems to prevent this
->>>>> loop
->>>>> from being endless. What do I miss?
->>>>>
->>>>
->>>> pages used as target page for migration won't be allocated from CMA
->>>> region.
->>>
->>>
->>> Then migrate_allow should be set to "false" regardless what
->>> migrate_pages() returned and then I am totally missing the point of this
->>> goto and going through the loop again even when we know for sure it
->>> won't do literally anything but checking is_migrate_cma_page() even
->>> though we know pages won't be allocated from CMA.
->>>
->>
->> Because we might have failed to isolate all the pages in the first attempt.
-> 
-> isolate==migrate?
+In kernel/cputable.c, explicitly use memcpy() in order
+to allow GCC to replace it with __memcpy() when KASAN is
+selected.
 
-no
+Since commit 400c47d81ca38 ("powerpc32: memset: only use dcbz once cache is
+enabled"), memset() can be used before activation of the cache,
+so no need to use memset_io() for zeroing the BSS.
 
-The call to isolate_lru_page and isolate_huge_page. We can fail because 
-the percpu pagevec is not fully drained
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/cputable.c | 4 ++--
+ arch/powerpc/kernel/setup_32.c | 6 ++----
+ 2 files changed, 4 insertions(+), 6 deletions(-)
 
-
--aneesh
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 2da01340c84c..9ea031b05f19 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -2145,7 +2145,7 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
+ 	struct cpu_spec *t = &the_cpu_spec;
+ 
+ 	t = PTRRELOC(t);
+-	*t = *s;
++	memcpy(t, s, sizeof(*t));
+ 
+ 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+ }
+@@ -2160,7 +2160,7 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
+ 	old = *t;
+ 
+ 	/* Copy everything, then do fixups */
+-	*t = *s;
++	memcpy(t, s, sizeof(*t));
+ 
+ 	/*
+ 	 * If we are overriding a previous value derived from the real
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 972c98d1e208..00b8f54fed29 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -74,10 +74,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
+ {
+ 	unsigned long offset = reloc_offset();
+ 
+-	/* First zero the BSS -- use memset_io, some platforms don't have
+-	 * caches on yet */
+-	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
+-			__bss_stop - __bss_start);
++	/* First zero the BSS */
++	memset(PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
+ 
+ 	/*
+ 	 * Identify the CPU type and fix up code sections
+-- 
+2.13.3
 
