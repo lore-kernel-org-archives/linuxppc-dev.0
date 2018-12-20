@@ -2,174 +2,103 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F8A9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 05:52:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56C63C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 05:54:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E35AC20815
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 05:52:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="IuX6sx65"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E35AC20815
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id C4C1020815
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 05:54:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4C1020815
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43L1BZ68l2zDqY0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:52:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by lists.ozlabs.org (Postfix) with ESMTP id 43L1Dr6JbqzDqgf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 16:54:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="IuX6sx65";
-	dkim-atps=neutral
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="IuX6sx65"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43L15h6ZL7zDqwW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 16:48:40 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id gn14so341823plb.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2018 21:48:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=N9dSCY/oEiDmFSZKVYAOrfstxsX9OAAs/ud+4jAAVC4=;
- b=IuX6sx65ofKaPDjym0M/e1S5Qmm5OQz1MLyc/FBqDdBWLXf/QI5mXouqYndd/9KxVc
- lQHbYpCqbpm30ZyDNWwSz2CrXdq1rxOuBx776iwFYP0OluWN6Vg8CqIbGdfuEsqio+VC
- xl0O726rAKVGOn0y6RH83nrPS3fz41kihkHxDhPUDcB4Eb5MC1VtOOKZdrYKwNDtZ9k2
- EMNlTWQNMU4DlrIFfm09HnFuIbee17pnDo2F1F5pxX7eHZbkHvc3CQ/ariNn7rS0+K4P
- 0F2dYw5fpsy3JLZdUBnu29u8ktfXOg1ATlAPsqJ8UA5LFVS+mWUbjJgPIjw0ra4q4UjJ
- yH2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=N9dSCY/oEiDmFSZKVYAOrfstxsX9OAAs/ud+4jAAVC4=;
- b=Yr0P1E0vgJdDvm4w3Rz0Iu1GJrlqqFFPg1XwXNQ5EpfrjLob0QUVTERfYb6H1IMJrX
- 8XPpn2DJte/smFleui1z368+1gAh8K97dzSjVZ7/MTmjxouqAmhHIwZLfyD+hkgCyt82
- VIR6TWco8czHKCslBGEW8f+fyCYgcaIYU1EtoVwVLFiNAxCuzY7oIppLBy2r9wtpQW6r
- tdM1vSbN0vAUfe5O5BnSPBPnydoh4awtt3G5U7x/2t91ot/DGamvyv/yyusFveFz3FbK
- m5G8JuJCGxcBDwr580+KNvmP2AHniqNbrYYRx54vPFgDWEIvfqhgAmRNg5tE2k9brQc3
- KA6g==
-X-Gm-Message-State: AA+aEWa8Hu6IdIhYqHaFSdEv2VFXxMxzVo4E8vTnh7KGymY6vRwXMflG
- 9NCUlYxW/CLl+zY/DH7rVh+m/m9Rrw8=
-X-Google-Smtp-Source: AFSGD/X5xBqVq+CchIPkR+Qf/eDdElVHndQ1+IxNVQCxcvJscDJjMrbHoR/hZiKI62To+wArGzKjDA==
-X-Received: by 2002:a17:902:22f:: with SMTP id
- 44mr22767202plc.137.1545284918196; 
- Wed, 19 Dec 2018 21:48:38 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id j197sm30251647pgc.76.2018.12.19.21.48.32
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 19 Dec 2018 21:48:37 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43L1BQ5CdczDqw1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 16:52:46 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBK5oaAT122822
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 00:52:44 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pg59pr2y6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 00:52:44 -0500
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 20 Dec 2018 05:52:42 -0000
+Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 20 Dec 2018 05:52:38 -0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBK5qbMD17629256
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 20 Dec 2018 05:52:37 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 75C84AC062;
+ Thu, 20 Dec 2018 05:52:37 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 61112AC059;
+ Thu, 20 Dec 2018 05:52:34 +0000 (GMT)
+Received: from [9.85.68.89] (unknown [9.85.68.89])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 20 Dec 2018 05:52:33 +0000 (GMT)
 Subject: Re: [PATCH V5 1/3] mm: Add get_user_pages_cma_migrate
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
- mpe@ellerman.id.au, paulus@samba.org,
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, akpm@linux-foundation.org,
+ Michal Hocko <mhocko@kernel.org>, mpe@ellerman.id.au, paulus@samba.org,
  David Gibson <david@gibson.dropbear.id.au>
 References: <20181219034047.16305-1-aneesh.kumar@linux.ibm.com>
  <20181219034047.16305-2-aneesh.kumar@linux.ibm.com>
  <e9c9b68a-a31b-ab59-902a-73401a89f72a@ozlabs.ru>
  <b316eb1c-36dc-49e0-f46f-e610f29b6058@linux.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- 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
-Message-ID: <23cae5a6-4370-224c-523c-ab6ee940cf87@ozlabs.ru>
-Date: Thu, 20 Dec 2018 16:48:30 +1100
+ <23cae5a6-4370-224c-523c-ab6ee940cf87@ozlabs.ru>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Thu, 20 Dec 2018 11:22:32 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-In-Reply-To: <b316eb1c-36dc-49e0-f46f-e610f29b6058@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <23cae5a6-4370-224c-523c-ab6ee940cf87@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 18122005-2213-0000-0000-0000032E668E
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010253; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000271; SDB=6.01134327; UDB=6.00589763; IPR=6.00914499; 
+ MB=3.00024763; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-20 05:52:41
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18122005-2214-0000-0000-00005CAC0B05
+Message-Id: <ba05bde5-5ef9-6e96-b15c-cebb9631a84b@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-20_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=18 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=-1004 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812200048
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -187,53 +116,53 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 20/12/2018 16:22, Aneesh Kumar K.V wrote:
-> On 12/20/18 9:49 AM, Alexey Kardashevskiy wrote:
->>
->>
->> On 19/12/2018 14:40, Aneesh Kumar K.V wrote:
->>> This helper does a get_user_pages_fast and if it find pages in the
->>> CMA area
->>> it will try to migrate them before taking page reference. This makes
->>> sure that
->>> we don't keep non-movable pages (due to page reference count) in the
->>> CMA area.
->>> Not able to move pages out of CMA area result in CMA allocation
->>> failures.
+On 12/20/18 11:18 AM, Alexey Kardashevskiy wrote:
+> 
+> 
+> On 20/12/2018 16:22, Aneesh Kumar K.V wrote:
+>> On 12/20/18 9:49 AM, Alexey Kardashevskiy wrote:
 >>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>>
+>>> On 19/12/2018 14:40, Aneesh Kumar K.V wrote:
+>>>> This helper does a get_user_pages_fast and if it find pages in the
+>>>> CMA area
+>>>> it will try to migrate them before taking page reference. This makes
+>>>> sure that
+>>>> we don't keep non-movable pages (due to page reference count) in the
+>>>> CMA area.
+>>>> Not able to move pages out of CMA area result in CMA allocation
+>>>> failures.
+>>>>
+>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>>
 >>
+>> .....
+>>>> +         * We did migrate all the pages, Try to get the page
+>>>> references again
+>>>> +         * migrating any new CMA pages which we failed to isolate
+>>>> earlier.
+>>>> +         */
+>>>> +        drain_allow = true;
+>>>> +        goto get_user_again;
+>>>
+>>>
+>>> So it is possible to have pages pinned, then successfully migrated
+>>> (migrate_pages() returned 0), then pinned again, then some pages may end
+>>> up in CMA again and migrate again and nothing seems to prevent this loop
+>>> from being endless. What do I miss?
+>>>
+>>
+>> pages used as target page for migration won't be allocated from CMA region.
 > 
-> .....
->>> +         * We did migrate all the pages, Try to get the page
->>> references again
->>> +         * migrating any new CMA pages which we failed to isolate
->>> earlier.
->>> +         */
->>> +        drain_allow = true;
->>> +        goto get_user_again;
->>
->>
->> So it is possible to have pages pinned, then successfully migrated
->> (migrate_pages() returned 0), then pinned again, then some pages may end
->> up in CMA again and migrate again and nothing seems to prevent this loop
->> from being endless. What do I miss?
->>
 > 
-> pages used as target page for migration won't be allocated from CMA region.
+> Then migrate_allow should be set to "false" regardless what
+> migrate_pages() returned and then I am totally missing the point of this
+> goto and going through the loop again even when we know for sure it
+> won't do literally anything but checking is_migrate_cma_page() even
+> though we know pages won't be allocated from CMA.
+> 
 
+Because we might have failed to isolate all the pages in the first attempt.
 
-Then migrate_allow should be set to "false" regardless what
-migrate_pages() returned and then I am totally missing the point of this
-goto and going through the loop again even when we know for sure it
-won't do literally anything but checking is_migrate_cma_page() even
-though we know pages won't be allocated from CMA.
+-aneesh
 
-It should be simple gup_fast() instead of goto and then we won't need
-goto/migrate_allow.
-
-
--- 
-Alexey
