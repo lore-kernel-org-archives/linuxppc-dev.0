@@ -2,94 +2,67 @@ Return-Path: <SRS0=vnEJ=O5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEAB7C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:05:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D53EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:10:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F2F84218FD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:05:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F2F84218FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=us.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 803B5218FD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Dec 2018 20:10:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="rJOdstN+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 803B5218FD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LN6X6m9wzDr1b
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 07:05:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=us.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43LNCh2KzKzDqxD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 07:10:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=us.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=linuxram@us.ibm.com; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="rJOdstN+";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=us.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="rJOdstN+"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43LN961VQgzDqwy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 07:07:54 +1100 (AEDT)
+Received: from localhost (unknown [69.71.4.100])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43LN4K6WsLzDqwy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 07:03:45 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- wBKJwZ5q087260
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 15:03:43 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pgffune22-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2018 15:03:42 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 20 Dec 2018 20:03:40 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 20 Dec 2018 20:03:37 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- wBKK3a0559703428
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 20 Dec 2018 20:03:36 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C3700AE055;
- Thu, 20 Dec 2018 20:03:36 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 69A18AE058;
- Thu, 20 Dec 2018 20:03:33 +0000 (GMT)
-Received: from ram.oc3035372033.ibm.com (unknown [9.85.187.27])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Thu, 20 Dec 2018 20:03:33 +0000 (GMT)
-Date: Thu, 20 Dec 2018 12:03:30 -0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc/pkeys: copy pkey-tracking-information at fork()
-References: <1543869802-15372-1-git-send-email-linuxram@us.ibm.com>
- <8736qsqqsu.fsf@concordia.ellerman.id.au>
+ by mail.kernel.org (Postfix) with ESMTPSA id F036D218FD;
+ Thu, 20 Dec 2018 20:07:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1545336472;
+ bh=5IJq36Mnqum9AvJT9vqPPi+IUGmFL1wkTL6Hzxs5Mkk=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=rJOdstN+nCAw+WU2+WNMgkx/Pzu9voi+dbJJSyjxDYnb8T1Zl7rC9J4L/YxQS4a1t
+ MU/R0AMcCBWc4rRRCjZOH8Uh5af2xOHYwud3tH7MZBd5FWth2zJEBeEEUt3GqCWXCm
+ 9cbnLvM96oWX+kX7d9+LSKtYH5jdD/ekssAIkasI=
+Date: Thu, 20 Dec 2018 14:07:50 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sebastian Ott <sebott@linux.ibm.com>
+Subject: Re: [PATCH 1/2] PCI/IOV: provide flag to skip VF scanning
+Message-ID: <20181220200750.GF183878@google.com>
+References: <20181217173546.GA4106@infradead.org>
+ <20181218101650.23089-1-sebott@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <8736qsqqsu.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.5.20 (2009-12-10)
-X-TM-AS-GCONF: 00
-x-cbid: 18122020-0008-0000-0000-000002A43B89
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 18122020-0009-0000-0000-0000220EDA93
-Message-Id: <20181220200330.GA5385@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2018-12-20_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=870 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1812200163
+In-Reply-To: <20181218101650.23089-1-sebott@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,93 +74,136 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-Cc: fweimer@redhat.com, Ulrich.Weigand@de.ibm.com, dave.hansen@linux.intel.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, msuchanek@suse.de,
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, Paul Mackerras <paulus@samba.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Pkey tracking information is not copied over to the mm_struct of the
-child during fork(). This can cause the child to erroneously allocate
-keys that were already allocated. Any allocated execute-only key is lost
-aswell.
-    
-Add code; called by dup_mmap(), to copy the pkey state from parent to
-child explicitly.
-    
-This problem was originally found by Dave Hansen on x86, which turns out
-to be a problem on powerpc aswell.
-    
-Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-    
-v2: do not copy if pkeys is disabled.
-    	-- comment by Michael Ellermen
+Hi Sebastian,
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 0381394..cb16146 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -217,12 +217,6 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
- #endif
- }
- 
--static inline int arch_dup_mmap(struct mm_struct *oldmm,
--				struct mm_struct *mm)
--{
--	return 0;
--}
--
- #ifndef CONFIG_PPC_BOOK3S_64
- static inline void arch_exit_mmap(struct mm_struct *mm)
- {
-@@ -247,6 +241,7 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
- #ifdef CONFIG_PPC_MEM_KEYS
- bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
- 			       bool execute, bool foreign);
-+void arch_dup_pkeys(struct mm_struct *oldmm, struct mm_struct *mm);
- #else /* CONFIG_PPC_MEM_KEYS */
- static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- 		bool write, bool execute, bool foreign)
-@@ -259,6 +254,7 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- #define thread_pkey_regs_save(thread)
- #define thread_pkey_regs_restore(new_thread, old_thread)
- #define thread_pkey_regs_init(thread)
-+#define arch_dup_pkeys(oldmm, mm)
- 
- static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
- {
-@@ -267,5 +263,12 @@ static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
- 
- #endif /* CONFIG_PPC_MEM_KEYS */
- 
-+static inline int arch_dup_mmap(struct mm_struct *oldmm,
-+				struct mm_struct *mm)
-+{
-+	arch_dup_pkeys(oldmm, mm);
-+	return 0;
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index b271b28..25a8dd9 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -414,3 +414,13 @@ bool arch_vma_access_permitted(struct vm_area_struct *vma, bool write,
- 
- 	return pkey_access_permitted(vma_pkey(vma), write, execute);
- }
-+
-+void arch_dup_pkeys(struct mm_struct *oldmm, struct mm_struct *mm)
-+{
-+	if (static_branch_likely(&pkey_disabled))
-+		return;
-+
-+	/* Duplicate the oldmm pkey state in mm: */
-+	mm_pkey_allocation_map(mm) = mm_pkey_allocation_map(oldmm);
-+	mm->context.execute_only_pkey = oldmm->context.execute_only_pkey;
-+}
+On Tue, Dec 18, 2018 at 11:16:49AM +0100, Sebastian Ott wrote:
+> Provide a flag to skip scanning for new VFs after SRIOV enablement.
+> This can be set by implementations for which the VFs are already
+> reported by other means.
+> 
+> Signed-off-by: Sebastian Ott <sebott@linux.ibm.com>
+> ---
+>  drivers/pci/iov.c   | 48 ++++++++++++++++++++++++++++++++++++------------
+>  include/linux/pci.h |  1 +
+>  2 files changed, 37 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+> index 9616eca3182f..3aa115ed3a65 100644
+> --- a/drivers/pci/iov.c
+> +++ b/drivers/pci/iov.c
+> @@ -252,6 +252,27 @@ int __weak pcibios_sriov_disable(struct pci_dev *pdev)
+>  	return 0;
+>  }
+>  
+> +static int sriov_add_vfs(struct pci_dev *dev, u16 num_vfs)
+> +{
+> +	unsigned int i;
+> +	int rc;
+> +
+> +	if (dev->no_vf_scan)
+> +		return 0;
+> +
+> +	for (i = 0; i < num_vfs; i++) {
+> +		rc = pci_iov_add_virtfn(dev, i);
+> +		if (rc)
+> +			goto failed;
+> +	}
+> +	return 0;
+> +failed:
+> +	while (i--)
+> +		pci_iov_remove_virtfn(dev, i);
+> +
+> +	return rc;
+> +}
 
+I think the strategy is fine, but can you restructure the patches
+like this:
+
+  1) Factor out sriov_add_vfs() and sriov_dev_vfs().  This makes no
+     functional change at all.
+
+  2) Add dev->no_vf_scan, set it in the s390 pcibios_add_device(), and
+     test it in sriov_add_vfs(), and sriov_del_vfs().
+
+I think both pieces will be easier to review that way.
+
+>  static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>  {
+>  	int rc;
+> @@ -337,21 +358,15 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>  	msleep(100);
+>  	pci_cfg_access_unlock(dev);
+>  
+> -	for (i = 0; i < initial; i++) {
+> -		rc = pci_iov_add_virtfn(dev, i);
+> -		if (rc)
+> -			goto failed;
+> -	}
+> +	rc = sriov_add_vfs(dev, initial);
+> +	if (rc)
+> +		goto err_pcibios;
+>  
+>  	kobject_uevent(&dev->dev.kobj, KOBJ_CHANGE);
+>  	iov->num_VFs = nr_virtfn;
+>  
+>  	return 0;
+>  
+> -failed:
+> -	while (i--)
+> -		pci_iov_remove_virtfn(dev, i);
+> -
+>  err_pcibios:
+>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+>  	pci_cfg_access_lock(dev);
+> @@ -368,17 +383,26 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>  	return rc;
+>  }
+>  
+> -static void sriov_disable(struct pci_dev *dev)
+> +static void sriov_del_vfs(struct pci_dev *dev)
+>  {
+> -	int i;
+>  	struct pci_sriov *iov = dev->sriov;
+> +	int i;
+>  
+> -	if (!iov->num_VFs)
+> +	if (dev->no_vf_scan)
+>  		return;
+>  
+>  	for (i = 0; i < iov->num_VFs; i++)
+>  		pci_iov_remove_virtfn(dev, i);
+> +}
+> +
+> +static void sriov_disable(struct pci_dev *dev)
+> +{
+> +	struct pci_sriov *iov = dev->sriov;
+> +
+> +	if (!iov->num_VFs)
+> +		return;
+>  
+> +	sriov_del_vfs(dev);
+>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+>  	pci_cfg_access_lock(dev);
+>  	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 11c71c4ecf75..f70b9ccd3e86 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -405,6 +405,7 @@ struct pci_dev {
+>  	unsigned int	non_compliant_bars:1;	/* Broken BARs; ignore them */
+>  	unsigned int	is_probed:1;		/* Device probing in progress */
+>  	unsigned int	link_active_reporting:1;/* Device capable of reporting link active */
+> +	unsigned int	no_vf_scan:1;		/* Don't scan for VF's after VF enablement */
+>  	pci_dev_flags_t dev_flags;
+>  	atomic_t	enable_cnt;	/* pci_enable_device has been called */
+>  
+> -- 
+> 2.13.4
+> 
