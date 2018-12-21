@@ -2,54 +2,49 @@ Return-Path: <SRS0=o62n=O6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7AA4C43612
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 18:00:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E16CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 23:54:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 593E021920
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 18:00:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 593E021920
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 55044204EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 23:54:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55044204EC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LxHC0JhKzDqPN
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 05:00:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=8qkb=o6=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43M57r5DwnzDqYL
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 10:54:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43LxCb32bLzDq7Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 04:56:58 +1100 (AEDT)
-Received: from gandalf.local.home (cpe-66-24-56-78.stny.res.rr.com
- [66.24.56.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1E8132192B;
- Fri, 21 Dec 2018 17:56:57 +0000 (UTC)
-Received: from rostedt by gandalf.local.home with local (Exim 4.91)
- (envelope-from <rostedt@goodmis.org>)
- id 1gaP2e-0002J7-5C; Fri, 21 Dec 2018 12:56:56 -0500
-Message-Id: <20181221175656.041890777@goodmis.org>
-User-Agent: quilt/0.65
-Date: Fri, 21 Dec 2018 12:56:23 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Subject: [for-next][PATCH 05/24] powerpc/frace: Use
- ftrace_graph_get_ret_stack() instead of curr_ret_stack
-References: <20181221175618.968519903@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43M55b1Y11zDqXZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 10:52:18 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wBLNq2Mq030885;
+ Fri, 21 Dec 2018 17:52:03 -0600
+Message-ID: <01fde905930d89ce8a9f0ae47b58625ad3849807.camel@kernel.crashing.org>
+Subject: Re: trace_hardirqs_on/off vs. extra stack frames
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Date: Sat, 22 Dec 2018 10:52:02 +1100
+In-Reply-To: <20181220210257.743426dd@vmware.local.home>
+References: <e43c141da0ed2c3c6136c09c32afe91698ccce21.camel@kernel.crashing.org>
+ <20181220210257.743426dd@vmware.local.home>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.2 (3.30.2-2.fc29) 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,64 +56,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, Masami Hiramatsu <mhiramat@kernel.org>,
- Namhyung Kim <namhyung@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
+Cc: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <michaele@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Steven Rostedt (VMware)" <rostedt@goodmis.org>
+On Thu, 2018-12-20 at 21:02 -0500, Steven Rostedt wrote:
+> On Fri, 21 Dec 2018 12:11:35 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > Hi Steven !
+> > 
+> > I'm trying to untangle something, and I need your help :-)
+> > 
+> > In commit 3cb5f1a3e58c0bd70d47d9907cc5c65192281dee, you added a summy
+> > stack frame around the assembly calls to trace_hardirqs_on/off on the
+> > ground that when using the latency tracer (irqsoff), you might poke at
+> > CALLER_ADDR1 and that could blow up if there's only one frame at hand.
+> > 
+> > However, I can't see where it would be doing that. lockdep.c only uses
+> > CALLER_ADDR0 and irqsoff uses the values passed by it. In fact, that
+> > was already the case when the above commit was merged.
+> > 
+> > I tried on a 32-bit kernel to remove the dummy stack frame with no
+> > issue so far .... (though I do get stupid values reported with or
+> > without a stack frame, but I think that's normal, looking into it).
+> 
+> BTW, I only had a 64 bit PPC working, so I would have been testing that.
+> 
+> > The reason I'm asking is that we have other code path, on return
+> > from interrupts for example, at least on 32-bits where we call the
+> > tracing without the extra stack frame, and I yet to see it crash.
+> 
+> Have you tried enabling the irqsoff tracer and running it for a while?
+> 
+>  echo irqsoff > /sys/kernel/debug/tracing/current_tracer
+> 
+> The problem is that when we come from user space, and we disable
+> interrupts in the entry code, it calls into the irqsoff tracer:
+> 
+> [ in userspace ]
+> <interrupt>
+> [ in kernel ]
+> bl .trace_hardirqs_off
+> 
+>   kernel/trace/trace_preemptirq.c:
+> 
+>    trace_hardirqs_off(CALLER_ADDR_0, CALLER_ADDR1)
+> 
+> IIRC, without the stack frame, that CALLER_ADDR1 can end up having the
+> kernel read garbage.
 
-The structure of the ret_stack array on the task struct is going to
-change, and accessing it directly via the curr_ret_stack index will no
-longer give the ret_stack entry that holds the return address. To access
-that, architectures must now use ftrace_graph_get_ret_stack() to get the
-associated ret_stack that matches the saved return address.
+You're right, I was looking at a too old tree where trace_hardirqs_* is
+implemented in kernel/locking/lockdep.c and only uses CALLER_ADDR0.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
----
- arch/powerpc/kernel/process.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 96f34730010f..ce393df243aa 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -2061,9 +2061,10 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 	int count = 0;
- 	int firstframe = 1;
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--	int curr_frame = current->curr_ret_stack;
-+	struct ftrace_ret_stack *ret_stack;
- 	extern void return_to_handler(void);
- 	unsigned long rth = (unsigned long)return_to_handler;
-+	int curr_frame = 0;
- #endif
- 
- 	sp = (unsigned long) stack;
-@@ -2089,9 +2090,13 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 			printk("["REG"] ["REG"] %pS", sp, ip, (void *)ip);
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 			if ((ip == rth) && curr_frame >= 0) {
--				pr_cont(" (%pS)",
--				       (void *)current->ret_stack[curr_frame].ret);
--				curr_frame--;
-+				ret_stack = ftrace_graph_get_ret_stack(current,
-+								  curr_frame++);
-+				if (ret_stack)
-+					pr_cont(" (%pS)",
-+						(void *)ret_stack->ret);
-+				else
-+					curr_frame = -1;
- 			}
- #endif
- 			if (firstframe)
--- 
-2.19.2
-
+> 
+> -- Steve
+> 
+> 
+> > I wonder if the commit and bug fix above relates to some older code
+> > that no longer existed even at the point where the commit was
+> merged...
 
