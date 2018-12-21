@@ -2,59 +2,63 @@ Return-Path: <SRS0=o62n=O6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BB45C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 07:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A67DCC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 08:09:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6D7D218FD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 07:58:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6D7D218FD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 249DE21906
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 08:09:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 249DE21906
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LgxW2jkVzDrC0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 18:58:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43LhB5186xzDrCC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 19:09:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=lkp@intel.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43LgvK66C7zDrBs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 18:56:59 +1100 (AEDT)
-X-Amp-Result: UNSCANNABLE
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 20 Dec 2018 23:56:56 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,380,1539673200"; 
- d="gz'50?scan'50,208,50";a="304017551"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by fmsmga006.fm.intel.com with ESMTP; 20 Dec 2018 23:56:52 -0800
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1gaFfw-000FY6-Dv; Fri, 21 Dec 2018 15:56:52 +0800
-Date: Fri, 21 Dec 2018 15:56:39 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Pingfan Liu <kernelfans@gmail.com>
-Subject: Re: [PATCHv2 1/3] mm/numa: change the topo of build_zonelist_xx()
-Message-ID: <201812211505.W391FoVW%fengguang.wu@intel.com>
-References: <1545299439-31370-2-git-send-email-kernelfans@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="huq684BweRXVnRxX"
-Content-Disposition: inline
-In-Reply-To: <1545299439-31370-2-git-send-email-kernelfans@gmail.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Lh7w0tmhzDrBr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2018 19:07:56 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43Lh7q6T5mz9tyL4;
+ Fri, 21 Dec 2018 09:07:51 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id AXYKGTvTcQyv; Fri, 21 Dec 2018 09:07:51 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Lh7q5qNGz9tyL3;
+ Fri, 21 Dec 2018 09:07:51 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C26068B8E5;
+ Fri, 21 Dec 2018 09:07:52 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id mYoISYYE-_yH; Fri, 21 Dec 2018 09:07:52 +0100 (CET)
+Received: from PO15451.localdomain (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 97C1F8B75F;
+ Fri, 21 Dec 2018 09:07:52 +0100 (CET)
+Received: by localhost.localdomain (Postfix, from userid 0)
+ id 4F16E7176E; Fri, 21 Dec 2018 08:07:52 +0000 (UTC)
+Message-Id: <ae7b64e9415874060977e32ed48b62f1f6148084.1545346337.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3] crypto: talitos - fix ablkcipher for CONFIG_VMAP_STACK
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, Horia Geanta <horia.geanta@nxp.com>
+Date: Fri, 21 Dec 2018 08:07:52 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,186 +70,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@redhat.com>,
- x86@kernel.org, linux-kernel@vger.kernel.org,
- Pingfan Liu <kernelfans@gmail.com>, linux-mm@kvack.org,
- Mike Rapoport <rppt@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- kbuild-all@01.org, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Bjorn Helgaas <bhelgaas@google.com>, David Rientjes <rientjes@google.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
+ stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+[    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
+[    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
+[    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
+[    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+[    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
+[    2.406669]
+[    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
+[    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
+[    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
+[    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
+[    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
+[    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
+[    2.451762] Call Trace:
+[    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
+[    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
+[    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
+[    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
+[    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
+[    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
+[    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
+[    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
+[    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
+[    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
+[    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+[    2.515532] Instruction dump:
+[    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
+[    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
+[    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
+[    2.539123] talitos ff020000.crypto: master data transfer error
+[    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
+[    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
+cannot be DMA mapped anymore.
 
-Hi Pingfan,
+This patch copies the IV into the extended descriptor when iv is not
+a valid linear address.
 
-Thank you for the patch! Yet something to improve:
-
-[auto build test ERROR on linus/master]
-[also build test ERROR on v4.20-rc7 next-20181220]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Pingfan-Liu/mm-bugfix-for-NULL-reference-in-mm-on-all-archs/20181221-152625
-config: riscv-tinyconfig (attached as .config)
-compiler: riscv64-linux-gcc (GCC) 8.1.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        GCC_VERSION=8.1.0 make.cross ARCH=riscv 
-
-All errors (new ones prefixed by >>):
-
-   mm/page_alloc.c: In function 'build_zonelists':
->> mm/page_alloc.c:5288:12: error: 'local_node' redeclared as different kind of symbol
-     int node, local_node;
-               ^~~~~~~~~~
-   mm/page_alloc.c:5286:66: note: previous definition of 'local_node' was here
-    static void build_zonelists(struct zonelist *node_zonelists, int local_node)
-                                                                 ~~~~^~~~~~~~~~
-
-vim +/local_node +5288 mm/page_alloc.c
-
-^1da177e4 Linus Torvalds    2005-04-16  5285  
-e6ee0d8bd Pingfan Liu       2018-12-20  5286  static void build_zonelists(struct zonelist *node_zonelists, int local_node)
-^1da177e4 Linus Torvalds    2005-04-16  5287  {
-19655d348 Christoph Lameter 2006-09-25 @5288  	int node, local_node;
-9d3be21bf Michal Hocko      2017-09-06  5289  	struct zoneref *zonerefs;
-9d3be21bf Michal Hocko      2017-09-06  5290  	int nr_zones;
-^1da177e4 Linus Torvalds    2005-04-16  5291  
-e6ee0d8bd Pingfan Liu       2018-12-20  5292  	zonerefs = node_zonelists[ZONELIST_FALLBACK]._zonerefs;
-e6ee0d8bd Pingfan Liu       2018-12-20  5293  	nr_zones = build_zonerefs_node(local_node, zonerefs);
-9d3be21bf Michal Hocko      2017-09-06  5294  	zonerefs += nr_zones;
-^1da177e4 Linus Torvalds    2005-04-16  5295  
-^1da177e4 Linus Torvalds    2005-04-16  5296  	/*
-^1da177e4 Linus Torvalds    2005-04-16  5297  	 * Now we build the zonelist so that it contains the zones
-^1da177e4 Linus Torvalds    2005-04-16  5298  	 * of all the other nodes.
-^1da177e4 Linus Torvalds    2005-04-16  5299  	 * We don't want to pressure a particular node, so when
-^1da177e4 Linus Torvalds    2005-04-16  5300  	 * building the zones for node N, we make sure that the
-^1da177e4 Linus Torvalds    2005-04-16  5301  	 * zones coming right after the local ones are those from
-^1da177e4 Linus Torvalds    2005-04-16  5302  	 * node N+1 (modulo N)
-^1da177e4 Linus Torvalds    2005-04-16  5303  	 */
-^1da177e4 Linus Torvalds    2005-04-16  5304  	for (node = local_node + 1; node < MAX_NUMNODES; node++) {
-^1da177e4 Linus Torvalds    2005-04-16  5305  		if (!node_online(node))
-^1da177e4 Linus Torvalds    2005-04-16  5306  			continue;
-e6ee0d8bd Pingfan Liu       2018-12-20  5307  		nr_zones = build_zonerefs_node(node, zonerefs);
-9d3be21bf Michal Hocko      2017-09-06  5308  		zonerefs += nr_zones;
-^1da177e4 Linus Torvalds    2005-04-16  5309  	}
-^1da177e4 Linus Torvalds    2005-04-16  5310  	for (node = 0; node < local_node; node++) {
-^1da177e4 Linus Torvalds    2005-04-16  5311  		if (!node_online(node))
-^1da177e4 Linus Torvalds    2005-04-16  5312  			continue;
-e6ee0d8bd Pingfan Liu       2018-12-20  5313  		nr_zones = build_zonerefs_node(node, zonerefs);
-9d3be21bf Michal Hocko      2017-09-06  5314  		zonerefs += nr_zones;
-^1da177e4 Linus Torvalds    2005-04-16  5315  	}
-^1da177e4 Linus Torvalds    2005-04-16  5316  
-9d3be21bf Michal Hocko      2017-09-06  5317  	zonerefs->zone = NULL;
-9d3be21bf Michal Hocko      2017-09-06  5318  	zonerefs->zone_idx = 0;
-^1da177e4 Linus Torvalds    2005-04-16  5319  }
-^1da177e4 Linus Torvalds    2005-04-16  5320  
-
-:::::: The code at line 5288 was first introduced by commit
-:::::: 19655d3487001d7df0e10e9cbfc27c758b77c2b5 [PATCH] linearly index zone->node_zonelists[]
-
-:::::: TO: Christoph Lameter <clameter@sgi.com>
-:::::: CC: Linus Torvalds <torvalds@g5.osdl.org>
-
+Fixes: 4de9d0b547b9 ("crypto: talitos - Add ablkcipher algorithms")
+Cc: stable@vger.kernel.org
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ v3: Using struct edesc buffer.
 
---huq684BweRXVnRxX
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+ v2: Using per-request context.
 
-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
+ drivers/crypto/talitos.c | 35 +++++++++++++++--------------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
 
---huq684BweRXVnRxX--
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 6988012deca4..160702b119bb 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1355,29 +1355,23 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ {
+ 	struct talitos_edesc *edesc;
+ 	int src_nents, dst_nents, alloc_len, dma_len, src_len, dst_len;
+-	dma_addr_t iv_dma = 0;
+ 	gfp_t flags = cryptoflags & CRYPTO_TFM_REQ_MAY_SLEEP ? GFP_KERNEL :
+ 		      GFP_ATOMIC;
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	bool is_sec1 = has_ftr_sec1(priv);
+ 	int max_len = is_sec1 ? TALITOS1_MAX_DATA_LEN : TALITOS2_MAX_DATA_LEN;
+-	void *err;
+ 
+ 	if (cryptlen + authsize > max_len) {
+ 		dev_err(dev, "length exceeds h/w max limit\n");
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (ivsize)
+-		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
+-
+ 	if (!dst || dst == src) {
+ 		src_len = assoclen + cryptlen + authsize;
+ 		src_nents = sg_nents_for_len(src, src_len);
+ 		if (src_nents < 0) {
+ 			dev_err(dev, "Invalid number of src SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		src_nents = (src_nents == 1) ? 0 : src_nents;
+ 		dst_nents = dst ? src_nents : 0;
+@@ -1387,16 +1381,14 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 		src_nents = sg_nents_for_len(src, src_len);
+ 		if (src_nents < 0) {
+ 			dev_err(dev, "Invalid number of src SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		src_nents = (src_nents == 1) ? 0 : src_nents;
+ 		dst_len = assoclen + cryptlen + (encrypt ? authsize : 0);
+ 		dst_nents = sg_nents_for_len(dst, dst_len);
+ 		if (dst_nents < 0) {
+ 			dev_err(dev, "Invalid number of dst SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		dst_nents = (dst_nents == 1) ? 0 : dst_nents;
+ 	}
+@@ -1423,17 +1415,24 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 	/* if its a ahash, add space for a second desc next to the first one */
+ 	if (is_sec1 && !dst)
+ 		alloc_len += sizeof(struct talitos_desc);
++	if (ivsize && !virt_addr_valid(iv))
++		alloc_len += ivsize;
+ 
+ 	edesc = kmalloc(alloc_len, GFP_DMA | flags);
+-	if (!edesc) {
+-		err = ERR_PTR(-ENOMEM);
+-		goto error_sg;
+-	}
++	if (!edesc)
++		return ERR_PTR(-ENOMEM);
+ 	memset(&edesc->desc, 0, sizeof(edesc->desc));
+ 
++	if (ivsize && !virt_addr_valid(iv))
++		iv = memcpy(((u8 *)edesc) + alloc_len - ivsize, iv, ivsize);
++
+ 	edesc->src_nents = src_nents;
+ 	edesc->dst_nents = dst_nents;
+-	edesc->iv_dma = iv_dma;
++	if (ivsize)
++		edesc->iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
++	else
++		edesc->iv_dma = 0;
++
+ 	edesc->dma_len = dma_len;
+ 	if (dma_len) {
+ 		void *addr = &edesc->link_tbl[0];
+@@ -1445,10 +1444,6 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 						     DMA_BIDIRECTIONAL);
+ 	}
+ 	return edesc;
+-error_sg:
+-	if (iv_dma)
+-		dma_unmap_single(dev, iv_dma, ivsize, DMA_TO_DEVICE);
+-	return err;
+ }
+ 
+ static struct talitos_edesc *aead_edesc_alloc(struct aead_request *areq, u8 *iv,
+-- 
+2.13.3
+
