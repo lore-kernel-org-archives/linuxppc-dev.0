@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55293C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:35:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9175EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:37:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 040AA21917
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:35:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 040AA21917
+	by mail.kernel.org (Postfix) with ESMTPS id 451C32190A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:37:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 451C32190A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43LwkX4XqYzDr1F
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 04:35:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Lwmp2k0GzDqGG
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 04:37:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
@@ -29,24 +29,24 @@ Authentication-Results: lists.ozlabs.org;
 Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Lwdy2BGPzDr32
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Lwdy24g2zDr2j
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 04:31:16 +1100 (AEDT)
 Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 8B168200152;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D1975200073;
  Fri, 21 Dec 2018 18:31:13 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 7FAE0200002;
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C622B200002;
  Fri, 21 Dec 2018 18:31:13 +0100 (CET)
 Received: from fsr-ub1664-009.ea.freescale.net
  (fsr-ub1664-009.ea.freescale.net [10.171.71.77])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 4854D205E9;
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 8ED80205E9;
  Fri, 21 Dec 2018 18:31:13 +0100 (CET)
 From: Diana Craciun <diana.craciun@nxp.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 03/11 v2] powerpc/fsl: Fix spectre_v2 mitigations reporting
-Date: Fri, 21 Dec 2018 19:30:29 +0200
-Message-Id: <1545413437-5538-4-git-send-email-diana.craciun@nxp.com>
+Subject: [PATCH 04/11 v2] powerpc/fsl: Emulate SPRN_BUCSR register
+Date: Fri, 21 Dec 2018 19:30:30 +0200
+Message-Id: <1545413437-5538-5-git-send-email-diana.craciun@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1545413437-5538-1-git-send-email-diana.craciun@nxp.com>
 References: <1545413437-5538-1-git-send-email-diana.craciun@nxp.com>
@@ -67,32 +67,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently for CONFIG_PPC_FSL_BOOK3E
-cat /sys/devices/system/cpu/vulnerabilities/spectre_v2 reports:
-"Mitigation: Software count cache flush" which is wrong. Fix it
-to report vulnerable for now.
+In order to flush the branch predictor the guest kernel
+performs writes to the BUCSR register which is hypervisor
+privilleged. However, the branch predictor is flushed at
+each KVM entry, so the branch predictor has been already
+flushed, so just return as soon as possible to guest.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
-v1->v2
+v1-->v2
 - no change
 
- arch/powerpc/kernel/security.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kvm/e500_emulate.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index f6f469f..1b395b8 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -22,7 +22,7 @@ enum count_cache_flush_type {
- 	COUNT_CACHE_FLUSH_SW	= 0x2,
- 	COUNT_CACHE_FLUSH_HW	= 0x4,
- };
--static enum count_cache_flush_type count_cache_flush_type;
-+static enum count_cache_flush_type count_cache_flush_type = COUNT_CACHE_FLUSH_NONE;
+diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+index 3f8189e..d0eb670 100644
+--- a/arch/powerpc/kvm/e500_emulate.c
++++ b/arch/powerpc/kvm/e500_emulate.c
+@@ -276,6 +276,11 @@ int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong spr_va
+ 		 */
+ 		vcpu->arch.pwrmgtcr0 = spr_val;
+ 		break;
++		/* if we are here, it means that we have already flushed the
++		 * branch predictor, so just return to guest
++		 */
++	case SPRN_BUCSR:
++		break;
  
- bool barrier_nospec_enabled;
- static bool no_nospec;
+ 	/* extra exceptions */
+ #ifdef CONFIG_SPE_POSSIBLE
 -- 
 2.5.5
 
