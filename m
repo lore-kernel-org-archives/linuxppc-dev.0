@@ -3,50 +3,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D787C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E5BEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:41:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1EE182190A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:39:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1EE182190A
+	by mail.kernel.org (Postfix) with ESMTPS id E43A22190A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Dec 2018 17:41:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E43A22190A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Lwpx1c0tzDrMX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 04:39:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Lws957JSzDqYW
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 04:41:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
  envelope-from=diana.craciun@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Lwdy2HTPzDr39
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 04:31:17 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id DCF711A013F;
- Fri, 21 Dec 2018 18:31:14 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Lwdy20GyzDr28
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 04:31:16 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 450622000C4;
+ Fri, 21 Dec 2018 18:31:13 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
  [134.27.226.22])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D10E81A0138;
- Fri, 21 Dec 2018 18:31:14 +0100 (CET)
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 396B3200002;
+ Fri, 21 Dec 2018 18:31:13 +0100 (CET)
 Received: from fsr-ub1664-009.ea.freescale.net
  (fsr-ub1664-009.ea.freescale.net [10.171.71.77])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 9923F205E9;
- Fri, 21 Dec 2018 18:31:14 +0100 (CET)
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 02031205E9;
+ Fri, 21 Dec 2018 18:31:12 +0100 (CET)
 From: Diana Craciun <diana.craciun@nxp.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 08/11 v2] powerpc/fsl: Flush branch predictor when entering KVM
-Date: Fri, 21 Dec 2018 19:30:34 +0200
-Message-Id: <1545413437-5538-9-git-send-email-diana.craciun@nxp.com>
+Subject: [PATCH 02/11 v2] powerpc/fsl: Add macro to flush the branch predictor
+Date: Fri, 21 Dec 2018 19:30:28 +0200
+Message-Id: <1545413437-5538-3-git-send-email-diana.craciun@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1545413437-5538-1-git-send-email-diana.craciun@nxp.com>
 References: <1545413437-5538-1-git-send-email-diana.craciun@nxp.com>
@@ -67,33 +67,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Switching from the guest to host is another place
-where the speculative accesses can be exploited.
-Flush the branch predictor when entering KVM.
+The BUCSR register can be used to invalidate the entries in the
+branch prediction mechanisms.
 
 Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
 v1-->v2
-- no changes
+- no change
 
- arch/powerpc/kvm/bookehv_interrupts.S | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/include/asm/ppc_asm.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 051af7d..4e5081e 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -75,6 +75,10 @@
- 	PPC_LL	r1, VCPU_HOST_STACK(r4)
- 	PPC_LL	r2, HOST_R2(r1)
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index b5d0236..5c901bf 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -821,4 +821,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ 	stringify_in_c(.long (_target) - . ;)	\
+ 	stringify_in_c(.previous)
  
-+START_BTB_FLUSH_SECTION
-+	BTB_FLUSH(r10)
-+END_BTB_FLUSH_SECTION
++#ifdef CONFIG_PPC_FSL_BOOK3E
++#define BTB_FLUSH(reg)			\
++	lis reg,BUCSR_INIT@h;		\
++	ori reg,reg,BUCSR_INIT@l;	\
++	mtspr SPRN_BUCSR,reg;		\
++	isync;
++#else
++#define BTB_FLUSH(reg)
++#endif /* CONFIG_PPC_FSL_BOOK3E */
 +
- 	mfspr	r10, SPRN_PID
- 	lwz	r8, VCPU_HOST_PID(r4)
- 	PPC_LL	r11, VCPU_SHARED(r4)
+ #endif /* _ASM_POWERPC_PPC_ASM_H */
 -- 
 2.5.5
 
