@@ -6,41 +6,41 @@ X-Spam-Status: No, score=-8.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CF30C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 09:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A95EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 10:00:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2959321A47
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 09:58:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2959321A47
+	by mail.kernel.org (Postfix) with ESMTPS id 0860021A47
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 10:00:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0860021A47
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43MLYX0dBDzDqbG
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 20:58:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43MLbj0HbYzDqXl
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Dec 2018 21:00:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43MLSR54NYzDqSZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 20:54:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43MLSS1rglzDqT3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Dec 2018 20:54:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43MLSR0hzpz9sLw; Sat, 22 Dec 2018 20:54:30 +1100 (AEDT)
+ id 43MLSR6WTrz9sDP; Sat, 22 Dec 2018 20:54:31 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 0ed5b55884f8b1fa368454d47cc6ecf9790b8b99
+X-powerpc-patch-commit: 385e89d5b20f5a7c33fd7c1904da0e6a8e1b366f
 X-Patchwork-Hint: ignore
-In-Reply-To: <674bef4f0b56492b4c30644ccaaf318869c84992.1543340240.git.christophe.leroy@c-s.fr>
+In-Reply-To: <62fcfb8435c2f801d820eff469fd01e68c1b107d.1543425412.git.christophe.leroy@c-s.fr>
 To: Christophe Leroy <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/8xx: add exception frame marker
-Message-Id: <43MLSR0hzpz9sLw@ozlabs.org>
-Date: Sat, 22 Dec 2018 20:54:30 +1100 (AEDT)
+Subject: Re: [v3] powerpc/mm: add exec protection on powerpc 603
+Message-Id: <43MLSR6WTrz9sDP@ozlabs.org>
+Date: Sat, 22 Dec 2018 20:54:31 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,28 +57,23 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-11-27 at 17:38:16 UTC, Christophe Leroy wrote:
-> This patch adds STACK_FRAME_REGS_MARKER in the stack at exception entry
-> in order to see interrupts in call traces as below:
+On Wed, 2018-11-28 at 17:21:10 UTC, Christophe Leroy wrote:
+> The 603 doesn't have a HASH table, TLB misses are handled by
+> software. It is then possible to generate page fault when
+> _PAGE_EXEC is not set like in nohash/32.
 > 
-> [    0.013964] Call Trace:
-> [    0.014014] [c0745db0] [c007a9d4] tick_periodic.constprop.5+0xd8/0x104 (unreliable)
-> [    0.014086] [c0745dc0] [c007aa20] tick_handle_periodic+0x20/0x9c
-> [    0.014181] [c0745de0] [c0009cd0] timer_interrupt+0xa0/0x264
-> [    0.014258] [c0745e10] [c000e484] ret_from_except+0x0/0x14
-> [    0.014390] --- interrupt: 901 at console_unlock.part.7+0x3f4/0x528
-> [    0.014390]     LR = console_unlock.part.7+0x3f0/0x528
-> [    0.014455] [c0745ee0] [c0050334] console_unlock.part.7+0x114/0x528 (unreliable)
-> [    0.014542] [c0745f30] [c00524e0] register_console+0x3d8/0x44c
-> [    0.014625] [c0745f60] [c0675aac] cpm_uart_console_init+0x18/0x2c
-> [    0.014709] [c0745f70] [c06614f4] console_init+0x114/0x1cc
-> [    0.014795] [c0745fb0] [c0658b68] start_kernel+0x300/0x3d8
-> [    0.014864] [c0745ff0] [c00022cc] start_here+0x44/0x98
+> There is one "reserved" PTE bit available, this patch uses
+> it for _PAGE_EXEC.
+> 
+> In order to support it, set_pte_filter() and
+> set_access_flags_filter() are made common, and the handling
+> is made dependent on MMU_FTR_HPTE_TABLE
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0ed5b55884f8b1fa368454d47cc6ec
+https://git.kernel.org/powerpc/c/385e89d5b20f5a7c33fd7c1904da0e
 
 cheers
