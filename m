@@ -6,40 +6,39 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67EE7C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Dec 2018 14:23:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A2BAC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Dec 2018 14:25:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 114E421849
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Dec 2018 14:23:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 114E421849
+	by mail.kernel.org (Postfix) with ESMTPS id 1194221849
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Dec 2018 14:25:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1194221849
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43N4NQ003ZzDqNy
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 01:23:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43N4QY008FzDqlX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 01:25:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43N38h66PmzDqWB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2018 00:28:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43N38k2M94zDqW1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2018 00:28:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43N38h3zSdz9sPM; Mon, 24 Dec 2018 00:28:20 +1100 (AEDT)
+ id 43N38j5MNDz9sPP; Mon, 24 Dec 2018 00:28:21 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: f21b0a45e4e48eafca38f11612244c5bd454a6c2
+X-powerpc-patch-commit: a25de7af340fcd19a59978ded2ff04ed329bca06
 X-Patchwork-Hint: ignore
-In-Reply-To: <20181016023003.41327-1-aik@ozlabs.ru>
+In-Reply-To: <20181016023409.42238-1-aik@ozlabs.ru>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [kernel] powerpc/powernv/ioda1: Remove dead code for a single
- device PE
-Message-Id: <43N38h3zSdz9sPM@ozlabs.org>
-Date: Mon, 24 Dec 2018 00:28:20 +1100 (AEDT)
+Subject: Re: [kernel] powerpc/powernv/ioda: Reduce a number of hooks in pnv_phb
+Message-Id: <43N38j5MNDz9sPP@ozlabs.org>
+Date: Mon, 24 Dec 2018 00:28:21 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,16 +55,18 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2018-10-16 at 02:30:03 UTC, Alexey Kardashevskiy wrote:
-> At the moment PNV_IODA_PE_DEV is only used for NPU PEs which are not
-> present on IODA1 machines (i.e. POWER7) so let's remove a piece of
-> dead code.
+On Tue, 2018-10-16 at 02:34:09 UTC, Alexey Kardashevskiy wrote:
+> fixup_phb() is never used, this removes it.
+> 
+> pick_m64_pe() and reserve_m64_pe() are always defined for all powernv
+> PHBs: they are initialized by pnv_ioda_parse_m64_window() which is
+> called unconditionally from pnv_pci_init_ioda_phb() which initializes
+> all known PHB types on powernv so we can open code them.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/f21b0a45e4e48eafca38f11612244c
+https://git.kernel.org/powerpc/c/a25de7af340fcd19a59978ded2ff04
 
 cheers
