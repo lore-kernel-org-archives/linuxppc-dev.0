@@ -2,49 +2,71 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8EB19C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 05:27:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59893C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 07:10:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06E1C214D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 05:27:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06E1C214D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 63B462171F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 07:10:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 63B462171F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43PhKz0J4DzDqLv
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 16:27:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43PkdF0pXgzDqMM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 18:10:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iram.es
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Pgn05RhjzDqHn
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 16:01:56 +1100 (AEDT)
-Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id B457529505; Tue, 25 Dec 2018 19:43:55 -0500 (EST)
-To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Michael Schmitz <schmitzmic@gmail.com>,
- "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>
-Message-Id: <0e72ee3231529ab642f6aea94cb93644689e79b5.1545784679.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
-References: <cover.1545784679.git.fthain@telegraphics.com.au>
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v8 03/25] m68k/atari: Replace nvram_{read,write}_byte with
- arch_nvram_ops
-Date: Wed, 26 Dec 2018 11:37:59 +1100
+ spf=pass (mailfrom) smtp.mailfrom=iram.es
+ (client-ip=130.206.19.142; helo=mx01.puc.rediris.es;
+ envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=iram.es
+X-Greylist: delayed 76577 seconds by postgrey-1.36 at bilbo;
+ Wed, 26 Dec 2018 18:08:31 AEDT
+Received: from mx01.puc.rediris.es (outbound3mad.lav.puc.rediris.es
+ [130.206.19.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Pkb33LvpzDqHY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 18:08:29 +1100 (AEDT)
+Received: from sim.rediris.es (mta-out04.sim.rediris.es [130.206.24.46])
+ (user=smtp-out_iram mech=LOGIN bits=0)
+ by mx01.puc.rediris.es  with ESMTP id wBN8Tvoq004705-wBN8Tvos004705
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Sun, 23 Dec 2018 09:29:57 +0100
+Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by sim.rediris.es (Postfix) with ESMTPS id 653E386743;
+ Sun, 23 Dec 2018 09:29:56 +0100 (CET)
+Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by sim.rediris.es (Postfix) with ESMTPS id CFB9586747;
+ Sun, 23 Dec 2018 09:29:55 +0100 (CET)
+Received: from lt-gp.iram.es (230.41.223.87.dynamic.jazztel.es [87.223.41.230])
+ by sim.rediris.es (Postfix) with ESMTPA id 5407486743;
+ Sun, 23 Dec 2018 09:29:54 +0100 (CET)
+Date: Sun, 23 Dec 2018 09:29:44 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/4xx/ocm: fix compiler error
+Message-ID: <20181223082944.o2qakn6f34megzfj@lt-gp.iram.es>
+References: <20181222100934.8051-1-chunkeey@gmail.com>
+ <abadbc68-c612-94c3-3248-dc6b55cf6822@c-s.fr>
+ <2160350.91F9KbYz58@debian64>
+ <06576f55-e31f-2554-255d-d10f8576c7ab@c-s.fr>
+ <20181222171631.GA23740@gate.crashing.org>
+ <f365c733-6a1d-1ae9-067a-2a9490388c38@c-s.fr>
+ <20181222230451.GB23740@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20181222230451.GB23740@gate.crashing.org>
+User-Agent: NeoMutt/20170113 (1.7.2)
+X-FEAS-AUTH-USER: smtp-out_iram
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,197 +78,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ Christian Lamparter <chunkeey@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-By implementing an arch_nvram_ops struct, any platform can re-use the
-drivers/char/nvram.c module without needing any arch-specific code
-in that module. Atari does so here.
+On Sat, Dec 22, 2018 at 05:04:51PM -0600, Segher Boessenkool wrote:
+> On Sat, Dec 22, 2018 at 08:37:28PM +0100, christophe leroy wrote:
+> > Le 22/12/2018 à 18:16, Segher Boessenkool a écrit :
+> > >On Sat, Dec 22, 2018 at 02:08:02PM +0100, christophe leroy wrote:
+> > >>
+> > >>Usually, Guarded implies no exec (at least on 6xx and 8xx).
+> > >
+> > >Huh?  What do you mean here?
+> > 
+> > From the 885 Reference Manual:
+> > 
+> > Address translation: the EA is translated by using the MMU’s TLB 
+> > mechanism. Instructions are not fetched from no-execute or guarded 
+> > memory and data accesses are not executed speculatively to or from the 
+> > guarded memory.
+> > 
+> > 6.1.3.4 Instruction TLB Error Exception (0x01300)
+> > This type of exception occurs as a result of one of the following 
+> > conditions if MSR[IR] = 1:
+> > - The EA cannot be translated.
+> > - The fetch access violates memory protection
+> > - The fetch access is to guarded memory
+> > 
+> > 
+> > From e300core reference manual:
+> > 
+> > Translation Exception Conditions:
+> > Exception condition: Instruction fetch from guarded memory
+> > with MSR[IR] = 1 ==> ISI interrupt SRR1[3] = 1
+> 
+> Right, but you said 6xx as well, i.e. pure PowerPC.
+> 
+> If for example IR=0 you cannot have N=1, but you do have G=1.  There is
+> no case where G=1 implies N=1 afaik, or where fetch is prohibited some
+> other way (causes an ISI, say).
 
-Atari has one user of nvram_check_checksum() whereas the other "CMOS"
-platforms don't use that function at all. Replace this
-validate-checksum-and-read-byte sequence with the equivalent
-rtc_nvram_ops.read() call and remove the now unused functions.
+From the 750fx user's manual, similar wording can be found for other
+processors (except 601), including the ones that use software TLB load
+like 603/603e (the test for guarded memory is in the sample code for
+the tlb miss handler):
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Tested-by: Christian T. Steigies <cts@debian.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-The advantage of the new ops struct over the old global nvram_* functions
-is that the misc device module can be shared by different platforms
-without requiring every platform to implement every nvram_* function.
-E.g. only RTC "CMOS" NVRAMs have a checksum for the entire NVRAM
-and only PowerPC platforms have a "sync" ioctl.
----
- arch/m68k/atari/nvram.c   | 89 ++++++++++++++++++++++++---------------
- drivers/scsi/atari_scsi.c |  8 ++--
- include/linux/nvram.h     |  9 ++++
- 3 files changed, 70 insertions(+), 36 deletions(-)
+"
+An ISI exception occurs when no higher priority exception exists and an
+attempt to fetch the next instruction fails. This exception is implemented 
+as it is defined by the PowerPC architecture (OEA), and is taken for the
+following conditions:
+•   The effective address cannot be translated.
+•   The fetch access is to a no-execute segment (SR[N] = 1).
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+•   The fetch access is to guarded storage and MSR[IR] = 1.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+•   The fetch access is to a segment for which SR[T] is set.
+•   The fetch access violates memory protection.
+When an ISI exception is taken, instruction fetching resumes at offset
+0x00400 from the physical base indicated by MSR[IP].
+"
 
-diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
-index 3e620ee955ba..bafc9dc32830 100644
---- a/arch/m68k/atari/nvram.c
-+++ b/arch/m68k/atari/nvram.c
-@@ -39,33 +39,12 @@ unsigned char __nvram_read_byte(int i)
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
- 
--unsigned char nvram_read_byte(int i)
--{
--	unsigned long flags;
--	unsigned char c;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	c = __nvram_read_byte(i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return c;
--}
--EXPORT_SYMBOL(nvram_read_byte);
--
- /* This races nicely with trying to read with checksum checking */
- void __nvram_write_byte(unsigned char c, int i)
- {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
- 
--void nvram_write_byte(unsigned char c, int i)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	__nvram_write_byte(c, i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--}
--
- /* On Ataris, the checksum is over all bytes except the checksum bytes
-  * themselves; these are at the very end.
-  */
-@@ -84,18 +63,6 @@ int __nvram_check_checksum(void)
- 	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
- }
- 
--int nvram_check_checksum(void)
--{
--	unsigned long flags;
--	int rv;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	rv = __nvram_check_checksum();
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return rv;
--}
--EXPORT_SYMBOL(nvram_check_checksum);
--
- static void __nvram_set_checksum(void)
- {
- 	int i;
-@@ -107,6 +74,62 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
- 
-+static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		*p = __nvram_read_byte(i);
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		__nvram_write_byte(*p, i);
-+
-+	__nvram_set_checksum();
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
-+}
-+
-+const struct nvram_ops arch_nvram_ops = {
-+	.read           = nvram_read,
-+	.write          = nvram_write,
-+	.get_size       = nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
- #ifdef CONFIG_PROC_FS
- static struct {
- 	unsigned char val;
-diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
-index 99e5729d910d..f55d13e400da 100644
---- a/drivers/scsi/atari_scsi.c
-+++ b/drivers/scsi/atari_scsi.c
-@@ -760,13 +760,15 @@ static int __init atari_scsi_probe(struct platform_device *pdev)
- #ifdef CONFIG_NVRAM
- 	else
- 		/* Test if a host id is set in the NVRam */
--		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
--			unsigned char b = nvram_read_byte(16);
-+		if (ATARIHW_PRESENT(TT_CLK)) {
-+			unsigned char b;
-+			loff_t offset = 16;
-+			ssize_t count = arch_nvram_ops.read(&b, 1, &offset);
- 
- 			/* Arbitration enabled? (for TOS)
- 			 * If yes, use configured host ID
- 			 */
--			if (b & 0x80)
-+			if ((count == 1) && (b & 0x80))
- 				atari_scsi_template.this_id = b & 7;
- 		}
- #endif
-diff --git a/include/linux/nvram.h b/include/linux/nvram.h
-index 28bfb9ab94ca..4f78147e74d9 100644
---- a/include/linux/nvram.h
-+++ b/include/linux/nvram.h
-@@ -11,4 +11,13 @@ extern void __nvram_write_byte(unsigned char c, int i);
- extern void nvram_write_byte(unsigned char c, int i);
- extern int __nvram_check_checksum(void);
- extern int nvram_check_checksum(void);
-+
-+struct nvram_ops {
-+	ssize_t         (*read)(char *, size_t, loff_t *);
-+	ssize_t         (*write)(char *, size_t, loff_t *);
-+	ssize_t         (*get_size)(void);
-+};
-+
-+extern const struct nvram_ops arch_nvram_ops;
-+
- #endif  /* _LINUX_NVRAM_H */
--- 
-2.19.2
-
+	Gabriel
