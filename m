@@ -2,24 +2,24 @@ Return-Path: <SRS0=X2ql=PB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0
+X-Spam-Status: No, score=-12.5 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82C4CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 02:13:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDCF6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 02:22:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A82E52176F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 02:13:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A82E52176F
+	by mail.kernel.org (Postfix) with ESMTPS id 5E14C2176F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 02:22:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E14C2176F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43NN7g6mMjzDqfM
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 13:13:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43NNLT209xzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Dec 2018 13:22:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=buserror.net
@@ -30,29 +30,26 @@ Authentication-Results: lists.ozlabs.org;
 Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43NN5W0my3zDqWx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2018 13:11:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43NNJF4KK8zDqKf
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2018 13:21:01 +1100 (AEDT)
 Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
+ (helo=home.buserror.net)
  by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
  (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1gbFgH-0005DR-9u; Sun, 23 Dec 2018 20:09:26 -0600
-Message-ID: <aacb88f67d1c2bdacff760341291588ac3f2c0f0.camel@buserror.net>
+ id 1gbFrX-0005EN-9L; Sun, 23 Dec 2018 20:20:59 -0600
+Date: Sun, 23 Dec 2018 20:20:57 -0600
 From: Scott Wood <oss@buserror.net>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sun, 23 Dec 2018 20:09:19 -0600
-In-Reply-To: <877eg0idwv.fsf@concordia.ellerman.id.au>
-References: <20181222044250.GA7651@home.buserror.net>
- <877eg0idwv.fsf@concordia.ellerman.id.au>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <20181224022057.GA18444@home.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
 X-SA-Exim-Rcpt-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- galak@kernel.crashing.org, hch@lst.de
+ galak@kernel.crashing.org
 X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: Pull request: scottwood/linux.git next
+Subject: Pull request v2: scottwood/linux.git next
 X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
 X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -66,52 +63,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2018-12-24 at 00:13 +1100, Michael Ellerman wrote:
-> Hi Scott,
-> 
-> Scott Wood <oss@buserror.net> writes:
-> > Highlights include elimination of legacy clock bindings use from dts
-> > files, an 83xx watchdog handler, fixes to old dts interrupt errors, and
-> > some minor cleanup.
-> > 
-> > The following changes since commit
-> > 8c6c942d33f2a79439e86f8f406afae40a5bc767:
-> > 
-> >   powerpc/eeh: Fix debugfs_simple_attr.cocci warnings (2018-12-20 22:59:03
-> > +1100)
-> > 
-> > are available in the Git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> > 
-> > for you to fetch changes up to 5f470b3638a4ed03df79b993ece819cac2f4ca7e:
-> > 
-> >   powerpc/configs/85xx: Enable CONFIG_DEBUG_KERNEL (2018-12-21 22:07:54
-> > -0600)
-> > 
-> > ----------------------------------------------------------------
-> > Alexandre Belloni (1):
-> >       powerpc/fsl-rio: fix spelling mistake "reserverd" -> "reserved"
-> > 
-> > Christoph Hellwig (1):
-> >       powerpc/fsl_pci: simplify fsl_pci_dma_set_mask
-> 
-> This one breaks networking on my p5020ds.
-> 
-> dmesg is just full of:
-> 
->   e1000e 2000:01:00.0: Tx DMA map failed
-> 
-> Haven't had time to dig any further.
+Highlights include elimination of legacy clock bindings use from dts
+files, an 83xx watchdog handler, fixes to old dts interrupt errors, and
+some minor cleanup.
 
-OK, I'll revert.  My t4240rdb doesn't have PCI devices, so I wasn't able to
-test it.
+v2: Reverted the fsl_pci_dma_set_mask patch
 
--Scott
+The following changes since commit 8c6c942d33f2a79439e86f8f406afae40a5bc767:
 
+  powerpc/eeh: Fix debugfs_simple_attr.cocci warnings (2018-12-20 22:59:03 +1100)
 
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+
+for you to fetch changes up to 63d86876f32440a45b6f9d42ab2fb7f68b3a8bf7:
+
+  Revert "powerpc/fsl_pci: simplify fsl_pci_dma_set_mask" (2018-12-23 20:11:20 -0600)
+
+----------------------------------------------------------------
+Alexandre Belloni (1):
+      powerpc/fsl-rio: fix spelling mistake "reserverd" -> "reserved"
+
+Christoph Hellwig (1):
+      powerpc/fsl_pci: simplify fsl_pci_dma_set_mask
+
+Christophe Leroy (1):
+      powerpc/83xx: handle machine check caused by watchdog timer
+
+Sabyasachi Gupta (1):
+      arch/powerpc/fsl_rmu: Use dma_zalloc_coherent
+
+Scott Wood (4):
+      powerpc/fsl: Use new clockgen binding
+      powerpc/dts/fsl: Fix dtc-flagged interrupt errors
+      powerpc/configs/85xx: Enable CONFIG_DEBUG_KERNEL
+      Revert "powerpc/fsl_pci: simplify fsl_pci_dma_set_mask"
+
+Yuantian Tang (1):
+      clk: qoriq: add more compatibles strings
+
+ .../devicetree/bindings/clock/qoriq-clock.txt      |   6 +
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi         |   4 +-
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |  15 ---
+ arch/powerpc/boot/dts/fsl/mpc8641_hpcn.dts         | 128 ++++++++++-----------
+ arch/powerpc/boot/dts/fsl/mpc8641_hpcn_36b.dts     | 128 ++++++++++-----------
+ arch/powerpc/boot/dts/fsl/mpc8641si-post.dtsi      |   2 +
+ arch/powerpc/boot/dts/fsl/p1020rdb-pc.dtsi         |   4 +-
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |  18 ---
+ arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |  18 ---
+ arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |  70 -----------
+ arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi         |  16 +--
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |   4 +-
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |  18 ---
+ arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi     |  47 --------
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi     |  30 -----
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        |  16 ---
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi         |   4 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  44 -------
+ arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        |  22 ----
+ arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi         |   8 +-
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |  61 ----------
+ arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi         |  24 ++--
+ arch/powerpc/boot/dts/mpc832x_rdb.dts              |   4 -
+ arch/powerpc/configs/fsl-emb-nonhw.config          |   1 +
+ arch/powerpc/include/asm/cputable.h                |   1 +
+ arch/powerpc/include/asm/reg.h                     |   2 +
+ arch/powerpc/kernel/cputable.c                     |  10 +-
+ arch/powerpc/platforms/83xx/misc.c                 |  17 +++
+ arch/powerpc/sysdev/fsl_rio.h                      |   2 +-
+ arch/powerpc/sysdev/fsl_rmu.c                      |   4 +-
+ 35 files changed, 217 insertions(+), 551 deletions(-)
