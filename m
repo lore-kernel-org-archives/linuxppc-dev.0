@@ -2,58 +2,67 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23B6BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:23:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 726FCC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:26:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBF0520811
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:23:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBF0520811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id D17AA20811
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:26:17 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D17AA20811
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q8D53Y3dzDqLr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:23:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q8HC4lfBzDqMy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:26:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
- (client-ip=63.217.80.70; helo=mxhk.zte.com.cn;
- envelope-from=peng.hao2@zte.com.cn; receiver=<UNKNOWN>)
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP";
+	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zte.com.cn
-Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.217.80.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43PmF92ckkzDqHZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 19:23:09 +1100 (AEDT)
-Received: from mse01.zte.com.cn (unknown [10.30.3.20])
- by Forcepoint Email with ESMTPS id 7472AB1EF043F2FFE692;
- Wed, 26 Dec 2018 16:07:36 +0800 (CST)
-Received: from notes_smtp.zte.com.cn ([10.30.1.239])
- by mse01.zte.com.cn with ESMTP id wBQ87WI3030735;
- Wed, 26 Dec 2018 16:07:32 +0800 (GMT-8)
- (envelope-from peng.hao2@zte.com.cn)
-Received: from localhost.localdomain.localdomain ([10.74.120.59])
- by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
- with ESMTP id 2018122616075477-18870823 ;
- Wed, 26 Dec 2018 16:07:54 +0800 
-From: Peng Hao <peng.hao2@zte.com.cn>
-To: qiang.zhao@nxp.com, davem@davemloft.net
-Subject: [PATCH] net/wan/fsl_ucc_hdlc: Avoid double free in ucc_hdlc_probe()
-Date: Wed, 26 Dec 2018 16:28:30 +0800
-Message-Id: <1545812910-77777-1-git-send-email-peng.hao2@zte.com.cn>
-X-Mailer: git-send-email 1.8.3.1
-X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
- 8.5.3FP6|November 21, 2013) at 2018-12-26 16:07:55,
- Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2018-12-26 16:07:24, Serialize complete at 2018-12-26 16:07:24
-X-MAIL: mse01.zte.com.cn wBQ87WI3030735
-X-Mailman-Approved-At: Thu, 27 Dec 2018 10:19:16 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q8BQ326mzDqMX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 10:22:06 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A9E2C2084A;
+ Wed, 26 Dec 2018 23:22:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1545866524;
+ bh=iWXAqQLaG+6hGfoIPo6i9JFqcOvF97kQu5MvsDI2Bqw=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Z4nDZRYPDxCNW6SX21GG1jR1432qwKaC5civM88HGE0Vm+YpJXIDvn6SB3vweUXvv
+ J0Fd9S2O+DiUDs8qcOsSNZlULlTqweYs7/lhinnuMU34ZM0jOZkCMJWvf0tcXtmyeR
+ jgonqV2/zZ8JbLWchn6ZtX5NYBMQX574eTY571V4=
+From: Sasha Levin <sashal@kernel.org>
+To: stable@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH AUTOSEL 3.18 01/12] powerpc: Fix COFF zImage booting on old
+ powermacs
+Date: Wed, 26 Dec 2018 17:57:29 -0500
+Message-Id: <20181226225741.151608-1-sashal@kernel.org>
+X-Mailer: git-send-email 2.19.1
+MIME-Version: 1.0
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,39 +74,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Wen Yang <wen.yang99@zte.com.cn>
+Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Wen Yang <wen.yang99@zte.com.cn>
+From: Paul Mackerras <paulus@ozlabs.org>
 
-This patch fixes potential double frees if register_hdlc_device() fails.
+[ Upstream commit 5564597d51c8ff5b88d95c76255e18b13b760879 ]
 
-Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Reviewed-by: Peng Hao <peng.hao2@zte.com.cn>
-CC: Zhao Qiang <qiang.zhao@nxp.com>
-CC: "David S. Miller" <davem@davemloft.net>
-CC: netdev@vger.kernel.org
-CC: linuxppc-dev@lists.ozlabs.org
-CC: linux-kernel@vger.kernel.org
+Commit 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper
+as a relocatable ET_DYN", 2011-04-12) changed the procedure descriptor
+at the start of crt0.S to have a hard-coded start address of 0x500000
+rather than a reference to _zimage_start, presumably because having
+a reference to a symbol introduced a relocation which is awkward to
+handle in a position-independent executable.  Unfortunately, what is
+at 0x500000 in the COFF image is not the first instruction, but the
+procedure descriptor itself, that is, a word containing 0x500000,
+which is not a valid instruction.  Hence, booting a COFF zImage
+results in a "DEFAULT CATCH!, code=FFF00700" message from Open
+Firmware.
+
+This fixes the problem by (a) putting the procedure descriptor in the
+data section and (b) adding a branch to _zimage_start as the first
+instruction in the program.
+
+Fixes: 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper as a relocatable ET_DYN")
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/wan/fsl_ucc_hdlc.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/boot/crt0.S | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 7a42336..839fa77 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -1180,7 +1180,6 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
- 	if (register_hdlc_device(dev)) {
- 		ret = -ENOBUFS;
- 		pr_err("ucc_hdlc: unable to register hdlc device\n");
--		free_netdev(dev);
- 		goto free_dev;
- 	}
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index 8539ac93b0de..dbb06588b594 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -15,7 +15,7 @@
+ RELA = 7
+ RELACOUNT = 0x6ffffff9
  
+-	.text
++	.data
+ 	/* A procedure descriptor used when booting this as a COFF file.
+ 	 * When making COFF, this comes first in the link and we're
+ 	 * linked at 0x500000.
+@@ -23,6 +23,8 @@ RELACOUNT = 0x6ffffff9
+ 	.globl	_zimage_start_opd
+ _zimage_start_opd:
+ 	.long	0x500000, 0, 0, 0
++	.text
++	b	_zimage_start
+ 
+ #ifdef __powerpc64__
+ .balign 8
 -- 
-2.9.5
+2.19.1
 
