@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4D98C43444
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 355F1C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:03:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FA16214D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:59:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id A7E5D2087F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:03:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FA16214D8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7E5D2087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7h35p62zDqLt
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 09:59:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7n75NzjzDqLw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:03:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,33 +32,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7Fv2kMrzDqDh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:40:03 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7GG28QszDqKw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:40:22 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 26C44218E2;
- Wed, 26 Dec 2018 22:40:01 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 99E6320651;
+ Wed, 26 Dec 2018 22:40:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545864001;
- bh=o81EuJgkXKgsPy/BgWUnSLGjwRup3hC2Y+as07xe2PE=;
+ s=default; t=1545864020;
+ bh=Px6UZj563bikmHNcosTib3Ae5wEAb7cHeNaORZqfN6w=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=lN+WWm+Wh3gWopZnjuFznvRYnZK4Ajb1craoY4+z1t6fIk08WKib6lIICWMLRrvPB
- 2jGYp3DbWk7gEOTZHC8xg6mgNRLIdzs26Y7tjWUxDzj/P3r48IKoKTy9CnvjSNezzb
- qJzIzEUEKHIzSv5TwT0WWvdLR70KwhMuEHlvyqF4=
+ b=1sClDdKzU9XjI5b5F/4FavzuKcrBfVvbkYbhXC84fM2LjeMQ8LwCgLotNdrGWAJdo
+ kABmAMzQRyRZH0Im+0yLCTjUSeIw6ohumD2HPJ6pYdun9MHlU+T6ZAFC0xw1Q5fwDk
+ 5IEswN/Y+8yGTEtvBQPeIu5Fo1ci5edspg4je9vk=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 03/59] powerpc/mm: Fix linux page tables build
- with some configs
-Date: Wed, 26 Dec 2018 17:37:43 -0500
-Message-Id: <20181226223839.150262-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 16/59] ibmvnic: Fix non-atomic memory allocation
+ in IRQ context
+Date: Wed, 26 Dec 2018 17:37:56 -0500
+Message-Id: <20181226223839.150262-16-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
 References: <20181226223839.150262-1-sashal@kernel.org>
@@ -76,41 +76,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, netdev@vger.kernel.org,
+ Thomas Falcon <tlfalcon@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Thomas Falcon <tlfalcon@linux.ibm.com>
 
-[ Upstream commit 462951cd32e1496dc64b00051dfb777efc8ae5d8 ]
+[ Upstream commit 1d1bbc37f89b0559c9e913682f2489d89cfde6b8 ]
 
-For some configs the build fails with:
+ibmvnic_reset allocated new reset work item objects in a non-atomic
+context. This can be called from a tasklet, generating the output below.
+Allocate work items with the GFP_ATOMIC flag instead.
 
-  arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
-  arch/powerpc/mm/dump_linuxpagetables.c:306:39: error: 'PKMAP_BASE' undeclared (first use in this function)
-  arch/powerpc/mm/dump_linuxpagetables.c:314:50: error: 'LAST_PKMAP' undeclared (first use in this function)
+BUG: sleeping function called from invalid context at mm/slab.h:421
+in_atomic(): 1, irqs_disabled(): 1, pid: 93, name: kworker/0:2
+INFO: lockdep is turned off.
+irq event stamp: 66049
+hardirqs last  enabled at (66048): [<c000000000122468>] tasklet_action_common.isra.12+0x78/0x1c0
+hardirqs last disabled at (66049): [<c000000000befce8>] _raw_spin_lock_irqsave+0x48/0xf0
+softirqs last  enabled at (66044): [<c000000000a8ac78>] dev_deactivate_queue.constprop.28+0xc8/0x160
+softirqs last disabled at (66045): [<c0000000000306e0>] call_do_softirq+0x14/0x24
+CPU: 0 PID: 93 Comm: kworker/0:2 Kdump: loaded Not tainted 4.20.0-rc6-00001-g1b50a8f03706 #7
+Workqueue: events linkwatch_event
+Call Trace:
+[c0000003fffe7ae0] [c000000000bc83e4] dump_stack+0xe8/0x164 (unreliable)
+[c0000003fffe7b30] [c00000000015ba0c] ___might_sleep+0x2dc/0x320
+[c0000003fffe7bb0] [c000000000391514] kmem_cache_alloc_trace+0x3e4/0x440
+[c0000003fffe7c30] [d000000005b2309c] ibmvnic_reset+0x16c/0x360 [ibmvnic]
+[c0000003fffe7cc0] [d000000005b29834] ibmvnic_tasklet+0x1054/0x2010 [ibmvnic]
+[c0000003fffe7e00] [c0000000001224c8] tasklet_action_common.isra.12+0xd8/0x1c0
+[c0000003fffe7e60] [c000000000bf1238] __do_softirq+0x1a8/0x64c
+[c0000003fffe7f90] [c0000000000306e0] call_do_softirq+0x14/0x24
+[c0000003f3967980] [c00000000001ba50] do_softirq_own_stack+0x60/0xb0
+[c0000003f39679c0] [c0000000001218a8] do_softirq+0xa8/0x100
+[c0000003f39679f0] [c000000000121a74] __local_bh_enable_ip+0x174/0x180
+[c0000003f3967a60] [c000000000bf003c] _raw_spin_unlock_bh+0x5c/0x80
+[c0000003f3967a90] [c000000000a8ac78] dev_deactivate_queue.constprop.28+0xc8/0x160
+[c0000003f3967ad0] [c000000000a8c8b0] dev_deactivate_many+0xd0/0x520
+[c0000003f3967b70] [c000000000a8cd40] dev_deactivate+0x40/0x60
+[c0000003f3967ba0] [c000000000a5e0c4] linkwatch_do_dev+0x74/0xd0
+[c0000003f3967bd0] [c000000000a5e694] __linkwatch_run_queue+0x1a4/0x1f0
+[c0000003f3967c30] [c000000000a5e728] linkwatch_event+0x48/0x60
+[c0000003f3967c50] [c0000000001444e8] process_one_work+0x238/0x710
+[c0000003f3967d20] [c000000000144a48] worker_thread+0x88/0x4e0
+[c0000003f3967db0] [c00000000014e3a8] kthread+0x178/0x1c0
+[c0000003f3967e20] [c00000000000bfd0] ret_from_kernel_thread+0x5c/0x6c
 
-These come from highmem.h, including that fixes the build.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/dump_linuxpagetables.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/ibm/ibmvnic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-index 31c1c61afaa4..0bbaf7344872 100644
---- a/arch/powerpc/mm/dump_linuxpagetables.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables.c
-@@ -19,6 +19,7 @@
- #include <linux/hugetlb.h>
- #include <linux/io.h>
- #include <linux/mm.h>
-+#include <linux/highmem.h>
- #include <linux/sched.h>
- #include <linux/seq_file.h>
- #include <asm/fixmap.h>
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 14c53ed5cca6..c914b338691b 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1596,7 +1596,7 @@ static void ibmvnic_reset(struct ibmvnic_adapter *adapter,
+ 		}
+ 	}
+ 
+-	rwi = kzalloc(sizeof(*rwi), GFP_KERNEL);
++	rwi = kzalloc(sizeof(*rwi), GFP_ATOMIC);
+ 	if (!rwi) {
+ 		mutex_unlock(&adapter->rwi_lock);
+ 		ibmvnic_close(netdev);
 -- 
 2.19.1
 
