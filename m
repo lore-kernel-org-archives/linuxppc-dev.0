@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 355F1C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9AB3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:06:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7E5D2087F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:03:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 552AA2087F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:06:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7E5D2087F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 552AA2087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7n75NzjzDqLw
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:03:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7r4216XzDqM7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:06:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,36 +32,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="1sClDdKz"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7GG28QszDqKw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:40:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7Ys2C9vzDqHn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:53:53 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 99E6320651;
- Wed, 26 Dec 2018 22:40:19 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D184C218A5;
+ Wed, 26 Dec 2018 22:53:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545864020;
- bh=Px6UZj563bikmHNcosTib3Ae5wEAb7cHeNaORZqfN6w=;
+ s=default; t=1545864831;
+ bh=3Czy2PjlnymjrRkOxlN2tJetQsILPFtz8qPZkKjnUH8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=1sClDdKzU9XjI5b5F/4FavzuKcrBfVvbkYbhXC84fM2LjeMQ8LwCgLotNdrGWAJdo
- kABmAMzQRyRZH0Im+0yLCTjUSeIw6ohumD2HPJ6pYdun9MHlU+T6ZAFC0xw1Q5fwDk
- 5IEswN/Y+8yGTEtvBQPeIu5Fo1ci5edspg4je9vk=
+ b=r5Lk2v8n4KsYhiVI59YGewG8LtwCVSeEEvOAXPoFs8QTzr6/Bcd4J6LN4ALR7qNji
+ mCls/cIVwJ1mkWRkcxT2KGZobM29DxGCnfB+qeUXuJvVSKlRhv7ZOt6kDIxSl4LIFL
+ KioYgIPvy5SxXS6gUBxxsTc5yH85Angx0nfT+/G8=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 16/59] ibmvnic: Fix non-atomic memory allocation
- in IRQ context
-Date: Wed, 26 Dec 2018 17:37:56 -0500
-Message-Id: <20181226223839.150262-16-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 02/35] powerpc: Fix COFF zImage booting on old
+ powermacs
+Date: Wed, 26 Dec 2018 17:41:09 -0500
+Message-Id: <20181226224142.150866-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
-References: <20181226223839.150262-1-sashal@kernel.org>
+In-Reply-To: <20181226224142.150866-1-sashal@kernel.org>
+References: <20181226224142.150866-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -76,75 +76,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, netdev@vger.kernel.org,
- Thomas Falcon <tlfalcon@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Thomas Falcon <tlfalcon@linux.ibm.com>
+From: Paul Mackerras <paulus@ozlabs.org>
 
-[ Upstream commit 1d1bbc37f89b0559c9e913682f2489d89cfde6b8 ]
+[ Upstream commit 5564597d51c8ff5b88d95c76255e18b13b760879 ]
 
-ibmvnic_reset allocated new reset work item objects in a non-atomic
-context. This can be called from a tasklet, generating the output below.
-Allocate work items with the GFP_ATOMIC flag instead.
+Commit 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper
+as a relocatable ET_DYN", 2011-04-12) changed the procedure descriptor
+at the start of crt0.S to have a hard-coded start address of 0x500000
+rather than a reference to _zimage_start, presumably because having
+a reference to a symbol introduced a relocation which is awkward to
+handle in a position-independent executable.  Unfortunately, what is
+at 0x500000 in the COFF image is not the first instruction, but the
+procedure descriptor itself, that is, a word containing 0x500000,
+which is not a valid instruction.  Hence, booting a COFF zImage
+results in a "DEFAULT CATCH!, code=FFF00700" message from Open
+Firmware.
 
-BUG: sleeping function called from invalid context at mm/slab.h:421
-in_atomic(): 1, irqs_disabled(): 1, pid: 93, name: kworker/0:2
-INFO: lockdep is turned off.
-irq event stamp: 66049
-hardirqs last  enabled at (66048): [<c000000000122468>] tasklet_action_common.isra.12+0x78/0x1c0
-hardirqs last disabled at (66049): [<c000000000befce8>] _raw_spin_lock_irqsave+0x48/0xf0
-softirqs last  enabled at (66044): [<c000000000a8ac78>] dev_deactivate_queue.constprop.28+0xc8/0x160
-softirqs last disabled at (66045): [<c0000000000306e0>] call_do_softirq+0x14/0x24
-CPU: 0 PID: 93 Comm: kworker/0:2 Kdump: loaded Not tainted 4.20.0-rc6-00001-g1b50a8f03706 #7
-Workqueue: events linkwatch_event
-Call Trace:
-[c0000003fffe7ae0] [c000000000bc83e4] dump_stack+0xe8/0x164 (unreliable)
-[c0000003fffe7b30] [c00000000015ba0c] ___might_sleep+0x2dc/0x320
-[c0000003fffe7bb0] [c000000000391514] kmem_cache_alloc_trace+0x3e4/0x440
-[c0000003fffe7c30] [d000000005b2309c] ibmvnic_reset+0x16c/0x360 [ibmvnic]
-[c0000003fffe7cc0] [d000000005b29834] ibmvnic_tasklet+0x1054/0x2010 [ibmvnic]
-[c0000003fffe7e00] [c0000000001224c8] tasklet_action_common.isra.12+0xd8/0x1c0
-[c0000003fffe7e60] [c000000000bf1238] __do_softirq+0x1a8/0x64c
-[c0000003fffe7f90] [c0000000000306e0] call_do_softirq+0x14/0x24
-[c0000003f3967980] [c00000000001ba50] do_softirq_own_stack+0x60/0xb0
-[c0000003f39679c0] [c0000000001218a8] do_softirq+0xa8/0x100
-[c0000003f39679f0] [c000000000121a74] __local_bh_enable_ip+0x174/0x180
-[c0000003f3967a60] [c000000000bf003c] _raw_spin_unlock_bh+0x5c/0x80
-[c0000003f3967a90] [c000000000a8ac78] dev_deactivate_queue.constprop.28+0xc8/0x160
-[c0000003f3967ad0] [c000000000a8c8b0] dev_deactivate_many+0xd0/0x520
-[c0000003f3967b70] [c000000000a8cd40] dev_deactivate+0x40/0x60
-[c0000003f3967ba0] [c000000000a5e0c4] linkwatch_do_dev+0x74/0xd0
-[c0000003f3967bd0] [c000000000a5e694] __linkwatch_run_queue+0x1a4/0x1f0
-[c0000003f3967c30] [c000000000a5e728] linkwatch_event+0x48/0x60
-[c0000003f3967c50] [c0000000001444e8] process_one_work+0x238/0x710
-[c0000003f3967d20] [c000000000144a48] worker_thread+0x88/0x4e0
-[c0000003f3967db0] [c00000000014e3a8] kthread+0x178/0x1c0
-[c0000003f3967e20] [c00000000000bfd0] ret_from_kernel_thread+0x5c/0x6c
+This fixes the problem by (a) putting the procedure descriptor in the
+data section and (b) adding a branch to _zimage_start as the first
+instruction in the program.
 
-Signed-off-by: Thomas Falcon <tlfalcon@linux.ibm.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Fixes: 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper as a relocatable ET_DYN")
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/ethernet/ibm/ibmvnic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/boot/crt0.S | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 14c53ed5cca6..c914b338691b 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1596,7 +1596,7 @@ static void ibmvnic_reset(struct ibmvnic_adapter *adapter,
- 		}
- 	}
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index 5c2199857aa8..a3550e8f1a77 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -15,7 +15,7 @@
+ RELA = 7
+ RELACOUNT = 0x6ffffff9
  
--	rwi = kzalloc(sizeof(*rwi), GFP_KERNEL);
-+	rwi = kzalloc(sizeof(*rwi), GFP_ATOMIC);
- 	if (!rwi) {
- 		mutex_unlock(&adapter->rwi_lock);
- 		ibmvnic_close(netdev);
+-	.text
++	.data
+ 	/* A procedure descriptor used when booting this as a COFF file.
+ 	 * When making COFF, this comes first in the link and we're
+ 	 * linked at 0x500000.
+@@ -23,6 +23,8 @@ RELACOUNT = 0x6ffffff9
+ 	.globl	_zimage_start_opd
+ _zimage_start_opd:
+ 	.long	0x500000, 0, 0, 0
++	.text
++	b	_zimage_start
+ 
+ #ifdef __powerpc64__
+ .balign 8
 -- 
 2.19.1
 
