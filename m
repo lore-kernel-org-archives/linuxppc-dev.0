@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 631CFC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:54:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21528C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:56:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E6482148E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:54:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E6482148E
+	by mail.kernel.org (Postfix) with ESMTPS id 9239A2148E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:56:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9239A2148E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43PfGh1mHmzDqKT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 14:54:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43PfK03BXNzDqL9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 14:56:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,19 +28,19 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43PfDF5PsZzDqJm
+ by lists.ozlabs.org (Postfix) with ESMTP id 43PfDF5KGtzDqJk
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 14:51:57 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id D1D6C29529; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
+ id 19C3A2951F; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Message-Id: <88b7f55b6b27aac143c364de12d01c73afce78e9.1545784679.git.fthain@telegraphics.com.au>
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <f94994916e3899b2c41e067105877ead8fdc91b1.1545784679.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v8 19/25] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when
- CONFIG_PPC32 && CONFIG_PPC_PMAC && CONFIG_NVRAM
+Subject: [PATCH v8 09/25] m68k/atari: Implement arch_nvram_ops methods and
+ enable CONFIG_HAVE_ARCH_NVRAM_OPS
 Date: Wed, 26 Dec 2018 11:37:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -54,176 +54,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
- linux-fbdev@vger.kernel.org
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch addresses inconsistencies in Mac framebuffer drivers and their
-use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
-
-Macintosh framebuffer drivers use default settings for color mode and
-video mode that are found in NVRAM. On PCI Macs, MacOS stores display
-settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
-there is no NR partition and MacOS stores display mode settings in PRAM**.
-
-Early-model Macs are the ones most likely to benefit from these settings,
-since they are more likely to have a fixed-frequency monitor connected to
-the built-in framebuffer device. Moreover, a single NV_CMODE value and
-a single NV_VMODE value provide for only one display.
-
-The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
-partition for Old World machines. This also suggests that these defaults
-are not useful on later models. The NR partition seems to be optional on
-New World machines. CONFIG_NVRAM cannot be enabled on PPC64 at present.
-
-It is safe to say that NVRAM support in PowerMac fbdev drivers is only
-applicable to CONFIG_PPC32 so make this condition explicit. This means
-matroxfb driver won't crash on PPC64 when CONFIG_NVRAM becomes available
-there.
-
-For imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
-since PPC64 does not implement nvram_read_byte(). Also add a missing
-machine_is(powermac) check. Change the inconsistent dependency on
-CONFIG_PPC and the matching #ifdef tests to CONFIG_PPC_PMAC.
-
-For valkyriefb, to improve clarity and consistency with the other PowerMac
-fbdev drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
-bogus comment regarding PRAM.
-
-* See GetPreferredConfiguration and SavePreferredConfiguration in
-"Designing PCI Cards and Drivers for Power Macintosh Computers".
-
-** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
-for the Macintosh Family".
+Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
+methods for the set_checksum and initialize ioctls. Enable
+CONFIG_HAVE_ARCH_NVRAM_OPS.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/fbdev/Kconfig                |  2 +-
- drivers/video/fbdev/imsttfb.c              | 12 +++++-------
- drivers/video/fbdev/matrox/matroxfb_base.c |  2 +-
- drivers/video/fbdev/valkyriefb.c           | 14 ++++++--------
- 4 files changed, 13 insertions(+), 17 deletions(-)
+Changed since v7:
+ - Changed the default for CONFIG_NVRAM, because "select NVRAM" was
+removed from ATARI_SCSI in patch 1.
+---
+ arch/m68k/Kconfig         |  3 +++
+ arch/m68k/Kconfig.machine |  1 +
+ arch/m68k/atari/nvram.c   | 24 ++++++++++++++++++++++++
+ drivers/char/Kconfig      |  3 ++-
+ 4 files changed, 30 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index e413f54208f4..52453ce3040a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -536,7 +536,7 @@ config FB_IMSTT
- 	bool "IMS Twin Turbo display support"
- 	depends on (FB = y) && PCI
- 	select FB_CFB_IMAGEBLIT
--	select FB_MACMODES if PPC
-+	select FB_MACMODES if PPC_PMAC
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 1bc9f1ba759a..79e545f2520a 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -70,6 +70,9 @@ config ZONE_DMA
+ 	bool
+ 	default y
+ 
++config HAVE_ARCH_NVRAM_OPS
++	bool
++
+ config HZ
+ 	int
+ 	default 1000 if CLEOPATRA
+diff --git a/arch/m68k/Kconfig.machine b/arch/m68k/Kconfig.machine
+index 64a641467736..0c8c4c7982c1 100644
+--- a/arch/m68k/Kconfig.machine
++++ b/arch/m68k/Kconfig.machine
+@@ -16,6 +16,7 @@ config ATARI
+ 	bool "Atari support"
+ 	depends on MMU
+ 	select MMU_MOTOROLA if MMU
++	select HAVE_ARCH_NVRAM_OPS
  	help
- 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
- 	  many Macintosh and compatible computers.
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index 901ca4ed10e9..8d231591ff0e 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -30,9 +30,8 @@
- #include <asm/io.h>
- #include <linux/uaccess.h>
+ 	  This option enables support for the 68000-based Atari series of
+ 	  computers (including the TT, Falcon and Medusa). If you plan to use
+diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
+index bafc9dc32830..4b27f1683a37 100644
+--- a/arch/m68k/atari/nvram.c
++++ b/arch/m68k/atari/nvram.c
+@@ -74,6 +74,26 @@ static void __nvram_set_checksum(void)
+ 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
+ }
  
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- #include <linux/nvram.h>
--#include <asm/prom.h>
- #include "macmodes.h"
- #endif
++static long nvram_set_checksum(void)
++{
++	spin_lock_irq(&rtc_lock);
++	__nvram_set_checksum();
++	spin_unlock_irq(&rtc_lock);
++	return 0;
++}
++
++static long nvram_initialize(void)
++{
++	loff_t i;
++
++	spin_lock_irq(&rtc_lock);
++	for (i = 0; i < NVRAM_BYTES; ++i)
++		__nvram_write_byte(0, i);
++	__nvram_set_checksum();
++	spin_unlock_irq(&rtc_lock);
++	return 0;
++}
++
+ static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+ {
+ 	char *p = buf;
+@@ -120,6 +140,8 @@ static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
  
-@@ -327,14 +326,13 @@ enum {
- 	TVP = 1
+ static ssize_t nvram_get_size(void)
+ {
++	if (!MACH_IS_ATARI)
++		return -ENODEV;
+ 	return NVRAM_BYTES;
+ }
+ 
+@@ -127,6 +149,8 @@ const struct nvram_ops arch_nvram_ops = {
+ 	.read           = nvram_read,
+ 	.write          = nvram_write,
+ 	.get_size       = nvram_get_size,
++	.set_checksum   = nvram_set_checksum,
++	.initialize     = nvram_initialize,
  };
+ EXPORT_SYMBOL(arch_nvram_ops);
  
--#define USE_NV_MODES		1
- #define INIT_BPP		8
- #define INIT_XRES		640
- #define INIT_YRES		480
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 5b54595dfe30..f9960bd65481 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -236,7 +236,8 @@ source "drivers/char/hw_random/Kconfig"
  
- static int inverse = 0;
- static char fontname[40] __initdata = { 0 };
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- static signed char init_vmode = -1, init_cmode = -1;
- #endif
- 
-@@ -1390,8 +1388,8 @@ static void init_imstt(struct fb_info *info)
- 		}
- 	}
- 
--#if USE_NV_MODES && defined(CONFIG_PPC32)
--	{
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
-+	if (machine_is(powermac)) {
- 		int vmode = init_vmode, cmode = init_cmode;
- 
- 		if (vmode == -1) {
-@@ -1565,7 +1563,7 @@ imsttfb_setup(char *options)
- 			inverse = 1;
- 			fb_invert_cmaps();
- 		}
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- 		else if (!strncmp(this_opt, "vmode:", 6)) {
- 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <= VMODE_MAX)
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 0a4e5bad33f4..cac5865d461c 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1874,7 +1874,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
- 		struct fb_var_screeninfo var;
- 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
- 			default_vmode = VMODE_640_480_60;
--#ifdef CONFIG_NVRAM
-+#if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
- 		if (default_cmode == CMODE_NVRAM)
- 			default_cmode = nvram_read_byte(NV_CMODE);
- #endif
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index d51c3a8009cb..8022316ee9c9 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -63,14 +63,12 @@
- #include "macmodes.h"
- #include "valkyriefb.h"
- 
--#ifdef CONFIG_MAC
--/* We don't yet have functions to read the PRAM... perhaps we can
--   adapt them from the PPC code? */
--static int default_vmode = VMODE_CHOOSE;
--static int default_cmode = CMODE_8;
--#else
-+#ifdef CONFIG_PPC_PMAC
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
-+#else
-+static int default_vmode = VMODE_CHOOSE;
-+static int default_cmode = CMODE_8;
- #endif
- 
- struct fb_par_valkyrie {
-@@ -283,7 +281,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
- 
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode == VMODE_NVRAM) {
- 		default_vmode = nvram_read_byte(NV_VMODE);
- 		if (default_vmode <= 0
-@@ -296,7 +294,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- 		default_vmode = mac_map_monitor_sense(p->sense);
- 	if (!valkyrie_reg_init[default_vmode - 1])
- 		default_vmode = VMODE_640_480_67;
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode == CMODE_NVRAM)
- 		default_cmode = nvram_read_byte(NV_CMODE);
- #endif
+ config NVRAM
+ 	tristate "/dev/nvram support"
+-	depends on X86 || GENERIC_NVRAM
++	depends on X86 || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
++	default M68K
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/nvram
+ 	  with major number 10 and minor number 144 using mknod ("man mknod"),
 -- 
 2.19.2
 
