@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78B08C43612
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4D98C43444
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:59:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BFB56214D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:56:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5FA16214D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 22:59:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="1js63LF4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFB56214D8
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FA16214D8
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7cP5FSnzDqLs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 09:56:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7h35p62zDqLt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 09:59:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="1js63LF4";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,33 +32,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="1js63LF4"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="lN+WWm+W"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7Fs2HdszDqLG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:40:01 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7Fv2kMrzDqDh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:40:03 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id F0C8320651;
- Wed, 26 Dec 2018 22:39:58 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 26C44218E2;
+ Wed, 26 Dec 2018 22:40:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545863999;
- bh=RRNvBnYpys4EAY+rpxxBRXnGKnbxB0RqhrmWp3JAn9A=;
+ s=default; t=1545864001;
+ bh=o81EuJgkXKgsPy/BgWUnSLGjwRup3hC2Y+as07xe2PE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=1js63LF4pv9FHJGZWCX7SZKlvZYOB18x7DlgFkqWdNBCx8Vr8scOXmkTE989EQ5eq
- bHlJEKwFWO0CAwHwHT4RQm7GFGaTXyz/tGcFgVH9s5zCQSTl46u05IQami5SGZCrn3
- Oo2w8y9TGP7mnCrRZEKxZ/nKVn3AmSZVa3bZQUIY=
+ b=lN+WWm+Wh3gWopZnjuFznvRYnZK4Ajb1craoY4+z1t6fIk08WKib6lIICWMLRrvPB
+ 2jGYp3DbWk7gEOTZHC8xg6mgNRLIdzs26Y7tjWUxDzj/P3r48IKoKTy9CnvjSNezzb
+ qJzIzEUEKHIzSv5TwT0WWvdLR70KwhMuEHlvyqF4=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 02/59] powerpc: Fix COFF zImage booting on old
- powermacs
-Date: Wed, 26 Dec 2018 17:37:42 -0500
-Message-Id: <20181226223839.150262-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 03/59] powerpc/mm: Fix linux page tables build
+ with some configs
+Date: Wed, 26 Dec 2018 17:37:43 -0500
+Message-Id: <20181226223839.150262-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20181226223839.150262-1-sashal@kernel.org>
 References: <20181226223839.150262-1-sashal@kernel.org>
@@ -76,61 +76,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Paul Mackerras <paulus@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit 5564597d51c8ff5b88d95c76255e18b13b760879 ]
+[ Upstream commit 462951cd32e1496dc64b00051dfb777efc8ae5d8 ]
 
-Commit 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper
-as a relocatable ET_DYN", 2011-04-12) changed the procedure descriptor
-at the start of crt0.S to have a hard-coded start address of 0x500000
-rather than a reference to _zimage_start, presumably because having
-a reference to a symbol introduced a relocation which is awkward to
-handle in a position-independent executable.  Unfortunately, what is
-at 0x500000 in the COFF image is not the first instruction, but the
-procedure descriptor itself, that is, a word containing 0x500000,
-which is not a valid instruction.  Hence, booting a COFF zImage
-results in a "DEFAULT CATCH!, code=FFF00700" message from Open
-Firmware.
+For some configs the build fails with:
 
-This fixes the problem by (a) putting the procedure descriptor in the
-data section and (b) adding a branch to _zimage_start as the first
-instruction in the program.
+  arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
+  arch/powerpc/mm/dump_linuxpagetables.c:306:39: error: 'PKMAP_BASE' undeclared (first use in this function)
+  arch/powerpc/mm/dump_linuxpagetables.c:314:50: error: 'LAST_PKMAP' undeclared (first use in this function)
 
-Fixes: 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper as a relocatable ET_DYN")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+These come from highmem.h, including that fixes the build.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/boot/crt0.S | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/dump_linuxpagetables.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index 32dfe6d083f3..9b9d17437373 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -15,7 +15,7 @@
- RELA = 7
- RELACOUNT = 0x6ffffff9
- 
--	.text
-+	.data
- 	/* A procedure descriptor used when booting this as a COFF file.
- 	 * When making COFF, this comes first in the link and we're
- 	 * linked at 0x500000.
-@@ -23,6 +23,8 @@ RELACOUNT = 0x6ffffff9
- 	.globl	_zimage_start_opd
- _zimage_start_opd:
- 	.long	0x500000, 0, 0, 0
-+	.text
-+	b	_zimage_start
- 
- #ifdef __powerpc64__
- .balign 8
+diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
+index 31c1c61afaa4..0bbaf7344872 100644
+--- a/arch/powerpc/mm/dump_linuxpagetables.c
++++ b/arch/powerpc/mm/dump_linuxpagetables.c
+@@ -19,6 +19,7 @@
+ #include <linux/hugetlb.h>
+ #include <linux/io.h>
+ #include <linux/mm.h>
++#include <linux/highmem.h>
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <asm/fixmap.h>
 -- 
 2.19.1
 
