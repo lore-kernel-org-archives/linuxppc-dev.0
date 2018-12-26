@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFD61C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 04:17:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B0C4C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 05:04:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3471E214C6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 04:17:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3471E214C6
+	by mail.kernel.org (Postfix) with ESMTPS id 93A6821741
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 05:04:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93A6821741
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Pfp40j3WzDqHZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 15:17:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43PgqL4drPzDqKf
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 16:03:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,17 +28,19 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43PfDG3XJ1zDqJm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 14:51:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Pgmy5kqhzDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 16:01:54 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 0D8862951E; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
+ id 4F2A029522; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Message-Id: <9b9b4218e6a2a3da0a73a190eba085267989c0b4.1545784679.git.fthain@telegraphics.com.au>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Joshua Thompson <funaho@jurai.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <9a2226a05c8b1e142ee060a40c30ed803607ae44.1545784679.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v8 08/25] char/nvram: Implement NVRAM read/write methods
+Subject: [PATCH v8 12/25] m68k/mac: Fix PRAM accessors
 Date: Wed, 26 Dec 2018 11:37:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -57,222 +59,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Refactor the RTC "CMOS" NVRAM functions so that they can be used as
-arch_nvram_ops methods. Checksumming logic is moved from the misc device
-operations to the nvram read/write operations.
-
-This makes the misc device implementation more generic. This also
-preserves the locking semantics such that "read if checksum valid" and
-"write and update checksum" remain atomic operations.
-
-Some platforms implement byte-range read/write methods which are similar
-to file_operations struct methods. Other platforms provide only
-byte-at-a-time functions. The misc device driver prefers to use the
-former but will fall back on the latter.
+PMU-based m68k Macs pre-date PowerMac-style NVRAM. Use the appropriate
+PMU commands. Also implement the missing XPRAM accessors for VIA-based
+Macs.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Tested-by: Stan Johnson <userm57@yahoo.com>
 ---
 Changed since v7:
- - Use memdup_user(), like arch/powerpc/kernel/nvram_64.c.
+ - Updated PMU response decoding due to via-pmu68k driver replacement.
 ---
- drivers/char/nvram.c | 149 ++++++++++++++++++++++++++++++-------------
- 1 file changed, 104 insertions(+), 45 deletions(-)
+ arch/m68k/mac/misc.c     | 43 ++++++++++++++++++++++++++++++----------
+ include/uapi/linux/pmu.h |  2 ++
+ 2 files changed, 35 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index 33ef3b02d365..889123ddace4 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -41,6 +41,7 @@
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-+#include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/uaccess.h>
-@@ -178,9 +179,48 @@ static ssize_t nvram_get_size(void)
- 	return NVRAM_BYTES;
- }
- 
-+static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		*p = __nvram_read_byte(i);
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		__nvram_write_byte(*p, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
- const struct nvram_ops arch_nvram_ops = {
- 	.read_byte      = nvram_read_byte,
- 	.write_byte     = nvram_write_byte,
-+	.read           = nvram_read,
-+	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
- 	.set_checksum   = nvram_set_checksum,
- 	.initialize     = nvram_initialize,
-@@ -201,69 +241,88 @@ static loff_t nvram_misc_llseek(struct file *file, loff_t offset, int origin)
- static ssize_t nvram_misc_read(struct file *file, char __user *buf,
- 			       size_t count, loff_t *ppos)
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index 475c93e4048c..0009efebb264 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -66,23 +66,22 @@ static unsigned char pmu_pram_read_byte(int offset)
  {
--	unsigned char contents[NVRAM_BYTES];
--	unsigned i = *ppos;
--	unsigned char *tmp;
--
--	spin_lock_irq(&rtc_lock);
--
--	if (!__nvram_check_checksum())
--		goto checksum_err;
-+	loff_t i;
-+	char __user *p = buf;
+ 	struct adb_request req;
  
--	for (tmp = contents; count-- > 0 && i < NVRAM_BYTES; ++i, ++tmp)
--		*tmp = __nvram_read_byte(i);
--
--	spin_unlock_irq(&rtc_lock);
--
--	if (copy_to_user(buf, contents, tmp - contents))
-+	if (!access_ok(VERIFY_WRITE, buf, count))
- 		return -EFAULT;
-+	if (*ppos >= nvram_size)
-+		return 0;
+-	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
+-			(offset >> 8) & 0xFF, offset & 0xFF) < 0)
++	if (pmu_request(&req, NULL, 3, PMU_READ_XPRAM,
++	                offset & 0xFF, 1) < 0)
+ 		return 0;
+-	while (!req.complete)
+-		pmu_poll();
+-	return req.reply[3];
++	pmu_wait_complete(&req);
 +
-+	/* If the arch provided a byte range read op, use it. Otherwise
-+	 * fall back on the byte-at-a-time accessor.
-+	 */
-+	if (arch_nvram_ops.read != NULL) {
-+		char *tmp;
-+		ssize_t ret;
-+
-+		count = min_t(size_t, count, nvram_size - *ppos);
-+		count = min_t(size_t, count, PAGE_SIZE);
-+
-+		tmp = kmalloc(count, GFP_KERNEL);
-+		if (!tmp)
-+			return -ENOMEM;
-+
-+		ret = arch_nvram_ops.read(tmp, count, ppos);
-+		if (ret <= 0)
-+			goto out;
-+
-+		if (copy_to_user(buf, tmp, ret)) {
-+			*ppos -= ret;
-+			ret = -EFAULT;
-+		}
- 
--	*ppos = i;
--
--	return tmp - contents;
-+out:
-+		kfree(tmp);
-+		return ret;
-+	}
- 
--checksum_err:
--	spin_unlock_irq(&rtc_lock);
--	return -EIO;
-+	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count)
-+		if (__put_user(arch_nvram_ops.read_byte(i), p))
-+			return -EFAULT;
-+	*ppos = i;
-+	return p - buf;
++	return req.reply[0];
  }
  
- static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
- 				size_t count, loff_t *ppos)
+ static void pmu_pram_write_byte(unsigned char data, int offset)
  {
--	unsigned char contents[NVRAM_BYTES];
--	unsigned i = *ppos;
--	unsigned char *tmp;
-+	loff_t i;
-+	const char __user *p = buf;
+ 	struct adb_request req;
  
--	if (i >= NVRAM_BYTES)
--		return 0;	/* Past EOF */
--
--	if (count > NVRAM_BYTES - i)
--		count = NVRAM_BYTES - i;
--	if (count > NVRAM_BYTES)
--		return -EFAULT;	/* Can't happen, but prove it to gcc */
--
--	if (copy_from_user(contents, buf, count))
-+	if (!access_ok(VERIFY_READ, buf, count))
- 		return -EFAULT;
-+	if (*ppos >= nvram_size)
-+		return 0;
+-	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
+-			(offset >> 8) & 0xFF, offset & 0xFF, data) < 0)
++	if (pmu_request(&req, NULL, 4, PMU_WRITE_XPRAM,
++	                offset & 0xFF, 1, data) < 0)
+ 		return;
+-	while (!req.complete)
+-		pmu_poll();
++	pmu_wait_complete(&req);
+ }
+ #endif /* CONFIG_ADB_PMU */
  
--	spin_lock_irq(&rtc_lock);
-+	/* If the arch provided a byte range write op, use it. Otherwise
-+	 * fall back on the byte-at-a-time accessor.
-+	 */
-+	if (arch_nvram_ops.write != NULL) {
-+		char *tmp;
-+		ssize_t ret;
+@@ -151,6 +150,16 @@ static void via_rtc_send(__u8 data)
+ #define RTC_REG_SECONDS_3       3
+ #define RTC_REG_WRITE_PROTECT   13
  
--	if (!__nvram_check_checksum())
--		goto checksum_err;
-+		count = min_t(size_t, count, nvram_size - *ppos);
-+		count = min_t(size_t, count, PAGE_SIZE);
++/*
++ * Inside Mac has no information about two-byte RTC commands but
++ * the MAME/MESS source code has the essentials.
++ */
++
++#define RTC_REG_XPRAM           14
++#define RTC_CMD_XPRAM_READ      (RTC_CMD_READ(RTC_REG_XPRAM) << 8)
++#define RTC_CMD_XPRAM_WRITE     (RTC_CMD_WRITE(RTC_REG_XPRAM) << 8)
++#define RTC_CMD_XPRAM_ARG(a)    (((a & 0xE0) << 3) | ((a & 0x1F) << 2))
++
+ /*
+  * Execute a VIA PRAM/RTC command. For read commands
+  * data should point to a one-byte buffer for the
+@@ -198,11 +207,25 @@ static void via_rtc_command(int command, __u8 *data)
  
--	for (tmp = contents; count--; ++i, ++tmp)
--		__nvram_write_byte(*tmp, i);
-+		tmp = memdup_user(buf, count);
-+		if (IS_ERR(tmp))
-+			return PTR_ERR(tmp);
- 
--	__nvram_set_checksum();
-+		ret = arch_nvram_ops.write(tmp, count, ppos);
-+		kfree(tmp);
-+		return ret;
-+	}
- 
--	spin_unlock_irq(&rtc_lock);
-+	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count) {
-+		char c;
- 
-+		if (__get_user(c, p))
-+			return -EFAULT;
-+		arch_nvram_ops.write_byte(c, i);
-+	}
- 	*ppos = i;
--
--	return tmp - contents;
--
--checksum_err:
--	spin_unlock_irq(&rtc_lock);
--	return -EIO;
-+	return p - buf;
+ static unsigned char via_pram_read_byte(int offset)
+ {
+-	return 0;
++	unsigned char temp;
++
++	via_rtc_command(RTC_CMD_XPRAM_READ | RTC_CMD_XPRAM_ARG(offset), &temp);
++
++	return temp;
  }
  
- static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+ static void via_pram_write_byte(unsigned char data, int offset)
+ {
++	unsigned char temp;
++
++	temp = 0x55;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
++
++	temp = data;
++	via_rtc_command(RTC_CMD_XPRAM_WRITE | RTC_CMD_XPRAM_ARG(offset), &temp);
++
++	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ }
+ 
+ /*
+diff --git a/include/uapi/linux/pmu.h b/include/uapi/linux/pmu.h
+index 97256f90e6df..f2fc1bd80017 100644
+--- a/include/uapi/linux/pmu.h
++++ b/include/uapi/linux/pmu.h
+@@ -19,7 +19,9 @@
+ #define PMU_POWER_CTRL		0x11	/* control power of some devices */
+ #define PMU_ADB_CMD		0x20	/* send ADB packet */
+ #define PMU_ADB_POLL_OFF	0x21	/* disable ADB auto-poll */
++#define PMU_WRITE_XPRAM		0x32	/* write eXtended Parameter RAM */
+ #define PMU_WRITE_NVRAM		0x33	/* write non-volatile RAM */
++#define PMU_READ_XPRAM		0x3a	/* read eXtended Parameter RAM */
+ #define PMU_READ_NVRAM		0x3b	/* read non-volatile RAM */
+ #define PMU_SET_RTC		0x30	/* set real-time clock */
+ #define PMU_READ_RTC		0x38	/* read real-time clock */
 -- 
 2.19.2
 
