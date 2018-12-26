@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9AB3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C6A0C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:08:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 552AA2087F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:06:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8145520882
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:08:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 552AA2087F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Va6LhacF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8145520882
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7r4216XzDqM7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:06:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q7tt2lpPzDqCx
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:08:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Va6LhacF";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
@@ -32,36 +32,34 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="r5Lk2v8n"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Va6LhacF"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7Ys2C9vzDqHn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:53:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q7dS4txBzDqJL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 09:57:00 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D184C218A5;
- Wed, 26 Dec 2018 22:53:50 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 5F33A218A5;
+ Wed, 26 Dec 2018 22:56:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545864831;
+ s=default; t=1545865019;
  bh=3Czy2PjlnymjrRkOxlN2tJetQsILPFtz8qPZkKjnUH8=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=r5Lk2v8n4KsYhiVI59YGewG8LtwCVSeEEvOAXPoFs8QTzr6/Bcd4J6LN4ALR7qNji
- mCls/cIVwJ1mkWRkcxT2KGZobM29DxGCnfB+qeUXuJvVSKlRhv7ZOt6kDIxSl4LIFL
- KioYgIPvy5SxXS6gUBxxsTc5yH85Angx0nfT+/G8=
+ h=From:To:Cc:Subject:Date:From;
+ b=Va6LhacFOtuWsD7UMYzcymsdA61W5Hf2uAEdRXYTlC+nBiWlllMfh9VqcKcYSjSJh
+ AbU5dNLNYMrFsCIlC5jfCxPqlLUSyMDjyvrTtwjaQ2p/wj7kBqd6mg/MJ0AHv6QZZZ
+ Ini4aaBYYXJQBTxD8QDZLYkMBJxGJ3uj4g2Tfqek=
 From: Sasha Levin <sashal@kernel.org>
 To: stable@vger.kernel.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 02/35] powerpc: Fix COFF zImage booting on old
+Subject: [PATCH AUTOSEL 4.4 01/21] powerpc: Fix COFF zImage booting on old
  powermacs
-Date: Wed, 26 Dec 2018 17:41:09 -0500
-Message-Id: <20181226224142.150866-2-sashal@kernel.org>
+Date: Wed, 26 Dec 2018 17:54:39 -0500
+Message-Id: <20181226225501.151365-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20181226224142.150866-1-sashal@kernel.org>
-References: <20181226224142.150866-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
