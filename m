@@ -2,67 +2,54 @@ Return-Path: <SRS0=ZqAX=PD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 726FCC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:26:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C11DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:49:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D17AA20811
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:26:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D17AA20811
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C6309218A5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 23:49:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6309218A5
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Q8HC4lfBzDqMy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:26:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z4nDZRYP"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Q8nQ4kSqzDqKy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 10:48:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Q8BQ326mzDqMX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 10:22:06 +1100 (AEDT)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A9E2C2084A;
- Wed, 26 Dec 2018 23:22:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545866524;
- bh=iWXAqQLaG+6hGfoIPo6i9JFqcOvF97kQu5MvsDI2Bqw=;
- h=From:To:Cc:Subject:Date:From;
- b=Z4nDZRYPDxCNW6SX21GG1jR1432qwKaC5civM88HGE0Vm+YpJXIDvn6SB3vweUXvv
- J0Fd9S2O+DiUDs8qcOsSNZlULlTqweYs7/lhinnuMU34ZM0jOZkCMJWvf0tcXtmyeR
- jgonqV2/zZ8JbLWchn6ZtX5NYBMQX574eTY571V4=
-From: Sasha Levin <sashal@kernel.org>
-To: stable@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH AUTOSEL 3.18 01/12] powerpc: Fix COFF zImage booting on old
- powermacs
-Date: Wed, 26 Dec 2018 17:57:29 -0500
-Message-Id: <20181226225741.151608-1-sashal@kernel.org>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Q8lJ159yzDqJ5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2018 10:47:07 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id wBQNk0YB021539;
+ Wed, 26 Dec 2018 17:46:01 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id wBQNjsGP021532;
+ Wed, 26 Dec 2018 17:45:54 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 26 Dec 2018 17:45:52 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Ben Hutchings <ben@decadent.org.uk>
+Subject: Re: [PATCH] powerpc: Fix -mcpu= options for SPE-only compiler
+Message-ID: <20181226234552.GA28554@gate.crashing.org>
+References: <20181226141511.3ag7uf6rvdgzlmxt@decadent.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181226141511.3ag7uf6rvdgzlmxt@decadent.org.uk>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,61 +61,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, debian-kernel@lists.debian.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Paul Mackerras <paulus@ozlabs.org>
+Hi!
 
-[ Upstream commit 5564597d51c8ff5b88d95c76255e18b13b760879 ]
+On Wed, Dec 26, 2018 at 02:15:11PM +0000, Ben Hutchings wrote:
+> GCC for Debian's "powerpcspe" architecture only supports 32-bit
+> SPE targets, and using -mcpu=powerpc or -mcpu=powerpc64 is a fatal
+> error.
 
-Commit 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper
-as a relocatable ET_DYN", 2011-04-12) changed the procedure descriptor
-at the start of crt0.S to have a hard-coded start address of 0x500000
-rather than a reference to _zimage_start, presumably because having
-a reference to a symbol introduced a relocation which is awkward to
-handle in a position-independent executable.  Unfortunately, what is
-at 0x500000 in the COFF image is not the first instruction, but the
-procedure descriptor itself, that is, a word containing 0x500000,
-which is not a valid instruction.  Hence, booting a COFF zImage
-results in a "DEFAULT CATCH!, code=FFF00700" message from Open
-Firmware.
+I don't see where your patch touches -mcpu=powerpc, and I don't see how
+it would make a difference either?
 
-This fixes the problem by (a) putting the procedure descriptor in the
-data section and (b) adding a branch to _zimage_start as the first
-instruction in the program.
+> +ifdef CONFIG_PPC64
+>  ifdef CONFIG_PPC_BOOK3S_64
+>  ifdef CONFIG_CPU_LITTLE_ENDIAN
+>  CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=power8
+> @@ -177,6 +178,7 @@ endif
+>  else
+>  CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
+>  endif
+> +endif
 
-Fixes: 6975a783d7b4 ("powerpc/boot: Allow building the zImage wrapper as a relocatable ET_DYN")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/boot/crt0.S | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+How can CONFIG_PPC_BOOK3S_64 be true while CONFIG_PPC64 is fals?  That
+does not make a lot of sense.
 
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index 8539ac93b0de..dbb06588b594 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -15,7 +15,7 @@
- RELA = 7
- RELACOUNT = 0x6ffffff9
- 
--	.text
-+	.data
- 	/* A procedure descriptor used when booting this as a COFF file.
- 	 * When making COFF, this comes first in the link and we're
- 	 * linked at 0x500000.
-@@ -23,6 +23,8 @@ RELACOUNT = 0x6ffffff9
- 	.globl	_zimage_start_opd
- _zimage_start_opd:
- 	.long	0x500000, 0, 0, 0
-+	.text
-+	b	_zimage_start
- 
- #ifdef __powerpc64__
- .balign 8
--- 
-2.19.1
 
+Segher
