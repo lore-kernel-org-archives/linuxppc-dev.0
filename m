@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21528C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:56:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 177C3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:58:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9239A2148E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:56:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9239A2148E
+	by mail.kernel.org (Postfix) with ESMTPS id 86EF421720
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 03:58:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86EF421720
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43PfK03BXNzDqL9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 14:56:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43PfMC3zg5zDqKS
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Dec 2018 14:57:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,19 +28,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43PfDF5KGtzDqJk
+ by lists.ozlabs.org (Postfix) with ESMTP id 43PfDF5MKjzDqJl
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Dec 2018 14:51:57 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 19C3A2951F; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
+ id 9897229525; Tue, 25 Dec 2018 19:43:56 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Message-Id: <f94994916e3899b2c41e067105877ead8fdc91b1.1545784679.git.fthain@telegraphics.com.au>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Message-Id: <6db46da0ad072e50de32721e2dce9387aa58f4ab.1545784679.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v8 09/25] m68k/atari: Implement arch_nvram_ops methods and
- enable CONFIG_HAVE_ARCH_NVRAM_OPS
+Subject: [PATCH v8 16/25] powerpc: Add missing ppc_md.nvram_size for CHRP and
+ PowerMac
 Date: Wed, 26 Dec 2018 11:37:59 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,112 +60,109 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
-methods for the set_checksum and initialize ioctls. Enable
-CONFIG_HAVE_ARCH_NVRAM_OPS.
+Add the nvram_size() function to those PowerPC platforms that don't already
+have one: CHRP and PowerMac. This means that the ppc_md.nvram_size()
+function can be used to implement arch_nvram_ops.get_size()
+
+Since we are addressing inconsistencies here, also rename chrp_nvram_read
+and chrp_nvram_write, which break the naming convention used across
+PowerPC platforms for NVRAM accessor functions.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Tested-by: Stan Johnson <userm57@yahoo.com>
 ---
-Changed since v7:
- - Changed the default for CONFIG_NVRAM, because "select NVRAM" was
-removed from ATARI_SCSI in patch 1.
----
- arch/m68k/Kconfig         |  3 +++
- arch/m68k/Kconfig.machine |  1 +
- arch/m68k/atari/nvram.c   | 24 ++++++++++++++++++++++++
- drivers/char/Kconfig      |  3 ++-
- 4 files changed, 30 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/chrp/nvram.c     | 14 ++++++++++----
+ arch/powerpc/platforms/powermac/nvram.c |  9 +++++++++
+ 2 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 1bc9f1ba759a..79e545f2520a 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -70,6 +70,9 @@ config ZONE_DMA
- 	bool
- 	default y
+diff --git a/arch/powerpc/platforms/chrp/nvram.c b/arch/powerpc/platforms/chrp/nvram.c
+index 791b86398e1d..6ec2901d2aa4 100644
+--- a/arch/powerpc/platforms/chrp/nvram.c
++++ b/arch/powerpc/platforms/chrp/nvram.c
+@@ -24,7 +24,7 @@ static unsigned int nvram_size;
+ static unsigned char nvram_buf[4];
+ static DEFINE_SPINLOCK(nvram_lock);
  
-+config HAVE_ARCH_NVRAM_OPS
-+	bool
-+
- config HZ
- 	int
- 	default 1000 if CLEOPATRA
-diff --git a/arch/m68k/Kconfig.machine b/arch/m68k/Kconfig.machine
-index 64a641467736..0c8c4c7982c1 100644
---- a/arch/m68k/Kconfig.machine
-+++ b/arch/m68k/Kconfig.machine
-@@ -16,6 +16,7 @@ config ATARI
- 	bool "Atari support"
- 	depends on MMU
- 	select MMU_MOTOROLA if MMU
-+	select HAVE_ARCH_NVRAM_OPS
- 	help
- 	  This option enables support for the 68000-based Atari series of
- 	  computers (including the TT, Falcon and Medusa). If you plan to use
-diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
-index bafc9dc32830..4b27f1683a37 100644
---- a/arch/m68k/atari/nvram.c
-+++ b/arch/m68k/atari/nvram.c
-@@ -74,6 +74,26 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
+-static unsigned char chrp_nvram_read(int addr)
++static unsigned char chrp_nvram_read_byte(int addr)
+ {
+ 	unsigned int done;
+ 	unsigned long flags;
+@@ -46,7 +46,7 @@ static unsigned char chrp_nvram_read(int addr)
+ 	return ret;
  }
  
-+static long nvram_set_checksum(void)
-+{
-+	spin_lock_irq(&rtc_lock);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
-+static long nvram_initialize(void)
-+{
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (i = 0; i < NVRAM_BYTES; ++i)
-+		__nvram_write_byte(0, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
- static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+-static void chrp_nvram_write(int addr, unsigned char val)
++static void chrp_nvram_write_byte(int addr, unsigned char val)
  {
- 	char *p = buf;
-@@ -120,6 +140,8 @@ static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
- 
- static ssize_t nvram_get_size(void)
- {
-+	if (!MACH_IS_ATARI)
-+		return -ENODEV;
- 	return NVRAM_BYTES;
+ 	unsigned int done;
+ 	unsigned long flags;
+@@ -64,6 +64,11 @@ static void chrp_nvram_write(int addr, unsigned char val)
+ 	spin_unlock_irqrestore(&nvram_lock, flags);
  }
  
-@@ -127,6 +149,8 @@ const struct nvram_ops arch_nvram_ops = {
- 	.read           = nvram_read,
- 	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
-+	.set_checksum   = nvram_set_checksum,
-+	.initialize     = nvram_initialize,
- };
- EXPORT_SYMBOL(arch_nvram_ops);
++static ssize_t chrp_nvram_size(void)
++{
++	return nvram_size;
++}
++
+ void __init chrp_nvram_init(void)
+ {
+ 	struct device_node *nvram;
+@@ -85,8 +90,9 @@ void __init chrp_nvram_init(void)
+ 	printk(KERN_INFO "CHRP nvram contains %u bytes\n", nvram_size);
+ 	of_node_put(nvram);
  
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 5b54595dfe30..f9960bd65481 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -236,7 +236,8 @@ source "drivers/char/hw_random/Kconfig"
+-	ppc_md.nvram_read_val = chrp_nvram_read;
+-	ppc_md.nvram_write_val = chrp_nvram_write;
++	ppc_md.nvram_read_val  = chrp_nvram_read_byte;
++	ppc_md.nvram_write_val = chrp_nvram_write_byte;
++	ppc_md.nvram_size      = chrp_nvram_size;
  
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || GENERIC_NVRAM
-+	depends on X86 || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
-+	default M68K
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
+ 	return;
+ }
+diff --git a/arch/powerpc/platforms/powermac/nvram.c b/arch/powerpc/platforms/powermac/nvram.c
+index ae54d7fe68f3..9360cdc408c1 100644
+--- a/arch/powerpc/platforms/powermac/nvram.c
++++ b/arch/powerpc/platforms/powermac/nvram.c
+@@ -147,6 +147,11 @@ static ssize_t core99_nvram_size(void)
+ static volatile unsigned char __iomem *nvram_addr;
+ static int nvram_mult;
+ 
++static ssize_t ppc32_nvram_size(void)
++{
++	return NVRAM_SIZE;
++}
++
+ static unsigned char direct_nvram_read_byte(int addr)
+ {
+ 	return in_8(&nvram_data[(addr & (NVRAM_SIZE - 1)) * nvram_mult]);
+@@ -590,21 +595,25 @@ int __init pmac_nvram_init(void)
+ 		nvram_mult = 1;
+ 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 1) {
+ 		nvram_data = ioremap(r1.start, s1);
+ 		nvram_mult = (s1 + NVRAM_SIZE - 1) / NVRAM_SIZE;
+ 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 2) {
+ 		nvram_addr = ioremap(r1.start, s1);
+ 		nvram_data = ioremap(r2.start, s2);
+ 		ppc_md.nvram_read_val	= indirect_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= indirect_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
+ #ifdef CONFIG_ADB_PMU
+ 		nvram_naddrs = -1;
+ 		ppc_md.nvram_read_val	= pmu_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= pmu_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ #endif /* CONFIG_ADB_PMU */
+ 	} else {
+ 		printk(KERN_ERR "Incompatible type of NVRAM\n");
 -- 
 2.19.2
 
