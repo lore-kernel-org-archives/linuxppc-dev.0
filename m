@@ -1,66 +1,61 @@
-Return-Path: <SRS0=TJyh=PE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E83EC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 22:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D7EBC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 00:07:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D39C021909
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Dec 2018 22:07:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fP9k8+CO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D39C021909
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C087A21741
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 00:07:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C087A21741
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43QkV85nvTzDqGY
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 09:07:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Qn84242GzDqHL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 11:07:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=buserror.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.b="fP9k8+CO";
-	dkim-atps=neutral
+ spf=none (mailfrom) smtp.mailfrom=buserror.net
+ (client-ip=165.227.176.147; helo=baldur.buserror.net;
+ envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=pr-tracker-bot@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="fP9k8+CO"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=buserror.net
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43QkR80jCGzDqGF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2018 09:05:08 +1100 (AEDT)
-Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.21-1 tag
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1545948305;
- bh=EiXq9HRxGheLmnVgq800w7Ch5vj/wTswhR4kNBhUUyk=;
- h=From:In-Reply-To:References:Date:To:Cc:From;
- b=fP9k8+COUNpEbwtzPaX35YihI2pBfladLdD8RAJrEb+GPcQ+y+V+7yG5rI0+V9WSb
- DPOYZA7XGvAIrkhQQZTlQqLgq4EHHnlSX4586jo0Bn5U82a3dwYu18/QDKATws4pQD
- EJU/0ZHQRgiT23vpHTqQEOuT8fAdN+NKeVxklXMk=
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <87o997xju9.fsf@concordia.ellerman.id.au>
-References: <87o997xju9.fsf@concordia.ellerman.id.au>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <87o997xju9.fsf@concordia.ellerman.id.au>
-X-PR-Tracked-Remote: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
- tags/powerpc-4.21-1
-X-PR-Tracked-Commit-Id: 12526b0d6c580df860b31e59d68e5696e16c6e5b
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 8d6973327ee84c2f40dd9efd8928d4a1186c96e2
-Message-Id: <20181227220505.24636.75727.pr-tracker-bot@pdx-korg-gitolite-1.ci.codeaurora.org>
-Date: Thu, 27 Dec 2018 22:05:05 +0000
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Qn5t1TcXzDqFs
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2018 11:05:22 +1100 (AEDT)
+Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
+ by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+ (Exim 4.89) (envelope-from <oss@buserror.net>)
+ id 1gcfcF-00085q-9R; Thu, 27 Dec 2018 18:03:03 -0600
+Message-ID: <15cd70210641b64dd70afa2e89afd77dbf67dfa1.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Christoph Hellwig <hch@lst.de>
+Date: Thu, 27 Dec 2018 18:03:01 -0600
+In-Reply-To: <20181227131038.GB22967@lst.de>
+References: <20181222044250.GA7651@home.buserror.net>
+ <877eg0idwv.fsf@concordia.ellerman.id.au>
+ <aacb88f67d1c2bdacff760341291588ac3f2c0f0.camel@buserror.net>
+ <20181227131038.GB22967@lst.de>
+Organization: Red Hat
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
+X-SA-Exim-Rcpt-To: hch@lst.de, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, galak@kernel.crashing.org
+X-SA-Exim-Mail-From: oss@buserror.net
+Subject: Re: Pull request: scottwood/linux.git next
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,32 +67,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alexandre.belloni@bootlin.com, darren@stevens-zone.net,
- geert+renesas@glider.be, aik@ozlabs.ru, linuxram@us.ibm.com,
- viresh.kumar@linaro.org, ldv@altlinux.org, maddy@linux.vnet.ibm.com,
- oohall@gmail.com, leitao@debian.org, hch@lst.de, robh@kernel.org,
- sabyasachi.linux@gmail.com, aneesh.kumar@linux.ibm.com, yuehaibing@huawei.com,
- elfring@users.sourceforge.net, diana.craciun@nxp.com, tiny.windzz@gmail.com,
- firoz.khan@linaro.org, joel@jms.id.au, mahesh@linux.vnet.ibm.com,
- ravi.bangoria@linux.ibm.com, arnd@arndb.de, sfr@canb.auug.org.au,
- alistair@popple.id.au, groug@kaod.org, oss@buserror.net,
- alex.williamson@redhat.com, dja@axtens.net, andy.tang@nxp.com,
- malat@debian.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- sboyd@kernel.org, andrew.donnellan@au1.ibm.com, fbarrat@linux.ibm.com,
- sathnaga@linux.vnet.ibm.com, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pull request you sent on Thu, 27 Dec 2018 22:58:06 +1100:
+On Thu, 2018-12-27 at 14:10 +0100, Christoph Hellwig wrote:
+> On Sun, Dec 23, 2018 at 08:09:19PM -0600, Scott Wood wrote:
+> > > > Christoph Hellwig (1):
+> > > >       powerpc/fsl_pci: simplify fsl_pci_dma_set_mask
+> > > 
+> > > This one breaks networking on my p5020ds.
+> > > 
+> > > dmesg is just full of:
+> > > 
+> > >   e1000e 2000:01:00.0: Tx DMA map failed
+> > > 
+> > > Haven't had time to dig any further.
+> > 
+> > OK, I'll revert.  My t4240rdb doesn't have PCI devices, so I wasn't able
+> > to
+> > test it.
+> 
+> How did this patch end up in your tree?  I don't think it has a chance
+> to work Without the rest of the series.
 
-> https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.21-1
+It got dropped into my patchwork to-do and I didn't look closely enough at the
+context -- sorry about that.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/8d6973327ee84c2f40dd9efd8928d4a1186c96e2
+-Scott
 
-Thank you!
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
