@@ -2,57 +2,62 @@ Return-Path: <SRS0=XWqB=PF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E034C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 01:33:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 24AD6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 16:40:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 662B021741
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 01:33:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 662B021741
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 602F820874
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 16:40:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 602F820874
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Qq3k5QHdzDqK5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 28 Dec 2018 12:33:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 43RCBY5L7bzDqD5
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 03:40:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Qq1S0W2szDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2018 12:31:39 +1100 (AEDT)
-Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1gcgzu-0008Cg-2S; Thu, 27 Dec 2018 19:31:34 -0600
-Message-ID: <859893153097012cf1a6efd1457e56c79a8ce5ce.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Guenter Roeck <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Dec 2018 19:31:33 -0600
-In-Reply-To: <20181227190542.GA29444@roeck-us.net>
-References: <20181227190542.GA29444@roeck-us.net>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: linux@roeck-us.net, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: Runtime warnings in powerpc code
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43RC8J0F4KzDqCq
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2018 03:38:54 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43RC8739THz9v118;
+ Fri, 28 Dec 2018 17:38:47 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id tJgowDavkt9D; Fri, 28 Dec 2018 17:38:47 +0100 (CET)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43RC872bZsz9v117;
+ Fri, 28 Dec 2018 17:38:47 +0100 (CET)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id B14EB614; Fri, 28 Dec 2018 17:38:46 +0100 (CET)
+Received: from 37.165.157.78 ([37.165.157.78]) by messagerie.si.c-s.fr
+ (Horde Framework) with HTTP; Fri, 28 Dec 2018 17:38:46 +0100
+Date: Fri, 28 Dec 2018 17:38:46 +0100
+Message-ID: <20181228173846.Horde.z_zDEJN0rVd8tkt3HjYzmg2@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Finn Thain <fthain@telegraphics.com.au>
+Subject: Re: [PATCH v8 01/25] scsi/atari_scsi: Don't select CONFIG_NVRAM
+References: <cover.1545784679.git.fthain@telegraphics.com.au>
+ <e68fcc3ec0a6cd4e14f763366d4d9445890b9b82.1545784679.git.fthain@telegraphics.com.au>
+In-Reply-To: <e68fcc3ec0a6cd4e14f763366d4d9445890b9b82.1545784679.git.fthain@telegraphics.com.au>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,85 +69,125 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Schmitz <schmitzmic@gmail.com>,
+ "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2018-12-27 at 11:05 -0800, Guenter Roeck wrote:
+Finn Thain <fthain@telegraphics.com.au> a =C3=A9crit=C2=A0:
+
+> On powerpc, setting CONFIG_NVRAM=3Dn builds a kernel with no NVRAM suppor=
+t.
+> Setting CONFIG_NVRAM=3Dm enables the /dev/nvram misc device module withou=
+t
+> enabling NVRAM support in drivers. Setting CONFIG_NVRAM=3Dy enables the
+> misc device (built-in) and also enables NVRAM support in drivers.
+>
+> m68k shares the valkyriefb driver with powerpc, and since that driver use=
+s
+> NVRAM, it is affected by CONFIG_ATARI_SCSI, because of the use of
+> "select NVRAM".
+>
+> Adopt the powerpc convention on m68k to avoid surprises.
+>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Tested-by: Christian T. Steigies <cts@debian.org>
 > ---
-> CONFIG_DEBUG_ATOMIC_SLEEP
-> 
-> ------------[ cut here ]------------
-> do not call blocking ops when !TASK_RUNNING; state=2 set at [<(ptrval)>]
-> prepare_to_wait+0x54/0xe4
-> WARNING: CPU: 0 PID: 1 at kernel/sched/core.c:6099 __might_sleep+0x94/0x9c
-> Modules linked in:
-> CPU: 0 PID: 1 Comm: init Not tainted 4.20.0-yocto-standard+ #1
-> NIP:  c00667a0 LR: c00667a0 CTR: 00000000
-> REGS: cf8df8c0 TRAP: 0700   Not tainted  (4.20.0-yocto-standard+)
-> MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 28888822  XER: 20000000
-> 
-> GPR00: c00667a0 cf8df970 cf8e0000 00000062 c0af15c8 00000007 fa1ae97e
-> 757148e2 
-> GPR08: cf8de000 00000000 00000000 00000000 1f386000 00000000 00000000
-> cfd83c8c 
-> GPR16: 00000004 00000004 00000004 00000000 0000060c 0000000a cf8dfdb8
-> cf267804 
-> GPR24: cf8dfd78 cf8dfd68 cfa88a20 cec70830 00000001 00000000 000001d3
-> c0b444cc 
-> NIP [c00667a0] __might_sleep+0x94/0x9c
-> LR [c00667a0] __might_sleep+0x94/0x9c
-> Call Trace:
-> [cf8df970] [c00667a0] __might_sleep+0x94/0x9c (unreliable)
-> [cf8df990] [c05beddc] do_ide_request+0x48/0x6bc
-> [cf8dfa10] [c0492bcc] __blk_run_queue+0x80/0x10c
-> [cf8dfa20] [c049a938] blk_flush_plug_list+0x23c/0x258
-> [cf8dfa60] [c006b888] io_schedule_prepare+0x44/0x5c
-> [cf8dfa70] [c006b8c0] io_schedule+0x20/0x48
-> [cf8dfa80] [c095e1ac] bit_wait_io+0x24/0x74
-> [cf8dfa90] [c095dd94] __wait_on_bit+0xac/0x104
-> [cf8dfab0] [c095de74] out_of_line_wait_on_bit+0x88/0x98
-> [cf8dfae0] [c0229094] bh_submit_read+0xf8/0x104
-> [cf8dfaf0] [c028b9a8] ext4_get_branch+0xdc/0x168
-> [cf8dfb20] [c028c7fc] ext4_ind_map_blocks+0x2b0/0xc08
-> [cf8dfc30] [c029551c] ext4_map_blocks+0x2e0/0x65c
-> [cf8dfc80] [c02b8c84] ext4_mpage_readpages+0x5e8/0x97c
-> [cf8dfd60] [c016c3cc] read_pages+0x60/0x1a0
-> [cf8dfdb0] [c016c6e8] __do_page_cache_readahead+0x1dc/0x208
-> [cf8dfe10] [c0159768] filemap_fault+0x418/0x834
-> [cf8dfe50] [c02a00fc] ext4_filemap_fault+0x40/0x64
-> [cf8dfe60] [c0198d0c] __do_fault+0x34/0xb8
-> [cf8dfe70] [c019e264] handle_mm_fault+0xc44/0xf88
-> [cf8dfef0] [c001a218] __do_page_fault+0x158/0x7b4
-> [cf8dff40] [c00143b4] handle_page_fault+0x14/0x40
-> --- interrupt: 301 at 0xb7904a70
->     LR = 0xb78ef0c8
-> Instruction dump:
-> 7fe3fb78 bba10014 7c0803a6 38210020 4bfffd20 808a0000 3c60c0b0 39400001 
-> 7cc53378 3863a558 99490001 4bfd03bd <0fe00000> 4bffffc0 7c0802a6 90010004 
-> irq event stamp: 126702
-> hardirqs last  enabled at (126701): [<c0091a74>] console_unlock+0x434/0x5d0
-> hardirqs last disabled at (126702): [<c00140b4>] reenable_mmu+0x30/0x88
-> softirqs last  enabled at (126552): [<c0964614>] __do_softirq+0x42c/0x4a0
-> softirqs last disabled at (126529): [<c003cda4>] irq_exit+0x104/0x108
-> ---[ end trace 4f6c84b7815474d9 ]---
-
-This doesn't look PPC-specific, but rather IDE-specific.  Here's a similar one
-on x86:
-https://lkml.org/lkml/2016/12/12/596
-
+> This patch temporarily disables CONFIG_NVRAM on Atari, to prevent build
+> failures when bisecting the rest of this patch series. It gets enabled
+> again with the introduction of CONFIG_HAVE_ARCH_NVRAM_OPS, once the
+> nvram_* global functions have been moved to an ops struct.
 > ---
-> #if defined(CONFIG_PROVE_LOCKING) && defined(CONFIG_DEBUG_LOCKDEP) && \
->     defined(CONFIG_TRACE_IRQFLAGS)
-> 
-> ------------[ cut here ]------------
-> DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled)
-> WARNING: CPU: 0 PID: 1 at kernel/locking/lockdep.c:3762
+>  drivers/char/Kconfig      | 5 +----
+>  drivers/scsi/Kconfig      | 6 +++---
+>  drivers/scsi/atari_scsi.c | 7 ++++---
+>  3 files changed, 8 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+> index 9d03b2ff5df6..5b54595dfe30 100644
+> --- a/drivers/char/Kconfig
+> +++ b/drivers/char/Kconfig
+> @@ -236,7 +236,7 @@ source "drivers/char/hw_random/Kconfig"
+>
+>  config NVRAM
+>  	tristate "/dev/nvram support"
+> -	depends on ATARI || X86 || GENERIC_NVRAM
+> +	depends on X86 || GENERIC_NVRAM
+>  	---help---
+>  	  If you say Y here and create a character special file /dev/nvram
+>  	  with major number 10 and minor number 144 using mknod ("man mknod"),
+> @@ -254,9 +254,6 @@ config NVRAM
+>  	  should NEVER idly tamper with it. See Ralf Brown's interrupt list
+>  	  for a guide to the use of CMOS bytes by your BIOS.
+>
+> -	  On Atari machines, /dev/nvram is always configured and does not need
+> -	  to be selected.
+> -
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called nvram.
+>
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 640cd1b31a18..924eb69e7fc4 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -1381,14 +1381,14 @@ config ATARI_SCSI
+>  	tristate "Atari native SCSI support"
+>  	depends on ATARI && SCSI
+>  	select SCSI_SPI_ATTRS
+> -	select NVRAM
+>  	---help---
+>  	  If you have an Atari with built-in NCR5380 SCSI controller (TT,
+>  	  Falcon, ...) say Y to get it supported. Of course also, if you have
+>  	  a compatible SCSI controller (e.g. for Medusa).
+>
+> -	  To compile this driver as a module, choose M here: the
+> -	  module will be called atari_scsi.
+> +	  To compile this driver as a module, choose M here: the module will
+> +	  be called atari_scsi. If you also enable NVRAM support, the SCSI
+> +	  host's ID is taken from the setting in TT RTC NVRAM.
+>
+>  	  This driver supports both styles of NCR integration into the
+>  	  system: the TT style (separate DMA), and the Falcon style (via
+> diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
+> index 89f5154c40b6..99e5729d910d 100644
+> --- a/drivers/scsi/atari_scsi.c
+> +++ b/drivers/scsi/atari_scsi.c
+> @@ -755,9 +755,10 @@ static int __init atari_scsi_probe(struct=20=20
+>=20platform_device *pdev)
+>  	if (ATARIHW_PRESENT(TT_SCSI) && setup_sg_tablesize >=3D 0)
+>  		atari_scsi_template.sg_tablesize =3D setup_sg_tablesize;
+>
+> -	if (setup_hostid >=3D 0) {
+> +	if (setup_hostid >=3D 0)
+>  		atari_scsi_template.this_id =3D setup_hostid & 7;
+> -	} else {
+> +#ifdef CONFIG_NVRAM
+> +	else
 
-http://patchwork.ozlabs.org/patch/1016541/ should fix this.  It should also
-only be showing up on 32-bit, not all platforms.
+Such ifdefs should be avoided in C files.
+It would be better to use
 
--Scott
+} else if (IS_ENABLED(CONFIG_NVRAM)) {
+
+>  		/* Test if a host id is set in the NVRam */
+>  		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
+>  			unsigned char b =3D nvram_read_byte(16);
+> @@ -768,7 +769,7 @@ static int __init atari_scsi_probe(struct=20=20
+>=20platform_device *pdev)
+>  			if (b & 0x80)
+>  				atari_scsi_template.this_id =3D b & 7;
+>  		}
+> -	}
+> +#endif
+>
+>  	/* If running on a Falcon and if there's TT-Ram (i.e., more than one
+>  	 * memory block, since there's always ST-Ram in a Falcon), then
+> --
+> 2.19.2
 
 
