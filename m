@@ -2,50 +2,93 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA78C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 01:18:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47951C43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 01:35:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A21EF2184E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 01:18:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A21EF2184E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id 8201D21019
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 01:35:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rVGbyG54"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8201D21019
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43RQgj3HwbzDqF0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 12:18:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43RR3X1XXqzDqDp
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 12:35:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43RQdV52vczDqBH
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2018 12:16:30 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 58CDB22BF5;
- Fri, 28 Dec 2018 20:16:25 -0500 (EST)
-Date: Sat, 29 Dec 2018 12:16:47 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v8 02/25] m68k/atari: Move Atari-specific code out of
- drivers/char/nvram.c
-In-Reply-To: <20181228175113.Horde.5ZUOOQLIT5SWwDlYCZQjrw1@messagerie.si.c-s.fr>
-Message-ID: <alpine.LNX.2.21.1812291053110.152@nippy.intranet>
+	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="rVGbyG54";
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
+ envelope-from=schmitzmic@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="rVGbyG54"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43RR0r3vNWzDqCk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2018 12:33:12 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id z9so11101550pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2018 17:33:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:references:cc:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-transfer-encoding;
+ bh=0g+71U+dX+QF2iiDoSz5x+9PmsICHaGBbrjNqL+fqJA=;
+ b=rVGbyG54LViWSoyiHppDMoeyktkoVpAJAdeBYdHLR/LVmuJR5JfG9XKWydst2M8Hzx
+ tvVUYcMyNMjqu9r0Uic3yOU9XVJb6lz9xUTtVxtQ8nrWltZB5JgZAUzwahCvb+hMutdz
+ 0d+R2JGf9xFxt8xD5iXfVs/CYvmq1dXe4/08pV749JJ+ao3gnvBzXMJS7Wl3t0Tt3pTq
+ NhisMXY7XnEAldBrc9LILyvpSxloWoTj5y0hbyPB3YsfnmlMxWqo+sLTkwM8m7YAdnRN
+ JDmW+PkJsDc5usAwFxu4BzrhBLq0r0R4QWJ5ah4AywrW1lmm1kz2p/9Ubu5TZt5vdyPB
+ rDxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:references:cc:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-transfer-encoding;
+ bh=0g+71U+dX+QF2iiDoSz5x+9PmsICHaGBbrjNqL+fqJA=;
+ b=exPhL2oJ+cQ3gzNK8bH5VY23M7tPEEoZU/lYCH6l/43P55YxClpR7Dw1X59tk1F5sQ
+ cZ2KvBbXMoTj0L7BsML+Fo3WN6NQ162RFlBmtEo7WlLRwoShJVUtSyLUqAM26c3s+N+5
+ VkKxBuuxz5iF8wUDoSde77poGIbNUWZln0sfkOC7RNfYulyub8tR2a90nG6URrNmws4i
+ 2p4uq4ry/B+MX4AA6A+/d6vBIbUE51VylBbcrqcKtkb8w/EKFimF8gkN268vg4oyoSDI
+ bwdOA/aUvkr+MT+blMINYWWqOhBeOaXfVM0Lw9l1Z+ZrYblJVrvJMeBjpLpqcRLymwQJ
+ hOWA==
+X-Gm-Message-State: AA+aEWaIVMhyiKGdGKQYif3R7O2d0y/KpWRc6gvvAqAGdWf/FrPkAQO+
+ S6rgv0kHCXfN3PiLmOZ4bsM=
+X-Google-Smtp-Source: AFSGD/UI2ut7bgxj+fbDqA2EcIn3+I9kKcAMx9YyKFdhMGHVnrNJx8ywdu1VT4koUsbcows91O6FYw==
+X-Received: by 2002:a62:442:: with SMTP id 63mr29667407pfe.156.1546047190014; 
+ Fri, 28 Dec 2018 17:33:10 -0800 (PST)
+Received: from [192.168.1.101] (122-58-176-92-adsl.sparkbb.co.nz.
+ [122.58.176.92])
+ by smtp.gmail.com with ESMTPSA id i62sm48795899pge.44.2018.12.28.17.33.03
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 28 Dec 2018 17:33:09 -0800 (PST)
+Subject: Re: [PATCH v8 01/25] scsi/atari_scsi: Don't select CONFIG_NVRAM
+To: Finn Thain <fthain@telegraphics.com.au>,
+ LEROY Christophe <christophe.leroy@c-s.fr>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <5a285a9d9aecc1ee748f62e41870111e7e0f4cff.1545784679.git.fthain@telegraphics.com.au>
- <20181228175113.Horde.5ZUOOQLIT5SWwDlYCZQjrw1@messagerie.si.c-s.fr>
+ <e68fcc3ec0a6cd4e14f763366d4d9445890b9b82.1545784679.git.fthain@telegraphics.com.au>
+ <20181228173846.Horde.z_zDEJN0rVd8tkt3HjYzmg2@messagerie.si.c-s.fr>
+ <alpine.LNX.2.21.1812291050330.152@nippy.intranet>
+From: Michael Schmitz <schmitzmic@gmail.com>
+Message-ID: <a170720a-fe17-744d-790b-e258465bd75e@gmail.com>
+Date: Sat, 29 Dec 2018 14:33:00 +1300
+User-Agent: Mozilla/5.0 (X11; Linux ppc; rv:45.0) Gecko/20100101 Icedove/45.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <alpine.LNX.2.21.1812291050330.152@nippy.intranet>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,464 +100,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-m68k@lists.linux-m68k.org, Arnd Bergmann <arnd@arndb.de>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 28 Dec 2018, LEROY Christophe wrote:
+Hi Finn,
 
-> Finn Thain <fthain@telegraphics.com.au> a ?crit?:
-> 
-> > Move the m68k-specific code out of the driver to make the driver generic.
-> >
-> > I've used 'SPDX-License-Identifier: GPL-2.0+' for the new file because the
-> > old file is covered by MODULE_LICENSE("GPL").
-> >
-> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> > Tested-by: Christian T. Steigies <cts@debian.org>
-> > Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > ---
-> > Changed since v7:
-> >  - Added SPDX-License-Identifier.
-> > ---
-> >  arch/m68k/atari/Makefile |   2 +
-> >  arch/m68k/atari/nvram.c  | 243 +++++++++++++++++++++++++++++++++
-> >  drivers/char/nvram.c     | 280 +++++----------------------------------
-> >  3 files changed, 280 insertions(+), 245 deletions(-)
-> >  create mode 100644 arch/m68k/atari/nvram.c
-> >
-> > diff --git a/arch/m68k/atari/Makefile b/arch/m68k/atari/Makefile
-> > index 0cac723306f9..0b86bb6cfa87 100644
-> > --- a/arch/m68k/atari/Makefile
-> > +++ b/arch/m68k/atari/Makefile
-> > @@ -6,3 +6,5 @@ obj-y		:= config.o time.o debug.o ataints.o stdma.o \
-> >  			atasound.o stram.o
-> >
-> >  obj-$(CONFIG_ATARI_KBD_CORE)	+= atakeyb.o
-> > +
-> > +obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
-> > diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
-> > new file mode 100644
-> > index 000000000000..3e620ee955ba
-> > --- /dev/null
-> > +++ b/arch/m68k/atari/nvram.c
-> > @@ -0,0 +1,243 @@
-> > +// SPDX-License-Identifier: GPL-2.0+
-> > +/*
-> > + * CMOS/NV-RAM driver for Atari. Adapted from drivers/char/nvram.c.
-> > + * Copyright (C) 1997 Roman Hodek <Roman.Hodek@informatik.uni-erlangen.de>
-> > + * idea by and with help from Richard Jelinek <rj@suse.de>
-> > + * Portions copyright (c) 2001,2002 Sun Microsystems (thockin@sun.com)
-> > + * Further contributions from Cesar Barros, Erik Gilling, Tim Hockin and
-> > + * Wim Van Sebroeck.
-> > + */
-> > +
-> > +#include <linux/errno.h>
-> > +#include <linux/init.h>
-> > +#include <linux/mc146818rtc.h>
-> > +#include <linux/module.h>
-> > +#include <linux/nvram.h>
-> > +#include <linux/proc_fs.h>
-> > +#include <linux/seq_file.h>
-> > +#include <linux/spinlock.h>
-> > +#include <linux/types.h>
-> > +#include <asm/atarihw.h>
-> > +#include <asm/atariints.h>
-> > +
-> > +#define NVRAM_BYTES		50
-> > +
-> > +/* It is worth noting that these functions all access bytes of general
-> > + * purpose memory in the NVRAM - that is to say, they all add the
-> > + * NVRAM_FIRST_BYTE offset. Pass them offsets into NVRAM as if you did not
-> > + * know about the RTC cruft.
-> > + */
-> > +
-> > +/* Note that *all* calls to CMOS_READ and CMOS_WRITE must be done with
-> > + * rtc_lock held. Due to the index-port/data-port design of the RTC, we
-> > + * don't want two different things trying to get to it at once. (e.g. the
-> > + * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-> > + */
-> > +
-> > +unsigned char __nvram_read_byte(int i)
-> > +{
-> > +	return CMOS_READ(NVRAM_FIRST_BYTE + i);
-> > +}
-> > +
-> > +unsigned char nvram_read_byte(int i)
-> > +{
-> > +	unsigned long flags;
-> > +	unsigned char c;
-> > +
-> > +	spin_lock_irqsave(&rtc_lock, flags);
-> > +	c = __nvram_read_byte(i);
-> > +	spin_unlock_irqrestore(&rtc_lock, flags);
-> > +	return c;
-> > +}
-> > +EXPORT_SYMBOL(nvram_read_byte);
-> > +
-> > +/* This races nicely with trying to read with checksum checking */
-> > +void __nvram_write_byte(unsigned char c, int i)
-> > +{
-> > +	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
-> > +}
-> > +
-> > +void nvram_write_byte(unsigned char c, int i)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&rtc_lock, flags);
-> > +	__nvram_write_byte(c, i);
-> > +	spin_unlock_irqrestore(&rtc_lock, flags);
-> > +}
-> > +
-> > +/* On Ataris, the checksum is over all bytes except the checksum bytes
-> > + * themselves; these are at the very end.
-> > + */
-> > +#define ATARI_CKS_RANGE_START	0
-> > +#define ATARI_CKS_RANGE_END	47
-> > +#define ATARI_CKS_LOC		48
-> > +
-> > +int __nvram_check_checksum(void)
-> > +{
-> > +	int i;
-> > +	unsigned char sum = 0;
-> > +
-> > +	for (i = ATARI_CKS_RANGE_START; i <= ATARI_CKS_RANGE_END; ++i)
-> > +		sum += __nvram_read_byte(i);
-> > +	return (__nvram_read_byte(ATARI_CKS_LOC) == (~sum & 0xff)) &&
-> > +	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
-> > +}
-> > +
-> > +int nvram_check_checksum(void)
-> > +{
-> > +	unsigned long flags;
-> > +	int rv;
-> > +
-> > +	spin_lock_irqsave(&rtc_lock, flags);
-> > +	rv = __nvram_check_checksum();
-> > +	spin_unlock_irqrestore(&rtc_lock, flags);
-> > +	return rv;
-> > +}
-> > +EXPORT_SYMBOL(nvram_check_checksum);
-> > +
-> > +static void __nvram_set_checksum(void)
-> > +{
-> > +	int i;
-> > +	unsigned char sum = 0;
-> > +
-> > +	for (i = ATARI_CKS_RANGE_START; i <= ATARI_CKS_RANGE_END; ++i)
-> > +		sum += __nvram_read_byte(i);
-> > +	__nvram_write_byte(~sum, ATARI_CKS_LOC);
-> > +	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
-> > +}
-> > +
-> > +#ifdef CONFIG_PROC_FS
-> > +static struct {
-> > +	unsigned char val;
-> > +	const char *name;
-> > +} boot_prefs[] = {
-> > +	{ 0x80, "TOS" },
-> > +	{ 0x40, "ASV" },
-> > +	{ 0x20, "NetBSD (?)" },
-> > +	{ 0x10, "Linux" },
-> > +	{ 0x00, "unspecified" },
-> > +};
-> > +
-> > +static const char * const languages[] = {
-> > +	"English (US)",
-> > +	"German",
-> > +	"French",
-> > +	"English (UK)",
-> > +	"Spanish",
-> > +	"Italian",
-> > +	"6 (undefined)",
-> > +	"Swiss (French)",
-> > +	"Swiss (German)",
-> > +};
-> > +
-> > +static const char * const dateformat[] = {
-> > +	"MM%cDD%cYY",
-> > +	"DD%cMM%cYY",
-> > +	"YY%cMM%cDD",
-> > +	"YY%cDD%cMM",
-> > +	"4 (undefined)",
-> > +	"5 (undefined)",
-> > +	"6 (undefined)",
-> > +	"7 (undefined)",
-> > +};
-> > +
-> > +static const char * const colors[] = {
-> > +	"2", "4", "16", "256", "65536", "??", "??", "??"
-> > +};
-> > +
-> > +static void atari_nvram_proc_read(unsigned char *nvram, struct  
-> > seq_file *seq,
-> > +				  void *offset)
-> > +{
-> > +	int checksum;
-> > +	int i;
-> > +	unsigned int vmode;
-> > +
-> > +	spin_lock_irq(&rtc_lock);
-> > +	checksum = __nvram_check_checksum();
-> > +	spin_unlock_irq(&rtc_lock);
-> > +
-> > +	seq_printf(seq, "Checksum status  : %svalid\n", checksum ? "" : "not ");
-> > +
-> > +	seq_puts(seq, "Boot preference  : ");
-> > +	for (i = ARRAY_SIZE(boot_prefs) - 1; i >= 0; --i)
-> > +		if (nvram[1] == boot_prefs[i].val) {
-> > +			seq_printf(seq, "%s\n", boot_prefs[i].name);
-> > +			break;
-> > +		}
-> > +	if (i < 0)
-> > +		seq_printf(seq, "0x%02x (undefined)\n", nvram[1]);
-> > +
-> > +	seq_printf(seq, "SCSI arbitration : %s\n",
-> > +		   (nvram[16] & 0x80) ? "on" : "off");
-> > +	seq_puts(seq, "SCSI host ID     : ");
-> > +	if (nvram[16] & 0x80)
-> > +		seq_printf(seq, "%d\n", nvram[16] & 7);
-> > +	else
-> > +		seq_puts(seq, "n/a\n");
-> > +
-> > +	if (!MACH_IS_FALCON)
-> > +		return;
-> > +
-> > +	seq_puts(seq, "OS language      : ");
-> > +	if (nvram[6] < ARRAY_SIZE(languages))
-> > +		seq_printf(seq, "%s\n", languages[nvram[6]]);
-> > +	else
-> > +		seq_printf(seq, "%u (undefined)\n", nvram[6]);
-> > +	seq_puts(seq, "Keyboard language: ");
-> > +	if (nvram[7] < ARRAY_SIZE(languages))
-> > +		seq_printf(seq, "%s\n", languages[nvram[7]]);
-> > +	else
-> > +		seq_printf(seq, "%u (undefined)\n", nvram[7]);
-> > +	seq_puts(seq, "Date format      : ");
-> > +	seq_printf(seq, dateformat[nvram[8] & 7],
-> > +		   nvram[9] ? nvram[9] : '/', nvram[9] ? nvram[9] : '/');
-> > +	seq_printf(seq, ", %dh clock\n", nvram[8] & 16 ? 24 : 12);
-> > +	seq_puts(seq, "Boot delay       : ");
-> > +	if (nvram[10] == 0)
-> > +		seq_puts(seq, "default");
-> > +	else
-> > +		seq_printf(seq, "%ds%s\n", nvram[10],
-> > +			   nvram[10] < 8 ? ", no memory test" : "");
-> > +
-> > +	vmode = (nvram[14] << 8) | nvram[15];
-> > +	seq_printf(seq,
-> > +		   "Video mode       : %s colors, %d columns, %s %s monitor\n",
-> > +		   colors[vmode & 7], vmode & 8 ? 80 : 40,
-> > +		   vmode & 16 ? "VGA" : "TV", vmode & 32 ? "PAL" : "NTSC");
-> > +	seq_printf(seq,
-> > +		   "                   %soverscan, compat. mode %s%s\n",
-> > +		   vmode & 64 ? "" : "no ", vmode & 128 ? "on" : "off",
-> > +		   vmode & 256 ?
-> > +		   (vmode & 16 ? ", line doubling" : ", half screen") : "");
-> > +}
-> > +
-> > +static int nvram_proc_read(struct seq_file *seq, void *offset)
-> > +{
-> > +	unsigned char contents[NVRAM_BYTES];
-> > +	int i;
-> > +
-> > +	spin_lock_irq(&rtc_lock);
-> > +	for (i = 0; i < NVRAM_BYTES; ++i)
-> > +		contents[i] = __nvram_read_byte(i);
-> > +	spin_unlock_irq(&rtc_lock);
-> > +
-> > +	atari_nvram_proc_read(contents, seq, offset);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int __init atari_nvram_init(void)
-> > +{
-> > +	if (!(MACH_IS_ATARI && ATARIHW_PRESENT(TT_CLK)))
-> > +		return -ENODEV;
-> > +
-> > +	if (!proc_create_single("driver/nvram", 0, NULL, nvram_proc_read)) {
-> > +		pr_err("nvram: can't create /proc/driver/nvram\n");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +device_initcall(atari_nvram_init);
-> > +#endif /* CONFIG_PROC_FS */
-> > diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-> > index 25264d65e716..a9d4652f9e90 100644
-> > --- a/drivers/char/nvram.c
-> > +++ b/drivers/char/nvram.c
-> > @@ -21,13 +21,6 @@
-> >   * ioctl(NVRAM_SETCKS) (doesn't change contents, just makes checksum valid
-> >   * again; use with care!)
-> >   *
-> > - * This file also provides some functions for other parts of the kernel that
-> > - * want to access the NVRAM: nvram_{read,write,check_checksum,set_checksum}.
-> > - * Obviously this can be used only if this driver is always configured into
-> > - * the kernel and is not a module. Since the functions are used by  
-> > some Atari
-> > - * drivers, this is the case on the Atari.
-> > - *
-> > - *
-> >   * 	1.1	Cesar Barros: SMP locking fixes
-> >   * 		added changelog
-> >   * 	1.2	Erik Gilling: Cobalt Networks support
-> > @@ -39,64 +32,6 @@
-> >
-> >  #include <linux/module.h>
-> >  #include <linux/nvram.h>
-> > -
-> > -#define PC		1
-> > -#define ATARI		2
-> > -
-> > -/* select machine configuration */
-> > -#if defined(CONFIG_ATARI)
-> > -#  define MACH ATARI
-> > -#elif defined(__i386__) || defined(__x86_64__) || defined(__arm__)   
-> > /* and ?? */
-> > -#  define MACH PC
-> > -#else
-> > -#  error Cannot build nvram driver for this machine configuration.
-> > -#endif
-> > -
-> > -#if MACH == PC
-> > -
-> > -/* RTC in a PC */
-> > -#define CHECK_DRIVER_INIT()	1
-> > -
-> > -/* On PCs, the checksum is built only over bytes 2..31 */
-> > -#define PC_CKS_RANGE_START	2
-> > -#define PC_CKS_RANGE_END	31
-> > -#define PC_CKS_LOC		32
-> > -#define NVRAM_BYTES		(128-NVRAM_FIRST_BYTE)
-> > -
-> > -#define mach_check_checksum	pc_check_checksum
-> > -#define mach_set_checksum	pc_set_checksum
-> > -#define mach_proc_infos		pc_proc_infos
-> > -
-> > -#endif
-> > -
-> > -#if MACH == ATARI
-> > -
-> > -/* Special parameters for RTC in Atari machines */
-> > -#include <asm/atarihw.h>
-> > -#include <asm/atariints.h>
-> > -#define RTC_PORT(x)		(TT_RTC_BAS + 2*(x))
-> > -#define CHECK_DRIVER_INIT()	(MACH_IS_ATARI && ATARIHW_PRESENT(TT_CLK))
-> > -
-> > -#define NVRAM_BYTES		50
-> > -
-> > -/* On Ataris, the checksum is over all bytes except the checksum bytes
-> > - * themselves; these are at the very end */
-> > -#define ATARI_CKS_RANGE_START	0
-> > -#define ATARI_CKS_RANGE_END	47
-> > -#define ATARI_CKS_LOC		48
-> > -
-> > -#define mach_check_checksum	atari_check_checksum
-> > -#define mach_set_checksum	atari_set_checksum
-> > -#define mach_proc_infos		atari_proc_infos
-> > -
-> > -#endif
-> > -
-> > -/* Note that *all* calls to CMOS_READ and CMOS_WRITE must be done with
-> > - * rtc_lock held. Due to the index-port/data-port design of the RTC, we
-> > - * don't want two different things trying to get to it at once. (e.g. the
-> > - * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-> > - */
-> > -
-> >  #include <linux/types.h>
-> >  #include <linux/errno.h>
-> >  #include <linux/miscdevice.h>
-> > @@ -120,12 +55,9 @@ static int nvram_open_mode;	/* special open modes */
-> >  #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
-> >  #define NVRAM_EXCL		2 /* opened with O_EXCL */
-> >
-> > -static int mach_check_checksum(void);
-> > -static void mach_set_checksum(void);
-> > -
-> >  #ifdef CONFIG_PROC_FS
-> > -static void mach_proc_infos(unsigned char *contents, struct seq_file *seq,
-> > -								void *offset);
-> > +static void pc_nvram_proc_read(unsigned char *contents, struct  
-> > seq_file *seq,
-> > +			       void *offset);
-> >  #endif
-> >
-> >  /*
-> > @@ -139,6 +71,14 @@ static void mach_proc_infos(unsigned char  
-> > *contents, struct seq_file *seq,
-> >   * know about the RTC cruft.
-> >   */
-> >
-> > +#define NVRAM_BYTES		(128 - NVRAM_FIRST_BYTE)
-> > +
-> > +/* Note that *all* calls to CMOS_READ and CMOS_WRITE must be done with
-> > + * rtc_lock held. Due to the index-port/data-port design of the RTC, we
-> > + * don't want two different things trying to get to it at once. (e.g. the
-> > + * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-> > + */
-> > +
-> >  unsigned char __nvram_read_byte(int i)
-> >  {
-> >  	return CMOS_READ(NVRAM_FIRST_BYTE + i);
-> > @@ -174,9 +114,22 @@ void nvram_write_byte(unsigned char c, int i)
-> >  }
-> >  EXPORT_SYMBOL(nvram_write_byte);
-> >
-> > +/* On PCs, the checksum is built only over bytes 2..31 */
-> > +#define PC_CKS_RANGE_START	2
-> > +#define PC_CKS_RANGE_END	31
-> > +#define PC_CKS_LOC		32
-> > +
-> >  int __nvram_check_checksum(void)
-> >  {
-> > -	return mach_check_checksum();
-> > +	int i;
-> > +	unsigned short sum = 0;
-> > +	unsigned short expect;
-> > +
-> > +	for (i = PC_CKS_RANGE_START; i <= PC_CKS_RANGE_END; ++i)
-> > +		sum += __nvram_read_byte(i);
-> > +	expect = __nvram_read_byte(PC_CKS_LOC)<<8 |
-> > +	    __nvram_read_byte(PC_CKS_LOC+1);
-> > +	return (sum & 0xffff) == expect;
-> >  }
-> 
-> 
-> I don't understand how this is part of the code move.
-> Does the pc specific checksum becomes the generic one ?
-> 
+Am 29.12.2018 um 14:06 schrieb Finn Thain:
+> On Fri, 28 Dec 2018, LEROY Christophe wrote:
+>>> diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
+>>> index 89f5154c40b6..99e5729d910d 100644
+>>> --- a/drivers/scsi/atari_scsi.c
+>>> +++ b/drivers/scsi/atari_scsi.c
+>>> @@ -755,9 +755,10 @@ static int __init atari_scsi_probe(struct
+>>> platform_device *pdev)
+>>>  	if (ATARIHW_PRESENT(TT_SCSI) && setup_sg_tablesize >= 0)
+>>>  		atari_scsi_template.sg_tablesize = setup_sg_tablesize;
+>>>
+>>> -	if (setup_hostid >= 0) {
+>>> +	if (setup_hostid >= 0)
+>>>  		atari_scsi_template.this_id = setup_hostid & 7;
+>>> -	} else {
+>>> +#ifdef CONFIG_NVRAM
+>>> +	else
+>>
+>> Such ifdefs should be avoided in C files.
+>> It would be better to use
+>>
+>> } else if (IS_ENABLED(CONFIG_NVRAM)) {
+>>
+>
+> I don't like #ifdefs either. However, as the maintainer of this file, I am
+> okay with this one.
+>
+> The old #ifdef CONFIG_NVRAM conditional compilation convention that gets
+> used here and under drivers/video/fbdev could probably be improved upon
+> but I consider this to be out-of-scope for this series, which is
+> complicated enough.
+>
+> And as explained in the commit log, CONFIG_NVRAM=y and CONFIG_NVRAM=m are
+> treaded differently by drivers. Therefore, IS_ENABLED would be incorrect.
 
-This is not generic code, of course. Please refer to the two patches that 
-follow this one, in which all of the x86-specific code gets wrapped with 
-#ifdef CONFIG_X86.
+IS_BUILTIN(CONFIG_NVRAM) is probably what Christophe really meant to 
+suggest.
 
-This code gets moved because the MACH macro is made redundant. You might 
-defer this code motion to patch 4 or patch 5 but I don't see that as being 
-an improvement.
+Or (really going out on a limb here):
 
-You may want to take a look at the final generic implementation of 
-drivers/char/nvram.c, which can be seen here: 
-https://github.com/fthain/linux/blob/0949c1b7bd8b9d0034e77601a9af73c712d26d4a/drivers/char/nvram.c
+IS_BUILTIN(CONFIG_NVRAM) ||
+( IS_MODULE(CONFIG_ATARI_SCSI) && IS_ENABLED(CONFIG_NVRAM) )
 
-You may also find it helpful to look at this whole series in the form of a 
-single diff, to reveal the effect on this file. I think you'll agree that 
-the overall effect on this file is a dramatic improvement.
+Not that I'd advocate that, for this series.
 
-You may argue that there should be no CONFIG_X86 code in drivers/char. 
-Sure, that would be nice. However, if you grep for CMOS_READ|CMOS_WRITE 
-you'll see that the problem is much bigger than drivers/char/nvram.c.
-Perhaps the next best place for the x86-specific code here is 
-drivers/rtc/rtc-cmos.c where you can already find #ifdef CONFIG_X86. 
+Cheers,
 
-Anyway, I consider the CMOS_READ|CMOS_WRITE issue to be out-of-scope, 
-though hopefully this patch series does untangle it a little.
+	Michael
 
--- 
+
+
