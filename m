@@ -2,62 +2,64 @@ Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D634C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 22:22:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A620DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 22:29:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8714620873
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 22:22:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8714620873
+	by mail.kernel.org (Postfix) with ESMTPS id 1FA1020869
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 22:29:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FA1020869
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Ryk60m1FzDqDs
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 09:22:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Rytg1GqkzDqGh
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 09:29:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
+ (client-ip=209.85.222.194; helo=mail-qk1-f194.google.com;
  envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
+Received: from mail-qk1-f194.google.com (mail-qk1-f194.google.com
+ [209.85.222.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Rygh6kr8zDqFJ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 09:20:16 +1100 (AEDT)
-Received: by mail-qt1-f193.google.com with SMTP id t33so26541789qtt.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2018 14:20:16 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43RyrL4hnXzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 09:27:46 +1100 (AEDT)
+Received: by mail-qk1-f194.google.com with SMTP id y16so14240400qki.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2018 14:27:45 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=gEKNttcn2DuV6IUidckb9z98s4YMQSt0m/gFTL7QWxY=;
- b=Y8Qq/7wqsBRTQ7zGXJy8MtGfJi1AmazkKzhB7ngBQtDCfVKanOTLjN6bh3FBCJGd6h
- Ri/sCtGwo7RtCwlmNErAGMCpKXcH14pL+IHs/OBGXSPIs+AOvyK1LbqoZo3DJYoZbbL2
- 282P26PooJm5FSkb+VwivZnU0D2VgU3AF9eyuxnQaeo33E/P5oop6Loib4//4yx7irqE
- SJtuQbhvVvW+FKMw8zQxsd8Z1oKzq2ZAT+zBuohOfZo6PLxZdBRE6Dv5N/fTC+37x6JZ
- a+335btIiWlqm8BSVEq7Yw35Z1bFmd+0AjkkzcU78Pq5Z3i5WXDmTzL56pTJ/QjUYWEU
- u8iA==
-X-Gm-Message-State: AA+aEWa+rW8XnExLVQsjew+Db/SxQ2FE5geUzYUSJ938zJHQKFseF/pS
- TfVxQ+Uzqhl3f0BxvX6j1A4m70KjJc1qOWqoWGc=
-X-Google-Smtp-Source: AFSGD/VP4OgqTevr0l0kgt+jsLmHm4koubyN5NQH8QXOPDhgnoDNjTdGQzAzSL0INVYSyEyZd+6OwMNuoJ/8J8lFSpM=
-X-Received: by 2002:ac8:7451:: with SMTP id h17mr30221440qtr.319.1546122013947; 
- Sat, 29 Dec 2018 14:20:13 -0800 (PST)
+ bh=o0oBUkqD5p4j+xffeWUiyhsv44vkKiTcEHnXCi5uSdo=;
+ b=eD0ZdGy8Fr8ag9NRgXuH+FlQed/15s0tbf+0qDyTv2YrvfhrWCBhKT96fH7eXS94Tw
+ 2Lyfc66KxaE62g+xcwmIGvLWT6tG4Y2w+74xp86F7oUjiIUGnxEKAxrAH31uLBiJgGY2
+ v7km/bfUc/hEyFicmvnEdjNWNEA+RWqjXDHztUOZ2kPiaTwJoXg4j6uem051vubwKYWe
+ EBCcIpvBjYbWqT2KeHYRZFwIPMUwgl2FCo9UecqjWfPU9mIcY178X2vNYpgi/6b3q1I7
+ TNK5BKGVdcdOUy7tXG8y6oOrNPqILY4IfiT7pNZptUxZHpKcSuN2eUKYbYdr3FyPPtV7
+ wtGg==
+X-Gm-Message-State: AJcUukdwZc73unq5Wspj6Aqav/fwKxjg0D3+LbBi1w7YqxscpYo1Ic+k
+ Ia60mSep5S6JjW7rj5mFBoMmmPmUmefJ911g7aGLMYDY
+X-Google-Smtp-Source: ALg8bN6dhuNcs0QnWtoULV5zjryQxDeGrpo3N8kjItS1pnbJjUmy+wHGeE18YJWU6kA2rS73ItoSySk42fhqWqWBPIw=
+X-Received: by 2002:a37:bdc6:: with SMTP id
+ n189mr29013373qkf.330.1546122463680; 
+ Sat, 29 Dec 2018 14:27:43 -0800 (PST)
 MIME-Version: 1.0
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <3ba1dd965c1097e00463eafe7c7d5fd93bbed836.1545784679.git.fthain@telegraphics.com.au>
-In-Reply-To: <3ba1dd965c1097e00463eafe7c7d5fd93bbed836.1545784679.git.fthain@telegraphics.com.au>
+ <505240b144f1666acf26a3c1e93c8e6868fe1408.1545784679.git.fthain@telegraphics.com.au>
+In-Reply-To: <505240b144f1666acf26a3c1e93c8e6868fe1408.1545784679.git.fthain@telegraphics.com.au>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 29 Dec 2018 23:19:57 +0100
-Message-ID: <CAK8P3a0-4vGuCR4aCq0=D1Du1K=f5MtnB9fyCBnOsF+4Na5dMg@mail.gmail.com>
-Subject: Re: [PATCH v8 18/25] powerpc: Implement nvram sync ioctl
+Date: Sat, 29 Dec 2018 23:27:27 +0100
+Message-ID: <CAK8P3a0P7r+PCykB1cHq3HBrpHagfJ5WhDV7JR-wu0tGTMSFMA@mail.gmail.com>
+Subject: Re: [PATCH v8 13/25] m68k: Dispatch nvram_ops calls to Atari or Mac
+ functions
 To: Finn Thain <fthain@telegraphics.com.au>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -74,69 +76,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> --- a/drivers/char/nvram.c
-> +++ b/drivers/char/nvram.c
-> @@ -48,6 +48,10 @@
->  #include <linux/mutex.h>
->  #include <linux/pagemap.h>
->
-> +#ifdef CONFIG_PPC
-> +#include <asm/nvram.h>
-> +#include <asm/machdep.h>
-> +#endif
->
->  static DEFINE_MUTEX(nvram_mutex);
->  static DEFINE_SPINLOCK(nvram_state_lock);
-> @@ -331,6 +335,37 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
->         long ret = -ENOTTY;
->
->         switch (cmd) {
-> +#ifdef CONFIG_PPC
-> +       case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
-> +               pr_warn("nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
-> +               /* fall through */
-> +       case IOC_NVRAM_GET_OFFSET:
-> +               ret = -EINVAL;
-> +#ifdef CONFIG_PPC_PMAC
+On Wed, Dec 26, 2018 at 1:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
 
-I think it would make be nicer here to keep the ppc bits in arch/ppc,
-and instead add a .ioctl() callback to nvram_ops.
-
-> @@ -369,12 +405,14 @@ static int nvram_misc_open(struct inode *inode, struct file *file)
->                 return -EBUSY;
->         }
->
-> +#ifndef CONFIG_PPC
->         /* Prevent multiple writers if the set_checksum ioctl is implemented. */
->         if ((arch_nvram_ops.set_checksum != NULL) &&
->             (file->f_mode & FMODE_WRITE) && (nvram_open_mode & NVRAM_WRITE)) {
->                 spin_unlock(&nvram_state_lock);
->                 return -EBUSY;
->         }
+> +
+> +static ssize_t m68k_nvram_get_size(void)
+> +{
+> +       if (MACH_IS_ATARI)
+> +               return atari_nvram_get_size();
+> +       else if (MACH_IS_MAC)
+> +               return mac_pram_get_size();
+> +       return -ENODEV;
+> +}
+> +
+> +/* Atari device drivers call .read (to get checksum validation) whereas
+> + * Mac and PowerMac device drivers just use .read_byte.
+> + */
+> +const struct nvram_ops arch_nvram_ops = {
+> +#ifdef CONFIG_MAC
+> +       .read_byte      = m68k_nvram_read_byte,
+> +       .write_byte     = m68k_nvram_write_byte,
 > +#endif
->
-> diff --git a/include/linux/nvram.h b/include/linux/nvram.h
-> index b7bfaec60a43..24a57675dba1 100644
-> --- a/include/linux/nvram.h
-> +++ b/include/linux/nvram.h
-> @@ -18,8 +18,12 @@ struct nvram_ops {
->         unsigned char   (*read_byte)(int);
->         void            (*write_byte)(unsigned char, int);
->         ssize_t         (*get_size)(void);
-> +#ifdef CONFIG_PPC
-> +       long            (*sync)(void);
-> +#else
->         long            (*set_checksum)(void);
->         long            (*initialize)(void);
+> +#ifdef CONFIG_ATARI
+> +       .read           = m68k_nvram_read,
+> +       .write          = m68k_nvram_write,
+> +       .set_checksum   = m68k_nvram_set_checksum,
+> +       .initialize     = m68k_nvram_initialize,
 > +#endif
->  };
+> +       .get_size       = m68k_nvram_get_size,
+> +};
+> +EXPORT_SYMBOL(arch_nvram_ops);
 
-Maybe just leave all entries visible here, and avoid the above #ifdef checks.
+Since the operations are almost entirely distinct, why not have two
+separate 'nvram_ops' instances here that each refer to just
+the set they actually need?
+
+I was actually expecting one more patch here that would make the
+arch_nvram_ops a pointer to one of multiple structures, which would
+be easier to do with multiple copies, but I suppose there is no need
+for that here (there might be on ppc, I have to look again).
 
        Arnd
