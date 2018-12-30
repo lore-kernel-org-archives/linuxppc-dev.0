@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82EA4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 22:14:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C195EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 22:47:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B6B102081B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 22:14:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6B102081B
+	by mail.kernel.org (Postfix) with ESMTPS id 1569220828
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 22:47:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1569220828
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43SZVz2L1QzDqJR
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 09:14:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43SbDg5T1pzDqGW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 09:47:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,23 +28,28 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43SZSf2dVrzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 09:12:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43SbBB5QC7zDqJR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 09:45:22 +1100 (AEDT)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 5AD0629BC9;
- Sun, 30 Dec 2018 17:12:44 -0500 (EST)
-Date: Mon, 31 Dec 2018 09:12:42 +1100 (AEDT)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 42EE12280E;
+ Sun, 30 Dec 2018 17:45:18 -0500 (EST)
+Date: Mon, 31 Dec 2018 09:45:16 +1100 (AEDT)
 From: Finn Thain <fthain@telegraphics.com.au>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v8 13/25] m68k: Dispatch nvram_ops calls to Atari or Mac
- functions
-In-Reply-To: <20181230185300.Horde.o5iU5x8n8UeDsyjemaBU_w7@messagerie.si.c-s.fr>
-Message-ID: <alpine.LNX.2.21.1812310847210.444@nippy.intranet>
+To: James Bottomley <jejb@linux.vnet.ibm.com>
+Subject: Re: [PATCH v8 01/25] scsi/atari_scsi: Don't select CONFIG_NVRAM
+In-Reply-To: <alpine.LNX.2.21.1812310839050.444@nippy.intranet>
+Message-ID: <alpine.LNX.2.21.1812310933450.444@nippy.intranet>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <505240b144f1666acf26a3c1e93c8e6868fe1408.1545784679.git.fthain@telegraphics.com.au>
- <CAK8P3a0P7r+PCykB1cHq3HBrpHagfJ5WhDV7JR-wu0tGTMSFMA@mail.gmail.com>
- <alpine.LNX.2.21.1812301750320.424@nippy.intranet>
- <20181230185300.Horde.o5iU5x8n8UeDsyjemaBU_w7@messagerie.si.c-s.fr>
+ <e68fcc3ec0a6cd4e14f763366d4d9445890b9b82.1545784679.git.fthain@telegraphics.com.au>
+ <20181228173846.Horde.z_zDEJN0rVd8tkt3HjYzmg2@messagerie.si.c-s.fr> 
+ <alpine.LNX.2.21.1812291050330.152@nippy.intranet>
+ <a170720a-fe17-744d-790b-e258465bd75e@gmail.com>
+ <alpine.LNX.2.21.1812291327380.152@nippy.intranet>
+ <5e901432-65e2-c87b-31e3-36a394687a9a@gmail.com> 
+ <CAK8P3a1J3sy55nd5QbxR5AjxkLyE-RE=bDNKB9sG27xx=mZ60A@mail.gmail.com>
+ <20181230185002.Horde.AdSknvcs4hP1Kh_T_Cos6w8@messagerie.si.c-s.fr>
+ <1546193203.2844.9.camel@linux.vnet.ibm.com>
+ <alpine.LNX.2.21.1812310839050.444@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -58,84 +63,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc: Michael Schmitz <schmitzmic@gmail.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Joshua Thompson <funaho@jurai.org>
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 30 Dec 2018, LEROY Christophe wrote:
+On Mon, 31 Dec 2018, Finn Thain wrote:
 
-> > > 
-> > > Since the operations are almost entirely distinct, why not have two 
-> > > separate 'nvram_ops' instances here that each refer to just the set 
-> > > they actually need?
-> > > 
+> On Sun, 30 Dec 2018, James Bottomley wrote:
+> 
 > > 
-> > The reason for that is that I am alergic to code duplication. But I'll 
-> > change it if you think it matters. BTW, this patch has already been 
-> > acked by Geert.
+> > That said, as has been pointed out, the current #ifdef has a failing 
+> > corner case when both are modular (because the code should then be 
+> > included).  The runtime macro that correctly expresses this is 
+> > IS_REACHABLE(CONFIG_NVRAM).
+> > 
 > 
-> I agree it would be cleaner, as it would also avoid this 
-> m68k_nvram_get_size() wouldn't it ?
+> No, in the case of CONFIG_NVRAM=m, the conditional code is deliberately 
+> excluded. This is discussed in the patch description. The convention on 
+> PPC32 is that device drivers drop support for NVRAM in this situation. 
+> 
+> I've adopted the PPC32 convention here because M68K drivers and PPC32 
+> drivers have to co-exist (I'm thinking of valkyriefb, but there are other 
+> examples).
 > 
 
-No, that function makes run-time decisions. #ifdef won't work.
+I agree with your comment in principle, that these drivers should be using 
+IS_REACHABLE(CONFIG_NVRAM), not defined(CONFIG_NVRAM).
 
-> I don't see potential code duplication here, do you ?
-> 
+$ grep -lrw CONFIG_NVRAM drivers/
+drivers/video/fbdev/matrox/matroxfb_base.c
+drivers/video/fbdev/platinumfb.c
+drivers/video/fbdev/controlfb.c
+drivers/video/fbdev/valkyriefb.c
+drivers/video/fbdev/imsttfb.c
+drivers/scsi/atari_scsi.c
+$ 
 
-Here's my problem with Arnd's suggestion. Consider this C code,
+But I think this is not the fault of this patch; it's just a historical 
+accident.
 
-#ifdef FOO
-const struct nvram_ops arch_nvram_ops = {
-	/* ... */
-}
-#else
-const struct nvram_ops arch_nvram_ops = {
-        /* ... */
-}
-#endif
+Having said that, I will rework this series to convert all of the above 
+drivers to IS_REACHABLE(CONFIG_NVRAM). I think it would be an improvement.
 
-Lets say you write a hypothetical patch to remove the 'const'. Now you 
-have two 'const' keywords to edit, and you have the risk of overlooking 
-one of them. The solution to this problem is sometimes referred to as 
-"DRY", meaning Don't Repeat Yourself:
-
-const struct nvram_ops arch_nvram_ops = {
-        /* ... */
-#ifdef FOO
-        /* ... */
-#else
-        /* ... */
-#endif
-        /* ... */
-}
-
-But I'm over-simplifying. Arnd's alternative actually goes like this,
-
-#if defined(CONFIG_MAC) && !defined(CONFIG_ATARI)
-const struct nvram_ops arch_nvram_ops = {
-        /* ... */
-}
-#elif !defined(CONFIG_MAC) && defined(CONFIG_ATARI)
-const struct nvram_ops arch_nvram_ops = {
-        /* ... */
-}
-#elif defined(CONFIG_MAC) && defined(CONFIG_ATARI)
-const struct nvram_ops arch_nvram_ops = {
-        /* ... */
-}
-#endif
-
-So, you're right, this isn't "duplication", it's "triplication".
+Besides, it seems likely that some rework involving ppc_md will be needed 
+too because as Arnd pointed out, it would be good to avoid two sets of 
+nvram accessor methods.
 
 -- 
-
-> Christophe
-> 
