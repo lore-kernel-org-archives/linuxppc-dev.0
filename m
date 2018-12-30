@@ -1,24 +1,24 @@
-Return-Path: <SRS0=BvUY=PG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=B87Y=PH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91A30C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 23:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10C8AC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 00:10:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AACC320857
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 29 Dec 2018 23:45:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AACC320857
+	by mail.kernel.org (Postfix) with ESMTPS id 238DA20873
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 00:10:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 238DA20873
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43S0Yh5rBpzDqHx
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 10:45:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43S17H0CTRzDqJ5
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 11:10:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,21 +28,19 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43S0WV1BmSzDqHF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 10:43:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43S1523WlyzDqFB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 11:08:54 +1100 (AEDT)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 5842628EE3;
- Sat, 29 Dec 2018 18:43:10 -0500 (EST)
-Date: Sun, 30 Dec 2018 10:43:33 +1100 (AEDT)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 8F5CC29798;
+ Sat, 29 Dec 2018 19:08:50 -0500 (EST)
+Date: Sun, 30 Dec 2018 11:09:13 +1100 (AEDT)
 From: Finn Thain <fthain@telegraphics.com.au>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods
- instead of nvram_read_byte() and nvram_write_byte()
-In-Reply-To: <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
-Message-ID: <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v8 00/25] Re-use nvram module
+In-Reply-To: <CAK8P3a3yF+CkvQS_funp4BPhi-10N4yse2oAeWAcWR+Ty5Pxmg@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1812301051280.215@nippy.intranet>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au>
- <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
+ <CAK8P3a3yF+CkvQS_funp4BPhi-10N4yse2oAeWAcWR+Ty5Pxmg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -56,125 +54,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-m68k@lists.linux-m68k.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 29 Dec 2018, LEROY Christophe wrote:
+On Sat, 29 Dec 2018, Arnd Bergmann wrote:
 
-> Finn Thain <fthain@telegraphics.com.au> a ?crit?:
-> 
-> > Make use of arch_nvram_ops in device drivers so that the nvram_* function
-> > exports can be removed.
-> > 
-> > Since they are no longer global symbols, rename the PPC32 nvram_* functions
-> > appropriately.
-> > 
-> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> > ---
-> > arch/powerpc/kernel/setup_32.c             | 8 ++++----
-> > drivers/char/generic_nvram.c               | 4 ++--
-> > drivers/video/fbdev/controlfb.c            | 4 ++--
-> > drivers/video/fbdev/imsttfb.c              | 4 ++--
-> > drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
-> > drivers/video/fbdev/platinumfb.c           | 4 ++--
-> > drivers/video/fbdev/valkyriefb.c           | 4 ++--
-> > 7 files changed, 15 insertions(+), 15 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> > index e0d045677472..bdbe6acbef11 100644
-> > --- a/arch/powerpc/kernel/setup_32.c
-> > +++ b/arch/powerpc/kernel/setup_32.c
-> > @@ -152,20 +152,18 @@ __setup("l3cr=", ppc_setup_l3cr);
-> > 
-> > #ifdef CONFIG_GENERIC_NVRAM
-> > 
-> > -unsigned char nvram_read_byte(int addr)
-> > +static unsigned char ppc_nvram_read_byte(int addr)
-> > {
-> > 	if (ppc_md.nvram_read_val)
-> > 		return ppc_md.nvram_read_val(addr);
-> > 	return 0xff;
-> > }
-> > -EXPORT_SYMBOL(nvram_read_byte);
-> > 
-> > -void nvram_write_byte(unsigned char val, int addr)
-> > +static void ppc_nvram_write_byte(unsigned char val, int addr)
-> > {
-> > 	if (ppc_md.nvram_write_val)
-> > 		ppc_md.nvram_write_val(addr, val);
-> > }
-> > -EXPORT_SYMBOL(nvram_write_byte);
-> > 
-> > static ssize_t ppc_nvram_get_size(void)
-> > {
-> > @@ -182,6 +180,8 @@ static long ppc_nvram_sync(void)
-> > }
-> > 
-> > const struct nvram_ops arch_nvram_ops = {
-> > +	.read_byte      = ppc_nvram_read_byte,
-> > +	.write_byte     = ppc_nvram_write_byte,
-> > 	.get_size       = ppc_nvram_get_size,
-> > 	.sync           = ppc_nvram_sync,
-> > };
-> > diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-> > index f32d5663de95..41b76bf9614e 100644
-> > --- a/drivers/char/generic_nvram.c
-> > +++ b/drivers/char/generic_nvram.c
-> > @@ -48,7 +48,7 @@ static ssize_t read_nvram(struct file *file, char __user
-> > *buf,
-> > 	if (*ppos >= nvram_len)
-> > 		return 0;
-> > 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
-> > -		if (__put_user(nvram_read_byte(i), p))
-> > +		if (__put_user(arch_nvram_ops.read_byte(i), p))
-> 
-> Instead of modifying all drivers (in this patch and previous ones related to
-> other arches), wouldn't it be better to add helpers like the following in
-> nvram.h:
-> 
-> Static inline unsigned char nvram_read_byte(int addr)
-> {
->        return arch_nvram_ops.read_byte(addr);
-> }
+> I had a look at the complete series now, and I think this is a great 
+> cleanup. I replied with a couple of minor comments that you may or may 
+> not want to address first.
 > 
 
-Is there some benefit, or is that just personal taste?
+Thanks for reviewing this.
 
-Avoiding changes to call sites avoids code review, but I think 1) the 
-thinkpad_acpi changes have already been reviewed and 2) the fbdev changes 
-need review anyway.
+> The one thing I would like to see resolved (I hope this doesn't bring 
+> back an old discussion you had already concluded) is regarding the use 
+> of a global exported structure of function pointers, as opposed to using 
+> either directly exported functions (with a consistent interface) or a 
+> boot-time selectable structure like dma_map_ops or ppc_md.
+> 
 
-Your suggesion would add several new entities and one extra layer of 
-indirection.
+If I understand correctly, /dev/nvram was made obsolete by the nvmem 
+subsystem (?). If so, there won't be new /dev/nvram users, and the 
+refactoring here only has to be sufficiently flexible to meet the needs of 
+existing users.
 
-I think indirection harms readability because now the reader now has to go 
-and look up the meaning of the new entities.
+I'm not opposed to exported functions in place of a singleton ops struct. 
+Other things being equal I'm inclined toward the ops struct, perhaps 
+because I like encapsulation or perhaps because I don't like excess 
+generality. (That design decision was made years ago and I don't remember 
+the reasoning.)
 
-It's not the case that we need to choose between definitions of 
-nvram_read_byte() at compile time, or stub them out:
+All the arch_nvram_ops structs that I've defined in these patches have the 
+'const' properly:
 
-#ifdef CONFIG_FOO
-static inline unsigned char nvram_read_byte(int addr)
-{
-	return arch_nvram_ops.read_byte(addr);
-}
-#else
-static inline unsigned char nvram_read_byte(int addr) { }
-#endif
+const struct nvram_ops arch_nvram_ops = {
+       .read_byte      = nvram_read_byte,
+       .write_byte     = nvram_write_byte,
+       .read           = nvram_read,
+       .write          = nvram_write,
+       .get_size       = nvram_get_size,
+       .set_checksum   = nvram_set_checksum,
+       .initialize     = nvram_initialize,
+};
+EXPORT_SYMBOL(arch_nvram_ops);
 
-And I don't anticipate a need for a macro here either:
+This is because there's no need to do any run-time reconfiguration.
 
-#define nvram_read_byte(a) random_nvram_read_byte_impl(a)
-
-I think I've used the simplest solution.
+Is a collection of exported functions a better fit here?
 
 -- 
 
-> Christophe
+>     Arnd
 > 
