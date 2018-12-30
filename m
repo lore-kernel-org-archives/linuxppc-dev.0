@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10C8AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 00:10:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32BC6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 03:31:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 238DA20873
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 00:10:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 238DA20873
+	by mail.kernel.org (Postfix) with ESMTPS id 4935021019
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 03:31:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4935021019
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43S17H0CTRzDqJ5
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 11:10:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43S5ZR47nMzDqHr
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 14:31:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,19 +28,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43S1523WlyzDqFB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 11:08:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43S5X374CxzDqHK
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 14:29:07 +1100 (AEDT)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 8F5CC29798;
- Sat, 29 Dec 2018 19:08:50 -0500 (EST)
-Date: Sun, 30 Dec 2018 11:09:13 +1100 (AEDT)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id CF1AB28EDF;
+ Sat, 29 Dec 2018 22:29:03 -0500 (EST)
+Date: Sun, 30 Dec 2018 14:28:56 +1100 (AEDT)
 From: Finn Thain <fthain@telegraphics.com.au>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v8 00/25] Re-use nvram module
-In-Reply-To: <CAK8P3a3yF+CkvQS_funp4BPhi-10N4yse2oAeWAcWR+Ty5Pxmg@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1812301051280.215@nippy.intranet>
+Subject: Re: [PATCH v8 24/25] powerpc: Adopt nvram module for PPC64
+In-Reply-To: <CAK8P3a2p91XJfJuSCZqRLRgC-aP3LR1tMK2DDxTiSuD8_FOg8Q@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1812301401220.215@nippy.intranet>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <CAK8P3a3yF+CkvQS_funp4BPhi-10N4yse2oAeWAcWR+Ty5Pxmg@mail.gmail.com>
+ <2fe2b8e6395aeacfafcbde590a50922d4e632189.1545784679.git.fthain@telegraphics.com.au>
+ <CAK8P3a2p91XJfJuSCZqRLRgC-aP3LR1tMK2DDxTiSuD8_FOg8Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -55,59 +56,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Sat, 29 Dec 2018, Arnd Bergmann wrote:
 
-> I had a look at the complete series now, and I think this is a great 
-> cleanup. I replied with a couple of minor comments that you may or may 
-> not want to address first.
+> On Wed, Dec 26, 2018 at 1:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> 
+> > +static ssize_t ppc_nvram_get_size(void)
+> > +{
+> > +       if (ppc_md.nvram_size)
+> > +               return ppc_md.nvram_size();
+> > +       return -ENODEV;
+> > +}
+> 
+> > +const struct nvram_ops arch_nvram_ops = {
+> > +       .read           = ppc_nvram_read,
+> > +       .write          = ppc_nvram_write,
+> > +       .get_size       = ppc_nvram_get_size,
+> > +       .sync           = ppc_nvram_sync,
+> > +};
+> 
+> Coming back to this after my comment on the m68k side, I notice that 
+> there is now a double indirection through function pointers. Have you 
+> considered completely removing the operations from ppc_md instead by 
+> having multiple copies of nvram_ops?
 > 
 
-Thanks for reviewing this.
+I considered a few alternatives. I figured that it was refactoring that 
+could be deferred, as it would be confined to arch/powerpc. I was more 
+interested in the cross-platform API.
 
-> The one thing I would like to see resolved (I hope this doesn't bring 
-> back an old discussion you had already concluded) is regarding the use 
-> of a global exported structure of function pointers, as opposed to using 
-> either directly exported functions (with a consistent interface) or a 
-> boot-time selectable structure like dma_map_ops or ppc_md.
+> With the current method, it does seem odd to have a single 
+> per-architecture instance of the exported structure containing function 
+> pointers. This doesn't give us the flexibility of having multiple copies 
+> in the kernel the way that ppc_md does, but it adds overhead compared to 
+> simply exporting the functions directly.
 > 
 
-If I understand correctly, /dev/nvram was made obsolete by the nvmem 
-subsystem (?). If so, there won't be new /dev/nvram users, and the 
-refactoring here only has to be sufficiently flexible to meet the needs of 
-existing users.
+You're right, there is overhead here.
 
-I'm not opposed to exported functions in place of a singleton ops struct. 
-Other things being equal I'm inclined toward the ops struct, perhaps 
-because I like encapsulation or perhaps because I don't like excess 
-generality. (That design decision was made years ago and I don't remember 
-the reasoning.)
+With a bit of auditing, wrappers like the one you quoted (which merely 
+checks whether or not a ppc_md method is implemented) could surely be 
+avoided.
 
-All the arch_nvram_ops structs that I've defined in these patches have the 
-'const' properly:
+The arch_nvram_ops methods are supposed to optional (that is, they are 
+allowed to be NULL).
 
-const struct nvram_ops arch_nvram_ops = {
-       .read_byte      = nvram_read_byte,
-       .write_byte     = nvram_write_byte,
-       .read           = nvram_read,
-       .write          = nvram_write,
-       .get_size       = nvram_get_size,
-       .set_checksum   = nvram_set_checksum,
-       .initialize     = nvram_initialize,
-};
-EXPORT_SYMBOL(arch_nvram_ops);
-
-This is because there's no need to do any run-time reconfiguration.
-
-Is a collection of exported functions a better fit here?
+We could call exactly the same function pointers though either ppc_md or 
+arch_nvram_ops. That would avoid the double indirection.
 
 -- 
 
->     Arnd
+>        Arnd
 > 
