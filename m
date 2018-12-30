@@ -2,23 +2,23 @@ Return-Path: <SRS0=B87Y=PH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4CA3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 07:27:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09A1FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 07:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6F15213F2
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 07:27:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6F15213F2
+	by mail.kernel.org (Postfix) with ESMTPS id 78260213F2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 07:29:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 78260213F2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43SBqP6yRtzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 18:27:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43SBsX3WF0zDqJV
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 30 Dec 2018 18:29:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,20 +28,21 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43SBn66d1gzDqHS
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 18:25:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43SBpG5PkDzDqJc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2018 18:26:46 +1100 (AEDT)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id CCF2021FEF;
- Sun, 30 Dec 2018 02:25:41 -0500 (EST)
-Date: Sun, 30 Dec 2018 18:25:38 +1100 (AEDT)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 99A9021FEF;
+ Sun, 30 Dec 2018 02:26:43 -0500 (EST)
+Date: Sun, 30 Dec 2018 18:26:40 +1100 (AEDT)
 From: Finn Thain <fthain@telegraphics.com.au>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v8 18/25] powerpc: Implement nvram sync ioctl
-In-Reply-To: <CAK8P3a0-4vGuCR4aCq0=D1Du1K=f5MtnB9fyCBnOsF+4Na5dMg@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1812301744540.424@nippy.intranet>
+Subject: Re: [PATCH v8 13/25] m68k: Dispatch nvram_ops calls to Atari or Mac
+ functions
+In-Reply-To: <CAK8P3a0P7r+PCykB1cHq3HBrpHagfJ5WhDV7JR-wu0tGTMSFMA@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1812301750320.424@nippy.intranet>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <3ba1dd965c1097e00463eafe7c7d5fd93bbed836.1545784679.git.fthain@telegraphics.com.au>
- <CAK8P3a0-4vGuCR4aCq0=D1Du1K=f5MtnB9fyCBnOsF+4Na5dMg@mail.gmail.com>
+ <505240b144f1666acf26a3c1e93c8e6868fe1408.1545784679.git.fthain@telegraphics.com.au>
+ <CAK8P3a0P7r+PCykB1cHq3HBrpHagfJ5WhDV7JR-wu0tGTMSFMA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -58,82 +59,62 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Sat, 29 Dec 2018, Arnd Bergmann wrote:
 
-> > --- a/drivers/char/nvram.c
-> > +++ b/drivers/char/nvram.c
-> > @@ -48,6 +48,10 @@
-> >  #include <linux/mutex.h>
-> >  #include <linux/pagemap.h>
-> >
-> > +#ifdef CONFIG_PPC
-> > +#include <asm/nvram.h>
-> > +#include <asm/machdep.h>
-> > +#endif
-> >
-> >  static DEFINE_MUTEX(nvram_mutex);
-> >  static DEFINE_SPINLOCK(nvram_state_lock);
-> > @@ -331,6 +335,37 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
-> >         long ret = -ENOTTY;
-> >
-> >         switch (cmd) {
-> > +#ifdef CONFIG_PPC
-> > +       case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
-> > +               pr_warn("nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
-> > +               /* fall through */
-> > +       case IOC_NVRAM_GET_OFFSET:
-> > +               ret = -EINVAL;
-> > +#ifdef CONFIG_PPC_PMAC
+> On Wed, Dec 26, 2018 at 1:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
 > 
-> I think it would make be nicer here to keep the ppc bits in arch/ppc,
-> and instead add a .ioctl() callback to nvram_ops.
+> > +
+> > +static ssize_t m68k_nvram_get_size(void)
+> > +{
+> > +       if (MACH_IS_ATARI)
+> > +               return atari_nvram_get_size();
+> > +       else if (MACH_IS_MAC)
+> > +               return mac_pram_get_size();
+> > +       return -ENODEV;
+> > +}
+> > +
+> > +/* Atari device drivers call .read (to get checksum validation) whereas
+> > + * Mac and PowerMac device drivers just use .read_byte.
+> > + */
+> > +const struct nvram_ops arch_nvram_ops = {
+> > +#ifdef CONFIG_MAC
+> > +       .read_byte      = m68k_nvram_read_byte,
+> > +       .write_byte     = m68k_nvram_write_byte,
+> > +#endif
+> > +#ifdef CONFIG_ATARI
+> > +       .read           = m68k_nvram_read,
+> > +       .write          = m68k_nvram_write,
+> > +       .set_checksum   = m68k_nvram_set_checksum,
+> > +       .initialize     = m68k_nvram_initialize,
+> > +#endif
+> > +       .get_size       = m68k_nvram_get_size,
+> > +};
+> > +EXPORT_SYMBOL(arch_nvram_ops);
+> 
+> Since the operations are almost entirely distinct, why not have two
+> separate 'nvram_ops' instances here that each refer to just
+> the set they actually need?
 > 
 
-The problem with having an nvram_ops.ioctl() method is the code in the 
-!PPC branch. That code would get duplicated because it's needed by both 
-X86 and M68K, to implement the checksum ioctls.
+The reason for that is that I am alergic to code duplication. But I'll 
+change it if you think it matters. BTW, this patch has already been acked 
+by Geert.
 
-> > @@ -369,12 +405,14 @@ static int nvram_misc_open(struct inode *inode, struct file *file)
-> >                 return -EBUSY;
-> >         }
-> >
-> > +#ifndef CONFIG_PPC
-> >         /* Prevent multiple writers if the set_checksum ioctl is implemented. */
-> >         if ((arch_nvram_ops.set_checksum != NULL) &&
-> >             (file->f_mode & FMODE_WRITE) && (nvram_open_mode & NVRAM_WRITE)) {
-> >                 spin_unlock(&nvram_state_lock);
-> >                 return -EBUSY;
-> >         }
-> > +#endif
-> >
-> > diff --git a/include/linux/nvram.h b/include/linux/nvram.h
-> > index b7bfaec60a43..24a57675dba1 100644
-> > --- a/include/linux/nvram.h
-> > +++ b/include/linux/nvram.h
-> > @@ -18,8 +18,12 @@ struct nvram_ops {
-> >         unsigned char   (*read_byte)(int);
-> >         void            (*write_byte)(unsigned char, int);
-> >         ssize_t         (*get_size)(void);
-> > +#ifdef CONFIG_PPC
-> > +       long            (*sync)(void);
-> > +#else
-> >         long            (*set_checksum)(void);
-> >         long            (*initialize)(void);
-> > +#endif
-> >  };
-> 
-> Maybe just leave all entries visible here, and avoid the above #ifdef checks.
+> I was actually expecting one more patch here that would make the
+> arch_nvram_ops a pointer to one of multiple structures, which would
+> be easier to do with multiple copies, but I suppose there is no need
+> for that here (there might be on ppc, I have to look again).
 > 
 
-The #ifdef isn't there just to save a few bytes, though it does do that. 
-It's really meant to cause a build failure when I mess up somewhere. But 
-I'm happy to change it if you can see a reason to do so (?)
+Yes, I considered that too. I picked the variation that makes everything 
+const.
 
 -- 
 
