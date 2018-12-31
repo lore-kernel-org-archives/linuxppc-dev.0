@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09908C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:51:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1D17C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:53:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 66EB120B1F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:51:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66EB120B1F
+	by mail.kernel.org (Postfix) with ESMTPS id 72CCA2133F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:53:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72CCA2133F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Smdc2c6MzDqCG
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 16:51:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Smgn29SNzDqFB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 16:53:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,15 +28,14 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Smb55v0YzDqBg
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Smb55v1YzDqC3
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 16:49:05 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id AE25E29BD5; Mon, 31 Dec 2018 00:49:02 -0500 (EST)
+ id 9382729BC9; Mon, 31 Dec 2018 00:49:02 -0500 (EST)
 To: Jens Axboe <axboe@kernel.dk>
-Message-Id: <177ead1d637f617792aa5ca2ee294d61e3d0cea2.1546235049.git.fthain@telegraphics.com.au>
+Message-Id: <f84a43669647c55b91c2a46e7876d8dd2a713c8a.1546235049.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH] block/swim3: Fix -EBUSY error when re-opening device after
- unmount
+Subject: [PATCH] block/swim3: Remove dead return statement
 Date: Mon, 31 Dec 2018 16:44:09 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -55,36 +54,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the block device is opened with FMODE_EXCL, ref_count is set to -1.
-This value doesn't get reset when the device is closed which means the
-device cannot be opened again. Fix this by checking for refcount <= 0
-in the release method.
-
-Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
-Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
 Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/block/swim3.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/block/swim3.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index ba1190f1276b..87ca8f207c7c 100644
+index c1c676a33e4a..ba1190f1276b 100644
 --- a/drivers/block/swim3.c
 +++ b/drivers/block/swim3.c
-@@ -995,7 +995,11 @@ static void floppy_release(struct gendisk *disk, fmode_t mode)
- 	struct swim3 __iomem *sw = fs->swim3;
+@@ -1151,7 +1151,6 @@ static int swim3_add_device(struct macio_dev *mdev, int index)
+ 		swim3_err("%s", "Couldn't request interrupt\n");
+ 		pmac_call_feature(PMAC_FTR_SWIM3_ENABLE, swim, 0, 0);
+ 		goto out_unmap;
+-		return -EBUSY;
+ 	}
  
- 	mutex_lock(&swim3_mutex);
--	if (fs->ref_count > 0 && --fs->ref_count == 0) {
-+	if (fs->ref_count > 0)
-+		--fs->ref_count;
-+	else if (fs->ref_count == -1)
-+		fs->ref_count = 0;
-+	if (fs->ref_count == 0) {
- 		swim3_action(fs, MOTOR_OFF);
- 		out_8(&sw->control_bic, 0xff);
- 		swim3_select(fs, RELAX);
+ 	timer_setup(&fs->timeout, NULL, 0);
 -- 
 2.19.2
 
