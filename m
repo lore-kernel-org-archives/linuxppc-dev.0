@@ -2,92 +2,91 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7B60C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 17:27:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20A11C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 21:45:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 687F920B1F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 17:27:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="mqQTA1tO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 687F920B1F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+	by mail.kernel.org (Postfix) with ESMTPS id 44D9420B1F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 21:45:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 44D9420B1F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43T4523RcLzDqBZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 04:27:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.dk
+	by lists.ozlabs.org (Postfix) with ESMTP id 43T9p96XwMzDqLK
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 08:45:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=kernel-dk.20150623.gappssmtp.com header.i=@kernel-dk.20150623.gappssmtp.com header.b="mqQTA1tO";
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.dk
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=axboe@kernel.dk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kernel.dk
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=kernel-dk.20150623.gappssmtp.com
- header.i=@kernel-dk.20150623.gappssmtp.com header.b="mqQTA1tO"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43T3wy3m2czDqKQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 04:20:34 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id c25so12889381pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 09:20:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=kernel-dk.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=YNAT8rHz5hGWy/vgi2TyCGEubvALNl5/fFKu8eZEoKI=;
- b=mqQTA1tO7uLzdGdMPV8sMcTv0z9GG0l2fue8XqKtY59gjx4QQrvh4a8Y76PI3oAaVy
- JMdksMdt1iusGG/mu07RTquV6D9tmHntIDXrqiH5lChquDXjY/860s0jC9rMl0a0gUzE
- 3z0ZIaEY5IlnswKrCOTGbKEJTwpY2jkJ3DE2YVocI7LyV6ToXs1dEzO/2w+amnYYPouO
- j9reCLFHsPs0pnnZtINaprqIiSasoiSsc5LT0Sj93jaB3NuBoyAjHzonvLuaOH5EaAvv
- oFhUCS8kuJfiCuMP3ohl3hNxKwstl4xoLR41+8aYZlZtJh1hgDyZUDvux8zVpDa43mv/
- oEPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=YNAT8rHz5hGWy/vgi2TyCGEubvALNl5/fFKu8eZEoKI=;
- b=hxFu/+VROvHyW+4awH5KmAQ2iQEUBiTPJyLaNtgr8gq4VOBg2f/JUoqg+4KviP693t
- l12QFpRXIUxUjBO762hSdYHdOiaqesdwfyiAdAmE/oJCJwtXgVJMBR9Qs7aDveHIxC+v
- QUFtTpd7Fq8Im6CV0CQFxPRTY5mf1JWjPsXir1nTOJs8TD2J6KiMQgnFcqE+mRUSMf1D
- 0GIRtwWfn81GbL98L7fAgEdD4xh4p/b4mJ9ntEx5TpHJDLF1NV3Ya5s8MBWMfAqSRA9k
- +ChptMM5v/Ab1sUswwoljCmEgwbANC4M+CzvTXrMu73W2Wo8CULh8na0u0v/BM2Ky1qJ
- Sb/w==
-X-Gm-Message-State: AJcUukcOC6AXBfgf/RUOcb6EIjRoISD7hNJ/1QXelOqzqlPVS2rX+L5H
- oElUeW5iuKjiFNg6oYaT+x4h6A==
-X-Google-Smtp-Source: ALg8bN6P2VfjzXeXQKdulknKmgdXEQRzbz37AAl+7En8RXwooms2VHNlW04nU1HNVySXw+XBnsTlnA==
-X-Received: by 2002:a63:6c48:: with SMTP id h69mr7842971pgc.139.1546276832563; 
- Mon, 31 Dec 2018 09:20:32 -0800 (PST)
-Received: from [192.168.1.121] (66.29.188.166.static.utbb.net. [66.29.188.166])
- by smtp.gmail.com with ESMTPSA id z191sm59764915pgd.74.2018.12.31.09.20.31
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 31 Dec 2018 09:20:31 -0800 (PST)
-Subject: Re: [PATCH] block/swim3: Fix regression on PowerBook G3
-To: Finn Thain <fthain@telegraphics.com.au>
-References: <594abbd4bbf6a55878869bc02d1614269bb9b3c5.1546235049.git.fthain@telegraphics.com.au>
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <4712a99a-c1bd-f9bf-6674-57b6b891847d@kernel.dk>
-Date: Mon, 31 Dec 2018 10:20:30 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
-MIME-Version: 1.0
-In-Reply-To: <594abbd4bbf6a55878869bc02d1614269bb9b3c5.1546235049.git.fthain@telegraphics.com.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43T9m02ctCzDqKT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 08:43:12 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBVLdJiZ076530
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 16:43:09 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pqkmgyvn4-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 16:43:09 -0500
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 31 Dec 2018 21:43:08 -0000
+Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 31 Dec 2018 21:43:05 -0000
+Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
+ [9.57.199.106])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBVLh44v23789618
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 31 Dec 2018 21:43:04 GMT
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6CF8428059;
+ Mon, 31 Dec 2018 21:43:04 +0000 (GMT)
+Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CD54C28058;
+ Mon, 31 Dec 2018 21:43:03 +0000 (GMT)
+Received: from ltcalpine2-lp18.aus.stglabs.ibm.com (unknown [9.40.195.201])
+ by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
+ Mon, 31 Dec 2018 21:43:03 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: davem@davemloft.net
+Subject: [PATCH] ibmveth: fix DMA unmap error in ibmveth_xmit_start error path
+Date: Mon, 31 Dec 2018 15:43:01 -0600
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 18123121-0060-0000-0000-000002F109E1
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010324; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000272; SDB=6.01139884; UDB=6.00593121; IPR=6.00920094; 
+ MB=3.00024918; MTD=3.00000008; XFM=3.00000015; UTC=2018-12-31 21:43:07
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18123121-0061-0000-0000-000047C0AB9E
+Message-Id: <1546292581-21336-1-git-send-email-tyreld@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-31_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812310185
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,90 +98,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, stable@vger.kernel.org, tlfalcon@linux.ibm.com,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/30/18 10:44 PM, Finn Thain wrote:
-> As of v4.20, the swim3 driver crashes when loaded on a PowerBook G3
-> (Wallstreet).
-> 
-> MacIO PCI driver attached to Gatwick chipset
-> MacIO PCI driver attached to Heathrow chipset
-> swim3 0.00015000:floppy: [fd0] SWIM3 floppy controller in media bay
-> 0.00013020:ch-a: ttyS0 at MMIO 0xf3013020 (irq = 16, base_baud = 230400) is a Z85c30 ESCC - Serial port
-> 0.00013000:ch-b: ttyS1 at MMIO 0xf3013000 (irq = 17, base_baud = 230400) is a Z85c30 ESCC - Infrared port
-> macio: fixed media-bay irq on gatwick
-> macio: fixed left floppy irqs
-> swim3 1.00015000:floppy: [fd1] Couldn't request interrupt
-> Unable to handle kernel paging request for data at address 0x00000024
-> Faulting instruction address: 0xc02652f8
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> BE SMP NR_CPUS=2 PowerMac
-> Modules linked in:
-> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.20.0 #2
-> NIP:  c02652f8 LR: c026915c CTR: c0276d1c
-> REGS: df43ba10 TRAP: 0300   Not tainted  (4.20.0)
-> MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 28228288  XER: 00000100
-> DAR: 00000024 DSISR: 40000000
-> GPR00: c026915c df43bac0 df439060 c0731524 df494700 00000000 c06e1c08 00000001
-> GPR08: 00000001 00000000 df5ff220 00001032 28228282 00000000 c0004ca4 00000000
-> GPR16: 00000000 00000000 00000000 c073144c dfffe064 c0731524 00000120 c0586108
-> GPR24: c073132c c073143c c073143c 00000000 c0731524 df67cd70 df494700 00000001
-> NIP [c02652f8] blk_mq_free_rqs+0x28/0xf8
-> LR [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-> Call Trace:
-> [df43bac0] [c0045f50] flush_workqueue_prep_pwqs+0x178/0x1c4 (unreliable)
-> [df43bae0] [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-> [df43bb00] [c02697f0] blk_mq_exit_sched+0x9c/0xb8
-> [df43bb20] [c0252794] elevator_exit+0x84/0xa4
-> [df43bb40] [c0256538] blk_exit_queue+0x30/0x50
-> [df43bb50] [c0256640] blk_cleanup_queue+0xe8/0x184
-> [df43bb70] [c034732c] swim3_attach+0x330/0x5f0
-> [df43bbb0] [c034fb24] macio_device_probe+0x58/0xec
-> [df43bbd0] [c032ba88] really_probe+0x1e4/0x2f4
-> [df43bc00] [c032bd28] driver_probe_device+0x64/0x204
-> [df43bc20] [c0329ac4] bus_for_each_drv+0x60/0xac
-> [df43bc50] [c032b824] __device_attach+0xe8/0x160
-> [df43bc80] [c032ab38] bus_probe_device+0xa0/0xbc
-> [df43bca0] [c0327338] device_add+0x3d8/0x630
-> [df43bcf0] [c0350848] macio_add_one_device+0x444/0x48c
-> [df43bd50] [c03509f8] macio_pci_add_devices+0x168/0x1bc
-> [df43bd90] [c03500ec] macio_pci_probe+0xc0/0x10c
-> [df43bda0] [c02ad884] pci_device_probe+0xd4/0x184
-> [df43bdd0] [c032ba88] really_probe+0x1e4/0x2f4
-> [df43be00] [c032bd28] driver_probe_device+0x64/0x204
-> [df43be20] [c032bfcc] __driver_attach+0x104/0x108
-> [df43be40] [c0329a00] bus_for_each_dev+0x64/0xb4
-> [df43be70] [c032add8] bus_add_driver+0x154/0x238
-> [df43be90] [c032ca24] driver_register+0x84/0x148
-> [df43bea0] [c0004aa0] do_one_initcall+0x40/0x188
-> [df43bf00] [c0690100] kernel_init_freeable+0x138/0x1d4
-> [df43bf30] [c0004cbc] kernel_init+0x18/0x10c
-> [df43bf40] [c00121e4] ret_from_kernel_thread+0x14/0x1c
-> Instruction dump:
-> 5484d97e 4bfff4f4 9421ffe0 7c0802a6 bf410008 7c9e2378 90010024 8124005c
-> 2f890000 419e0078 81230004 7c7c1b78 <81290024> 2f890000 419e0064 81440000
-> ---[ end trace 12025ab921a9784c ]---
-> 
-> Reverting commit 8ccb8cb1892b ("swim3: convert to blk-mq") resolves the
-> problem.
-> 
-> That commit added a struct blk_mq_tag_set to struct floppy_state and
-> initialized it with a blk_mq_init_sq_queue() call. Unfortunately, there
-> is a memset() in swim3_add_device() that subsequently clears the
-> floppy_state struct. That means fs->tag_set->ops is a NULL pointer, and
-> it gets dereferenced by blk_mq_free_rqs() which gets called in the
-> request_irq() error path. Move the memset() to fix this bug.
-> 
-> BTW, the request_irq() failure for the left mediabay floppy (fd1) is not
-> a regression. I don't know why it happens. The right media bay floppy
-> (fd0) works fine however.
+Commit 33a48ab105a7 ("ibmveth: Fix DMA unmap error") fixed an issue in the
+normal code path of ibmveth_xmit_start() that was originally introduced by
+Commit 6e8ab30ec677 ("ibmveth: Add scatter-gather support"). This original
+fix missed the error path where dma_unmap_page is wrongly called on the
+header portion in descs[0] which was mapped with dma_map_single. As a
+result a failure to DMA map any of the frags results in a dmesg warning
+when CONFIG_DMA_API_DEBUG is enabled.
 
-Applied, thanks.
+------------[ cut here ]------------
+DMA-API: ibmveth 30000002: device driver frees DMA memory with wrong function
+  [device address=0x000000000a430000] [size=172 bytes] [mapped as page] [unmapped as single]
+WARNING: CPU: 1 PID: 8426 at kernel/dma/debug.c:1085 check_unmap+0x4fc/0xe10
+...
+<snip>
+...
+DMA-API: Mapped at:
+ibmveth_start_xmit+0x30c/0xb60
+dev_hard_start_xmit+0x100/0x450
+sch_direct_xmit+0x224/0x490
+__qdisc_run+0x20c/0x980
+__dev_queue_xmit+0x1bc/0xf20
 
+This fixes the API misuse by unampping descs[0] with dma_unmap_single.
+
+Fixes: 6e8ab30ec677 ("ibmveth: Add scatter-gather support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index a468178..098d876 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1171,11 +1171,15 @@ static netdev_tx_t ibmveth_start_xmit(struct sk_buff *skb,
+ 
+ map_failed_frags:
+ 	last = i+1;
+-	for (i = 0; i < last; i++)
++	for (i = 1; i < last; i++)
+ 		dma_unmap_page(&adapter->vdev->dev, descs[i].fields.address,
+ 			       descs[i].fields.flags_len & IBMVETH_BUF_LEN_MASK,
+ 			       DMA_TO_DEVICE);
+ 
++	dma_unmap_single(&adapter->vdev->dev,
++			 descs[0].fields.address,
++			 descs[0].fields.flags_len & IBMVETH_BUF_LEN_MASK,
++			 DMA_TO_DEVICE);
+ map_failed:
+ 	if (!firmware_has_feature(FW_FEATURE_CMO))
+ 		netdev_err(netdev, "tx: unable to map xmit buffer\n");
 -- 
-Jens Axboe
+2.7.4
 
