@@ -2,41 +2,89 @@ Return-Path: <SRS0=LDiU=PI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6E1CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:55:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6BE3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 09:32:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D0A920B1F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 05:55:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D0A920B1F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id EE8712133F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 09:32:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE8712133F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Smjy0Z0SzDqHF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 16:55:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 43SsXY3HMhzDq5h
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 31 Dec 2018 20:32:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Smb55yyXzDqC5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 16:49:05 +1100 (AEDT)
-Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id BE6FB29BD6; Mon, 31 Dec 2018 00:49:02 -0500 (EST)
-To: Jens Axboe <axboe@kernel.dk>
-Message-Id: <594abbd4bbf6a55878869bc02d1614269bb9b3c5.1546235049.git.fthain@telegraphics.com.au>
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH] block/swim3: Fix regression on PowerBook G3
-Date: Mon, 31 Dec 2018 16:44:09 +1100
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43SsTj3DmQzDqDh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 20:29:45 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ wBV9Sh6P089064
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 04:29:42 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pqfth1ekv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Dec 2018 04:29:42 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Mon, 31 Dec 2018 09:29:40 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 31 Dec 2018 09:29:33 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ wBV9TWYT26017906
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 31 Dec 2018 09:29:32 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 154B84C040;
+ Mon, 31 Dec 2018 09:29:32 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 83CC14C04A;
+ Mon, 31 Dec 2018 09:29:28 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.207.181])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 31 Dec 2018 09:29:28 +0000 (GMT)
+Received: by rapoport-lnx (sSMTP sendmail emulation);
+ Mon, 31 Dec 2018 11:29:27 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v4 0/6] memblock: simplify several early memory allocation
+Date: Mon, 31 Dec 2018 11:29:20 +0200
+X-Mailer: git-send-email 2.7.4
+X-TM-AS-GCONF: 00
+x-cbid: 18123109-0028-0000-0000-00000331258E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 18123109-0029-0000-0000-000023EE69C7
+Message-Id: <1546248566-14910-1-git-send-email-rppt@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2018-12-31_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1812310088
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,126 +96,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-sh@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Rich Felker <dalias@libc.org>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
+ Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mike Rapoport <rppt@linux.ibm.com>,
+ Mark Salter <msalter@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As of v4.20, the swim3 driver crashes when loaded on a PowerBook G3
-(Wallstreet).
+Hi,
 
-MacIO PCI driver attached to Gatwick chipset
-MacIO PCI driver attached to Heathrow chipset
-swim3 0.00015000:floppy: [fd0] SWIM3 floppy controller in media bay
-0.00013020:ch-a: ttyS0 at MMIO 0xf3013020 (irq = 16, base_baud = 230400) is a Z85c30 ESCC - Serial port
-0.00013000:ch-b: ttyS1 at MMIO 0xf3013000 (irq = 17, base_baud = 230400) is a Z85c30 ESCC - Infrared port
-macio: fixed media-bay irq on gatwick
-macio: fixed left floppy irqs
-swim3 1.00015000:floppy: [fd1] Couldn't request interrupt
-Unable to handle kernel paging request for data at address 0x00000024
-Faulting instruction address: 0xc02652f8
-Oops: Kernel access of bad area, sig: 11 [#1]
-BE SMP NR_CPUS=2 PowerMac
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.20.0 #2
-NIP:  c02652f8 LR: c026915c CTR: c0276d1c
-REGS: df43ba10 TRAP: 0300   Not tainted  (4.20.0)
-MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 28228288  XER: 00000100
-DAR: 00000024 DSISR: 40000000
-GPR00: c026915c df43bac0 df439060 c0731524 df494700 00000000 c06e1c08 00000001
-GPR08: 00000001 00000000 df5ff220 00001032 28228282 00000000 c0004ca4 00000000
-GPR16: 00000000 00000000 00000000 c073144c dfffe064 c0731524 00000120 c0586108
-GPR24: c073132c c073143c c073143c 00000000 c0731524 df67cd70 df494700 00000001
-NIP [c02652f8] blk_mq_free_rqs+0x28/0xf8
-LR [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-Call Trace:
-[df43bac0] [c0045f50] flush_workqueue_prep_pwqs+0x178/0x1c4 (unreliable)
-[df43bae0] [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-[df43bb00] [c02697f0] blk_mq_exit_sched+0x9c/0xb8
-[df43bb20] [c0252794] elevator_exit+0x84/0xa4
-[df43bb40] [c0256538] blk_exit_queue+0x30/0x50
-[df43bb50] [c0256640] blk_cleanup_queue+0xe8/0x184
-[df43bb70] [c034732c] swim3_attach+0x330/0x5f0
-[df43bbb0] [c034fb24] macio_device_probe+0x58/0xec
-[df43bbd0] [c032ba88] really_probe+0x1e4/0x2f4
-[df43bc00] [c032bd28] driver_probe_device+0x64/0x204
-[df43bc20] [c0329ac4] bus_for_each_drv+0x60/0xac
-[df43bc50] [c032b824] __device_attach+0xe8/0x160
-[df43bc80] [c032ab38] bus_probe_device+0xa0/0xbc
-[df43bca0] [c0327338] device_add+0x3d8/0x630
-[df43bcf0] [c0350848] macio_add_one_device+0x444/0x48c
-[df43bd50] [c03509f8] macio_pci_add_devices+0x168/0x1bc
-[df43bd90] [c03500ec] macio_pci_probe+0xc0/0x10c
-[df43bda0] [c02ad884] pci_device_probe+0xd4/0x184
-[df43bdd0] [c032ba88] really_probe+0x1e4/0x2f4
-[df43be00] [c032bd28] driver_probe_device+0x64/0x204
-[df43be20] [c032bfcc] __driver_attach+0x104/0x108
-[df43be40] [c0329a00] bus_for_each_dev+0x64/0xb4
-[df43be70] [c032add8] bus_add_driver+0x154/0x238
-[df43be90] [c032ca24] driver_register+0x84/0x148
-[df43bea0] [c0004aa0] do_one_initcall+0x40/0x188
-[df43bf00] [c0690100] kernel_init_freeable+0x138/0x1d4
-[df43bf30] [c0004cbc] kernel_init+0x18/0x10c
-[df43bf40] [c00121e4] ret_from_kernel_thread+0x14/0x1c
-Instruction dump:
-5484d97e 4bfff4f4 9421ffe0 7c0802a6 bf410008 7c9e2378 90010024 8124005c
-2f890000 419e0078 81230004 7c7c1b78 <81290024> 2f890000 419e0064 81440000
----[ end trace 12025ab921a9784c ]---
+These patches simplify some of the early memory allocations by replacing
+usage of older memblock APIs with newer and shinier ones.
 
-Reverting commit 8ccb8cb1892b ("swim3: convert to blk-mq") resolves the
-problem.
+Quite a few places in the arch/ code allocated memory using a memblock API
+that returns a physical address of the allocated area, then converted this
+physical address to a virtual one and then used memset(0) to clear the
+allocated range.
 
-That commit added a struct blk_mq_tag_set to struct floppy_state and
-initialized it with a blk_mq_init_sq_queue() call. Unfortunately, there
-is a memset() in swim3_add_device() that subsequently clears the
-floppy_state struct. That means fs->tag_set->ops is a NULL pointer, and
-it gets dereferenced by blk_mq_free_rqs() which gets called in the
-request_irq() error path. Move the memset() to fix this bug.
+More recent memblock APIs do all the three steps in one call and their
+usage simplifies the code.
 
-BTW, the request_irq() failure for the left mediabay floppy (fd1) is not
-a regression. I don't know why it happens. The right media bay floppy
-(fd0) works fine however.
+It's important to note that regardless of API used, the core allocation is
+nearly identical for any set of memblock allocators: first it tries to find
+a free memory with all the constraints specified by the caller and then
+falls back to the allocation with some or all constraints disabled.
 
-Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
-Fixes: 8ccb8cb1892b ("swim3: convert to blk-mq")
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
----
- drivers/block/swim3.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+The first three patches perform the conversion of call sites that have
+exact requirements for the node and the possible memory range.
 
-diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index 87ca8f207c7c..1e2ae90d7715 100644
---- a/drivers/block/swim3.c
-+++ b/drivers/block/swim3.c
-@@ -1091,8 +1091,6 @@ static int swim3_add_device(struct macio_dev *mdev, int index)
- 	struct floppy_state *fs = &floppy_states[index];
- 	int rc = -EBUSY;
- 
--	/* Do this first for message macros */
--	memset(fs, 0, sizeof(*fs));
- 	fs->mdev = mdev;
- 	fs->index = index;
- 
-@@ -1191,14 +1189,15 @@ static int swim3_attach(struct macio_dev *mdev,
- 			return rc;
- 	}
- 
--	fs = &floppy_states[floppy_count];
--
- 	disk = alloc_disk(1);
- 	if (disk == NULL) {
- 		rc = -ENOMEM;
- 		goto out_unregister;
- 	}
- 
-+	fs = &floppy_states[floppy_count];
-+	memset(fs, 0, sizeof(*fs));
-+
- 	disk->queue = blk_mq_init_sq_queue(&fs->tag_set, &swim3_mq_ops, 2,
- 						BLK_MQ_F_SHOULD_MERGE);
- 	if (IS_ERR(disk->queue)) {
+The fourth patch is a bit one-off as it simplifies openrisc's
+implementation of pte_alloc_one_kernel(), and not only the memblock usage.
+
+The fifth patch takes care of simpler cases when the allocation can be
+satisfied with a simple call to memblock_alloc().
+
+The sixth patch removes one-liner wrappers for memblock_alloc on arm and
+unicore32, as suggested by Christoph.
+
+v4:
+* rebased on the current upstream
+* added conversion of s390 node data allocation
+
+v3:
+* added Tested-by from Michal Simek for microblaze changes
+* updated powerpc changes as per Michael Ellerman comments:
+  - use allocations that clear memory in alloc_paca_data() and alloc_stack()
+  - ensure the replacement is equivalent to old API
+
+v2:
+* added Ack from Stafford Horne for openrisc changes
+* entirely drop early_alloc wrappers on arm and unicore32, as per Christoph
+Hellwig
+
+Mike Rapoport (6):
+  powerpc: prefer memblock APIs returning virtual address
+  microblaze: prefer memblock API returning virtual address
+  sh: prefer memblock APIs returning virtual address
+  openrisc: simplify pte_alloc_one_kernel()
+  arch: simplify several early memory allocations
+  arm, s390, unicore32: remove oneliner wrappers for memblock_alloc()
+
+ arch/arm/mm/mmu.c                      | 13 +++----------
+ arch/c6x/mm/dma-coherent.c             |  9 ++-------
+ arch/microblaze/mm/init.c              |  5 +++--
+ arch/nds32/mm/init.c                   | 12 ++++--------
+ arch/openrisc/mm/ioremap.c             | 11 ++++-------
+ arch/powerpc/kernel/paca.c             | 16 ++++++----------
+ arch/powerpc/kernel/setup-common.c     |  4 ++--
+ arch/powerpc/kernel/setup_64.c         | 24 ++++++++++--------------
+ arch/powerpc/mm/hash_utils_64.c        |  6 +++---
+ arch/powerpc/mm/pgtable-book3e.c       |  8 ++------
+ arch/powerpc/mm/pgtable-book3s64.c     |  5 +----
+ arch/powerpc/mm/pgtable-radix.c        | 25 +++++++------------------
+ arch/powerpc/mm/ppc_mmu_32.c           |  3 +--
+ arch/powerpc/platforms/pasemi/iommu.c  |  5 +++--
+ arch/powerpc/platforms/powernv/opal.c  |  3 +--
+ arch/powerpc/platforms/pseries/setup.c | 18 ++++++++++++++----
+ arch/powerpc/sysdev/dart_iommu.c       |  7 +++++--
+ arch/s390/numa/numa.c                  | 14 +-------------
+ arch/sh/mm/init.c                      | 18 +++++-------------
+ arch/sh/mm/numa.c                      |  5 ++---
+ arch/sparc/kernel/prom_64.c            |  7 ++-----
+ arch/sparc/mm/init_64.c                |  9 +++------
+ arch/unicore32/mm/mmu.c                | 14 ++++----------
+ 23 files changed, 88 insertions(+), 153 deletions(-)
+
 -- 
-2.19.2
+2.7.4
 
