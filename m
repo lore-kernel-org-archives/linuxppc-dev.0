@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A173C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA562C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:40:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1257D2070B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:12:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1257D2070B
+	by mail.kernel.org (Postfix) with ESMTPS id 429AE21019
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:40:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 429AE21019
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43TGPZ68C4zDqHv
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 12:12:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43TH1y6qWYzDqFL
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 12:40:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
@@ -28,23 +28,22 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43TGMJ2MxVzDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 12:10:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43TGzn6D2YzDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 12:38:45 +1100 (AEDT)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 2962D29C55;
- Mon, 31 Dec 2018 20:10:33 -0500 (EST)
-Date: Tue, 1 Jan 2019 12:10:11 +1100 (AEDT)
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 0F38329CD9;
+ Mon, 31 Dec 2018 20:38:41 -0500 (EST)
+Date: Tue, 1 Jan 2019 12:38:38 +1100 (AEDT)
 From: Finn Thain <fthain@telegraphics.com.au>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods
- instead of nvram_read_byte() and nvram_write_byte()
-In-Reply-To: <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1901011154590.574@nippy.intranet>
+Subject: Re: [PATCH v8 24/25] powerpc: Adopt nvram module for PPC64
+In-Reply-To: <CAK8P3a3OD9ou=y+PaZ03v-ivW4A3fwwzA+aL+CoJDd_L2vTMLA@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1901011228290.574@nippy.intranet>
 References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au>
- <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
- <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
- <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
+ <2fe2b8e6395aeacfafcbde590a50922d4e632189.1545784679.git.fthain@telegraphics.com.au>
+ <CAK8P3a2p91XJfJuSCZqRLRgC-aP3LR1tMK2DDxTiSuD8_FOg8Q@mail.gmail.com>
+ <alpine.LNX.2.21.1812301401220.215@nippy.intranet>
+ <CAK8P3a3OD9ou=y+PaZ03v-ivW4A3fwwzA+aL+CoJDd_L2vTMLA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -58,11 +57,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- dri-devel <dri-devel@lists.freedesktop.org>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
  Paul Mackerras <paulus@samba.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
@@ -72,67 +68,76 @@ Sender: "Linuxppc-dev"
 
 On Mon, 31 Dec 2018, Arnd Bergmann wrote:
 
-> On Sun, Dec 30, 2018 at 12:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> On Sun, Dec 30, 2018 at 4:29 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> >
+> > On Sat, 29 Dec 2018, Arnd Bergmann wrote:
+> >
+> > > On Wed, Dec 26, 2018 at 1:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> > >
+> > > > +static ssize_t ppc_nvram_get_size(void)
+> > > > +{
+> > > > +       if (ppc_md.nvram_size)
+> > > > +               return ppc_md.nvram_size();
+> > > > +       return -ENODEV;
+> > > > +}
+> > >
+> > > > +const struct nvram_ops arch_nvram_ops = {
+> > > > +       .read           = ppc_nvram_read,
+> > > > +       .write          = ppc_nvram_write,
+> > > > +       .get_size       = ppc_nvram_get_size,
+> > > > +       .sync           = ppc_nvram_sync,
+> > > > +};
+> > >
+> > > Coming back to this after my comment on the m68k side, I notice that 
+> > > there is now a double indirection through function pointers. Have 
+> > > you considered completely removing the operations from ppc_md 
+> > > instead by having multiple copies of nvram_ops?
+> > >
+> >
+> > I considered a few alternatives. I figured that it was refactoring 
+> > that could be deferred, as it would be confined to arch/powerpc. I was 
+> > more interested in the cross-platform API.
 > 
-> >
-> > Is there some benefit, or is that just personal taste?
-> >
-> > Avoiding changes to call sites avoids code review, but I think 1) the
-> > thinkpad_acpi changes have already been reviewed and 2) the fbdev changes
-> > need review anyway.
-> >
-> > Your suggesion would add several new entities and one extra layer of
-> > indirection.
-> >
-> > I think indirection harms readability because now the reader now has to go
-> > and look up the meaning of the new entities.
-> >
-> > It's not the case that we need to choose between definitions of
-> > nvram_read_byte() at compile time, or stub them out:
-> >
-> > #ifdef CONFIG_FOO
-> > static inline unsigned char nvram_read_byte(int addr)
-> > {
-> >         return arch_nvram_ops.read_byte(addr);
-> > }
-> > #else
-> > static inline unsigned char nvram_read_byte(int addr) { }
-> > #endif
-> >
-> > And I don't anticipate a need for a macro here either:
-> >
-> > #define nvram_read_byte(a) random_nvram_read_byte_impl(a)
-> >
-> > I think I've used the simplest solution.
+> Fair enough.
 > 
-> Having the indirection would help if the inline function can
-> encapsulate the NULL pointer check, like
+> > > With the current method, it does seem odd to have a single 
+> > > per-architecture instance of the exported structure containing 
+> > > function pointers. This doesn't give us the flexibility of having 
+> > > multiple copies in the kernel the way that ppc_md does, but it adds 
+> > > overhead compared to simply exporting the functions directly.
+> > >
+> >
+> > You're right, there is overhead here.
+> >
+> > With a bit of auditing, wrappers like the one you quoted (which merely 
+> > checks whether or not a ppc_md method is implemented) could surely be 
+> > avoided.
+> >
+> > The arch_nvram_ops methods are supposed to optional (that is, they are 
+> > allowed to be NULL).
+> >
+> > We could call exactly the same function pointers though either ppc_md 
+> > or arch_nvram_ops. That would avoid the double indirection.
 > 
-> static inline unsigned char nvram_read_byte(loff_t addr)
-> {
->        char data;
-> 
->        if (!IS_ENABLED(CONFIG_NVRAM))
->                  return 0xff;
-> 
->        if (arch_nvram_ops.read_byte)
->                  return arch_nvram_ops.read_byte(addr);
-> 
->        if (arch_nvram_ops.read)
->                  return arch_nvram_ops.read(char, 1, &addr);
-> 
->       return 0xff;
-> }
+> I think you can have a 'const' structure in the __ro_after_init section, 
+> so without changing anything else, powerpc could just copy the function 
+> pointers from ppc_md into the arch_nvram_ops at early init time, which 
+> should ideally simplify your implementation as well.
 > 
 
-The semantics of .read_byte and .read are subtly different. For CONFIG_X86 
-and CONFIG_ATARI, .read implies checksum validation and .read_byte does 
-not.
+This "early init time" could be hard to pin down... It has to be after 
+ppc_md methods are initialized but before the nvram_ops methods get used 
+(e.g. by the framebuffer console). Seems a bit fragile (?)
 
-In particular, in the thinkpad_acpi case, checksum validation isn't used, 
-but in the atari_scsi case, it is.
+Your suggestion to completely remove the ppc_md.nvram* methods might be a 
+better way. It just means functions get assigned to nvram_ops pointers 
+instead of ppc_md pointers.
 
-So I like to see drivers explicitly call the method they want. I didn't 
-want to obscure this distinction in a helper.
+The patch is simple enough, but it assumes that arch_nvram_ops is not 
+const. The struct machdep_calls ppc_md is not const, so should we worry 
+about dropping the const for the struct nvram_ops arch_nvram_ops?
 
 -- 
+
+>         Arnd
+> 
