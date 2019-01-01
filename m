@@ -2,50 +2,42 @@ Return-Path: <SRS0=ebkI=PJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA562C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:40:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A2DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 03:57:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 429AE21019
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 01:40:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 429AE21019
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id C93A9208E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 03:57:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C93A9208E3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43TH1y6qWYzDqFL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 12:40:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43TL3f5w4HzDqJ2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jan 2019 14:57:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43TL1B54b1zDqBs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 14:55:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43TGzn6D2YzDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jan 2019 12:38:45 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 0F38329CD9;
- Mon, 31 Dec 2018 20:38:41 -0500 (EST)
-Date: Tue, 1 Jan 2019 12:38:38 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v8 24/25] powerpc: Adopt nvram module for PPC64
-In-Reply-To: <CAK8P3a3OD9ou=y+PaZ03v-ivW4A3fwwzA+aL+CoJDd_L2vTMLA@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1901011228290.574@nippy.intranet>
-References: <cover.1545784679.git.fthain@telegraphics.com.au>
- <2fe2b8e6395aeacfafcbde590a50922d4e632189.1545784679.git.fthain@telegraphics.com.au>
- <CAK8P3a2p91XJfJuSCZqRLRgC-aP3LR1tMK2DDxTiSuD8_FOg8Q@mail.gmail.com>
- <alpine.LNX.2.21.1812301401220.215@nippy.intranet>
- <CAK8P3a3OD9ou=y+PaZ03v-ivW4A3fwwzA+aL+CoJDd_L2vTMLA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 43TL1B3r5vz9s3l; Tue,  1 Jan 2019 14:55:10 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 43TL1B3MCBz9sBn; Tue,  1 Jan 2019 14:55:10 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] KVM: PPC: Book3S HV: radix: Fix uninitialized var build error
+Date: Tue,  1 Jan 2019 14:55:13 +1100
+Message-Id: <20190101035513.12444-1-mpe@ellerman.id.au>
+X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,87 +49,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: paulus@samba.org, kvm-ppc@vger.kernel.org, sjitindarsingh@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 31 Dec 2018, Arnd Bergmann wrote:
+Old GCCs (4.6.3 at least), aren't able to follow the logic in
+__kvmhv_copy_tofrom_guest_radix() and warn that old_pid is used
+uninitialized:
 
-> On Sun, Dec 30, 2018 at 4:29 AM Finn Thain <fthain@telegraphics.com.au> wrote:
-> >
-> > On Sat, 29 Dec 2018, Arnd Bergmann wrote:
-> >
-> > > On Wed, Dec 26, 2018 at 1:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
-> > >
-> > > > +static ssize_t ppc_nvram_get_size(void)
-> > > > +{
-> > > > +       if (ppc_md.nvram_size)
-> > > > +               return ppc_md.nvram_size();
-> > > > +       return -ENODEV;
-> > > > +}
-> > >
-> > > > +const struct nvram_ops arch_nvram_ops = {
-> > > > +       .read           = ppc_nvram_read,
-> > > > +       .write          = ppc_nvram_write,
-> > > > +       .get_size       = ppc_nvram_get_size,
-> > > > +       .sync           = ppc_nvram_sync,
-> > > > +};
-> > >
-> > > Coming back to this after my comment on the m68k side, I notice that 
-> > > there is now a double indirection through function pointers. Have 
-> > > you considered completely removing the operations from ppc_md 
-> > > instead by having multiple copies of nvram_ops?
-> > >
-> >
-> > I considered a few alternatives. I figured that it was refactoring 
-> > that could be deferred, as it would be confined to arch/powerpc. I was 
-> > more interested in the cross-platform API.
-> 
-> Fair enough.
-> 
-> > > With the current method, it does seem odd to have a single 
-> > > per-architecture instance of the exported structure containing 
-> > > function pointers. This doesn't give us the flexibility of having 
-> > > multiple copies in the kernel the way that ppc_md does, but it adds 
-> > > overhead compared to simply exporting the functions directly.
-> > >
-> >
-> > You're right, there is overhead here.
-> >
-> > With a bit of auditing, wrappers like the one you quoted (which merely 
-> > checks whether or not a ppc_md method is implemented) could surely be 
-> > avoided.
-> >
-> > The arch_nvram_ops methods are supposed to optional (that is, they are 
-> > allowed to be NULL).
-> >
-> > We could call exactly the same function pointers though either ppc_md 
-> > or arch_nvram_ops. That would avoid the double indirection.
-> 
-> I think you can have a 'const' structure in the __ro_after_init section, 
-> so without changing anything else, powerpc could just copy the function 
-> pointers from ppc_md into the arch_nvram_ops at early init time, which 
-> should ideally simplify your implementation as well.
-> 
+  arch/powerpc/kvm/book3s_64_mmu_radix.c:75:3: error: 'old_pid' may be
+  used uninitialized in this function
 
-This "early init time" could be hard to pin down... It has to be after 
-ppc_md methods are initialized but before the nvram_ops methods get used 
-(e.g. by the framebuffer console). Seems a bit fragile (?)
+The logic is OK, we only use old_pid if quadrant == 1, and in that
+case it has definitely be initialised, eg:
 
-Your suggestion to completely remove the ppc_md.nvram* methods might be a 
-better way. It just means functions get assigned to nvram_ops pointers 
-instead of ppc_md pointers.
+	if (quadrant == 1) {
+		old_pid = mfspr(SPRN_PID);
+	...
+	if (quadrant == 1 && pid != old_pid)
+		mtspr(SPRN_PID, old_pid);
 
-The patch is simple enough, but it assumes that arch_nvram_ops is not 
-const. The struct machdep_calls ppc_md is not const, so should we worry 
-about dropping the const for the struct nvram_ops arch_nvram_ops?
+Annotate it to fix the error.
 
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index fb88167a402a..1b821c6efdef 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -33,8 +33,8 @@ unsigned long __kvmhv_copy_tofrom_guest_radix(int lpid, int pid,
+ 					      gva_t eaddr, void *to, void *from,
+ 					      unsigned long n)
+ {
++	int uninitialized_var(old_pid), old_lpid;
+ 	unsigned long quadrant, ret = n;
+-	int old_pid, old_lpid;
+ 	bool is_load = !!to;
+ 
+ 	/* Can't access quadrants 1 or 2 in non-HV mode, call the HV to do it */
 -- 
+2.17.2
 
->         Arnd
-> 
