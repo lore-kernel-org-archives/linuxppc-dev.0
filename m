@@ -2,80 +2,84 @@ Return-Path: <SRS0=1YdR=PK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0073CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 12:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 94191C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:05:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6793D2075B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 12:58:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BB51C2063F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:05:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="beIgIaBw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6793D2075B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB51C2063F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43VB182Xq0zDqH1
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 23:58:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 43VDqj3mMzzDqKw
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jan 2019 02:05:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.b="beIgIaBw";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::342; helo=mail-wm1-x342.google.com;
- envelope-from=sedat.dilek@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="beIgIaBw"; 
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe"; 
  dkim-atps=neutral
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com
- [IPv6:2a00:1450:4864:20::342])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43V9321j73zDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jan 2019 23:14:34 +1100 (AEDT)
-Received: by mail-wm1-x342.google.com with SMTP id y139so26356469wmc.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jan 2019 04:14:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:reply-to:from:date:message-id:subject:to:cc;
- bh=tuOeiypRUnZ+vONbIlfvSMz1B6QmcFHUX6zM6XouHKw=;
- b=beIgIaBwoGs1oVP4kVoCdEoOgYkRQcaIk0bR3Q2xIS2FszfzqPCLXyLGYS74X7bD0w
- jrWOYxayiEXKXmp5xyJhszLjNZS8sVE8hysSeKZJnf2VuOEe4UADKZCdG9Om4r85EIWH
- Rrg7r7P/mV09o65vPH0lVcUDmlmZFkgXnOs4YDMm+0+EVvMxr/ai5Ifpgh/Bn3dKVuTz
- cFo/VcLImQR3jNo4aj/1PKadMZtSRpPsjOm5P55xpZ9755igmPjUPNuA3dLqc0R26L02
- aDAz1WOC8JqqWJA1DzDGpIhYaya2rCtkSoAgUiIORS6ow4Li1wtrPa+wlRTvkZ15Cp6X
- K42w==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43VDmq0nn5zDqHP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2019 02:02:34 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id c25so14703484pgb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jan 2019 07:02:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=from:to:cc:subject:date:message-id;
+ bh=7nqJrGCWoJ/xXa+0vawBxQXEAZNobDoLmrZscFMVjZY=;
+ b=D58yz0feqYH8p3MlPzWJ5O4HNTeru3ubYuxTOOx+nCouyEc2r0hnaS1C8V5BQ7pGQg
+ a3HQOzV5zGyVLLq1ybFKsEZHnnowIgRh/ji0d86VV8K2PRO8bJhgI66Zlf450SQXQRtL
+ HD4ZiT+jnqnf3zdmSp+5fds0S0Kri2KexHxCo=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:reply-to:from:date:message-id
- :subject:to:cc;
- bh=tuOeiypRUnZ+vONbIlfvSMz1B6QmcFHUX6zM6XouHKw=;
- b=om7NvotFCEE7fIgz7rcsf1NluVJ+LI3bQ7og3nUSybeoWyF34TXmR8Trx/wq3Vv+Xo
- R6I8jtqtWixmsl4t4bWpILYafJLXVHzz9HVJC7QT+DtQj/uWGKOiWc0V7WhRylwqN+Nx
- 3kukKV5SkNZIzLCVvNGbJ6AqEF2FlKWsgRNctFRcwgqBW+Fc4ITnJg0iHcmSFD6mtwpe
- MuJsh9t7anwaTiS2SSMwoZdtc/Athz7gKSCuLah076J/u0YijmcDhspD0g6DznsegkIN
- 6weis+iq8RSVs15SISQrILXnco8AEKJ7ywefSVk2xVAtg0cpfc4oyRG1I0n69+6HWXGG
- s/Fw==
-X-Gm-Message-State: AA+aEWbVZlYiaNsa8iusM/UCf1alXpTW9Wu37bfhabC+Jgf5kfb/LKjW
- 1OMFdHeiRLf5ZyoAhJab9bmkt3yNgmLVq3/zMLc=
-X-Google-Smtp-Source: AFSGD/Wrp+2wG3UodzdTtFKXJ1N1+jmmQr9HUM6U4bEiUWyE7kCh4UEN6Qwi3BN1wf/RkHNC8Lh+0w7pDhELJg7mkKQ=
-X-Received: by 2002:a1c:9c0a:: with SMTP id f10mr36004298wme.73.1546431270297; 
- Wed, 02 Jan 2019 04:14:30 -0800 (PST)
-MIME-Version: 1.0
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Date: Wed, 2 Jan 2019 13:14:18 +0100
-Message-ID: <CA+icZUU=1S0Xg3+zWNU-60eknfWyL2kjEPm2BNNTK8Eu-tkTEg@mail.gmail.com>
-Subject: Re: jump_label: move 'asm goto' support test to Kconfig
-To: masahiroy@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-X-Mailman-Approved-At: Wed, 02 Jan 2019 23:53:24 +1100
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=7nqJrGCWoJ/xXa+0vawBxQXEAZNobDoLmrZscFMVjZY=;
+ b=WMHiFzGvSMW5ckLWHhtw0aoWwwnegk3GCEwkeMVMQAjCPs3LS2RKhEpyyELMZfan6i
+ Q8Y9XRl22pMGwDeIPs/oFMaGJUEn8uXf81WHgahLiyzd45rL7qnSjyVVtkoqxDK/pe/B
+ SGTPprIuHb0kV5VrI447Nnt74FkkowW/g8hMhDdMxYb3+N0dBjrY8et/5pxElgEYx05A
+ rZi4RN0WE4ZoB3IadDAvb1PlTBgUbpgjZdqaUREL4Y+RHW9rEOTNN/TwiUtR7OHrvZVR
+ cFC3Fm43uVVSv0deu/ssMcqTVqe8w5UbBFJSay0P+Y5HLcFtrJWqKFGNrj5+o0bGk9yX
+ XkAw==
+X-Gm-Message-State: AJcUukcRAHp9NW08Z2BaBqVWGdC7Gd0hO+HCfDH8pLIZRnq8UwGN9z2L
+ xEYuLDcTEKa8OeUKwFMkew73sw==
+X-Google-Smtp-Source: ALg8bN4klezGJ0qRyQtepbOyLk5xRK2fQc0VFDcWdh/7XU4H1sqDnuGGKSe5lk39u0CFM5YuqhtlBA==
+X-Received: by 2002:a63:4456:: with SMTP id t22mr14012658pgk.0.1546441352610; 
+ Wed, 02 Jan 2019 07:02:32 -0800 (PST)
+Received: from qualcomm-HP-ZBook-14-G2.qualcomm.com
+ (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com. [103.229.18.19])
+ by smtp.gmail.com with ESMTPSA id z14sm66180213pgv.47.2019.01.02.07.02.25
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Wed, 02 Jan 2019 07:02:31 -0800 (PST)
+From: Firoz Khan <firoz.khan@linaro.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Al Viro <viro@zeniv.linux.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Kate Stewart <kstewart@linuxfoundation.org>
+Subject: [PATCH 0/2] powerpc: Unify the system call scripts
+Date: Wed,  2 Jan 2019 20:32:02 +0530
+Message-Id: <1546441324-19774-1-git-send-email-firoz.khan@linaro.org>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,45 +91,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: sedat.dilek@gmail.com
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org, x86@kernel.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Peter Zijlstra <peterz@infradead.org>, linux-s390@vger.kernel.org,
- linux-kbuild@vger.kernel.org, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- Max Filippov <jcmvbkbc@gmail.com>, Ingo Molnar <mingo@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- "David S . Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-arch@vger.kernel.org, arnd@arndb.de, y2038@lists.linaro.org,
+ linux-kernel@vger.kernel.org, marcin.juszkiewicz@linaro.org,
+ firoz.khan@linaro.org, deepa.kernel@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+System call table generation support is provided for
+alpha, ia64, m68k, microblaze, mips, parisc, powerpc,
+sh, sparc and xtensa architectures. The implementat-
+ions are almost similar across all the above archte-
+ctures. In order to reduce the source code across all
+the above architectures, create common ".sh" files and
+keep it in the common directory, script/. This will 
+be a generic scripts which can use for all the above
+architectures.
 
-I was not aware that CONFIG_JUMP_LABEL Kconfig setting depends on the
-support of asm-goto.
+This patch depends on;
+ https://lore.kernel.org/lkml/1546439331-18646-1-git-send-email-firoz.khan@linaro.org/
 
-Currently, I am doing experiments with clang-7 and a snapshot of
-clang-8 on Linux/x86.
-These compilers have no asm-goto support.
+Firoz Khan (2):
+  powerpc: remove nargs from __SYSCALL
+  powerpc: generate uapi header and system call table files
 
-What is your recommendation for Linux >= v4.20?
-I am asking as it is possible to set CONFIG_JUMP_LABEL=y when
-compiling with clang - which has no effect.
-This is confusing.
+ arch/powerpc/kernel/syscalls/Makefile       | 11 +++++++--
+ arch/powerpc/kernel/syscalls/syscallhdr.sh  | 37 -----------------------------
+ arch/powerpc/kernel/syscalls/syscalltbl.sh  | 36 ----------------------------
+ arch/powerpc/kernel/systbl.S                |  6 ++---
+ arch/powerpc/platforms/cell/spu_callbacks.c |  2 +-
+ 5 files changed, 13 insertions(+), 79 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
+ delete mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
 
-Thanks, this patch makes things clearer and protects users from
-setting "wrong" in the sense of non-functional settings.
+-- 
+1.9.1
 
-I have tested this against recent Linus tree where kbuild/kconfig Git
-pulls were latest commits.
-
-Tested-by: Sedat Dilek <sedat.dilek@gmail.com> [ x86 with LLVM/Clang
-v7 and v8 (snapshot) ]
-
-Thanks.
-
-Regards,
-- Sedat -
