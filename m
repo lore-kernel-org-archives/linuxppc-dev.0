@@ -2,67 +2,51 @@ Return-Path: <SRS0=1YdR=PK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADB36C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 21:55:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3174DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 22:27:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EDF7E21479
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 21:55:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDF7E21479
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
+	by mail.kernel.org (Postfix) with ESMTPS id A64DD206C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 22:27:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A64DD206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43VPwk4W4ZzDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jan 2019 08:55:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
+	by lists.ozlabs.org (Postfix) with ESMTP id 43VQdm3Mz5zDqLd
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jan 2019 09:27:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
- (client-ip=212.227.126.135; helo=mout.kundenserver.de;
- envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
+ (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
+ envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=stevens-zone.net
-X-Greylist: delayed 319 seconds by postgrey-1.36 at bilbo;
- Thu, 03 Jan 2019 08:53:07 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.135])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43VPtW5RDZzDqHh
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2019 08:53:07 +1100 (AEDT)
-Received: from mintppc.lan ([80.189.87.237]) by mrelayeu.kundenserver.de
- (mreue011 [212.227.15.163]) with ESMTPA (Nemesis) id
- 1N2lzA-1hJh3z0aUO-0134yL; Wed, 02 Jan 2019 22:47:35 +0100
-From: Darren Stevens <darren@stevens-zone.net>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>
-Date: Wed, 02 Jan 2019 21:46:51 +0000 (GMT)
-Message-ID: <4d20f218a26.60da37fd@auth.smtp.1and1.co.uk>
-In-Reply-To: <43MLSx0CY2z9sPY@ozlabs.org>
-References: <4c6da03c92f.ac1d78@auth.smtp.1and1.co.uk>
- <43MLSx0CY2z9sPY@ozlabs.org>
-User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
-Subject: Re: powerpc/pasemi: Add Nemo board IRQ initroutine
+ header.from=telegraphics.com.au
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43VQbZ28bXzDqJM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2019 09:25:13 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id D1D4F29FC6;
+ Wed,  2 Jan 2019 17:25:08 -0500 (EST)
+Date: Thu, 3 Jan 2019 09:25:08 +1100 (AEDT)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v8 18/25] powerpc: Implement nvram sync ioctl
+In-Reply-To: <alpine.LNX.2.21.1901011206010.574@nippy.intranet>
+Message-ID: <alpine.LNX.2.21.1901030853160.614@nippy.intranet>
+References: <cover.1545784679.git.fthain@telegraphics.com.au>
+ <3ba1dd965c1097e00463eafe7c7d5fd93bbed836.1545784679.git.fthain@telegraphics.com.au>
+ <CAK8P3a0-4vGuCR4aCq0=D1Du1K=f5MtnB9fyCBnOsF+4Na5dMg@mail.gmail.com>
+ <alpine.LNX.2.21.1812301744540.424@nippy.intranet>
+ <CAK8P3a1rkdMXGOt90SDhBkVvFeNsqdoMKQAu4nLfk_Eg+_CB6g@mail.gmail.com>
+ <alpine.LNX.2.21.1901011206010.574@nippy.intranet>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Provags-ID: V03:K1:WQ6zCPTCRyDObgCs9SBiB7ANzmoex6cBWieyHzwtrbws6GplJx+
- QVEf3VPkgrgvXzf9unQfst4AGOU+WQnp8PlXSJF92IxVhVNVJ8PNZuiST7q/e1+wEvsYk3q
- CAUuNa1jsacpkBezciAES9elQRz4hWz+7UwipnT4EMQreALg5EAVdq0lWtljPtxeu6V99pI
- bL1FXC+FcEC9mDbL/krMQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:aw7jwJqDUY8=:0Vyvfk21F3dfqg/F/D8YNQ
- a4es0FC0tfUz3a8uLp5OmO8w6Ge1XVpcQ8qfSSAVq7h5eKYyv+k2Cs6duprHC2ZbvVlqoMc1c
- hxa94BSP+bc3NmFgqgMCnr8zR0A0KiRZD52TNwFYuJa36O8ckkY42Ga0EK+NUWtHPk9Pn1EVC
- 7BJr02mwKZ+HEr+FGqYGK262lJZ3B5dGnX7g+gYq5pgozIM7LBufpyLAUZ4HOdVzoSizlrbAQ
- W+rvSz//EyrUalE1x14OZAihii4fgkF+S6FxMw7Xldo9TV8gnpSX5j0IZ28VK6xvfuTt4DaS3
- YPCbTpGd63001iHR2KephLplsIYYtXJAGJGohYkNEhFISeZ4z5RDobySyNAebQcLS6mjzOIzB
- rrCYRXfrNOiL3+mO9xxKv8vVCNAHNU3oMpfemiIGrx/3kM6eIH2XToZfOMDW3Yx2Te2nOJdln
- h50MkTPiaUd1uvjXb0DtrvRC8bxCsZttMNvizOTpfzw/f5xO+mW27LoDQAUBfeqMSJVb8rGAi
- LN+cW69vWlLVsecB1+f/g4lXFAeTyaD1aAhoU1x//Dx0VQVCFP4NCXe5lbLNmaeXbTb8FCKDE
- sthPfmslhFBMWwVlfnSvIhNGRuPBCbgOqctS6QPAujEH3g0BOQ7b/LUrxEObwqfOL4nx2drDt
- GXAes6/yx7hRMKZ6uyOR4TRoQdqDJu7umP4h1Hq+59zdoTYyUryJhzc8Rn5MFgACDPjtnVbTp
- WRRjo70EJ2MQVQJcDbvsNoD/qfuuzS1GNMbKMb13SaPICfZ0JYtcn+Sas9Y=
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,29 +58,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Michael
+On Tue, 1 Jan 2019, I wrote:
 
-On 22/12/2018, Michael Ellerman wrote:
-> On Sun, 2018-08-19 at 20:21:47 UTC, Darren Stevens wrote:
->> Add a IRQ init routine for the Nemo board which inits and attatches
->> the i8259 found in the SB600, and a cascade routine to dispatch the
->> interrupts.
->> 
->> Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
->
-> Applied to powerpc next, thanks.
+> 
+> There are no [nvram] ioctls common to all architectures. So your example 
+> becomes,
+> 
+> static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+>                              unsigned long arg)
+> {
+>      if (ops->ioctl)
+>           return ops->ioctl(file, cmd, arg);
+>      return -ENOTTY;
+> }
+> 
+> And then my objection is the same: m68k and x86 now have to duplicate 
+> their common ops->ioctl() implementation.
+> 
 
-Thankyou very much! We can now build a X1000 kernel without an out-of-tree patch, which is good.
+Perhaps code duplication is inevitable. Either you punt the ioctl 
+implementation from the char misc driver (and duplicate that ioctl 
+implementation under arch/) or else you duplicate the char misc driver.
 
-> https://git.kernel.org/powerpc/c/51f4cc2047a4b7e9bf1b49acf06c11
+Maybe this dilemma explains the situation we have now* which is duplicated 
+drivers (drivers/char/nvram.c and drivers/char/generic_nvram.c). But this 
+explanation doesn't seem to offer any solution. Re-using either of the 
+existing drivers seems to be impossible.
 
-Sorry for not mentioning this earlier(holidays etc..), but this commit has my 4th patch, but the commit message from the 2nd patch. I don't know how, and it is not a major problem, but can we get it updated?
+Different interpretations of the NVRAM Kconfig symbol accross the tree are 
+not helping. And having separate Kconfig symbols (NVRAM and GENERIC_NVRAM) 
+for the two drivers doesn't help either. But maybe the NVRAM symbol can be 
+dropped from arch/powerpc and all of the powerpc drivers...
 
-Regards
-Darren
+* Actually, we presently have duplicated misc device drivers AND 
+duplicated ioctl implementations too, for good measure. See 
+arch/powerpc/kernel/nvram_64.c and drivers/char/generic_nvram.c.
 
+-- 
