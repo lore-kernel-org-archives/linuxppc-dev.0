@@ -2,72 +2,74 @@ Return-Path: <SRS0=1YdR=PK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94191C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:05:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE723C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:07:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB51C2063F
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:05:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 30AFA20656
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jan 2019 15:07:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB51C2063F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="A6LL0kNT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30AFA20656
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43VDqj3mMzzDqKw
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jan 2019 02:05:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43VDtt22fXzDqDP
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jan 2019 02:07:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe";
+	dkim=fail reason="signature verification failed" (1024-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.b="A6LL0kNT";
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
  envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="D58yz0fe"; 
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="A6LL0kNT"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43VDmq0nn5zDqHP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2019 02:02:34 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id c25so14703484pgb.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jan 2019 07:02:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43VDmw0LNGzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2019 02:02:39 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id b7so15287139pfi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jan 2019 07:02:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=from:to:cc:subject:date:message-id;
- bh=7nqJrGCWoJ/xXa+0vawBxQXEAZNobDoLmrZscFMVjZY=;
- b=D58yz0feqYH8p3MlPzWJ5O4HNTeru3ubYuxTOOx+nCouyEc2r0hnaS1C8V5BQ7pGQg
- a3HQOzV5zGyVLLq1ybFKsEZHnnowIgRh/ji0d86VV8K2PRO8bJhgI66Zlf450SQXQRtL
- HD4ZiT+jnqnf3zdmSp+5fds0S0Kri2KexHxCo=
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=Eat+r8u+VqdJ2gf8pt6fPlnDCgZGxQ4z1YhcFJx2Y5c=;
+ b=A6LL0kNTDc7uhzjcydJoLkqNPWL78vHJ5FoZjsqcv2yeaXsxbH2Ha9pQD2DDJA5sxG
+ qxEDwJQjV+Ot4GztgC7y0fOfNyBeaOsCFA1EOCB4jLdQ1xkY558yH5Y9wHTFc1xjBIWD
+ 3tH4tngZEqEy8CID71SG6KnvwuIBKOwl9Zg5g=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=7nqJrGCWoJ/xXa+0vawBxQXEAZNobDoLmrZscFMVjZY=;
- b=WMHiFzGvSMW5ckLWHhtw0aoWwwnegk3GCEwkeMVMQAjCPs3LS2RKhEpyyELMZfan6i
- Q8Y9XRl22pMGwDeIPs/oFMaGJUEn8uXf81WHgahLiyzd45rL7qnSjyVVtkoqxDK/pe/B
- SGTPprIuHb0kV5VrI447Nnt74FkkowW/g8hMhDdMxYb3+N0dBjrY8et/5pxElgEYx05A
- rZi4RN0WE4ZoB3IadDAvb1PlTBgUbpgjZdqaUREL4Y+RHW9rEOTNN/TwiUtR7OHrvZVR
- cFC3Fm43uVVSv0deu/ssMcqTVqe8w5UbBFJSay0P+Y5HLcFtrJWqKFGNrj5+o0bGk9yX
- XkAw==
-X-Gm-Message-State: AJcUukcRAHp9NW08Z2BaBqVWGdC7Gd0hO+HCfDH8pLIZRnq8UwGN9z2L
- xEYuLDcTEKa8OeUKwFMkew73sw==
-X-Google-Smtp-Source: ALg8bN4klezGJ0qRyQtepbOyLk5xRK2fQc0VFDcWdh/7XU4H1sqDnuGGKSe5lk39u0CFM5YuqhtlBA==
-X-Received: by 2002:a63:4456:: with SMTP id t22mr14012658pgk.0.1546441352610; 
- Wed, 02 Jan 2019 07:02:32 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=Eat+r8u+VqdJ2gf8pt6fPlnDCgZGxQ4z1YhcFJx2Y5c=;
+ b=oQEKkrlz1/ZLvhhma3XluqPLbwRWOdHv5JZRmjEnWNbjba5fA/9hlBpHqHbo+z2i6+
+ LJf9gYgKoUSi00QwhnqyQLkHy8ss1HOj0eIoB1xDJreR+98j7Irbis3VUOLnBST4tih7
+ WObc66nlyjtpZXMeVJEycc1HEXfKwZ8U4avl6/0fpwN1E+3LWAn256uZXS4XFjMnaMAO
+ eMV4f41f3OxVGNBghOmzLtKEZ967gFrzzD6+I7ADFRnga5J4mQIcJMN6YPeytdgN8e9q
+ fkJRVm38W54MS4B/UvotA4M/RdTKAk1udQA4IHi0FVIpAP0EyYpExFmT2aHNiCJXC6XR
+ VH2g==
+X-Gm-Message-State: AJcUukfHLgWmPqywM+dCEmyXAmqVcI0TcrBwaPn4nCfzlPD2tCoyWSVD
+ UrS0L/dPZ0YcOtk8IUsg8fwhlg==
+X-Google-Smtp-Source: ALg8bN6fJUR1lVZw7cXCobT9RCVFx5R5C1+/J2rUe/2qe8jqSkWPssMo3yYlyvGezfgi+gT2W5g7eg==
+X-Received: by 2002:a63:9a09:: with SMTP id o9mr13295542pge.94.1546441358109; 
+ Wed, 02 Jan 2019 07:02:38 -0800 (PST)
 Received: from qualcomm-HP-ZBook-14-G2.qualcomm.com
  (blr-bdr-fw-01_globalnat_allzones-outside.qualcomm.com. [103.229.18.19])
- by smtp.gmail.com with ESMTPSA id z14sm66180213pgv.47.2019.01.02.07.02.25
+ by smtp.gmail.com with ESMTPSA id z14sm66180213pgv.47.2019.01.02.07.02.32
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
- Wed, 02 Jan 2019 07:02:31 -0800 (PST)
+ Wed, 02 Jan 2019 07:02:37 -0800 (PST)
 From: Firoz Khan <firoz.khan@linaro.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -76,10 +78,12 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Philippe Ombredanne <pombredanne@nexb.com>,
  Thomas Gleixner <tglx@linutronix.de>,
  Kate Stewart <kstewart@linuxfoundation.org>
-Subject: [PATCH 0/2] powerpc: Unify the system call scripts
-Date: Wed,  2 Jan 2019 20:32:02 +0530
-Message-Id: <1546441324-19774-1-git-send-email-firoz.khan@linaro.org>
+Subject: [PATCH 1/2] powerpc: remove nargs from __SYSCALL
+Date: Wed,  2 Jan 2019 20:32:03 +0530
+Message-Id: <1546441324-19774-2-git-send-email-firoz.khan@linaro.org>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1546441324-19774-1-git-send-email-firoz.khan@linaro.org>
+References: <1546441324-19774-1-git-send-email-firoz.khan@linaro.org>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,32 +102,80 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-System call table generation support is provided for
-alpha, ia64, m68k, microblaze, mips, parisc, powerpc,
-sh, sparc and xtensa architectures. The implementat-
-ions are almost similar across all the above archte-
-ctures. In order to reduce the source code across all
-the above architectures, create common ".sh" files and
-keep it in the common directory, script/. This will 
-be a generic scripts which can use for all the above
-architectures.
+The __SYSCALL macro's arguments are system call number,
+system call entry name and number of arguments for the
+system call.
 
-This patch depends on;
- https://lore.kernel.org/lkml/1546439331-18646-1-git-send-email-firoz.khan@linaro.org/
+Argument- nargs in __SYSCALL(nr, entry, nargs) is neither
+calculated nor used anywhere. So it would be better to
+keep the implementaion as  __SYSCALL(nr, entry). This will
+unifies the implementation with some other architetures
+too.
 
-Firoz Khan (2):
-  powerpc: remove nargs from __SYSCALL
-  powerpc: generate uapi header and system call table files
+Signed-off-by: Firoz Khan <firoz.khan@linaro.org>
+---
+ arch/powerpc/kernel/syscalls/syscalltbl.sh  | 4 ++--
+ arch/powerpc/kernel/systbl.S                | 6 +++---
+ arch/powerpc/platforms/cell/spu_callbacks.c | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
- arch/powerpc/kernel/syscalls/Makefile       | 11 +++++++--
- arch/powerpc/kernel/syscalls/syscallhdr.sh  | 37 -----------------------------
- arch/powerpc/kernel/syscalls/syscalltbl.sh  | 36 ----------------------------
- arch/powerpc/kernel/systbl.S                |  6 ++---
- arch/powerpc/platforms/cell/spu_callbacks.c |  2 +-
- 5 files changed, 13 insertions(+), 79 deletions(-)
- delete mode 100644 arch/powerpc/kernel/syscalls/syscallhdr.sh
- delete mode 100644 arch/powerpc/kernel/syscalls/syscalltbl.sh
-
+diff --git a/arch/powerpc/kernel/syscalls/syscalltbl.sh b/arch/powerpc/kernel/syscalls/syscalltbl.sh
+index fd62049..f7393a7 100644
+--- a/arch/powerpc/kernel/syscalls/syscalltbl.sh
++++ b/arch/powerpc/kernel/syscalls/syscalltbl.sh
+@@ -13,10 +13,10 @@ emit() {
+ 	t_entry="$3"
+ 
+ 	while [ $t_nxt -lt $t_nr ]; do
+-		printf "__SYSCALL(%s,sys_ni_syscall, )\n" "${t_nxt}"
++		printf "__SYSCALL(%s,sys_ni_syscall)\n" "${t_nxt}"
+ 		t_nxt=$((t_nxt+1))
+ 	done
+-	printf "__SYSCALL(%s,%s, )\n" "${t_nxt}" "${t_entry}"
++	printf "__SYSCALL(%s,%s)\n" "${t_nxt}" "${t_entry}"
+ }
+ 
+ grep -E "^[0-9A-Fa-fXx]+[[:space:]]+${my_abis}" "$in" | sort -n | (
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+index 23265a2..02f28fa 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.S
+@@ -25,11 +25,11 @@
+ .globl sys_call_table
+ sys_call_table:
+ #ifdef CONFIG_PPC64
+-#define __SYSCALL(nr, entry, nargs) .8byte DOTSYM(entry)
++#define __SYSCALL(nr, entry)	.8byte DOTSYM(entry)
+ #include <asm/syscall_table_64.h>
+ #undef __SYSCALL
+ #else
+-#define __SYSCALL(nr, entry, nargs) .long entry
++#define __SYSCALL(nr, entry)	.long entry
+ #include <asm/syscall_table_32.h>
+ #undef __SYSCALL
+ #endif
+@@ -38,7 +38,7 @@ sys_call_table:
+ .globl compat_sys_call_table
+ compat_sys_call_table:
+ #define compat_sys_sigsuspend	sys_sigsuspend
+-#define __SYSCALL(nr, entry, nargs) .8byte DOTSYM(entry)
++#define __SYSCALL(nr, entry)	.8byte DOTSYM(entry)
+ #include <asm/syscall_table_c32.h>
+ #undef __SYSCALL
+ #endif
+diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
+index 125f2a5..b5f35cb 100644
+--- a/arch/powerpc/platforms/cell/spu_callbacks.c
++++ b/arch/powerpc/platforms/cell/spu_callbacks.c
+@@ -34,7 +34,7 @@
+  */
+ 
+ static void *spu_syscall_table[] = {
+-#define __SYSCALL(nr, entry, nargs) entry,
++#define __SYSCALL(nr, entry)	entry,
+ #include <asm/syscall_table_spu.h>
+ #undef __SYSCALL
+ };
 -- 
 1.9.1
 
