@@ -4,55 +4,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 872C3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:02:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACD8EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:03:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D6137218D3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:02:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6137218D3
+	by mail.kernel.org (Postfix) with ESMTPS id 2ED37218D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:03:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2ED37218D3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43WgK32hfjzDqNL
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 10:01:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43WgLw2c4bzDqNb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 10:03:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.120; helo=mga04.intel.com;
+ (client-ip=134.134.136.20; helo=mga02.intel.com;
  envelope-from=sean.j.christopherson@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43WTlQ6RRdzDqHf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 02:50:38 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43WVdZ2rTRzDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 03:30:41 +1100 (AEDT)
+X-Amp-Result: UNSCANNABLE
 X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 04 Jan 2019 07:50:36 -0800
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 04 Jan 2019 08:30:35 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,439,1539673200"; d="scan'208";a="103935317"
+X-IronPort-AV: E=Sophos;i="5.56,439,1539673200"; d="scan'208";a="124112789"
 Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com)
  ([10.54.74.154])
- by orsmga007.jf.intel.com with ESMTP; 04 Jan 2019 07:50:36 -0800
-Date: Fri, 4 Jan 2019 07:50:36 -0800
+ by orsmga001.jf.intel.com with ESMTP; 04 Jan 2019 08:30:35 -0800
+Date: Fri, 4 Jan 2019 08:30:35 -0800
 From: Sean Christopherson <sean.j.christopherson@intel.com>
 To: lantianyu1986@gmail.com
-Subject: Re: [PATCH 7/11] KVM: Remove redundant check in the
- kvm_get_dirty_log_protect()
-Message-ID: <20190104155036.GA11288@linux.intel.com>
+Subject: Re: [PATCH 6/11] KVM/MMU: Flush tlb with range list in sync_page()
+Message-ID: <20190104163035.GC11288@linux.intel.com>
 References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
- <20190104085405.40356-8-Tianyu.Lan@microsoft.com>
+ <20190104085405.40356-7-Tianyu.Lan@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190104085405.40356-8-Tianyu.Lan@microsoft.com>
+In-Reply-To: <20190104085405.40356-7-Tianyu.Lan@microsoft.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-Mailman-Approved-At: Sat, 05 Jan 2019 10:00:30 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -80,51 +78,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 04, 2019 at 04:54:01PM +0800, lantianyu1986@gmail.com wrote:
+On Fri, Jan 04, 2019 at 04:54:00PM +0800, lantianyu1986@gmail.com wrote:
 > From: Lan Tianyu <Tianyu.Lan@microsoft.com>
 > 
-> The dirty bits have already been checked in the previous check of
-> "dirty_bitmap" and mask must be non-zero value at this point.
+> This patch is to flush tlb via flush list function.
+
+More explanation of why this is beneficial would be nice.  Without the
+context of the overall series it's not immediately obvious what
+kvm_flush_remote_tlbs_with_list() does without a bit of digging.
+
 > 
 > Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
 > ---
->  virt/kvm/kvm_main.c | 8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
+>  arch/x86/kvm/paging_tmpl.h | 16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
 > 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index cf7cc0554094..e75dbb15fd09 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -1206,11 +1206,9 @@ int kvm_get_dirty_log_protect(struct kvm *kvm,
->  			mask = xchg(&dirty_bitmap[i], 0);
->  			dirty_bitmap_buffer[i] = mask;
+> diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+> index 833e8855bbc9..866ccdea762e 100644
+> --- a/arch/x86/kvm/paging_tmpl.h
+> +++ b/arch/x86/kvm/paging_tmpl.h
+> @@ -973,6 +973,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+>  	bool host_writable;
+>  	gpa_t first_pte_gpa;
+>  	int set_spte_ret = 0;
+> +	LIST_HEAD(flush_list);
 >  
-> -			if (mask) {
-> -				offset = i * BITS_PER_LONG;
-> -				kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
-> -									offset, mask);
-> -			}
-> +			offset = i * BITS_PER_LONG;
-> +			kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
-> +								offset, mask);
-
-Hmm, the check against mask was explicitly added by commit 58d2930f4ee3
-("KVM: Eliminate extra function calls in kvm_get_dirty_log_protect()").
-AFAIK KVM only *sets* bits in dirty_bitmap without holding slots_lock
-and/or mmu_lock, so I agree that checking mask is redundant, but it'd be
-nice to elaborate a bit more in the changelog.
-
-At the very least this needs a Fixes tag for the aforementioned commit.
-
-
-Tangentially related, does mmu_lock actually need to be held while we
-walk dirty_bitmap in kvm_{clear,get}_dirty_log_protect()?  The bitmap
-itself is protected by slots_lock (a lockdep assertion would be nice
-too), e.g. can we grab the lock iff dirty_bitmap[i] != 0?
-
->  		}
->  		spin_unlock(&kvm->mmu_lock);
+>  	/* direct kvm_mmu_page can not be unsync. */
+>  	BUG_ON(sp->role.direct);
+> @@ -980,6 +981,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+>  	first_pte_gpa = FNAME(get_level1_sp_gpa)(sp);
+>  
+>  	for (i = 0; i < PT64_ENT_PER_PAGE; i++) {
+> +		int tmp_spte_ret = 0;
+>  		unsigned pte_access;
+>  		pt_element_t gpte;
+>  		gpa_t pte_gpa;
+> @@ -1029,14 +1031,24 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+>  
+>  		host_writable = sp->spt[i] & SPTE_HOST_WRITEABLE;
+>  
+> -		set_spte_ret |= set_spte(vcpu, &sp->spt[i],
+> +		tmp_spte_ret = set_spte(vcpu, &sp->spt[i],
+>  					 pte_access, PT_PAGE_TABLE_LEVEL,
+>  					 gfn, spte_to_pfn(sp->spt[i]),
+>  					 true, false, host_writable);
+> +
+> +		if (kvm_available_flush_tlb_with_range()
+> +		    && (tmp_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH)) {
+> +			struct kvm_mmu_page *leaf_sp = page_header(sp->spt[i]
+> +					& PT64_BASE_ADDR_MASK);
+> +			list_add(&leaf_sp->flush_link, &flush_list);
+> +		}
+> +
+> +		set_spte_ret |= tmp_spte_ret;
+> +
 >  	}
+>  
+>  	if (set_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH)
+> -		kvm_flush_remote_tlbs(vcpu->kvm);
+> +		kvm_flush_remote_tlbs_with_list(vcpu->kvm, &flush_list);
+
+This is a bit confusing and potentially fragile.  It's not obvious that
+kvm_flush_remote_tlbs_with_list() is guaranteed to call
+kvm_flush_remote_tlbs() when kvm_available_flush_tlb_with_range() is
+false, and you're relying on the kvm_flush_remote_tlbs_with_list() call
+chain to never optimize away the empty list case.  Rechecking
+kvm_available_flush_tlb_with_range() isn't expensive.
+
+>  
+>  	return nr_present;
+>  }
 > -- 
 > 2.14.4
 > 
