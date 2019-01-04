@@ -2,60 +2,68 @@ Return-Path: <SRS0=Lr1k=PM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35CB6C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:05:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09597C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:06:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A95F1218D3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:04:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A95F1218D3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 83D00218D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 23:06:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83D00218D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43WgNT5xQZzDqBH
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 10:04:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43WgQB13bmzDqQQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 10:06:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.151; helo=mga17.intel.com;
- envelope-from=sean.j.christopherson@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.85.221.67; helo=mail-wr1-f67.google.com;
+ envelope-from=mcroce@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mail-wr1-f67.google.com (mail-wr1-f67.google.com
+ [209.85.221.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43WdCc2tWjzDqMG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 08:27:06 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
- by fmsmga107.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 04 Jan 2019 13:27:03 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,439,1539673200"; d="scan'208";a="307580654"
-Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com)
- ([10.54.74.154])
- by fmsmga006.fm.intel.com with ESMTP; 04 Jan 2019 13:27:02 -0800
-Date: Fri, 4 Jan 2019 13:27:02 -0800
-From: Sean Christopherson <sean.j.christopherson@intel.com>
-To: lantianyu1986@gmail.com
-Subject: Re: [PATCH 7/11] KVM: Remove redundant check in the
- kvm_get_dirty_log_protect()
-Message-ID: <20190104212702.GD11288@linux.intel.com>
-References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
- <20190104085405.40356-8-Tianyu.Lan@microsoft.com>
- <20190104155036.GA11288@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43WdKD1Q1zzDqMG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 08:31:56 +1100 (AEDT)
+Received: by mail-wr1-f67.google.com with SMTP id p4so37742756wrt.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2019 13:31:56 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=A+2/3qYF9bkEDS/AfEXpeoXxGiPbDco3v0PCIVHdPxg=;
+ b=meZU6oRwLjo2a9ZdXWp+xtGPupPpsyHpzWUPJMjPTWD/plWVNhbLb0zxL3K84h/Z3/
+ AXFX/WGNsVoBKpR7cnMmWkUqWLHo8Z7sX82W6M0fcJ43faBQ0ro5lKRsbHTcBFVWTsLq
+ t6zWVo/oW8F18HNyxg7vfA+OvJ4Rhu8I0/JjxbQEPrGWZrMDlkbxrKZXySyQjH514BcJ
+ zgWJiTVqv+fJt0bs/tD3xDob51ebmL0ywUzGgg4dJ210TsczxxZgg+df3KNkmm1Qq6dQ
+ HEZ5ahAscznYpTdxFtVpFwmcxbfFc8VQWPWJEDnI8jXONaJ00Cke97ZsS6HykZ8Ut5nQ
+ BmFw==
+X-Gm-Message-State: AJcUukfjl5ZBC2e8WzhW5Zt/ZzcbS1u2OnZVd1TguL6vcuK//l0bXjWj
+ zKm07zUPlpPxKIKeUJGNRvPv6g==
+X-Google-Smtp-Source: ALg8bN5PDPFwkApAQC4mDIN3+uryrHu2wsEqEcFELDbNztoIfqadTO71H3mv1ay8Mkm/LLIau1Wkww==
+X-Received: by 2002:adf:b649:: with SMTP id i9mr47322467wre.70.1546637514014; 
+ Fri, 04 Jan 2019 13:31:54 -0800 (PST)
+Received: from mcroce-redhat.redhat.com
+ (host177-2-dynamic.16-87-r.retail.telecomitalia.it. [87.16.2.177])
+ by smtp.gmail.com with ESMTPSA id d2sm38704415wrs.97.2019.01.04.13.31.52
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 04 Jan 2019 13:31:53 -0800 (PST)
+From: Matteo Croce <mcroce@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 02/12] powerpc/hvsi: fix typo
+Date: Fri,  4 Jan 2019 22:31:52 +0100
+Message-Id: <20190104213152.28602-1-mcroce@redhat.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190104155036.GA11288@linux.intel.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Mailman-Approved-At: Sat, 05 Jan 2019 10:00:30 +1100
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Sat, 05 Jan 2019 10:00:31 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,55 +75,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, catalin.marinas@arm.com,
- will.deacon@arm.com, christoffer.dall@arm.com, hpa@zytor.com,
- kys@microsoft.com, kvmarm@lists.cs.columbia.edu, x86@kernel.org,
- linux@armlinux.org.uk, michael.h.kelley@microsoft.com, mingo@redhat.com,
- jhogan@kernel.org, linux-mips@vger.kernel.org,
- Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- kvm-ppc@vger.kernel.org, bp@alien8.de, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, paul.burton@mips.com, pbonzini@redhat.com,
- vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 04, 2019 at 07:50:36AM -0800, Sean Christopherson wrote:
-> On Fri, Jan 04, 2019 at 04:54:01PM +0800, lantianyu1986@gmail.com wrote:
-> > From: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> > 
-> > The dirty bits have already been checked in the previous check of
-> > "dirty_bitmap" and mask must be non-zero value at this point.
-> > 
-> > Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> > ---
-> >  virt/kvm/kvm_main.c | 8 +++-----
-> >  1 file changed, 3 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> > index cf7cc0554094..e75dbb15fd09 100644
-> > --- a/virt/kvm/kvm_main.c
-> > +++ b/virt/kvm/kvm_main.c
-> > @@ -1206,11 +1206,9 @@ int kvm_get_dirty_log_protect(struct kvm *kvm,
-> >  			mask = xchg(&dirty_bitmap[i], 0);
-> >  			dirty_bitmap_buffer[i] = mask;
-> >  
-> > -			if (mask) {
-> > -				offset = i * BITS_PER_LONG;
-> > -				kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
-> > -									offset, mask);
-> > -			}
-> > +			offset = i * BITS_PER_LONG;
-> > +			kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
-> > +								offset, mask);
-> 
-> Hmm, the check against mask was explicitly added by commit 58d2930f4ee3
-> ("KVM: Eliminate extra function calls in kvm_get_dirty_log_protect()").
-> AFAIK KVM only *sets* bits in dirty_bitmap without holding slots_lock
-> and/or mmu_lock, so I agree that checking mask is redundant, but it'd be
-> nice to elaborate a bit more in the changelog.
-> 
-> At the very least this needs a Fixes tag for the aforementioned commit.
+Fix spelling mistake: "lenght" -> "length"
 
-Actually, this can be a straight revert of 58d2930f4ee3.
+Signed-off-by: Matteo Croce <mcroce@redhat.com>
+---
+ arch/powerpc/include/asm/hvsi.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/hvsi.h b/arch/powerpc/include/asm/hvsi.h
+index 3fdc54df63c9..464a7519ed64 100644
+--- a/arch/powerpc/include/asm/hvsi.h
++++ b/arch/powerpc/include/asm/hvsi.h
+@@ -64,7 +64,7 @@ struct hvsi_priv {
+ 	unsigned int	inbuf_len;	/* data in input buffer */
+ 	unsigned char	inbuf[HVSI_INBUF_SIZE];
+ 	unsigned int	inbuf_cur;	/* Cursor in input buffer */
+-	unsigned int	inbuf_pktlen;	/* packet lenght from cursor */
++	unsigned int	inbuf_pktlen;	/* packet length from cursor */
+ 	atomic_t	seqno;		/* packet sequence number */
+ 	unsigned int	opened:1;	/* driver opened */
+ 	unsigned int	established:1;	/* protocol established */
+-- 
+2.20.1
+
