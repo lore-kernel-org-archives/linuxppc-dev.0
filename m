@@ -2,44 +2,105 @@ Return-Path: <SRS0=Lr1k=PM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3655EC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 13:01:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 394B3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 15:19:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B24682070C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 13:01:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B24682070C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 7567D21871
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 15:19:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="DzQPMAzc"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7567D21871
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43WQ0f44MwzDqMW
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 00:01:54 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43WT2y3lDyzDqP0
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 02:19:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.8.47; helo=eur04-vi1-obe.outbound.protection.outlook.com;
+ envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="DzQPMAzc"; 
+ dkim-atps=neutral
+Received: from EUR04-VI1-obe.outbound.protection.outlook.com
+ (mail-eopbgr80047.outbound.protection.outlook.com [40.107.8.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43WPyM0q45zDqG8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jan 2019 23:59:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43WPyL5KDNz9rxp;
- Fri,  4 Jan 2019 23:59:54 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.21-2 tag
-Date: Sat, 05 Jan 2019 00:00:03 +1100
-Message-ID: <87ftu8y3vw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43WT1C4ydxzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 02:17:32 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=hYKzSWSYwcftzoeOdqVyiFQ+oEhqpAgfvnV/vI0jHWo=;
+ b=DzQPMAzcjZhxYejFEfSXxdIoD+AKxrc+LrN2i5OZ8TmQhGZTrRjwiychYuhdmrUNhfHwc8afe9sro04sV2xpSTXx7SLXYdA0Ej2UkaX6e5Jj+eABM2yiWkOu3XB+UP9XKFCqcWfSwao8TAXI1ZGFkDagTP1qM1TsPJzn//E8U5w=
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com (52.134.3.153) by
+ VI1PR0402MB3807.eurprd04.prod.outlook.com (52.134.16.28) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1471.20; Fri, 4 Jan 2019 15:17:25 +0000
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::9c4e:17cb:deff:1c18]) by VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::9c4e:17cb:deff:1c18%5]) with mapi id 15.20.1471.021; Fri, 4 Jan 2019
+ 15:17:25 +0000
+From: Horia Geanta <horia.geanta@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v3] crypto: talitos - fix ablkcipher for CONFIG_VMAP_STACK
+Thread-Topic: [PATCH v3] crypto: talitos - fix ablkcipher for CONFIG_VMAP_STACK
+Thread-Index: AQHUmQRIuiLMyqBCRUqtEmVYpQRHSQ==
+Date: Fri, 4 Jan 2019 15:17:25 +0000
+Message-ID: <VI1PR0402MB3485FC2A3758BCEAC05BF3A2988E0@VI1PR0402MB3485.eurprd04.prod.outlook.com>
+References: <ae7b64e9415874060977e32ed48b62f1f6148084.1545346337.git.christophe.leroy@c-s.fr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=horia.geanta@nxp.com; 
+x-originating-ip: [192.88.166.1]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; VI1PR0402MB3807;
+ 6:R50IUijGmnRo9yM4b4OfTaMiWekpyGwLixKsZ4ZfbHnkqaQUA3ZinJStzVXLhjpy1lXB85fAGLbHu1ayin016Uu49Sga4AOqU/FPpPLhklmpnqVsGomPzdx6dmV4rZySHGC2o1WmrfMzxBm7U3VO5fKYmuAGiZub7I1Gj5jU6NlRTslzpGtE16JdXZk0lbaazMwhfaatrw9rJ48SJMSykXw9e4GDbUHpCxHeNRafeRkYgR6OOHzmVXj914wadzkau1n2CQzpv6KLN8oDd0fS28adm6pjXcfijG72+gY1oLw32otP4rtiupiswdkFD+DMp3DbLTuFsjt6WiaWtH5mjSn7WfUXJfyJ50t5OtJ+LvAR+jvp+x3mbzWjkAGDMxOSCdd2p/me+s06RIBvJq3Q8oS4KR51Y7pj0mCfIr/JLinsz5lrRmwcwj/00lrc4gXqNWhw/5z1J2S+UK3fB4D4OA==;
+ 5:iG56CrVDfjnl6LfkMcHPwB8j0jtHxnteHwNFcS6RqIErMdEh/IAmhrPwflEpgWqLzHAfqNRmvFq9VDEZKTfh1lu8po+fzJhxmbPAIlryTNAz1X1eKFUVLxoEAK5KOyvkwUl9oO2gMrh84lb6yketii+MGvxXIP9g++u/BD/kyVA=;
+ 7:kiM343ROrXlD9ceOZhyZA0hKgHscDVkuhccoyOtjGPSFZlncvNYuVMP4B39P7kOiAeDNB8e851SeVxu2QfH5QX5ops3C0/Qgl8o7xUxYIeuI7VY/H5js1yDCg/S/9dfBwRwd83sKb4yTBCRWyVpl5g==
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: 765904e9-2f23-4f0d-f2fd-08d67257bbe5
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR0402MB3807; 
+x-ms-traffictypediagnostic: VI1PR0402MB3807:
+x-microsoft-antispam-prvs: <VI1PR0402MB3807B0E2FE738C038E96959B988E0@VI1PR0402MB3807.eurprd04.prod.outlook.com>
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(3230021)(908002)(999002)(5005026)(6040522)(8220060)(2401047)(8121501046)(3002001)(93006095)(93001095)(3231475)(944501520)(52105112)(10201501046)(6055026)(6041310)(20161123562045)(20161123558120)(20161123564045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(20161123560045)(201708071742011)(7699051)(76991095);
+ SRVR:VI1PR0402MB3807; BCL:0; PCL:0; RULEID:; SRVR:VI1PR0402MB3807; 
+x-forefront-prvs: 0907F58A24
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(376002)(39860400002)(136003)(366004)(396003)(189003)(199004)(33656002)(229853002)(478600001)(68736007)(3846002)(6116002)(6436002)(14454004)(305945005)(2906002)(9686003)(55016002)(53936002)(81156014)(81166006)(8936002)(7736002)(8676002)(106356001)(25786009)(4326008)(486006)(476003)(6246003)(105586002)(26005)(186003)(97736004)(71200400001)(71190400001)(446003)(74316002)(5660300001)(110136005)(316002)(54906003)(76176011)(575784001)(6506007)(86362001)(44832011)(99286004)(14444005)(53546011)(102836004)(256004)(7696005)(66066001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB3807;
+ H:VI1PR0402MB3485.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 8CwyPvZXRzvWTuF0eKxn7WZtD9UOlwjz2M/oLk8/S3lCoxSBfxSGACeJfRGO1BzAx1rBJyfzKs/+2IHAALJNC3OzwkqefLReec4D8lIrHb3SzsrV3abBQJTOIEbnlaWBNqmlbcUszKudAkdIyN80z6I4HOSRiIaIam2glZk151KA8hyXN/aI0mQdSv4ANF83wL03CuKQeHEI4JnF4bmXvJnrTKe8MQCuHrkZZwjbMy9ZpuM14smT5T20GToVL+70Ihaq081SLykud1vnkZM67PDT9tOv98MQNiTrRGer+RbUF6ZknNGU28SXgDtqj/yI
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 765904e9-2f23-4f0d-f2fd-08d67257bbe5
+X-MS-Exchange-CrossTenant-originalarrivaltime: 04 Jan 2019 15:17:25.8783 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3807
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,79 +112,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: diana.craciun@nxp.com, malat@debian.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, chunkeey@gmail.com
+Cc: "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Hi Linus,
-
-Please pull some powerpc fixes for 4.21:
-
-The following changes since commit 96d4f267e40f9509e8a66e2b39e8b95655617693:
-
-  Remove 'type' argument from access_ok() function (2019-01-03 18:57:57 -0800)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.21-2
-
-for you to fetch changes up to 074400a7be61250d9f0ccec07d5c35ffec4d8d22:
-
-  powerpc: Drop use of 'type' from access_ok() (2019-01-04 23:07:59 +1100)
-
-- ------------------------------------------------------------------
-powerpc fixes for 4.21 #2
-
-A fix for the recent access_ok() change, which broke the build. We recently
-added a use of type in order to squash a warning elsewhere about type being
-unused.
-
-A handful of other minor build fixes, and one defconfig update.
-
-Thanks to:
-  Christian Lamparter, Christophe Leroy, Diana Craciun, Mathieu Malaterre.
-
-- ------------------------------------------------------------------
-Christian Lamparter (1):
-      powerpc/4xx/ocm: Fix compilation error due to PAGE_KERNEL usage
-
-Diana Craciun (1):
-      powerpc/fsl: Fixed warning: orphan section `__btb_flush_fixup'
-
-Mathieu Malaterre (1):
-      powerpc: Drop use of 'type' from access_ok()
-
-Michael Ellerman (4):
-      powerpc/4xx/ocm: Fix phys_addr_t printf warnings
-      powerpc/configs: Add PPC4xx_OCM to ppc40x_defconfig
-      KVM: PPC: Book3S HV: radix: Fix uninitialized var build error
-      Merge branch 'master' into fixes
-
-
- arch/powerpc/configs/ppc40x_defconfig  |  1 +
- arch/powerpc/include/asm/uaccess.h     |  2 +-
- arch/powerpc/kernel/head_booke.h       | 18 ++++++++++++------
- arch/powerpc/kvm/book3s_64_mmu_radix.c |  2 +-
- arch/powerpc/platforms/4xx/ocm.c       | 10 +++++-----
- 5 files changed, 20 insertions(+), 13 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBAgAGBQJcL1eOAAoJEFHr6jzI4aWA86wP/3V5zlUNtsyXpcCx60PNIMya
-6z6oWVKoM92nMIyfWuoxKBEbylSyixFSxOsKoiVJDyigW5WWNjsPQ1KOUD2OVn0V
-OQhj2aDXwUtxdlQ5dK0H9lodsUKUEw1/saqcgi2OS8iDDa8kJIEemDe29Omf5DyE
-U2RKl++nhAfK8BLfMRCAIqL+TVZq9Zy+zNwbVtsmj7lAlw+Csb4KV3YvlJ7b6pjD
-Ntm6O3X8sy7GtJdMpeBDOMTbWuvIQpefVH135jS1IjJZbrafZK6a4gQ9cs5mx68d
-+/nyzkcjy83eRGkv3QY5Y+vEa0wkFdBb6Nf0MH63xCPVYVjom6pRUGL+RPldi2GO
-bmieDXavlicX9y+BCQSKASTzNo2uR2heF31aCnr6bsOSeT8ZNGbIwgHuGGqrzN+8
-qLQb00hA0uKlbNgPpNoyYO5K3khntR348HfH0Uwlm3Nttvn1TEh87c9L19FcdlMw
-SlA6kpJ6328FkEv5FUPu7v7764dPgOQNImPKnsYdhbUxhHnDMx33LzsUEQQcYWpM
-3nsKQMW1yqMH2BG8u9LQtZErFanX+RNm81OsP38F8nvGe1RJkoq7R7MSooZ9tzs2
-Ymf8W+KNofKmXVAPh7AyKQzpy0a/sEqAXmtTPBf7bsdwU5PQB0+LMf0yzyZpEp2U
-3eFcseqDoO32ScDZQUYt
-=Y+yv
------END PGP SIGNATURE-----
+On 12/21/2018 10:07 AM, Christophe Leroy wrote:=0A=
+[snip]=0A=
+> IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stac=
+k=0A=
+> cannot be DMA mapped anymore.=0A=
+> This looks better, thanks.=0A=
+=0A=
+> This patch copies the IV into the extended descriptor when iv is not=0A=
+> a valid linear address.=0A=
+> =0A=
+Though I am not sure the checks in place are enough.=0A=
+=0A=
+> Fixes: 4de9d0b547b9 ("crypto: talitos - Add ablkcipher algorithms")=0A=
+> Cc: stable@vger.kernel.org=0A=
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>=0A=
+> ---=0A=
+>  v3: Using struct edesc buffer.=0A=
+> =0A=
+>  v2: Using per-request context.=0A=
+[snip]=0A=
+> +	if (ivsize && !virt_addr_valid(iv))=0A=
+> +		alloc_len +=3D ivsize;=0A=
+[snip]=0A=
+>  =0A=
+> +	if (ivsize && !virt_addr_valid(iv))=0A=
+A more precise condition would be (!is_vmalloc_addr || is_vmalloc_addr(iv))=
+=0A=
+=0A=
+It matches the checks in debug_dma_map_single() helper, though I am not sur=
+e=0A=
+they are enough to rule out all exceptions of DMA API.=0A=
+=0A=
+> +		iv =3D memcpy(((u8 *)edesc) + alloc_len - ivsize, iv, ivsize);=0A=
+> +=0A=
+>  	edesc->src_nents =3D src_nents;=0A=
+>  	edesc->dst_nents =3D dst_nents;=0A=
+> -	edesc->iv_dma =3D iv_dma;=0A=
+> +	if (ivsize)=0A=
+> +		edesc->iv_dma =3D dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);=0A=
+> +	else=0A=
+> +		edesc->iv_dma =3D 0;=0A=
+> +=0A=
