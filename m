@@ -7,75 +7,75 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47D8AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 09:06:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EA3FC43612
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 09:07:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B4AE62184B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 09:06:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1703E2184B
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 09:07:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JSNQv0ht"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B4AE62184B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="bERgKUKu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1703E2184B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43WJmg5Y2WzDqDM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 20:06:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43WJpK24ZRzDqRY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 20:07:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="JSNQv0ht"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="bERgKUKu"; 
  dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43WJWt4MGDzDqGC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jan 2019 19:55:06 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id t13so17145164ply.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2019 00:55:06 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43WJX21P22zDqGC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jan 2019 19:55:14 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id h3so18009454pfg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2019 00:55:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=VAVkaVsyvHGb3944LCTx3RYQpKB8eIkyndjj2Ikvaks=;
- b=JSNQv0hto48d+cy9OmeC8+vpqtt4/8EI9u9HIqEmmUbj6f2TxB9IIfx/sXfdswigSu
- EfVz+80dJ8PkWlx+96miP5z94XhYM+ykxX3Fmq4clNe8KPorrdKxjWxhLblkovBxKOoE
- xNYBVIAgaXQScDW+EAKSKC9Vr5FCyiuV4d9SXDVbYKPiXlyZHItxqT9jBQmvUlY+lIX6
- QQxwdeg3r8Jc/hvz7dkxYLqoh+osKRZY5AyLcBIZ0cLUIsntPEjJnC3IB6sc65dcu4X5
- 0h2aJEJSkwZD10HfzE989QUcENXgc2JHiKAXwoElzz9FnMX6UUYrCm3geYrKeF6nQ2K2
- q/cQ==
+ bh=3CQvyPlxafLLMYYmnidZXL6MopPPAyOd1R4OKDK3Tg8=;
+ b=bERgKUKu51PAzYg3Rrzv52DBjdnCcfNkUuGl0QEWhiWj6W0MmP1KserqG3gw+V0uOz
+ 717BaRsb17KQy9DlLpRwN73NDF+JlNIwIa6Vtid3Wn7/unsJsMpEWzLVhDoWsO+jPqBK
+ CXzhbDQK4O0iY5rU0gimk9NZuMJOLue/IM7psgZOst2rkKV6QjkUQ+xy9R5CHlRtE0yf
+ 6eYDVGquJEt/gVb0OBEtL7uwYx/NIUXuq7ZJAts2E7VLsvPLZYf9o1OEXSsCvqx1R+Fm
+ FOz/j9UPfBj3duCoLjjODwHV5/2+j1i4jVT/zc46j+B8Sqj4H5cNFpIum3Jq9ABDTfbu
+ UfaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=VAVkaVsyvHGb3944LCTx3RYQpKB8eIkyndjj2Ikvaks=;
- b=Ejc4S0JfmUPYSsrNRuaCRaOMsjw4HPaj4V8BMLa9evahWmBibywNwdbsEdsz9N+yiN
- VevewN4BhJ39Eq5u1LeWaQ81Ls3qZCawdI8SJefQJZnGOlwjqIvo8UaxigelnRV2NW3R
- +JHWNzqDEgKpnHN22NnWPGwQtcayP6OOrg5MbD3PBV0sVtLYzXNy+p34TwKxYBH7OxRE
- +DctRHVmmoDH4upTuZtMyjLIJBbfBuP72kBKFEYb8NywcxJondi88c3KI7wmYE3GrBNu
- MzmS+oKNTnJHqFETamClN6DtnU4RkeTzFiL55bi6KwY4R1sbYEoxOTv/tGKPAQdNS1dZ
- Ki+w==
-X-Gm-Message-State: AJcUukeG7kYnHN79Y3jyO73JeudqMgH3+2eib2uEyGc2yoQtgxtWKBkB
- A9JYRYY/R9Rl6wljJMiD3EY=
-X-Google-Smtp-Source: ALg8bN4OjtFEk71VDHPjiuzCk2TCpCOEwCai/Wt7CBSpw62HsAigCPIHdjQRvUBI364td6kTt3nr6A==
-X-Received: by 2002:a17:902:7882:: with SMTP id
- q2mr51489397pll.305.1546592104889; 
- Fri, 04 Jan 2019 00:55:04 -0800 (PST)
+ bh=3CQvyPlxafLLMYYmnidZXL6MopPPAyOd1R4OKDK3Tg8=;
+ b=Acs1KrcQskbDs6hONFcDMVFPOk2tqCOsN7KcN/Bae8g34VMvNsr+GGsv27kGdxO1gk
+ 1tWWYjhc7c6cAKPlSrEDteZP/eboRCaV5OKLcYaRCNueAr2QbhOb0waiSFPqHAwdtq7/
+ nJt2H9fXCnm0PFQhHkrGfiI0PSyNDxlWabRHZwR1zPL9XlhX7bQqJ9nYbkcGydZ/XHQG
+ MWicsgwKDjZNZ0A6Sd/xPsQ6yftX38Ggk7IjrHdhEGI/1r8yyPrdradhoSOhK3to5t/3
+ Ti73v2985e6phsYr7hI4/ibXrafPUB4F5klw5A2P5oaENYwJ1QiHjd1LmG40s9/zNdlv
+ ugPw==
+X-Gm-Message-State: AJcUukcXiBt9U4CfexXuxnSFUvde6mwGjw9qp7h698QNle0AUl8Z/64m
+ Kqh81/GcV7o1uFslyXwpvSA=
+X-Google-Smtp-Source: ALg8bN52JNWJUY4wd3KWz56nhScCreos1hBMy4NTN0TRzwOHpvOyEaRyBz6+s+XGkePV/idoh2nHEQ==
+X-Received: by 2002:a63:557:: with SMTP id 84mr19472589pgf.411.1546592112418; 
+ Fri, 04 Jan 2019 00:55:12 -0800 (PST)
 Received: from localhost.corp.microsoft.com
  ([2404:f801:9000:1a:d9bd:62c6:740b:9fc4])
- by smtp.googlemail.com with ESMTPSA id i21sm99772145pgm.17.2019.01.04.00.54.57
+ by smtp.googlemail.com with ESMTPSA id i21sm99772145pgm.17.2019.01.04.00.55.05
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 04 Jan 2019 00:55:04 -0800 (PST)
+ Fri, 04 Jan 2019 00:55:11 -0800 (PST)
 From: lantianyu1986@gmail.com
 X-Google-Original-From: Tianyu.Lan@microsoft.com
 To: 
-Subject: [PATCH 6/11] KVM/MMU: Flush tlb with range list in sync_page()
-Date: Fri,  4 Jan 2019 16:54:00 +0800
-Message-Id: <20190104085405.40356-7-Tianyu.Lan@microsoft.com>
+Subject: [PATCH 7/11] KVM: Remove redundant check in the
+ kvm_get_dirty_log_protect()
+Date: Fri,  4 Jan 2019 16:54:01 +0800
+Message-Id: <20190104085405.40356-8-Tianyu.Lan@microsoft.com>
 X-Mailer: git-send-email 2.14.4
 In-Reply-To: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
 References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
@@ -106,60 +106,33 @@ Sender: "Linuxppc-dev"
 
 From: Lan Tianyu <Tianyu.Lan@microsoft.com>
 
-This patch is to flush tlb via flush list function.
+The dirty bits have already been checked in the previous check of
+"dirty_bitmap" and mask must be non-zero value at this point.
 
 Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
 ---
- arch/x86/kvm/paging_tmpl.h | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ virt/kvm/kvm_main.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
-index 833e8855bbc9..866ccdea762e 100644
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -973,6 +973,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
- 	bool host_writable;
- 	gpa_t first_pte_gpa;
- 	int set_spte_ret = 0;
-+	LIST_HEAD(flush_list);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index cf7cc0554094..e75dbb15fd09 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1206,11 +1206,9 @@ int kvm_get_dirty_log_protect(struct kvm *kvm,
+ 			mask = xchg(&dirty_bitmap[i], 0);
+ 			dirty_bitmap_buffer[i] = mask;
  
- 	/* direct kvm_mmu_page can not be unsync. */
- 	BUG_ON(sp->role.direct);
-@@ -980,6 +981,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
- 	first_pte_gpa = FNAME(get_level1_sp_gpa)(sp);
- 
- 	for (i = 0; i < PT64_ENT_PER_PAGE; i++) {
-+		int tmp_spte_ret = 0;
- 		unsigned pte_access;
- 		pt_element_t gpte;
- 		gpa_t pte_gpa;
-@@ -1029,14 +1031,24 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
- 
- 		host_writable = sp->spt[i] & SPTE_HOST_WRITEABLE;
- 
--		set_spte_ret |= set_spte(vcpu, &sp->spt[i],
-+		tmp_spte_ret = set_spte(vcpu, &sp->spt[i],
- 					 pte_access, PT_PAGE_TABLE_LEVEL,
- 					 gfn, spte_to_pfn(sp->spt[i]),
- 					 true, false, host_writable);
-+
-+		if (kvm_available_flush_tlb_with_range()
-+		    && (tmp_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH)) {
-+			struct kvm_mmu_page *leaf_sp = page_header(sp->spt[i]
-+					& PT64_BASE_ADDR_MASK);
-+			list_add(&leaf_sp->flush_link, &flush_list);
-+		}
-+
-+		set_spte_ret |= tmp_spte_ret;
-+
+-			if (mask) {
+-				offset = i * BITS_PER_LONG;
+-				kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
+-									offset, mask);
+-			}
++			offset = i * BITS_PER_LONG;
++			kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
++								offset, mask);
+ 		}
+ 		spin_unlock(&kvm->mmu_lock);
  	}
- 
- 	if (set_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH)
--		kvm_flush_remote_tlbs(vcpu->kvm);
-+		kvm_flush_remote_tlbs_with_list(vcpu->kvm, &flush_list);
- 
- 	return nr_present;
- }
 -- 
 2.14.4
 
