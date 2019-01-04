@@ -2,87 +2,68 @@ Return-Path: <SRS0=Lr1k=PM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E42AFC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 17:56:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23D85C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 17:58:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3587521872
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 17:56:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9477E218D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Jan 2019 17:58:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="IodDgUPX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3587521872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="eKgNahiL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9477E218D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43WXX80qlZzDqN3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 04:56:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43WXZf4qpSzDqNT
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 04:58:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+31c976e5a77288f83966+5612+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::241; helo=mail-lj1-x241.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="IodDgUPX"; dkim-atps=neutral
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
- [IPv6:2a00:1450:4864:20::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43WXVF2XgqzDqM1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 04:54:25 +1100 (AEDT)
-Received: by mail-lj1-x241.google.com with SMTP id l15-v6so33071192lja.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2019 09:54:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=XsVK1WRl7sYn7ta04iAyntHqwbf6VtSYGr1Ly5n6GNU=;
- b=IodDgUPX5dda1krHX6/lVuNBp/uDtyBokKCNh+lxSTZvP6zPoqyGOLxgUYF1UhskPO
- 9G9g2vktSyeimEDKVHNnwNg3c7KauAA+po+wxydEQyDwOMhP6DuSrF+Rxj6Ag/q3fvKK
- OwW7Pun5DbkAIuHthvbbURLNLdpWlZiT1ctn8=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=XsVK1WRl7sYn7ta04iAyntHqwbf6VtSYGr1Ly5n6GNU=;
- b=W2+mxHNV0VYtOXo9xcZFEBJWOE/MnM6iGS5OS7akcvnyKKeQmmg3nlvEkYa4aI8z1K
- Q3ZAAdFfJZ2eE8uNHPxavmK746phBXKjikx9im2RgHK3ggogEJZyk+tLfXFE+ZKFf9Hu
- H1Bzy8MCmz11fTY6nV5c9thQJBNc/6IrXiJAEJHDS7It3f2bDlVXn/p+fbCLZCGaESP8
- 9cxeTlF/ykP8XFBDoUrqELy8qc6Ytu1d2r43yJAan/VbTyzYa+UgOGDhwiiTLgyRzxLJ
- sB+SUXjqkkZR83jUKt3sFI7gB8wdWkFRYgU8c6zuOAUINNYQ5ObuSiw+VaC5lQDvAad1
- 1p7w==
-X-Gm-Message-State: AA+aEWZzey8J5yUrG8w+80EWn+44nc5ZlGj7YJSPYTIDdoh4p2/F6BFO
- JgfD+VCY5zSrKN08qca8yTqhsLR1TCQ=
-X-Google-Smtp-Source: ALg8bN5RFqZpA/wlJBHP1U9vfBOHFzW052P5xvetLGS7okPiD95c3WDj92fYI1u3d/B3yaomLRS5yw==
-X-Received: by 2002:a2e:9783:: with SMTP id
- y3-v6mr28693669lji.167.1546624461715; 
- Fri, 04 Jan 2019 09:54:21 -0800 (PST)
-Received: from mail-lf1-f41.google.com (mail-lf1-f41.google.com.
- [209.85.167.41])
- by smtp.gmail.com with ESMTPSA id p67sm11323474lfe.14.2019.01.04.09.54.20
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 04 Jan 2019 09:54:21 -0800 (PST)
-Received: by mail-lf1-f41.google.com with SMTP id a16so25988938lfg.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2019 09:54:20 -0800 (PST)
-X-Received: by 2002:a19:4287:: with SMTP id
- p129mr27660722lfa.135.1546624460449; 
- Fri, 04 Jan 2019 09:54:20 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43WXXt40V8zDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2019 04:56:45 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=cFhh/SpczrtPJ7xHqkNJnPu29+v6tO2n6e+8LLbs2lM=; b=eKgNahiLRd5ko5k90O/tS/8r6
+ 19xDAFf87DSyh4c6+8kz+fh8Dlsy7JK1oX4TgfSsHLCSwXAGEc/2UHm3kMLOIzSdsXmpRM8DVz7di
+ yHTYM+hCWOmr2qj+yEVs5PVDX0vteRPunVSrc+Irq0zj6J4BRZwMcR2ynNSf5rEtowUDyVrlV0ECk
+ 66CybBYhPLnlGKQEHl5M0+U4nlHpdwNd08VC2qrxT+0u/9yih7uExV+1ETQvSm/IUg0PEvw9FD20e
+ xc8OKN3zdrLIZXNw1MB9r7ZlMfPVtjV9BUh/LMfRRcWomOelDDlovJi53S3zY5oP6PcQR9903N9DR
+ cj+RmJj8A==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gfTi3-0002y7-Sj; Fri, 04 Jan 2019 17:56:39 +0000
+Date: Fri, 4 Jan 2019 09:56:39 -0800
+From: Christoph Hellwig <hch@infradead.org>
+To: Finn Thain <fthain@telegraphics.com.au>
+Subject: Re: [PATCH v8 05/25] char/nvram: Adopt arch_nvram_ops
+Message-ID: <20190104175639.GA6347@infradead.org>
+References: <cover.1545784679.git.fthain@telegraphics.com.au>
+ <66ed571883695314ace53080df8f6dfb132a8b4d.1545784679.git.fthain@telegraphics.com.au>
+ <20190103080229.GB11147@infradead.org>
+ <alpine.LNX.2.21.1901040844380.658@nippy.intranet>
 MIME-Version: 1.0
-References: <20190104092758.4378-1-malat@debian.org>
-In-Reply-To: <20190104092758.4378-1-malat@debian.org>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 4 Jan 2019 09:54:04 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wi0zJk-1manLvbFCuCduYj0JF6EWWjs_9t8M+MVMSuMTQ@mail.gmail.com>
-Message-ID: <CAHk-=wi0zJk-1manLvbFCuCduYj0JF6EWWjs_9t8M+MVMSuMTQ@mail.gmail.com>
-Subject: Re: [PATCH] Remove 'type' argument from access_ok() function
-To: Mathieu Malaterre <malat@debian.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.21.1901040844380.658@nippy.intranet>
+User-Agent: Mutt/1.9.2 (2017-12-15)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,23 +75,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Christoph Hellwig <hch@infradead.org>, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 4, 2019 at 1:28 AM Mathieu Malaterre <malat@debian.org> wrote:
->
-> Revert commit 05a4ab823983 ("powerpc/uaccess: fix warning/error with
-> access_ok()") to fix the following compilation error:
+On Fri, Jan 04, 2019 at 09:08:13AM +1100, Finn Thain wrote:
+> On Thu, 3 Jan 2019, Christoph Hellwig wrote:
+> 
+> > > +
+> > > +const struct nvram_ops arch_nvram_ops = {
+> > > +	.read_byte      = nvram_read_byte,
+> > > +	.write_byte     = nvram_write_byte,
+> > > +	.get_size       = nvram_get_size,
+> > > +};
+> > > +EXPORT_SYMBOL(arch_nvram_ops);
+> > 
+> > I think something this internal should always be EXPORT_SYMBOL_GPL.
+> > 
+> 
+> By "internal" do you mean "not involving interests outside of the Linux 
+> Foundation"? TBH, I don't know who's affected.
 
-Gaah. I even *looked* at the powerpc use of 'type', but then when I
-was actually going through my manual editing I forgot all about it.
+Linux Foundation doesn't matter.
 
-So this wasn't a case of "the powerpc change was recent and clashed".
-This was purely a case of "Linus screwed up".
-
-Sorry.
-
-              Linus
+But as far as I can see you export the struct from arch code
+for nvram.ko to use them and no one else, which is clearly internal.
