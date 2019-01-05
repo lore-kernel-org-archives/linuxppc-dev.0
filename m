@@ -2,89 +2,87 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EE7AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 17:53:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71737C43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 19:52:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 45147222BC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 17:53:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9FFD720675
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 19:52:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="ITdm6f4f"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45147222BC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="VmxmtenY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FFD720675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43X8R64sRGzDqFt
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jan 2019 04:53:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43XC3x2S43zDqHV
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jan 2019 06:52:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="ITdm6f4f"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="VmxmtenY"; dkim-atps=neutral
+Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com
+ [IPv6:2a00:1450:4864:20::135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43X8ND47LCzDqDZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2019 04:51:20 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id z10so18849824pgp.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Jan 2019 09:51:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=bmFtkiMzY0SjcGgWZDnXoB7lrhs+dKojhnWxuZ4Ulkg=;
- b=ITdm6f4fW8QautoLRLSG1phMTMj2iuQLmLxDF+T0kN82TxeVV1j00miE0Oo3PslMCO
- bQ6TrG8UQ73pjOcXA73iW8aR45Cz3HAKFz1BtvLEMpdNyFCiN+B0jqgWcVENVyqR4KFO
- L5ovF35IgXPwJPIKg7TAaWZqEjbmpgkemK+oaQeTp+BUBv639FtVLUCnYThlsw7U4klp
- jBo9vtXrHIXYU7FZLG3b2aIODlSkG9va85ecBLN7eFKCWvCc3DOsKnE+og9x/fEarDIu
- XQEFOyMEksq4jWcLbKWF9i2JUj8D+iy3tHD47fDvNw0diAQaD4T/Ej+zYg/cHJeDKJ4J
- fFkA==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43XC234h3yzDqBS
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2019 06:50:50 +1100 (AEDT)
+Received: by mail-lf1-x135.google.com with SMTP id i26so27631903lfc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Jan 2019 11:50:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=3gtEwaNEjdCPGtTV4trcD0HAWT7H2A0cIc7LlFZEwkA=;
+ b=VmxmtenY0hqZ43PiYoxT6Af0o//0e6oNsWTVsnZU9p5aoauCFoF/yN8ifsNeHxQFDf
+ 3JRiLxvtKiG1Q7ByKKjj5xV4EV4St/RySjEaDLuE4qmmD/u8r1fP7gDRwWKCQC3AbkeK
+ 4neRr9b86Gpjk5I1bvrQ8wrtQRQEVRp3AmlXM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=bmFtkiMzY0SjcGgWZDnXoB7lrhs+dKojhnWxuZ4Ulkg=;
- b=W4aAYT3XIcSTzMFJRZI6h6Q1oce9zuMB6VEIU9zKdY8VNLV9VzBVqxdV6iDr3Tx/0a
- bDMdez5bPRYSDa3kbmPEf56SYXAblfRXfluJH3Ik4legDIG/jKwtTKOfK7W+DX45AAPW
- vAJeBnESLwG48ap2Om11zDo85BnlQ5Ck4sPW52OqVXWA+0mK9rpsGEU8vfQNu+yQZfCR
- hIU1cnv6tmHEYBMZIZTPyWBdOA69MGoJYfxOYRKQ8APXrVjcPt795TLWOsoJR//JOv0l
- qU5OQcGIsdnEE1nv+KtOnh7Sghc2koz3ILkJIsI53+NtDz7+nEzj0RecCU8zgg+RZG6a
- 5zFw==
-X-Gm-Message-State: AJcUukemQfEyRUNAMtk3soB8yEM5LfKWk+tt+PoKa3PKqqZ0r6/AkgWb
- HC8e5Lp/7JWOHCw7yRbBNN2Qt8PW7UM=
-X-Google-Smtp-Source: ALg8bN5CWdV0l04sM6sKg6mHb4H5KfjJ+9BVYkv5JG/kj/c+dIa75hYcEg6kHnIsIdFDi+ZgYRVb9g==
-X-Received: by 2002:a63:1d59:: with SMTP id d25mr24839142pgm.180.1546710678704; 
- Sat, 05 Jan 2019 09:51:18 -0800 (PST)
-Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
- by smtp.gmail.com with ESMTPSA id
- y71sm119832456pfi.123.2019.01.05.09.51.17
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sat, 05 Jan 2019 09:51:17 -0800 (PST)
-Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
- (envelope-from <jgg@ziepe.ca>)
- id 1gfq6P-00045X-0F; Sat, 05 Jan 2019 10:51:17 -0700
-Date: Sat, 5 Jan 2019 10:51:16 -0700
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
-Message-ID: <20190105175116.GB14238@ziepe.ca>
-References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
- <20181206064509.GM15544@mtr-leonro.mtl.com>
- <20190104034401.GA2801@umbus.fritz.box>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=3gtEwaNEjdCPGtTV4trcD0HAWT7H2A0cIc7LlFZEwkA=;
+ b=FCI73U+0+WqlsfnV/7ND+gpeJvzoz4B4G6jMKPo1DXFOWcOvUYE8DT2bHXRj3DGO6u
+ mT0fU35Hes4yTP0P5Yqdc4WaHRW5GIuTwBvwU1e0yzHW+InRXGJicC8EZ2XZYxigussg
+ ZAXB73tTnQfHnAVtpLB6mYK7hKQfs8WrjJpZ0ffi/4be9Ocx0kVg6Z3nvkl1lN7O2srm
+ RXNbchIOmMrdgcP7dnmRTyCEPajA1Z2ABTSxhJWvYov8WgzQxniyS/5gEvjM+r1Yrzcs
+ S0prPEt2+9CC2quMCsKRMAJPuEXSysTVJ/QIO6PKfvV9e9jLmpOg9if+amyBlqf+oM++
+ 9K/A==
+X-Gm-Message-State: AA+aEWZrliegrk6paNkomCM12EgVUQmuH+Js2Sp/qbWIbnoNMthubJfl
+ u9+VU1U04VovJi0CbjF+FStXw64gCC8=
+X-Google-Smtp-Source: AFSGD/Vn6Eg4xmfFXHtRgDul5O2ZovFXrpez9mnrGLxhlsLe6/8jmN3DxT1YjvaA2d1fj2z5rf+7Rw==
+X-Received: by 2002:a19:1a14:: with SMTP id a20mr26414733lfa.1.1546717846918; 
+ Sat, 05 Jan 2019 11:50:46 -0800 (PST)
+Received: from mail-lj1-f177.google.com (mail-lj1-f177.google.com.
+ [209.85.208.177])
+ by smtp.gmail.com with ESMTPSA id b21sm11750299lfi.7.2019.01.05.11.50.45
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sat, 05 Jan 2019 11:50:46 -0800 (PST)
+Received: by mail-lj1-f177.google.com with SMTP id u89-v6so35134332lje.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Jan 2019 11:50:45 -0800 (PST)
+X-Received: by 2002:a2e:2c02:: with SMTP id
+ s2-v6mr31179695ljs.118.1546717845563; 
+ Sat, 05 Jan 2019 11:50:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190104034401.GA2801@umbus.fritz.box>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <87ftu8y3vw.fsf@concordia.ellerman.id.au>
+ <877efjxquj.fsf@concordia.ellerman.id.au>
+In-Reply-To: <877efjxquj.fsf@concordia.ellerman.id.au>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 5 Jan 2019 11:50:29 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wiE-_Dc7FDirP=_QGYt6pU7TEYdbGhCTeDnasj5s1uOOQ@mail.gmail.com>
+Message-ID: <CAHk-=wiE-_Dc7FDirP=_QGYt6pU7TEYdbGhCTeDnasj5s1uOOQ@mail.gmail.com>
+Subject: Re: [GIT PULL] Please pull powerpc/linux.git powerpc-4.21-2 tag
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,62 +94,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbest@redhat.com,
- saeedm@mellanox.com, alex.williamson@redhat.com, paulus@samba.org,
- linux-pci@vger.kernel.org, bhelgaas@google.com, ogerlitz@mellanox.com,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, tariqt@mellanox.com
+Cc: diana.craciun@nxp.com, Mathieu Malaterre <malat@debian.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>, chunkeey@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 04, 2019 at 02:44:01PM +1100, David Gibson wrote:
-> On Thu, Dec 06, 2018 at 08:45:09AM +0200, Leon Romanovsky wrote:
-> > On Thu, Dec 06, 2018 at 03:19:51PM +1100, David Gibson wrote:
-> > > Mellanox ConnectX-5 IB cards (MT27800) seem to cause a call trace when
-> > > unbound from their regular driver and attached to vfio-pci in order to pass
-> > > them through to a guest.
-> > >
-> > > This goes away if the disable_idle_d3 option is used, so it looks like a
-> > > problem with the hardware handling D3 state.  To fix that more permanently,
-> > > use a device quirk to disable D3 state for these devices.
-> > >
-> > > We do this by renaming the existing quirk_no_ata_d3() more generally and
-> > > attaching it to the ConnectX-[45] devices (0x15b3:0x1013).
-> > >
-> > > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > >  drivers/pci/quirks.c | 17 +++++++++++------
-> > >  1 file changed, 11 insertions(+), 6 deletions(-)
-> > >
-> > 
-> > Hi David,
-> > 
-> > Thank for your patch,
-> > 
-> > I would like to reproduce the calltrace before moving forward,
-> > but have trouble to reproduce the original issue.
-> > 
-> > I'm working with vfio-pci and CX-4/5 cards on daily basis,
-> > tried manually enter into D3 state now, and it worked for me.
-> 
-> Interesting.  I've investigated this further, though I don't have as
-> many new clues as I'd like.  The problem occurs reliably, at least on
-> one particular type of machine (a POWER8 "Garrison" with ConnectX-4).
-> I don't yet know if it occurs with other machines, I'm having trouble
-> getting access to other machines with a suitable card.  I didn't
-> manage to reproduce it on a different POWER8 machine with a
-> ConnectX-5, but I don't know if it's the difference in machine or
-> difference in card revision that's important.
+On Sat, Jan 5, 2019 at 3:53 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >   powerpc: Drop use of 'type' from access_ok() (2019-01-04 23:07:59 +1100)
+>
+> I see you've fixed this in your tree already.
 
-Make sure the card has the latest firmware is always good advice..
+No problem. It was my mess-up to begin with, and I just did the
+obvious resolution (only difference between our fixes was whitespace,
+and that I obviously also fixed up sparc32 as well).
 
-> So possibilities that occur to me:
->   * It's something specific about how the vfio-pci driver uses D3
->     state - have you tried rebinding your device to vfio-pci?
->   * It's something specific about POWER, either the kernel or the PCI
->     bridge hardware
->   * It's something specific about this particular type of machine
-
-Does the EEH indicate what happend to actually trigger it?
-
-Jason
+                 Linus
