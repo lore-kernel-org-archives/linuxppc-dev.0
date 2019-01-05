@@ -2,83 +2,89 @@ Return-Path: <SRS0=xMQ5=PN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2AD6C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 16:07:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EE7AC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 17:53:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B95D020868
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 16:07:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 45147222BC
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Jan 2019 17:53:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="dOMMPmML"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B95D020868
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="ITdm6f4f"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45147222BC
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43X63x3MTNzDq9y
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jan 2019 03:07:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43X8R64sRGzDqFt
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  6 Jan 2019 04:53:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5302::10; helo=mo6-p02-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
+ dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="dOMMPmML"; 
+ unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="ITdm6f4f"; 
  dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43X60m4rXHzDq9y
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2019 03:04:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1546704257;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=pllP0jthKpovdES2C/baV4NuaIX0EypTt7j9mGnqdFg=;
- b=dOMMPmMLyw15Ia7fqm+ZFlVLZFbA+6MDl5A8NqC6UNuwN7YHd9EX1Scw/2GHVO63sX
- Om3rYbm1TcHNzq+thXYBrwGNmOaQxt2aLhWysjujqBYp16bD8hx5UPmipl/ZXJqwoiLL
- a3KMAJQDA0GjSAAgC0lyVhzG4b0wUJcaPGIz2KWC9eK5JgVLRhrjbFufEYawFwl3LEBP
- IPRpQxsQlSwgC8wX+nDH34xY0iLanMtHKXCkUIo3SUiInD9dt5Y75slM5sQn67lSzafw
- oOsyKhqx6JB42J5EQzhCyQN796phmbts+y5kX1Bt09COCvAyDfGBKOyqSwSYU745hhIJ
- orSA==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7ClcjjWPPWGqT6Pby0eqStayQ2wW1g=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:c0c9:30fb:db29:81fd]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv05G3r5TX
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Sat, 5 Jan 2019 17:03:53 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <2242B4B2-6311-492E-BFF9-6740E36EC6D4@xenosoft.de>
- <84558d7f-5a7f-5219-0c3a-045e6b4c494f@xenosoft.de>
- <20181213091021.GA2106@lst.de>
- <835bd119-081e-a5ea-1899-189d439c83d6@xenosoft.de>
- <76bc684a-b4d2-1d26-f18d-f5c9ba65978c@xenosoft.de>
- <20181213112511.GA4574@lst.de>
- <e109de27-f4af-147d-dc0e-067c8bafb29b@xenosoft.de>
- <ad5a5a8a-d232-d523-a6f7-e9377fc3857b@xenosoft.de>
- <e60d6ca3-860c-f01d-8860-c5e022ec7179@xenosoft.de>
- <008c981e-bdd2-21a7-f5f7-c57e4850ae9a@xenosoft.de>
- <20190103073622.GA24323@lst.de>
- <71A251A5-FA06-4019-B324-7AED32F7B714@xenosoft.de>
-Message-ID: <1b0c5c21-2761-d3a3-651b-3687bb6ae694@xenosoft.de>
-Date: Sat, 5 Jan 2019 17:03:52 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43X8ND47LCzDqDZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2019 04:51:20 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id z10so18849824pgp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Jan 2019 09:51:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=bmFtkiMzY0SjcGgWZDnXoB7lrhs+dKojhnWxuZ4Ulkg=;
+ b=ITdm6f4fW8QautoLRLSG1phMTMj2iuQLmLxDF+T0kN82TxeVV1j00miE0Oo3PslMCO
+ bQ6TrG8UQ73pjOcXA73iW8aR45Cz3HAKFz1BtvLEMpdNyFCiN+B0jqgWcVENVyqR4KFO
+ L5ovF35IgXPwJPIKg7TAaWZqEjbmpgkemK+oaQeTp+BUBv639FtVLUCnYThlsw7U4klp
+ jBo9vtXrHIXYU7FZLG3b2aIODlSkG9va85ecBLN7eFKCWvCc3DOsKnE+og9x/fEarDIu
+ XQEFOyMEksq4jWcLbKWF9i2JUj8D+iy3tHD47fDvNw0diAQaD4T/Ej+zYg/cHJeDKJ4J
+ fFkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=bmFtkiMzY0SjcGgWZDnXoB7lrhs+dKojhnWxuZ4Ulkg=;
+ b=W4aAYT3XIcSTzMFJRZI6h6Q1oce9zuMB6VEIU9zKdY8VNLV9VzBVqxdV6iDr3Tx/0a
+ bDMdez5bPRYSDa3kbmPEf56SYXAblfRXfluJH3Ik4legDIG/jKwtTKOfK7W+DX45AAPW
+ vAJeBnESLwG48ap2Om11zDo85BnlQ5Ck4sPW52OqVXWA+0mK9rpsGEU8vfQNu+yQZfCR
+ hIU1cnv6tmHEYBMZIZTPyWBdOA69MGoJYfxOYRKQ8APXrVjcPt795TLWOsoJR//JOv0l
+ qU5OQcGIsdnEE1nv+KtOnh7Sghc2koz3ILkJIsI53+NtDz7+nEzj0RecCU8zgg+RZG6a
+ 5zFw==
+X-Gm-Message-State: AJcUukemQfEyRUNAMtk3soB8yEM5LfKWk+tt+PoKa3PKqqZ0r6/AkgWb
+ HC8e5Lp/7JWOHCw7yRbBNN2Qt8PW7UM=
+X-Google-Smtp-Source: ALg8bN5CWdV0l04sM6sKg6mHb4H5KfjJ+9BVYkv5JG/kj/c+dIa75hYcEg6kHnIsIdFDi+ZgYRVb9g==
+X-Received: by 2002:a63:1d59:: with SMTP id d25mr24839142pgm.180.1546710678704; 
+ Sat, 05 Jan 2019 09:51:18 -0800 (PST)
+Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
+ by smtp.gmail.com with ESMTPSA id
+ y71sm119832456pfi.123.2019.01.05.09.51.17
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sat, 05 Jan 2019 09:51:17 -0800 (PST)
+Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
+ (envelope-from <jgg@ziepe.ca>)
+ id 1gfq6P-00045X-0F; Sat, 05 Jan 2019 10:51:17 -0700
+Date: Sat, 5 Jan 2019 10:51:16 -0700
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
+Message-ID: <20190105175116.GB14238@ziepe.ca>
+References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
+ <20181206064509.GM15544@mtr-leonro.mtl.com>
+ <20190104034401.GA2801@umbus.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <71A251A5-FA06-4019-B324-7AED32F7B714@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190104034401.GA2801@umbus.fritz.box>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,42 +96,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbest@redhat.com,
+ saeedm@mellanox.com, alex.williamson@redhat.com, paulus@samba.org,
+ linux-pci@vger.kernel.org, bhelgaas@google.com, ogerlitz@mellanox.com,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, tariqt@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Next step: c446404b041130fbd9d1772d184f24715cf2362f (powerpc/dma: remove 
-dma_nommu_mmap_coherent)
+On Fri, Jan 04, 2019 at 02:44:01PM +1100, David Gibson wrote:
+> On Thu, Dec 06, 2018 at 08:45:09AM +0200, Leon Romanovsky wrote:
+> > On Thu, Dec 06, 2018 at 03:19:51PM +1100, David Gibson wrote:
+> > > Mellanox ConnectX-5 IB cards (MT27800) seem to cause a call trace when
+> > > unbound from their regular driver and attached to vfio-pci in order to pass
+> > > them through to a guest.
+> > >
+> > > This goes away if the disable_idle_d3 option is used, so it looks like a
+> > > problem with the hardware handling D3 state.  To fix that more permanently,
+> > > use a device quirk to disable D3 state for these devices.
+> > >
+> > > We do this by renaming the existing quirk_no_ata_d3() more generally and
+> > > attaching it to the ConnectX-[45] devices (0x15b3:0x1013).
+> > >
+> > > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > >  drivers/pci/quirks.c | 17 +++++++++++------
+> > >  1 file changed, 11 insertions(+), 6 deletions(-)
+> > >
+> > 
+> > Hi David,
+> > 
+> > Thank for your patch,
+> > 
+> > I would like to reproduce the calltrace before moving forward,
+> > but have trouble to reproduce the original issue.
+> > 
+> > I'm working with vfio-pci and CX-4/5 cards on daily basis,
+> > tried manually enter into D3 state now, and it worked for me.
+> 
+> Interesting.  I've investigated this further, though I don't have as
+> many new clues as I'd like.  The problem occurs reliably, at least on
+> one particular type of machine (a POWER8 "Garrison" with ConnectX-4).
+> I don't yet know if it occurs with other machines, I'm having trouble
+> getting access to other machines with a suitable card.  I didn't
+> manage to reproduce it on a different POWER8 machine with a
+> ConnectX-5, but I don't know if it's the difference in machine or
+> difference in card revision that's important.
 
-git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+Make sure the card has the latest firmware is always good advice..
 
-git checkout c446404b041130fbd9d1772d184f24715cf2362f
+> So possibilities that occur to me:
+>   * It's something specific about how the vfio-pci driver uses D3
+>     state - have you tried rebinding your device to vfio-pci?
+>   * It's something specific about POWER, either the kernel or the PCI
+>     bridge hardware
+>   * It's something specific about this particular type of machine
 
-Output:
+Does the EEH indicate what happend to actually trigger it?
 
-Note: checking out 'c446404b041130fbd9d1772d184f24715cf2362f'.
-
-You are in 'detached HEAD' state. You can look around, make experimental
-changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout.
-
-If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
-
-   git checkout -b <new-branch-name>
-
-HEAD is now at c446404... powerpc/dma: remove dma_nommu_mmap_coherent
-
------
-
-Link to the Git: 
-http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
-
-Result: PASEMI onboard ethernet works and the X5000 (P5020 board) boots.
-
--- Christian
+Jason
