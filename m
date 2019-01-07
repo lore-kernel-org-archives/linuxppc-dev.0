@@ -3,56 +3,94 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09608C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:10:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A400C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:14:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 856A6206B7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:10:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 856A6206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 97DD0206B7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:14:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97DD0206B7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YQ2F3vHvzDqSS
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:10:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YQ7d33wGzDqJs
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:14:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=87.98.172.75; helo=4.mo2.mail-out.ovh.net;
+ spf=softfail (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 4.mo2.mail-out.ovh.net (4.mo2.mail-out.ovh.net [87.98.172.75])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YPsS3LlxzDqLl
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:02:36 +1100 (AEDT)
-Received: from player737.ha.ovh.net (unknown [10.109.143.220])
- by mo2.mail-out.ovh.net (Postfix) with ESMTP id E6B93179140
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2019 19:44:35 +0100 (CET)
-Received: from kaod.org (lfbn-1-10605-110.w90-89.abo.wanadoo.fr
- [90.89.196.110]) (Authenticated sender: clg@kaod.org)
- by player737.ha.ovh.net (Postfix) with ESMTPSA id E73291866383;
- Mon,  7 Jan 2019 18:44:24 +0000 (UTC)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YQ2W2kgQzDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:10:27 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x07J3nuD031657
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Jan 2019 14:10:24 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pvc5dsux3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 14:10:24 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@kaod.org>;
+ Mon, 7 Jan 2019 19:10:22 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 7 Jan 2019 19:10:19 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x07JAI6Z35258422
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 7 Jan 2019 19:10:18 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 78D424204F;
+ Mon,  7 Jan 2019 19:10:18 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5C39B42041;
+ Mon,  7 Jan 2019 19:10:18 +0000 (GMT)
+Received: from smtp.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.1])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  7 Jan 2019 19:10:18 +0000 (GMT)
+Received: from zorba.kaod.org.com (sig-9-145-153-156.de.ibm.com
+ [9.145.153.156])
+ by smtp.lab.toulouse-stg.fr.ibm.com (Postfix) with ESMTP id 93738220359;
+ Mon,  7 Jan 2019 20:10:17 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 04/19] KVM: PPC: Book3S HV: export services for the XIVE
- native exploitation device
-Date: Mon,  7 Jan 2019 19:43:16 +0100
-Message-Id: <20190107184331.8429-5-clg@kaod.org>
+Subject: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
+Date: Mon,  7 Jan 2019 20:10:05 +0100
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190107184331.8429-1-clg@kaod.org>
+In-Reply-To: <20190107191006.10648-1-clg@kaod.org>
 References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107191006.10648-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11390447883591388119
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrvdejgdduudegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+X-TM-AS-GCONF: 00
+x-cbid: 19010719-0016-0000-0000-000002418864
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19010719-0017-0000-0000-0000329B9849
+Message-Id: <20190107191006.10648-2-clg@kaod.org>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-07_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=4 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=843 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901070160
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,230 +109,140 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The KVM device for the XIVE native exploitation mode will reuse the
-structures of the XICS-over-XIVE glue implementation. Some code will
-also be shared : source block creation and destruction, target
-selection and escalation attachment.
+Clear the ESB pages from the VMA of the IRQ being pass through to the
+guest and let the fault handler repopulate the VMA when the ESB pages
+are accessed for an EOI or for a trigger.
+
+Storing the VMA under the KVM XIVE device is a little ugly.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s_xive.h | 11 +++++
- arch/powerpc/kvm/book3s_xive.c | 89 +++++++++++++++++++---------------
- 2 files changed, 62 insertions(+), 38 deletions(-)
+ arch/powerpc/kvm/book3s_xive.h        |  8 +++++++
+ arch/powerpc/kvm/book3s_xive.c        | 15 ++++++++++++++
+ arch/powerpc/kvm/book3s_xive_native.c | 30 +++++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+)
 
 diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
-index a08ae6fd4c51..10c4aa5cd010 100644
+index 31e598e62589..6e64d3496a2c 100644
 --- a/arch/powerpc/kvm/book3s_xive.h
 +++ b/arch/powerpc/kvm/book3s_xive.h
-@@ -248,5 +248,16 @@ extern int (*__xive_vm_h_ipi)(struct kvm_vcpu *vcpu, unsigned long server,
- extern int (*__xive_vm_h_cppr)(struct kvm_vcpu *vcpu, unsigned long cppr);
- extern int (*__xive_vm_h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr);
+@@ -90,6 +90,11 @@ struct kvmppc_xive_src_block {
+ 	struct kvmppc_xive_irq_state irq_state[KVMPPC_XICS_IRQ_PER_ICS];
+ };
  
-+/*
-+ * Common Xive routines for XICS-over-XIVE and XIVE native
-+ */
-+struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
-+	struct kvmppc_xive *xive, int irq);
-+void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
-+int kvmppc_xive_select_target(struct kvm *kvm, u32 *server, u8 prio);
-+void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu);
-+int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio);
-+int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu);
++struct kvmppc_xive;
 +
- #endif /* CONFIG_KVM_XICS */
- #endif /* _KVM_PPC_BOOK3S_XICS_H */
++struct kvmppc_xive_ops {
++	int (*reset_mapped)(struct kvm *kvm, unsigned long guest_irq);
++};
+ 
+ struct kvmppc_xive {
+ 	struct kvm *kvm;
+@@ -131,6 +136,9 @@ struct kvmppc_xive {
+ 
+ 	/* VC base address for ESBs */
+ 	u64     vc_base;
++
++	struct kvmppc_xive_ops *ops;
++	struct vm_area_struct *vma;
+ };
+ 
+ #define KVMPPC_XIVE_Q_COUNT	8
 diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 8a4fa45f07f8..bb5d32f7e4e6 100644
+index e9f05d9c9ad5..9b4751713554 100644
 --- a/arch/powerpc/kvm/book3s_xive.c
 +++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -166,7 +166,7 @@ static irqreturn_t xive_esc_irq(int irq, void *data)
- 	return IRQ_HANDLED;
- }
+@@ -946,6 +946,13 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 	/* Turn the IPI hard off */
+ 	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
  
--static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
-+int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
- 	struct xive_q *q = &xc->queues[prio];
-@@ -291,7 +291,7 @@ static int xive_check_provisioning(struct kvm *kvm, u8 prio)
- 			continue;
- 		rc = xive_provision_queue(vcpu, prio);
- 		if (rc == 0 && !xive->single_escalation)
--			xive_attach_escalation(vcpu, prio);
-+			kvmppc_xive_attach_escalation(vcpu, prio);
- 		if (rc)
- 			return rc;
- 	}
-@@ -342,7 +342,7 @@ static int xive_try_pick_queue(struct kvm_vcpu *vcpu, u8 prio)
- 	return atomic_add_unless(&q->count, 1, max) ? 0 : -EBUSY;
- }
- 
--static int xive_select_target(struct kvm *kvm, u32 *server, u8 prio)
-+int kvmppc_xive_select_target(struct kvm *kvm, u32 *server, u8 prio)
- {
- 	struct kvm_vcpu *vcpu;
- 	int i, rc;
-@@ -535,7 +535,7 @@ static int xive_target_interrupt(struct kvm *kvm,
- 	 * priority. The count for that new target will have
- 	 * already been incremented.
- 	 */
--	rc = xive_select_target(kvm, &server, prio);
-+	rc = kvmppc_xive_select_target(kvm, &server, prio);
- 
- 	/*
- 	 * We failed to find a target ? Not much we can do
-@@ -1055,7 +1055,7 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
- }
- EXPORT_SYMBOL_GPL(kvmppc_xive_clr_mapped);
- 
--static void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
-+void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
- 	struct kvm *kvm = vcpu->kvm;
-@@ -1225,7 +1225,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 		if (xive->qmap & (1 << i)) {
- 			r = xive_provision_queue(vcpu, i);
- 			if (r == 0 && !xive->single_escalation)
--				xive_attach_escalation(vcpu, i);
-+				kvmppc_xive_attach_escalation(vcpu, i);
- 			if (r)
- 				goto bail;
- 		} else {
-@@ -1240,7 +1240,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	}
- 
- 	/* If not done above, attach priority 0 escalation */
--	r = xive_attach_escalation(vcpu, 0);
-+	r = kvmppc_xive_attach_escalation(vcpu, 0);
- 	if (r)
- 		goto bail;
- 
-@@ -1491,8 +1491,8 @@ static int xive_get_source(struct kvmppc_xive *xive, long irq, u64 addr)
- 	return 0;
- }
- 
--static struct kvmppc_xive_src_block *xive_create_src_block(struct kvmppc_xive *xive,
--							   int irq)
-+struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
-+	struct kvmppc_xive *xive, int irq)
- {
- 	struct kvm *kvm = xive->kvm;
- 	struct kvmppc_xive_src_block *sb;
-@@ -1571,7 +1571,7 @@ static int xive_set_source(struct kvmppc_xive *xive, long irq, u64 addr)
- 	sb = kvmppc_xive_find_source(xive, irq, &idx);
- 	if (!sb) {
- 		pr_devel("No source, creating source block...\n");
--		sb = xive_create_src_block(xive, irq);
-+		sb = kvmppc_xive_create_src_block(xive, irq);
- 		if (!sb) {
- 			pr_devel("Failed to create block...\n");
- 			return -ENOMEM;
-@@ -1795,7 +1795,7 @@ static void kvmppc_xive_cleanup_irq(u32 hw_num, struct xive_irq_data *xd)
- 	xive_cleanup_irq_data(xd);
- }
- 
--static void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
-+void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
- {
- 	int i;
- 
-@@ -1824,6 +1824,8 @@ static void kvmppc_xive_free(struct kvm_device *dev)
- 
- 	debugfs_remove(xive->dentry);
- 
-+	pr_devel("Destroying xive for partition\n");
++	/*
++	 * Reset ESB guest mapping. Needed when ESB pages are exposed
++	 * to the guest in XIVE native mode
++	 */
++	if (xive->ops && xive->ops->reset_mapped)
++		xive->ops->reset_mapped(kvm, guest_irq);
 +
- 	if (kvm)
- 		kvm->arch.xive = NULL;
+ 	/* Grab info about irq */
+ 	state->pt_number = hw_irq;
+ 	state->pt_data = irq_data_get_irq_handler_data(host_data);
+@@ -1031,6 +1038,14 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
+ 	state->pt_number = 0;
+ 	state->pt_data = NULL;
  
-@@ -1889,6 +1891,43 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
- 	return 0;
- }
- 
-+int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu)
-+{
-+	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	unsigned int i;
-+
-+	for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
-+		struct xive_q *q = &xc->queues[i];
-+		u32 i0, i1, idx;
-+
-+		if (!q->qpage && !xc->esc_virq[i])
-+			continue;
-+
-+		seq_printf(m, " [q%d]: ", i);
-+
-+		if (q->qpage) {
-+			idx = q->idx;
-+			i0 = be32_to_cpup(q->qpage + idx);
-+			idx = (idx + 1) & q->msk;
-+			i1 = be32_to_cpup(q->qpage + idx);
-+			seq_printf(m, "T=%d %08x %08x...\n", q->toggle,
-+				   i0, i1);
-+		}
-+		if (xc->esc_virq[i]) {
-+			struct irq_data *d = irq_get_irq_data(xc->esc_virq[i]);
-+			struct xive_irq_data *xd =
-+				irq_data_get_irq_handler_data(d);
-+			u64 pq = xive_vm_esb_load(xd, XIVE_ESB_GET);
-+
-+			seq_printf(m, "E:%c%c I(%d:%llx:%llx)",
-+				   (pq & XIVE_ESB_VAL_P) ? 'P' : 'p',
-+				   (pq & XIVE_ESB_VAL_Q) ? 'Q' : 'q',
-+				   xc->esc_virq[i], pq, xd->eoi_page);
-+			seq_puts(m, "\n");
-+		}
++	/*
++	 * Reset ESB guest mapping. Needed when ESB pages are exposed
++	 * to the guest in XIVE native mode
++	 */
++	if (xive->ops && xive->ops->reset_mapped) {
++		xive->ops->reset_mapped(kvm, guest_irq);
 +	}
++
+ 	/* Reconfigure the IPI */
+ 	xive_native_configure_irq(state->ipi_number,
+ 				  xive_vp(xive, state->act_server),
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index 1aefb366df0b..12edac29995e 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -240,6 +240,32 @@ static int kvmppc_xive_native_get_vc_base(struct kvmppc_xive *xive, u64 addr)
+ 	return 0;
+ }
+ 
++static int kvmppc_xive_native_reset_mapped(struct kvm *kvm, unsigned long irq)
++{
++	struct kvmppc_xive *xive = kvm->arch.xive;
++	struct mm_struct *mm = kvm->mm;
++	struct vm_area_struct *vma = xive->vma;
++	unsigned long address;
++
++	if (irq >= KVMPPC_XIVE_NR_IRQS)
++		return -EINVAL;
++
++	pr_debug("clearing esb pages for girq 0x%lx\n", irq);
++
++	down_read(&mm->mmap_sem);
++	/* TODO: can we clear the PTEs without keeping a VMA pointer ? */
++	if (vma) {
++		address = vma->vm_start + irq * (2ull << PAGE_SHIFT);
++		zap_vma_ptes(vma, address, 2ull << PAGE_SHIFT);
++	}
++	up_read(&mm->mmap_sem);
 +	return 0;
 +}
- 
- static int xive_debug_show(struct seq_file *m, void *private)
++
++static struct kvmppc_xive_ops kvmppc_xive_native_ops =  {
++	.reset_mapped = kvmppc_xive_native_reset_mapped,
++};
++
+ static int xive_native_esb_fault(struct vm_fault *vmf)
  {
-@@ -1914,7 +1953,6 @@ static int xive_debug_show(struct seq_file *m, void *private)
+ 	struct vm_area_struct *vma = vmf->vma;
+@@ -292,6 +318,8 @@ static const struct vm_operations_struct xive_native_esb_vmops = {
  
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
--		unsigned int i;
+ static int xive_native_esb_mmap(struct file *file, struct vm_area_struct *vma)
+ {
++	struct kvmppc_xive *xive = vma->vm_file->private_data;
++
+ 	/* There are two ESB pages (trigger and EOI) per IRQ */
+ 	if (vma_pages(vma) + vma->vm_pgoff > KVMPPC_XIVE_NR_IRQS * 2)
+ 		return -EINVAL;
+@@ -299,6 +327,7 @@ static int xive_native_esb_mmap(struct file *file, struct vm_area_struct *vma)
+ 	vma->vm_flags |= VM_IO | VM_PFNMAP;
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	vma->vm_ops = &xive_native_esb_vmops;
++	xive->vma = vma; /* TODO: get rid of the VMA pointer */
+ 	return 0;
+ }
  
- 		if (!xc)
- 			continue;
-@@ -1924,33 +1962,8 @@ static int xive_debug_show(struct seq_file *m, void *private)
- 			   xc->server_num, xc->cppr, xc->hw_cppr,
- 			   xc->mfrr, xc->pending,
- 			   xc->stat_rm_h_xirr, xc->stat_vm_h_xirr);
--		for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
--			struct xive_q *q = &xc->queues[i];
--			u32 i0, i1, idx;
+@@ -992,6 +1021,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
+ 	xive->vc_base = XIVE_VC_BASE;
  
--			if (!q->qpage && !xc->esc_virq[i])
--				continue;
--
--			seq_printf(m, " [q%d]: ", i);
--
--			if (q->qpage) {
--				idx = q->idx;
--				i0 = be32_to_cpup(q->qpage + idx);
--				idx = (idx + 1) & q->msk;
--				i1 = be32_to_cpup(q->qpage + idx);
--				seq_printf(m, "T=%d %08x %08x... \n", q->toggle, i0, i1);
--			}
--			if (xc->esc_virq[i]) {
--				struct irq_data *d = irq_get_irq_data(xc->esc_virq[i]);
--				struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
--				u64 pq = xive_vm_esb_load(xd, XIVE_ESB_GET);
--				seq_printf(m, "E:%c%c I(%d:%llx:%llx)",
--					   (pq & XIVE_ESB_VAL_P) ? 'P' : 'p',
--					   (pq & XIVE_ESB_VAL_Q) ? 'Q' : 'q',
--					   xc->esc_virq[i], pq, xd->eoi_page);
--				seq_printf(m, "\n");
--			}
--		}
-+		kvmppc_xive_debug_show_queues(m, vcpu);
+ 	xive->single_escalation = xive_native_has_single_escalation();
++	xive->ops = &kvmppc_xive_native_ops;
  
- 		t_rm_h_xirr += xc->stat_rm_h_xirr;
- 		t_rm_h_ipoll += xc->stat_rm_h_ipoll;
+ 	if (ret)
+ 		kfree(xive);
 -- 
 2.20.1
 
