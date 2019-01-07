@@ -6,75 +6,76 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D3C5C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 116B9C43444
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:55:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC1ED2087F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:54:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8707C2087F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:55:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZSJfvzO5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC1ED2087F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lqTLqygV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8707C2087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YM146VW9zDqNk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:54:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YM2q5RbtzDqP3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:55:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ (client-ip=2a00:1450:4864:20::441; helo=mail-wr1-x441.google.com;
  envelope-from=paolo.bonzini@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="ZSJfvzO5"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="lqTLqygV"; 
  dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YLZ7242MzDqHF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 03:34:07 +1100 (AEDT)
-Received: by mail-wm1-x341.google.com with SMTP id g67so1526718wmd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 08:34:07 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YLhY0z2DzDqKD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 03:39:41 +1100 (AEDT)
+Received: by mail-wr1-x441.google.com with SMTP id u4so1119974wrp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 08:39:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:subject:to:cc:references:from:openpgp:autocrypt:message-id
  :date:user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=rGZa/IUiqhDHrcCURN/ZOfDbcW76DbOfdmtz6UFvdTY=;
- b=ZSJfvzO5eaQ6+ZYvr78Y7UpBGKDiPvt+7Ybu56K34mxUq0+Mwboq4/5h8OBD3bSH8j
- zzKE0nlotLXNHdZ3w9UbgHvVfczHYUYyivOPtvhjGLXZeR3F8cE82rqbB+9vEqicZWZU
- 2kLSg12FYl9uMMMylWeLTnKgREBdhqVvEiRDDNdiug7wDfysyKcmrpSN1bZuEpTJ8zS2
- Q9eQ8B1I5a8hlyJgeuH4+yjN9gkBnW5tjIUbhsKDShg/vkRc2TwYIKtTH8m3w0VpfVnR
- ez2bQQktBLFdqmNrNwnXUxHSgjqGy1Iq27S/4DFtsgqKpETNCQZ3uEQUSdWyQvZGUmdX
- ZtRw==
+ bh=BteyKLlXLM8xWhmFfx8rEo5j5LsIt2xkNi4G5K7nq30=;
+ b=lqTLqygV9eTX8EMiBHxdl51ZJjd30A0Q1vjaqc6FHVAA4EC6R2iIuVPrWNUNI/C8Bj
+ JHXDexAWZrtz48IFC5MgGCtCTsxDNN0Y/fiUZ6euEBzaKyi2HxYgAQtZ5J91oQMcDAYY
+ UyYZYQwNWIV5lVPu+VTyE0Cnc/0LnF6C18HXSD6g9KaCwtvrdTJiy7Wz3h+ZM9GKEVa9
+ kwazWvew+Xvo7jBwDWhyjMErEk7MS8Ix3KhsSjZK4hs1j8bSgSrwv/GLyIBJR6Xwi8xO
+ I4RA5kLnSD8I8SoEt9prBpjr9NZW1+XkqP1h5k532Gre6Q4Zk1L11t3ux3FkObfJuiop
+ moYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:subject:to:cc:references:from:openpgp
  :autocrypt:message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=rGZa/IUiqhDHrcCURN/ZOfDbcW76DbOfdmtz6UFvdTY=;
- b=qv9G4IACjZoW3G+HFa6fMuRv4GlGca1OqrZnsiDpZ1DrlOtVmzp2ngh0dBRkrESEm9
- pv5C2XlmE0X+bYyCQIO/IkA9nomMQi4GtK7bvRGabo8esgAMPwVYdSsJo+mIzU6boVMx
- zgXXvH25rcwS0loZAAjWdjB/5/LWwA4UBzbdtp6Z4TazP4NtDaYcvDwKFgv028xQoRso
- nlJlIbhCquDR7SJSOnPFusszUQFciy44mx6/ZI73WOozwhB6bX7npp2RDDaCQ2IAtGha
- S1GFp4+8YXfmknwAgsDYIcgz81qoZEXyW+B8dkVM1VhoqxDJQk6ZMKZf8KJ7FLirqNZu
- O/0A==
-X-Gm-Message-State: AJcUukdokFfwR74BPNwlw0qOYLiouF08VRYo9ScdTcVQ6xbnDfhqWsO0
- nJlsBIDz1unqJjrQhsazaSHJqwbu5cs=
-X-Google-Smtp-Source: ALg8bN6zgQkMuUaGzExUIKKYaNM86+O45cK2o6wRe4er1alUcRL90jiJOzmmMczjP3xRk/ARMOYR3Q==
-X-Received: by 2002:a1c:2b01:: with SMTP id r1mr8996473wmr.7.1546878843953;
- Mon, 07 Jan 2019 08:34:03 -0800 (PST)
+ bh=BteyKLlXLM8xWhmFfx8rEo5j5LsIt2xkNi4G5K7nq30=;
+ b=jw9/DcjIFWVR5ZhCLa6kBHCCd1rmCc3BpWHA+rtLWVdIGxltDRX6TJLYNoraAoC5YU
+ tLlYufcGiekQjVAX1d1E7etvR47NwMmItthoyUSz4pcA5SR8iCfTDhRhj0pbBOdVDjRS
+ nhATFT8D99lVAIcpyBCY+ITXYUWlP1PztMwuSVINhfKKTx7D9mTpB05obLX4lsTPXIxl
+ Q2gNf/fjBPKfj3e4bD/9fRnU9368+4QE8RE5mNPJcGTxAGbpFQq+vIjQ3xkm9c9LoyVz
+ ig3hsIQuulNoKJW/Uht4mSoQMMwWog2orqzZ2glPMFWsxpdccPGIqshldZUPK1zOUAOc
+ Ktxw==
+X-Gm-Message-State: AJcUukduJ+RCikZr2isCY1Oh1rvjYkbAxPp4aJonWn/sMTUZSpVn0emq
+ QFA3fpgx0BBoXm/FaR5gVKd0D29tTpM=
+X-Google-Smtp-Source: ALg8bN5A4h2vi1OaJoHqPHyE7gYA/rx1zturjQ0g6r5Fu3Wm3FdHxIrKHDubTXPGhlOsjlB/7qNs7A==
+X-Received: by 2002:adf:b6a1:: with SMTP id j33mr52322444wre.55.1546879178246; 
+ Mon, 07 Jan 2019 08:39:38 -0800 (PST)
 Received: from ?IPv6:2001:b07:6468:f312:3473:41cf:8b30:f2e1?
  ([2001:b07:6468:f312:3473:41cf:8b30:f2e1])
- by smtp.googlemail.com with ESMTPSA id v1sm69334041wrw.90.2019.01.07.08.34.01
+ by smtp.googlemail.com with ESMTPSA id
+ l20sm111840324wrb.93.2019.01.07.08.39.35
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 07 Jan 2019 08:34:03 -0800 (PST)
-Subject: Re: [PATCH 3/11] KVM: Add spte's point in the struct kvm_mmu_page
+ Mon, 07 Jan 2019 08:39:37 -0800 (PST)
+Subject: Re: [PATCH 4/11] KVM/MMU: Introduce tlb flush with range list
 To: lantianyu1986@gmail.com
 References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
- <20190104085405.40356-4-Tianyu.Lan@microsoft.com>
+ <20190104085405.40356-5-Tianyu.Lan@microsoft.com>
 From: Paolo Bonzini <pbonzini@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=pbonzini@redhat.com; keydata=
@@ -132,15 +133,15 @@ Autocrypt: addr=pbonzini@redhat.com; keydata=
  DduC0U3xYkfbGAUvbxeepjgzp0uEnBXfPTy09JGpgWbg0w91GyfT/ujKaGd4vxG2Ei+MMNDm
  S1SMx7wu0evvQ5kT9NPzyq8R2GIhVSiAd2jioGuTjX6AZCFv3ToO53DliFMkVTecLptsXaes
  uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <dfaebf54-2a01-aafc-6f86-596f49874d3c@redhat.com>
-Date: Mon, 7 Jan 2019 17:34:00 +0100
+Message-ID: <2c6f7a11-b406-d4f1-c934-e6dedf5b07fd@redhat.com>
+Date: Mon, 7 Jan 2019 17:39:33 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.1
 MIME-Version: 1.0
-In-Reply-To: <20190104085405.40356-4-Tianyu.Lan@microsoft.com>
+In-Reply-To: <20190104085405.40356-5-Tianyu.Lan@microsoft.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -166,26 +167,22 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 04/01/19 09:53, lantianyu1986@gmail.com wrote:
-> @@ -332,6 +332,7 @@ struct kvm_mmu_page {
->  	int root_count;          /* Currently serving as active root */
->  	unsigned int unsync_children;
->  	struct kvm_rmap_head parent_ptes; /* rmap pointers to parent sptes */
-> +	u64 *sptep;
+>  struct kvm_mmu_page {
+>  	struct list_head link;
+> +
+> +	/*
+> +	 * Tlb flush with range list uses struct kvm_mmu_page as list entry
+> +	 * and all list operations should be under protection of mmu_lock.
+> +	 */
+> +	struct list_head flush_link;
+>  	struct hlist_node hash_link;
+>  	bool unsync;
+>  
+> @@ -443,6 +449,7 @@ struct kvm_mmu {
 
-Is this really needed?  Can we put the "last" flag in the struct instead
-as a bool?  In fact, if you do
+Again, it would be nice not to grow the struct too much, though I
+understand that it's already relatively big (168 bytes).
 
-	u16 unsync_children;
-	bool unsync;
-	bool last_level;
-
-the struct does not grow at all. :)
-
-(I'm not sure where "large" is tested using the sptep field, even though
-it is in the commit message).
+Can you at least make this an hlist, so that it only takes a single word?
 
 Paolo
-
->  	/* The page is obsolete if mmu_valid_gen != kvm->arch.mmu_valid_gen.  */
->  	unsigned long mmu_valid_gen;
-
