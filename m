@@ -6,78 +6,77 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C3A8C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:22:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDA85C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:28:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB24C2147C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:22:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 14F8E2089F
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 16:28:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eV+GpH4A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB24C2147C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SweO434i"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14F8E2089F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YLJP6nBSzDqJL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:22:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YLS31lvSzDqGQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:28:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::443; helo=mail-wr1-x443.google.com;
+ (client-ip=2a00:1450:4864:20::444; helo=mail-wr1-x444.google.com;
  envelope-from=paolo.bonzini@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="eV+GpH4A"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SweO434i"; 
  dkim-atps=neutral
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
- [IPv6:2a00:1450:4864:20::443])
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
+ [IPv6:2a00:1450:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YLGc0Y6XzDqDC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 03:20:39 +1100 (AEDT)
-Received: by mail-wr1-x443.google.com with SMTP id j2so1059331wrw.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 08:20:39 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YLPc4ZJSzDqDL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 03:26:44 +1100 (AEDT)
+Received: by mail-wr1-x444.google.com with SMTP id 96so1071307wrb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 08:26:44 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=sender:subject:to:cc:references:from:openpgp:autocrypt:message-id
  :date:user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=wo6kvzYCEB9x6sNLpbzEiDdvddMlVBTQkNzc4peqcCQ=;
- b=eV+GpH4AQ6+7T7LIwNOOOejnJmtqZM2yXT2/VG308IJZHjjJWS3N9gcP2nHKtkdKM/
- JSHGL1niPKpht2EkJPG0TH/ZEyjxwZOOxHQZipQC4OkRjBRRecfDTw4YBB1LwHoXFC9v
- tlQODf899mTtivp7XmyjMbe28JPPTbJdZqkufAuDIxH0pbKvIfPCyG54kRacioV/ZCER
- OAScVNmXQW7hsXbXDhUsZHGvOibmdboZ/nz2xngABk4O5ZdLPs/ivMrBJql+rEHsT24D
- piOxUPf3ysxjycsEaKrpbN++XCo7/zdlGe4l+GI8qh4/k7k7sFCDyGb6M1UMqBpqMyGt
- wg4A==
+ bh=/U70qfKIXZfDtiR8L8OsjRjbuUkYcPLUD/fleteotXk=;
+ b=SweO434iWDy1IdSqUunohVYNhyzYgiE2pEiHkiqxgo7qhyAtL0Eiu23Gx6vr4pdFuW
+ sNscKecGB1c9z3VebNG+aC+0hxuHorwhJmPrT6EhjWrmjp82XsZ6lDopdKlZBzjHJqsS
+ 906fJCHUocNRq2/jg5m0WxI+tS53UdBRhufo8nwa4J8JOrr3AfaZf7IXzPenzAGtceiz
+ 3TDYrmSo2oDAcytg0LFTQcYFmR6ZCrvngXL8ttaxRZhEnNVCSbcrsR510lG8Cy502jPL
+ N3DCPIbuc+8SfPLGXF1RzZd1nIQtdk0I3QRzZGjHKpZrMZfqBEXm8cDx0FjqopsTwXQh
+ T6lg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:sender:subject:to:cc:references:from:openpgp
  :autocrypt:message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=wo6kvzYCEB9x6sNLpbzEiDdvddMlVBTQkNzc4peqcCQ=;
- b=PF8XzusFTvZbDqkQEHB6HBkhgtU9msmvE1xgCWdp6oeFWpXK5BBEDg7stC0k1yvkBG
- FTkTFHwVZgn7UAKoUi4tbw7+m1bOq4xsZBCvEsYJqnwHiFq6C188Lst3NezNa+ulBGTY
- TmBkfteQUpSEkn7gU96pNvgf2nOJX+5oW1efDRGbTkba2QFBLZjMK3KssD6Ff9d6ATA1
- eht06tyTuE9aFKRvK1JKh10hb2/zr9n+4gbumIqTUz2r3D6/Wx31VXG5IzKWsfTjJiiq
- lz0o4T+bimogvYvL5VxbhD+BcENg6rNEov04CYGXW9qq7MqL7NVD2wTkJIthPhmwTSY8
- PlsQ==
-X-Gm-Message-State: AJcUukc7OxEYG8HFmS9VRSQL2pvu/h0i4ie+2q86mqG1OFaZ+bth6+v2
- humn7xYYSYcF4WJ+dsdQNSArdlXPXoU=
-X-Google-Smtp-Source: ALg8bN75whlY2X8B+OnId7dxa6Gwo2IHtNNBq6DMkLET6wv0X8qN6sDjd1i2QO6EG+oSM13RIXDDEg==
-X-Received: by 2002:adf:f149:: with SMTP id y9mr56724337wro.284.1546878037106; 
- Mon, 07 Jan 2019 08:20:37 -0800 (PST)
+ bh=/U70qfKIXZfDtiR8L8OsjRjbuUkYcPLUD/fleteotXk=;
+ b=ibKfNbO6Gj0YL3sdgY6OqCs47ZIw4KUEmO5PyHvmgSwSqXxGKb0LpXrrr00VHd5LJI
+ UglaMbhtt6Fef4VPUvNRGo2WrqBBHYqb2ADRO8zkwO3btVtTfVac5h4sIDyBjNJ8KIRj
+ w6RPEMMR95TtmeR94ZxVSQ+k4gckZx+f31SGVNL+Y82TMXwwu+VCYTnlPr4ZhzLmSBGW
+ DqD7iDEqnUoWSRyPi2T05MCGHP853LGXZxI86R70F01wyZu1qqCGcozTY9++4MPRFvEt
+ BsVwrDzljZBi2KdrKynEc9XxRK6Akl4INkf5Gp7J6iRJG/vXGjku1XHnQ4MGHmDmQKNC
+ mK+A==
+X-Gm-Message-State: AJcUukdV4lZiqHRjWkYADtKBNX5OApKHMLsf5EdxqkD1zIaM/rUAVX5t
+ zml2hXeyY5mQRD5jYacLDQA=
+X-Google-Smtp-Source: ALg8bN53Ae/LWk8R4oNfWY8JaVuQFl1l5dBEGbQBZ1oQw+MohX5T5j7ACyzpZfip9SWSnWHDOfTYEg==
+X-Received: by 2002:a05:6000:120a:: with SMTP id
+ e10mr52902210wrx.85.1546878401435; 
+ Mon, 07 Jan 2019 08:26:41 -0800 (PST)
 Received: from ?IPv6:2001:b07:6468:f312:3473:41cf:8b30:f2e1?
  ([2001:b07:6468:f312:3473:41cf:8b30:f2e1])
- by smtp.googlemail.com with ESMTPSA id j8sm19509377wmd.0.2019.01.07.08.20.35
+ by smtp.googlemail.com with ESMTPSA id n127sm8479381wmd.20.2019.01.07.08.26.36
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 07 Jan 2019 08:20:36 -0800 (PST)
-Subject: Re: [PATCH 7/11] KVM: Remove redundant check in the
- kvm_get_dirty_log_protect()
-To: Sean Christopherson <sean.j.christopherson@intel.com>,
- lantianyu1986@gmail.com
+ Mon, 07 Jan 2019 08:26:40 -0800 (PST)
+Subject: Re: [PATCH 9/11] KVM/MMU: Flush tlb in the
+ kvm_mmu_write_protect_pt_masked()
+To: lantianyu1986@gmail.com
 References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
- <20190104085405.40356-8-Tianyu.Lan@microsoft.com>
- <20190104155036.GA11288@linux.intel.com>
+ <20190104085405.40356-10-Tianyu.Lan@microsoft.com>
 From: Paolo Bonzini <pbonzini@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=pbonzini@redhat.com; keydata=
@@ -135,12 +134,12 @@ Autocrypt: addr=pbonzini@redhat.com; keydata=
  DduC0U3xYkfbGAUvbxeepjgzp0uEnBXfPTy09JGpgWbg0w91GyfT/ujKaGd4vxG2Ei+MMNDm
  S1SMx7wu0evvQ5kT9NPzyq8R2GIhVSiAd2jioGuTjX6AZCFv3ToO53DliFMkVTecLptsXaes
  uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <dad62bfb-e4c0-266f-ff36-8344d3952ba0@redhat.com>
-Date: Mon, 7 Jan 2019 17:20:30 +0100
+Message-ID: <7eb0cde4-9436-9719-dd13-caf4ab5083a2@redhat.com>
+Date: Mon, 7 Jan 2019 17:26:35 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.1
 MIME-Version: 1.0
-In-Reply-To: <20190104155036.GA11288@linux.intel.com>
+In-Reply-To: <20190104085405.40356-10-Tianyu.Lan@microsoft.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -155,30 +154,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, will.deacon@arm.com,
- linux-mips@vger.kernel.org, hpa@zytor.com, kys@microsoft.com,
- kvmarm@lists.cs.columbia.edu, x86@kernel.org, linux@armlinux.org.uk,
- michael.h.kelley@microsoft.com, mingo@redhat.com, catalin.marinas@arm.com,
- jhogan@kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>,
- christoffer.dall@arm.com, marc.zyngier@arm.com, kvm-ppc@vger.kernel.org,
- bp@alien8.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, paul.burton@mips.com,
- vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, catalin.marinas@arm.com,
+ will.deacon@arm.com, christoffer.dall@arm.com, hpa@zytor.com,
+ kys@microsoft.com, kvmarm@lists.cs.columbia.edu, x86@kernel.org,
+ linux@armlinux.org.uk, michael.h.kelley@microsoft.com, mingo@redhat.com,
+ jhogan@kernel.org, linux-mips@vger.kernel.org,
+ Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
+ kvm-ppc@vger.kernel.org, bp@alien8.de, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ ralf@linux-mips.org, paul.burton@mips.com, vkuznets@redhat.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 04/01/19 16:50, Sean Christopherson wrote:
-> Tangentially related, does mmu_lock actually need to be held while we
-> walk dirty_bitmap in kvm_{clear,get}_dirty_log_protect()?  The bitmap
-> itself is protected by slots_lock (a lockdep assertion would be nice
-> too), e.g. can we grab the lock iff dirty_bitmap[i] != 0?
+On 04/01/19 09:54, lantianyu1986@gmail.com wrote:
+>  		rmap_head = __gfn_to_rmap(slot->base_gfn + gfn_offset + __ffs(mask),
+>  					  PT_PAGE_TABLE_LEVEL, slot);
+> -		__rmap_write_protect(kvm, rmap_head, false);
+> +		flush |= __rmap_write_protect(kvm, rmap_head, false);
+>  
+>  		/* clear the first set bit */
+>  		mask &= mask - 1;
+>  	}
+> +
+> +	if (flush && kvm_available_flush_tlb_with_range()) {
+> +		kvm_flush_remote_tlbs_with_address(kvm,
+> +				slot->base_gfn + gfn_offset,
+> +				hweight_long(mask));
 
-Yes, we could avoid grabbing it as long as the bitmap is zero.  However,
-without kvm->manual_dirty_log_protect, the granularity of
-kvm_get_dirty_log_protect() is too coarse so it won't happen in
-practice.  Instead, with the new manual clear,
-kvm_get_dirty_log_protect() does not take the lock and a well-written
-userspace is not going to call the clear ioctl unless some bits are set.
+Mask is zero here, so this probably won't work.
+
+In addition, I suspect calling the hypercall once for every 64 pages is
+not very efficient.  Passing a flush list into
+kvm_mmu_write_protect_pt_masked, and flushing in
+kvm_arch_mmu_enable_log_dirty_pt_masked, isn't efficient either because
+kvm_arch_mmu_enable_log_dirty_pt_masked is also called once per word.
+
+I don't have any good ideas, except for moving the whole
+kvm_clear_dirty_log_protect loop into architecture-specific code (which
+is not the direction we want---architectures should share more code, not
+less).
 
 Paolo
+
+> +		flush = false;
+> +	}
+> +
+
