@@ -6,92 +6,56 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 431A2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A702BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:27:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 95B84206B7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:24:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95B84206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 2A7CB2085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:27:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A7CB2085A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YQM93zL5zDqML
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:24:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YQQP1TdbzDqPl
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:27:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.33.251.19; helo=14.mo7.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+X-Greylist: delayed 1752 seconds by postgrey-1.36 at bilbo;
+ Tue, 08 Jan 2019 06:21:44 AEDT
+Received: from 14.mo7.mail-out.ovh.net (14.mo7.mail-out.ovh.net
+ [178.33.251.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YQ2X1SWfzDqPc
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:10:27 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x07J3k3O145915
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Jan 2019 14:10:25 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pvawpe5j0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 14:10:25 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@kaod.org>;
- Mon, 7 Jan 2019 19:10:23 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 7 Jan 2019 19:10:20 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x07JAJ7R56426572
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 7 Jan 2019 19:10:19 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3455DA4055;
- Mon,  7 Jan 2019 19:10:19 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 180A4A4053;
- Mon,  7 Jan 2019 19:10:19 +0000 (GMT)
-Received: from smtp.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.1])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  7 Jan 2019 19:10:19 +0000 (GMT)
-Received: from zorba.kaod.org.com (sig-9-145-153-156.de.ibm.com
- [9.145.153.156])
- by smtp.lab.toulouse-stg.fr.ibm.com (Postfix) with ESMTP id 54B022201CD;
- Mon,  7 Jan 2019 20:10:18 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YQHX4T0NzDq7N
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:21:43 +1100 (AEDT)
+Received: from player737.ha.ovh.net (unknown [10.109.159.136])
+ by mo7.mail-out.ovh.net (Postfix) with ESMTP id 1B29DF29F5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2019 19:44:15 +0100 (CET)
+Received: from kaod.org (lfbn-1-10605-110.w90-89.abo.wanadoo.fr
+ [90.89.196.110]) (Authenticated sender: clg@kaod.org)
+ by player737.ha.ovh.net (Postfix) with ESMTPSA id 72FA01866325;
+ Mon,  7 Jan 2019 18:44:04 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 19/19] KVM: introduce a KVM_DELETE_DEVICE ioctl
-Date: Mon,  7 Jan 2019 20:10:06 +0100
+Subject: [PATCH 02/19] powerpc/xive: add OPAL extensions for the XIVE native
+ exploitation support
+Date: Mon,  7 Jan 2019 19:43:14 +0100
+Message-Id: <20190107184331.8429-3-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190107191006.10648-1-clg@kaod.org>
+In-Reply-To: <20190107184331.8429-1-clg@kaod.org>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107191006.10648-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19010719-0020-0000-0000-000003028B96
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19010719-0021-0000-0000-0000215399A3
-Message-Id: <20190107191006.10648-3-clg@kaod.org>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-07_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=13 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901070160
+X-Ovh-Tracer-Id: 11384818386161732567
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrvdejgdduudegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,219 +74,225 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This will be used to destroy the KVM XICS or XIVE device when the
-sPAPR machine is reseted. When the VM boots, the CAS negotiation
-process will determine which interrupt mode to use and the appropriate
-KVM device will then be created.
+The support for XIVE native exploitation mode in Linux/KVM needs a
+couple more OPAL calls to configure the sPAPR guest and to get/set the
+state of the XIVE internal structures.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- include/linux/kvm_host.h              |  2 ++
- include/uapi/linux/kvm.h              |  2 ++
- arch/powerpc/kvm/book3s_xive.c        | 38 +++++++++++++++++++++++++-
- arch/powerpc/kvm/book3s_xive_native.c | 24 +++++++++++++++++
- virt/kvm/kvm_main.c                   | 39 +++++++++++++++++++++++++++
- 5 files changed, 104 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/opal-api.h           | 11 ++-
+ arch/powerpc/include/asm/opal.h               |  7 ++
+ arch/powerpc/include/asm/xive.h               | 14 +++
+ arch/powerpc/sysdev/xive/native.c             | 99 +++++++++++++++++++
+ .../powerpc/platforms/powernv/opal-wrappers.S |  3 +
+ 5 files changed, 130 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index c38cc5eb7e73..259b6885dc74 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1218,6 +1218,8 @@ struct kvm_device_ops {
- 	 */
- 	void (*destroy)(struct kvm_device *dev);
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..cdfc54f78101 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -186,8 +186,8 @@
+ #define OPAL_XIVE_FREE_IRQ			140
+ #define OPAL_XIVE_SYNC				141
+ #define OPAL_XIVE_DUMP				142
+-#define OPAL_XIVE_RESERVED3			143
+-#define OPAL_XIVE_RESERVED4			144
++#define OPAL_XIVE_GET_QUEUE_STATE		143
++#define OPAL_XIVE_SET_QUEUE_STATE		144
+ #define OPAL_SIGNAL_SYSTEM_RESET		145
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+@@ -209,8 +209,11 @@
+ #define OPAL_SENSOR_GROUP_ENABLE		163
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+-#define	OPAL_NX_COPROC_INIT			167
+-#define OPAL_LAST				167
++#define OPAL_HANDLE_HMI2			166
++#define OPAL_NX_COPROC_INIT			167
++#define OPAL_NPU_SET_RELAXED_ORDER		168
++#define OPAL_NPU_GET_RELAXED_ORDER		169
++#define OPAL_XIVE_GET_VP_STATE			170
  
-+	int (*delete)(struct kvm_device *dev);
-+
- 	int (*set_attr)(struct kvm_device *dev, struct kvm_device_attr *attr);
- 	int (*get_attr)(struct kvm_device *dev, struct kvm_device_attr *attr);
- 	int (*has_attr)(struct kvm_device *dev, struct kvm_device_attr *attr);
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 52bf74a1616e..b00cb4d986cf 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -1331,6 +1331,8 @@ struct kvm_s390_ucas_mapping {
- #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
- #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
+ #define QUIESCE_HOLD			1 /* Spin all calls at entry */
+ #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a55b01c90bb1..4e978d4dea5c 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -279,6 +279,13 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
+ int64_t opal_xive_free_irq(uint32_t girq);
+ int64_t opal_xive_sync(uint32_t type, uint32_t id);
+ int64_t opal_xive_dump(uint32_t type, uint32_t id);
++int64_t opal_xive_get_queue_state(uint64_t vp, uint32_t prio,
++				  __be32 *out_qtoggle,
++				  __be32 *out_qindex);
++int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
++				  uint32_t qtoggle,
++				  uint32_t qindex);
++int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
+ int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
+ 			uint64_t desc, uint16_t pe_number);
  
-+#define KVM_DELETE_DEVICE	  _IOWR(KVMIO,  0xf0, struct kvm_create_device)
-+
- /*
-  * ioctls for vcpu fds
-  */
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 9b4751713554..5449fb4c87f9 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -1109,11 +1109,19 @@ void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
- void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
--	struct kvmppc_xive *xive = xc->xive;
-+	struct kvmppc_xive *xive;
- 	int i;
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 32f033bfbf42..d6be3e4d9fa4 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -132,12 +132,26 @@ extern int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
+ extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
  
-+	if (!kvmppc_xics_enabled(vcpu))
-+		return;
-+
-+	if (!xc)
-+		return;
-+
- 	pr_devel("cleanup_vcpu(cpu=%d)\n", xc->server_num);
+ extern void xive_native_sync_source(u32 hw_irq);
++extern void xive_native_sync_queue(u32 hw_irq);
+ extern bool is_xive_irq(struct irq_chip *chip);
+ extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
+ extern int xive_native_disable_vp(u32 vp_id);
+ extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id);
+ extern bool xive_native_has_single_escalation(void);
  
-+	xive = xc->xive;
++extern int xive_native_get_queue_info(u32 vp_id, uint32_t prio,
++				      u64 *out_qpage,
++				      u64 *out_qsize,
++				      u64 *out_qeoi_page,
++				      u32 *out_escalate_irq,
++				      u64 *out_qflags);
 +
- 	/* Ensure no interrupt is still routed to that VP */
- 	xc->valid = false;
- 	kvmppc_xive_disable_vcpu_interrupts(vcpu);
-@@ -1150,6 +1158,10 @@ void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
- 	}
- 	/* Free the VP */
- 	kfree(xc);
++extern int xive_native_get_queue_state(u32 vp_id, uint32_t prio, u32 *qtoggle,
++				       u32 *qindex);
++extern int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qtoggle,
++				       u32 qindex);
++extern int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
 +
-+	/* Cleanup the vcpu */
-+	vcpu->arch.irq_type = KVMPPC_IRQ_DEFAULT;
-+	vcpu->arch.xive_vcpu = NULL;
+ #else
+ 
+ static inline bool xive_enabled(void) { return false; }
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 1ca127d052a6..0c037e933e55 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -437,6 +437,12 @@ void xive_native_sync_source(u32 hw_irq)
  }
+ EXPORT_SYMBOL_GPL(xive_native_sync_source);
  
- int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
-@@ -1861,6 +1873,29 @@ static void kvmppc_xive_free(struct kvm_device *dev)
- 	kfree(dev);
- }
- 
-+static int kvmppc_xive_delete(struct kvm_device *dev)
++void xive_native_sync_queue(u32 hw_irq)
 +{
-+	struct kvm *kvm = dev->kvm;
-+	unsigned int i;
-+	struct kvm_vcpu *vcpu;
-+
-+	if (!kvm->arch.xive)
-+		return -EPERM;
-+
-+	/*
-+	 * call kick_all_cpus_sync() to ensure that all CPUs have
-+	 * executed any pending interrupts
-+	 */
-+	if (is_kvmppc_hv_enabled(kvm))
-+		kick_all_cpus_sync();
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvmppc_xive_cleanup_vcpu(vcpu);
-+
-+	kvmppc_xive_free(dev);
-+	return 0;
++	opal_xive_sync(XIVE_SYNC_QUEUE, hw_irq);
 +}
++EXPORT_SYMBOL_GPL(xive_native_sync_queue);
 +
- static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
- {
- 	struct kvmppc_xive *xive;
-@@ -2035,6 +2070,7 @@ struct kvm_device_ops kvm_xive_ops = {
- 	.create = kvmppc_xive_create,
- 	.init = kvmppc_xive_init,
- 	.destroy = kvmppc_xive_free,
-+	.delete = kvmppc_xive_delete,
- 	.set_attr = xive_set_attr,
- 	.get_attr = xive_get_attr,
- 	.has_attr = xive_has_attr,
-diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index 12edac29995e..7367962e670a 100644
---- a/arch/powerpc/kvm/book3s_xive_native.c
-+++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -979,6 +979,29 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
- 	kfree(dev);
+ static const struct xive_ops xive_native_ops = {
+ 	.populate_irq_data	= xive_native_populate_irq_data,
+ 	.configure_irq		= xive_native_configure_irq,
+@@ -711,3 +717,96 @@ bool xive_native_has_single_escalation(void)
+ 	return xive_has_single_esc;
  }
- 
-+static int kvmppc_xive_native_delete(struct kvm_device *dev)
+ EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
++
++int xive_native_get_queue_info(u32 vp_id, u32 prio,
++			       u64 *out_qpage,
++			       u64 *out_qsize,
++			       u64 *out_qeoi_page,
++			       u32 *out_escalate_irq,
++			       u64 *out_qflags)
 +{
-+	struct kvm *kvm = dev->kvm;
-+	unsigned int i;
-+	struct kvm_vcpu *vcpu;
++	__be64 qpage;
++	__be64 qsize;
++	__be64 qeoi_page;
++	__be32 escalate_irq;
++	__be64 qflags;
++	s64 rc;
 +
-+	if (!kvm->arch.xive)
-+		return -EPERM;
-+
-+	/*
-+	 * call kick_all_cpus_sync() to ensure that all CPUs have
-+	 * executed any pending interrupts
-+	 */
-+	if (is_kvmppc_hv_enabled(kvm))
-+		kick_all_cpus_sync();
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm)
-+		kvmppc_xive_native_cleanup_vcpu(vcpu);
-+
-+	kvmppc_xive_native_free(dev);
-+	return 0;
-+}
-+
- /*
-  * ESB MMIO address of chip 0
-  */
-@@ -1350,6 +1373,7 @@ struct kvm_device_ops kvm_xive_native_ops = {
- 	.create = kvmppc_xive_native_create,
- 	.init = kvmppc_xive_native_init,
- 	.destroy = kvmppc_xive_native_free,
-+	.delete = kvmppc_xive_native_delete,
- 	.set_attr = kvmppc_xive_native_set_attr,
- 	.get_attr = kvmppc_xive_native_get_attr,
- 	.has_attr = kvmppc_xive_native_has_attr,
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 1f888a103f78..c93c35c43675 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3009,6 +3009,31 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
- 	return 0;
- }
- 
-+static int kvm_ioctl_delete_device(struct kvm *kvm,
-+				   struct kvm_create_device *cd)
-+{
-+	struct fd f;
-+	struct kvm_device *dev;
-+	int ret;
-+
-+	f = fdget(cd->fd);
-+	if (!f.file)
-+		return -EBADF;
-+
-+	dev = kvm_device_from_filp(f.file);
-+	fdput(f);
-+
-+	if (!dev)
-+		return -EPERM;
-+
-+	mutex_lock(&kvm->lock);
-+	list_del(&dev->vm_node);
-+	mutex_unlock(&kvm->lock);
-+	ret = dev->ops->delete(dev);
-+
-+	return ret;
-+}
-+
- static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- {
- 	switch (arg) {
-@@ -3253,6 +3278,20 @@ static long kvm_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
- 	}
-+	case KVM_DELETE_DEVICE: {
-+		struct kvm_create_device cd;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&cd, argp, sizeof(cd)))
-+			goto out;
-+
-+		r = kvm_ioctl_delete_device(kvm, &cd);
-+		if (r)
-+			goto out;
-+
-+		r = 0;
-+		break;
++	rc = opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
++				      &qeoi_page, &escalate_irq, &qflags);
++	if (rc) {
++		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
 +	}
- 	case KVM_CHECK_EXTENSION:
- 		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
- 		break;
++
++	if (out_qpage)
++		*out_qpage = be64_to_cpu(qpage);
++	if (out_qsize)
++		*out_qsize = be32_to_cpu(qsize);
++	if (out_qeoi_page)
++		*out_qeoi_page = be64_to_cpu(qeoi_page);
++	if (out_escalate_irq)
++		*out_escalate_irq = be32_to_cpu(escalate_irq);
++	if (out_qflags)
++		*out_qflags = be64_to_cpu(qflags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_info);
++
++int xive_native_get_queue_state(u32 vp_id, u32 prio, u32 *qtoggle, u32 *qindex)
++{
++	__be32 opal_qtoggle;
++	__be32 opal_qindex;
++	s64 rc;
++
++	rc = opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
++				       &opal_qindex);
++	if (rc) {
++		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	if (qtoggle)
++		*qtoggle = be32_to_cpu(opal_qtoggle);
++	if (qindex)
++		*qindex = be32_to_cpu(opal_qindex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_state);
++
++int xive_native_set_queue_state(u32 vp_id, u32 prio, u32 qtoggle, u32 qindex)
++{
++	s64 rc;
++
++	rc = opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
++	if (rc) {
++		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_set_queue_state);
++
++int xive_native_get_vp_state(u32 vp_id, u64 *out_state)
++{
++	__be64 state;
++	s64 rc;
++
++	rc = opal_xive_get_vp_state(vp_id, &state);
++	if (rc) {
++		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
++		       vp_id, rc);
++		return -EIO;
++	}
++
++	if (out_state)
++		*out_state = be64_to_cpu(state);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_vp_state);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index f4875fe3f8ff..3179953d6b56 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -309,6 +309,9 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
+ OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+ OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
++OPAL_CALL(opal_xive_get_queue_state,		OPAL_XIVE_GET_QUEUE_STATE);
++OPAL_CALL(opal_xive_set_queue_state,		OPAL_XIVE_SET_QUEUE_STATE);
++OPAL_CALL(opal_xive_get_vp_state,		OPAL_XIVE_GET_VP_STATE);
+ OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
 -- 
 2.20.1
 
