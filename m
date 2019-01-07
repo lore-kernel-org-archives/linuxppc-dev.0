@@ -6,56 +6,55 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A702BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:27:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5857CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:29:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A7CB2085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:27:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A7CB2085A
+	by mail.kernel.org (Postfix) with ESMTPS id CEB032085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 19:29:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEB032085A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YQQP1TdbzDqPl
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:27:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YQS36YnPzDqQD
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:29:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.19; helo=14.mo7.mail-out.ovh.net;
+ (client-ip=46.105.40.176; helo=9.mo4.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 1752 seconds by postgrey-1.36 at bilbo;
- Tue, 08 Jan 2019 06:21:44 AEDT
-Received: from 14.mo7.mail-out.ovh.net (14.mo7.mail-out.ovh.net
- [178.33.251.19])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YQHX4T0NzDq7N
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:21:43 +1100 (AEDT)
-Received: from player737.ha.ovh.net (unknown [10.109.159.136])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id 1B29DF29F5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2019 19:44:15 +0100 (CET)
+X-Greylist: delayed 1802 seconds by postgrey-1.36 at bilbo;
+ Tue, 08 Jan 2019 06:22:09 AEDT
+Received: from 9.mo4.mail-out.ovh.net (9.mo4.mail-out.ovh.net [46.105.40.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YQJ15V1KzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 06:22:09 +1100 (AEDT)
+Received: from player737.ha.ovh.net (unknown [10.109.146.106])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id D71341C89C4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2019 19:45:09 +0100 (CET)
 Received: from kaod.org (lfbn-1-10605-110.w90-89.abo.wanadoo.fr
  [90.89.196.110]) (Authenticated sender: clg@kaod.org)
- by player737.ha.ovh.net (Postfix) with ESMTPSA id 72FA01866325;
- Mon,  7 Jan 2019 18:44:04 +0000 (UTC)
+ by player737.ha.ovh.net (Postfix) with ESMTPSA id 08A4F1866417;
+ Mon,  7 Jan 2019 18:44:58 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 02/19] powerpc/xive: add OPAL extensions for the XIVE native
- exploitation support
-Date: Mon,  7 Jan 2019 19:43:14 +0100
-Message-Id: <20190107184331.8429-3-clg@kaod.org>
+Subject: [PATCH 07/19] KVM: PPC: Book3S HV: add a GET_TIMA_FD control to XIVE
+ native device
+Date: Mon,  7 Jan 2019 19:43:19 +0100
+Message-Id: <20190107184331.8429-8-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190107184331.8429-1-clg@kaod.org>
 References: <20190107184331.8429-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11384818386161732567
+X-Ovh-Tracer-Id: 11400018033937255383
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrvdejgdduudegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrvdejgdduudehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,225 +73,151 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The support for XIVE native exploitation mode in Linux/KVM needs a
-couple more OPAL calls to configure the sPAPR guest and to get/set the
-state of the XIVE internal structures.
+This will let the guest create a memory mapping to expose the XIVE
+MMIO region (TIMA) used for interrupt management at the CPU level.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/include/asm/opal-api.h           | 11 ++-
- arch/powerpc/include/asm/opal.h               |  7 ++
- arch/powerpc/include/asm/xive.h               | 14 +++
- arch/powerpc/sysdev/xive/native.c             | 99 +++++++++++++++++++
- .../powerpc/platforms/powernv/opal-wrappers.S |  3 +
- 5 files changed, 130 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/xive.h       |  1 +
+ arch/powerpc/include/uapi/asm/kvm.h   |  1 +
+ arch/powerpc/kvm/book3s_xive_native.c | 57 +++++++++++++++++++++++++++
+ arch/powerpc/sysdev/xive/native.c     | 11 ++++++
+ 4 files changed, 70 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b239ea..cdfc54f78101 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -186,8 +186,8 @@
- #define OPAL_XIVE_FREE_IRQ			140
- #define OPAL_XIVE_SYNC				141
- #define OPAL_XIVE_DUMP				142
--#define OPAL_XIVE_RESERVED3			143
--#define OPAL_XIVE_RESERVED4			144
-+#define OPAL_XIVE_GET_QUEUE_STATE		143
-+#define OPAL_XIVE_SET_QUEUE_STATE		144
- #define OPAL_SIGNAL_SYSTEM_RESET		145
- #define OPAL_NPU_INIT_CONTEXT			146
- #define OPAL_NPU_DESTROY_CONTEXT		147
-@@ -209,8 +209,11 @@
- #define OPAL_SENSOR_GROUP_ENABLE		163
- #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
- #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
--#define	OPAL_NX_COPROC_INIT			167
--#define OPAL_LAST				167
-+#define OPAL_HANDLE_HMI2			166
-+#define OPAL_NX_COPROC_INIT			167
-+#define OPAL_NPU_SET_RELAXED_ORDER		168
-+#define OPAL_NPU_GET_RELAXED_ORDER		169
-+#define OPAL_XIVE_GET_VP_STATE			170
- 
- #define QUIESCE_HOLD			1 /* Spin all calls at entry */
- #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a55b01c90bb1..4e978d4dea5c 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -279,6 +279,13 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
- int64_t opal_xive_free_irq(uint32_t girq);
- int64_t opal_xive_sync(uint32_t type, uint32_t id);
- int64_t opal_xive_dump(uint32_t type, uint32_t id);
-+int64_t opal_xive_get_queue_state(uint64_t vp, uint32_t prio,
-+				  __be32 *out_qtoggle,
-+				  __be32 *out_qindex);
-+int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
-+				  uint32_t qtoggle,
-+				  uint32_t qindex);
-+int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
- int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
- 			uint64_t desc, uint16_t pe_number);
- 
 diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
-index 32f033bfbf42..d6be3e4d9fa4 100644
+index d6be3e4d9fa4..7a7aa22d8258 100644
 --- a/arch/powerpc/include/asm/xive.h
 +++ b/arch/powerpc/include/asm/xive.h
-@@ -132,12 +132,26 @@ extern int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
- extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
+@@ -23,6 +23,7 @@
+  * same offset regardless of where the code is executing
+  */
+ extern void __iomem *xive_tima;
++extern unsigned long xive_tima_os;
  
- extern void xive_native_sync_source(u32 hw_irq);
-+extern void xive_native_sync_queue(u32 hw_irq);
- extern bool is_xive_irq(struct irq_chip *chip);
- extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
- extern int xive_native_disable_vp(u32 vp_id);
- extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id);
- extern bool xive_native_has_single_escalation(void);
+ /*
+  * Offset in the TM area of our current execution level (provided by
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 6bb61ba141c2..89c140cb9e79 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -678,5 +678,6 @@ struct kvm_ppc_cpu_char {
+ /* POWER9 XIVE Native Interrupt Controller */
+ #define KVM_DEV_XIVE_GRP_CTRL		1
+ #define   KVM_DEV_XIVE_GET_ESB_FD	1
++#define   KVM_DEV_XIVE_GET_TIMA_FD	2
  
-+extern int xive_native_get_queue_info(u32 vp_id, uint32_t prio,
-+				      u64 *out_qpage,
-+				      u64 *out_qsize,
-+				      u64 *out_qeoi_page,
-+				      u32 *out_escalate_irq,
-+				      u64 *out_qflags);
+ #endif /* __LINUX_KVM_POWERPC_H */
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index e20081f0c8d4..ee9d12bf2dae 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -232,6 +232,60 @@ static int kvmppc_xive_native_get_esb_fd(struct kvmppc_xive *xive, u64 addr)
+ 	return put_user(ret, ubufp);
+ }
+ 
++static int xive_native_tima_fault(struct vm_fault *vmf)
++{
++	struct vm_area_struct *vma = vmf->vma;
 +
-+extern int xive_native_get_queue_state(u32 vp_id, uint32_t prio, u32 *qtoggle,
-+				       u32 *qindex);
-+extern int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qtoggle,
-+				       u32 qindex);
-+extern int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
++	switch (vmf->pgoff) {
++	case 0: /* HW - forbid access */
++	case 1: /* HV - forbid access */
++		return VM_FAULT_SIGBUS;
++	case 2: /* OS */
++		vmf_insert_pfn(vma, vmf->address, xive_tima_os >> PAGE_SHIFT);
++		return VM_FAULT_NOPAGE;
++	case 3: /* USER - TODO */
++	default:
++		return VM_FAULT_SIGBUS;
++	}
++}
 +
- #else
- 
- static inline bool xive_enabled(void) { return false; }
++static const struct vm_operations_struct xive_native_tima_vmops = {
++	.fault = xive_native_tima_fault,
++};
++
++static int xive_native_tima_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	/*
++	 * The TIMA is four pages wide but only the last two pages (OS
++	 * and User view) are accessible to the guest. The page fault
++	 * handler will handle the permissions.
++	 */
++	if (vma_pages(vma) + vma->vm_pgoff > 4)
++		return -EINVAL;
++
++	vma->vm_flags |= VM_IO | VM_PFNMAP;
++	vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
++	vma->vm_ops = &xive_native_tima_vmops;
++	return 0;
++}
++
++static const struct file_operations xive_native_tima_fops = {
++	.mmap = xive_native_tima_mmap,
++};
++
++static int kvmppc_xive_native_get_tima_fd(struct kvmppc_xive *xive, u64 addr)
++{
++	u64 __user *ubufp = (u64 __user *) addr;
++	int ret;
++
++	ret = anon_inode_getfd("[xive-tima]", &xive_native_tima_fops, xive,
++			       O_RDWR | O_CLOEXEC);
++	if (ret < 0)
++		return ret;
++
++	return put_user(ret, ubufp);
++}
++
+ static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
+ 				       struct kvm_device_attr *attr)
+ {
+@@ -248,6 +302,8 @@ static int kvmppc_xive_native_get_attr(struct kvm_device *dev,
+ 		switch (attr->attr) {
+ 		case KVM_DEV_XIVE_GET_ESB_FD:
+ 			return kvmppc_xive_native_get_esb_fd(xive, attr->addr);
++		case KVM_DEV_XIVE_GET_TIMA_FD:
++			return kvmppc_xive_native_get_tima_fd(xive, attr->addr);
+ 		}
+ 		break;
+ 	}
+@@ -261,6 +317,7 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
+ 	case KVM_DEV_XIVE_GRP_CTRL:
+ 		switch (attr->attr) {
+ 		case KVM_DEV_XIVE_GET_ESB_FD:
++		case KVM_DEV_XIVE_GET_TIMA_FD:
+ 			return 0;
+ 		}
+ 		break;
 diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index 1ca127d052a6..0c037e933e55 100644
+index 0c037e933e55..7782201e5fe8 100644
 --- a/arch/powerpc/sysdev/xive/native.c
 +++ b/arch/powerpc/sysdev/xive/native.c
-@@ -437,6 +437,12 @@ void xive_native_sync_source(u32 hw_irq)
+@@ -521,6 +521,9 @@ u32 xive_native_default_eq_shift(void)
  }
- EXPORT_SYMBOL_GPL(xive_native_sync_source);
+ EXPORT_SYMBOL_GPL(xive_native_default_eq_shift);
  
-+void xive_native_sync_queue(u32 hw_irq)
-+{
-+	opal_xive_sync(XIVE_SYNC_QUEUE, hw_irq);
-+}
-+EXPORT_SYMBOL_GPL(xive_native_sync_queue);
++unsigned long xive_tima_os;
++EXPORT_SYMBOL_GPL(xive_tima_os);
 +
- static const struct xive_ops xive_native_ops = {
- 	.populate_irq_data	= xive_native_populate_irq_data,
- 	.configure_irq		= xive_native_configure_irq,
-@@ -711,3 +717,96 @@ bool xive_native_has_single_escalation(void)
- 	return xive_has_single_esc;
- }
- EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
-+
-+int xive_native_get_queue_info(u32 vp_id, u32 prio,
-+			       u64 *out_qpage,
-+			       u64 *out_qsize,
-+			       u64 *out_qeoi_page,
-+			       u32 *out_escalate_irq,
-+			       u64 *out_qflags)
-+{
-+	__be64 qpage;
-+	__be64 qsize;
-+	__be64 qeoi_page;
-+	__be32 escalate_irq;
-+	__be64 qflags;
-+	s64 rc;
-+
-+	rc = opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
-+				      &qeoi_page, &escalate_irq, &qflags);
-+	if (rc) {
-+		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
-+		       vp_id, prio, rc);
-+		return -EIO;
+ bool __init xive_native_init(void)
+ {
+ 	struct device_node *np;
+@@ -573,6 +576,14 @@ bool __init xive_native_init(void)
+ 	for_each_possible_cpu(cpu)
+ 		kvmppc_set_xive_tima(cpu, r.start, tima);
+ 
++	/* Resource 2 is OS window */
++	if (of_address_to_resource(np, 2, &r)) {
++		pr_err("Failed to get thread mgmnt area resource\n");
++		return false;
 +	}
 +
-+	if (out_qpage)
-+		*out_qpage = be64_to_cpu(qpage);
-+	if (out_qsize)
-+		*out_qsize = be32_to_cpu(qsize);
-+	if (out_qeoi_page)
-+		*out_qeoi_page = be64_to_cpu(qeoi_page);
-+	if (out_escalate_irq)
-+		*out_escalate_irq = be32_to_cpu(escalate_irq);
-+	if (out_qflags)
-+		*out_qflags = be64_to_cpu(qflags);
++	xive_tima_os = r.start;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xive_native_get_queue_info);
-+
-+int xive_native_get_queue_state(u32 vp_id, u32 prio, u32 *qtoggle, u32 *qindex)
-+{
-+	__be32 opal_qtoggle;
-+	__be32 opal_qindex;
-+	s64 rc;
-+
-+	rc = opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
-+				       &opal_qindex);
-+	if (rc) {
-+		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
-+		       vp_id, prio, rc);
-+		return -EIO;
-+	}
-+
-+	if (qtoggle)
-+		*qtoggle = be32_to_cpu(opal_qtoggle);
-+	if (qindex)
-+		*qindex = be32_to_cpu(opal_qindex);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xive_native_get_queue_state);
-+
-+int xive_native_set_queue_state(u32 vp_id, u32 prio, u32 qtoggle, u32 qindex)
-+{
-+	s64 rc;
-+
-+	rc = opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
-+	if (rc) {
-+		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
-+		       vp_id, prio, rc);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xive_native_set_queue_state);
-+
-+int xive_native_get_vp_state(u32 vp_id, u64 *out_state)
-+{
-+	__be64 state;
-+	s64 rc;
-+
-+	rc = opal_xive_get_vp_state(vp_id, &state);
-+	if (rc) {
-+		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
-+		       vp_id, rc);
-+		return -EIO;
-+	}
-+
-+	if (out_state)
-+		*out_state = be64_to_cpu(state);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(xive_native_get_vp_state);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index f4875fe3f8ff..3179953d6b56 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -309,6 +309,9 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
- OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
- OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
- OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
-+OPAL_CALL(opal_xive_get_queue_state,		OPAL_XIVE_GET_QUEUE_STATE);
-+OPAL_CALL(opal_xive_set_queue_state,		OPAL_XIVE_SET_QUEUE_STATE);
-+OPAL_CALL(opal_xive_get_vp_state,		OPAL_XIVE_GET_VP_STATE);
- OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
- OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
- OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+ 	/* Grab size of provisionning pages */
+ 	xive_parse_provisioning(np);
+ 
 -- 
 2.20.1
 
