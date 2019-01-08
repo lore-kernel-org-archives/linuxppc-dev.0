@@ -2,54 +2,66 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A39E5C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:30:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA991C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:45:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2980D20827
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:30:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2980D20827
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 49D6120850
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:45:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49D6120850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YtRF0xbbzDqVv
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:30:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ytn95k0FzDqLk
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:45:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Yt4n25sRzDqVl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:14:01 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D4CDB1596;
- Tue,  8 Jan 2019 05:13:59 -0800 (PST)
-Received: from localhost (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3CC8F3F70D;
- Tue,  8 Jan 2019 05:13:59 -0800 (PST)
-Date: Tue, 8 Jan 2019 13:13:57 +0000
-From: Andrew Murray <andrew.murray@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 05/13] arm: perf: conditionally use
- PERF_PMU_CAP_NO_EXCLUDE
-Message-ID: <20190108131357.GF56789@e119886-lin.cambridge.arm.com>
-References: <1546878450-20341-1-git-send-email-andrew.murray@arm.com>
- <1546878450-20341-6-git-send-email-andrew.murray@arm.com>
- <20190108102802.GC6808@hirez.programming.kicks-ass.net>
- <20190108130740.GC56789@e119886-lin.cambridge.arm.com>
- <20190108131031.GG6808@hirez.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190108131031.GG6808@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YtkT0yHCzDqKP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:43:13 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43YtkN6KwZz9tyMy;
+ Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id pYx6BQ4vhwHl; Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43YtkN5mpSz9tyMv;
+ Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F22608B83C;
+ Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id f8F9imAQGsDl; Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A0F838B7DF;
+ Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 7E2FA717F2; Tue,  8 Jan 2019 13:43:09 +0000 (UTC)
+Message-Id: <ec01a9be000c2305eec61bb1e2c44df2f917c1a6.1546954236.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1546954233.git.christophe.leroy@c-s.fr>
+References: <cover.1546954233.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v12 01/10] powerpc/irq: use memblock functions returning
+ virtual address
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.ibm.com>
+Date: Tue,  8 Jan 2019 13:43:09 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,38 +73,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, Shawn Guo <shawnguo@kernel.org>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- suzuki.poulose@arm.com, Sascha Hauer <s.hauer@pengutronix.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, robin.murphy@arm.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- Borislav Petkov <bp@alien8.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 08, 2019 at 02:10:31PM +0100, Peter Zijlstra wrote:
-> On Tue, Jan 08, 2019 at 01:07:41PM +0000, Andrew Murray wrote:
-> 
-> > Yes I found lots of examples like this across the tree whilst doing this
-> > work. However I decided to initially start with simply removing duplicated
-> > code as a result of adding this flag and attempting to preserve existing
-> > functionality. I thought that if I add missing checks then the patchset
-> > will get much bigger and be harder to merge. I would like to do this though
-> > as another non-cross-arch series.
-> > 
-> > Can we limit this patch series to the minimal changes required to fully
-> > use PERF_PMU_CAP_NO_EXCLUDE and then attempt to fix these existing problems
-> > in subsequent patch sets?
-> 
-> Ok, but it would've been nice to see that mentioned somewhere.
+Since only the virtual address of allocated blocks is used,
+lets use functions returning directly virtual address.
 
-I'll update the cover leter on any next revision. I'll try to be clearer next
-time with my intentions.
+Those functions have the advantage of also zeroing the block.
 
-Andrew Murray
+Suggested-by: Mike Rapoport <rppt@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ @Mike: Part of this is taken from your serie. I was not sure how
+ to include you in the commit log, I used Suggested-by: but could use
+ any other property, so if you prefer something different just tell
+ me. Also, if you could review this patch, it would be nice.
+
+ arch/powerpc/kernel/irq.c      |  5 -----
+ arch/powerpc/kernel/setup_32.c | 15 +++++----------
+ arch/powerpc/kernel/setup_64.c | 16 ++--------------
+ 3 files changed, 7 insertions(+), 29 deletions(-)
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 916ddc4aac44..4a44bc395fbc 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -725,18 +725,15 @@ void exc_lvl_ctx_init(void)
+ #endif
+ #endif
+ 
+-		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
+ 		tp = critirq_ctx[cpu_nr];
+ 		tp->cpu = cpu_nr;
+ 		tp->preempt_count = 0;
+ 
+ #ifdef CONFIG_BOOKE
+-		memset((void *)dbgirq_ctx[cpu_nr], 0, THREAD_SIZE);
+ 		tp = dbgirq_ctx[cpu_nr];
+ 		tp->cpu = cpu_nr;
+ 		tp->preempt_count = 0;
+ 
+-		memset((void *)mcheckirq_ctx[cpu_nr], 0, THREAD_SIZE);
+ 		tp = mcheckirq_ctx[cpu_nr];
+ 		tp->cpu = cpu_nr;
+ 		tp->preempt_count = HARDIRQ_OFFSET;
+@@ -754,12 +751,10 @@ void irq_ctx_init(void)
+ 	int i;
+ 
+ 	for_each_possible_cpu(i) {
+-		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
+ 		tp = softirq_ctx[i];
+ 		tp->cpu = i;
+ 		klp_init_thread_info(tp);
+ 
+-		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
+ 		tp = hardirq_ctx[i];
+ 		tp->cpu = i;
+ 		klp_init_thread_info(tp);
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 947f904688b0..bfe1b46a26dc 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -203,10 +203,8 @@ void __init irqstack_early_init(void)
+ 	/* interrupt stacks must be in lowmem, we get that for free on ppc32
+ 	 * as the memblock is limited to lowmem by default */
+ 	for_each_possible_cpu(i) {
+-		softirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+-		hardirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
++		softirq_ctx[i] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++		hardirq_ctx[i] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+ 	}
+ }
+ 
+@@ -224,13 +222,10 @@ void __init exc_lvl_early_init(void)
+ 		hw_cpu = 0;
+ #endif
+ 
+-		critirq_ctx[hw_cpu] = (struct thread_info *)
+-			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
++		critirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+ #ifdef CONFIG_BOOKE
+-		dbgirq_ctx[hw_cpu] = (struct thread_info *)
+-			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+-		mcheckirq_ctx[hw_cpu] = (struct thread_info *)
+-			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
++		dbgirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++		mcheckirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+ #endif
+ 	}
+ }
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 236c1151a3a7..943503f1e2c0 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -634,19 +634,10 @@ __init u64 ppc64_bolted_size(void)
+ 
+ static void *__init alloc_stack(unsigned long limit, int cpu)
+ {
+-	unsigned long pa;
+-
+ 	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
+ 
+-	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
+-					early_cpu_to_node(cpu), MEMBLOCK_NONE);
+-	if (!pa) {
+-		pa = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+-		if (!pa)
+-			panic("cannot allocate stacks");
+-	}
+-
+-	return __va(pa);
++	return memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE, MEMBLOCK_LOW_LIMIT,
++				      limit, early_cpu_to_node(cpu));
+ }
+ 
+ void __init irqstack_early_init(void)
+@@ -739,20 +730,17 @@ void __init emergency_stack_init(void)
+ 		struct thread_info *ti;
+ 
+ 		ti = alloc_stack(limit, i);
+-		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->emergency_sp = (void *)ti + THREAD_SIZE;
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 		/* emergency stack for NMI exception handling. */
+ 		ti = alloc_stack(limit, i);
+-		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->nmi_emergency_sp = (void *)ti + THREAD_SIZE;
+ 
+ 		/* emergency stack for machine check exception handling. */
+ 		ti = alloc_stack(limit, i);
+-		memset(ti, 0, THREAD_SIZE);
+ 		emerg_stack_init_thread_info(ti, i);
+ 		paca_ptrs[i]->mc_emergency_sp = (void *)ti + THREAD_SIZE;
+ #endif
+-- 
+2.13.3
+
