@@ -2,112 +2,95 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A075AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:12:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE2B4C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:25:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C92E20827
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:12:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="XmSB4Ngr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C92E20827
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 407ED20827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:25:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 407ED20827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YvMy6NTXzDqYC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 01:12:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Yvgd2M4RzDqXl
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 01:25:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.6.89; helo=eur04-db3-obe.outbound.protection.outlook.com;
- envelope-from=camelia.groza@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="XmSB4Ngr"; 
- dkim-atps=neutral
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-eopbgr60089.outbound.protection.outlook.com [40.107.6.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YvGG43GLzDqXB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 01:07:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=2uJnHWlyOBdF4wj1GoCNftwsSWilUr+riX5YEfsgkdY=;
- b=XmSB4Ngr8cbkwqL3ekrTFoW4T6fMQvskpEWXQOPGC+wHA9XTbfqo9UQzvYa4MI0tTo2ZoF3xly6bDUxkwRTF6h2gs//5iAnUhxlatNU/iE3VYJbrOAIB+iBxAxOQ5CTb7wHo6QCTJ6QKtH7lYOHrGJ0ZLeGei30W/eQouR6nLiE=
-Received: from VI1PR04MB4799.eurprd04.prod.outlook.com (20.177.48.220) by
- VI1PR04MB6158.eurprd04.prod.outlook.com (20.179.27.84) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1495.9; Tue, 8 Jan 2019 14:07:10 +0000
-Received: from VI1PR04MB4799.eurprd04.prod.outlook.com
- ([fe80::1503:3059:d104:d46f]) by VI1PR04MB4799.eurprd04.prod.outlook.com
- ([fe80::1503:3059:d104:d46f%4]) with mapi id 15.20.1495.011; Tue, 8 Jan 2019
- 14:07:10 +0000
-From: Camelia Alexandra Groza <camelia.groza@nxp.com>
-To: Scott Wood <oss@buserror.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, 
- "mark.rutland@arm.com" <mark.rutland@arm.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>
-Subject: RE: [PATCH 2/3] powerpc/dts/fsl: t4240rdb: use the Cortina PHY driver
- compatible
-Thread-Topic: [PATCH 2/3] powerpc/dts/fsl: t4240rdb: use the Cortina PHY
- driver compatible
-Thread-Index: AQHUHo0Oh6sC9upw1k6mbDT3ta+JEKWLGm8AgBtcHUA=
-Date: Tue, 8 Jan 2019 14:07:10 +0000
-Message-ID: <VI1PR04MB47996AC5BC20CC53F505880EF28A0@VI1PR04MB4799.eurprd04.prod.outlook.com>
-References: <cover.1531903211.git.camelia.groza@nxp.com>
- <6fa5aa04d257525c5703b7c8ca833ec0ae0047c7.1531903211.git.camelia.groza@nxp.com>
- <6a64c160360bae80a4908d3ca7a887d0c0cb35c9.camel@buserror.net>
-In-Reply-To: <6a64c160360bae80a4908d3ca7a887d0c0cb35c9.camel@buserror.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=camelia.groza@nxp.com; 
-x-originating-ip: [86.34.165.90]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; VI1PR04MB6158;
- 6:20xs7NLmg8jnp989S9Bvu74IXnqt5IAAAhbmb+vJJLGtB+/TF2fsnWZgUk6acc6NixoN+Yv1g/Qc4VZM7ewCaQ0fZuohQI81uVlpj8Hti5VgioggzuDbGe3FXwfwpfjX8+kYD6/bHtOJXxaEFoh88g5qR6Pa/ksFMPpdpDbZbSyXBAd3fHPllWvPaVAQELPMtnV0+PmCRKMQu2Fswsx3HH2HiaWM4hgrEffVjslGdjBOMr3DaCkCuU/su2CnoTyMiCag74EcDtLEtOgWx3PnoR/5fiMIY470s86Nxnqzuj89/kyuTymvozZ1G9q64/N5ven9BH6KsIdeERTQV2Ow0idxu/xyD5myBeLsq9PDavrUsZjTeUOHSsfDcTmicjWQATPQjHhP9Uluz/j+X+gS7a1hg1c0rInG4SkJANkQaREQdQ+6TgA6dVbwQh3OkSMsdm8NLf0UuJWdeszoVdJe6Q==;
- 5:An+nXc+Vxz1Ha5eWwlwxyxyhp53Zowm3m/RZsN6HKItU0C1kaGkcS8L005bWzK5IlEHkFvQThOdgpgQvdPeaagkBbP1IZ98a0W3ofW8KQszpfMd6QngZgpej90D78qCIcfOpVzZG/lUcIWZnE9wdDU3ziEQecizUvSgPmm15oBCtkeALlCseSASsqzC8KOF6Llnz5HgTwT1x/GCCGz0K5A==;
- 7:jmSLUCYRVX6fjlGVOGb7NQ6LA97nduAgYKmaki+6COgIVPvqyuNzmafo4dKQj7I03x9fG1Fg8Z0LDaZUpMRne3ZEBqyXgwJInYgph35KeQr/qB3DX6OSh+hsyQeHoCAFTw4VLWZ5dkXGPJy0TYIDeQ==
-x-ms-exchange-antispam-srfa-diagnostics: SOS;
-x-ms-office365-filtering-correlation-id: ff169065-967d-4f22-ca14-08d6757294f1
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:VI1PR04MB6158; 
-x-ms-traffictypediagnostic: VI1PR04MB6158:
-x-microsoft-antispam-prvs: <VI1PR04MB6158FDF5BCBEFD3333F5BA58F28A0@VI1PR04MB6158.eurprd04.prod.outlook.com>
-x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
- RULEID:(8211001083)(3230021)(908002)(999002)(5005026)(6040522)(8220060)(2401047)(8121501046)(10201501046)(93006095)(93001095)(3231475)(944501520)(52105112)(3002001)(6055026)(6041310)(20161123562045)(20161123560045)(20161123558120)(20161123564045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051)(76991095);
- SRVR:VI1PR04MB6158; BCL:0; PCL:0; RULEID:; SRVR:VI1PR04MB6158; 
-x-forefront-prvs: 0911D5CE78
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(376002)(346002)(396003)(136003)(39860400002)(366004)(199004)(189003)(13464003)(305945005)(105586002)(7736002)(68736007)(76176011)(26005)(186003)(8676002)(102836004)(66066001)(7696005)(2501003)(6436002)(106356001)(6506007)(55016002)(14454004)(81166006)(81156014)(99286004)(478600001)(316002)(53546011)(33656002)(229853002)(8936002)(54906003)(5660300001)(6246003)(256004)(2906002)(53936002)(86362001)(9686003)(97736004)(575784001)(3846002)(71190400001)(74316002)(71200400001)(110136005)(11346002)(476003)(486006)(25786009)(6116002)(446003)(4326008);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB6158;
- H:VI1PR04MB4799.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: Umx8rHTLrvngMtTwkpdICuiArovBowLOE5tImW9/aEQuIEK4zOxTCKMsQWErah6414cCgUGy9XSjskbvmTjPAGqOqYlf3lzBtF5Pi1q9p09sN4kX/REbQ2V2Wy4aeyOV87k16SRKF1Y2+Bjcv5SbmK+gKdzeYIoP1+wFKTkgC1PZ4RWl1b/DzH9xhfSnYIsn+KGFmgUn+HmFGdKUW56obXeK+RiR5i7IG6B8oyaKnOqoxSfN0wk2q4VBEVhhN6MZ+N+nlLSnSQVI5Mh/qu+wr9x4RmjC9UCbS9gNLcXZzqsZCoZMii11rj5YDRdrU/gF
-spamdiagnosticoutput: 1:99
-spamdiagnosticmetadata: NSPM
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YvdW3sCgzDqWs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 01:23:59 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x08EKCx4030819
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Jan 2019 09:23:56 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pvtqu1rcd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jan 2019 09:23:56 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Tue, 8 Jan 2019 14:23:52 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 8 Jan 2019 14:23:46 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x08ENjnw56295606
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 8 Jan 2019 14:23:45 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3B191A4054;
+ Tue,  8 Jan 2019 14:23:45 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4B5E5A405C;
+ Tue,  8 Jan 2019 14:23:43 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.8.241])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue,  8 Jan 2019 14:23:43 +0000 (GMT)
+Date: Tue, 8 Jan 2019 16:23:41 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v4 1/6] powerpc: prefer memblock APIs returning virtual
+ address
+References: <1546248566-14910-1-git-send-email-rppt@linux.ibm.com>
+ <1546248566-14910-2-git-send-email-rppt@linux.ibm.com>
+ <282fd5d1-24b5-81ac-b7ff-7329fe3c0fe1@c-s.fr>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: ff169065-967d-4f22-ca14-08d6757294f1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jan 2019 14:07:10.3838 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB6158
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <282fd5d1-24b5-81ac-b7ff-7329fe3c0fe1@c-s.fr>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 19010814-0012-0000-0000-000002E3F66B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19010814-0013-0000-0000-0000211B03C6
+Message-Id: <20190108142341.GA14063@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-08_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901080118
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -119,48 +102,325 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Michal Hocko <mhocko@suse.com>, Paul Mackerras <paulus@samba.org>,
+ sparclinux@vger.kernel.org, Vincent Chen <deanbo422@gmail.com>,
+ Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Russell King <linux@armlinux.org.uk>, Mark Salter <msalter@redhat.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+ openrisc@lists.librecores.org, Greentime Hu <green.hu@gmail.com>,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTY290dCBXb29kIDxvc3NAYnVz
-ZXJyb3IubmV0Pg0KPiBTZW50OiBTYXR1cmRheSwgRGVjZW1iZXIgMjIsIDIwMTggMDY6MDcNCj4g
-VG86IENhbWVsaWEgQWxleGFuZHJhIEdyb3phIDxjYW1lbGlhLmdyb3phQG54cC5jb20+Ow0KPiBy
-b2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOyBiZW5oQGtlcm5lbC5jcmFz
-aGluZy5vcmcNCj4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnOw0KPiBwYXVsdXNAc2FtYmEub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvM10gcG93ZXJwYy9kdHMvZnNsOiB0
-NDI0MHJkYjogdXNlIHRoZSBDb3J0aW5hIFBIWQ0KPiBkcml2ZXIgY29tcGF0aWJsZQ0KPiANCj4g
-T24gV2VkLCAyMDE4LTA3LTE4IGF0IDE0OjQ2ICswMzAwLCBDYW1lbGlhIEdyb3phIHdyb3RlOg0K
-PiA+IFRoZSBDb3J0aW5hIFBIWSByZXF1aXJlcyB0aGUgdXNlIG9mIHRoZSBkZWRpY2F0ZWQgQ29y
-dGluYSBQSFkgZHJpdmVyDQo+ID4gaW5zdGVhZCBvZiB0aGUgZ2VuZXJpYyBvbmUuDQo+ID4NCj4g
-PiBTaWduZWQtb2ZmLWJ5OiBDYW1lbGlhIEdyb3phIDxjYW1lbGlhLmdyb3phQG54cC5jb20+DQo+
-ID4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDQyNDByZGIuZHRzIHwgOCAr
-KysrLS0tLQ0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9u
-cygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDQy
-NDByZGIuZHRzDQo+ID4gYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Q0MjQwcmRiLmR0cw0K
-PiA+IGluZGV4IDE1ZWIwYTMuLmE1NmE3MDUgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBj
-L2Jvb3QvZHRzL2ZzbC90NDI0MHJkYi5kdHMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9k
-dHMvZnNsL3Q0MjQwcmRiLmR0cw0KPiA+IEBAIC0yNjcsMjIgKzI2NywyMiBAQA0KPiA+DQo+ID4g
-IAkJCW1kaW9AZmQwMDAgew0KPiA+ICAJCQkJeGZpcGh5MTogZXRoZXJuZXQtcGh5QDEwIHsNCj4g
-PiAtCQkJCQljb21wYXRpYmxlID0gImV0aGVybmV0LXBoeS0NCj4gaWVlZTgwMi4zLQ0KPiA+IGM0
-NSI7DQo+ID4gKwkJCQkJY29tcGF0aWJsZSA9ICJldGhlcm5ldC1waHktDQo+ID4gaWQxM2U1LjEw
-MDIiOw0KPiA+ICAJCQkJCXJlZyA9IDwweDEwPjsNCj4gPiAgCQkJCX07DQo+ID4NCj4gPiAgCQkJ
-CXhmaXBoeTI6IGV0aGVybmV0LXBoeUAxMSB7DQo+ID4gLQkJCQkJY29tcGF0aWJsZSA9ICJldGhl
-cm5ldC1waHktDQo+IGllZWU4MDIuMy0NCj4gPiBjNDUiOw0KPiA+ICsJCQkJCWNvbXBhdGlibGUg
-PSAiZXRoZXJuZXQtcGh5LQ0KPiA+IGlkMTNlNS4xMDAyIjsNCj4gPiAgCQkJCQlyZWcgPSA8MHgx
-MT47DQo+ID4gIAkJCQl9Ow0KPiA+DQo+ID4gIAkJCQl4ZmlwaHkzOiBldGhlcm5ldC1waHlAMTMg
-ew0KPiA+IC0JCQkJCWNvbXBhdGlibGUgPSAiZXRoZXJuZXQtcGh5LQ0KPiBpZWVlODAyLjMtDQo+
-ID4gYzQ1IjsNCj4gPiArCQkJCQljb21wYXRpYmxlID0gImV0aGVybmV0LXBoeS0NCj4gPiBpZDEz
-ZTUuMTAwMiI7DQo+ID4gIAkJCQkJcmVnID0gPDB4MTM+Ow0KPiA+ICAJCQkJfTsNCj4gPg0KPiA+
-ICAJCQkJeGZpcGh5NDogZXRoZXJuZXQtcGh5QDEyIHsNCj4gPiAtCQkJCQljb21wYXRpYmxlID0g
-ImV0aGVybmV0LXBoeS0NCj4gaWVlZTgwMi4zLQ0KPiA+IGM0NSI7DQo+ID4gKwkJCQkJY29tcGF0
-aWJsZSA9ICJldGhlcm5ldC1waHktDQo+ID4gaWQxM2U1LjEwMDIiOw0KPiA+ICAJCQkJCXJlZyA9
-IDwweDEyPjsNCj4gPiAgCQkJCX07DQo+ID4gIAkJCX07DQo+IA0KPiBJIGdldCBjcmFzaGVzIG9u
-IGJvb3Qgd2hlbiB1c2luZyBhIGR0YiB3aXRoIHRoaXMgY2hhbmdlOg0KDQpIaQ0KDQpTb3JyeSBm
-b3IgdGhlIGxhdGUgcmVwbGF5LiBJIHdhcyBvbiB2YWNhdGlvbi4gSSdtIGxvb2tpbmcgaW50byBp
-dC4NCg0KUmVnYXJkcywNCkNhbWVsaWENCg==
+Hi,
+
+On Tue, Jan 08, 2019 at 11:02:24AM +0100, Christophe Leroy wrote:
+> 
+> Le 31/12/2018 à 10:29, Mike Rapoport a écrit :
+> >There are a several places that allocate memory using memblock APIs that
+> >return a physical address, convert the returned address to the virtual
+> >address and frequently also memset(0) the allocated range.
+> >
+> >Update these places to use memblock allocators already returning a virtual
+> >address. Use memblock functions that clear the allocated memory instead of
+> >calling memset(0) where appropriate.
+> >
+> >The calls to memblock_alloc_base() that were not followed by memset(0) are
+> >replaced with memblock_alloc_try_nid_raw(). Since the latter does not
+> >panic() when the allocation fails, the appropriate panic() calls are added
+> >to the call sites.
+> >
+> >Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> >---
+> >  arch/powerpc/kernel/paca.c             | 16 ++++++----------
+> >  arch/powerpc/kernel/setup_64.c         | 24 ++++++++++--------------
+> >  arch/powerpc/mm/hash_utils_64.c        |  6 +++---
+> >  arch/powerpc/mm/pgtable-book3e.c       |  8 ++------
+> >  arch/powerpc/mm/pgtable-book3s64.c     |  5 +----
+> >  arch/powerpc/mm/pgtable-radix.c        | 25 +++++++------------------
+> >  arch/powerpc/platforms/pasemi/iommu.c  |  5 +++--
+> >  arch/powerpc/platforms/pseries/setup.c | 18 ++++++++++++++----
+> >  arch/powerpc/sysdev/dart_iommu.c       |  7 +++++--
+> >  9 files changed, 51 insertions(+), 63 deletions(-)
+> >
+> >diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+> >index 913bfca..276d36d4 100644
+> >--- a/arch/powerpc/kernel/paca.c
+> >+++ b/arch/powerpc/kernel/paca.c
+> >@@ -27,7 +27,7 @@
+> >  static void *__init alloc_paca_data(unsigned long size, unsigned long align,
+> >  				unsigned long limit, int cpu)
+> >  {
+> >-	unsigned long pa;
+> >+	void *ptr;
+> >  	int nid;
+> >  	/*
+> >@@ -42,17 +42,15 @@ static void *__init alloc_paca_data(unsigned long size, unsigned long align,
+> >  		nid = early_cpu_to_node(cpu);
+> >  	}
+> >-	pa = memblock_alloc_base_nid(size, align, limit, nid, MEMBLOCK_NONE);
+> >-	if (!pa) {
+> >-		pa = memblock_alloc_base(size, align, limit);
+> >-		if (!pa)
+> >-			panic("cannot allocate paca data");
+> >-	}
+> >+	ptr = memblock_alloc_try_nid(size, align, MEMBLOCK_LOW_LIMIT,
+> >+				     limit, nid);
+> >+	if (!ptr)
+> >+		panic("cannot allocate paca data");
+> 
+> AFAIKS, memblock_alloc_try_nid() panics if memblock_alloc_internal() returns
+> NULL, so the above panic is useless, isn't it ?
+ 
+My plan is to make all memblock_alloc() APIs to return NULL rather then
+panic and then get rid of _nopanic variants. It's currently WIP and
+hopefully I'll have the patches ready next week.
+
+> >  	if (cpu == boot_cpuid)
+> >  		memblock_set_bottom_up(false);
+> >-	return __va(pa);
+> >+	return ptr;
+> >  }
+> >  #ifdef CONFIG_PPC_PSERIES
+> >@@ -118,7 +116,6 @@ static struct slb_shadow * __init new_slb_shadow(int cpu, unsigned long limit)
+> >  	}
+> >  	s = alloc_paca_data(sizeof(*s), L1_CACHE_BYTES, limit, cpu);
+> >-	memset(s, 0, sizeof(*s));
+> >  	s->persistent = cpu_to_be32(SLB_NUM_BOLTED);
+> >  	s->buffer_length = cpu_to_be32(sizeof(*s));
+> >@@ -222,7 +219,6 @@ void __init allocate_paca(int cpu)
+> >  	paca = alloc_paca_data(sizeof(struct paca_struct), L1_CACHE_BYTES,
+> >  				limit, cpu);
+> >  	paca_ptrs[cpu] = paca;
+> >-	memset(paca, 0, sizeof(struct paca_struct));
+> >  	initialise_paca(paca, cpu);
+> >  #ifdef CONFIG_PPC_PSERIES
+> >diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> >index 236c115..3dcd779 100644
+> >--- a/arch/powerpc/kernel/setup_64.c
+> >+++ b/arch/powerpc/kernel/setup_64.c
+> >@@ -634,19 +634,17 @@ __init u64 ppc64_bolted_size(void)
+> >  static void *__init alloc_stack(unsigned long limit, int cpu)
+> >  {
+> >-	unsigned long pa;
+> >+	void *ptr;
+> >  	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
+> >-	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
+> >-					early_cpu_to_node(cpu), MEMBLOCK_NONE);
+> >-	if (!pa) {
+> >-		pa = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+> >-		if (!pa)
+> >-			panic("cannot allocate stacks");
+> >-	}
+> >+	ptr = memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE,
+> >+				     MEMBLOCK_LOW_LIMIT, limit,
+> >+				     early_cpu_to_node(cpu));
+> >+	if (!ptr)
+> >+		panic("cannot allocate stacks");
+> 
+> Same ?
+> 
+> Christophe
+> 
+> >-	return __va(pa);
+> >+	return ptr;
+> >  }
+> >  void __init irqstack_early_init(void)
+> >@@ -739,20 +737,17 @@ void __init emergency_stack_init(void)
+> >  		struct thread_info *ti;
+> >  		ti = alloc_stack(limit, i);
+> >-		memset(ti, 0, THREAD_SIZE);
+> >  		emerg_stack_init_thread_info(ti, i);
+> >  		paca_ptrs[i]->emergency_sp = (void *)ti + THREAD_SIZE;
+> >  #ifdef CONFIG_PPC_BOOK3S_64
+> >  		/* emergency stack for NMI exception handling. */
+> >  		ti = alloc_stack(limit, i);
+> >-		memset(ti, 0, THREAD_SIZE);
+> >  		emerg_stack_init_thread_info(ti, i);
+> >  		paca_ptrs[i]->nmi_emergency_sp = (void *)ti + THREAD_SIZE;
+> >  		/* emergency stack for machine check exception handling. */
+> >  		ti = alloc_stack(limit, i);
+> >-		memset(ti, 0, THREAD_SIZE);
+> >  		emerg_stack_init_thread_info(ti, i);
+> >  		paca_ptrs[i]->mc_emergency_sp = (void *)ti + THREAD_SIZE;
+> >  #endif
+> >@@ -933,8 +928,9 @@ static void __ref init_fallback_flush(void)
+> >  	 * hardware prefetch runoff. We don't have a recipe for load patterns to
+> >  	 * reliably avoid the prefetcher.
+> >  	 */
+> >-	l1d_flush_fallback_area = __va(memblock_alloc_base(l1d_size * 2, l1d_size, limit));
+> >-	memset(l1d_flush_fallback_area, 0, l1d_size * 2);
+> >+	l1d_flush_fallback_area = memblock_alloc_try_nid(l1d_size * 2,
+> >+						l1d_size, MEMBLOCK_LOW_LIMIT,
+> >+						limit, NUMA_NO_NODE);
+> >  	for_each_possible_cpu(cpu) {
+> >  		struct paca_struct *paca = paca_ptrs[cpu];
+> >diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+> >index 0cc7fbc..bc6be44 100644
+> >--- a/arch/powerpc/mm/hash_utils_64.c
+> >+++ b/arch/powerpc/mm/hash_utils_64.c
+> >@@ -908,9 +908,9 @@ static void __init htab_initialize(void)
+> >  #ifdef CONFIG_DEBUG_PAGEALLOC
+> >  	if (debug_pagealloc_enabled()) {
+> >  		linear_map_hash_count = memblock_end_of_DRAM() >> PAGE_SHIFT;
+> >-		linear_map_hash_slots = __va(memblock_alloc_base(
+> >-				linear_map_hash_count, 1, ppc64_rma_size));
+> >-		memset(linear_map_hash_slots, 0, linear_map_hash_count);
+> >+		linear_map_hash_slots = memblock_alloc_try_nid(
+> >+				linear_map_hash_count, 1, MEMBLOCK_LOW_LIMIT,
+> >+				ppc64_rma_size,	NUMA_NO_NODE);
+> >  	}
+> >  #endif /* CONFIG_DEBUG_PAGEALLOC */
+> >diff --git a/arch/powerpc/mm/pgtable-book3e.c b/arch/powerpc/mm/pgtable-book3e.c
+> >index e0ccf36..53cbc7d 100644
+> >--- a/arch/powerpc/mm/pgtable-book3e.c
+> >+++ b/arch/powerpc/mm/pgtable-book3e.c
+> >@@ -57,12 +57,8 @@ void vmemmap_remove_mapping(unsigned long start,
+> >  static __ref void *early_alloc_pgtable(unsigned long size)
+> >  {
+> >-	void *pt;
+> >-
+> >-	pt = __va(memblock_alloc_base(size, size, __pa(MAX_DMA_ADDRESS)));
+> >-	memset(pt, 0, size);
+> >-
+> >-	return pt;
+> >+	return memblock_alloc_try_nid(size, size, MEMBLOCK_LOW_LIMIT,
+> >+				      __pa(MAX_DMA_ADDRESS), NUMA_NO_NODE);
+> >  }
+> >  /*
+> >diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+> >index f3c31f5..55876b7 100644
+> >--- a/arch/powerpc/mm/pgtable-book3s64.c
+> >+++ b/arch/powerpc/mm/pgtable-book3s64.c
+> >@@ -195,11 +195,8 @@ void __init mmu_partition_table_init(void)
+> >  	unsigned long ptcr;
+> >  	BUILD_BUG_ON_MSG((PATB_SIZE_SHIFT > 36), "Partition table size too large.");
+> >-	partition_tb = __va(memblock_alloc_base(patb_size, patb_size,
+> >-						MEMBLOCK_ALLOC_ANYWHERE));
+> >-
+> >  	/* Initialize the Partition Table with no entries */
+> >-	memset((void *)partition_tb, 0, patb_size);
+> >+	partition_tb = memblock_alloc(patb_size, patb_size);
+> >  	/*
+> >  	 * update partition table control register,
+> >diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> >index 9311560..29bcea5 100644
+> >--- a/arch/powerpc/mm/pgtable-radix.c
+> >+++ b/arch/powerpc/mm/pgtable-radix.c
+> >@@ -51,26 +51,15 @@ static int native_register_process_table(unsigned long base, unsigned long pg_sz
+> >  static __ref void *early_alloc_pgtable(unsigned long size, int nid,
+> >  			unsigned long region_start, unsigned long region_end)
+> >  {
+> >-	unsigned long pa = 0;
+> >-	void *pt;
+> >+	phys_addr_t min_addr = MEMBLOCK_LOW_LIMIT;
+> >+	phys_addr_t max_addr = MEMBLOCK_ALLOC_ANYWHERE;
+> >-	if (region_start || region_end) /* has region hint */
+> >-		pa = memblock_alloc_range(size, size, region_start, region_end,
+> >-						MEMBLOCK_NONE);
+> >-	else if (nid != -1) /* has node hint */
+> >-		pa = memblock_alloc_base_nid(size, size,
+> >-						MEMBLOCK_ALLOC_ANYWHERE,
+> >-						nid, MEMBLOCK_NONE);
+> >+	if (region_start)
+> >+		min_addr = region_start;
+> >+	if (region_end)
+> >+		max_addr = region_end;
+> >-	if (!pa)
+> >-		pa = memblock_alloc_base(size, size, MEMBLOCK_ALLOC_ANYWHERE);
+> >-
+> >-	BUG_ON(!pa);
+> >-
+> >-	pt = __va(pa);
+> >-	memset(pt, 0, size);
+> >-
+> >-	return pt;
+> >+	return memblock_alloc_try_nid(size, size, min_addr, max_addr, nid);
+> >  }
+> >  static int early_map_kernel_page(unsigned long ea, unsigned long pa,
+> >diff --git a/arch/powerpc/platforms/pasemi/iommu.c b/arch/powerpc/platforms/pasemi/iommu.c
+> >index f297152..f62930f 100644
+> >--- a/arch/powerpc/platforms/pasemi/iommu.c
+> >+++ b/arch/powerpc/platforms/pasemi/iommu.c
+> >@@ -208,7 +208,9 @@ static int __init iob_init(struct device_node *dn)
+> >  	pr_debug(" -> %s\n", __func__);
+> >  	/* For 2G space, 8x64 pages (2^21 bytes) is max total l2 size */
+> >-	iob_l2_base = (u32 *)__va(memblock_alloc_base(1UL<<21, 1UL<<21, 0x80000000));
+> >+	iob_l2_base = memblock_alloc_try_nid_raw(1UL << 21, 1UL << 21,
+> >+					MEMBLOCK_LOW_LIMIT, 0x80000000,
+> >+					NUMA_NO_NODE);
+> >  	pr_info("IOBMAP L2 allocated at: %p\n", iob_l2_base);
+> >@@ -269,4 +271,3 @@ void __init iommu_init_early_pasemi(void)
+> >  	pasemi_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pasemi;
+> >  	set_pci_dma_ops(&dma_iommu_ops);
+> >  }
+> >-
+> >diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> >index 41f62ca2..e4f0dfd 100644
+> >--- a/arch/powerpc/platforms/pseries/setup.c
+> >+++ b/arch/powerpc/platforms/pseries/setup.c
+> >@@ -130,8 +130,13 @@ static void __init fwnmi_init(void)
+> >  	 * It will be used in real mode mce handler, hence it needs to be
+> >  	 * below RMA.
+> >  	 */
+> >-	mce_data_buf = __va(memblock_alloc_base(RTAS_ERROR_LOG_MAX * nr_cpus,
+> >-					RTAS_ERROR_LOG_MAX, ppc64_rma_size));
+> >+	mce_data_buf = memblock_alloc_try_nid_raw(RTAS_ERROR_LOG_MAX * nr_cpus,
+> >+					RTAS_ERROR_LOG_MAX, MEMBLOCK_LOW_LIMIT,
+> >+					ppc64_rma_size, NUMA_NO_NODE);
+> >+	if (!mce_data_buf)
+> >+		panic("Failed to allocate %d bytes below %pa for MCE buffer\n",
+> >+		      RTAS_ERROR_LOG_MAX * nr_cpus, &ppc64_rma_size);
+> >+
+> >  	for_each_possible_cpu(i) {
+> >  		paca_ptrs[i]->mce_data_buf = mce_data_buf +
+> >  						(RTAS_ERROR_LOG_MAX * i);
+> >@@ -140,8 +145,13 @@ static void __init fwnmi_init(void)
+> >  #ifdef CONFIG_PPC_BOOK3S_64
+> >  	/* Allocate per cpu slb area to save old slb contents during MCE */
+> >  	size = sizeof(struct slb_entry) * mmu_slb_size * nr_cpus;
+> >-	slb_ptr = __va(memblock_alloc_base(size, sizeof(struct slb_entry),
+> >-					   ppc64_rma_size));
+> >+	slb_ptr = memblock_alloc_try_nid_raw(size, sizeof(struct slb_entry),
+> >+					MEMBLOCK_LOW_LIMIT, ppc64_rma_size,
+> >+					NUMA_NO_NODE);
+> >+	if (!slb_ptr)
+> >+		panic("Failed to allocate %zu bytes below %pa for slb area\n",
+> >+		      size, &ppc64_rma_size);
+> >+
+> >  	for_each_possible_cpu(i)
+> >  		paca_ptrs[i]->mce_faulty_slbs = slb_ptr + (mmu_slb_size * i);
+> >  #endif
+> >diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+> >index a5b40d1..25bc25f 100644
+> >--- a/arch/powerpc/sysdev/dart_iommu.c
+> >+++ b/arch/powerpc/sysdev/dart_iommu.c
+> >@@ -251,8 +251,11 @@ static void allocate_dart(void)
+> >  	 * 16MB (1 << 24) alignment. We allocate a full 16Mb chuck since we
+> >  	 * will blow up an entire large page anyway in the kernel mapping.
+> >  	 */
+> >-	dart_tablebase = __va(memblock_alloc_base(1UL<<24,
+> >-						  1UL<<24, 0x80000000L));
+> >+	dart_tablebase = memblock_alloc_try_nid_raw(SZ_16M, SZ_16M,
+> >+					MEMBLOCK_LOW_LIMIT, SZ_2G,
+> >+					NUMA_NO_NODE);
+> >+	if (!dart_tablebase)
+> >+		panic("Failed to allocate 16MB below 2GB for DART table\n");
+> >  	/* There is no point scanning the DART space for leaks*/
+> >  	kmemleak_no_scan((void *)dart_tablebase);
+> >
+> 
+
+-- 
+Sincerely yours,
+Mike.
+
