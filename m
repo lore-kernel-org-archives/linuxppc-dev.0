@@ -2,52 +2,73 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE89BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:24:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D3FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:26:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A099F206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:24:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A099F206B6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D1B50206B6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:26:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="kPtcD0BO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1B50206B6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YtJs4L7mzDqVF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:24:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YtMG40NyzDqBS
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:26:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=andrew.murray@arm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Ysyl16kgzDqV9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:08:46 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 864BD1596;
- Tue,  8 Jan 2019 05:08:45 -0800 (PST)
-Received: from localhost (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E2A823F70D;
- Tue,  8 Jan 2019 05:08:44 -0800 (PST)
-Date: Tue, 8 Jan 2019 13:08:43 +0000
-From: Andrew Murray <andrew.murray@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 11/13] x86: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for
- exclude incapable PMUs
-Message-ID: <20190108130842.GD56789@e119886-lin.cambridge.arm.com>
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="kPtcD0BO"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yt1f4BNNzDqVq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:11:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=RH/5lh2hI9xb1gFqv9RkB8AxW7I9vax/KHqnXcNAOZ0=; b=kPtcD0BOgYYx4w3+uLkJOFHfY
+ aPy3Z9tsHajOvgIPDjACd9fLvlpcz86AAU9NX/b3MetRNl/II9/ZfJtmxMsaR4Ojbs0BKHu7aFPuh
+ 3GMH7jfC34bUOu+7k9/d70/8bjbyfIrD5dKQCQIhltSctV9MAu1tS44ksuQYrEpPBU3LaoKpTZjBU
+ LLsHcmtnbXLemCSvNswgS3sSMho8SXIzG77q4cqfhpXwyI/T+EYtMTaS/rHqSmHlfrrvAcf9aEXww
+ bcD9PnSs51+qndEegxOlVTNxWBpFEF2PHmf0/l3sH4sqS3QS4wQj1L7cmlrD4rTMiX7hocuqIOboo
+ zIe48jn+Q==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1ggr9O-0006v4-6L; Tue, 08 Jan 2019 13:10:34 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 837B82019FEBB; Tue,  8 Jan 2019 14:10:31 +0100 (CET)
+Date: Tue, 8 Jan 2019 14:10:31 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Murray <andrew.murray@arm.com>
+Subject: Re: [PATCH v4 05/13] arm: perf: conditionally use
+ PERF_PMU_CAP_NO_EXCLUDE
+Message-ID: <20190108131031.GG6808@hirez.programming.kicks-ass.net>
 References: <1546878450-20341-1-git-send-email-andrew.murray@arm.com>
- <1546878450-20341-12-git-send-email-andrew.murray@arm.com>
- <20190108104940.GE6808@hirez.programming.kicks-ass.net>
+ <1546878450-20341-6-git-send-email-andrew.murray@arm.com>
+ <20190108102802.GC6808@hirez.programming.kicks-ass.net>
+ <20190108130740.GC56789@e119886-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190108104940.GE6808@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
+In-Reply-To: <20190108130740.GC56789@e119886-lin.cambridge.arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,13 +95,17 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 08, 2019 at 11:49:40AM +0100, Peter Zijlstra wrote:
-> On Mon, Jan 07, 2019 at 04:27:28PM +0000, Andrew Murray wrote:
+On Tue, Jan 08, 2019 at 01:07:41PM +0000, Andrew Murray wrote:
+
+> Yes I found lots of examples like this across the tree whilst doing this
+> work. However I decided to initially start with simply removing duplicated
+> code as a result of adding this flag and attempting to preserve existing
+> functionality. I thought that if I add missing checks then the patchset
+> will get much bigger and be harder to merge. I would like to do this though
+> as another non-cross-arch series.
 > 
-> This patch has the exact same subject as the previous one.. that seems
-> sub-optimal.
+> Can we limit this patch series to the minimal changes required to fully
+> use PERF_PMU_CAP_NO_EXCLUDE and then attempt to fix these existing problems
+> in subsequent patch sets?
 
-Ah yes, I'll update that in subsquent revisions. (The reason for two patches
-was to separate functional vs non-functional changes).
-
-Andrew Murray
+Ok, but it would've been nice to see that mentioned somewhere.
