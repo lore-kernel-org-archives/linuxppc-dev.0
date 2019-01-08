@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA505C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:58:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88C2FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 07:00:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49C312087F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:58:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49C312087F
+	by mail.kernel.org (Postfix) with ESMTPS id 0D15F2087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 07:00:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D15F2087F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Yjld0LzxzDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 17:58:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YjnC0C0FzDqQf
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 17:59:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,38 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Yjjd0XWYzDqQQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 17:56:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yjjd0XTDzDqNN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 17:56:51 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43YjjX0F55z9v1HX;
- Tue,  8 Jan 2019 07:56:48 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43YjjV1GqLz9v2g7;
+ Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ATpPzMj0kDRk; Tue,  8 Jan 2019 07:56:47 +0100 (CET)
+ with ESMTP id UPAcuR7dcLCv; Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43YjjW6lpLzB09Zh;
- Tue,  8 Jan 2019 07:56:47 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43YjjV0l5YzB09Zh;
+ Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C7AA48B791;
- Tue,  8 Jan 2019 07:56:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ECD0B8B791;
+ Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id bHcLnr3mGVNG; Tue,  8 Jan 2019 07:56:48 +0100 (CET)
+ with ESMTP id PXTZ2k2jivoZ; Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 Received: from PO15451.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8D7E98B754;
- Tue,  8 Jan 2019 07:56:48 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BD8558B754;
+ Tue,  8 Jan 2019 07:56:46 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id 6B6B8717D8; Tue,  8 Jan 2019 06:56:48 +0000 (UTC)
-Message-Id: <e082265fba04b4a4c17003a73820844c8feb5017.1545445924.git.christophe.leroy@c-s.fr>
-In-Reply-To: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
-References: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
+ id 7CCEB717D8; Tue,  8 Jan 2019 06:56:46 +0000 (UTC)
+Message-Id: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 2/2] crypto: talitos - fix ablkcipher for CONFIG_VMAP_STACK
+Subject: [PATCH v4 1/2] crypto: talitos - reorder code in talitos_edesc_alloc()
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>, Horia Geanta <horia.geanta@nxp.com>
-Date: Tue,  8 Jan 2019 06:56:48 +0000 (UTC)
+Date: Tue,  8 Jan 2019 06:56:46 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,77 +75,90 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
-[    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
-[    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
-[    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
-[    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
-[    2.406669]
-[    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
-[    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
-[    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
-[    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
-[    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
-[    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
-[    2.451762] Call Trace:
-[    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
-[    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
-[    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
-[    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
-[    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
-[    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
-[    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
-[    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
-[    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
-[    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
-[    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
-[    2.515532] Instruction dump:
-[    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
-[    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
-[    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
-[    2.539123] talitos ff020000.crypto: master data transfer error
-[    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
-[    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
+This patch moves the mapping of IV after the kmalloc(). This
+avoids having to unmap in case kmalloc() fails.
 
-IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
-cannot be DMA mapped anymore.
-
-This patch copies the IV into the extended descriptor.
-
-Fixes: 4de9d0b547b9 ("crypto: talitos - Add ablkcipher algorithms")
-Cc: stable@vger.kernel.org
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v4: Split in two patches ; made the copy unconditional.
+ new in v4
 
- v3: Using struct edesc buffer.
-
- v2: Using per-request context.
-
- drivers/crypto/talitos.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/crypto/talitos.c | 25 +++++++------------------
+ 1 file changed, 7 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 54d80e7edb86..f8e2c5c3f4eb 100644
+index 45e20707cef8..54d80e7edb86 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -1416,12 +1416,15 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
- 	/* if its a ahash, add space for a second desc next to the first one */
- 	if (is_sec1 && !dst)
+@@ -1361,23 +1361,18 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 	struct talitos_private *priv = dev_get_drvdata(dev);
+ 	bool is_sec1 = has_ftr_sec1(priv);
+ 	int max_len = is_sec1 ? TALITOS1_MAX_DATA_LEN : TALITOS2_MAX_DATA_LEN;
+-	void *err;
+ 
+ 	if (cryptlen + authsize > max_len) {
+ 		dev_err(dev, "length exceeds h/w max limit\n");
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (ivsize)
+-		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
+-
+ 	if (!dst || dst == src) {
+ 		src_len = assoclen + cryptlen + authsize;
+ 		src_nents = sg_nents_for_len(src, src_len);
+ 		if (src_nents < 0) {
+ 			dev_err(dev, "Invalid number of src SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		src_nents = (src_nents == 1) ? 0 : src_nents;
+ 		dst_nents = dst ? src_nents : 0;
+@@ -1387,16 +1382,14 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 		src_nents = sg_nents_for_len(src, src_len);
+ 		if (src_nents < 0) {
+ 			dev_err(dev, "Invalid number of src SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		src_nents = (src_nents == 1) ? 0 : src_nents;
+ 		dst_len = assoclen + cryptlen + (encrypt ? authsize : 0);
+ 		dst_nents = sg_nents_for_len(dst, dst_len);
+ 		if (dst_nents < 0) {
+ 			dev_err(dev, "Invalid number of dst SG.\n");
+-			err = ERR_PTR(-EINVAL);
+-			goto error_sg;
++			return ERR_PTR(-EINVAL);
+ 		}
+ 		dst_nents = (dst_nents == 1) ? 0 : dst_nents;
+ 	}
+@@ -1425,10 +1418,10 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
  		alloc_len += sizeof(struct talitos_desc);
-+	alloc_len += ivsize;
  
  	edesc = kmalloc(alloc_len, GFP_DMA | flags);
- 	if (!edesc)
- 		return ERR_PTR(-ENOMEM);
--	if (ivsize)
-+	if (ivsize) {
-+		iv = memcpy(((u8 *)edesc) + alloc_len - ivsize, iv, ivsize);
- 		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
-+	}
+-	if (!edesc) {
+-		err = ERR_PTR(-ENOMEM);
+-		goto error_sg;
+-	}
++	if (!edesc)
++		return ERR_PTR(-ENOMEM);
++	if (ivsize)
++		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
  	memset(&edesc->desc, 0, sizeof(edesc->desc));
  
  	edesc->src_nents = src_nents;
+@@ -1445,10 +1438,6 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 						     DMA_BIDIRECTIONAL);
+ 	}
+ 	return edesc;
+-error_sg:
+-	if (iv_dma)
+-		dma_unmap_single(dev, iv_dma, ivsize, DMA_TO_DEVICE);
+-	return err;
+ }
+ 
+ static struct talitos_edesc *aead_edesc_alloc(struct aead_request *areq, u8 *iv,
 -- 
 2.13.3
 
