@@ -2,23 +2,23 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA991C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:45:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A649C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:47:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 49D6120850
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:45:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49D6120850
+	by mail.kernel.org (Postfix) with ESMTPS id E50A4206BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:47:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E50A4206BB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Ytn95k0FzDqLk
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:45:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ytq92g5pzDqXC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:47:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,40 +28,37 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YtkT0yHCzDqKP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:43:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YtkT0Q0FzDqKH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:43:12 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43YtkN6KwZz9tyMy;
- Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43YtkM15DPz9tyMx;
+ Tue,  8 Jan 2019 14:43:07 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id pYx6BQ4vhwHl; Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+ with ESMTP id WZqmlY5V_IDu; Tue,  8 Jan 2019 14:43:07 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43YtkN5mpSz9tyMv;
- Tue,  8 Jan 2019 14:43:08 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43YtkM0Qmkz9tyMv;
+ Tue,  8 Jan 2019 14:43:07 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F22608B83C;
- Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3BC888B833;
+ Tue,  8 Jan 2019 14:43:08 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id f8F9imAQGsDl; Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+ with ESMTP id AZMSzRADvPja; Tue,  8 Jan 2019 14:43:08 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A0F838B7DF;
- Tue,  8 Jan 2019 14:43:09 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EFEA18B7DF;
+ Tue,  8 Jan 2019 14:43:07 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 7E2FA717F2; Tue,  8 Jan 2019 13:43:09 +0000 (UTC)
-Message-Id: <ec01a9be000c2305eec61bb1e2c44df2f917c1a6.1546954236.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1546954233.git.christophe.leroy@c-s.fr>
-References: <cover.1546954233.git.christophe.leroy@c-s.fr>
+ id A9572717F2; Tue,  8 Jan 2019 13:43:07 +0000 (UTC)
+Message-Id: <cover.1546954233.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v12 01/10] powerpc/irq: use memblock functions returning
- virtual address
+Subject: [PATCH v12 00/10] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.ibm.com>
-Date: Tue,  8 Jan 2019 13:43:09 +0000 (UTC)
+Date: Tue,  8 Jan 2019 13:43:07 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,141 +75,131 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since only the virtual address of allocated blocks is used,
-lets use functions returning directly virtual address.
+The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
+moves the thread_info into task_struct.
 
-Those functions have the advantage of also zeroing the block.
+Moving thread_info into task_struct has the following advantages:
+- It protects thread_info from corruption in the case of stack
+overflows.
+- Its address is harder to determine if stack addresses are
+leaked, making a number of attacks more difficult.
 
-Suggested-by: Mike Rapoport <rppt@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- @Mike: Part of this is taken from your serie. I was not sure how
- to include you in the commit log, I used Suggested-by: but could use
- any other property, so if you prefer something different just tell
- me. Also, if you could review this patch, it would be nice.
+Changes since v11:
+ - Rebased on 81775f5563fa ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+ - Added a first patch to change memblock allocs to functions returning virtual addrs. This removes
+   the memset() which were the only remaining stuff in irq_ctx_init() and exc_lvl_ctx_init() at the end.
+ - dropping irq_ctx_init() and exc_lvl_ctx_init() in patch 5 (powerpc: Activate CONFIG_THREAD_INFO_IN_TASK)
+ - A few cosmetic changes in commit log and code.
 
- arch/powerpc/kernel/irq.c      |  5 -----
- arch/powerpc/kernel/setup_32.c | 15 +++++----------
- arch/powerpc/kernel/setup_64.c | 16 ++--------------
- 3 files changed, 7 insertions(+), 29 deletions(-)
+Changes since v10:
+ - Rebased on 21622a0d2023 ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+  ==> Fixed conflict in setup_32.S
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 916ddc4aac44..4a44bc395fbc 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -725,18 +725,15 @@ void exc_lvl_ctx_init(void)
- #endif
- #endif
- 
--		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
- 		tp = critirq_ctx[cpu_nr];
- 		tp->cpu = cpu_nr;
- 		tp->preempt_count = 0;
- 
- #ifdef CONFIG_BOOKE
--		memset((void *)dbgirq_ctx[cpu_nr], 0, THREAD_SIZE);
- 		tp = dbgirq_ctx[cpu_nr];
- 		tp->cpu = cpu_nr;
- 		tp->preempt_count = 0;
- 
--		memset((void *)mcheckirq_ctx[cpu_nr], 0, THREAD_SIZE);
- 		tp = mcheckirq_ctx[cpu_nr];
- 		tp->cpu = cpu_nr;
- 		tp->preempt_count = HARDIRQ_OFFSET;
-@@ -754,12 +751,10 @@ void irq_ctx_init(void)
- 	int i;
- 
- 	for_each_possible_cpu(i) {
--		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
- 		tp = softirq_ctx[i];
- 		tp->cpu = i;
- 		klp_init_thread_info(tp);
- 
--		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
- 		tp = hardirq_ctx[i];
- 		tp->cpu = i;
- 		klp_init_thread_info(tp);
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 947f904688b0..bfe1b46a26dc 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -203,10 +203,8 @@ void __init irqstack_early_init(void)
- 	/* interrupt stacks must be in lowmem, we get that for free on ppc32
- 	 * as the memblock is limited to lowmem by default */
- 	for_each_possible_cpu(i) {
--		softirq_ctx[i] = (struct thread_info *)
--			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
--		hardirq_ctx[i] = (struct thread_info *)
--			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
-+		softirq_ctx[i] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
-+		hardirq_ctx[i] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
- 	}
- }
- 
-@@ -224,13 +222,10 @@ void __init exc_lvl_early_init(void)
- 		hw_cpu = 0;
- #endif
- 
--		critirq_ctx[hw_cpu] = (struct thread_info *)
--			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
-+		critirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
- #ifdef CONFIG_BOOKE
--		dbgirq_ctx[hw_cpu] = (struct thread_info *)
--			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
--		mcheckirq_ctx[hw_cpu] = (struct thread_info *)
--			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
-+		dbgirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
-+		mcheckirq_ctx[hw_cpu] = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
- #endif
- 	}
- }
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 236c1151a3a7..943503f1e2c0 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -634,19 +634,10 @@ __init u64 ppc64_bolted_size(void)
- 
- static void *__init alloc_stack(unsigned long limit, int cpu)
- {
--	unsigned long pa;
--
- 	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
- 
--	pa = memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
--					early_cpu_to_node(cpu), MEMBLOCK_NONE);
--	if (!pa) {
--		pa = memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
--		if (!pa)
--			panic("cannot allocate stacks");
--	}
--
--	return __va(pa);
-+	return memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE, MEMBLOCK_LOW_LIMIT,
-+				      limit, early_cpu_to_node(cpu));
- }
- 
- void __init irqstack_early_init(void)
-@@ -739,20 +730,17 @@ void __init emergency_stack_init(void)
- 		struct thread_info *ti;
- 
- 		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
- 		emerg_stack_init_thread_info(ti, i);
- 		paca_ptrs[i]->emergency_sp = (void *)ti + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
- 		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
- 		emerg_stack_init_thread_info(ti, i);
- 		paca_ptrs[i]->nmi_emergency_sp = (void *)ti + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
- 		ti = alloc_stack(limit, i);
--		memset(ti, 0, THREAD_SIZE);
- 		emerg_stack_init_thread_info(ti, i);
- 		paca_ptrs[i]->mc_emergency_sp = (void *)ti + THREAD_SIZE;
- #endif
+Changes since v9:
+ - Rebased on 183cbf93be88 ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+  ==> Fixed conflict on xmon
+
+Changes since v8:
+ - Rebased on e589b79e40d9 ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+  ==> Main impact was conflicts due to commit 9a8dd708d547 ("memblock: rename memblock_alloc{_nid,_try_nid} to memblock_phys_alloc*")
+
+Changes since v7:
+ - Rebased on fb6c6ce7907d ("Automatic merge of branches 'master', 'next' and 'fixes' into merge")
+
+Changes since v6:
+ - Fixed validate_sp() to exclude NULL sp in 'regain entire stack space' patch (early crash with CONFIG_KMEMLEAK)
+
+Changes since v5:
+ - Fixed livepatch_sp setup by using end_of_stack() instead of hardcoding
+ - Fixed PPC_BPF_LOAD_CPU() macro
+
+Changes since v4:
+ - Fixed a build failure on 32bits SMP when include/generated/asm-offsets.h is not
+ already existing, was due to spaces instead of a tab in the Makefile
+
+Changes since RFC v3: (based on Nick's review)
+ - Renamed task_size.h to task_size_user64.h to better relate to what it contains.
+ - Handling of the isolation of thread_info cpu field inside CONFIG_SMP #ifdefs moved to a separate patch.
+ - Removed CURRENT_THREAD_INFO macro completely.
+ - Added a guard in asm/smp.h to avoid build failure before _TASK_CPU is defined.
+ - Added a patch at the end to rename 'tp' pointers to 'sp' pointers
+ - Renamed 'tp' into 'sp' pointers in preparation patch when relevant
+ - Fixed a few commit logs
+ - Fixed checkpatch report.
+
+Changes since RFC v2:
+ - Removed the modification of names in asm-offsets
+ - Created a rule in arch/powerpc/Makefile to append the offset of current->cpu in CFLAGS
+ - Modified asm/smp.h to use the offset set in CFLAGS
+ - Squashed the renaming of THREAD_INFO to TASK_STACK in the preparation patch
+ - Moved the modification of current_pt_regs in the patch activating CONFIG_THREAD_INFO_IN_TASK
+
+Changes since RFC v1:
+ - Removed the first patch which was modifying header inclusion order in timer
+ - Modified some names in asm-offsets to avoid conflicts when including asm-offsets in C files
+ - Modified asm/smp.h to avoid having to include linux/sched.h (using asm-offsets instead)
+ - Moved some changes from the activation patch to the preparation patch.
+
+Christophe Leroy (10):
+  powerpc/irq: use memblock functions returning virtual address
+  book3s/64: avoid circular header inclusion in mmu-hash.h
+  powerpc: Only use task_struct 'cpu' field on SMP
+  powerpc: Prepare for moving thread_info into task_struct
+  powerpc: Activate CONFIG_THREAD_INFO_IN_TASK
+  powerpc: regain entire stack space
+  powerpc: 'current_set' is now a table of task_struct pointers
+  powerpc/32: Remove CURRENT_THREAD_INFO and rename TI_CPU
+  powerpc/64: Remove CURRENT_THREAD_INFO
+  powerpc: clean stack pointers naming
+
+ arch/powerpc/Kconfig                           |   1 +
+ arch/powerpc/Makefile                          |   7 ++
+ arch/powerpc/include/asm/asm-prototypes.h      |   4 +-
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h  |   2 +-
+ arch/powerpc/include/asm/exception-64s.h       |   4 +-
+ arch/powerpc/include/asm/irq.h                 |  18 ++--
+ arch/powerpc/include/asm/livepatch.h           |   6 +-
+ arch/powerpc/include/asm/processor.h           |  39 +--------
+ arch/powerpc/include/asm/ptrace.h              |   2 +-
+ arch/powerpc/include/asm/reg.h                 |   2 +-
+ arch/powerpc/include/asm/smp.h                 |  17 +++-
+ arch/powerpc/include/asm/task_size_user64.h    |  42 +++++++++
+ arch/powerpc/include/asm/thread_info.h         |  19 -----
+ arch/powerpc/kernel/asm-offsets.c              |  10 ++-
+ arch/powerpc/kernel/entry_32.S                 |  66 +++++---------
+ arch/powerpc/kernel/entry_64.S                 |  12 +--
+ arch/powerpc/kernel/epapr_hcalls.S             |   5 +-
+ arch/powerpc/kernel/exceptions-64e.S           |  13 +--
+ arch/powerpc/kernel/exceptions-64s.S           |   2 +-
+ arch/powerpc/kernel/head_32.S                  |  14 +--
+ arch/powerpc/kernel/head_40x.S                 |   4 +-
+ arch/powerpc/kernel/head_44x.S                 |   8 +-
+ arch/powerpc/kernel/head_64.S                  |   1 +
+ arch/powerpc/kernel/head_8xx.S                 |   2 +-
+ arch/powerpc/kernel/head_booke.h               |  12 +--
+ arch/powerpc/kernel/head_fsl_booke.S           |  16 ++--
+ arch/powerpc/kernel/idle_6xx.S                 |   8 +-
+ arch/powerpc/kernel/idle_book3e.S              |   2 +-
+ arch/powerpc/kernel/idle_e500.S                |   8 +-
+ arch/powerpc/kernel/idle_power4.S              |   2 +-
+ arch/powerpc/kernel/irq.c                      | 114 +++----------------------
+ arch/powerpc/kernel/kgdb.c                     |  28 ------
+ arch/powerpc/kernel/machine_kexec_64.c         |   6 +-
+ arch/powerpc/kernel/misc_32.S                  |  17 ++--
+ arch/powerpc/kernel/process.c                  |  40 ++++-----
+ arch/powerpc/kernel/setup-common.c             |   2 +-
+ arch/powerpc/kernel/setup_32.c                 |  15 ++--
+ arch/powerpc/kernel/setup_64.c                 |  48 ++---------
+ arch/powerpc/kernel/smp.c                      |  16 ++--
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S |   6 +-
+ arch/powerpc/kvm/book3s_hv_hmi.c               |   1 +
+ arch/powerpc/mm/hash_low_32.S                  |  14 ++-
+ arch/powerpc/net/bpf_jit32.h                   |   5 +-
+ arch/powerpc/sysdev/6xx-suspend.S              |   5 +-
+ arch/powerpc/xmon/xmon.c                       |   2 +-
+ 45 files changed, 234 insertions(+), 433 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/task_size_user64.h
+
 -- 
 2.13.3
 
