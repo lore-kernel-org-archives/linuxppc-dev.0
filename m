@@ -6,40 +6,42 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB63BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:26:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 907C8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:28:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4D4C72173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:26:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D4C72173C
+	by mail.kernel.org (Postfix) with ESMTPS id 103AF2087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:28:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 103AF2087F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Yd2Q1SXqzDqNg
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:26:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Yd5V6lz0zDqNX
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:28:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=92.121.34.13; helo=inva020.nxp.com;
  envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
+X-Greylist: delayed 538 seconds by postgrey-1.36 at bilbo;
+ Tue, 08 Jan 2019 14:24:00 AEDT
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Yd006CtPzDqMx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 14:24:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yd005tTWzDqMX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 14:23:59 +1100 (AEDT)
 Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id E103A1A04B0;
- Tue,  8 Jan 2019 04:14:56 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 3BA1A1A04EA;
+ Tue,  8 Jan 2019 04:15:03 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
  [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 717981A0218;
- Tue,  8 Jan 2019 04:14:45 +0100 (CET)
+ by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 4F7BF1A02A6;
+ Tue,  8 Jan 2019 04:14:51 +0100 (CET)
 Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id BD54C402A9;
- Tue,  8 Jan 2019 11:14:31 +0800 (SGT)
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 0FFC8402CA;
+ Tue,  8 Jan 2019 11:14:37 +0800 (SGT)
 From: Xiaowei Bao <xiaowei.bao@nxp.com>
 To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
  shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
@@ -50,11 +52,13 @@ To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv4 1/4] dt-bindings: add DT binding for the layerscape PCIe
- controller with EP mode
-Date: Tue,  8 Jan 2019 11:09:19 +0800
-Message-Id: <20190108030922.24031-1-xiaowei.bao@nxp.com>
+Subject: [PATCHv4 4/4] misc: pci_endpoint_test: Add the layerscape EP device
+ support
+Date: Tue,  8 Jan 2019 11:09:22 +0800
+Message-Id: <20190108030922.24031-4-xiaowei.bao@nxp.com>
 X-Mailer: git-send-email 2.14.1
+In-Reply-To: <20190108030922.24031-1-xiaowei.bao@nxp.com>
+References: <20190108030922.24031-1-xiaowei.bao@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,42 +76,32 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the documentation for the Device Tree binding for the layerscape PCIe
-controller with EP mode.
+Add the layerscape EP device support in pci_endpoint_test driver.
 
 Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
 ---
 v2:
- - Add the SoC specific compatibles.
+ - no change
 v3:
- - modify the commit message.
+ - no change
 v4:
- - no change.
+ - delate the comments.
 
- .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/misc/pci_endpoint_test.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-index 9b2b8d6..e20ceaa 100644
---- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-+++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-@@ -13,6 +13,7 @@ information.
- 
- Required properties:
- - compatible: should contain the platform identifier such as:
-+  RC mode:
-         "fsl,ls1021a-pcie"
-         "fsl,ls2080a-pcie", "fsl,ls2085a-pcie"
-         "fsl,ls2088a-pcie"
-@@ -20,6 +21,8 @@ Required properties:
-         "fsl,ls1046a-pcie"
-         "fsl,ls1043a-pcie"
-         "fsl,ls1012a-pcie"
-+  EP mode:
-+	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
- - reg: base addresses and lengths of the PCIe controller register blocks.
- - interrupts: A list of interrupt outputs of the controller. Must contain an
-   entry for each entry in the interrupt-names property.
+diff --git a/drivers/misc/pci_endpoint_test.c b/drivers/misc/pci_endpoint_test.c
+index 896e2df..29582fe 100644
+--- a/drivers/misc/pci_endpoint_test.c
++++ b/drivers/misc/pci_endpoint_test.c
+@@ -788,6 +788,7 @@ static void pci_endpoint_test_remove(struct pci_dev *pdev)
+ static const struct pci_device_id pci_endpoint_test_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA74x) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_DRA72x) },
++	{ PCI_DEVICE(PCI_VENDOR_ID_FREESCALE, 0x81c0) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_SYNOPSYS, 0xedda) },
+ 	{ }
+ };
 -- 
 1.7.1
 
