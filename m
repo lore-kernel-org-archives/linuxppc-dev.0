@@ -2,61 +2,91 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6706DC43612
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:30:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08B20C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 04:03:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC7BE218B0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:30:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC7BE218B0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4A13B2087F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 04:03:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="aqmzHBbv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A13B2087F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Yd7z6KfRzDqPG
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:30:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ydst1NQhzDqPW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 15:03:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="aqmzHBbv"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Yd0066z4zDqMh
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 14:24:00 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 53B741A02A7;
- Tue,  8 Jan 2019 04:15:01 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 30A641A02A2;
- Tue,  8 Jan 2019 04:14:49 +0100 (CET)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id F3AB5402C0;
- Tue,  8 Jan 2019 11:14:35 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
- shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
- lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com,
- kstewart@linuxfoundation.org, cyrille.pitchen@free-electrons.com,
- pombredanne@nexb.com, shawn.lin@rock-chips.com, niklas.cassel@axis.com,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv4 3/4] pci: layerscape: Add the EP mode support.
-Date: Tue,  8 Jan 2019 11:09:21 +0800
-Message-Id: <20190108030922.24031-3-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20190108030922.24031-1-xiaowei.bao@nxp.com>
-References: <20190108030922.24031-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YdqL4bDDzDqNp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 15:01:32 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id r136so1237240pfc.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 20:01:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=hI3HFiiQiOBTLixuPxZ9I+eYojMS0YjMnMKMa+vFZv0=;
+ b=aqmzHBbvoLVOt7Kzd0jPRPAXuG0MwgDzU65fDYLm0mvdSLfTYsGF/j5wjnjs66hAMy
+ 3SkmSAYSBAEMLq/Z1oHm/cHUXTbrjipWjnnT4yig3mAZdNbXf1UgnVbG6P+VV2gb8SgI
+ hN5fF0DVkSi1e8TLsQV6Bo5BcDEODI8r7HNLU98uaeNKI6iymOkd7Hn6us+oGui1cjkS
+ 8hlxeLMeV8tZvOxTgTSIDOeJhKtYX7Rn2A2ybKszGIbWZRspawStiEfEs78uThE9JKya
+ b0Kjx5Z2Frg2AJUyLdloUVN0BGGOTuzFi/HPKdxI/pHTE96zgHlCzbtTJ9d2yehubXR8
+ PypQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=hI3HFiiQiOBTLixuPxZ9I+eYojMS0YjMnMKMa+vFZv0=;
+ b=Dmj8ovsg2Dun+qEPteIlg/fynX1F37LMhu5CY5kkg2etJrtMlIiA0xnyt+8bjFNJ+8
+ L2XUF96/gdfl9SDX0EPe/wsrfHFKkkMDND1zy8zyHyLW3d9sUE8Gc8WSb/lkEQRIIiwG
+ Tq1VfZ64YUUlJTGMysd1mZSoeYlSaofGavtb9pgw8qJ0x+ONMCQcFp+Br6PiA4jJJHp0
+ MppxX/8LmExEO/4rvHUHsTTEOdo4rdm4CXu7H0hFetE4hUWSAH3qmXxeQ2wY9Z4Ho7Fj
+ gRI8YFQjntqiZB2O/Ap5z+Qx6KA4PuzEzmWD0yL+JHU05F60gZTz9CvXrg+0PJvdhwYR
+ To5A==
+X-Gm-Message-State: AJcUukdbRTnL0q4sYMovCG5UlKRwB8LjIcjIRLqO3INwgtB/bzWuB9eM
+ p35xt/jVxWJAN8ExuHhD9qUZ3Q==
+X-Google-Smtp-Source: ALg8bN5lzQ0TEnC4tGM2QWkSvlrK0kiKtDXVTjW+AYsWMmHGaLKZPdjkTUkbSM05fVQOqZwN2LmacQ==
+X-Received: by 2002:a63:b24a:: with SMTP id t10mr135492pgo.223.1546920090935; 
+ Mon, 07 Jan 2019 20:01:30 -0800 (PST)
+Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
+ by smtp.gmail.com with ESMTPSA id
+ g15sm298482974pfj.131.2019.01.07.20.01.29
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 07 Jan 2019 20:01:30 -0800 (PST)
+Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
+ (envelope-from <jgg@ziepe.ca>)
+ id 1ggia1-0007HO-C7; Mon, 07 Jan 2019 21:01:29 -0700
+Date: Mon, 7 Jan 2019 21:01:29 -0700
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
+Message-ID: <20190108040129.GE5336@ziepe.ca>
+References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
+ <20181206064509.GM15544@mtr-leonro.mtl.com>
+ <20190104034401.GA2801@umbus.fritz.box>
+ <20190105175116.GB14238@ziepe.ca>
+ <c1296ee9120a6a04dc75d0fdb2a641c722cb65d6.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c1296ee9120a6a04dc75d0fdb2a641c722cb65d6.camel@kernel.crashing.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,192 +98,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: Leon Romanovsky <leon@kernel.org>, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbest@redhat.com,
+ saeedm@mellanox.com, alex.williamson@redhat.com, paulus@samba.org,
+ linux-pci@vger.kernel.org, bhelgaas@google.com, ogerlitz@mellanox.com,
+ David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, tariqt@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the PCIe EP mode support for layerscape platform.
+On Sun, Jan 06, 2019 at 09:43:46AM +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2019-01-05 at 10:51 -0700, Jason Gunthorpe wrote:
+> > 
+> > > Interesting.  I've investigated this further, though I don't have as
+> > > many new clues as I'd like.  The problem occurs reliably, at least on
+> > > one particular type of machine (a POWER8 "Garrison" with ConnectX-4).
+> > > I don't yet know if it occurs with other machines, I'm having trouble
+> > > getting access to other machines with a suitable card.  I didn't
+> > > manage to reproduce it on a different POWER8 machine with a
+> > > ConnectX-5, but I don't know if it's the difference in machine or
+> > > difference in card revision that's important.
+> > 
+> > Make sure the card has the latest firmware is always good advice..
+> > 
+> > > So possibilities that occur to me:
+> > >   * It's something specific about how the vfio-pci driver uses D3
+> > >     state - have you tried rebinding your device to vfio-pci?
+> > >   * It's something specific about POWER, either the kernel or the PCI
+> > >     bridge hardware
+> > >   * It's something specific about this particular type of machine
+> > 
+> > Does the EEH indicate what happend to actually trigger it?
+> 
+> In a very cryptic way that requires manual parsing using non-public
+> docs sadly but yes. From the look of it, it's a completion timeout.
+> 
+> Looks to me like we don't get a response to a config space access
+> during the change of D state. I don't know if it's the write of the D3
+> state itself or the read back though (it's probably detected on the
+> read back or a subsequent read, but that doesn't tell me which specific
+> one failed).
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
----
-v2:
- - remove the EP mode check function.
-v3:
- - modif the return value when enter default case.
-v4:
- - no change.
+If it is just one card doing it (again, check you have latest
+firmware) I wonder if it is a sketchy PCI-E electrical link that is
+causing a long re-training cycle? Can you tell if the PCI-E link is
+permanently gone or does it eventually return?
 
- drivers/pci/controller/dwc/Makefile            |    2 +-
- drivers/pci/controller/dwc/pci-layerscape-ep.c |  146 ++++++++++++++++++++++++
- 2 files changed, 147 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
+Does the card work in Gen 3 when it starts? Is there any indication of
+PCI-E link errors?
 
-diff --git a/drivers/pci/controller/dwc/Makefile b/drivers/pci/controller/dwc/Makefile
-index fcf91ea..e97e920 100644
---- a/drivers/pci/controller/dwc/Makefile
-+++ b/drivers/pci/controller/dwc/Makefile
-@@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
- obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
- obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
- obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone.o
--obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
-+obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
- obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
- obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
- obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o
-diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-new file mode 100644
-index 0000000..dafb528
---- /dev/null
-+++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-@@ -0,0 +1,146 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PCIe controller EP driver for Freescale Layerscape SoCs
-+ *
-+ * Copyright (C) 2018 NXP Semiconductor.
-+ *
-+ * Author: Xiaowei Bao <xiaowei.bao@nxp.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/of_pci.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/resource.h>
-+
-+#include "pcie-designware.h"
-+
-+#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
-+
-+struct ls_pcie_ep {
-+	struct dw_pcie		*pci;
-+};
-+
-+#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
-+
-+static int ls_pcie_establish_link(struct dw_pcie *pci)
-+{
-+	return 0;
-+}
-+
-+static const struct dw_pcie_ops ls_pcie_ep_ops = {
-+	.start_link = ls_pcie_establish_link,
-+};
-+
-+static const struct of_device_id ls_pcie_ep_of_match[] = {
-+	{ .compatible = "fsl,ls-pcie-ep",},
-+	{ },
-+};
-+
-+static void ls_pcie_ep_init(struct dw_pcie_ep *ep)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+	struct pci_epc *epc = ep->epc;
-+	enum pci_barno bar;
-+
-+	for (bar = BAR_0; bar <= BAR_5; bar++)
-+		dw_pcie_ep_reset_bar(pci, bar);
-+
-+	epc->features |= EPC_FEATURE_NO_LINKUP_NOTIFIER;
-+}
-+
-+static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
-+				  enum pci_epc_irq_type type, u16 interrupt_num)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+
-+	switch (type) {
-+	case PCI_EPC_IRQ_LEGACY:
-+		return dw_pcie_ep_raise_legacy_irq(ep, func_no);
-+	case PCI_EPC_IRQ_MSI:
-+		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
-+	case PCI_EPC_IRQ_MSIX:
-+		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
-+	default:
-+		dev_err(pci->dev, "UNKNOWN IRQ type\n");
-+		return -EINVAL;
-+	}
-+}
-+
-+static struct dw_pcie_ep_ops pcie_ep_ops = {
-+	.ep_init = ls_pcie_ep_init,
-+	.raise_irq = ls_pcie_ep_raise_irq,
-+};
-+
-+static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
-+					struct platform_device *pdev)
-+{
-+	struct dw_pcie *pci = pcie->pci;
-+	struct device *dev = pci->dev;
-+	struct dw_pcie_ep *ep;
-+	struct resource *res;
-+	int ret;
-+
-+	ep = &pci->ep;
-+	ep->ops = &pcie_ep_ops;
-+
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
-+	if (!res)
-+		return -EINVAL;
-+
-+	ep->phys_base = res->start;
-+	ep->addr_size = resource_size(res);
-+
-+	ret = dw_pcie_ep_init(ep);
-+	if (ret) {
-+		dev_err(dev, "failed to initialize endpoint\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init ls_pcie_ep_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct dw_pcie *pci;
-+	struct ls_pcie_ep *pcie;
-+	struct resource *dbi_base;
-+	int ret;
-+
-+	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
-+	if (!pcie)
-+		return -ENOMEM;
-+
-+	pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-+	if (!pci)
-+		return -ENOMEM;
-+
-+	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-+	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
-+	if (IS_ERR(pci->dbi_base))
-+		return PTR_ERR(pci->dbi_base);
-+
-+	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
-+	pci->dev = dev;
-+	pci->ops = &ls_pcie_ep_ops;
-+	pcie->pci = pci;
-+
-+	platform_set_drvdata(pdev, pcie);
-+
-+	ret = ls_add_pcie_ep(pcie, pdev);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver ls_pcie_ep_driver = {
-+	.driver = {
-+		.name = "layerscape-pcie-ep",
-+		.of_match_table = ls_pcie_ep_of_match,
-+		.suppress_bind_attrs = true,
-+	},
-+};
-+builtin_platform_driver_probe(ls_pcie_ep_driver, ls_pcie_ep_probe);
--- 
-1.7.1
+Everytime or sometimes?
 
+POWER 8 firmware is good? If the link does eventually come back, is
+the POWER8's D3 resumption timeout long enough?
+
+If this doesn't lead to an obvious conclusion you'll probably need to
+connect to IBM's Mellanox support team to get more information from
+the card side.
+
+Jason
