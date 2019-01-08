@@ -2,73 +2,76 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 415FAC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 18:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47C76C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:03:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7CD1720827
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 18:50:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Uu/7bonv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CD1720827
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id B8357206BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:03:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B8357206BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Z1YW0CdmzDqZw
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 05:50:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Z1rW5r7BzDqXM
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 06:03:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="Uu/7bonv"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.146.97; helo=gateway33.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Greylist: delayed 1482 seconds by postgrey-1.36 at bilbo;
+ Wed, 09 Jan 2019 06:02:13 AEDT
+Received: from gateway33.websitewelcome.com (gateway33.websitewelcome.com
+ [192.185.146.97])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Z1Wg6521zDqWf
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 05:49:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=9EThvUedqwr9JLagw4SbqAFedU0AoJZ9CKdWwl7XKiA=; b=Uu/7bonv5ZaHGzI6QLfILzH9B
- puh54QM8wm3H7+zKWLUgPsli0zU7U2sj4ZY8gDz+g1tyBdF4Xo6U6eBGsKezYjvqnhIBZKNtC228Z
- mjGzNwbI/ic4qkyDTUSUrAuciBBzKhhlVnTGc/zIxj0ggVaOxfZAC9/mj6UxvDOOEQiDr3Y2xFdlK
- snYv0/ZvaVrjGUtmfBj9ak+edbZ/9hi+/jApT37OBk9WJn5519c4gTVbS68ifn97QoyRIfmadth1K
- Q8Y71bcS4buqpXGjXg8wnzbUs5DiONR9amO94TYHZn8ZEPRLlJxCgRPR/W8Ia9sI5WEQTS2cfzNgX
- z2sT6TyHg==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1ggwQw-0007W7-MF; Tue, 08 Jan 2019 18:49:02 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 1C99320289CC1; Tue,  8 Jan 2019 19:49:01 +0100 (CET)
-Date: Tue, 8 Jan 2019 19:49:01 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Subject: Re: [PATCH v4 10/13] x86: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for
- exclude incapable PMUs
-Message-ID: <20190108184901.GA1900@hirez.programming.kicks-ass.net>
-References: <1546878450-20341-1-git-send-email-andrew.murray@arm.com>
- <1546878450-20341-11-git-send-email-andrew.murray@arm.com>
- <20190108104841.GD6808@hirez.programming.kicks-ass.net>
- <7300f0af-b532-5546-a6f4-fec69cb91a0f@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Z1pY26w7zDqXB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:02:13 +1100 (AEDT)
+Received: from cm11.websitewelcome.com (cm11.websitewelcome.com [100.42.49.5])
+ by gateway33.websitewelcome.com (Postfix) with ESMTP id 316FFE130
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 12:37:28 -0600 (CST)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id gwFkgqMDidnCegwFkgwLZJ; Tue, 08 Jan 2019 12:37:28 -0600
+X-Authority-Reason: nr=8
+Received: from [189.250.130.205] (port=55342 helo=embeddedor)
+ by gator4166.hostgator.com with esmtpa (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1ggwFi-0035m5-9E; Tue, 08 Jan 2019 12:37:27 -0600
+Date: Tue, 8 Jan 2019 12:37:20 -0600
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc/spufs: use struct_size() in kmalloc()
+Message-ID: <20190108183720.GA14238@embeddedor>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7300f0af-b532-5546-a6f4-fec69cb91a0f@oracle.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.130.205
+X-Source-L: No
+X-Exim-ID: 1ggwFi-0035m5-9E
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: (embeddedor) [189.250.130.205]:55342
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 13
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,48 +83,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, Shawn Guo <shawnguo@kernel.org>,
- x86@kernel.org, Russell King <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Matt Turner <mattst88@gmail.com>,
- suzuki.poulose@arm.com, Sascha Hauer <s.hauer@pengutronix.de>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Andrew Murray <andrew.murray@arm.com>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- jgross@suse.com, robin.murphy@arm.com, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 08, 2019 at 11:36:33AM -0500, Boris Ostrovsky wrote:
-> On 1/8/19 5:48 AM, Peter Zijlstra wrote:
+One of the more common cases of allocation size calculations is finding
+the size of a structure that has a zero-sized array at the end, along
+with memory for some number of elements for that array. For example:
 
-> > On the various exclude options; they are as follows (IIUC):
-> >
-> >   - exclude_guest: we're a HV/host-kernel and we don't want the counter
-> >                    to run when we run a guest context.
-> >
-> >   - exclude_host: we're a HV/host-kernel and we don't want the counter
-> >                   to run when we run in host context.
-> >
-> >   - exclude_hv: we're a guest and don't want the counter to run in HV
-> >                 context.
-> >
-> > Now, KVM always implies exclude_hv afaict (for guests), I'm not sure
-> > what, if anything Xen does on x86 (IIRC Brendan Gregg once said perf
-> > works on Xen) -- nor quite sure who to ask, Boris, Jeurgen?
-> 
-> perf does work inside guests.
-> 
-> VPMU is managed by the Xen and it presents to the guest only samples
-> that are associated with the guest. So from that perspective exclude_hv
-> doesn't seem to be needed.
-> 
-> There is a VPMU mode that allows profiling whole system (host and
-> guests) from dom0, and this where exclude_hv might be useful. But this
-> mode, ahem, needs some work.
+struct foo {
+    int stuff;
+    void *entry[];
+};
 
-Thanks Boris!
+instance = kmalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
+
+Instead of leaving these open-coded and prone to type mistakes, we can
+now use the new struct_size() helper:
+
+instance = kmalloc(struct_size(instance, entry, count), GFP_KERNEL);
+
+This code was detected with the help of Coccinelle.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ arch/powerpc/platforms/cell/spufs/file.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index ae8123edddc6..48c2477e7e2a 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -2338,9 +2338,8 @@ static int spufs_switch_log_open(struct inode *inode, struct file *file)
+ 		goto out;
+ 	}
+ 
+-	ctx->switch_log = kmalloc(sizeof(struct switch_log) +
+-		SWITCH_LOG_BUFSIZE * sizeof(struct switch_log_entry),
+-		GFP_KERNEL);
++	ctx->switch_log = kmalloc(struct_size(ctx->switch_log, log,
++				  SWITCH_LOG_BUFSIZE), GFP_KERNEL);
+ 
+ 	if (!ctx->switch_log) {
+ 		rc = -ENOMEM;
+-- 
+2.20.1
+
