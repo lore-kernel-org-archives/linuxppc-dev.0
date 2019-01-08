@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76C70C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:22:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE89BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:24:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE7F3206B6
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:22:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE7F3206B6
+	by mail.kernel.org (Postfix) with ESMTPS id A099F206B6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 13:24:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A099F206B6
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YtGw6jS3zDqLR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:22:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YtJs4L7mzDqVF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 00:24:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,27 +26,27 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43YsxZ58lWzDqVJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:07:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43Ysyl16kgzDqV9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:08:46 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6D6621596;
- Tue,  8 Jan 2019 05:07:43 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 864BD1596;
+ Tue,  8 Jan 2019 05:08:45 -0800 (PST)
 Received: from localhost (unknown [10.37.6.11])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C84953F70D;
- Tue,  8 Jan 2019 05:07:42 -0800 (PST)
-Date: Tue, 8 Jan 2019 13:07:41 +0000
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E2A823F70D;
+ Tue,  8 Jan 2019 05:08:44 -0800 (PST)
+Date: Tue, 8 Jan 2019 13:08:43 +0000
 From: Andrew Murray <andrew.murray@arm.com>
 To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 05/13] arm: perf: conditionally use
- PERF_PMU_CAP_NO_EXCLUDE
-Message-ID: <20190108130740.GC56789@e119886-lin.cambridge.arm.com>
+Subject: Re: [PATCH v4 11/13] x86: perf/core: use PERF_PMU_CAP_NO_EXCLUDE for
+ exclude incapable PMUs
+Message-ID: <20190108130842.GD56789@e119886-lin.cambridge.arm.com>
 References: <1546878450-20341-1-git-send-email-andrew.murray@arm.com>
- <1546878450-20341-6-git-send-email-andrew.murray@arm.com>
- <20190108102802.GC6808@hirez.programming.kicks-ass.net>
+ <1546878450-20341-12-git-send-email-andrew.murray@arm.com>
+ <20190108104940.GE6808@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190108102802.GC6808@hirez.programming.kicks-ass.net>
+In-Reply-To: <20190108104940.GE6808@hirez.programming.kicks-ass.net>
 User-Agent: Mutt/1.10.1+81 (426a6c1) (2018-08-26)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,67 +74,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 08, 2019 at 11:28:02AM +0100, Peter Zijlstra wrote:
-> On Mon, Jan 07, 2019 at 04:27:22PM +0000, Andrew Murray wrote:
-> > @@ -393,9 +386,8 @@ __hw_perf_event_init(struct perf_event *event)
-> >  	/*
-> >  	 * Check whether we need to exclude the counter from certain modes.
-> >  	 */
-> > +	if (armpmu->set_event_filter &&
-> > +	    armpmu->set_event_filter(hwc, &event->attr)) {
-> >  		pr_debug("ARM performance counters do not support "
-> >  			 "mode exclusion\n");
-> >  		return -EOPNOTSUPP;
+On Tue, Jan 08, 2019 at 11:49:40AM +0100, Peter Zijlstra wrote:
+> On Mon, Jan 07, 2019 at 04:27:28PM +0000, Andrew Murray wrote:
 > 
-> This then requires all set_event_filter() implementations to check all
-> the various exclude options;
+> This patch has the exact same subject as the previous one.. that seems
+> sub-optimal.
 
-Yes but this isn't a new requirement, this hunk uses the absence of
-set_event_filter to blanket indicate that no exclusion flags are supported.
-
-
-> also, set_event_filter() failing then
-> returns with -EOPNOTSUPP instead of the -EINVAL the CAP_NO_EXCLUDE
-> generates, which is again inconsitent.
-
-Yes, it's not ideal - but a step in the right direction. I wanted to limit
-user visible changes as much as possible, where I've identified them I've
-noted it in the commit log.
-
-> 
-> If I look at (the very first git-grep found me)
-> armv7pmu_set_event_filter(), then I find it returning -EPERM (again
-> inconsistent but irrelevant because the actual value is not preserved)
-> for exclude_idle.
-> 
-> But it doesn't seem to check exclude_host at all for example.
-
-Yes I found lots of examples like this across the tree whilst doing this
-work. However I decided to initially start with simply removing duplicated
-code as a result of adding this flag and attempting to preserve existing
-functionality. I thought that if I add missing checks then the patchset
-will get much bigger and be harder to merge. I would like to do this though
-as another non-cross-arch series.
-
-Can we limit this patch series to the minimal changes required to fully
-use PERF_PMU_CAP_NO_EXCLUDE and then attempt to fix these existing problems
-in subsequent patch sets?
-
-Thanks,
+Ah yes, I'll update that in subsquent revisions. (The reason for two patches
+was to separate functional vs non-functional changes).
 
 Andrew Murray
-
-> 
-> > @@ -867,6 +859,9 @@ int armpmu_register(struct arm_pmu *pmu)
-> >  	if (ret)
-> >  		return ret;
-> >  
-> > +	if (!pmu->set_event_filter)
-> > +		pmu->pmu.capabilities |= PERF_PMU_CAP_NO_EXCLUDE;
-> > +
-> >  	ret = perf_pmu_register(&pmu->pmu, pmu->name, -1);
-> >  	if (ret)
-> >  		goto out_destroy;
-> > -- 
-> > 2.7.4
-> > 
