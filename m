@@ -2,65 +2,49 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47CD3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:17:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4227BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:21:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99AC320675
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:17:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DLkH8iIa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99AC320675
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id BAB0620675
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:21:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAB0620675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Z3Tm39PzzDqZy
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:17:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Z3Z855QJzDqPm
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:21:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="DLkH8iIa"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
+ (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
+ envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2YF2nZSzDqX7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:35:45 +1100 (AEDT)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id DE25F20883;
- Tue,  8 Jan 2019 19:35:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1546976140;
- bh=bc8A+XORyamBW3sk9p3OOSuBpM5iKyeglxel7VUJC7k=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=DLkH8iIa40McSXKXnaYEwxWm9sBaT0Dwg5Rjp6u8nVJRKxggEIyXLK3T1NqeEqWLz
- 2QynKVwmxUfj29ioldtYfZGRi/ppTOUE5sULxqC6b9YlnN5qFy0KQ/a2G/iM+DKRgA
- N+LemH6EsC77TMT6UCK1xDBhqhUqIBjmUfgXRvqs=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 3.18 05/19] powerpc/pseries/cpuidle: Fix preempt
- warning
-Date: Tue,  8 Jan 2019 14:35:17 -0500
-Message-Id: <20190108193534.124555-5-sashal@kernel.org>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190108193534.124555-1-sashal@kernel.org>
-References: <20190108193534.124555-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2qW245mzDqYq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:48:07 +1100 (AEDT)
+Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id DADFE891;
+ Tue,  8 Jan 2019 19:48:04 +0000 (UTC)
+Date: Tue, 8 Jan 2019 11:48:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 1/2] mm: add probe_user_read()
+Message-Id: <20190108114803.583f203b86d4a368ac9796f3@linux-foundation.org>
+In-Reply-To: <0b0db24e18063076e9d9f4e376994af83da05456.1546932949.git.christophe.leroy@c-s.fr>
+References: <0b0db24e18063076e9d9f4e376994af83da05456.1546932949.git.christophe.leroy@c-s.fr>
+X-Mailer: Sylpheed 3.6.0 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,74 +56,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Breno Leitao <leitao@debian.org>
+On Tue,  8 Jan 2019 07:37:44 +0000 (UTC) Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-[ Upstream commit 2b038cbc5fcf12a7ee1cc9bfd5da1e46dacdee87 ]
+> In powerpc code, there are several places implementing safe
+> access to user data. This is sometimes implemented using
+> probe_kernel_address() with additional access_ok() verification,
+> sometimes with get_user() enclosed in a pagefault_disable()/enable()
+> pair, etc. :
+>     show_user_instructions()
+>     bad_stack_expansion()
+>     p9_hmi_special_emu()
+>     fsl_pci_mcheck_exception()
+>     read_user_stack_64()
+>     read_user_stack_32() on PPC64
+>     read_user_stack_32() on PPC32
+>     power_pmu_bhrb_to()
+> 
+> In the same spirit as probe_kernel_read(), this patch adds
+> probe_user_read().
+> 
+> probe_user_read() does the same as probe_kernel_read() but
+> first checks that it is really a user address.
+> 
+> ...
+>
+> --- a/include/linux/uaccess.h
+> +++ b/include/linux/uaccess.h
+> @@ -263,6 +263,40 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
+>  #define probe_kernel_address(addr, retval)		\
+>  	probe_kernel_read(&retval, addr, sizeof(retval))
+>  
+> +/**
+> + * probe_user_read(): safely attempt to read from a user location
+> + * @dst: pointer to the buffer that shall take the data
+> + * @src: address to read from
+> + * @size: size of the data chunk
+> + *
+> + * Returns: 0 on success, -EFAULT on error.
+> + *
+> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
+> + * happens, handle that and return -EFAULT.
+> + *
+> + * We ensure that the copy_from_user is executed in atomic context so that
+> + * do_page_fault() doesn't attempt to take mmap_sem.  This makes
+> + * probe_user_read() suitable for use within regions where the caller
+> + * already holds mmap_sem, or other locks which nest inside mmap_sem.
+> + */
+> +
+> +#ifndef probe_user_read
+> +static __always_inline long probe_user_read(void *dst, const void __user *src,
+> +					    size_t size)
+> +{
+> +	long ret;
+> +
+> +	if (!access_ok(src, size))
+> +		return -EFAULT;
+> +
+> +	pagefault_disable();
+> +	ret = __copy_from_user_inatomic(dst, src, size);
+> +	pagefault_enable();
+> +
+> +	return ret ? -EFAULT : 0;
+> +}
+> +#endif
 
-When booting a pseries kernel with PREEMPT enabled, it dumps the
-following warning:
+Why was the __always_inline needed?
 
-   BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
-   caller is pseries_processor_idle_init+0x5c/0x22c
-   CPU: 13 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc3-00090-g12201a0128bc-dirty #828
-   Call Trace:
-   [c000000429437ab0] [c0000000009c8878] dump_stack+0xec/0x164 (unreliable)
-   [c000000429437b00] [c0000000005f2f24] check_preemption_disabled+0x154/0x160
-   [c000000429437b90] [c000000000cab8e8] pseries_processor_idle_init+0x5c/0x22c
-   [c000000429437c10] [c000000000010ed4] do_one_initcall+0x64/0x300
-   [c000000429437ce0] [c000000000c54500] kernel_init_freeable+0x3f0/0x500
-   [c000000429437db0] [c0000000000112dc] kernel_init+0x2c/0x160
-   [c000000429437e20] [c00000000000c1d0] ret_from_kernel_thread+0x5c/0x6c
-
-This happens because the code calls get_lppaca() which calls
-get_paca() and it checks if preemption is disabled through
-check_preemption_disabled().
-
-Preemption should be disabled because the per CPU variable may make no
-sense if there is a preemption (and a CPU switch) after it reads the
-per CPU data and when it is used.
-
-In this device driver specifically, it is not a problem, because this
-code just needs to have access to one lppaca struct, and it does not
-matter if it is the current per CPU lppaca struct or not (i.e. when
-there is a preemption and a CPU migration).
-
-That said, the most appropriate fix seems to be related to avoiding
-the debug_smp_processor_id() call at get_paca(), instead of calling
-preempt_disable() before get_paca().
-
-Signed-off-by: Breno Leitao <leitao@debian.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpuidle/cpuidle-pseries.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 6f7b01956885..b755d3a54e3c 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -237,7 +237,13 @@ static int pseries_idle_probe(void)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		if (lppaca_shared_proc(get_lppaca())) {
-+		/*
-+		 * Use local_paca instead of get_lppaca() since
-+		 * preemption is not disabled, and it is not required in
-+		 * fact, since lppaca_ptr does not need to be the value
-+		 * associated to the current CPU, it can be from any CPU.
-+		 */
-+		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
--- 
-2.19.1
-
+This function is pretty large.  Why is it inlined?
