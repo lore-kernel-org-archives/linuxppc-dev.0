@@ -2,69 +2,49 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26571C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB1EEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:56:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A00862087F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:53:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A00862087F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 0313020827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:56:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0313020827
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YndS4tPQzDqQx
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:53:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ynhl6nbWzDqPW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:56:23 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YnbQ3szCzDqQT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 20:51:46 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43YnbK71kqz9tyy2;
- Tue,  8 Jan 2019 10:51:41 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id ROjGTkHZZm7i; Tue,  8 Jan 2019 10:51:41 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43YnbK6WJTz9tyy1;
- Tue,  8 Jan 2019 10:51:41 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EBD5A8B7CF;
- Tue,  8 Jan 2019 10:51:42 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SnInYRpUBJDf; Tue,  8 Jan 2019 10:51:42 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2CB1C8B7C9;
- Tue,  8 Jan 2019 10:51:42 +0100 (CET)
-Subject: Re: [PATCH v4 1/2] crypto: talitos - reorder code in
- talitos_edesc_alloc()
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Horia Geanta <horia.geanta@nxp.com>
-References: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
-Message-ID: <cfb285c6-5700-194d-d4b2-9cc8601dbc04@c-s.fr>
-Date: Tue, 8 Jan 2019 10:51:41 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YnfZ0zgLzDqND
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 20:54:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 43YnfZ07xnz9sMQ; Tue,  8 Jan 2019 20:54:30 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43YnfY5jdbz9sDr;
+ Tue,  8 Jan 2019 20:54:29 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Lamparter <chunkeey@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [1/2] powerpc/4xx/ocm: Fix phys_addr_t printf warnings
+In-Reply-To: <3480116.KzcvcCly6l@debian64>
+References: <43V85g033hz9sCX@ozlabs.org> <3480116.KzcvcCly6l@debian64>
+Date: Tue, 08 Jan 2019 20:54:28 +1100
+Message-ID: <87ef9ntqy3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,100 +56,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org,
- stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 08/01/2019 à 07:56, Christophe Leroy a écrit :
-> This patch moves the mapping of IV after the kmalloc(). This
-> avoids having to unmap in case kmalloc() fails.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-Cc: stable@vger.kernel.org
-
+Christian Lamparter <chunkeey@gmail.com> writes:
+> On Wednesday, January 2, 2019 12:31:50 PM CET Michael Ellerman wrote:
+>> On Tue, 2019-01-01 at 03:56:00 UTC, Michael Ellerman wrote:
+>> > Currently the code produces several warnings, eg:
+>> > 
+>> >   arch/powerpc/platforms/4xx/ocm.c:240:38: error: format '%llx'
+>> >   expects argument of type 'long long unsigned int', but argument 3
+>> >   has type 'phys_addr_t {aka unsigned int}'
+>> >      seq_printf(m, "PhysAddr     : 0x%llx\n", ocm->phys);
+>> >                                    ~~~^     ~~~~~~~~~
+>> > 
+>> > Fix it by using the special %pa[p] format for printing phys_addr_t.
+>> > Note we need to pass the value by reference for the special specifier
+>> > to work.
+>> > 
+>> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> 
+>> Series applied to powerpc fixes.
+>> 
+>> https://git.kernel.org/powerpc/c/52b88fa1e8c7bae03bb691178a9f8b
+>
+> Well, I guess I'm a late. I had issues with the getting 4.20+
+> crosscompiled on debian with make-kpkg. 
+>
+> Nevertheless, I finally got a working kernel and 
+> on the MyBook Live APM82181:
+>
 > ---
->   new in v4
-> 
->   drivers/crypto/talitos.c | 25 +++++++------------------
->   1 file changed, 7 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-> index 45e20707cef8..54d80e7edb86 100644
-> --- a/drivers/crypto/talitos.c
-> +++ b/drivers/crypto/talitos.c
-> @@ -1361,23 +1361,18 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
->   	struct talitos_private *priv = dev_get_drvdata(dev);
->   	bool is_sec1 = has_ftr_sec1(priv);
->   	int max_len = is_sec1 ? TALITOS1_MAX_DATA_LEN : TALITOS2_MAX_DATA_LEN;
-> -	void *err;
->   
->   	if (cryptlen + authsize > max_len) {
->   		dev_err(dev, "length exceeds h/w max limit\n");
->   		return ERR_PTR(-EINVAL);
->   	}
->   
-> -	if (ivsize)
-> -		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
-> -
->   	if (!dst || dst == src) {
->   		src_len = assoclen + cryptlen + authsize;
->   		src_nents = sg_nents_for_len(src, src_len);
->   		if (src_nents < 0) {
->   			dev_err(dev, "Invalid number of src SG.\n");
-> -			err = ERR_PTR(-EINVAL);
-> -			goto error_sg;
-> +			return ERR_PTR(-EINVAL);
->   		}
->   		src_nents = (src_nents == 1) ? 0 : src_nents;
->   		dst_nents = dst ? src_nents : 0;
-> @@ -1387,16 +1382,14 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
->   		src_nents = sg_nents_for_len(src, src_len);
->   		if (src_nents < 0) {
->   			dev_err(dev, "Invalid number of src SG.\n");
-> -			err = ERR_PTR(-EINVAL);
-> -			goto error_sg;
-> +			return ERR_PTR(-EINVAL);
->   		}
->   		src_nents = (src_nents == 1) ? 0 : src_nents;
->   		dst_len = assoclen + cryptlen + (encrypt ? authsize : 0);
->   		dst_nents = sg_nents_for_len(dst, dst_len);
->   		if (dst_nents < 0) {
->   			dev_err(dev, "Invalid number of dst SG.\n");
-> -			err = ERR_PTR(-EINVAL);
-> -			goto error_sg;
-> +			return ERR_PTR(-EINVAL);
->   		}
->   		dst_nents = (dst_nents == 1) ? 0 : dst_nents;
->   	}
-> @@ -1425,10 +1418,10 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
->   		alloc_len += sizeof(struct talitos_desc);
->   
->   	edesc = kmalloc(alloc_len, GFP_DMA | flags);
-> -	if (!edesc) {
-> -		err = ERR_PTR(-ENOMEM);
-> -		goto error_sg;
-> -	}
-> +	if (!edesc)
-> +		return ERR_PTR(-ENOMEM);
-> +	if (ivsize)
-> +		iv_dma = dma_map_single(dev, iv, ivsize, DMA_TO_DEVICE);
->   	memset(&edesc->desc, 0, sizeof(edesc->desc));
->   
->   	edesc->src_nents = src_nents;
-> @@ -1445,10 +1438,6 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
->   						     DMA_BIDIRECTIONAL);
->   	}
->   	return edesc;
-> -error_sg:
-> -	if (iv_dma)
-> -		dma_unmap_single(dev, iv_dma, ivsize, DMA_TO_DEVICE);
-> -	return err;
->   }
->   
->   static struct talitos_edesc *aead_edesc_alloc(struct aead_request *areq, u8 *iv,
-> 
+> root@mbl:/sys/kernel/debug# cat ppc4xx_ocm/info 
+> PPC4XX OCM   : 1
+> PhysAddr     : 0x0000000400040000[p]
+> MemTotal     : 32768 Bytes
+> MemTotal(NC) : 32768 Bytes
+> MemTotal(C)  : 0 Bytes
+>
+> NC.PhysAddr  : 0x0000000400040000[p]
+> NC.VirtAddr  : 0x6bc84b36
+> NC.MemTotal  : 32768 Bytes
+> NC.MemFree   : 32768 Bytes
+>
+> C.PhysAddr   : 0x0000000000000000[p]
+> C.VirtAddr   : 0x  (null)
+> C.MemTotal   : 0 Bytes
+> C.MemFree    : 0 Bytes
+
+Oh right, I'm an idiot :)
+
+The docs say:
+
+Physical address types phys_addr_t
+----------------------------------
+
+	%pa[p]	0x01234567 or 0x0123456789abcdef
+
+
+And if you grep for that there's eg:
+
+  drivers/ntb/test/ntb_tool.c:                     "Window Size    \t%pa[p]\n",
+
+So I just literally copied that.
+
+But it's trying to indicate that the p is optional.
+
+This should fix it, I won't merge it until you've tested it this time :)
+
+cheers
+
+
+diff --git a/arch/powerpc/platforms/4xx/ocm.c b/arch/powerpc/platforms/4xx/ocm.c
+index a1aaa1569d7c..f0e488d97567 100644
+--- a/arch/powerpc/platforms/4xx/ocm.c
++++ b/arch/powerpc/platforms/4xx/ocm.c
+@@ -237,12 +237,12 @@ static int ocm_debugfs_show(struct seq_file *m, void *v)
+ 			continue;
+ 
+ 		seq_printf(m, "PPC4XX OCM   : %d\n", ocm->index);
+-		seq_printf(m, "PhysAddr     : %pa[p]\n", &(ocm->phys));
++		seq_printf(m, "PhysAddr     : %pa\n", &(ocm->phys));
+ 		seq_printf(m, "MemTotal     : %d Bytes\n", ocm->memtotal);
+ 		seq_printf(m, "MemTotal(NC) : %d Bytes\n", ocm->nc.memtotal);
+ 		seq_printf(m, "MemTotal(C)  : %d Bytes\n\n", ocm->c.memtotal);
+ 
+-		seq_printf(m, "NC.PhysAddr  : %pa[p]\n", &(ocm->nc.phys));
++		seq_printf(m, "NC.PhysAddr  : %pa\n", &(ocm->nc.phys));
+ 		seq_printf(m, "NC.VirtAddr  : 0x%p\n", ocm->nc.virt);
+ 		seq_printf(m, "NC.MemTotal  : %d Bytes\n", ocm->nc.memtotal);
+ 		seq_printf(m, "NC.MemFree   : %d Bytes\n", ocm->nc.memfree);
+@@ -252,7 +252,7 @@ static int ocm_debugfs_show(struct seq_file *m, void *v)
+ 							blk->size, blk->owner);
+ 		}
+ 
+-		seq_printf(m, "\nC.PhysAddr   : %pa[p]\n", &(ocm->c.phys));
++		seq_printf(m, "\nC.PhysAddr   : %pa\n", &(ocm->c.phys));
+ 		seq_printf(m, "C.VirtAddr   : 0x%p\n", ocm->c.virt);
+ 		seq_printf(m, "C.MemTotal   : %d Bytes\n", ocm->c.memtotal);
+ 		seq_printf(m, "C.MemFree    : %d Bytes\n", ocm->c.memfree);
