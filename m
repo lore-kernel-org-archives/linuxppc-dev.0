@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92E72C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:40:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFB07C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:44:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 11C282063F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:40:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2E9952063F
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:44:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="IYrSi9TB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 11C282063F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="IVVgYwid"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E9952063F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Z2fj3DGzzDqXQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 06:40:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Z2km6L71zDqP2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 06:44:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="IYrSi9TB"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="IVVgYwid"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2NJ1hY5zDqWr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:27:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2QB45dbzDqXP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:29:38 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5DE1D20578;
- Tue,  8 Jan 2019 19:27:57 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id E3ED62176F;
+ Tue,  8 Jan 2019 19:29:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1546975678;
- bh=AOKM9aP3K91DApiEOhrPC6XBXVCx80u9YSho/Ff4azY=;
+ s=default; t=1546975765;
+ bh=0AlTjQqK+uPi0Cm75wSlmaonb8yASqHjdCao1vhi/LM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=IYrSi9TBrzQ85r9/UZtQOs94Ys6KPQvUFvELlV/+IYjE2YLf7X8H6gUYFylxdgrs0
- BAYgQ77p9MFIx5NzBsgXOJGSlhJWk9ZE8rEFQObBukIVbbiFyr28tvD9oZkpc31u7H
- RMZArqre+3yM2/jzAlu2jjPRKmtoM0ljij6npQKI=
+ b=IVVgYwidPfnd2oh2JHC7XOj4ZVOBHfE7tlamvBln8MAVfUEuzV2xNlgYhcezup9Gg
+ 9CArMYa4GnSc+pNIKolhHfTRt/vNFoKxpyw9Ur+sP785UnVE6vA0PgZMOSNMxoxA4V
+ D62mfjEbNxdzGO1ognbUNo8Z3xoz+4r1pZgnQkzs=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.20 048/117] powerpc/pseries/cpuidle: Fix preempt
- warning
-Date: Tue,  8 Jan 2019 14:25:16 -0500
-Message-Id: <20190108192628.121270-48-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 107/117] KVM: PPC: Book3S HV: Align gfn to L1
+ page size when inserting nest-rmap entry
+Date: Tue,  8 Jan 2019 14:26:15 -0500
+Message-Id: <20190108192628.121270-107-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
 References: <20190108192628.121270-1-sashal@kernel.org>
@@ -72,74 +72,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Breno Leitao <leitao@debian.org>
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
-[ Upstream commit 2b038cbc5fcf12a7ee1cc9bfd5da1e46dacdee87 ]
+[ Upstream commit 8400f8740651c1a3081c30b46004451c448f4d5f ]
 
-When booting a pseries kernel with PREEMPT enabled, it dumps the
-following warning:
+Nested rmap entries are used to store the translation from L1 gpa to L2
+gpa when entries are inserted into the shadow (nested) page tables. This
+rmap list is located by indexing the rmap array in the memslot by L1
+gfn. When we come to search for these entries we only know the L1 page size
+(which could be PAGE_SIZE, 2M or a 1G page) and so can only select a gfn
+aligned to that size. This means that when we insert the entry, so we can
+find it later, we need to align the gfn we use to select the rmap list
+in which to insert the entry to L1 page size as well.
 
-   BUG: using smp_processor_id() in preemptible [00000000] code: swapper/0/1
-   caller is pseries_processor_idle_init+0x5c/0x22c
-   CPU: 13 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc3-00090-g12201a0128bc-dirty #828
-   Call Trace:
-   [c000000429437ab0] [c0000000009c8878] dump_stack+0xec/0x164 (unreliable)
-   [c000000429437b00] [c0000000005f2f24] check_preemption_disabled+0x154/0x160
-   [c000000429437b90] [c000000000cab8e8] pseries_processor_idle_init+0x5c/0x22c
-   [c000000429437c10] [c000000000010ed4] do_one_initcall+0x64/0x300
-   [c000000429437ce0] [c000000000c54500] kernel_init_freeable+0x3f0/0x500
-   [c000000429437db0] [c0000000000112dc] kernel_init+0x2c/0x160
-   [c000000429437e20] [c00000000000c1d0] ret_from_kernel_thread+0x5c/0x6c
+By not doing this we were missing nested rmap entries when modifying L1
+ptes which were for a page also passed through to an L2 guest.
 
-This happens because the code calls get_lppaca() which calls
-get_paca() and it checks if preemption is disabled through
-check_preemption_disabled().
-
-Preemption should be disabled because the per CPU variable may make no
-sense if there is a preemption (and a CPU switch) after it reads the
-per CPU data and when it is used.
-
-In this device driver specifically, it is not a problem, because this
-code just needs to have access to one lppaca struct, and it does not
-matter if it is the current per CPU lppaca struct or not (i.e. when
-there is a preemption and a CPU migration).
-
-That said, the most appropriate fix seems to be related to avoiding
-the debug_smp_processor_id() call at get_paca(), instead of calling
-preempt_disable() before get_paca().
-
-Signed-off-by: Breno Leitao <leitao@debian.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpuidle/cpuidle-pseries.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/book3s_hv_nested.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 9e56bc411061..74c247972bb3 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -247,7 +247,13 @@ static int pseries_idle_probe(void)
- 		return -ENODEV;
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 401d2ecbebc5..fc64535e4c00 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -1220,6 +1220,8 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
+ 			return ret;
+ 		shift = kvmppc_radix_level_to_shift(level);
+ 	}
++	/* Align gfn to the start of the page */
++	gfn = (gpa & ~((1UL << shift) - 1)) >> PAGE_SHIFT;
  
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		if (lppaca_shared_proc(get_lppaca())) {
-+		/*
-+		 * Use local_paca instead of get_lppaca() since
-+		 * preemption is not disabled, and it is not required in
-+		 * fact, since lppaca_ptr does not need to be the value
-+		 * associated to the current CPU, it can be from any CPU.
-+		 */
-+		if (lppaca_shared_proc(local_paca->lppaca_ptr)) {
- 			cpuidle_state_table = shared_states;
- 			max_idle_state = ARRAY_SIZE(shared_states);
- 		} else {
+ 	/* 3. Compute the pte we need to insert for nest_gpa -> host r_addr */
+ 
 -- 
 2.19.1
 
