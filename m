@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A5CBC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 047F4C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:23:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E147C206B7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:20:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E147C206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 4FB97206BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:23:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FB97206BB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Yrv76XNRzDqV7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 23:20:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YryB5d2gzDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 23:23:14 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YrrL4kgfzDqRp
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:18:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yrw946trzDqRq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43YrrL3L88z8tRJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:18:10 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43Yrw932NDz8sX0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 43YrrL2yqGz9sMM; Tue,  8 Jan 2019 23:18:10 +1100 (AEDT)
+ id 43Yrw92J4Jz9sMQ; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
 Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
  envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
@@ -40,38 +40,39 @@ Authentication-Results: ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43YrrK6FjNz9sBQ
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2019 23:18:09 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 43Yrw85hk8z9sBQ
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2019 23:21:28 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43YrrF5Lx3z9v0L4;
- Tue,  8 Jan 2019 13:18:05 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43Yrw44rQlz9v0Nk;
+ Tue,  8 Jan 2019 13:21:24 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id z4u8MhO1ofuF; Tue,  8 Jan 2019 13:18:05 +0100 (CET)
+ with ESMTP id RGNil0h2eiW4; Tue,  8 Jan 2019 13:21:24 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43YrrF4mrxz9v0L3;
- Tue,  8 Jan 2019 13:18:05 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Yrw44HVfz9v0DS;
+ Tue,  8 Jan 2019 13:21:24 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D4D948B7E1;
- Tue,  8 Jan 2019 13:18:06 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CB7CD8B7E2;
+ Tue,  8 Jan 2019 13:21:25 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id LU23fYc-yFox; Tue,  8 Jan 2019 13:18:06 +0100 (CET)
+ with ESMTP id ixUsLJ9xgnsS; Tue,  8 Jan 2019 13:21:25 +0100 (CET)
 Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id ED6BB8B7DF;
- Tue,  8 Jan 2019 13:18:05 +0100 (CET)
-Subject: Re: [PATCH 1/2] powerpc: Use seq_buf to avoid pr_cont() in __die()
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 036118B7DF;
+ Tue,  8 Jan 2019 13:21:24 +0100 (CET)
+Subject: Re: [PATCH 2/2] powerpc: Show PAGE_SIZE in __die() output
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 References: <20190108120500.2547-1-mpe@ellerman.id.au>
+ <20190108120500.2547-2-mpe@ellerman.id.au>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <53b82835-630a-beb9-8a4e-5badc07960c9@c-s.fr>
-Date: Tue, 8 Jan 2019 13:18:05 +0100
+Message-ID: <324827d2-b736-5726-76d7-3ece152a30cd@c-s.fr>
+Date: Tue, 8 Jan 2019 13:21:24 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.3.3
 MIME-Version: 1.0
-In-Reply-To: <20190108120500.2547-1-mpe@ellerman.id.au>
+In-Reply-To: <20190108120500.2547-2-mpe@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -92,75 +93,52 @@ Sender: "Linuxppc-dev"
 
 
 
-Le 08/01/2019 à 13:04, Michael Ellerman a écrit :
-> Using pr_cont() risks having our output interleaved with other output
-> from other CPUs. Instead use a seq_buf to construct the line and then
-> print it as a whole.
-
-Why not simply doing a single printk() or similar on the same model as 
-X86 for instance ? 
-(https://elixir.bootlin.com/linux/v5.0-rc1/source/arch/x86/kernel/dumpstack.c#L368)
-
-Christophe
-
+Le 08/01/2019 à 13:05, Michael Ellerman a écrit :
+> The page size the kernel is built with is useful info when debugging a
+> crash, so add it to the output in __die().
+> 
+> Result looks like eg:
+> 
+>    kernel BUG at drivers/misc/lkdtm/bugs.c:63!
+>    Oops: Exception in kernel mode, sig: 5 [#1]
+>    LE PAGE_SIZE=64K SMP NR_CPUS=2048 NUMA pSeries
+>    Modules linked in: vmx_crypto kvm binfmt_misc ip_tables
 > 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
->   arch/powerpc/kernel/traps.c | 23 ++++++++++++++++-------
->   1 file changed, 16 insertions(+), 7 deletions(-)
+>   arch/powerpc/kernel/traps.c | 12 ++++++++++++
+>   1 file changed, 12 insertions(+)
 > 
 > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 64936b60d521..431a86d3f772 100644
+> index 431a86d3f772..fc972e4eee5f 100644
 > --- a/arch/powerpc/kernel/traps.c
 > +++ b/arch/powerpc/kernel/traps.c
-> @@ -38,6 +38,7 @@
->   #include <linux/kdebug.h>
->   #include <linux/ratelimit.h>
->   #include <linux/context_tracking.h>
-> +#include <linux/seq_buf.h>
->   #include <linux/smp.h>
->   #include <linux/console.h>
->   #include <linux/kmsg_dump.h>
-> @@ -255,26 +256,34 @@ NOKPROBE_SYMBOL(oops_end);
->   
->   static int __die(const char *str, struct pt_regs *regs, long err)
->   {
-> +	char buf[128]; /* enough for all flags and a long platform name */
-> +	struct seq_buf s;
-> +
-> +	seq_buf_init(&s, buf, sizeof(buf));
-> +
->   	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
->   
->   	if (IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN))
-> -		printk("LE ");
-> +		seq_buf_puts(&s, "LE ");
+> @@ -268,6 +268,18 @@ static int __die(const char *str, struct pt_regs *regs, long err)
 >   	else
-> -		printk("BE ");
-> +		seq_buf_puts(&s, "BE ");
+>   		seq_buf_puts(&s, "BE ");
 >   
->   	if (IS_ENABLED(CONFIG_PREEMPT))
-> -		pr_cont("PREEMPT ");
-> +		seq_buf_puts(&s, "PREEMPT ");
->   
->   	if (IS_ENABLED(CONFIG_SMP))
-> -		pr_cont("SMP NR_CPUS=%d ", NR_CPUS);
-> +		seq_buf_printf(&s, "SMP NR_CPUS=%d ", NR_CPUS);
->   
->   	if (debug_pagealloc_enabled())
-> -		pr_cont("DEBUG_PAGEALLOC ");
-> +		seq_buf_puts(&s, "DEBUG_PAGEALLOC ");
->   
->   	if (IS_ENABLED(CONFIG_NUMA))
-> -		pr_cont("NUMA ");
-> +		seq_buf_puts(&s, "NUMA ");
+> +	seq_buf_puts(&s, "PAGE_SIZE=");
+> +	if (IS_ENABLED(CONFIG_PPC_4K_PAGES))
+> +		seq_buf_puts(&s, "4K ");
+> +	else if (IS_ENABLED(CONFIG_PPC_16K_PAGES))
+> +		seq_buf_puts(&s, "16K ");
+> +	else if (IS_ENABLED(CONFIG_PPC_64K_PAGES))
+> +		seq_buf_puts(&s, "64K ");
+> +	else if (IS_ENABLED(CONFIG_PPC_256K_PAGES))
+> +		seq_buf_puts(&s, "256K ");
+
+Can't we build all the above at once using PAGE_SHIFT ?
+
+Something like (untested):
+
+"%dK ", 1 << (PAGE_SHIFT - 10)
+
+Christophe
+
+> +	else
+> +		BUILD_BUG_ON(1);
 > +
-> +	if (ppc_md.name)
-> +		seq_buf_puts(&s, ppc_md.name);
+>   	if (IS_ENABLED(CONFIG_PREEMPT))
+>   		seq_buf_puts(&s, "PREEMPT ");
 >   
-> -	pr_cont("%s\n", ppc_md.name ? ppc_md.name : "");
-> +	printk("%s\n", buf);
->   
->   	if (notify_die(DIE_OOPS, str, regs, err, 255, SIGSEGV) == NOTIFY_STOP)
->   		return 1;
 > 
