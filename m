@@ -1,61 +1,62 @@
-Return-Path: <SRS0=vpml=PP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCE7BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 20:08:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2071C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:16:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3CC7F2087F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jan 2019 20:08:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3CC7F2087F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 14458206A3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 03:16:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14458206A3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YRKB2LXtzDqTq
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 07:08:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ycql41wxzDqQH
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:16:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.63.230; helo=7.mo68.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 3601 seconds by postgrey-1.36 at bilbo;
- Tue, 08 Jan 2019 07:05:41 AEDT
-Received: from 7.mo68.mail-out.ovh.net (7.mo68.mail-out.ovh.net
- [46.105.63.230])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YRGF2kFTzDqRg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 07:05:41 +1100 (AEDT)
-Received: from player737.ha.ovh.net (unknown [10.109.159.123])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id 4931E10B78E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2019 19:46:49 +0100 (CET)
-Received: from kaod.org (lfbn-1-10605-110.w90-89.abo.wanadoo.fr
- [90.89.196.110]) (Authenticated sender: clg@kaod.org)
- by player737.ha.ovh.net (Postfix) with ESMTPSA id 3C26918665BD;
- Mon,  7 Jan 2019 18:46:38 +0000 (UTC)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 16/19] KVM: PPC: Book3S HV: add get/set accessors for the EQ
- configuration
-Date: Mon,  7 Jan 2019 19:43:28 +0100
-Message-Id: <20190107184331.8429-17-clg@kaod.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190107184331.8429-1-clg@kaod.org>
-References: <20190107184331.8429-1-clg@kaod.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 11428165532934179799
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrvdejgdduudehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Ycnk3YL6zDqLD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 14:15:03 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 0BABE2002AB;
+ Tue,  8 Jan 2019 04:14:59 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
+ [165.114.16.14])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1F357200011;
+ Tue,  8 Jan 2019 04:14:47 +0100 (CET)
+Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
+ by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id D4DB4402C8;
+ Tue,  8 Jan 2019 11:14:33 +0800 (SGT)
+From: Xiaowei Bao <xiaowei.bao@nxp.com>
+To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
+ shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
+ lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
+ minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com,
+ kstewart@linuxfoundation.org, cyrille.pitchen@free-electrons.com,
+ pombredanne@nexb.com, shawn.lin@rock-chips.com, niklas.cassel@axis.com,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCHv4 2/4] arm64: dts: Add the PCIE EP node in dts
+Date: Tue,  8 Jan 2019 11:09:20 +0800
+Message-Id: <20190108030922.24031-2-xiaowei.bao@nxp.com>
+X-Mailer: git-send-email 2.14.1
+In-Reply-To: <20190108030922.24031-1-xiaowei.bao@nxp.com>
+References: <20190108030922.24031-1-xiaowei.bao@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,259 +68,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These are used to capture the XIVE END table of the KVM device. It
-relies on an OPAL call to retrieve from the XIVE IC the EQ toggle bit
-and index which are updated by the HW when events are enqueued in the
-guest RAM.
+Add the PCIE EP node in dts for ls1046a.
 
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
 ---
- arch/powerpc/include/uapi/asm/kvm.h   |  21 ++++
- arch/powerpc/kvm/book3s_xive_native.c | 166 ++++++++++++++++++++++++++
- 2 files changed, 187 insertions(+)
+v2:
+ - Add the SoC specific compatibles. 
+v3:
+ - no change
+v4:
+ - no change
 
-diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index faf024f39858..95302558ce10 100644
---- a/arch/powerpc/include/uapi/asm/kvm.h
-+++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -684,6 +684,7 @@ struct kvm_ppc_cpu_char {
- #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
- #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
- #define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
-+#define KVM_DEV_XIVE_GRP_EQ		5	/* 64-bit eq attributes */
+ arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi |   34 +++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+index 9a2106e..e373826 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1046a.dtsi
+@@ -657,6 +657,17 @@
+ 			status = "disabled";
+ 		};
  
- /* Layout of 64-bit XIVE source attribute values */
- #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
-@@ -699,4 +700,24 @@ struct kvm_ppc_cpu_char {
- #define KVM_XIVE_EAS_EISN_SHIFT		33
- #define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
++		pcie_ep@3400000 {
++			compatible = "fsl,ls1046a-pcie-ep","fsl,ls-pcie-ep";
++			reg = <0x00 0x03400000 0x0 0x00100000
++				0x40 0x00000000 0x8 0x00000000>;
++			reg-names = "regs", "addr_space";
++			num-ib-windows = <6>;
++			num-ob-windows = <6>;
++			num-lanes = <2>;
++			status = "disabled";
++		};
++
+ 		pcie@3500000 {
+ 			compatible = "fsl,ls1046a-pcie";
+ 			reg = <0x00 0x03500000 0x0 0x00100000   /* controller registers */
+@@ -683,6 +694,17 @@
+ 			status = "disabled";
+ 		};
  
-+/* Layout of 64-bit eq attribute */
-+#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
-+#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
-+#define KVM_XIVE_EQ_SERVER_SHIFT	3
-+#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
++		pcie_ep@3500000 {
++			compatible = "fsl,ls1046a-pcie-ep","fsl,ls-pcie-ep";
++			reg = <0x00 0x03500000 0x0 0x00100000
++				0x48 0x00000000 0x8 0x00000000>;
++			reg-names = "regs", "addr_space";
++			num-ib-windows = <6>;
++			num-ob-windows = <6>;
++			num-lanes = <2>;
++			status = "disabled";
++		};
 +
-+/* Layout of 64-bit eq attribute values */
-+struct kvm_ppc_xive_eq {
-+	__u32 flags;
-+	__u32 qsize;
-+	__u64 qpage;
-+	__u32 qtoggle;
-+	__u32 qindex;
-+};
-+
-+#define KVM_XIVE_EQ_FLAG_ENABLED	0x00000001
-+#define KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY	0x00000002
-+#define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
-+
-+
- #endif /* __LINUX_KVM_POWERPC_H */
-diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index 0468b605baa7..f4eb71eafc57 100644
---- a/arch/powerpc/kvm/book3s_xive_native.c
-+++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -607,6 +607,164 @@ static int kvmppc_xive_native_get_eas(struct kvmppc_xive *xive, long irq,
- 	return 0;
- }
+ 		pcie@3600000 {
+ 			compatible = "fsl,ls1046a-pcie";
+ 			reg = <0x00 0x03600000 0x0 0x00100000   /* controller registers */
+@@ -709,6 +731,17 @@
+ 			status = "disabled";
+ 		};
  
-+static int kvmppc_xive_native_set_queue(struct kvmppc_xive *xive, long eq_idx,
-+				      u64 addr)
-+{
-+	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
-+	struct kvmppc_xive_vcpu *xc;
-+	void __user *ubufp = (u64 __user *) addr;
-+	u32 server;
-+	u8 priority;
-+	struct kvm_ppc_xive_eq kvm_eq;
-+	int rc;
-+	__be32 *qaddr = 0;
-+	struct page *page;
-+	struct xive_q *q;
++		pcie_ep@3600000 {
++			compatible = "fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep";
++			reg = <0x00 0x03600000 0x0 0x00100000
++				0x50 0x00000000 0x8 0x00000000>;
++			reg-names = "regs", "addr_space";
++			num-ib-windows = <6>;
++			num-ob-windows = <6>;
++			num-lanes = <2>;
++			status = "disabled";
++		};
 +
-+	/*
-+	 * Demangle priority/server tuple from the EQ index
-+	 */
-+	priority = (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
-+		KVM_XIVE_EQ_PRIORITY_SHIFT;
-+	server = (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
-+		KVM_XIVE_EQ_SERVER_SHIFT;
-+
-+	if (copy_from_user(&kvm_eq, ubufp, sizeof(kvm_eq)))
-+		return -EFAULT;
-+
-+	vcpu = kvmppc_xive_find_server(kvm, server);
-+	if (!vcpu) {
-+		pr_err("Can't find server %d\n", server);
-+		return -ENOENT;
-+	}
-+	xc = vcpu->arch.xive_vcpu;
-+
-+	if (priority != xive_prio_from_guest(priority)) {
-+		pr_err("Trying to restore invalid queue %d for VCPU %d\n",
-+		       priority, server);
-+		return -EINVAL;
-+	}
-+	q = &xc->queues[priority];
-+
-+	pr_devel("%s VCPU %d priority %d fl:%x sz:%d addr:%llx g:%d idx:%d\n",
-+		 __func__, server, priority, kvm_eq.flags,
-+		 kvm_eq.qsize, kvm_eq.qpage, kvm_eq.qtoggle, kvm_eq.qindex);
-+
-+	rc = xive_native_validate_queue_size(kvm_eq.qsize);
-+	if (rc || !kvm_eq.qsize) {
-+		pr_err("invalid queue size %d\n", kvm_eq.qsize);
-+		return rc;
-+	}
-+
-+	page = gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
-+	if (is_error_page(page)) {
-+		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
-+		return -ENOMEM;
-+	}
-+	qaddr = page_to_virt(page) + (kvm_eq.qpage & ~PAGE_MASK);
-+
-+	/* Backup queue page guest address for migration */
-+	q->guest_qpage = kvm_eq.qpage;
-+	q->guest_qsize = kvm_eq.qsize;
-+
-+	rc = xive_native_configure_queue(xc->vp_id, q, priority,
-+					 (__be32 *) qaddr, kvm_eq.qsize, true);
-+	if (rc) {
-+		pr_err("Failed to configure queue %d for VCPU %d: %d\n",
-+		       priority, xc->server_num, rc);
-+		put_page(page);
-+		return rc;
-+	}
-+
-+	rc = xive_native_set_queue_state(xc->vp_id, priority, kvm_eq.qtoggle,
-+					 kvm_eq.qindex);
-+	if (rc)
-+		goto error;
-+
-+	rc = kvmppc_xive_attach_escalation(vcpu, priority);
-+error:
-+	if (rc)
-+		xive_native_cleanup_queue(vcpu, priority);
-+	return rc;
-+}
-+
-+static int kvmppc_xive_native_get_queue(struct kvmppc_xive *xive, long eq_idx,
-+				      u64 addr)
-+{
-+	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
-+	struct kvmppc_xive_vcpu *xc;
-+	struct xive_q *q;
-+	void __user *ubufp = (u64 __user *) addr;
-+	u32 server;
-+	u8 priority;
-+	struct kvm_ppc_xive_eq kvm_eq;
-+	u64 qpage;
-+	u64 qsize;
-+	u64 qeoi_page;
-+	u32 escalate_irq;
-+	u64 qflags;
-+	int rc;
-+
-+	/*
-+	 * Demangle priority/server tuple from the EQ index
-+	 */
-+	priority = (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
-+		KVM_XIVE_EQ_PRIORITY_SHIFT;
-+	server = (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
-+		KVM_XIVE_EQ_SERVER_SHIFT;
-+
-+	vcpu = kvmppc_xive_find_server(kvm, server);
-+	if (!vcpu) {
-+		pr_err("Can't find server %d\n", server);
-+		return -ENOENT;
-+	}
-+	xc = vcpu->arch.xive_vcpu;
-+
-+	if (priority != xive_prio_from_guest(priority)) {
-+		pr_err("invalid priority for queue %d for VCPU %d\n",
-+		       priority, server);
-+		return -EINVAL;
-+	}
-+	q = &xc->queues[priority];
-+
-+	memset(&kvm_eq, 0, sizeof(kvm_eq));
-+
-+	if (!q->qpage)
-+		return 0;
-+
-+	rc = xive_native_get_queue_info(xc->vp_id, priority, &qpage, &qsize,
-+					&qeoi_page, &escalate_irq, &qflags);
-+	if (rc)
-+		return rc;
-+
-+	kvm_eq.flags = 0;
-+	if (qflags & OPAL_XIVE_EQ_ENABLED)
-+		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ENABLED;
-+	if (qflags & OPAL_XIVE_EQ_ALWAYS_NOTIFY)
-+		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY;
-+	if (qflags & OPAL_XIVE_EQ_ESCALATE)
-+		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ESCALATE;
-+
-+	kvm_eq.qsize = q->guest_qsize;
-+	kvm_eq.qpage = q->guest_qpage;
-+
-+	rc = xive_native_get_queue_state(xc->vp_id, priority, &kvm_eq.qtoggle,
-+					 &kvm_eq.qindex);
-+	if (rc)
-+		return rc;
-+
-+	pr_devel("%s VCPU %d priority %d fl:%x sz:%d addr:%llx g:%d idx:%d\n",
-+		 __func__, server, priority, kvm_eq.flags,
-+		 kvm_eq.qsize, kvm_eq.qpage, kvm_eq.qtoggle, kvm_eq.qindex);
-+
-+	if (copy_to_user(ubufp, &kvm_eq, sizeof(kvm_eq)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
- 				       struct kvm_device_attr *attr)
- {
-@@ -628,6 +786,9 @@ static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
- 		return kvmppc_xive_native_sync(xive, attr->attr, attr->addr);
- 	case KVM_DEV_XIVE_GRP_EAS:
- 		return kvmppc_xive_native_set_eas(xive, attr->attr, attr->addr);
-+	case KVM_DEV_XIVE_GRP_EQ:
-+		return kvmppc_xive_native_set_queue(xive, attr->attr,
-+						    attr->addr);
- 	}
- 	return -ENXIO;
- }
-@@ -650,6 +811,9 @@ static int kvmppc_xive_native_get_attr(struct kvm_device *dev,
- 		break;
- 	case KVM_DEV_XIVE_GRP_EAS:
- 		return kvmppc_xive_native_get_eas(xive, attr->attr, attr->addr);
-+	case KVM_DEV_XIVE_GRP_EQ:
-+		return kvmppc_xive_native_get_queue(xive, attr->attr,
-+						    attr->addr);
- 	}
- 	return -ENXIO;
- }
-@@ -674,6 +838,8 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
- 		    attr->attr < KVMPPC_XIVE_NR_IRQS)
- 			return 0;
- 		break;
-+	case KVM_DEV_XIVE_GRP_EQ:
-+		return 0;
- 	}
- 	return -ENXIO;
- }
+ 		qdma: dma-controller@8380000 {
+ 			compatible = "fsl,ls1046a-qdma", "fsl,ls1021a-qdma";
+ 			reg = <0x0 0x8380000 0x0 0x1000>, /* Controller regs */
+@@ -729,7 +762,6 @@
+ 			queue-sizes = <64 64>;
+ 			big-endian;
+ 		};
+-
+ 	};
+ 
+ 	reserved-memory {
 -- 
-2.20.1
+1.7.1
 
