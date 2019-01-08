@@ -2,98 +2,51 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A27AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:13:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD31C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:15:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A379F2087E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:13:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A379F2087E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6892F2087E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:15:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6892F2087E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gondor.apana.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YgQX60C7zDqT9
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 16:13:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YgSm3zcCzDq62
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 16:15:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=gondor.apana.org.au
+ (client-ip=104.223.48.154; helo=deadmen.hmeau.com;
+ envelope-from=herbert@gondor.apana.org.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gondor.apana.org.au
+Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YfxF1Lh6zDqPG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 15:51:44 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x084muG2089848
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Jan 2019 23:51:42 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pvf8kqrmf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 23:51:42 -0500
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Tue, 8 Jan 2019 04:51:41 -0000
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 8 Jan 2019 04:51:38 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x084pbBa25428082
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 8 Jan 2019 04:51:37 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C0995B205F;
- Tue,  8 Jan 2019 04:51:37 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1814B2065;
- Tue,  8 Jan 2019 04:51:34 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.75.199])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Tue,  8 Jan 2019 04:51:34 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
-Subject: [PATCH V6 4/4] powerpc/mm/iommu: Allow large IOMMU page size only for
- hugetlb backing
-Date: Tue,  8 Jan 2019 10:21:10 +0530
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190108045110.28597-1-aneesh.kumar@linux.ibm.com>
-References: <20190108045110.28597-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yg7r6CL1zDqPg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 16:00:55 +1100 (AEDT)
+Received: from gondobar.mordor.me.apana.org.au ([192.168.128.4] helo=gondobar)
+ by deadmen.hmeau.com with esmtps (Exim 4.89 #2 (Debian))
+ id 1ggjVB-0000Iu-MR; Tue, 08 Jan 2019 13:00:33 +0800
+Received: from herbert by gondobar with local (Exim 4.89)
+ (envelope-from <herbert@gondor.apana.org.au>)
+ id 1ggjV6-000555-SU; Tue, 08 Jan 2019 13:00:28 +0800
+Date: Tue, 8 Jan 2019 13:00:28 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v3] crypto: talitos - fix ablkcipher for CONFIG_VMAP_STACK
+Message-ID: <20190108050028.mrdz727dhzmlbi7i@gondor.apana.org.au>
+References: <ae7b64e9415874060977e32ed48b62f1f6148084.1545346337.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19010804-2213-0000-0000-000003383877
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010364; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000273; SDB=6.01143337; UDB=6.00595222; IPR=6.00923595; 
- MB=3.00025026; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-08 04:51:40
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19010804-2214-0000-0000-00005CE1EC09
-Message-Id: <20190108045110.28597-5-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-08_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901080036
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ae7b64e9415874060977e32ed48b62f1f6148084.1545346337.git.christophe.leroy@c-s.fr>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,65 +58,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Horia Geanta <horia.geanta@nxp.com>, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-THP pages can get split during different code paths. An incremented reference
-count do imply we will not split the compound page. But the pmd entry can be
-converted to level 4 pte entries. Keep the code simpler by allowing large
-IOMMU page size only if the guest ram is backed by hugetlb pages.
+On Fri, Dec 21, 2018 at 08:07:52AM +0000, Christophe Leroy wrote:
+> [    2.364486] WARNING: CPU: 0 PID: 60 at ./arch/powerpc/include/asm/io.h:837 dma_nommu_map_page+0x44/0xd4
+> [    2.373579] CPU: 0 PID: 60 Comm: cryptomgr_test Tainted: G        W         4.20.0-rc5-00560-g6bfb52e23a00-dirty #531
+> [    2.384740] NIP:  c000c540 LR: c000c584 CTR: 00000000
+> [    2.389743] REGS: c95abab0 TRAP: 0700   Tainted: G        W          (4.20.0-rc5-00560-g6bfb52e23a00-dirty)
+> [    2.400042] MSR:  00029032 <EE,ME,IR,DR,RI>  CR: 24042204  XER: 00000000
+> [    2.406669]
+> [    2.406669] GPR00: c02f2244 c95abb60 c6262990 c95abd80 0000256a 00000001 00000001 00000001
+> [    2.406669] GPR08: 00000000 00002000 00000010 00000010 24042202 00000000 00000100 c95abd88
+> [    2.406669] GPR16: 00000000 c05569d4 00000001 00000010 c95abc88 c0615664 00000004 00000000
+> [    2.406669] GPR24: 00000010 c95abc88 c95abc88 00000000 c61ae210 c7ff6d40 c61ae210 00003d68
+> [    2.441559] NIP [c000c540] dma_nommu_map_page+0x44/0xd4
+> [    2.446720] LR [c000c584] dma_nommu_map_page+0x88/0xd4
+> [    2.451762] Call Trace:
+> [    2.454195] [c95abb60] [82000808] 0x82000808 (unreliable)
+> [    2.459572] [c95abb80] [c02f2244] talitos_edesc_alloc+0xbc/0x3c8
+> [    2.465493] [c95abbb0] [c02f2600] ablkcipher_edesc_alloc+0x4c/0x5c
+> [    2.471606] [c95abbd0] [c02f4ed0] ablkcipher_encrypt+0x20/0x64
+> [    2.477389] [c95abbe0] [c02023b0] __test_skcipher+0x4bc/0xa08
+> [    2.483049] [c95abe00] [c0204b60] test_skcipher+0x2c/0xcc
+> [    2.488385] [c95abe20] [c0204c48] alg_test_skcipher+0x48/0xbc
+> [    2.494064] [c95abe40] [c0205cec] alg_test+0x164/0x2e8
+> [    2.499142] [c95abf00] [c0200dec] cryptomgr_test+0x48/0x50
+> [    2.504558] [c95abf10] [c0039ff4] kthread+0xe4/0x110
+> [    2.509471] [c95abf40] [c000e1d0] ret_from_kernel_thread+0x14/0x1c
+> [    2.515532] Instruction dump:
+> [    2.518468] 7c7e1b78 7c9d2378 7cbf2b78 41820054 3d20c076 8089c200 3d20c076 7c84e850
+> [    2.526127] 8129c204 7c842e70 7f844840 419c0008 <0fe00000> 2f9e0000 54847022 7c84fa14
+> [    2.533960] ---[ end trace bf78d94af73fe3b8 ]---
+> [    2.539123] talitos ff020000.crypto: master data transfer error
+> [    2.544775] talitos ff020000.crypto: TEA error: ISR 0x20000000_00000040
+> [    2.551625] alg: skcipher: encryption failed on test 1 for ecb-aes-talitos: ret=22
+> 
+> IV cannot be on stack when CONFIG_VMAP_STACK is selected because the stack
+> cannot be DMA mapped anymore.
+> 
+> This patch copies the IV into the extended descriptor when iv is not
+> a valid linear address.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/mm/mmu_context_iommu.c | 24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
-
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index 52ccab294b47..62c7590378d4 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -98,8 +98,6 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	struct mm_iommu_table_group_mem_t *mem;
- 	long i, ret = 0, locked_entries = 0;
- 	unsigned int pageshift;
--	unsigned long flags;
--	unsigned long cur_ua;
- 
- 	mutex_lock(&mem_list_mutex);
- 
-@@ -167,22 +165,14 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
- 	for (i = 0; i < entries; ++i) {
- 		struct page *page = mem->hpages[i];
- 
--		cur_ua = ua + (i << PAGE_SHIFT);
--		if (mem->pageshift > PAGE_SHIFT && PageCompound(page)) {
--			pte_t *pte;
-+		/*
-+		 * Allow to use larger than 64k IOMMU pages. Only do that
-+		 * if we are backed by hugetlb.
-+		 */
-+		if ((mem->pageshift > PAGE_SHIFT) && PageHuge(page)) {
- 			struct page *head = compound_head(page);
--			unsigned int compshift = compound_order(head);
--			unsigned int pteshift;
--
--			local_irq_save(flags); /* disables as well */
--			pte = find_linux_pte(mm->pgd, cur_ua, NULL, &pteshift);
--
--			/* Double check it is still the same pinned page */
--			if (pte && pte_page(*pte) == head &&
--			    pteshift == compshift + PAGE_SHIFT)
--				pageshift = max_t(unsigned int, pteshift,
--						PAGE_SHIFT);
--			local_irq_restore(flags);
-+
-+			pageshift = compound_order(head) + PAGE_SHIFT;
- 		}
- 		mem->pageshift = min(mem->pageshift, pageshift);
- 		/*
+Please make the copy unconditional.  Thanks.
 -- 
-2.20.1
-
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
