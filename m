@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0235C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:06:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80042C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:08:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B6CF206BB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:06:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B6CF206BB
+	by mail.kernel.org (Postfix) with ESMTPS id 041A9206BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 14:08:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 041A9206BB
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YvFB0WY4zDqYP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 01:06:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YvH40J7czDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 01:08:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,39 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Ytkn4dsjzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:43:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Ytkq4p9rzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 00:43:31 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43Ytkj1CxXz9tyMy;
- Tue,  8 Jan 2019 14:43:25 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43Ytkl0Dvtz9tyMx;
+ Tue,  8 Jan 2019 14:43:27 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id UphVdYGvG_B5; Tue,  8 Jan 2019 14:43:25 +0100 (CET)
+ with ESMTP id BAjCPbi1jfZO; Tue,  8 Jan 2019 14:43:26 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43Ytkj0hyGz9tyMv;
- Tue,  8 Jan 2019 14:43:25 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A8FA8B833;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Ytkk6s6Nz9tyMv;
  Tue,  8 Jan 2019 14:43:26 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 520B58B833;
+ Tue,  8 Jan 2019 14:43:28 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2kYsQT_cZjvS; Tue,  8 Jan 2019 14:43:26 +0100 (CET)
+ with ESMTP id WTmu2dCKXou5; Tue,  8 Jan 2019 14:43:28 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0EA4F8B7DF;
- Tue,  8 Jan 2019 14:43:26 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 17C978B7DF;
+ Tue,  8 Jan 2019 14:43:28 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id C60D1717F2; Tue,  8 Jan 2019 13:43:25 +0000 (UTC)
-Message-Id: <59490adb626d57c55942bbbf4651f213df49fab4.1546954238.git.christophe.leroy@c-s.fr>
+ id CC1B4717F2; Tue,  8 Jan 2019 13:43:27 +0000 (UTC)
+Message-Id: <635f311db4c5956ca1e304cb42624ec9dd978907.1546954238.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1546954233.git.christophe.leroy@c-s.fr>
 References: <cover.1546954233.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v12 09/10] powerpc/64: Remove CURRENT_THREAD_INFO
+Subject: [PATCH v12 10/10] powerpc: clean stack pointers naming
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.ibm.com>
-Date: Tue,  8 Jan 2019 13:43:25 +0000 (UTC)
+Date: Tue,  8 Jan 2019 13:43:27 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,192 +77,87 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that current_thread_info is located at the beginning of 'current'
-task struct, CURRENT_THREAD_INFO macro is not really needed any more.
-
-This patch replaces it by loads of the value at PACACURRENT(r13).
+Some stack pointers used to also be thread_info pointers
+and were called tp. Now that they are only stack pointers,
+rename them sp.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/exception-64s.h       |  4 ++--
- arch/powerpc/include/asm/thread_info.h         |  4 ----
- arch/powerpc/kernel/entry_64.S                 | 10 +++++-----
- arch/powerpc/kernel/exceptions-64e.S           |  2 +-
- arch/powerpc/kernel/exceptions-64s.S           |  2 +-
- arch/powerpc/kernel/idle_book3e.S              |  2 +-
- arch/powerpc/kernel/idle_power4.S              |  2 +-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  6 +++---
- 8 files changed, 14 insertions(+), 18 deletions(-)
+ arch/powerpc/kernel/irq.c      | 17 +++++++----------
+ arch/powerpc/kernel/setup_64.c | 11 +++--------
+ 2 files changed, 10 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 3b4767ed3ec5..dd6a5ae7a769 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -671,7 +671,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 1aef9316345f..983e53b427c0 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -659,21 +659,21 @@ void __do_irq(struct pt_regs *regs)
+ void do_IRQ(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+-	void *curtp, *irqtp, *sirqtp;
++	void *cursp, *irqsp, *sirqsp;
  
- #define RUNLATCH_ON				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r3, r1);		\
-+	ld	r3, PACACURRENT(r13);		\
- 	ld	r4,TI_LOCAL_FLAGS(r3);		\
- 	andi.	r0,r4,_TLF_RUNLATCH;		\
- 	beql	ppc64_runlatch_on_trampoline;	\
-@@ -721,7 +721,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- #ifdef CONFIG_PPC_970_NAP
- #define FINISH_NAP				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r11, r1);		\
-+	ld	r11, PACACURRENT(r13);		\
- 	ld	r9,TI_LOCAL_FLAGS(r11);		\
- 	andi.	r10,r9,_TLF_NAPPING;		\
- 	bnel	power4_fixup_nap;		\
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index c959b8d66cac..8e1d0195ac36 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -17,10 +17,6 @@
+ 	/* Switch to the irq stack to handle this */
+-	curtp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
+-	irqtp = hardirq_ctx[raw_smp_processor_id()];
+-	sirqtp = softirq_ctx[raw_smp_processor_id()];
++	cursp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
++	irqsp = hardirq_ctx[raw_smp_processor_id()];
++	sirqsp = softirq_ctx[raw_smp_processor_id()];
  
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
+ 	/* Already there ? */
+-	if (unlikely(curtp == irqtp || curtp == sirqtp)) {
++	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
+ 		__do_irq(regs);
+ 		set_irq_regs(old_regs);
+ 		return;
+ 	}
+ 	/* Switch stack and call */
+-	call_do_irq(regs, irqtp);
++	call_do_irq(regs, irqsp);
  
--#ifdef CONFIG_PPC64
--#define CURRENT_THREAD_INFO(dest, sp)	stringify_in_c(ld dest, PACACURRENT(r13))
--#endif
+ 	set_irq_regs(old_regs);
+ }
+@@ -695,10 +695,7 @@ void *hardirq_ctx[NR_CPUS] __read_mostly;
+ 
+ void do_softirq_own_stack(void)
+ {
+-	void *irqtp;
 -
- #ifndef __ASSEMBLY__
- #include <linux/cache.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 01d0706d873f..83bddacd7a17 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -166,7 +166,7 @@ system_call:			/* label this so stack traces look sane */
- 	li	r10,IRQS_ENABLED
- 	std	r10,SOFTE(r1)
+-	irqtp = softirq_ctx[smp_processor_id()];
+-	call_do_softirq(irqtp);
++	call_do_softirq(softirq_ctx[smp_processor_id()]);
+ }
  
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
- 	bne	.Lsyscall_dotrace		/* does not return */
-@@ -213,7 +213,7 @@ system_call:			/* label this so stack traces look sane */
- 	ld	r3,RESULT(r1)
+ irq_hw_number_t virq_to_hw(unsigned int virq)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index bc55493ff164..debd8ac3834f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -709,19 +709,14 @@ void __init emergency_stack_init(void)
+ 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
+ 
+ 	for_each_possible_cpu(i) {
+-		void *ti;
+-
+-		ti = alloc_stack(limit, i);
+-		paca_ptrs[i]->emergency_sp = ti + THREAD_SIZE;
++		paca_ptrs[i]->emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 		/* emergency stack for NMI exception handling. */
+-		ti = alloc_stack(limit, i);
+-		paca_ptrs[i]->nmi_emergency_sp = ti + THREAD_SIZE;
++		paca_ptrs[i]->nmi_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+ 
+ 		/* emergency stack for machine check exception handling. */
+-		ti = alloc_stack(limit, i);
+-		paca_ptrs[i]->mc_emergency_sp = ti + THREAD_SIZE;
++		paca_ptrs[i]->mc_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
  #endif
- 
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
- 
- 	ld	r8,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3S
-@@ -348,7 +348,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 
- 	/* Repopulate r9 and r10 for the syscall path */
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
--	CURRENT_THREAD_INFO(r10, r1)
-+	ld	r10, PACACURRENT(r13)
- 	ld	r10,TI_FLAGS(r10)
- 
- 	cmpldi	r0,NR_syscalls
-@@ -746,7 +746,7 @@ _GLOBAL(ret_from_except_lite)
- 	mtmsrd	r10,1		  /* Update machine state */
- #endif /* CONFIG_PPC_BOOK3E */
- 
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r3,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3E
- 	ld	r10,PACACURRENT(r13)
-@@ -860,7 +860,7 @@ resume_kernel:
- 1:	bl	preempt_schedule_irq
- 
- 	/* Re-test flags and eventually loop */
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	bne	1b
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 20f14996281d..04ee24789f80 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -493,7 +493,7 @@ exc_##n##_bad_stack:							    \
-  * interrupts happen before the wait instruction.
-  */
- #define CHECK_NAPPING()							\
--	CURRENT_THREAD_INFO(r11, r1);					\
-+	ld	r11, PACACURRENT(r13);					\
- 	ld	r10,TI_LOCAL_FLAGS(r11);				\
- 	andi.	r9,r10,_TLF_NAPPING;					\
- 	beq+	1f;							\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9e253ce27e08..c7c4e2d6f98f 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1629,7 +1629,7 @@ do_hash_page:
- 	ori	r0,r0,DSISR_BAD_FAULT_64S@l
- 	and.	r0,r4,r0		/* weird error? */
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
- 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
- 	bne	77f			/* then don't call hash_page now */
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 4e0d94d02030..31e732c378ad 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -63,7 +63,7 @@ _GLOBAL(\name)
- 1:	/* Let's set the _TLF_NAPPING flag so interrupts make us return
- 	 * to the right spot
- 	*/
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	ld	r10,TI_LOCAL_FLAGS(r11)
- 	ori	r10,r10,_TLF_NAPPING
- 	std	r10,TI_LOCAL_FLAGS(r11)
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index a09b3c7ca176..61ac89fd0a05 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -68,7 +68,7 @@ BEGIN_FTR_SECTION
- 	DSSALL
- 	sync
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
- 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
- 	std	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index 32476a6e4e9c..202bec086e3b 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -229,7 +229,7 @@ ftrace_call:
- 	 *  - r0, r11 & r12 are free
- 	 */
- livepatch_handler:
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
- 
- 	/* Allocate 3 x 8 bytes */
- 	ld	r11, TI_livepatch_sp(r12)
-@@ -256,7 +256,7 @@ livepatch_handler:
- 	 * restore it.
- 	 */
- 
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
- 
- 	ld	r11, TI_livepatch_sp(r12)
- 
-@@ -273,7 +273,7 @@ livepatch_handler:
- 	ld	r2,  -24(r11)
- 
- 	/* Pop livepatch stack frame */
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
- 	subi	r11, r11, 24
- 	std	r11, TI_livepatch_sp(r12)
- 
+ 	}
+ }
 -- 
 2.13.3
 
