@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A749BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B096C43612
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:50:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20BBF2063F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:47:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F02B8206BB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 19:50:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SpFC4Cug"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20BBF2063F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zOR6pdBn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F02B8206BB
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Z2pB74JgzDqP2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 06:46:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Z2t24kBjzDqTs
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 06:50:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="SpFC4Cug"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="zOR6pdBn"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2QB45k0zDqXD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:29:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Z2Rf1xRpzDqXD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 06:30:54 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 09A75217D9;
- Tue,  8 Jan 2019 19:29:25 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D96A820827;
+ Tue,  8 Jan 2019 19:30:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1546975766;
- bh=zpKBx+Mr14lsVMT+rVCB0LfSUJmnEFxpb6RSAuLos4Y=;
+ s=default; t=1546975852;
+ bh=KB46h2aTYnehXf5nRJXlRgXw8M6hO7Y2Oh0GENXFiUQ=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=SpFC4CugkqmPKPAVlEurMKIGmTyJ2r/Wl4v+bpgRX7tQlS2jENpE2NwYUbFuMo5ih
- V3cqWOosPVPWv6V0bcjXF0AXRMtfx5YqwE9onIeZXi2znmuFOysoa8lnrB4XhlcTcC
- ghh6MnlWX+pflUnDAZDaiLdeAgM7kRw+LFW/0muQ=
+ b=zOR6pdBn7mLqjWe+UKdUNkgD7wPzhfqOwkqzDSlkTlxBAVrr2V+Gd+i9dSFzpcD4b
+ f/A7lB+diDzkVLGBnuHXizNt3AQOMVcaLNZORMW/mpmzc+Bpnh9nnmkWh9J4PZrbZT
+ wGKNwauB2j0G5ulUvFGSKDNu60O/Yp0Cj0KeddUQ=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.20 108/117] KVM: PPC: Book3S HV: Apply combination
- of host and l1 pte rc for nested guest
-Date: Tue,  8 Jan 2019 14:26:16 -0500
-Message-Id: <20190108192628.121270-108-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 37/97] powerpc/xmon: Fix invocation inside lock
+ region
+Date: Tue,  8 Jan 2019 14:28:46 -0500
+Message-Id: <20190108192949.122407-37-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190108192628.121270-1-sashal@kernel.org>
-References: <20190108192628.121270-1-sashal@kernel.org>
+In-Reply-To: <20190108192949.122407-1-sashal@kernel.org>
+References: <20190108192949.122407-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -72,54 +72,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org,
+ Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+From: Breno Leitao <leitao@debian.org>
 
-[ Upstream commit 8b23eee4e55a32a2b51a180dfd27a8d214acc7a1 ]
+[ Upstream commit 8d4a862276a9c30a269d368d324fb56529e6d5fd ]
 
-The shadow page table contains ptes for translations from nested guest
-address to host address. Currently when creating these ptes we take the
-rc bits from the pte for the L1 guest address to host address
-translation. This is incorrect as we must also factor in the rc bits
-from the pte for the nested guest address to L1 guest address
-translation (as contained in the L1 guest partition table for the nested
-guest).
+Currently xmon needs to get devtree_lock (through rtas_token()) during its
+invocation (at crash time). If there is a crash while devtree_lock is being
+held, then xmon tries to get the lock but spins forever and never get into
+the interactive debugger, as in the following case:
 
-By not calculating these bits correctly L1 may not have been correctly
-notified when it needed to update its rc bits in the partition table it
-maintains for its nested guest.
+	int *ptr = NULL;
+	raw_spin_lock_irqsave(&devtree_lock, flags);
+	*ptr = 0xdeadbeef;
 
-Modify the code so that the rc bits in the resultant pte for the L2->L0
-translation are the 'and' of the rc bits in the L2->L1 pte and the L1->L0
-pte, also accounting for whether this was a write access when setting
-the dirty bit.
+This patch avoids calling rtas_token(), thus trying to get the same lock,
+at crash time. This new mechanism proposes getting the token at
+initialization time (xmon_init()) and just consuming it at crash time.
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+This would allow xmon to be possible invoked independent of devtree_lock
+being held or not.
+
+Signed-off-by: Breno Leitao <leitao@debian.org>
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kvm/book3s_hv_nested.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/xmon/xmon.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
-index fc64535e4c00..f8176ae3a5a7 100644
---- a/arch/powerpc/kvm/book3s_hv_nested.c
-+++ b/arch/powerpc/kvm/book3s_hv_nested.c
-@@ -1229,6 +1229,9 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
- 	perm |= gpte.may_read ? 0UL : _PAGE_READ;
- 	perm |= gpte.may_write ? 0UL : _PAGE_WRITE;
- 	perm |= gpte.may_execute ? 0UL : _PAGE_EXEC;
-+	/* Only set accessed/dirty (rc) bits if set in host and l1 guest ptes */
-+	perm |= (gpte.rc & _PAGE_ACCESSED) ? 0UL : _PAGE_ACCESSED;
-+	perm |= ((gpte.rc & _PAGE_DIRTY) && writing) ? 0UL : _PAGE_DIRTY;
- 	pte = __pte(pte_val(pte) & ~perm);
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 4264aedc7775..dd6badc31f45 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -75,6 +75,9 @@ static int xmon_gate;
+ #define xmon_owner 0
+ #endif /* CONFIG_SMP */
  
- 	/* What size pte can we insert? */
++#ifdef CONFIG_PPC_PSERIES
++static int set_indicator_token = RTAS_UNKNOWN_SERVICE;
++#endif
+ static unsigned long in_xmon __read_mostly = 0;
+ static int xmon_on = IS_ENABLED(CONFIG_XMON_DEFAULT);
+ 
+@@ -358,7 +361,6 @@ static inline void disable_surveillance(void)
+ #ifdef CONFIG_PPC_PSERIES
+ 	/* Since this can't be a module, args should end up below 4GB. */
+ 	static struct rtas_args args;
+-	int token;
+ 
+ 	/*
+ 	 * At this point we have got all the cpus we can into
+@@ -367,11 +369,11 @@ static inline void disable_surveillance(void)
+ 	 * If we did try to take rtas.lock there would be a
+ 	 * real possibility of deadlock.
+ 	 */
+-	token = rtas_token("set-indicator");
+-	if (token == RTAS_UNKNOWN_SERVICE)
++	if (set_indicator_token == RTAS_UNKNOWN_SERVICE)
+ 		return;
+ 
+-	rtas_call_unlocked(&args, token, 3, 1, NULL, SURVEILLANCE_TOKEN, 0, 0);
++	rtas_call_unlocked(&args, set_indicator_token, 3, 1, NULL,
++			   SURVEILLANCE_TOKEN, 0, 0);
+ 
+ #endif /* CONFIG_PPC_PSERIES */
+ }
+@@ -3672,6 +3674,14 @@ static void xmon_init(int enable)
+ 		__debugger_iabr_match = xmon_iabr_match;
+ 		__debugger_break_match = xmon_break_match;
+ 		__debugger_fault_handler = xmon_fault_handler;
++
++#ifdef CONFIG_PPC_PSERIES
++		/*
++		 * Get the token here to avoid trying to get a lock
++		 * during the crash, causing a deadlock.
++		 */
++		set_indicator_token = rtas_token("set-indicator");
++#endif
+ 	} else {
+ 		__debugger = NULL;
+ 		__debugger_ipi = NULL;
 -- 
 2.19.1
 
