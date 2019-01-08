@@ -2,68 +2,107 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81AFEC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2511CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:49:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF34B206B7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:39:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF34B206B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8413820827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 09:49:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="XdzN13vG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8413820827
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YnKg55bfzDqQf
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:39:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43YnXf2djVzDqS4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 20:49:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.1.49; helo=eur02-he1-obe.outbound.protection.outlook.com;
+ envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="XdzN13vG"; 
+ dkim-atps=neutral
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10049.outbound.protection.outlook.com [40.107.1.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YnHS0Ry0zDqQR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 20:37:56 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43YnHM1psYz9v1Hf;
- Tue,  8 Jan 2019 10:37:51 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id cA4zH0foTH8r; Tue,  8 Jan 2019 10:37:51 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43YnHM14gfz9v1Hc;
- Tue,  8 Jan 2019 10:37:51 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 21B668B7CB;
- Tue,  8 Jan 2019 10:37:52 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id B9UCLNJ6RJx1; Tue,  8 Jan 2019 10:37:52 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 66F8D8B7C9;
- Tue,  8 Jan 2019 10:37:51 +0100 (CET)
-Subject: Re: [PATCH v2 2/2] powerpc: use probe_user_read()
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>, Russell Currey <ruscur@russell.cc>
-References: <0b0db24e18063076e9d9f4e376994af83da05456.1546932949.git.christophe.leroy@c-s.fr>
- <e939991366b784ef13c7afcab51749e3b46327ac.1546932949.git.christophe.leroy@c-s.fr>
-Message-ID: <293a653c-52aa-6326-4022-73fb25590354@c-s.fr>
-Date: Tue, 8 Jan 2019 10:37:51 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YnVg3x12zDqF0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 20:47:37 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=On8ICrgJkbEUzsxeC2y8dv7ul6hjSiKkbX6E5QOEi4g=;
+ b=XdzN13vGOrEoCWZcBDOwH+VIpKrKeL23f53OjduljsT8L/ts6aHUopaFVmvPlDi+PhNOVojI/cdveS19W82iOHD9TCL5jDmzYRHozUkuMiGkBZRNi9LRgURgPS7YH3GM6wSbjy8vciUHdpXNNez1bHY+EAtAZfMFMtkuEDyckok=
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com (52.134.3.153) by
+ VI1PR0402MB3824.eurprd04.prod.outlook.com (52.134.16.33) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1495.10; Tue, 8 Jan 2019 09:47:31 +0000
+Received: from VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::9c4e:17cb:deff:1c18]) by VI1PR0402MB3485.eurprd04.prod.outlook.com
+ ([fe80::9c4e:17cb:deff:1c18%5]) with mapi id 15.20.1495.011; Tue, 8 Jan 2019
+ 09:47:31 +0000
+From: Horia Geanta <horia.geanta@nxp.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v4 1/2] crypto: talitos - reorder code in
+ talitos_edesc_alloc()
+Thread-Topic: [PATCH v4 1/2] crypto: talitos - reorder code in
+ talitos_edesc_alloc()
+Thread-Index: AQHUpx9U2UgnBhsXrEyEQzxfOR/K1Q==
+Date: Tue, 8 Jan 2019 09:47:30 +0000
+Message-ID: <VI1PR0402MB3485608DF1B37BB7C740DD36988A0@VI1PR0402MB3485.eurprd04.prod.outlook.com>
+References: <5ed91db5e2976a4c260465c3d027acc9affd2d2b.1545445924.git.christophe.leroy@c-s.fr>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=horia.geanta@nxp.com; 
+x-originating-ip: [86.34.165.90]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; VI1PR0402MB3824;
+ 6:NJQ4MHmnPQVX4tYi727ZGWzyzWhbDCDZ8L0695zFx8MWsdIc19vldXXOnkrOfDTL0QaKbGtOXYJNaL1ffrxmiHWu+l2vOdASJK3TsJHgGD1y4LYbAqMeY5OSOaFQuJRTuBSIYyg5ZD3WehH5m9hrzZrY7aABWVeDiQVXF8oSN9ZRAQAUsxKQDOX/4UfDsWSbZrCGYAPzwxzcP2yfkRowW5X847/AOWKbloIkV6k+32qh2ra5SfkNR5GP6ukDyXMD+g3KkbU4dygE2tg3B9XbQ2yFQXxTug52n7AIZl/1dsj12gMWp4ZlQ7MSFjh/NBEyul+o/lEUR44FkFvQaMEdj9EOzCrlSd3SIA8MxWUIqYv2XlQkVVgHbUUw7ZqFL5buIds8EWllwqfPHLUvwpBWCUSLHYjB61BykSrbb1Tn2HzT/gqvnRiDv+ReYjzqUo0p9XEUY8B9MkeW+PBi8WH2Mg==;
+ 5:+F3UBqXWpkzvkDF5m99U8xfiZOVEAylwwGala5e/sunVf8QoQh187v1V9OzhOSTB9J9Ka6ntqHDr5Vqiu+ncoojSRM5lQaA7IaS3xcV4x6/z3yYNOanVhRCToe6D9Y8vvvl6+a8+p8q+bTBOMc4V0hLdl/PSDLp9WpsRY3Kvt6y2PaUeqvmi+8bZ5OJi2gerG9MW4K0tasQzmjic2COZnw==;
+ 7:WJjRLxP1O8Sac/8ey5yPazefcIZhQJL6xYZRHKpdZfA4CvGeBL9sSKsMQRF+YEf2/CYw4DPtZayFtnung/De4okvn9Lb2qWF1vU+cVaO57ptLxEfBMBWltc6D/WilIityDeu4uyxPyWwY6GXk8+lTg==
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: a845eab7-56a0-4c0a-a156-08d6754e4edc
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR0402MB3824; 
+x-ms-traffictypediagnostic: VI1PR0402MB3824:
+x-microsoft-antispam-prvs: <VI1PR0402MB38241F192714F82D7A846FD4988A0@VI1PR0402MB3824.eurprd04.prod.outlook.com>
+x-exchange-antispam-report-cfa-test: BCL:0; PCL:0;
+ RULEID:(8211001083)(3230021)(908002)(999002)(5005026)(6040522)(8220060)(2401047)(8121501046)(10201501046)(93006095)(93001095)(3231475)(944501520)(52105112)(3002001)(6055026)(6041310)(20161123564045)(20161123562045)(20161123558120)(20161123560045)(201703131423095)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(201708071742011)(7699051)(76991095);
+ SRVR:VI1PR0402MB3824; BCL:0; PCL:0; RULEID:; SRVR:VI1PR0402MB3824; 
+x-forefront-prvs: 0911D5CE78
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(376002)(39860400002)(396003)(366004)(136003)(346002)(189003)(199004)(55016002)(5660300001)(102836004)(486006)(110136005)(229853002)(97736004)(54906003)(7696005)(74316002)(186003)(6506007)(53546011)(68736007)(99286004)(86362001)(316002)(71200400001)(71190400001)(6436002)(3846002)(76176011)(81156014)(8936002)(8676002)(106356001)(476003)(81166006)(14454004)(33656002)(256004)(2906002)(478600001)(446003)(105586002)(6246003)(6116002)(26005)(9686003)(44832011)(4326008)(53936002)(25786009)(66066001)(305945005)(7736002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB3824;
+ H:VI1PR0402MB3485.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: BLApUqWy8m3W6PslOiuj23CSxFxMQvNNej/yFizX1mxos3d9OR62wKGgV5lYanmXqHdUywErv/FAlMEHeALdPQUnMLyTj6iGkUbrUV76ndx2wAYNxWI/KoImciC66DmWDPibfOviestasHNwPzc5O4tEMt7EoQys9wmY3kTCaVg9sLZbiQaLm8+VPbo+hsWpINJaukFiF5mi+0ckXQL1+4C9jbYIOvfdStk9t89s+9aMraDzVdw4cen/lDJe7xU6/bqNAAOe0N8vlc4fbFGaJytNNA1/AXvUb1fJQxi8zSy7kpCuqYVXHOB6Fg/V20q1
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-In-Reply-To: <e939991366b784ef13c7afcab51749e3b46327ac.1546932949.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: a845eab7-56a0-4c0a-a156-08d6754e4edc
+X-MS-Exchange-CrossTenant-originalarrivaltime: 08 Jan 2019 09:47:30.9534 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3824
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,185 +114,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
- Mike Rapoport <rppt@linux.ibm.com>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "stable@vger.kernel.org" <stable@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Michael and Russell,
-
-Any idea why:
-- checkpatch reports missing Signed-off-by:
-- Snowpatch build fails on PPC64 (it seems unrelated to the patch, 
-something wrong in lib/genalloc.c)
-
-Thanks
-Christophe
-
-Le 08/01/2019 à 08:37, Christophe Leroy a écrit :
-> Instead of opencoding, use probe_user_read() to failessly
-> read a user location.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->   v2: Using probe_user_read() instead of probe_user_address()
-> 
->   arch/powerpc/kernel/process.c   | 12 +-----------
->   arch/powerpc/mm/fault.c         |  6 +-----
->   arch/powerpc/perf/callchain.c   | 20 +++-----------------
->   arch/powerpc/perf/core-book3s.c |  8 +-------
->   arch/powerpc/sysdev/fsl_pci.c   | 10 ++++------
->   5 files changed, 10 insertions(+), 46 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index ce393df243aa..6a4b59d574c2 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1298,16 +1298,6 @@ void show_user_instructions(struct pt_regs *regs)
->   
->   	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
->   
-> -	/*
-> -	 * Make sure the NIP points at userspace, not kernel text/data or
-> -	 * elsewhere.
-> -	 */
-> -	if (!__access_ok(pc, NR_INSN_TO_PRINT * sizeof(int), USER_DS)) {
-> -		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
-> -			current->comm, current->pid);
-> -		return;
-> -	}
-> -
->   	seq_buf_init(&s, buf, sizeof(buf));
->   
->   	while (n) {
-> @@ -1318,7 +1308,7 @@ void show_user_instructions(struct pt_regs *regs)
->   		for (i = 0; i < 8 && n; i++, n--, pc += sizeof(int)) {
->   			int instr;
->   
-> -			if (probe_kernel_address((const void *)pc, instr)) {
-> +			if (probe_user_read(&instr, (void __user *)pc, sizeof(instr))) {
->   				seq_buf_printf(&s, "XXXXXXXX ");
->   				continue;
->   			}
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 887f11bcf330..ec74305fa330 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -276,12 +276,8 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
->   		if ((flags & FAULT_FLAG_WRITE) && (flags & FAULT_FLAG_USER) &&
->   		    access_ok(nip, sizeof(*nip))) {
->   			unsigned int inst;
-> -			int res;
->   
-> -			pagefault_disable();
-> -			res = __get_user_inatomic(inst, nip);
-> -			pagefault_enable();
-> -			if (!res)
-> +			if (!probe_user_read(&inst, nip, sizeof(inst)))
->   				return !store_updates_sp(inst);
->   			*must_retry = true;
->   		}
-> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-> index 0af051a1974e..0680efb2237b 100644
-> --- a/arch/powerpc/perf/callchain.c
-> +++ b/arch/powerpc/perf/callchain.c
-> @@ -159,12 +159,8 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
->   	    ((unsigned long)ptr & 7))
->   		return -EFAULT;
->   
-> -	pagefault_disable();
-> -	if (!__get_user_inatomic(*ret, ptr)) {
-> -		pagefault_enable();
-> +	if (!probe_user_read(ret, ptr, sizeof(*ret)))
->   		return 0;
-> -	}
-> -	pagefault_enable();
->   
->   	return read_user_stack_slow(ptr, ret, 8);
->   }
-> @@ -175,12 +171,8 @@ static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
->   	    ((unsigned long)ptr & 3))
->   		return -EFAULT;
->   
-> -	pagefault_disable();
-> -	if (!__get_user_inatomic(*ret, ptr)) {
-> -		pagefault_enable();
-> +	if (!probe_user_read(ret, ptr, sizeof(*ret)))
->   		return 0;
-> -	}
-> -	pagefault_enable();
->   
->   	return read_user_stack_slow(ptr, ret, 4);
->   }
-> @@ -307,17 +299,11 @@ static inline int current_is_64bit(void)
->    */
->   static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
->   {
-> -	int rc;
-> -
->   	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
->   	    ((unsigned long)ptr & 3))
->   		return -EFAULT;
->   
-> -	pagefault_disable();
-> -	rc = __get_user_inatomic(*ret, ptr);
-> -	pagefault_enable();
-> -
-> -	return rc;
-> +	return probe_user_read(ret, ptr, sizeof(*ret));
->   }
->   
->   static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index b0723002a396..4b64ddf0db68 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -416,7 +416,6 @@ static void power_pmu_sched_task(struct perf_event_context *ctx, bool sched_in)
->   static __u64 power_pmu_bhrb_to(u64 addr)
->   {
->   	unsigned int instr;
-> -	int ret;
->   	__u64 target;
->   
->   	if (is_kernel_addr(addr)) {
-> @@ -427,13 +426,8 @@ static __u64 power_pmu_bhrb_to(u64 addr)
->   	}
->   
->   	/* Userspace: need copy instruction here then translate it */
-> -	pagefault_disable();
-> -	ret = __get_user_inatomic(instr, (unsigned int __user *)addr);
-> -	if (ret) {
-> -		pagefault_enable();
-> +	if (probe_user_read(&instr, (unsigned int __user *)addr, sizeof(instr)))
->   		return 0;
-> -	}
-> -	pagefault_enable();
->   
->   	target = branch_target(&instr);
->   	if ((!target) || (instr & BRANCH_ABSOLUTE))
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index 918be816b097..c8a1b26489f5 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -1068,13 +1068,11 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
->   	addr += mfspr(SPRN_MCAR);
->   
->   	if (is_in_pci_mem_space(addr)) {
-> -		if (user_mode(regs)) {
-> -			pagefault_disable();
-> -			ret = get_user(inst, (__u32 __user *)regs->nip);
-> -			pagefault_enable();
-> -		} else {
-> +		if (user_mode(regs))
-> +			ret = probe_user_read(&inst, (void __user *)regs->nip,
-> +					      sizeof(inst));
-> +		else
->   			ret = probe_kernel_address((void *)regs->nip, inst);
-> -		}
->   
->   		if (!ret && mcheck_handle_load(regs, inst)) {
->   			regs->nip += 4;
-> 
+On 1/8/2019 8:56 AM, Christophe Leroy wrote:=0A=
+> This patch moves the mapping of IV after the kmalloc(). This=0A=
+> avoids having to unmap in case kmalloc() fails.=0A=
+> =0A=
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>=0A=
+Reviewed-by: Horia Geant=E3 <horia.geanta@nxp.com>=0A=
+=0A=
+Since patch 2/2 is Cc-ing stable, this one should do the same.=0A=
+Herbert, could you append the commit message before applying it?=0A=
+=0A=
+Thanks,=0A=
+Horia=0A=
