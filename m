@@ -2,80 +2,80 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 047F4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:23:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B79C3C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:55:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FB97206BB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:23:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FB97206BB
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 07E2720827
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 12:55:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="e0vvQH5r"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07E2720827
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=baylibre.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YryB5d2gzDqS7
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 23:23:14 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Yrw946trzDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Ysgc4CbVzDqSW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 23:55:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43Yrw932NDz8sX0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43Yrw92J4Jz9sMQ; Tue,  8 Jan 2019 23:21:29 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=baylibre.com
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ envelope-from=clabbe@baylibre.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=baylibre.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=baylibre-com.20150623.gappssmtp.com
+ header.i=@baylibre-com.20150623.gappssmtp.com header.b="e0vvQH5r"; 
+ dkim-atps=neutral
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43Yrw85hk8z9sBQ
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2019 23:21:28 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43Yrw44rQlz9v0Nk;
- Tue,  8 Jan 2019 13:21:24 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id RGNil0h2eiW4; Tue,  8 Jan 2019 13:21:24 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43Yrw44HVfz9v0DS;
- Tue,  8 Jan 2019 13:21:24 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CB7CD8B7E2;
- Tue,  8 Jan 2019 13:21:25 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id ixUsLJ9xgnsS; Tue,  8 Jan 2019 13:21:25 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 036118B7DF;
- Tue,  8 Jan 2019 13:21:24 +0100 (CET)
-Subject: Re: [PATCH 2/2] powerpc: Show PAGE_SIZE in __die() output
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20190108120500.2547-1-mpe@ellerman.id.au>
- <20190108120500.2547-2-mpe@ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <324827d2-b736-5726-76d7-3ece152a30cd@c-s.fr>
-Date: Tue, 8 Jan 2019 13:21:24 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
-MIME-Version: 1.0
-In-Reply-To: <20190108120500.2547-2-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43YscX1kMgzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 23:52:59 +1100 (AEDT)
+Received: by mail-wm1-x341.google.com with SMTP id n190so4050634wmd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jan 2019 04:52:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+ h=from:to:cc:subject:date:message-id;
+ bh=0F4k4YtVOnMFo5jh8Gnlg0kYbmRjxVoumr7jiM5rHqI=;
+ b=e0vvQH5rBGL9wdtGa6CX6FX0PiHKYqSFsB2gPVDMdafpp3kNWqnMmIrzImOF8kvQvb
+ 3lRaoMIxgcGd4Bhob0XP1P3lYOshXbea/F9o3nPPTqxBKZNv9Am5yOO873kv8cdgMUPl
+ g9LWeoNpFqYrwxQ4+XKOumbIS9mqV8IzlAXXFZEIvJhkQ1eBEEDHqHf/jjeRFjoYmQTk
+ 625ky33Lb4X5A87OOGTUZK1ra1xdEeyYrw1EjdjeJ3/V1tQDrfvlRguuZGbTzkoojTYk
+ MD3nVtFamo5LU/b63dDE7U98Gl4KqJEJRDVJsYYOBFenryAoxjrNdrn5vxwoxjHNawuT
+ i7wQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=0F4k4YtVOnMFo5jh8Gnlg0kYbmRjxVoumr7jiM5rHqI=;
+ b=pD76hOaiqzGoEj0GDSfIgsjUo9X2AVpj8N2EovFzZvN4z7B/KIVWz1kocfiVQbV68y
+ vl3q6tQUmywJyK59m3VkubjbL9+LILD2G/VxjZ49ugSqQrAR6VTB7YAyzmfSzIrxt2hP
+ a5G0y9IVOKcwaH5Ht1cQ7wttqZZoQ6jGv3kddb4o9ox836FlTbmar8RbdGE8/lNPVXyF
+ eEVQAA/xeZiz9wJD5pC31+lMaOYjEdU69bpIp71aJwt0pbllVHJlEMBjY8gWZXoEfh5Z
+ 0p7aktSFKaEk2VL3EZxp9bD3JBzwkpiAwpgm1pUBBZyN5FI10rS+nr1qMwYZVVFMol0H
+ JBgA==
+X-Gm-Message-State: AJcUukdGiTB1wTJNj/jbi7tTGS3ZeXt+VB2F091PkEKyiu3mGcNlzyBq
+ s+vEo3a4Mkan+IY0C5s3SIAw2Q==
+X-Google-Smtp-Source: ALg8bN5yVh6pLVRUMaEv2IIrJnAVglcZ6pj1YNfX8iW6u0vavGa46yMZerCKWD8CFs4JPbv/ALzQJg==
+X-Received: by 2002:a1c:4c10:: with SMTP id z16mr1772220wmf.117.1546951976580; 
+ Tue, 08 Jan 2019 04:52:56 -0800 (PST)
+Received: from localhost.localdomain ([51.15.160.169])
+ by smtp.googlemail.com with ESMTPSA id 67sm81044121wra.37.2019.01.08.04.52.55
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+ Tue, 08 Jan 2019 04:52:55 -0800 (PST)
+From: Corentin Labbe <clabbe@baylibre.com>
+To: benh@kernel.crashing.org, mark.rutland@arm.com, mpe@ellerman.id.au,
+ paulus@samba.org, robh+dt@kernel.org
+Subject: [PATCH] powerpc: build virtex dtb
+Date: Tue,  8 Jan 2019 12:52:50 +0000
+Message-Id: <1546951970-29079-1-git-send-email-clabbe@baylibre.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,58 +87,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Corentin Labbe <clabbe@baylibre.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+I wanted to test the virtex440-ml507 qemu machine and found that the dtb
+for it was not builded.
+All powerpc DTB are only built when CONFIG_OF_ALL_DTBS is set which depend on
+COMPILE_TEST.
 
+This patchs adds build of virtex dtbs depending on
+CONFIG_XILINX_VIRTEX440_GENERIC_BOARD option.
 
-Le 08/01/2019 à 13:05, Michael Ellerman a écrit :
-> The page size the kernel is built with is useful info when debugging a
-> crash, so add it to the output in __die().
-> 
-> Result looks like eg:
-> 
->    kernel BUG at drivers/misc/lkdtm/bugs.c:63!
->    Oops: Exception in kernel mode, sig: 5 [#1]
->    LE PAGE_SIZE=64K SMP NR_CPUS=2048 NUMA pSeries
->    Modules linked in: vmx_crypto kvm binfmt_misc ip_tables
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->   arch/powerpc/kernel/traps.c | 12 ++++++++++++
->   1 file changed, 12 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 431a86d3f772..fc972e4eee5f 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -268,6 +268,18 @@ static int __die(const char *str, struct pt_regs *regs, long err)
->   	else
->   		seq_buf_puts(&s, "BE ");
->   
-> +	seq_buf_puts(&s, "PAGE_SIZE=");
-> +	if (IS_ENABLED(CONFIG_PPC_4K_PAGES))
-> +		seq_buf_puts(&s, "4K ");
-> +	else if (IS_ENABLED(CONFIG_PPC_16K_PAGES))
-> +		seq_buf_puts(&s, "16K ");
-> +	else if (IS_ENABLED(CONFIG_PPC_64K_PAGES))
-> +		seq_buf_puts(&s, "64K ");
-> +	else if (IS_ENABLED(CONFIG_PPC_256K_PAGES))
-> +		seq_buf_puts(&s, "256K ");
+Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
+---
+ arch/powerpc/boot/dts/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Can't we build all the above at once using PAGE_SHIFT ?
+diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
+index fb335d05aae8..cae14fca682e 100644
+--- a/arch/powerpc/boot/dts/Makefile
++++ b/arch/powerpc/boot/dts/Makefile
+@@ -4,3 +4,5 @@ subdir-y += fsl
+ 
+ dtstree		:= $(srctree)/$(src)
+ dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
++dtb-$(CONFIG_XILINX_VIRTEX440_GENERIC_BOARD) += virtex440-ml507.dtb
++dtb-$(CONFIG_XILINX_VIRTEX440_GENERIC_BOARD) += virtex440-ml510.dtb
+-- 
+2.19.2
 
-Something like (untested):
-
-"%dK ", 1 << (PAGE_SHIFT - 10)
-
-Christophe
-
-> +	else
-> +		BUILD_BUG_ON(1);
-> +
->   	if (IS_ENABLED(CONFIG_PREEMPT))
->   		seq_buf_puts(&s, "PREEMPT ");
->   
-> 
