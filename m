@@ -2,82 +2,68 @@ Return-Path: <SRS0=hsDs=PQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B4D3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:29:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7B65C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:09:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E2CD2087F
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 05:29:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F13CA20700
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 06:09:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pnq/fq1n"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E2CD2087F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="nIlnt6hs"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F13CA20700
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43YgmR0b2DzDqRm
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 16:29:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43Yhfk17zVzDqRj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jan 2019 17:09:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=deepa.kernel@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=leon@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="pnq/fq1n"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="nIlnt6hs"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43YgfC4dRPzDqNK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 16:23:46 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id z11so1207819pgu.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jan 2019 21:23:46 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=tAhRSlvBCw0jlWlEIq0KYU18kUyop4luzyQAUajikNU=;
- b=pnq/fq1nrzFtTMiE5UoQbAHmSN+Du0v7pZ15O4bPg7rGRYVYNIIvVTFKGpQ+sVMaf+
- bIDwSbSXVRcVXQ+hxFMFdbgZBcKPASXmys8a1hBQzxKO+HI0ViCW4ywf4BcBBaczMDau
- rWXcHnl+NguPFKZOneQFOafV7mKPMTI5b0MTluUD4DkcWbtkRpkeJHkHXRw5PwdLFJPL
- 7x5AQqXhZ1cmNvCRQbpk3lthD6/CUqG+8UbP7nzk0qdWC/A0j8/I2Gb2o/TwFPmjiYam
- 2b8PDEYVrL12VmBPgZGpjaBLtVVJRVjzKQsZpSRyM71bN9fDhbCwdiYlwD8vIfE7JSCA
- kdAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=tAhRSlvBCw0jlWlEIq0KYU18kUyop4luzyQAUajikNU=;
- b=BH2Ue/b6b7WnxkG0UOLFQOk+BLOAj5BSbF2aa1UX6So2LaVAWOqoh7dgHxKuTntz40
- CzBx6dNihOp072/rJq77jKuUWwZi+6LuptopZQ0jzzpltpy1K2JYja01UXCYbrsnJy85
- vGPTda1pbH2wR0DXmsf62Xl9m2xvN21KmdedJbNtW/Atn8Uq25MkxuwN3NLGHuGM2cQl
- fn5XELyJs5X191+pmVwhd3eATgmvcfvANZmAi0VjwOmeEuteAKuwnAkMu8qRtxnl3CnL
- BvKBUMexh/XcIl1uV4Ps2ea9B4v/bkE84AvGwZv20iV1MvHPr6PkHXtXzxoNnRehLViW
- Ji5w==
-X-Gm-Message-State: AJcUukdbwOjKnc9fGCgoKvlQ8AXVXUHCLo8tBpRDiN7sGTDTIZIxicvF
- uxgCIF7H79F16qZNKHN4yZc=
-X-Google-Smtp-Source: ALg8bN4t04GVa0fMQUhLGrokSOg8J4Jdz/oAQltCP50PXpmCuFSFZSsSUhVJQu+DHBe01xD0NuiPuw==
-X-Received: by 2002:a63:de04:: with SMTP id f4mr325595pgg.292.1546925025124;
- Mon, 07 Jan 2019 21:23:45 -0800 (PST)
-Received: from deepa-ubuntu.lan (c-98-234-52-230.hsd1.ca.comcast.net.
- [98.234.52.230])
- by smtp.gmail.com with ESMTPSA id x127sm102710626pfd.156.2019.01.07.21.23.43
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 07 Jan 2019 21:23:44 -0800 (PST)
-From: Deepa Dinamani <deepa.kernel@gmail.com>
-To: davem@davemloft.net,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] sock: Add SO_RCVTIMEO_NEW and SO_SNDTIMEO_NEW
-Date: Mon,  7 Jan 2019 21:22:55 -0800
-Message-Id: <20190108052255.10699-4-deepa.kernel@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190108052255.10699-1-deepa.kernel@gmail.com>
-References: <20190108052255.10699-1-deepa.kernel@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Yhcq5jLhzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2019 17:07:39 +1100 (AEDT)
+Received: from localhost (unknown [77.138.135.184])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 98EB920700;
+ Tue,  8 Jan 2019 06:07:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1546927657;
+ bh=jDJvaN+uOakVMbxAqNGZOEwg7W7AOFW6nx5YuUUJJdA=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=nIlnt6hsOhlE9yZKhq/xJk+VVs4JEYbBGNurC/WdoIZnHv6cVXlGA8ZlB+lvgEmPb
+ 0mxbtdcuVpqEZuSlVM+fB6t8IfRDKtSslA8cKXt3YS71XCuor0qnHx/HxzuZUH3VJH
+ IRoL+lC2tjj52LUqidmbxlCp7yXtKyFSkqC0PLAQ=
+Date: Tue, 8 Jan 2019 08:07:34 +0200
+From: Leon Romanovsky <leon@kernel.org>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
+Message-ID: <20190108060734.GH3632@mtr-leonro.mtl.com>
+References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
+ <20181206064509.GM15544@mtr-leonro.mtl.com>
+ <20190104034401.GA2801@umbus.fritz.box>
+ <20190105175116.GB14238@ziepe.ca>
+ <c1296ee9120a6a04dc75d0fdb2a641c722cb65d6.camel@kernel.crashing.org>
+ <20190108040129.GE5336@ziepe.ca>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="QNDPHrPUIc00TOLW"
+Content-Disposition: inline
+In-Reply-To: <20190108040129.GE5336@ziepe.ca>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,336 +75,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org, arnd@arndb.de,
- y2038@lists.linaro.org, netdev@vger.kernel.org, deller@gmx.de,
- linux-mips@vger.kernel.org, ralf@linux-mips.org, cluster-devel@redhat.com,
- ccaulfie@redhat.com, paulus@samba.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, rth@twiddle.net
+Cc: linux-rdma@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, sbest@redhat.com, saeedm@mellanox.com,
+ alex.williamson@redhat.com, paulus@samba.org, netdev@vger.kernel.org,
+ bhelgaas@google.com, ogerlitz@mellanox.com,
+ David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net, tariqt@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add new socket timeout options that are y2038 safe.
 
-Signed-off-by: Deepa Dinamani <deepa.kernel@gmail.com>
-Cc: ccaulfie@redhat.com
-Cc: davem@davemloft.net
-Cc: deller@gmx.de
-Cc: paulus@samba.org
-Cc: ralf@linux-mips.org
-Cc: rth@twiddle.net
-Cc: cluster-devel@redhat.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
----
- arch/alpha/include/uapi/asm/socket.h  | 12 +++--
- arch/mips/include/uapi/asm/socket.h   | 11 ++++-
- arch/parisc/include/uapi/asm/socket.h | 11 ++++-
- arch/sparc/include/uapi/asm/socket.h  | 11 ++++-
- include/net/sock.h                    |  4 +-
- include/uapi/asm-generic/socket.h     | 11 ++++-
- net/core/sock.c                       | 64 +++++++++++++++++++++------
- 7 files changed, 98 insertions(+), 26 deletions(-)
+--QNDPHrPUIc00TOLW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/arch/alpha/include/uapi/asm/socket.h b/arch/alpha/include/uapi/asm/socket.h
-index ea3ba981d8a0..3d800d5d3d5d 100644
---- a/arch/alpha/include/uapi/asm/socket.h
-+++ b/arch/alpha/include/uapi/asm/socket.h
-@@ -118,19 +118,25 @@
- #define SO_TIMESTAMPNS_NEW       63
- #define SO_TIMESTAMPING_NEW      64
- 
--#if !defined(__KERNEL__)
-+#define SO_RCVTIMEO_NEW          65
-+#define SO_SNDTIMEO_NEW          66
- 
--#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
--#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
-+#if !defined(__KERNEL__)
- 
- #if __BITS_PER_LONG == 64
- #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
- #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
- #define SO_TIMESTAMPING	SO_TIMESTAMPING_OLD
-+
-+#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
-+#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #else
- #define SO_TIMESTAMP (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMP_OLD : SO_TIMESTAMP_NEW)
- #define SO_TIMESTAMPNS (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPNS_OLD : SO_TIMESTAMPNS_NEW)
- #define SO_TIMESTAMPING (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPING_OLD : SO_TIMESTAMPING_NEW)
-+
-+#define SO_RCVTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_RCVTIMEO_OLD : SO_RCVTIMEO_NEW)
-+#define SO_SNDTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_SNDTIMEO_OLD : SO_SNDTIMEO_NEW)
- #endif
- 
- #define SCM_TIMESTAMP          SO_TIMESTAMP
-diff --git a/arch/mips/include/uapi/asm/socket.h b/arch/mips/include/uapi/asm/socket.h
-index 4dde20d64690..5a7f9010c090 100644
---- a/arch/mips/include/uapi/asm/socket.h
-+++ b/arch/mips/include/uapi/asm/socket.h
-@@ -128,18 +128,25 @@
- #define SO_TIMESTAMPNS_NEW       63
- #define SO_TIMESTAMPING_NEW      64
- 
-+#define SO_RCVTIMEO_NEW          65
-+#define SO_SNDTIMEO_NEW          66
-+
- #if !defined(__KERNEL__)
- 
--#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
--#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #if __BITS_PER_LONG == 64
- #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
- #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
- #define SO_TIMESTAMPING	SO_TIMESTAMPING_OLD
-+
-+#define        SO_RCVTIMEO             SO_RCVTIMEO_OLD
-+#define        SO_SNDTIMEO             SO_SNDTIMEO_OLD
- #else
- #define SO_TIMESTAMP (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMP_OLD : SO_TIMESTAMP_NEW)
- #define SO_TIMESTAMPNS (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPNS_OLD : SO_TIMESTAMPNS_NEW)
- #define SO_TIMESTAMPING (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPING_OLD : SO_TIMESTAMPING_NEW)
-+
-+#define        SO_RCVTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_RCVTIMEO_OLD : SO_RCVTIMEO_NEW)
-+#define        SO_SNDTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_SNDTIMEO_OLD : SO_SNDTIMEO_NEW)
- #endif
- 
- #define SCM_TIMESTAMP          SO_TIMESTAMP
-diff --git a/arch/parisc/include/uapi/asm/socket.h b/arch/parisc/include/uapi/asm/socket.h
-index 546937fa0d8b..bd35de5b4666 100644
---- a/arch/parisc/include/uapi/asm/socket.h
-+++ b/arch/parisc/include/uapi/asm/socket.h
-@@ -109,18 +109,25 @@
- #define SO_TIMESTAMPNS_NEW       0x4038
- #define SO_TIMESTAMPING_NEW      0x4039
- 
-+#define SO_RCVTIMEO_NEW          0x4040
-+#define SO_SNDTIMEO_NEW          0x4041
-+
- #if !defined(__KERNEL__)
- 
--#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
--#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #if __BITS_PER_LONG == 64
- #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
- #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
- #define SO_TIMESTAMPING	SO_TIMESTAMPING_OLD
-+
-+#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
-+#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #else
- #define SO_TIMESTAMP (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMP_OLD : SO_TIMESTAMP_NEW)
- #define SO_TIMESTAMPNS (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPNS_OLD : SO_TIMESTAMPNS_NEW)
- #define SO_TIMESTAMPING (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPING_OLD : SO_TIMESTAMPING_NEW)
-+
-+#define        SO_RCVTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_RCVTIMEO_OLD : SO_RCVTIMEO_NEW)
-+#define        SO_SNDTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_SNDTIMEO_OLD : SO_SNDTIMEO_NEW)
- #endif
- 
- #define SCM_TIMESTAMP          SO_TIMESTAMP
-diff --git a/arch/sparc/include/uapi/asm/socket.h b/arch/sparc/include/uapi/asm/socket.h
-index bdc396211627..5a5b073c3299 100644
---- a/arch/sparc/include/uapi/asm/socket.h
-+++ b/arch/sparc/include/uapi/asm/socket.h
-@@ -110,18 +110,25 @@
- #define SO_TIMESTAMPNS_NEW       0x0042
- #define SO_TIMESTAMPING_NEW      0x0043
- 
-+#define SO_RCVTIMEO_NEW          0x0044
-+#define SO_SNDTIMEO_NEW          0x0045
-+
- #if !defined(__KERNEL__)
- 
--#define	SO_RCVTIMEO	SO_RCVTIMEO_OLD
--#define	SO_SNDTIMEO	SO_SNDTIMEO_OLD
- #if __BITS_PER_LONG == 64
- #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
- #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
- #define SO_TIMESTAMPING	SO_TIMESTAMPING_OLD
-+
-+#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
-+#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #else
- #define SO_TIMESTAMP (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMP_OLD : SO_TIMESTAMP_NEW)
- #define SO_TIMESTAMPNS (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPNS_OLD : SO_TIMESTAMPNS_NEW)
- #define SO_TIMESTAMPING (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPING_OLD : SO_TIMESTAMPING_NEW)
-+
-+#define        SO_RCVTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_RCVTIMEO_OLD : SO_RCVTIMEO_NEW)
-+#define        SO_SNDTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_SNDTIMEO_OLD : SO_SNDTIMEO_NEW)
- #endif
- 
- 
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 98965a9a2bf4..6679f3c120b0 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -292,8 +292,8 @@ struct sock_common {
-   *	@sk_peer_pid: &struct pid for this socket's peer
-   *	@sk_peer_cred: %SO_PEERCRED setting
-   *	@sk_rcvlowat: %SO_RCVLOWAT setting
--  *	@sk_rcvtimeo: %SO_RCVTIMEO_OLD setting
--  *	@sk_sndtimeo: %SO_SNDTIMEO_OLD setting
-+  *	@sk_rcvtimeo: %SO_RCVTIMEO setting
-+  *	@sk_sndtimeo: %SO_SNDTIMEO setting
-   *	@sk_txhash: computed flow hash for use on transmit
-   *	@sk_filter: socket filtering instructions
-   *	@sk_timer: sock cleanup timer
-diff --git a/include/uapi/asm-generic/socket.h b/include/uapi/asm-generic/socket.h
-index 9e370586fb19..5b4da6eacc9f 100644
---- a/include/uapi/asm-generic/socket.h
-+++ b/include/uapi/asm-generic/socket.h
-@@ -112,19 +112,26 @@
- #define SO_TIMESTAMPNS_NEW       63
- #define SO_TIMESTAMPING_NEW      64
- 
-+#define SO_RCVTIMEO_NEW          65
-+#define SO_SNDTIMEO_NEW          66
-+
- #if !defined(__KERNEL__)
- 
--#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
--#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #if __BITS_PER_LONG == 64 || (defined(__x86_64__) && defined(__ILP32__))
- /* on 64-bit and x32, avoid the ?: operator */
- #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
- #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
- #define SO_TIMESTAMPING	SO_TIMESTAMPING_OLD
-+
-+#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
-+#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
- #else
- #define SO_TIMESTAMP (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMP_OLD : SO_TIMESTAMP_NEW)
- #define SO_TIMESTAMPNS (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPNS_OLD : SO_TIMESTAMPNS_NEW)
- #define SO_TIMESTAMPING (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_TIMESTAMPING_OLD : SO_TIMESTAMPING_NEW)
-+
-+#define        SO_RCVTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_RCVTIMEO_OLD : SO_RCVTIMEO_NEW)
-+#define        SO_SNDTIMEO (sizeof(time_t) == sizeof(__kernel_long_t) ? SO_SNDTIMEO_OLD : SO_SNDTIMEO_NEW)
- #endif
- 
- #define SCM_TIMESTAMP          SO_TIMESTAMP
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 42914ca3186c..5e1c6dafee65 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -335,18 +335,31 @@ int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
- }
- EXPORT_SYMBOL(__sk_backlog_rcv);
- 
--static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
-+static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen, bool old_timeval)
- {
--	struct __kernel_old_timeval tv;
- 
--	if (optlen < sizeof(tv))
--		return -EINVAL;
--	if (copy_from_user(&tv, optval, sizeof(tv)))
--		return -EFAULT;
--	if (tv.tv_usec < 0 || tv.tv_usec >= USEC_PER_SEC)
-+	struct __kernel_sock_timeval stv;
-+
-+	if (old_timeval) {
-+		struct __kernel_old_timeval tv;
-+
-+		if (optlen < sizeof(tv))
-+			return -EINVAL;
-+		if (copy_from_user(&tv, optval, sizeof(tv)))
-+			return -EFAULT;
-+		stv.tv_sec = tv.tv_sec;
-+		stv.tv_usec = tv.tv_usec;
-+	} else {
-+		if (optlen < sizeof(stv))
-+			return -EINVAL;
-+		if (copy_from_user(&stv, optval, sizeof(stv)))
-+			return -EFAULT;
-+	}
-+
-+	if (stv.tv_usec < 0 || stv.tv_usec >= USEC_PER_SEC)
- 		return -EDOM;
- 
--	if (tv.tv_sec < 0) {
-+	if (stv.tv_sec < 0) {
- 		static int warned __read_mostly;
- 
- 		*timeo_p = 0;
-@@ -358,10 +371,10 @@ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
- 		return 0;
- 	}
- 	*timeo_p = MAX_SCHEDULE_TIMEOUT;
--	if (tv.tv_sec == 0 && tv.tv_usec == 0)
-+	if (stv.tv_sec == 0 && stv.tv_usec == 0)
- 		return 0;
--	if (tv.tv_sec < (MAX_SCHEDULE_TIMEOUT/HZ - 1))
--		*timeo_p = tv.tv_sec * HZ + DIV_ROUND_UP(tv.tv_usec, USEC_PER_SEC / HZ);
-+	if (stv.tv_sec < (MAX_SCHEDULE_TIMEOUT / HZ - 1))
-+		*timeo_p = stv.tv_sec * HZ + DIV_ROUND_UP((unsigned long)stv.tv_usec, USEC_PER_SEC / HZ);
- 	return 0;
- }
- 
-@@ -890,11 +903,13 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
- 		break;
- 
- 	case SO_RCVTIMEO_OLD:
--		ret = sock_set_timeout(&sk->sk_rcvtimeo, optval, optlen);
-+	case SO_RCVTIMEO_NEW:
-+		ret = sock_set_timeout(&sk->sk_rcvtimeo, optval, optlen, optname == SO_RCVTIMEO_OLD);
- 		break;
- 
- 	case SO_SNDTIMEO_OLD:
--		ret = sock_set_timeout(&sk->sk_sndtimeo, optval, optlen);
-+	case SO_SNDTIMEO_NEW:
-+		ret = sock_set_timeout(&sk->sk_sndtimeo, optval, optlen, optname == SO_SNDTIMEO_OLD);
- 		break;
- 
- 	case SO_ATTACH_FILTER:
-@@ -1114,6 +1129,7 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
- 		u64 val64;
- 		struct linger ling;
- 		struct __kernel_old_timeval tm;
-+		struct  __kernel_sock_timeval stm;
- 		struct sock_txtime txtime;
- 	} v;
- 
-@@ -1233,6 +1249,17 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
- 		}
- 		break;
- 
-+	case SO_RCVTIMEO_NEW:
-+		lv = sizeof(struct __kernel_sock_timeval);
-+		if (sk->sk_rcvtimeo == MAX_SCHEDULE_TIMEOUT) {
-+			v.stm.tv_sec = 0;
-+			v.stm.tv_usec = 0;
-+		} else {
-+			v.stm.tv_sec = sk->sk_rcvtimeo / HZ;
-+			v.stm.tv_usec = ((sk->sk_rcvtimeo % HZ) * USEC_PER_SEC) / HZ;
-+		}
-+		break;
-+
- 	case SO_SNDTIMEO_OLD:
- 		lv = sizeof(struct __kernel_old_timeval);
- 		if (sk->sk_sndtimeo == MAX_SCHEDULE_TIMEOUT) {
-@@ -1244,6 +1271,17 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
- 		}
- 		break;
- 
-+	case SO_SNDTIMEO_NEW:
-+		lv = sizeof(struct __kernel_sock_timeval);
-+		if (sk->sk_sndtimeo == MAX_SCHEDULE_TIMEOUT) {
-+			v.stm.tv_sec = 0;
-+			v.stm.tv_usec = 0;
-+		} else {
-+			v.stm.tv_sec = sk->sk_sndtimeo / HZ;
-+			v.stm.tv_usec = ((sk->sk_sndtimeo % HZ) * USEC_PER_SEC) / HZ;
-+		}
-+		break;
-+
- 	case SO_RCVLOWAT:
- 		v.val = sk->sk_rcvlowat;
- 		break;
--- 
-2.17.1
+On Mon, Jan 07, 2019 at 09:01:29PM -0700, Jason Gunthorpe wrote:
+> On Sun, Jan 06, 2019 at 09:43:46AM +1100, Benjamin Herrenschmidt wrote:
+> > On Sat, 2019-01-05 at 10:51 -0700, Jason Gunthorpe wrote:
+> > >
+> > > > Interesting.  I've investigated this further, though I don't have as
+> > > > many new clues as I'd like.  The problem occurs reliably, at least on
+> > > > one particular type of machine (a POWER8 "Garrison" with ConnectX-4).
+> > > > I don't yet know if it occurs with other machines, I'm having trouble
+> > > > getting access to other machines with a suitable card.  I didn't
+> > > > manage to reproduce it on a different POWER8 machine with a
+> > > > ConnectX-5, but I don't know if it's the difference in machine or
+> > > > difference in card revision that's important.
+> > >
+> > > Make sure the card has the latest firmware is always good advice..
+> > >
+> > > > So possibilities that occur to me:
+> > > >   * It's something specific about how the vfio-pci driver uses D3
+> > > >     state - have you tried rebinding your device to vfio-pci?
+> > > >   * It's something specific about POWER, either the kernel or the PCI
+> > > >     bridge hardware
+> > > >   * It's something specific about this particular type of machine
+> > >
+> > > Does the EEH indicate what happend to actually trigger it?
+> >
+> > In a very cryptic way that requires manual parsing using non-public
+> > docs sadly but yes. From the look of it, it's a completion timeout.
+> >
+> > Looks to me like we don't get a response to a config space access
+> > during the change of D state. I don't know if it's the write of the D3
+> > state itself or the read back though (it's probably detected on the
+> > read back or a subsequent read, but that doesn't tell me which specific
+> > one failed).
+>
+> If it is just one card doing it (again, check you have latest
+> firmware) I wonder if it is a sketchy PCI-E electrical link that is
+> causing a long re-training cycle? Can you tell if the PCI-E link is
+> permanently gone or does it eventually return?
+>
+> Does the card work in Gen 3 when it starts? Is there any indication of
+> PCI-E link errors?
+>
+> Everytime or sometimes?
+>
+> POWER 8 firmware is good? If the link does eventually come back, is
+> the POWER8's D3 resumption timeout long enough?
+>
+> If this doesn't lead to an obvious conclusion you'll probably need to
+> connect to IBM's Mellanox support team to get more information from
+> the card side.
 
++1, I tried to find any Mellanox-internal bugs related to your issue
+and didn't find anything concrete.
+
+Thanks
+
+>
+> Jason
+
+--QNDPHrPUIc00TOLW
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBAgAGBQJcND4mAAoJEORje4g2clinWmYQALc1t9Jj1WUm7zYVTd84U3pI
+gnGibiWBO2l7MI+MYk14ZBFGEYJlskNRHIigRcOFEkzha5dy6p2JOnQyS3yBvHjO
+Bl3JfvqJLZ6gq4EFqtQlvuH8TaJrkB2L3rxTmWXhbNVcxIw5SIyylhpVDgSncpde
+MtP+XC7viTd15bBrYBTqVJsjr0LnIUfyPzBpDcn6vHht6iPln3pUv90T7w49/Vkm
+EgDUN3bNYjyXbX07sj78Z5t8UuKv0UcQ2oGAWmA/YLGo04XZRQFcUlu4BnWT2YOf
+9z4yHBx/KdBMpxtRue74mqHitFjSu9u+Na5Leq6j3davuFg000q+f3AfE8nCWqLp
+DraqvSZKIhAiCFpQAcBAzEvVM0QzaKS8xqftPpnZ+509cnAwzRzlKDAO3xzyaXNN
+KM56HOXCPSJPvf0uCsTr3zTLpsAnzm1QOSt3J6SW4DxvBPTsdrvro08UQErbUAVL
+VieGklltiu+OeNY2DsCE6JSlxFIMOxMql3zVf5vD9GR7zzhtYA+sgVJssOzBMEY5
+4yHnrg42lQ3OvjBF686S5xFHJ13hNHvd4CvdUiNvlncJS14zlEiFoGzmnk4+44bu
+LSXy8AVLNDtmqk2WG+DlrCZPnm6zp1wC8mvvkvywSpbrWVEkBn2DIlfK788i1BoR
+UMzhWxopBvsJGk41pwm3
+=BVjQ
+-----END PGP SIGNATURE-----
+
+--QNDPHrPUIc00TOLW--
