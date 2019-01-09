@@ -2,73 +2,59 @@ Return-Path: <SRS0=h3rJ=PR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B323DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 16:14:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E3CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 16:43:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E675206BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 16:14:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PaaHvC5S"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E675206BB
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B592F206BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 16:43:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B592F206BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ZZ2C2Tl2zDqYq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 03:14:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZZhN2wcbzDqf9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 03:43:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.72.36; helo=2.mo4.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="PaaHvC5S"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ZZ0P22vgzDqXt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 03:12:37 +1100 (AEDT)
-Received: from mail-qt1-f175.google.com (mail-qt1-f175.google.com
- [209.85.160.175])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 1D5EF2183F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 16:12:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1547050355;
- bh=0ewnFeC4FHEcj3A7zvP6jyGEqueFxUiBiflRWniyQXc=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=PaaHvC5SP+i6GMQmpw0obVdFYkjcvV2PeHjc001a+JP9ks+YhfO8/KmWDAxJ8pEJV
- 3mkqgCmls74Qet9z2bsIVInWzuB/x5g7MsItPYiO57nHx6NiL6So6HifJmpc8JK5hJ
- ZpSLn6d0p6yV/jTyD7m7xnXZ3qlwbVk5/wx4jdc8=
-Received: by mail-qt1-f175.google.com with SMTP id l12so8852553qtf.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2019 08:12:35 -0800 (PST)
-X-Gm-Message-State: AJcUukdkrKLAAmFB0oW40xMLSkZ7yZylrZw0zgQ9F18Z4GpifXdvORgn
- ivMvPZVkz/jzg5pDCVW1BGIyhONqKR9+JSBYEQ==
-X-Google-Smtp-Source: ALg8bN4pu0jO5c5wx1wRb8Wdh/XxBNbWH/RA4JA1FVu26NTXWub+M5FQs5XxXlnpfvGYzWG+9gQUlDCyV6XWzoSBpIg=
-X-Received: by 2002:ac8:2d2b:: with SMTP id n40mr6044903qta.38.1547050354186; 
- Wed, 09 Jan 2019 08:12:34 -0800 (PST)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 601 seconds by postgrey-1.36 at bilbo;
+ Thu, 10 Jan 2019 03:42:03 AEDT
+Received: from 2.mo4.mail-out.ovh.net (2.mo4.mail-out.ovh.net [46.105.72.36])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ZZfM1xNkzDqYk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 03:42:01 +1100 (AEDT)
+Received: from player728.ha.ovh.net (unknown [10.109.143.146])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 77D841C66A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 17:25:39 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player728.ha.ovh.net (Postfix) with ESMTPSA id DC3D11663534;
+ Wed,  9 Jan 2019 16:25:29 +0000 (UTC)
+Date: Wed, 9 Jan 2019 17:25:29 +0100
+From: Greg Kurz <groug@kaod.org>
+To: Frederic Barrat <fbarrat@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv/npu: Fix oops in
+ pnv_try_setup_npu_table_group()
+Message-ID: <20190109172529.10c45ce6@bahia.lan>
+In-Reply-To: <20190109151342.19953-1-fbarrat@linux.ibm.com>
+References: <20190109151342.19953-1-fbarrat@linux.ibm.com>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-14-robh@kernel.org>
- <7hr2ewbxd4.fsf@baylibre.com>
- <CAL_Jsq+hZRJZZ1ZcOxZVXtsUs0013cP0fyf3A=_9J15WbzuUhw@mail.gmail.com>
-In-Reply-To: <CAL_Jsq+hZRJZZ1ZcOxZVXtsUs0013cP0fyf3A=_9J15WbzuUhw@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 9 Jan 2019 10:12:23 -0600
-X-Gmail-Original-Message-ID: <CAL_JsqJ2yN_h0FUJ_F79OBMNkpOH=ou-o4iBHffoRt4XRP8mYA@mail.gmail.com>
-Message-ID: <CAL_JsqJ2yN_h0FUJ_F79OBMNkpOH=ou-o4iBHffoRt4XRP8mYA@mail.gmail.com>
-Subject: Re: [PATCH v2 13/34] dt-bindings: arm: amlogic: Move
- 'amlogic,meson-gx-ao-secure' binding to its own file
-To: Kevin Hilman <khilman@baylibre.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 2342434758407723365
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrfedugdeklecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,48 +66,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, ARM-SoC Maintainers <arm@kernel.org>,
- Sean Hudson <darknighte@darknighte.com>, Frank Rowand <frowand.list@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Grant Likely <grant.likely@arm.com>, Carlo Caione <carlo@caione.org>,
- linux-amlogic@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ andrew.donnellan@au1.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Dec 4, 2018 at 10:18 PM Rob Herring <robh@kernel.org> wrote:
->
-> On Tue, Dec 4, 2018 at 7:01 PM Kevin Hilman <khilman@baylibre.com> wrote:
-> >
-> > Rob Herring <robh@kernel.org> writes:
-> >
-> > > It is best practice to have 1 binding per file, so board level bindings
-> > > should be separate for various misc SoC bindings.
-> > >
-> > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > Cc: Carlo Caione <carlo@caione.org>
-> > > Cc: Kevin Hilman <khilman@baylibre.com>
-> > > Cc: devicetree@vger.kernel.org
-> > > Cc: linux-arm-kernel@lists.infradead.org
-> > > Cc: linux-amlogic@lists.infradead.org
-> > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > ---
-> > >  .../devicetree/bindings/arm/amlogic.txt       | 29 -------------------
-> > >  .../amlogic/amlogic,meson-gx-ao-secure.txt    | 28 ++++++++++++++++++
-> > >  2 files changed, 28 insertions(+), 29 deletions(-)
-> > >  create mode 100644 Documentation/devicetree/bindings/arm/amlogic/amlogic,meson-gx-ao-secure.txt
-> >
-> > Acked-by: Kevin Hilman <khilman@baylibre.com>
-> >
-> > But this isn't really related to the schema series is it?  If you
-> > prefer, I can just queue this one separately via my tree.
->
-> Yes, you can take it.
+On Wed,  9 Jan 2019 16:13:42 +0100
+Frederic Barrat <fbarrat@linux.ibm.com> wrote:
 
-Hey Kevin, doesn't look like this got applied.
+> With a recent change around IOMMU group, a system with an opencapi
+> adapter is no longer booting and we get a kernel oops:
+> 
+> BUG: Kernel NULL pointer dereference at 0x00000028
+> Faulting instruction address: 0xc0000000000aa38c
+> Oops: Kernel access of bad area, sig: 7 [#1]
+> LE SMP NR_CPUS=2048 NUMA PowerNV
+> Modules linked in:
+> CPU: 5 PID: 1 Comm: swapper/4 Not tainted 5.0.0-rc1-fxb-00001-g3bd6e94bec12
+> NIP:  c0000000000aa38c LR: c0000000000a6608 CTR: c000000000097480
+> REGS: c000000005783700 TRAP: 0300   Not tainted  (5.0.0-rc1-fxb-00001-g3bd6
+> MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 28000228  XER: 20
+> CFAR: c0000000000a6604 DAR: 0000000000000028 DSISR: 00080000 IRQMASK: 0
+> GPR00: c0000000000a6608 c000000005783990 c000000001036100 c0000007bf761860
+> GPR04: 0000000000000000 c000000005783834 0000000000000000 0000000000000000
+> GPR08: 69626d2c6e707500 0000000000000000 0000000000000000 9000000002001003
+> GPR12: 0000000000000000 c0000007bfff8300 c000000000010450 0000000000000000
+> GPR16: c000000000ced938 0000000000000100 c000000000ced948 00000000000a0000
+> GPR20: 00000000000bfffe c000000000ced9a8 0000000000000200 c000000000ced978
+> GPR24: 00000000006080c0 c000000716d09828 c00000002e6fd000 0000000000000000
+> GPR28: c0000007bf4aff68 c0000007bf8d0080 c000000000f23938 c0000007bf761860
+> NIP [c0000000000aa38c] pnv_try_setup_npu_table_group+0x1c/0x1a0
+> LR [c0000000000a6608] pnv_pci_ioda_fixup+0x1f8/0x660
+> Call Trace:
+> [c000000005783990] [c0000000000aa3d0] pnv_try_setup_npu_table_group+0x60/0x
+> [c0000000057839d0] [c0000000000a661c] pnv_pci_ioda_fixup+0x20c/0x660
+> [c000000005783ab0] [c000000000e1d4c0] pcibios_resource_survey+0x2c8/0x31c
+> [c000000005783b90] [c000000000e1caf4] pcibios_init+0xb0/0xe4
+> [c000000005783c10] [c000000000010054] do_one_initcall+0x64/0x264
+> [c000000005783ce0] [c000000000e1132c] kernel_init_freeable+0x36c/0x468
+> [c000000005783db0] [c000000000010474] kernel_init+0x2c/0x148
+> [c000000005783e20] [c00000000000b794] ret_from_kernel_thread+0x5c/0x68
+> 
+> An opencapi device is using a device PE, so the current code breaks
+> because pe->pbus is not defined.
+> 
+> More generally, there's no need to define an IOMMU group for opencapi,
+> as the device sends real addresses directly (admittedly, the
+> virtualization story is yet to be written). So let's fix it by
 
-Rob
+Current plan is to go for mediated VFIO. The real HW stays under the control
+of the host ocxl driver, and we still don't need an IOMMU group.
+
+> skipping the IOMMU group setup for opencapi PHBs.
+> 
+> Fixes: 0bd971676e68 ("powerpc/powernv/npu: Add compound IOMMU groups")
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> ---
+
+Reviewed-by: Greg Kurz <groug@kaod.org>
+
+and
+
+Cc: stable@vger.kernel.org      # v4.20
+
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 1d6406a051f1..7db3119f8a5b 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2681,7 +2681,8 @@ static void pnv_pci_ioda_setup_iommu_api(void)
+>  	list_for_each_entry(hose, &hose_list, list_node) {
+>  		phb = hose->private_data;
+>  
+> -		if (phb->type == PNV_PHB_NPU_NVLINK)
+> +		if (phb->type == PNV_PHB_NPU_NVLINK ||
+> +		    phb->type == PNV_PHB_NPU_OCAPI)
+>  			continue;
+>  
+>  		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+
