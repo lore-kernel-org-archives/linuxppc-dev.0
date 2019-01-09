@@ -2,56 +2,81 @@ Return-Path: <SRS0=h3rJ=PR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3856AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06124C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:48:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE13D20883
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:27:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE13D20883
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 287D220821
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 07:48:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 287D220821
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ZLLW07qMzDqft
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 18:27:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZLps5kQGzDqgN
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 18:48:37 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ZLJN3MG7zDqdW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 18:25:40 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x097PHmV006512;
- Wed, 9 Jan 2019 01:25:18 -0600
-Message-ID: <1cf957e55f9587cb5aba557d0e723deaa5358fe1.camel@kernel.crashing.org>
-Subject: Re: [PATCH] PCI: Add no-D3 quirk for Mellanox ConnectX-[45]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, David Gibson
- <david@gibson.dropbear.id.au>
-Date: Wed, 09 Jan 2019 18:25:17 +1100
-In-Reply-To: <23e44611-7eec-b57c-c5a0-6c3b96133a9e@ozlabs.ru>
-References: <20181206041951.22413-1-david@gibson.dropbear.id.au>
- <20181206064509.GM15544@mtr-leonro.mtl.com>
- <20190104034401.GA2801@umbus.fritz.box> <20190105175116.GB14238@ziepe.ca>
- <c1296ee9120a6a04dc75d0fdb2a641c722cb65d6.camel@kernel.crashing.org>
- <20190108040129.GE5336@ziepe.ca>
- <012d24d58a542ed44c8af9f517f1bd61ab912037.camel@kernel.crashing.org>
- <20190109053045.GE6682@umbus.fritz.box>
- <23e44611-7eec-b57c-c5a0-6c3b96133a9e@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.3 (3.30.3-1.fc29) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ZLnD6PWlzDqfB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 18:47:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43ZLnD57Hyz8syK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2019 18:47:12 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43ZLnD4dBhz9sLt; Wed,  9 Jan 2019 18:47:12 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43ZLnD16mFz9sDn
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2019 18:47:11 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43ZLn821GYz9v0VN;
+ Wed,  9 Jan 2019 08:47:08 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id tC6xos1wySQe; Wed,  9 Jan 2019 08:47:08 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43ZLn81V2xz9v0VL;
+ Wed,  9 Jan 2019 08:47:08 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2625E8B7F5;
+ Wed,  9 Jan 2019 08:47:09 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id J-lDiE4qsXX5; Wed,  9 Jan 2019 08:47:09 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.3])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0CA5F8B7EA;
+ Wed,  9 Jan 2019 08:47:09 +0100 (CET)
+Subject: Re: [PATCH 2/2] powerpc: Show PAGE_SIZE in __die() output
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20190108120500.2547-1-mpe@ellerman.id.au>
+ <20190108120500.2547-2-mpe@ellerman.id.au>
+ <324827d2-b736-5726-76d7-3ece152a30cd@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <eb8df6c8-5850-cd50-778d-52102f4b4bbd@c-s.fr>
+Date: Wed, 9 Jan 2019 08:47:08 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
+MIME-Version: 1.0
+In-Reply-To: <324827d2-b736-5726-76d7-3ece152a30cd@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,32 +88,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Leon Romanovsky <leon@kernel.org>, saeedm@mellanox.com,
- linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, sbest@redhat.com, Jason Gunthorpe <jgg@ziepe.ca>,
- alex.williamson@redhat.com, paulus@samba.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com, ogerlitz@mellanox.com, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, tariqt@mellanox.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-01-09 at 17:32 +1100, Alexey Kardashevskiy wrote:
-> I have just moved the "Mellanox Technologies MT27700 Family
-> [ConnectX-4]" from garrison to firestone machine and there it does not
-> produce an EEH, with the same kernel and skiboot (both upstream + my
-> debug). Hm. I cannot really blame the card but I cannot see what could
-> cause the difference in skiboot either. I even tried disabling NPU so
-> garrison would look like firestone, still EEH'ing.
-
-The systems have a different chip though, firestone is P8 and garrison
-is P8', which a slightly different PHB revision. Worth checking if we
-have anything significantly different in our inits and poke at the HW
-guys.
-
-BTW. Are the cards behind a switch in either case ?
-
-Cheers,
-Ben.
 
 
+Le 08/01/2019 à 13:21, Christophe Leroy a écrit :
+> 
+> 
+> Le 08/01/2019 à 13:05, Michael Ellerman a écrit :
+>> The page size the kernel is built with is useful info when debugging a
+>> crash, so add it to the output in __die().
+>>
+>> Result looks like eg:
+>>
+>>    kernel BUG at drivers/misc/lkdtm/bugs.c:63!
+>>    Oops: Exception in kernel mode, sig: 5 [#1]
+>>    LE PAGE_SIZE=64K SMP NR_CPUS=2048 NUMA pSeries
+>>    Modules linked in: vmx_crypto kvm binfmt_misc ip_tables
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>   arch/powerpc/kernel/traps.c | 12 ++++++++++++
+>>   1 file changed, 12 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+>> index 431a86d3f772..fc972e4eee5f 100644
+>> --- a/arch/powerpc/kernel/traps.c
+>> +++ b/arch/powerpc/kernel/traps.c
+>> @@ -268,6 +268,18 @@ static int __die(const char *str, struct pt_regs 
+>> *regs, long err)
+>>       else
+>>           seq_buf_puts(&s, "BE ");
+>> +    seq_buf_puts(&s, "PAGE_SIZE=");
+>> +    if (IS_ENABLED(CONFIG_PPC_4K_PAGES))
+>> +        seq_buf_puts(&s, "4K ");
+>> +    else if (IS_ENABLED(CONFIG_PPC_16K_PAGES))
+>> +        seq_buf_puts(&s, "16K ");
+>> +    else if (IS_ENABLED(CONFIG_PPC_64K_PAGES))
+>> +        seq_buf_puts(&s, "64K ");
+>> +    else if (IS_ENABLED(CONFIG_PPC_256K_PAGES))
+>> +        seq_buf_puts(&s, "256K ");
+> 
+> Can't we build all the above at once using PAGE_SHIFT ?
+> 
+> Something like (untested):
+> 
+> "%dK ", 1 << (PAGE_SHIFT - 10)
+
+Or even simplier:
+
+"%dK ", PAGE_SIZE / 1024
+
+Christophe
+
+
+> 
+> Christophe
+> 
+>> +    else
+>> +        BUILD_BUG_ON(1);
+>> +
+>>       if (IS_ENABLED(CONFIG_PREEMPT))
+>>           seq_buf_puts(&s, "PREEMPT ");
+>>
