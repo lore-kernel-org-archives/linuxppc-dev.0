@@ -2,64 +2,99 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B31CDC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:06:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57B5FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:17:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12020208E3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:06:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12020208E3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id BE854213F2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:17:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE854213F2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bM716fFTzDqwh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 10:06:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bMN65xtPzDqyG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 10:17:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
- [209.85.160.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bM59079NzDqwH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 10:04:28 +1100 (AEDT)
-Received: by mail-qt1-f195.google.com with SMTP id i7so15945047qtj.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 15:04:28 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=HtXhbi3vHt8M/OEnatDKUvPiA7NAMQnuGXU1lkYVUOA=;
- b=heGkLCK6WQQMLgl0P6CRkFAO1uRQw4FoW7b6qw2MJfYkJz70OUKbu1+rxQ+HEKy9WZ
- vBHtfKpJUYMGj+7l4zOyOcscYHQ5EGHRuUJp0KQGHoMgCoywvKdzVrKKtRIF/bsRW3cW
- pUC81j6oIHrSSz3HnQJ6BQY36w+WmcKrzSrOq8TRfewe1DPNEZy7Df5wttHFjyySTyqg
- urZoMx3OkK4ZCyrBO+FBh1PZgEsKxIgQRz1zyBFvSyNpcdBmJlnHeZnRNutGTVW/UA7/
- 9SVnrAc0Y2YiELhVdccbzKtJ/jOVdWeplTC9w6cG3vNWTvluDWPCWw8ByroDhV5ByhUk
- kEOw==
-X-Gm-Message-State: AJcUukel3t89GZ2Y45GJfSrWQGX2xCwtERv4qXDp+qY1HulEhzOpyRJQ
- 0n/MC5Z+1pHBQtaS5I4SabQUN04gXDOAuEn08PY=
-X-Google-Smtp-Source: ALg8bN4ZeEWRkM9hWnrPPHyShJGIJaQ4v14vU6tq5tVSdcQOtnDoc1B1ZFUD1N8Tb+aXoK9KYlt7H6bjgwfKKkPpLQI=
-X-Received: by 2002:a0c:e202:: with SMTP id q2mr11357943qvl.180.1547161466728; 
- Thu, 10 Jan 2019 15:04:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bML86pF7zDqwV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 10:15:44 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0AN93Ho129019
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 18:15:42 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pxa9x4gc1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 18:15:42 -0500
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 10 Jan 2019 23:15:41 -0000
+Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 10 Jan 2019 23:15:38 -0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0ANFbHo20185194
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 10 Jan 2019 23:15:37 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 27F77112065;
+ Thu, 10 Jan 2019 23:15:37 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3F1E7112064;
+ Thu, 10 Jan 2019 23:15:36 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.85.156.211])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Jan 2019 23:15:36 +0000 (GMT)
+Subject: Re: [PATCH] ibmvscsi: use GFP_ATOMIC with dma_alloc_coherent in
+ map_sg_data
+To: Christoph Hellwig <hch@infradead.org>
+References: <1547089136-20264-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <20190110150703.GA26696@infradead.org>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 10 Jan 2019 15:15:35 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-References: <20190110162435.309262-1-arnd@arndb.de>
- <20190110162435.309262-12-arnd@arndb.de>
- <20190110193949.5wsysvchhhh2gfmu@pburton-laptop>
-In-Reply-To: <20190110193949.5wsysvchhhh2gfmu@pburton-laptop>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 11 Jan 2019 00:04:09 +0100
-Message-ID: <CAK8P3a1-QvHrPOupHx3sc+c6zAS9E-u8hYbt4keWzpiPgNOD-Q@mail.gmail.com>
-Subject: Re: [PATCH 11/15] mips: fix n32 compat_ipc_parse_version
-To: Paul Burton <paul.burton@mips.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190110150703.GA26696@infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19011023-2213-0000-0000-0000033A6ED5
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010381; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000274; SDB=6.01144652; UDB=6.00596015; IPR=6.00924917; 
+ MB=3.00025075; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-10 23:15:40
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011023-2214-0000-0000-00005CEBBE7B
+Message-Id: <4c5a470e-fa98-1ffd-7f55-5a4ffb3a692a@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-10_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=591 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901100176
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,86 +106,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "dalias@libc.org" <dalias@libc.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- "linux@dominikbrodowski.net" <linux@dominikbrodowski.net>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>,
- "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>,
- "hpa@zytor.com" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "dave@stgolabs.net" <dave@stgolabs.net>,
- "y2038@lists.linaro.org" <y2038@lists.linaro.org>,
- "deller@gmx.de" <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "geert@linux-m68k.org" <geert@linux-m68k.org>,
- "firoz.khan@linaro.org" <firoz.khan@linaro.org>,
- "mattst88@gmail.com" <mattst88@gmail.com>,
- "fenghua.yu@intel.com" <fenghua.yu@intel.com>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>,
- "luto@kernel.org" <luto@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "monstr@monstr.eu" <monstr@monstr.eu>,
- "tony.luck@intel.com" <tony.luck@intel.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>,
- "ebiederm@xmission.com" <ebiederm@xmission.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ stable@vger.kernel.org, james.bottomley@hansenpartnership.com,
+ brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 8:40 PM Paul Burton <paul.burton@mips.com> wrote:
-> On Thu, Jan 10, 2019 at 05:24:31PM +0100, Arnd Bergmann wrote:
-> > While reading through the sysvipc implementation, I noticed that the n32
-> > semctl/shmctl/msgctl system calls behave differently based on whether
-> > o32 support is enabled or not: Without o32, the IPC_64 flag passed by
-> > user space is rejected but calls without that flag get IPC_64 behavior.
-> >
-> > As far as I can tell, this was inadvertently changed by a cleanup patch
-> > but never noticed by anyone, possibly nobody has tried using sysvipc
-> > on n32 after linux-3.19.
-> >
-> > Change it back to the old behavior now.
-> >
-> > Fixes: 78aaf956ba3a ("MIPS: Compat: Fix build error if CONFIG_MIPS32_COMPAT but no compat ABI.")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> > As stated above, this was only found by inspection, the patch is not
-> > tested. Please review accordingly.
->
-> Nice catch! Would you prefer to merge this yourself, or that I take it
-> through the mips tree?
+On 01/10/2019 07:07 AM, Christoph Hellwig wrote:
+> On Wed, Jan 09, 2019 at 06:58:56PM -0800, Tyrel Datwyler wrote:
+>> While mapping DMA for scatter list when a scsi command is queued the
+>> existing call to dma_alloc_coherent() in our map_sg_data() function
+>> passes zero for the gfp_flags parameter. We are most definitly in atomic
+>> context at this point as queue_command() is called in softirq context
+>> and further we have a spinlock holding the scsi host lock.
+>>
+>> Fix this by passing GFP_ATOMIC to dma_alloc_coherent() to prevent any
+>> sort of sleeping in atomic context deadlock.
+> 
+> This is a pretty clear sign you should not be using dma_alloc_coherent
+> to start with.  GFP_ATOMIC support in many of the implementations either
+> doesn't work at all or is severly constrained.  
 
-Up to you: if you want to merge it for 5.0, I'll just drop it from my tree.
+On a secondary note I was unaware of the GFP_ATOMIC limitations. Should this be
+added to the documentation somewhere? I don't see any mention here form
+DMA-API-HOWTO.txt.
 
-> If the former then:
->
->   Acked-by: Paul Burton <paul.burton@mips.com>
+Using Consistent DMA mappings
+=============================
 
-Thanks!
+To allocate and map large (PAGE_SIZE or so) consistent DMA regions,
+you should do::
 
-> I suspect kernels configured with n32 support but no o32 support are
-> probably not very common - for internal testing we currently always
-> enable both.
+        dma_addr_t dma_handle;
 
-Do you know of anyone actually still using n32 in production systems
-with 4.x kernels? I wonder if it just fell out of popularity as the 64-bit
-machines that used it either became large enough to want 64-bit
-user space, or got replaced by arm64 or mips32 hardware.
+        cpu_addr = dma_alloc_coherent(dev, size, &dma_handle, gfp);
 
-      Arnd
+where device is a ``struct device *``. This may be called in interrupt
+context with the GFP_ATOMIC flag.
+
+-Tyrel
+
+Given that the
+> descriptor is written by the OS and read by the hardware exactly once
+> there is no point in having the coherent mapping to start with.
+> 
+
