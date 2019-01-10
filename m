@@ -3,63 +3,65 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93AC0C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D856AC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:46:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E367B2064C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:44:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E367B2064C
+	by mail.kernel.org (Postfix) with ESMTPS id 59C8D2064C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:46:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59C8D2064C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bLf81WwNzDqwN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 09:44:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bLhw2LXdzDqsQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 09:46:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
+ (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
  envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
- [209.85.160.194])
+Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
+ [209.85.160.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bLcD3BnnzDqwH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:42:52 +1100 (AEDT)
-Received: by mail-qt1-f194.google.com with SMTP id u47so15873883qtj.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 14:42:52 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bLdN0PxpzDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:43:52 +1100 (AEDT)
+Received: by mail-qt1-f193.google.com with SMTP id t33so15871382qtt.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 14:43:51 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=yNKid8601Q74qbqdVMhf8FUFM1MYtF3TJK3jK7Mp7Ng=;
- b=eYaH+/Na5K+6NaxohLqEyWlGKJy7IN2Evk7JwNBr4dL3EK2W7DuD71ed6J1XXY2joW
- PW43NSBhuXdiAhOPWp31mPlRLqrIam4b6rVYShwLcjAJfUHZv98jG5pVhEOBDv4ec7px
- oliyMi4+BRNucJgAsFQV1seedE7NIFzYJD0DG0cnkSwlHSiofpPloloGp6sqaDI1pAQb
- ql4jh0rl24HpKBw9KjmG6MgwFsUCDp0hxx3vvyEj5CzM+CZTL67oFjCryx5cc5n3/JDG
- pOBvsBLyUhJ6b/BW3VTHEd8GdU4SA9T7cALw2H1gi2imPw8soK0YHG0io3wg6I/L+ay4
- wvWg==
-X-Gm-Message-State: AJcUukcGzJetof8wHOiNVslCG0ce5/oPZUCYRCMlxcOO/VILEm+dpv2g
- uxXFD2FStJ7ueCNWL8eo7aoznzD1JKvPe1ouRfk=
-X-Google-Smtp-Source: ALg8bN4wMR/sIxtpNUyojzYiti1ruSkqKLKoKXLZmlthH3ilc8ugAlgx3EsdaYVXiGEAkGXDoaecVD7bYSRnjKp5c14=
-X-Received: by 2002:a37:bdc6:: with SMTP id
- n189mr10790675qkf.330.1547160169972; 
- Thu, 10 Jan 2019 14:42:49 -0800 (PST)
+ bh=8BQxy77aw0o+DSOGQG1SQtIdLEpkaKMICEdNR1LQ13U=;
+ b=Dm9QgslPXcMrU6aUmGPvAf9qbTKRFBu/B0hw9wDP07eamccypEv/XB6/ZShKHMGIU3
+ p9vc+9jRqDZTpw6XmgmXKxGrwSlK1KsB1OyN7TxAnCnxU3UaqV+Y3W2S1FZ2LolB6n15
+ laUUv6LBxz9hF6f2KpuZ1Th7lvMFaKhxfRC2Zizp+wDQRUCstuP/7Fu1q9F6c8GVGr5M
+ kyMwBoFV2MydFR0Dq2rOkGgD/rj9qD4/oLx+pi65EUU9LmTGTbVZlgSUb97tUiHR6XsS
+ WUm7Hxd/+ho3mcOuKmNj8+rlVSh7ueqCkPDY53VgpbC+ItN/1MR9S8maSo/sBOrx+t2A
+ VGng==
+X-Gm-Message-State: AJcUukff9Mmb35LL7YCP9i7AlFLhrukCEakWmXjXUXKTkqJUS0U1XG0m
+ yDGN2VvIjZ4BJQ3ATBOFVtjLqgukeGOttSKsAkw=
+X-Google-Smtp-Source: ALg8bN6HaEyY/0zx6RGqFtKtlSPz+RZx+KrllRYiKjcCjzeA51uZ4VQUxl3HD7ARydoqD46n7kKW7Dhkol5Ir927zA4=
+X-Received: by 2002:ae9:d8c2:: with SMTP id
+ u185mr10538686qkf.107.1547160230039; 
+ Thu, 10 Jan 2019 14:43:50 -0800 (PST)
 MIME-Version: 1.0
 References: <20190110162435.309262-1-arnd@arndb.de>
- <alpine.DEB.2.21.1901101808220.31458@digraph.polyomino.org.uk>
-In-Reply-To: <alpine.DEB.2.21.1901101808220.31458@digraph.polyomino.org.uk>
+ <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
+ <CAK8P3a0kmr2ju+sZE+f-+=-2t5Eu+t-DS-+r6OKrPVTAxHwf8w@mail.gmail.com>
+ <CAMuHMdVpUNUx-wdDYChYNzMYqYi79w5tzjk5x3JskdS88VQCQw@mail.gmail.com>
+In-Reply-To: <CAMuHMdVpUNUx-wdDYChYNzMYqYi79w5tzjk5x3JskdS88VQCQw@mail.gmail.com>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 10 Jan 2019 23:42:32 +0100
-Message-ID: <CAK8P3a2f4SCJXrm6HWO9UKY-akSW+ONNpOvQOtYbia_fRo9ciQ@mail.gmail.com>
+Date: Thu, 10 Jan 2019 23:43:32 +0100
+Message-ID: <CAK8P3a07yNiadLCJcA0Tyfo90YeQ0P2XF-wOEy9XAb8cDTFObw@mail.gmail.com>
 Subject: Re: [PATCH 00/15] arch: synchronize syscall tables in preparation for
  y2038
-To: Joseph Myers <joseph@codesourcery.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,7 +74,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+Cc: Rich Felker <dalias@libc.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
  Linux-sh list <linux-sh@vger.kernel.org>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
@@ -82,8 +85,7 @@ Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
  linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
  y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
  the arch/x86 maintainers <x86@kernel.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
  Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
  Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
  linux-m68k <linux-m68k@lists.linux-m68k.org>,
@@ -95,44 +97,45 @@ Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
  Linux API <linux-api@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Paul Burton <paul.burton@mips.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
  alpha <linux-alpha@vger.kernel.org>,
  Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 7:10 PM Joseph Myers <joseph@codesourcery.com> wrote:
+On Thu, Jan 10, 2019 at 7:11 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Thu, Jan 10, 2019 at 6:06 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Thu, Jan 10, 2019 at 5:59 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > On Thu, Jan 10, 2019 at 5:26 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> > > > The system call tables have diverged a bit over the years, and a number
+> > > > of the recent additions never made it into all architectures, for one
+> > > > reason or another.
+> > > >
+> > > > This is an attempt to clean it up as far as we can without breaking
+> > > > compatibility, doing a number of steps:
+> > >
+> > > Thanks a lot!
+> > >
+> > > > - Add system calls that have not yet been integrated into all
+> > > >   architectures but that we definitely want there.
+> > >
+> > > It looks like you missed wiring up io_pgetevents() on m68k.
+> > > Is that intentional?
+> >
+> > Yes, I thought I had described that somewhere but maybe I
+> > forgot: semtimedop() and io_pgetevents() get replaced with
+> > time64 versions in the follow-up, so I only added them in
+> > 64-bit architectures. If you think we should have both
+> > io_pgetevents() and io_pgetevents_time32() on all 32-bit
+> > architectures, I can add that as well.
 >
-> On Thu, 10 Jan 2019, Arnd Bergmann wrote:
->
-> > - Add system calls that have not yet been integrated into all
-> >   architectures but that we definitely want there.
->
-> glibc has a note that alpha lacks statfs64, any plans for that?
+> Thanks, sounds fine to me.
 
-Good catch, I missed that because all other 64-bit architectures
-have a statfs() call with 64-bit fields. I see that it also has an
-osf_statfs64 structure and system call with lots of padding and some
-oddly sized fields: f_type, f_flags and f_namemax are only 16 bits
-wide, the rest is all 64-bit.
+Just to be sure, you mean it's fine to not add it, not that we should
+add it?
 
-Adding the regular statfs64() should be easy enough, we just need to
-decide which layout to use:
-
-a) use the currently unused 'struct statfs64' as provided by the
-    alpha uapi headers, which has a 32-bit __statfs_word but
-    64-bit f_blocks, f_bfree, f_bavail, f_files, and f_ffree.
-
-b) copy asm-generic/statfs.h to the alpha asm/statfs.h and
-    change statfs64 to have the regular layout that we use
-    on all other 64-bit architectures, using all 64-bit fields.
-
-The other open question for alpha (as mentioned in one of the
-patches I sent) would be whether to add get{eg,eu,g,p,pp,u}id()
-with the regular calling conventions.
-
-       Arnd
+     Arnd
