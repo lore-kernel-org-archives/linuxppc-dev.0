@@ -2,84 +2,91 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E0B0C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 01:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CC7AC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 03:00:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9BF972075C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 01:44:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="I/X+LbE5"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BF972075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 93C7A214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 03:00:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93C7A214DA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ZphY10fJzDqWS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 12:44:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZrN54BCbzDqd9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 14:00:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=jms.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="I/X+LbE5"; 
- dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Zpfk5s1jzDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 12:43:10 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id q1so4535196pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2019 17:43:10 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=BmFn7kEqOoM8HVylSIWAfzxIstDUaFsc+wa4gGeuK+8=;
- b=I/X+LbE5wjvFAh0JEI3CxsZPEWO+ozpYYSI5qQlUTn9aOoh/2MnCS1s+7+OHMRqcMx
- C/mk5I+le+O2nMZp3Mp2p4KUFrugDP65LWOfCdKHKhPklLnSVpwCIOnxi2bBUwHkog8k
- l7h3HPVbl9SRphxV+jKpOfgVhOx1qzHYP62Y/lnfBML1KRBktqPe6srV/Lj23GTkGlqL
- 1/t4VtHamNw1wZ/tTFzmf3QzSUIodhduqsYWrfqENrAUwIUeZ5MoGa1uH4E0Ok4hP8o3
- VSQk01VvSpvX62T6loqzC6c8rJj/YycZ4NlP5lsmK4zvwgkGKT4vs22R36j4lysqHdPH
- fODw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :mime-version:content-transfer-encoding;
- bh=BmFn7kEqOoM8HVylSIWAfzxIstDUaFsc+wa4gGeuK+8=;
- b=rdgnnAzx9oRs47u7QL0u9lAe4izEAceFlnw+lONiDVB0sWSjT6Aqpl1rVbuq9c5Dye
- tyOa1gNA9KNl0Y3Iv+BmGFQNpE8Y4BAn+cJ/E+BxYc3nqsIJr8HMbE9RJepdQh6qQsqy
- xN8WoSY/LSt5PdnaWuRi6BKo3dBjtWkx6g/w937Br6Ac/HwNxqj6CoF0NwBEigG1Ye2F
- oC/BFv442awpEp14v47IP8F+J+Qtxh9bd/85/zJ8ix34SKHi+L/4qz7Che2KoCFu77nF
- MsfDqO8y7mu4BRiwHgPtDamdTaNaugcOD7vgl0lV4TcMB/WOlDMt0qJhMUZGd0VOZQO4
- ndyg==
-X-Gm-Message-State: AJcUukdaopOJgTz34N+RUyBMeT+U03WYgprvyJfiXCngBTbLn0drnDYq
- xpXBgHl8yFG30ZbYNz8Lp7dyyJXHrIo=
-X-Google-Smtp-Source: ALg8bN7T8PpOhBq0aLaVOT7LsWROzuHJOzY8MQDvIJeFELzH0Nzg2nb1XuMGbILl0+gL6tXQJ6Bvng==
-X-Received: by 2002:a63:4706:: with SMTP id u6mr7179005pga.95.1547084588458;
- Wed, 09 Jan 2019 17:43:08 -0800 (PST)
-Received: from aurora.jms.id.au (natp-s01-129-78-56-201.gw.usyd.edu.au.
- [129.78.56.201])
- by smtp.gmail.com with ESMTPSA id f67sm147708925pff.29.2019.01.09.17.43.05
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 09 Jan 2019 17:43:07 -0800 (PST)
-Received: by aurora.jms.id.au (sSMTP sendmail emulation);
- Thu, 10 Jan 2019 12:43:02 +1100
-From: Joel Stanley <joel@jms.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/vdso32: Drop -mabi=elfv1 for 32 bit objects
-Date: Thu, 10 Jan 2019 12:42:58 +1100
-Message-Id: <20190110014258.20963-1-joel@jms.id.au>
-X-Mailer: git-send-email 2.19.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ZrLN2ByYzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 13:59:07 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0A2snqb175669
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jan 2019 21:59:05 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2pwrq8anb8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2019 21:59:04 -0500
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 10 Jan 2019 02:59:04 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 10 Jan 2019 02:59:01 -0000
+Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
+ [9.57.199.109])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0A2x0dQ20250842
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 10 Jan 2019 02:59:00 GMT
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9CC50112070;
+ Thu, 10 Jan 2019 02:59:00 +0000 (GMT)
+Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B0734112062;
+ Thu, 10 Jan 2019 02:58:59 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.85.156.211])
+ by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Jan 2019 02:58:59 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Subject: [PATCH] ibmvscsi: use GFP_ATOMIC with dma_alloc_coherent in
+ map_sg_data
+Date: Wed,  9 Jan 2019 18:58:56 -0800
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 19011002-0060-0000-0000-000002F68603
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010376; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000274; SDB=6.01144255; UDB=6.00595775; IPR=6.00924517; 
+ MB=3.00025057; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-10 02:59:03
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011002-0061-0000-0000-000047DD531A
+Message-Id: <1547089136-20264-1-git-send-email-tyreld@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-10_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=799 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901100023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,49 +98,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>, Daniel Axtens <dja@axtens.net>
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ stable@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Daniel Axtens <dja@axtens.net>
+While mapping DMA for scatter list when a scsi command is queued the
+existing call to dma_alloc_coherent() in our map_sg_data() function
+passes zero for the gfp_flags parameter. We are most definitly in atomic
+context at this point as queue_command() is called in softirq context
+and further we have a spinlock holding the scsi host lock.
 
-All 64-bit objects need to specify the flag to be compiled correctly, we
-just don't need it for 32-bit objects. GCC just ignored it, but clang
-doesn't.
+Fix this by passing GFP_ATOMIC to dma_alloc_coherent() to prevent any
+sort of sleeping in atomic context deadlock.
 
-Link: https://github.com/ClangBuiltLinux/linux/issues/240
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+Fixes: 4dddbc26c389 ("[SCSI] ibmvscsi: handle large scatter/gather lists")
+Cc: stable@vger.kernel.org
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/vdso32/Makefile | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index 50112d4473bb..6bd41756e0c7 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -34,6 +34,20 @@ obj-y += vdso32_wrapper.o
- extra-y += vdso32.lds
- CPPFLAGS_vdso32.lds += -P -C -Upowerpc
- 
-+# clang refuses to accept -mabi=elfv1 for when using the
-+# 64-bit target in 32-bit mode
-+ifdef CONFIG_CC_IS_CLANG
-+ifdef CONFIG_PPC64
-+AFLAGS_REMOVE_getcpu.o += -mabi=elfv1
-+endif
-+AFLAGS_REMOVE_sigtramp.o += -mabi=elfv1
-+AFLAGS_REMOVE_gettimeofday.o += -mabi=elfv1
-+AFLAGS_REMOVE_datapage.o += -mabi=elfv1
-+AFLAGS_REMOVE_cacheflush.o += -mabi=elfv1
-+AFLAGS_REMOVE_note.o += -mabi=elfv1
-+endif
-+
-+
- # Force dependency (incbin is bad)
- $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
- 
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 1135e74..cb8535e 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -731,7 +731,7 @@ static int map_sg_data(struct scsi_cmnd *cmd,
+ 		evt_struct->ext_list = (struct srp_direct_buf *)
+ 			dma_alloc_coherent(dev,
+ 					   SG_ALL * sizeof(struct srp_direct_buf),
+-					   &evt_struct->ext_list_token, 0);
++					   &evt_struct->ext_list_token, GFP_ATOMIC);
+ 		if (!evt_struct->ext_list) {
+ 			if (!firmware_has_feature(FW_FEATURE_CMO))
+ 				sdev_printk(KERN_ERR, cmd->device,
 -- 
-2.19.1
+1.8.3.1
 
