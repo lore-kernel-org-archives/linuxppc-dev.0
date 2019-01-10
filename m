@@ -3,63 +3,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2886FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:27:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B91CFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:29:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A3B3520675
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:27:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3B3520675
+	by mail.kernel.org (Postfix) with ESMTPS id 10F5F208E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:29:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10F5F208E3
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bCcX5RyDzDqwp
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:27:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bCg16FmmzDqhY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:29:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=212.227.17.24; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.74; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bCX95tnYzDqrs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:23:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bCXC4TpJzDqld
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:23:55 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue109 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1M1YlB-1gj0Y53QqZ-00392C; Thu, 10 Jan 2019 18:22:27 +0100
+ 1Mo6zF-1h55pV3AZn-00pcwO; Thu, 10 Jan 2019 18:22:22 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 04/11] sparc64: add custom adjtimex/clock_adjtime functions
-Date: Thu, 10 Jan 2019 18:22:09 +0100
-Message-Id: <20190110172216.313063-5-arnd@arndb.de>
+Subject: [PATCH 01/11] time: make adjtime compat handling available for 32 bit
+Date: Thu, 10 Jan 2019 18:22:06 +0100
+Message-Id: <20190110172216.313063-2-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20190110172216.313063-1-arnd@arndb.de>
 References: <20190110172216.313063-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:skl8YoXVM1Bc5+8dLW6QPXqjNzPwSft+J3Z9tp7jCI69k8uS5A3
- j2I7TeRnybSEJFb6PQqZMoHbkDUXGvJXuyjHR2Ns9/VqVsM53sRR/AGT1uOL060++7vH3Gn
- pdvEn42TyE862JeQv55VlSNDDQZu2+Rs4tekg9xSH98Ed2SMBgImuPzGqpDEcUMvk/slUwe
- IqxgXElAXtPcMsm2Z+jzg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:soy2U2+eGws=:RffHu7RnBAIh8UUMhJt9sf
- oh7+KdNv8MWAzk+8RiKwVaFuw1j27FQR6i/QGMPfjh1un1huoAVqvcJCwFkJojv4YhsblpVoH
- pqH7zN+S3yHM+IQNXHSCG54Ne99zeW9yEa119FWPKFn7kT3yLvmakrwBKMbhk1xsiSIFsQmIp
- 4owhosQ/sDqE34Mgy4rwOeRZzxf2ggahK2zlaaFmTpw0dXr8dbFg6+rtPrQoB5UZ+xQvo2K4Z
- J+lvUC1VnbLun5F2LbntlwAHBBN4iG6ecpV5gTjvU7MEWpZRYVSLKL7Tt6yQMHTCgGZFX6V7e
- TLSdHmttbQW/o4zOJdy3zKbSDw/f83to6b0fAv/rtdsEkboe6IGCjzwkBxtvwk6jssjkdOXPV
- o0CRInNscWizL/Y/HrEFlPNW9Md0f3WdTx/XtDj7I1ZekBLzcQtEvZ6bcHJQJayf52UsMAieS
- WHL0Zpo6DK5DqB4+Vo5c0+iZii0cCkxEGtH2Lr/339n7YTQQ/cFRjr1iaaXGC2KHtiFJB+WZS
- yRiIQxVi+iRUDazPiJbPgeS4LEUMcRwNh2BAth096SqMadNXmr3XQg9PAp8MsIG9JcPDKBSjL
- 2BCQwqRhWbP5NFNtWSRv6OMZTdtpRIad7HFNdBdOrTyoWfKOs5UyaIErMXw/bVOjW7jw/444v
- BGAIHlIZNgzj/tRWT1N+OPGQjjSJR6vU4+DjIz6tgJwspulmhZTX6vsywIBEXX9W8ud1vInH6
- 9W6w+bRLaMSp48mg9WVDKzifCT7lW0L0rkB7aQ==
+X-Provags-ID: V03:K1:HsdsT2xCd83vp34qEAk7LwbSUNbBsntbt1SYcygRuDjkEMlU2WB
+ CRQFNtPqukrxmJBR2YJ8LevqpBqnVjlf1vH5OhcMh7Y0NmiHPKaWZGXAYr/r/5JKBKnwfVP
+ HMQdmmWftXg/l6dctXNC5hSJtrPI9Q/oQGCpDjPiahWEez4XsG9Org5GC8y88Gkwj/bADky
+ ZKOhwL9RWQ3nkOK6q/d1Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:0WSpqYIFVZ0=:FbW8ZQom/LLtCoFFTSDUMy
+ yhFtq9UvpB7JA1wuUax0Hj4APoOJZ5Ab44l6CDpVR/7k7K01jLlM3cZwoNdbLJaX/VUL/9/57
+ fXM9AcELMDh1i9bAy1BYjQdk9kNNksgyKWKfx5eE2aXVdFNEZwMonAdwdZiyms6pmVqPKxvUy
+ 3KXCjo3YTIZFMzFt8C2nNYC6drWk2Wp3DQlrX1lPl1MbTGubWCdN/ln40fVqXmNivyGcpHyhO
+ QogDFwramh3YkLscHaUGGMJ3TpKaendqiFjNtjI7aIEQnBVWTnUiL0sw96DIy31pfRlAbo3ot
+ aFz+cTW6UvimHys6N+GyWFBbibj46+vJ8G6Wy+ppPZAhxmaxeDMlsE2alTK9GIOtP2iTmCyqQ
+ 1t11MlViyv2E2apEPH0SgzwUHE3vlveErQHx2jGrxss930/iLbhBoDM2Jh3vda5GviT+lw17r
+ E6xdgJmVmXKSuFx+WaaSDRoHtgaL5ZXRZFqz/OI4HmERAil6+t+kgyIuQLersz01AGYK97xsO
+ Ru1RdYI//0XIuJormZJDoiVeNqziXnCCPl6LyVPVKExoMQOQiV0Kq+N7r3aETk5L6jcPMf/wv
+ h7iXzRnydfz4KWDNhYB9GUQYVQfIDU4X5+V6zdWWuKgjxsnjukpYHEat3tasaODuSZe2oaBuP
+ TdRlV4w8Fr6gQNMbH8iGLkkIDq2q5go5X1JlUb69OAVcc642l1bExVg9g4LKcbM9hmiUTdEys
+ /uNUv+N3j/e4hTH1jutt5m18nd2aTKDFBr8qnA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,202 +88,356 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-sparc64 is the only architecture on Linux that has a 'timeval'
-definition with a 32-bit tv_usec but a 64-bit tv_sec. This causes
-problems for sparc32 compat mode when we convert it to use the
-new __kernel_timex type that has the same layout as all other
-64-bit architectures.
+We want to reuse the compat_timex handling on 32-bit architectures the
+same way we are using the compat handling for timespec when moving to
+64-bit time_t.
 
-To avoid adding sparc64 specific code into the generic adjtimex
-implementation, this adds a wrapper in the sparc64 system call handling
-that converts the sparc64 'timex' into the new '__kernel_timex'.
-
-At this point, the two structures are defined to be identical,
-but that will change in the next step once we convert sparc32.
+Move all definitions related to compat_timex out of the compat code
+into the normal timekeeping code, along with a rename to old_timex32,
+corresponding to the timespec/timeval structures, and make it controlled
+by CONFIG_COMPAT_32BIT_TIME, which 32-bit architectures will then select.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/sparc/kernel/sys_sparc_64.c       | 59 +++++++++++++++++++++++++-
- arch/sparc/kernel/syscalls/syscall.tbl |  6 ++-
- include/linux/timex.h                  |  2 +
- kernel/time/posix-timers.c             | 24 +++++------
- 4 files changed, 76 insertions(+), 15 deletions(-)
+ include/linux/compat.h     | 35 ++-----------------
+ include/linux/time32.h     | 32 ++++++++++++++++-
+ kernel/compat.c            | 64 ----------------------------------
+ kernel/time/posix-timers.c | 14 ++------
+ kernel/time/time.c         | 70 +++++++++++++++++++++++++++++++++++---
+ 5 files changed, 102 insertions(+), 113 deletions(-)
 
-diff --git a/arch/sparc/kernel/sys_sparc_64.c b/arch/sparc/kernel/sys_sparc_64.c
-index 1c079e7bab09..37de18a11207 100644
---- a/arch/sparc/kernel/sys_sparc_64.c
-+++ b/arch/sparc/kernel/sys_sparc_64.c
-@@ -28,8 +28,9 @@
- #include <linux/random.h>
- #include <linux/export.h>
- #include <linux/context_tracking.h>
--
-+#include <linux/timex.h>
- #include <linux/uaccess.h>
-+
- #include <asm/utrap.h>
- #include <asm/unistd.h>
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index 056be0d03722..657ca6abd855 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -132,37 +132,6 @@ struct compat_tms {
+ 	compat_clock_t		tms_cstime;
+ };
  
-@@ -544,6 +545,62 @@ SYSCALL_DEFINE2(getdomainname, char __user *, name, int, len)
+-struct compat_timex {
+-	compat_uint_t modes;
+-	compat_long_t offset;
+-	compat_long_t freq;
+-	compat_long_t maxerror;
+-	compat_long_t esterror;
+-	compat_int_t status;
+-	compat_long_t constant;
+-	compat_long_t precision;
+-	compat_long_t tolerance;
+-	struct old_timeval32 time;
+-	compat_long_t tick;
+-	compat_long_t ppsfreq;
+-	compat_long_t jitter;
+-	compat_int_t shift;
+-	compat_long_t stabil;
+-	compat_long_t jitcnt;
+-	compat_long_t calcnt;
+-	compat_long_t errcnt;
+-	compat_long_t stbcnt;
+-	compat_int_t tai;
+-
+-	compat_int_t:32; compat_int_t:32; compat_int_t:32; compat_int_t:32;
+-	compat_int_t:32; compat_int_t:32; compat_int_t:32; compat_int_t:32;
+-	compat_int_t:32; compat_int_t:32; compat_int_t:32;
+-};
+-
+-struct timex;
+-int compat_get_timex(struct timex *, const struct compat_timex __user *);
+-int compat_put_timex(struct compat_timex __user *, const struct timex *);
+-
+ #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
+ 
+ typedef struct {
+@@ -808,7 +777,7 @@ asmlinkage long compat_sys_gettimeofday(struct old_timeval32 __user *tv,
+ 		struct timezone __user *tz);
+ asmlinkage long compat_sys_settimeofday(struct old_timeval32 __user *tv,
+ 		struct timezone __user *tz);
+-asmlinkage long compat_sys_adjtimex(struct compat_timex __user *utp);
++asmlinkage long compat_sys_adjtimex(struct old_timex32 __user *utp);
+ 
+ /* kernel/timer.c */
+ asmlinkage long compat_sys_sysinfo(struct compat_sysinfo __user *info);
+@@ -911,7 +880,7 @@ asmlinkage long compat_sys_open_by_handle_at(int mountdirfd,
+ 					     struct file_handle __user *handle,
+ 					     int flags);
+ asmlinkage long compat_sys_clock_adjtime(clockid_t which_clock,
+-					 struct compat_timex __user *tp);
++					 struct old_timex32 __user *tp);
+ asmlinkage long compat_sys_sendmmsg(int fd, struct compat_mmsghdr __user *mmsg,
+ 				    unsigned vlen, unsigned int flags);
+ asmlinkage ssize_t compat_sys_process_vm_readv(compat_pid_t pid,
+diff --git a/include/linux/time32.h b/include/linux/time32.h
+index 118b9977080c..820a22e2b98b 100644
+--- a/include/linux/time32.h
++++ b/include/linux/time32.h
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/time64.h>
++#include <linux/timex.h>
+ 
+ #define TIME_T_MAX	(time_t)((1UL << ((sizeof(time_t) << 3) - 1)) - 1)
+ 
+@@ -35,13 +36,42 @@ struct old_utimbuf32 {
+ 	old_time32_t	modtime;
+ };
+ 
++struct old_timex32 {
++	u32 modes;
++	s32 offset;
++	s32 freq;
++	s32 maxerror;
++	s32 esterror;
++	s32 status;
++	s32 constant;
++	s32 precision;
++	s32 tolerance;
++	struct old_timeval32 time;
++	s32 tick;
++	s32 ppsfreq;
++	s32 jitter;
++	s32 shift;
++	s32 stabil;
++	s32 jitcnt;
++	s32 calcnt;
++	s32 errcnt;
++	s32 stbcnt;
++	s32 tai;
++
++	s32:32; s32:32; s32:32; s32:32;
++	s32:32; s32:32; s32:32; s32:32;
++	s32:32; s32:32; s32:32;
++};
++
+ extern int get_old_timespec32(struct timespec64 *, const void __user *);
+ extern int put_old_timespec32(const struct timespec64 *, void __user *);
+ extern int get_old_itimerspec32(struct itimerspec64 *its,
+ 			const struct old_itimerspec32 __user *uits);
+ extern int put_old_itimerspec32(const struct itimerspec64 *its,
+ 			struct old_itimerspec32 __user *uits);
+-
++struct timex;
++int get_old_timex32(struct timex *, const struct old_timex32 __user *);
++int put_old_timex32(struct old_timex32 __user *, const struct timex *);
+ 
+ #if __BITS_PER_LONG == 64
+ 
+diff --git a/kernel/compat.c b/kernel/compat.c
+index f01affa17e22..d8a36c6ad7c9 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -20,7 +20,6 @@
+ #include <linux/syscalls.h>
+ #include <linux/unistd.h>
+ #include <linux/security.h>
+-#include <linux/timex.h>
+ #include <linux/export.h>
+ #include <linux/migrate.h>
+ #include <linux/posix-timers.h>
+@@ -30,69 +29,6 @@
+ 
+ #include <linux/uaccess.h>
+ 
+-int compat_get_timex(struct timex *txc, const struct compat_timex __user *utp)
+-{
+-	struct compat_timex tx32;
+-
+-	memset(txc, 0, sizeof(struct timex));
+-	if (copy_from_user(&tx32, utp, sizeof(struct compat_timex)))
+-		return -EFAULT;
+-
+-	txc->modes = tx32.modes;
+-	txc->offset = tx32.offset;
+-	txc->freq = tx32.freq;
+-	txc->maxerror = tx32.maxerror;
+-	txc->esterror = tx32.esterror;
+-	txc->status = tx32.status;
+-	txc->constant = tx32.constant;
+-	txc->precision = tx32.precision;
+-	txc->tolerance = tx32.tolerance;
+-	txc->time.tv_sec = tx32.time.tv_sec;
+-	txc->time.tv_usec = tx32.time.tv_usec;
+-	txc->tick = tx32.tick;
+-	txc->ppsfreq = tx32.ppsfreq;
+-	txc->jitter = tx32.jitter;
+-	txc->shift = tx32.shift;
+-	txc->stabil = tx32.stabil;
+-	txc->jitcnt = tx32.jitcnt;
+-	txc->calcnt = tx32.calcnt;
+-	txc->errcnt = tx32.errcnt;
+-	txc->stbcnt = tx32.stbcnt;
+-
+-	return 0;
+-}
+-
+-int compat_put_timex(struct compat_timex __user *utp, const struct timex *txc)
+-{
+-	struct compat_timex tx32;
+-
+-	memset(&tx32, 0, sizeof(struct compat_timex));
+-	tx32.modes = txc->modes;
+-	tx32.offset = txc->offset;
+-	tx32.freq = txc->freq;
+-	tx32.maxerror = txc->maxerror;
+-	tx32.esterror = txc->esterror;
+-	tx32.status = txc->status;
+-	tx32.constant = txc->constant;
+-	tx32.precision = txc->precision;
+-	tx32.tolerance = txc->tolerance;
+-	tx32.time.tv_sec = txc->time.tv_sec;
+-	tx32.time.tv_usec = txc->time.tv_usec;
+-	tx32.tick = txc->tick;
+-	tx32.ppsfreq = txc->ppsfreq;
+-	tx32.jitter = txc->jitter;
+-	tx32.shift = txc->shift;
+-	tx32.stabil = txc->stabil;
+-	tx32.jitcnt = txc->jitcnt;
+-	tx32.calcnt = txc->calcnt;
+-	tx32.errcnt = txc->errcnt;
+-	tx32.stbcnt = txc->stbcnt;
+-	tx32.tai = txc->tai;
+-	if (copy_to_user(utp, &tx32, sizeof(struct compat_timex)))
+-		return -EFAULT;
+-	return 0;
+-}
+-
+ static int __compat_get_timeval(struct timeval *tv, const struct old_timeval32 __user *ctv)
+ {
+ 	return (!access_ok(ctv, sizeof(*ctv)) ||
+diff --git a/kernel/time/posix-timers.c b/kernel/time/posix-timers.c
+index 0e84bb72a3da..8955f32f2a36 100644
+--- a/kernel/time/posix-timers.c
++++ b/kernel/time/posix-timers.c
+@@ -1123,12 +1123,8 @@ COMPAT_SYSCALL_DEFINE2(clock_gettime, clockid_t, which_clock,
  	return err;
  }
  
-+SYSCALL_DEFINE1(sparc_adjtimex, struct timex __user *, txc_p)
-+{
-+	struct timex txc;		/* Local copy of parameter */
-+	struct timex *kt = (void *)&txc;
-+	int ret;
-+
-+	/* Copy the user data space into the kernel copy
-+	 * structure. But bear in mind that the structures
-+	 * may change
-+	 */
-+	if (copy_from_user(&txc, txc_p, sizeof(struct timex)))
-+		return -EFAULT;
-+
-+	/*
-+	 * override for sparc64 specific timeval type: tv_usec
-+	 * is 32 bit wide instead of 64-bit in __kernel_timex
-+	 */
-+	kt->time.tv_usec = txc.time.tv_usec;
-+	ret = do_adjtimex(kt);
-+	txc.time.tv_usec = kt->time.tv_usec;
-+
-+	return copy_to_user(txc_p, &txc, sizeof(struct timex)) ? -EFAULT : ret;
-+}
-+
-+SYSCALL_DEFINE2(sparc_clock_adjtime, const clockid_t, which_clock,struct timex __user *, txc_p)
-+{
-+	struct timex txc;		/* Local copy of parameter */
-+	struct timex *kt = (void *)&txc;
-+	int ret;
-+
-+	if (!IS_ENABLED(CONFIG_POSIX_TIMERS)) {
-+		pr_err_once("process %d (%s) attempted a POSIX timer syscall "
-+		    "while CONFIG_POSIX_TIMERS is not set\n",
-+		    current->pid, current->comm);
-+
-+		return -ENOSYS;
-+	}
-+
-+	/* Copy the user data space into the kernel copy
-+	 * structure. But bear in mind that the structures
-+	 * may change
-+	 */
-+	if (copy_from_user(&txc, txc_p, sizeof(struct timex)))
-+		return -EFAULT;
-+
-+	/*
-+	 * override for sparc64 specific timeval type: tv_usec
-+	 * is 32 bit wide instead of 64-bit in __kernel_timex
-+	 */
-+	kt->time.tv_usec = txc.time.tv_usec;
-+	ret = do_clock_adjtime(which_clock, kt);
-+	txc.time.tv_usec = kt->time.tv_usec;
-+
-+	return copy_to_user(txc_p, &txc, sizeof(struct timex)) ? -EFAULT : ret;
-+}
-+
- SYSCALL_DEFINE5(utrap_install, utrap_entry_t, type,
- 		utrap_handler_t, new_p, utrap_handler_t, new_d,
- 		utrap_handler_t __user *, old_p,
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index 24ebef675184..e70110375399 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -258,7 +258,8 @@
- 216	64	sigreturn		sys_nis_syscall
- 217	common	clone			sys_clone
- 218	common	ioprio_get		sys_ioprio_get
--219	common	adjtimex		sys_adjtimex			compat_sys_adjtimex
-+219	32	adjtimex		sys_adjtimex			compat_sys_adjtimex
-+219	64	adjtimex		sys_sparc_adjtimex
- 220	32	sigprocmask		sys_sigprocmask			compat_sys_sigprocmask
- 220	64	sigprocmask		sys_nis_syscall
- 221	common	create_module		sys_ni_syscall
-@@ -377,7 +378,8 @@
- 331	common	prlimit64		sys_prlimit64
- 332	common	name_to_handle_at	sys_name_to_handle_at
- 333	common	open_by_handle_at	sys_open_by_handle_at		compat_sys_open_by_handle_at
--334	common	clock_adjtime		sys_clock_adjtime		compat_sys_clock_adjtime
-+334	32	clock_adjtime		sys_clock_adjtime		compat_sys_clock_adjtime
-+334	64	clock_adjtime		sys_sparc_clock_adjtime
- 335	common	syncfs			sys_syncfs
- 336	common	sendmmsg		sys_sendmmsg			compat_sys_sendmmsg
- 337	common	setns			sys_setns
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index 7f40e9e42ecc..a15e6aeb8d49 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -159,6 +159,8 @@ extern unsigned long tick_nsec;		/* SHIFTED_HZ period (nsec) */
- #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
- 
- extern int do_adjtimex(struct timex *);
-+extern int do_clock_adjtime(const clockid_t which_clock, struct timex * ktx);
-+
- extern void hardpps(const struct timespec64 *, const struct timespec64 *);
- 
- int read_current_timer(unsigned long *timer_val);
-diff --git a/kernel/time/posix-timers.c b/kernel/time/posix-timers.c
-index 8955f32f2a36..8f7f1dd95940 100644
---- a/kernel/time/posix-timers.c
-+++ b/kernel/time/posix-timers.c
-@@ -1047,22 +1047,28 @@ SYSCALL_DEFINE2(clock_gettime, const clockid_t, which_clock,
- 	return error;
- }
- 
--SYSCALL_DEFINE2(clock_adjtime, const clockid_t, which_clock,
--		struct timex __user *, utx)
-+int do_clock_adjtime(const clockid_t which_clock, struct timex * ktx)
+-#endif
+-
+-#ifdef CONFIG_COMPAT
+-
+ COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
+-		       struct compat_timex __user *, utp)
++		       struct old_timex32 __user *, utp)
  {
  	const struct k_clock *kc = clockid_to_kclock(which_clock);
--	struct timex ktx;
--	int err;
- 
- 	if (!kc)
- 		return -EINVAL;
+ 	struct timex ktx;
+@@ -1139,22 +1135,18 @@ COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
  	if (!kc->clock_adj)
  		return -EOPNOTSUPP;
  
-+	return kc->clock_adj(which_clock, ktx);
-+}
-+
-+SYSCALL_DEFINE2(clock_adjtime, const clockid_t, which_clock,
-+		struct timex __user *, utx)
-+{
-+	struct timex ktx;
-+	int err;
-+
- 	if (copy_from_user(&ktx, utx, sizeof(ktx)))
- 		return -EFAULT;
- 
--	err = kc->clock_adj(which_clock, &ktx);
-+	err = do_clock_adjtime(which_clock, &ktx);
- 
- 	if (err >= 0 && copy_to_user(utx, &ktx, sizeof(ktx)))
- 		return -EFAULT;
-@@ -1126,20 +1132,14 @@ COMPAT_SYSCALL_DEFINE2(clock_gettime, clockid_t, which_clock,
- COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
- 		       struct old_timex32 __user *, utp)
- {
--	const struct k_clock *kc = clockid_to_kclock(which_clock);
- 	struct timex ktx;
- 	int err;
- 
--	if (!kc)
--		return -EINVAL;
--	if (!kc->clock_adj)
--		return -EOPNOTSUPP;
--
- 	err = get_old_timex32(&ktx, utp);
+-	err = compat_get_timex(&ktx, utp);
++	err = get_old_timex32(&ktx, utp);
  	if (err)
  		return err;
  
--	err = kc->clock_adj(which_clock, &ktx);
-+	err = do_clock_adjtime(which_clock, &ktx);
+ 	err = kc->clock_adj(which_clock, &ktx);
  
  	if (err >= 0)
- 		err = put_old_timex32(utp, &ktx);
+-		err = compat_put_timex(utp, &ktx);
++		err = put_old_timex32(utp, &ktx);
+ 
+ 	return err;
+ }
+ 
+-#endif
+-
+-#ifdef CONFIG_COMPAT_32BIT_TIME
+-
+ COMPAT_SYSCALL_DEFINE2(clock_getres, clockid_t, which_clock,
+ 		       struct old_timespec32 __user *, tp)
+ {
+diff --git a/kernel/time/time.c b/kernel/time/time.c
+index 2edb5088a70b..2d013bc2b271 100644
+--- a/kernel/time/time.c
++++ b/kernel/time/time.c
+@@ -278,20 +278,82 @@ SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
+ 	return copy_to_user(txc_p, &txc, sizeof(struct timex)) ? -EFAULT : ret;
+ }
+ 
+-#ifdef CONFIG_COMPAT
++#ifdef CONFIG_COMPAT_32BIT_TIME
++int get_old_timex32(struct timex *txc, const struct old_timex32 __user *utp)
++{
++	struct old_timex32 tx32;
++
++	memset(txc, 0, sizeof(struct timex));
++	if (copy_from_user(&tx32, utp, sizeof(struct old_timex32)))
++		return -EFAULT;
++
++	txc->modes = tx32.modes;
++	txc->offset = tx32.offset;
++	txc->freq = tx32.freq;
++	txc->maxerror = tx32.maxerror;
++	txc->esterror = tx32.esterror;
++	txc->status = tx32.status;
++	txc->constant = tx32.constant;
++	txc->precision = tx32.precision;
++	txc->tolerance = tx32.tolerance;
++	txc->time.tv_sec = tx32.time.tv_sec;
++	txc->time.tv_usec = tx32.time.tv_usec;
++	txc->tick = tx32.tick;
++	txc->ppsfreq = tx32.ppsfreq;
++	txc->jitter = tx32.jitter;
++	txc->shift = tx32.shift;
++	txc->stabil = tx32.stabil;
++	txc->jitcnt = tx32.jitcnt;
++	txc->calcnt = tx32.calcnt;
++	txc->errcnt = tx32.errcnt;
++	txc->stbcnt = tx32.stbcnt;
++
++	return 0;
++}
++
++int put_old_timex32(struct old_timex32 __user *utp, const struct timex *txc)
++{
++	struct old_timex32 tx32;
++
++	memset(&tx32, 0, sizeof(struct old_timex32));
++	tx32.modes = txc->modes;
++	tx32.offset = txc->offset;
++	tx32.freq = txc->freq;
++	tx32.maxerror = txc->maxerror;
++	tx32.esterror = txc->esterror;
++	tx32.status = txc->status;
++	tx32.constant = txc->constant;
++	tx32.precision = txc->precision;
++	tx32.tolerance = txc->tolerance;
++	tx32.time.tv_sec = txc->time.tv_sec;
++	tx32.time.tv_usec = txc->time.tv_usec;
++	tx32.tick = txc->tick;
++	tx32.ppsfreq = txc->ppsfreq;
++	tx32.jitter = txc->jitter;
++	tx32.shift = txc->shift;
++	tx32.stabil = txc->stabil;
++	tx32.jitcnt = txc->jitcnt;
++	tx32.calcnt = txc->calcnt;
++	tx32.errcnt = txc->errcnt;
++	tx32.stbcnt = txc->stbcnt;
++	tx32.tai = txc->tai;
++	if (copy_to_user(utp, &tx32, sizeof(struct old_timex32)))
++		return -EFAULT;
++	return 0;
++}
+ 
+-COMPAT_SYSCALL_DEFINE1(adjtimex, struct compat_timex __user *, utp)
++COMPAT_SYSCALL_DEFINE1(adjtimex, struct old_timex32 __user *, utp)
+ {
+ 	struct timex txc;
+ 	int err, ret;
+ 
+-	err = compat_get_timex(&txc, utp);
++	err = get_old_timex32(&txc, utp);
+ 	if (err)
+ 		return err;
+ 
+ 	ret = do_adjtimex(&txc);
+ 
+-	err = compat_put_timex(utp, &txc);
++	err = put_old_timex32(utp, &txc);
+ 	if (err)
+ 		return err;
+ 
 -- 
 2.20.0
 
