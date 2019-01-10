@@ -2,64 +2,62 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AA70C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F1C6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:43:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1589120675
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:41:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1589120675
+	by mail.kernel.org (Postfix) with ESMTPS id D15E120657
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:43:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D15E120657
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bCw84wPpzDqyl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:41:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bCyS28d2zDqhY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:43:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=212.227.17.13; helo=mout.kundenserver.de;
+ (client-ip=212.227.17.24; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bCdy1nBjzDqwJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:28:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bCfF38PrzDqwT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:29:08 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue109 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1MyK9S-1hVBFV3ORA-00yftj; Thu, 10 Jan 2019 18:22:34 +0100
+ 1N8XHb-1hKz3U1jPt-014Q0M; Thu, 10 Jan 2019 18:22:21 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 09/11] y2038: remove struct definition redirects
-Date: Thu, 10 Jan 2019 18:22:14 +0100
-Message-Id: <20190110172216.313063-10-arnd@arndb.de>
+Subject: [PATCH 00/11] y2038: add time64 syscalls
+Date: Thu, 10 Jan 2019 18:22:05 +0100
+Message-Id: <20190110172216.313063-1-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
-In-Reply-To: <20190110172216.313063-1-arnd@arndb.de>
-References: <20190110172216.313063-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:JFxfraV6ycMtD0g5CS6YrYFoYtT89QsNLLyOITHqT41z422VdUk
- LrBF7KqupsEuf8G5AWi7KnizntYiJSGk3aSzCC18HSoU1fI0dBkUdiedPGCRfw3YuFKI+WZ
- sn0EDd+y1lKagAVy7SNwNYRebBx2PiBsDVXU4q12xPKfpGF8+eECy1CpQL8GH5DadiLP175
- NmavfIAHIzJ7u+sIpQZQw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:y8V2uvPD0Lc=:23pXewO+qOOTuEOmwKX+jP
- kgFisfr5zRBzZZuJjaXma9ROzEuNKJT2knnr35Twm0RUoMnp2hqucxVC4rdVPXcNcTFpR0Sfn
- rbiKUkJQY9CuLG2wUcNPD+ombhmXiQiiGbLZeDnbamWSfrIspAq9PUXgW0Y/ouXVH1P3dFlOp
- 85WCiTvqjUYqOOBL+9CGh1fcLCZ/EEOJtObyYQNX0+bmhrvIuAU3ekKvUcqhvK6lTH/VjnfzY
- 9wQa7aBxZ9PkfJGY2lxmqAFTNzkF504WGbXZiK9Yp6i1YITTVJwxIH/MRyRCPS4JuiOFrU3MV
- eSef3mCQxeqKEwaIgUKdBjiWp2LcDVYSOiiLSrhzrTuVuIUFOBGKnqSJxwaH64VunRfjbBNok
- 8xOTj6nxAs3HyrQSMqZYqiKmCxDi7uEm+Ti3wb1XaDfSyJbDj5++PdawZ/lqgHZA533+Szcg0
- cLDPJFjWBH0hSQE5+8BemRIEY8p3MQLCxb4v52DxN9STy5wXCTvJz0a9IN1j7O46SZYI8P3L8
- fKImA+62+KENNt62zka0WGT/U7MX3u39of/hTBUX08+nlXxIZD2IvdMW+eP9N3JNKXPXRxZaW
- 0h+aYQMdseiR8JnYsU622Afkfc4GAL5wsPKjxa9o3fGH75rij5I3HvZ7We3w+TXMOgQg6eHrd
- E5ZWfhW/S4j13sg0sUJp7puicvoDt9Sb0mokUuCxN+zNN/GwtKnfbjnEWHaeGCJRvIsy+QFu1
- ntldZWOn6osKLq9kRorjVCdWnRCLvihEdGNTLw==
+X-Provags-ID: V03:K1:vW0Dtz92Na8JvFtbJmdrKh+Wt6C4wl+ANEtiHTyStG1oSJxvfH2
+ K9sHwGh5KPndF/MySTlf8GNZ6uZN4Q6cZ+LtnuLRLzGMbJedI2g87MyDucReT6MVo6SLLpw
+ TuOM3qHe1ytgZ1t/Jri3mKwNr3y9kLV5Hh4pq1RC8iRupXThgHBi24MmMG4TY9XG/OEt8so
+ 3ZEJ/rgV99vZ95v5E8NdA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FLOeMd4IsYY=:wjmGiFrHNe582W/8TvMbrZ
+ BTy71tzGcGr4BEAsOx4HtTiNnuPoNmXfJHuYPGkcnQWfgbLQDLLP3kNILyltnsG/5UG7n2b3t
+ 7lL0rkEvk1Sfre+MGr1faxey2eFmMU1tWHcgIRMejducRkWGnTVRVIYR0WWMAPE6AnQ/nBPqp
+ apAjtfeQVYyStSFw12j2hEeC8cpzOl27LGFLByoxNr076lfVfyFuKZe+L03CSeKQX68X9n0EM
+ JXv52qUBTEhONk8ol+2EmtIZeOtfhwxzXlbdTmf1nXz2uPzV93NJ8CDcMY/DhKT3FJCmtYXQJ
+ y4EL2T8GKQihE1ht5FEovgdELPhx+x9D6umTQ7VvcEIKo8yo/lSRHSQtdx1ymIwwQVHUzK5yc
+ +nOpf47UwebfvIF+l70PD5EGaQw3Hzqvzr5ZFF+35+R0CuWTVC5hepujdK2vh8HExaIiSTeVN
+ f/IGUYp0y3zRCNJAMLVZo6ag4ltWlgQQcurKYmnCZDNq3SFWZZQ+1q5WZK8WNuXBtgNrQnZVO
+ gX+RqODXtoK9q+2aYJM1HchrkwfBIy2uuHupSlpQ7whfY583avdOewcQLayLqeBcU3POL4Vcc
+ GGfx3Hmkcn2vNYjLxt7mahHfjEDdZa3oGAXGgoiw+YbHUsJf+i0EP5l3jCUrwXULt+zp7Dpto
+ SDBG/+s3XxYapxF/ya3DAeMZC4WmUzDhmHiHE4XegrfvHICFTgylYbQsyxNb40HaplIXCuzLA
+ h3TmROU2XfTNK/Xs0rUaKh+MbBwQU1fQShHtOg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,103 +86,168 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We now use 64-bit time_t on all architectures, so the __kernel_timex,
-__kernel_timeval and __kernel_timespec redirects can be removed
-after having served their purpose.
+This series finally gets us to the point of having system calls with
+64-bit time_t on all architectures, after a long time of incremental
+preparation patches.
 
-This makes it all much less confusing, as the __kernel_* types
-now always refer to the same layout based on 64-bit time_t across
-all 32-bit and 64-bit architectures.
+There was actually one conversion that I missed during the summer,
+i.e. Deepa's timex series, which I now updated based the 5.0-rc1 changes
+and review comments.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- include/linux/time64.h     | 8 --------
- include/linux/timex.h      | 7 -------
- include/uapi/linux/time.h  | 4 ----
- include/uapi/linux/timex.h | 2 --
- 4 files changed, 21 deletions(-)
+I hope that the actual conversion should be uncontroversial by now,
+even if some of the patches are rather large.
 
-diff --git a/include/linux/time64.h b/include/linux/time64.h
-index 05634afba0db..f38d382ffec1 100644
---- a/include/linux/time64.h
-+++ b/include/linux/time64.h
-@@ -7,14 +7,6 @@
- typedef __s64 time64_t;
- typedef __u64 timeu64_t;
- 
--/* CONFIG_64BIT_TIME enables new 64 bit time_t syscalls in the compat path
-- * and 32-bit emulation.
-- */
--#ifndef CONFIG_64BIT_TIME
--#define __kernel_timespec timespec
--#define __kernel_itimerspec itimerspec
--#endif
--
- #include <uapi/linux/time.h>
- 
- struct timespec64 {
-diff --git a/include/linux/timex.h b/include/linux/timex.h
-index 4aff9f0d1367..ce0859763670 100644
---- a/include/linux/timex.h
-+++ b/include/linux/timex.h
-@@ -53,13 +53,6 @@
- #ifndef _LINUX_TIMEX_H
- #define _LINUX_TIMEX_H
- 
--/* CONFIG_64BIT_TIME enables new 64 bit time_t syscalls in the compat path
-- * and 32-bit emulation.
-- */
--#ifndef CONFIG_64BIT_TIME
--#define __kernel_timex timex
--#endif
--
- #include <uapi/linux/timex.h>
- 
- #define ADJ_ADJTIME		0x8000	/* switch between adjtime/adjtimex modes */
-diff --git a/include/uapi/linux/time.h b/include/uapi/linux/time.h
-index 6b56a2208be7..b03f8717c312 100644
---- a/include/uapi/linux/time.h
-+++ b/include/uapi/linux/time.h
-@@ -42,19 +42,15 @@ struct itimerval {
- 	struct timeval it_value;	/* current value */
- };
- 
--#ifndef __kernel_timespec
- struct __kernel_timespec {
- 	__kernel_time64_t       tv_sec;                 /* seconds */
- 	long long               tv_nsec;                /* nanoseconds */
- };
--#endif
- 
--#ifndef __kernel_itimerspec
- struct __kernel_itimerspec {
- 	struct __kernel_timespec it_interval;    /* timer period */
- 	struct __kernel_timespec it_value;       /* timer expiration */
- };
--#endif
- 
- /*
-  * legacy timeval structure, only embedded in structures that
-diff --git a/include/uapi/linux/timex.h b/include/uapi/linux/timex.h
-index a1c6b73016a5..9f517f9010bb 100644
---- a/include/uapi/linux/timex.h
-+++ b/include/uapi/linux/timex.h
-@@ -97,7 +97,6 @@ struct __kernel_timex_timeval {
- 	long long		tv_usec;
- };
- 
--#ifndef __kernel_timex
- struct __kernel_timex {
- 	unsigned int modes;	/* mode selector */
- 	int :32;            /* pad */
-@@ -131,7 +130,6 @@ struct __kernel_timex {
- 	int  :32; int  :32; int  :32; int  :32;
- 	int  :32; int  :32; int  :32;
- };
--#endif
- 
- /*
-  * Mode codes (timex.mode)
+The one area that may need a little discussion is for the system call
+numbers assigned in the final patch: Can we get consensus on whether
+the idea of using the same numbers on all architectures, as well as my
+choice of numbers makes sense here?
+
+So far, I have done a lot of build testing across most architectures,
+which has found a number of bugs. I have also done an LTP run on arm32
+with existing user space, but not on the other architectures. I did LTP
+tests with a modified musl libc[2] last summer on an older version of
+this series to make sure that the new 64-bit time_t interfaces work.
+The version there will need updates for testing with this new kernel
+patch series; I plan to do that next.
+
+For testing, the series plus the preparatory patches is available at
+[3].  Once there is a general agreement on this series and I have done
+more tests for the new system calls, I plan to add this to linux-next
+through my asm-generic tree or Thomas' timers tree.
+
+Please review and test!
+
+      Arnd
+
+[1] https://lore.kernel.org/lkml/20190110162435.309262-1-arnd@arndb.de/T/
+[2] https://git.linaro.org/people/arnd/musl-y2038.git/
+[3] https://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git y2038-5.0-rc1
+
+Arnd Bergmann (8):
+  time: make adjtime compat handling available for 32 bit
+  time: fix sys_timer_settime prototype
+  sparc64: add custom adjtimex/clock_adjtime functions
+  y2038: syscalls: rename y2038 compat syscalls
+  y2038: use time32 syscall names on 32-bit
+  y2038: remove struct definition redirects
+  y2038: rename old time and utime syscalls
+  y2038: add 64-bit time_t syscalls to all 32-bit architectures
+
+Deepa Dinamani (3):
+  time: Add struct __kernel_timex
+  timex: use __kernel_timex internally
+  timex: change syscalls to use struct __kernel_timex
+
+ arch/Kconfig                                |   2 +-
+ arch/alpha/kernel/osf_sys.c                 |   5 +-
+ arch/alpha/kernel/syscalls/syscall.tbl      |   2 +
+ arch/arm/include/asm/unistd.h               |   4 +-
+ arch/arm/kernel/sys_oabi-compat.c           |   8 +-
+ arch/arm/tools/syscall.tbl                  |  77 ++++++++-----
+ arch/arm64/include/asm/unistd.h             |   2 +-
+ arch/arm64/include/asm/unistd32.h           |  89 ++++++++++----
+ arch/ia64/kernel/syscalls/syscall.tbl       |   1 +
+ arch/m68k/include/asm/unistd.h              |   4 +-
+ arch/m68k/kernel/syscalls/syscall.tbl       |  72 +++++++-----
+ arch/microblaze/include/asm/unistd.h        |   4 +-
+ arch/microblaze/kernel/syscalls/syscall.tbl |  77 ++++++++-----
+ arch/mips/include/asm/unistd.h              |   4 +-
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |  71 ++++++++----
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |   1 +
+ arch/mips/kernel/syscalls/syscall_o32.tbl   |  74 +++++++-----
+ arch/parisc/include/asm/unistd.h            |   9 +-
+ arch/parisc/kernel/syscalls/syscall.tbl     | 105 ++++++++++++-----
+ arch/powerpc/include/asm/unistd.h           |   8 +-
+ arch/powerpc/kernel/syscalls/syscall.tbl    | 121 +++++++++++++++-----
+ arch/s390/include/asm/unistd.h              |   2 +-
+ arch/s390/kernel/syscalls/syscall.tbl       |  72 +++++++-----
+ arch/sh/include/asm/unistd.h                |   4 +-
+ arch/sh/kernel/syscalls/syscall.tbl         |  72 +++++++-----
+ arch/sparc/include/asm/unistd.h             |   8 +-
+ arch/sparc/kernel/sys_sparc_64.c            |  59 +++++++++-
+ arch/sparc/kernel/syscalls/syscall.tbl      | 100 +++++++++++-----
+ arch/x86/entry/syscalls/syscall_32.tbl      |  74 +++++++-----
+ arch/x86/entry/syscalls/syscall_64.tbl      |   4 +-
+ arch/x86/include/asm/unistd.h               |   8 +-
+ arch/xtensa/include/asm/unistd.h            |   2 +-
+ arch/xtensa/kernel/syscalls/syscall.tbl     |  71 ++++++++----
+ drivers/ptp/ptp_clock.c                     |   2 +-
+ fs/aio.c                                    |  10 +-
+ fs/select.c                                 |   4 +-
+ fs/timerfd.c                                |   4 +-
+ fs/utimes.c                                 |  10 +-
+ include/linux/compat.h                      | 104 +----------------
+ include/linux/posix-clock.h                 |   2 +-
+ include/linux/syscalls.h                    |  65 ++++++++++-
+ include/linux/time32.h                      |  32 +++++-
+ include/linux/time64.h                      |   8 --
+ include/linux/timex.h                       |   4 +-
+ include/uapi/asm-generic/unistd.h           | 103 ++++++++++++-----
+ include/uapi/linux/time.h                   |   4 -
+ include/uapi/linux/timex.h                  |  39 +++++++
+ ipc/mqueue.c                                |  16 +--
+ ipc/sem.c                                   |   2 +-
+ kernel/compat.c                             |  64 -----------
+ kernel/futex.c                              |   2 +-
+ kernel/sched/core.c                         |   5 +-
+ kernel/signal.c                             |   2 +-
+ kernel/sys_ni.c                             |  18 +--
+ kernel/time/hrtimer.c                       |   2 +-
+ kernel/time/ntp.c                           |  18 +--
+ kernel/time/ntp_internal.h                  |   2 +-
+ kernel/time/posix-clock.c                   |   2 +-
+ kernel/time/posix-stubs.c                   |  25 ++--
+ kernel/time/posix-timers.c                  |  72 ++++++------
+ kernel/time/posix-timers.h                  |   2 +-
+ kernel/time/time.c                          |  92 ++++++++++++---
+ kernel/time/timekeeping.c                   |   4 +-
+ net/compat.c                                |   2 +-
+ scripts/checksyscalls.sh                    |  40 +++++++
+ 65 files changed, 1264 insertions(+), 713 deletions(-)
+
 -- 
 2.20.0
+
+Cc: mattst88@gmail.com
+Cc: linux@armlinux.org.uk
+Cc: catalin.marinas@arm.com
+Cc: will.deacon@arm.com
+Cc: tony.luck@intel.com
+Cc: fenghua.yu@intel.com
+Cc: geert@linux-m68k.org
+Cc: monstr@monstr.eu
+Cc: paul.burton@mips.com
+Cc: deller@gmx.de
+Cc: benh@kernel.crashing.org
+Cc: mpe@ellerman.id.au
+Cc: schwidefsky@de.ibm.com
+Cc: heiko.carstens@de.ibm.com
+Cc: dalias@libc.org
+Cc: davem@davemloft.net
+Cc: luto@kernel.org
+Cc: tglx@linutronix.de
+Cc: mingo@redhat.com
+Cc: hpa@zytor.com
+Cc: x86@kernel.org
+Cc: jcmvbkbc@gmail.com
+Cc: arnd@arndb.de
+Cc: akpm@linux-foundation.org
+Cc: deepa.kernel@gmail.com
+Cc: ebiederm@xmission.com
+Cc: firoz.khan@linaro.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: linux-mips@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
 
