@@ -2,99 +2,98 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-3.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57B5FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2806BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:46:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE854213F2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:17:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE854213F2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C14F208E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 23:46:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C14F208E3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=orcon.net.nz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bMN65xtPzDqyG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 10:17:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bN1R63BQzDqxG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 10:46:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=orcon.net.nz
+ (client-ip=60.234.4.34; helo=smtp-1.orcon.net.nz;
+ envelope-from=mcree@orcon.net.nz; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=orcon.net.nz
+X-Greylist: delayed 1729 seconds by postgrey-1.36 at bilbo;
+ Fri, 11 Jan 2019 10:44:45 AEDT
+Received: from smtp-1.orcon.net.nz (smtp-1.orcon.net.nz [60.234.4.34])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bML86pF7zDqwV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 10:15:44 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x0AN93Ho129019
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 18:15:42 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2pxa9x4gc1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 18:15:42 -0500
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 10 Jan 2019 23:15:41 -0000
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 10 Jan 2019 23:15:38 -0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0ANFbHo20185194
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 10 Jan 2019 23:15:37 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 27F77112065;
- Thu, 10 Jan 2019 23:15:37 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3F1E7112064;
- Thu, 10 Jan 2019 23:15:36 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.85.156.211])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 10 Jan 2019 23:15:36 +0000 (GMT)
-Subject: Re: [PATCH] ibmvscsi: use GFP_ATOMIC with dma_alloc_coherent in
- map_sg_data
-To: Christoph Hellwig <hch@infradead.org>
-References: <1547089136-20264-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <20190110150703.GA26696@infradead.org>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Thu, 10 Jan 2019 15:15:35 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bMzd3x8FzDqwB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 10:44:45 +1100 (AEDT)
+Received: from [121.99.228.40] (port=24388 helo=tower)
+ by smtp-1.orcon.net.nz with esmtpa (Exim 4.86_2)
+ (envelope-from <mcree@orcon.net.nz>)
+ id 1ghjX2-0006MW-NK; Fri, 11 Jan 2019 12:14:37 +1300
+Date: Fri, 11 Jan 2019 12:14:31 +1300
+From: Michael Cree <mcree@orcon.net.nz>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 00/15] arch: synchronize syscall tables in preparation
+ for y2038
+Message-ID: <20190110231431.ho6mjhjkj4p47hww@tower>
+Mail-Followup-To: Michael Cree <mcree@orcon.net.nz>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Joseph Myers <joseph@codesourcery.com>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Michal Simek <monstr@monstr.eu>, Paul Burton <paul.burton@mips.com>,
+ Helge Deller <deller@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Rich Felker <dalias@libc.org>, David Miller <davem@davemloft.net>,
+ Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Max Filippov <jcmvbkbc@gmail.com>,
+ Firoz Khan <firoz.khan@linaro.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Deepa Dinamani <deepa.kernel@gmail.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Davidlohr Bueso <dave@stgolabs.net>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ linux-ia64@vger.kernel.org,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ linux-mips@vger.kernel.org,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>
+References: <20190110162435.309262-1-arnd@arndb.de>
+ <alpine.DEB.2.21.1901101808220.31458@digraph.polyomino.org.uk>
+ <CAK8P3a2f4SCJXrm6HWO9UKY-akSW+ONNpOvQOtYbia_fRo9ciQ@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20190110150703.GA26696@infradead.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19011023-2213-0000-0000-0000033A6ED5
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010381; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000274; SDB=6.01144652; UDB=6.00596015; IPR=6.00924917; 
- MB=3.00025075; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-10 23:15:40
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19011023-2214-0000-0000-00005CEBBE7B
-Message-Id: <4c5a470e-fa98-1ffd-7f55-5a4ffb3a692a@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-10_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=591 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901100176
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAK8P3a2f4SCJXrm6HWO9UKY-akSW+ONNpOvQOtYbia_fRo9ciQ@mail.gmail.com>
+User-Agent: NeoMutt/20170113 (1.7.2)
+X-GeoIP: NZ
+X-Spam_score: -2.9
+X-Spam_score_int: -28
+X-Spam_bar: --
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,49 +105,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- stable@vger.kernel.org, james.bottomley@hansenpartnership.com,
- brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ Joseph Myers <joseph@codesourcery.com>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/10/2019 07:07 AM, Christoph Hellwig wrote:
-> On Wed, Jan 09, 2019 at 06:58:56PM -0800, Tyrel Datwyler wrote:
->> While mapping DMA for scatter list when a scsi command is queued the
->> existing call to dma_alloc_coherent() in our map_sg_data() function
->> passes zero for the gfp_flags parameter. We are most definitly in atomic
->> context at this point as queue_command() is called in softirq context
->> and further we have a spinlock holding the scsi host lock.
->>
->> Fix this by passing GFP_ATOMIC to dma_alloc_coherent() to prevent any
->> sort of sleeping in atomic context deadlock.
+On Thu, Jan 10, 2019 at 11:42:32PM +0100, Arnd Bergmann wrote:
+> On Thu, Jan 10, 2019 at 7:10 PM Joseph Myers <joseph@codesourcery.com> wrote:
+> >
+> > On Thu, 10 Jan 2019, Arnd Bergmann wrote:
+> >
+> > > - Add system calls that have not yet been integrated into all
+> > >   architectures but that we definitely want there.
+> >
+> > glibc has a note that alpha lacks statfs64, any plans for that?
 > 
-> This is a pretty clear sign you should not be using dma_alloc_coherent
-> to start with.  GFP_ATOMIC support in many of the implementations either
-> doesn't work at all or is severly constrained.  
-
-On a secondary note I was unaware of the GFP_ATOMIC limitations. Should this be
-added to the documentation somewhere? I don't see any mention here form
-DMA-API-HOWTO.txt.
-
-Using Consistent DMA mappings
-=============================
-
-To allocate and map large (PAGE_SIZE or so) consistent DMA regions,
-you should do::
-
-        dma_addr_t dma_handle;
-
-        cpu_addr = dma_alloc_coherent(dev, size, &dma_handle, gfp);
-
-where device is a ``struct device *``. This may be called in interrupt
-context with the GFP_ATOMIC flag.
-
--Tyrel
-
-Given that the
-> descriptor is written by the OS and read by the hardware exactly once
-> there is no point in having the coherent mapping to start with.
+> Good catch, I missed that because all other 64-bit architectures
+> have a statfs() call with 64-bit fields. I see that it also has an
+> osf_statfs64 structure and system call with lots of padding and some
+> oddly sized fields: f_type, f_flags and f_namemax are only 16 bits
+> wide, the rest is all 64-bit.
 > 
+> Adding the regular statfs64() should be easy enough, we just need to
+> decide which layout to use:
+> 
+> a) use the currently unused 'struct statfs64' as provided by the
+>     alpha uapi headers, which has a 32-bit __statfs_word but
+>     64-bit f_blocks, f_bfree, f_bavail, f_files, and f_ffree.
+> 
+> b) copy asm-generic/statfs.h to the alpha asm/statfs.h and
+>     change statfs64 to have the regular layout that we use
+>     on all other 64-bit architectures, using all 64-bit fields.
+> 
+> The other open question for alpha (as mentioned in one of the
+> patches I sent) would be whether to add get{eg,eu,g,p,pp,u}id()
+> with the regular calling conventions.
 
+I would be interested in seeing those provided on Alpha.  There are
+a handful of projects choosing to sidestep glibc for these syscalls
+and they break on Alpha.  Such projects are never keen to include
+special assembler code (because the extant syscalls on Alpha are not
+C ABI compliant) to support a legacy arch.
+
+Cheers
+Michael.
