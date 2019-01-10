@@ -2,80 +2,88 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68FA9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 09:08:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFA81C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 09:50:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A54F1214C6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 09:08:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hTGY9Vaw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A54F1214C6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id F37FF214C6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 09:50:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F37FF214C6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b0XB5JClzDqdf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 20:08:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b1Sb4hxfzDqdb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 20:50:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ravi.bangoria@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="hTGY9Vaw"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b0VR2JwdzDqY7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 20:06:39 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id b85so5029613pfc.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 01:06:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=oq80hyIRxc7kD/9H1MyYY3fFLvm60ShEsiOlrZc3KYA=;
- b=hTGY9VawGhKjAEPgrRt1SPQT4EG5iuZqoIW1KBax7pl8YNTXG4Vfd9yFbNqVTP6CKq
- Lq9gCQr172eU4c6qB+2ZJoksKKEV0IrNS25SJMIWPuxgIbu6deseS3OSzEsbAJy2YeM+
- nA4gDJwymhlOM0pD950PKH7w1M22eiN5i/ObZwBQeq8LJFMBXiVzhVcTAUMlKc5aXzrp
- 9vkvrrM9VLbJcerBTbmQuUZK6eUWVSVly6mIouFlvpkaK7mBPZywI4SN2+PEgTyQNXlk
- 0civggBqSPQuln3CUOhsBUZ7jfJwDRjbFCyzKA0fficEthHyKNDX96C2SNbZYYLG6FHc
- VpWg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=oq80hyIRxc7kD/9H1MyYY3fFLvm60ShEsiOlrZc3KYA=;
- b=LxWl5aR05gUs0RRPyeI892Q6XGh1kEXovxmpWigS6H8lfpVMNFZKv4m/Q1NgqpDRCe
- V6m7FYI27gk89DcoSCxqcjRedi0lhCrfTgZAx0m6pDCmZukIC6Q9Ii3X2uL+sGA6WEhz
- kptJnp5Ktej4KwuV5XGh5m2jOzs21EbA47CoKWjayaMLdxB1VxMIa6iauv6qk+jXUPfM
- OA75g/cbVCLXcd7QJkw1+d7KjNsfOJgI4zpSyaGzaZtCxcoTuQVOh1ys7zVktpDrOSGN
- Ll4lmHL+n8k2Vxd9569tfUDCTgPo6expv7hlVTt8yrmbRBjcGsCFkJUFqhiWc0lHNeUY
- c6pg==
-X-Gm-Message-State: AJcUukcefMaHRX4b6hHll1gJ+1ihf4m/xho2BTk2C+pA+DjjLBoa63ap
- QiT4ySeLWcmmJUjfcgOpASVoudt3PLhJx1HL9co=
-X-Google-Smtp-Source: ALg8bN4BE6q8xxDDtq+YuLH5+cixz7d0oBOOvQbl+bRUmSLVR5oY8KTP6B615fpl1R0lgmzzlO6hmmnE0EIbQpvPK5o=
-X-Received: by 2002:a63:da14:: with SMTP id c20mr8224322pgh.233.1547111196652; 
- Thu, 10 Jan 2019 01:06:36 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b1Qq0sQczDqX6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 20:48:34 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0A9iM6q122707
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 04:48:32 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2px2dgbff0-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 04:48:31 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
+ Thu, 10 Jan 2019 09:48:30 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 10 Jan 2019 09:48:26 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0A9mPL960883144
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 10 Jan 2019 09:48:25 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A220211C04C;
+ Thu, 10 Jan 2019 09:48:25 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4095A11C052;
+ Thu, 10 Jan 2019 09:48:24 +0000 (GMT)
+Received: from bangoria.in.ibm.com (unknown [9.124.31.212])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 10 Jan 2019 09:48:24 +0000 (GMT)
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+To: acme@kernel.org
+Subject: [PATCH 1/2] perf powerpc: Rework syscall table generation
+Date: Thu, 10 Jan 2019 15:19:35 +0530
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190104085405.40356-1-Tianyu.Lan@microsoft.com>
- <20190104085405.40356-10-Tianyu.Lan@microsoft.com>
- <7eb0cde4-9436-9719-dd13-caf4ab5083a2@redhat.com>
-In-Reply-To: <7eb0cde4-9436-9719-dd13-caf4ab5083a2@redhat.com>
-From: Tianyu Lan <lantianyu1986@gmail.com>
-Date: Thu, 10 Jan 2019 17:06:25 +0800
-Message-ID: <CAOLK0pz6K90+QOMV2Vmhd3vC2t5+15vmUo0E=2rwax7cGDfxjw@mail.gmail.com>
-Subject: Re: [PATCH 9/11] KVM/MMU: Flush tlb in the
- kvm_mmu_write_protect_pt_masked()
-To: Paolo Bonzini <pbonzini@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19011009-0012-0000-0000-000002E5D37E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011009-0013-0000-0000-0000211CD8DB
+Message-Id: <20190110094936.3132-1-ravi.bangoria@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-10_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901100080
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,67 +95,538 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm <kvm@vger.kernel.org>, Radim Krcmar <rkrcmar@redhat.com>,
- catalin.marinas@arm.com, will.deacon@arm.com, christoffer.dall@arm.com,
- "H. Peter Anvin" <hpa@zytor.com>, kys@microsoft.com,
- kvmarm@lists.cs.columbia.edu, the arch/x86 maintainers <x86@kernel.org>,
- linux@armlinux.org.uk, michael.h.kelley@microsoft.com,
- Ingo Molnar <mingo@redhat.com>, jhogan@kernel.org, linux-mips@vger.kernel.org,
- Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- kvm-ppc@vger.kernel.org, bp@alien8.de, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org,
- "linux-kernel@vger kernel org" <linux-kernel@vger.kernel.org>,
- ralf@linux-mips.org, paul.burton@mips.com, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ namhyung@kernel.org, jolsa@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 8, 2019 at 12:26 AM Paolo Bonzini <pbonzini@redhat.com> wrote:
->
-> On 04/01/19 09:54, lantianyu1986@gmail.com wrote:
-> >               rmap_head = __gfn_to_rmap(slot->base_gfn + gfn_offset + __ffs(mask),
-> >                                         PT_PAGE_TABLE_LEVEL, slot);
-> > -             __rmap_write_protect(kvm, rmap_head, false);
-> > +             flush |= __rmap_write_protect(kvm, rmap_head, false);
-> >
-> >               /* clear the first set bit */
-> >               mask &= mask - 1;
-> >       }
-> > +
-> > +     if (flush && kvm_available_flush_tlb_with_range()) {
-> > +             kvm_flush_remote_tlbs_with_address(kvm,
-> > +                             slot->base_gfn + gfn_offset,
-> > +                             hweight_long(mask));
->
-> Mask is zero here, so this probably won't work.
->
-> In addition, I suspect calling the hypercall once for every 64 pages is
-> not very efficient.  Passing a flush list into
-> kvm_mmu_write_protect_pt_masked, and flushing in
-> kvm_arch_mmu_enable_log_dirty_pt_masked, isn't efficient either because
-> kvm_arch_mmu_enable_log_dirty_pt_masked is also called once per word.
->
-Yes, this is not efficient.
+Commit aff850393200 ("powerpc: add system call table generation support")
+changed how systemcall table is generated for powerpc. Incorporate these
+changes into perf as well.
 
-> I don't have any good ideas, except for moving the whole
-> kvm_clear_dirty_log_protect loop into architecture-specific code (which
-> is not the direction we want---architectures should share more code, not
-> less).
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+---
+ tools/perf/arch/powerpc/Makefile                   |  15 +-
+ .../perf/arch/powerpc/entry/syscalls/mksyscalltbl  |  22 +-
+ tools/perf/arch/powerpc/entry/syscalls/syscall.tbl | 427 +++++++++++++++++++++
+ 3 files changed, 450 insertions(+), 14 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
 
-kvm_vm_ioctl_clear_dirty_log/get_dirty_log()  is to get/clear dirty log with
-memslot as unit. We may just flush tlbs of the affected memslot instead of
-entire page table's when range flush is available.
+diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+index a111239df182..e58d00d62f02 100644
+--- a/tools/perf/arch/powerpc/Makefile
++++ b/tools/perf/arch/powerpc/Makefile
+@@ -14,18 +14,25 @@ PERF_HAVE_JITDUMP := 1
+ out    := $(OUTPUT)arch/powerpc/include/generated/asm
+ header32 := $(out)/syscalls_32.c
+ header64 := $(out)/syscalls_64.c
+-sysdef := $(srctree)/tools/arch/powerpc/include/uapi/asm/unistd.h
+-sysprf := $(srctree)/tools/perf/arch/powerpc/entry/syscalls/
++syskrn := $(srctree)/arch/powerpc/kernel/syscalls/syscall.tbl
++sysprf := $(srctree)/tools/perf/arch/powerpc/entry/syscalls
++sysdef := $(sysprf)/syscall.tbl
+ systbl := $(sysprf)/mksyscalltbl
+ 
+ # Create output directory if not already present
+ _dummy := $(shell [ -d '$(out)' ] || mkdir -p '$(out)')
+ 
+ $(header64): $(sysdef) $(systbl)
+-	$(Q)$(SHELL) '$(systbl)' '64' '$(CC)' $(sysdef) > $@
++	@(test -d ../../kernel -a -d ../../tools -a -d ../perf && ( \
++	(diff -B $(sysdef) $(syskrn) >/dev/null) \
++	|| echo "Warning: Kernel ABI header at '$(sysdef)' differs from latest version at '$(syskrn)'" >&2 )) || true
++	$(Q)$(SHELL) '$(systbl)' '64' $(sysdef) > $@
+ 
+ $(header32): $(sysdef) $(systbl)
+-	$(Q)$(SHELL) '$(systbl)' '32' '$(CC)' $(sysdef) > $@
++	@(test -d ../../kernel -a -d ../../tools -a -d ../perf && ( \
++	(diff -B $(sysdef) $(syskrn) >/dev/null) \
++	|| echo "Warning: Kernel ABI header at '$(sysdef)' differs from latest version at '$(syskrn)'" >&2 )) || true
++	$(Q)$(SHELL) '$(systbl)' '32' $(sysdef) > $@
+ 
+ clean::
+ 	$(call QUIET_CLEAN, powerpc) $(RM) $(header32) $(header64)
+diff --git a/tools/perf/arch/powerpc/entry/syscalls/mksyscalltbl b/tools/perf/arch/powerpc/entry/syscalls/mksyscalltbl
+index ef52e1dd694b..6c58060aa03b 100755
+--- a/tools/perf/arch/powerpc/entry/syscalls/mksyscalltbl
++++ b/tools/perf/arch/powerpc/entry/syscalls/mksyscalltbl
+@@ -9,10 +9,9 @@
+ # Changed by: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
+ 
+ wordsize=$1
+-gcc=$2
+-input=$3
++SYSCALL_TBL=$2
+ 
+-if ! test -r $input; then
++if ! test -r $SYSCALL_TBL; then
+ 	echo "Could not read input file" >&2
+ 	exit 1
+ fi
+@@ -20,18 +19,21 @@ fi
+ create_table()
+ {
+ 	local wordsize=$1
+-	local max_nr
++	local max_nr nr abi sc discard
++	max_nr=-1
++	nr=0
+ 
+ 	echo "static const char *syscalltbl_powerpc_${wordsize}[] = {"
+-	while read sc nr; do
+-		printf '\t[%d] = "%s",\n' $nr $sc
+-		max_nr=$nr
++	while read nr abi sc discard; do
++		if [ "$max_nr" -lt "$nr" ]; then
++			printf '\t[%d] = "%s",\n' $nr $sc
++			max_nr=$nr
++		fi
+ 	done
+ 	echo '};'
+ 	echo "#define SYSCALLTBL_POWERPC_${wordsize}_MAX_ID $max_nr"
+ }
+ 
+-$gcc -m${wordsize} -E -dM -x c  $input	       \
+-	|sed -ne 's/^#define __NR_//p' \
+-	|sort -t' ' -k2 -nu	       \
++grep -E "^[[:digit:]]+[[:space:]]+(common|spu|nospu|${wordsize})" $SYSCALL_TBL \
++	|sort -k1 -n                                                           \
+ 	|create_table ${wordsize}
+diff --git a/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+new file mode 100644
+index 000000000000..db3bbb8744af
+--- /dev/null
++++ b/tools/perf/arch/powerpc/entry/syscalls/syscall.tbl
+@@ -0,0 +1,427 @@
++# SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
++#
++# system call numbers and entry vectors for powerpc
++#
++# The format is:
++# <number> <abi> <name> <entry point> <compat entry point>
++#
++# The <abi> can be common, spu, nospu, 64, or 32 for this file.
++#
++0	nospu	restart_syscall			sys_restart_syscall
++1	nospu	exit				sys_exit
++2	nospu	fork				ppc_fork
++3	common	read				sys_read
++4	common	write				sys_write
++5	common	open				sys_open			compat_sys_open
++6	common	close				sys_close
++7	common	waitpid				sys_waitpid
++8	common	creat				sys_creat
++9	common	link				sys_link
++10	common	unlink				sys_unlink
++11	nospu	execve				sys_execve			compat_sys_execve
++12	common	chdir				sys_chdir
++13	common	time				sys_time			compat_sys_time
++14	common	mknod				sys_mknod
++15	common	chmod				sys_chmod
++16	common	lchown				sys_lchown
++17	common	break				sys_ni_syscall
++18	32	oldstat				sys_stat			sys_ni_syscall
++18	64	oldstat				sys_ni_syscall
++18	spu	oldstat				sys_ni_syscall
++19	common	lseek				sys_lseek			compat_sys_lseek
++20	common	getpid				sys_getpid
++21	nospu	mount				sys_mount			compat_sys_mount
++22	32	umount				sys_oldumount
++22	64	umount				sys_ni_syscall
++22	spu	umount				sys_ni_syscall
++23	common	setuid				sys_setuid
++24	common	getuid				sys_getuid
++25	common	stime				sys_stime			compat_sys_stime
++26	nospu	ptrace				sys_ptrace			compat_sys_ptrace
++27	common	alarm				sys_alarm
++28	32	oldfstat			sys_fstat			sys_ni_syscall
++28	64	oldfstat			sys_ni_syscall
++28	spu	oldfstat			sys_ni_syscall
++29	nospu	pause				sys_pause
++30	nospu	utime				sys_utime			compat_sys_utime
++31	common	stty				sys_ni_syscall
++32	common	gtty				sys_ni_syscall
++33	common	access				sys_access
++34	common	nice				sys_nice
++35	common	ftime				sys_ni_syscall
++36	common	sync				sys_sync
++37	common	kill				sys_kill
++38	common	rename				sys_rename
++39	common	mkdir				sys_mkdir
++40	common	rmdir				sys_rmdir
++41	common	dup				sys_dup
++42	common	pipe				sys_pipe
++43	common	times				sys_times			compat_sys_times
++44	common	prof				sys_ni_syscall
++45	common	brk				sys_brk
++46	common	setgid				sys_setgid
++47	common	getgid				sys_getgid
++48	nospu	signal				sys_signal
++49	common	geteuid				sys_geteuid
++50	common	getegid				sys_getegid
++51	nospu	acct				sys_acct
++52	nospu	umount2				sys_umount
++53	common	lock				sys_ni_syscall
++54	common	ioctl				sys_ioctl			compat_sys_ioctl
++55	common	fcntl				sys_fcntl			compat_sys_fcntl
++56	common	mpx				sys_ni_syscall
++57	common	setpgid				sys_setpgid
++58	common	ulimit				sys_ni_syscall
++59	32	oldolduname			sys_olduname
++59	64	oldolduname			sys_ni_syscall
++59	spu	oldolduname			sys_ni_syscall
++60	common	umask				sys_umask
++61	common	chroot				sys_chroot
++62	nospu	ustat				sys_ustat			compat_sys_ustat
++63	common	dup2				sys_dup2
++64	common	getppid				sys_getppid
++65	common	getpgrp				sys_getpgrp
++66	common	setsid				sys_setsid
++67	32	sigaction			sys_sigaction			compat_sys_sigaction
++67	64	sigaction			sys_ni_syscall
++67	spu	sigaction			sys_ni_syscall
++68	common	sgetmask			sys_sgetmask
++69	common	ssetmask			sys_ssetmask
++70	common	setreuid			sys_setreuid
++71	common	setregid			sys_setregid
++72	32	sigsuspend			sys_sigsuspend
++72	64	sigsuspend			sys_ni_syscall
++72	spu	sigsuspend			sys_ni_syscall
++73	32	sigpending			sys_sigpending			compat_sys_sigpending
++73	64	sigpending			sys_ni_syscall
++73	spu	sigpending			sys_ni_syscall
++74	common	sethostname			sys_sethostname
++75	common	setrlimit			sys_setrlimit			compat_sys_setrlimit
++76	32	getrlimit			sys_old_getrlimit		compat_sys_old_getrlimit
++76	64	getrlimit			sys_ni_syscall
++76	spu	getrlimit			sys_ni_syscall
++77	common	getrusage			sys_getrusage			compat_sys_getrusage
++78	common	gettimeofday			sys_gettimeofday		compat_sys_gettimeofday
++79	common	settimeofday			sys_settimeofday		compat_sys_settimeofday
++80	common	getgroups			sys_getgroups
++81	common	setgroups			sys_setgroups
++82	32	select				ppc_select			sys_ni_syscall
++82	64	select				sys_ni_syscall
++82	spu	select				sys_ni_syscall
++83	common	symlink				sys_symlink
++84	32	oldlstat			sys_lstat			sys_ni_syscall
++84	64	oldlstat			sys_ni_syscall
++84	spu	oldlstat			sys_ni_syscall
++85	common	readlink			sys_readlink
++86	nospu	uselib				sys_uselib
++87	nospu	swapon				sys_swapon
++88	nospu	reboot				sys_reboot
++89	32	readdir				sys_old_readdir			compat_sys_old_readdir
++89	64	readdir				sys_ni_syscall
++89	spu	readdir				sys_ni_syscall
++90	common	mmap				sys_mmap
++91	common	munmap				sys_munmap
++92	common	truncate			sys_truncate			compat_sys_truncate
++93	common	ftruncate			sys_ftruncate			compat_sys_ftruncate
++94	common	fchmod				sys_fchmod
++95	common	fchown				sys_fchown
++96	common	getpriority			sys_getpriority
++97	common	setpriority			sys_setpriority
++98	common	profil				sys_ni_syscall
++99	nospu	statfs				sys_statfs			compat_sys_statfs
++100	nospu	fstatfs				sys_fstatfs			compat_sys_fstatfs
++101	common	ioperm				sys_ni_syscall
++102	common	socketcall			sys_socketcall			compat_sys_socketcall
++103	common	syslog				sys_syslog
++104	common	setitimer			sys_setitimer			compat_sys_setitimer
++105	common	getitimer			sys_getitimer			compat_sys_getitimer
++106	common	stat				sys_newstat			compat_sys_newstat
++107	common	lstat				sys_newlstat			compat_sys_newlstat
++108	common	fstat				sys_newfstat			compat_sys_newfstat
++109	32	olduname			sys_uname
++109	64	olduname			sys_ni_syscall
++109	spu	olduname			sys_ni_syscall
++110	common	iopl				sys_ni_syscall
++111	common	vhangup				sys_vhangup
++112	common	idle				sys_ni_syscall
++113	common	vm86				sys_ni_syscall
++114	common	wait4				sys_wait4			compat_sys_wait4
++115	nospu	swapoff				sys_swapoff
++116	common	sysinfo				sys_sysinfo			compat_sys_sysinfo
++117	nospu	ipc				sys_ipc				compat_sys_ipc
++118	common	fsync				sys_fsync
++119	32	sigreturn			sys_sigreturn			compat_sys_sigreturn
++119	64	sigreturn			sys_ni_syscall
++119	spu	sigreturn			sys_ni_syscall
++120	nospu	clone				ppc_clone
++121	common	setdomainname			sys_setdomainname
++122	common	uname				sys_newuname
++123	common	modify_ldt			sys_ni_syscall
++124	common	adjtimex			sys_adjtimex			compat_sys_adjtimex
++125	common	mprotect			sys_mprotect
++126	32	sigprocmask			sys_sigprocmask			compat_sys_sigprocmask
++126	64	sigprocmask			sys_ni_syscall
++126	spu	sigprocmask			sys_ni_syscall
++127	common	create_module			sys_ni_syscall
++128	nospu	init_module			sys_init_module
++129	nospu	delete_module			sys_delete_module
++130	common	get_kernel_syms			sys_ni_syscall
++131	nospu	quotactl			sys_quotactl
++132	common	getpgid				sys_getpgid
++133	common	fchdir				sys_fchdir
++134	common	bdflush				sys_bdflush
++135	common	sysfs				sys_sysfs
++136	32	personality			sys_personality			ppc64_personality
++136	64	personality			ppc64_personality
++136	spu	personality			ppc64_personality
++137	common	afs_syscall			sys_ni_syscall
++138	common	setfsuid			sys_setfsuid
++139	common	setfsgid			sys_setfsgid
++140	common	_llseek				sys_llseek
++141	common	getdents			sys_getdents			compat_sys_getdents
++142	common	_newselect			sys_select			compat_sys_select
++143	common	flock				sys_flock
++144	common	msync				sys_msync
++145	common	readv				sys_readv			compat_sys_readv
++146	common	writev				sys_writev			compat_sys_writev
++147	common	getsid				sys_getsid
++148	common	fdatasync			sys_fdatasync
++149	nospu	_sysctl				sys_sysctl			compat_sys_sysctl
++150	common	mlock				sys_mlock
++151	common	munlock				sys_munlock
++152	common	mlockall			sys_mlockall
++153	common	munlockall			sys_munlockall
++154	common	sched_setparam			sys_sched_setparam
++155	common	sched_getparam			sys_sched_getparam
++156	common	sched_setscheduler		sys_sched_setscheduler
++157	common	sched_getscheduler		sys_sched_getscheduler
++158	common	sched_yield			sys_sched_yield
++159	common	sched_get_priority_max		sys_sched_get_priority_max
++160	common	sched_get_priority_min		sys_sched_get_priority_min
++161	common	sched_rr_get_interval		sys_sched_rr_get_interval	compat_sys_sched_rr_get_interval
++162	common	nanosleep			sys_nanosleep			compat_sys_nanosleep
++163	common	mremap				sys_mremap
++164	common	setresuid			sys_setresuid
++165	common	getresuid			sys_getresuid
++166	common	query_module			sys_ni_syscall
++167	common	poll				sys_poll
++168	common	nfsservctl			sys_ni_syscall
++169	common	setresgid			sys_setresgid
++170	common	getresgid			sys_getresgid
++171	common	prctl				sys_prctl
++172	nospu	rt_sigreturn			sys_rt_sigreturn		compat_sys_rt_sigreturn
++173	nospu	rt_sigaction			sys_rt_sigaction		compat_sys_rt_sigaction
++174	nospu	rt_sigprocmask			sys_rt_sigprocmask		compat_sys_rt_sigprocmask
++175	nospu	rt_sigpending			sys_rt_sigpending		compat_sys_rt_sigpending
++176	nospu	rt_sigtimedwait			sys_rt_sigtimedwait		compat_sys_rt_sigtimedwait
++177	nospu 	rt_sigqueueinfo			sys_rt_sigqueueinfo		compat_sys_rt_sigqueueinfo
++178	nospu 	rt_sigsuspend			sys_rt_sigsuspend		compat_sys_rt_sigsuspend
++179	common	pread64				sys_pread64			compat_sys_pread64
++180	common	pwrite64			sys_pwrite64			compat_sys_pwrite64
++181	common	chown				sys_chown
++182	common	getcwd				sys_getcwd
++183	common	capget				sys_capget
++184	common	capset				sys_capset
++185	nospu	sigaltstack			sys_sigaltstack			compat_sys_sigaltstack
++186	32	sendfile			sys_sendfile			compat_sys_sendfile
++186	64	sendfile			sys_sendfile64
++186	spu	sendfile			sys_sendfile64
++187	common	getpmsg				sys_ni_syscall
++188	common 	putpmsg				sys_ni_syscall
++189	nospu	vfork				ppc_vfork
++190	common	ugetrlimit			sys_getrlimit			compat_sys_getrlimit
++191	common	readahead			sys_readahead			compat_sys_readahead
++192	32	mmap2				sys_mmap2			compat_sys_mmap2
++193	32	truncate64			sys_truncate64			compat_sys_truncate64
++194	32	ftruncate64			sys_ftruncate64			compat_sys_ftruncate64
++195	32	stat64				sys_stat64
++196	32	lstat64				sys_lstat64
++197	32	fstat64				sys_fstat64
++198	nospu 	pciconfig_read			sys_pciconfig_read
++199	nospu 	pciconfig_write			sys_pciconfig_write
++200	nospu 	pciconfig_iobase		sys_pciconfig_iobase
++201	common 	multiplexer			sys_ni_syscall
++202	common	getdents64			sys_getdents64
++203	common	pivot_root			sys_pivot_root
++204	32	fcntl64				sys_fcntl64			compat_sys_fcntl64
++205	common	madvise				sys_madvise
++206	common	mincore				sys_mincore
++207	common	gettid				sys_gettid
++208	common	tkill				sys_tkill
++209	common	setxattr			sys_setxattr
++210	common	lsetxattr			sys_lsetxattr
++211	common	fsetxattr			sys_fsetxattr
++212	common	getxattr			sys_getxattr
++213	common	lgetxattr			sys_lgetxattr
++214	common	fgetxattr			sys_fgetxattr
++215	common	listxattr			sys_listxattr
++216	common	llistxattr			sys_llistxattr
++217	common	flistxattr			sys_flistxattr
++218	common	removexattr			sys_removexattr
++219	common	lremovexattr			sys_lremovexattr
++220	common	fremovexattr			sys_fremovexattr
++221	common	futex				sys_futex			compat_sys_futex
++222	common	sched_setaffinity		sys_sched_setaffinity		compat_sys_sched_setaffinity
++223	common	sched_getaffinity		sys_sched_getaffinity		compat_sys_sched_getaffinity
++# 224 unused
++225	common	tuxcall				sys_ni_syscall
++226	32	sendfile64			sys_sendfile64			compat_sys_sendfile64
++227	common	io_setup			sys_io_setup			compat_sys_io_setup
++228	common	io_destroy			sys_io_destroy
++229	common	io_getevents			sys_io_getevents		compat_sys_io_getevents
++230	common	io_submit			sys_io_submit			compat_sys_io_submit
++231	common	io_cancel			sys_io_cancel
++232	nospu	set_tid_address			sys_set_tid_address
++233	common	fadvise64			sys_fadvise64			ppc32_fadvise64
++234	nospu	exit_group			sys_exit_group
++235	nospu	lookup_dcookie			sys_lookup_dcookie		compat_sys_lookup_dcookie
++236	common	epoll_create			sys_epoll_create
++237	common	epoll_ctl			sys_epoll_ctl
++238	common	epoll_wait			sys_epoll_wait
++239	common	remap_file_pages		sys_remap_file_pages
++240	common	timer_create			sys_timer_create		compat_sys_timer_create
++241	common	timer_settime			sys_timer_settime		compat_sys_timer_settime
++242	common	timer_gettime			sys_timer_gettime		compat_sys_timer_gettime
++243	common	timer_getoverrun		sys_timer_getoverrun
++244	common	timer_delete			sys_timer_delete
++245	common	clock_settime			sys_clock_settime		compat_sys_clock_settime
++246	common	clock_gettime			sys_clock_gettime		compat_sys_clock_gettime
++247	common	clock_getres			sys_clock_getres		compat_sys_clock_getres
++248	common	clock_nanosleep			sys_clock_nanosleep		compat_sys_clock_nanosleep
++249	32	swapcontext			ppc_swapcontext			ppc32_swapcontext
++249	64	swapcontext			ppc64_swapcontext
++249	spu	swapcontext			sys_ni_syscall
++250	common	tgkill				sys_tgkill
++251	common	utimes				sys_utimes			compat_sys_utimes
++252	common	statfs64			sys_statfs64			compat_sys_statfs64
++253	common	fstatfs64			sys_fstatfs64			compat_sys_fstatfs64
++254	32	fadvise64_64			ppc_fadvise64_64
++254	spu	fadvise64_64			sys_ni_syscall
++255	common	rtas				sys_rtas
++256	32	sys_debug_setcontext		sys_debug_setcontext		sys_ni_syscall
++256	64	sys_debug_setcontext		sys_ni_syscall
++256	spu	sys_debug_setcontext		sys_ni_syscall
++# 257 reserved for vserver
++258	nospu	migrate_pages			sys_migrate_pages		compat_sys_migrate_pages
++259	nospu	mbind				sys_mbind			compat_sys_mbind
++260	nospu	get_mempolicy			sys_get_mempolicy		compat_sys_get_mempolicy
++261	nospu	set_mempolicy			sys_set_mempolicy		compat_sys_set_mempolicy
++262	nospu	mq_open				sys_mq_open			compat_sys_mq_open
++263	nospu	mq_unlink			sys_mq_unlink
++264	nospu	mq_timedsend			sys_mq_timedsend		compat_sys_mq_timedsend
++265	nospu	mq_timedreceive			sys_mq_timedreceive		compat_sys_mq_timedreceive
++266	nospu	mq_notify			sys_mq_notify			compat_sys_mq_notify
++267	nospu	mq_getsetattr			sys_mq_getsetattr		compat_sys_mq_getsetattr
++268	nospu	kexec_load			sys_kexec_load			compat_sys_kexec_load
++269	nospu	add_key				sys_add_key
++270	nospu	request_key			sys_request_key
++271	nospu	keyctl				sys_keyctl			compat_sys_keyctl
++272	nospu	waitid				sys_waitid			compat_sys_waitid
++273	nospu	ioprio_set			sys_ioprio_set
++274	nospu	ioprio_get			sys_ioprio_get
++275	nospu	inotify_init			sys_inotify_init
++276	nospu	inotify_add_watch		sys_inotify_add_watch
++277	nospu	inotify_rm_watch		sys_inotify_rm_watch
++278	nospu	spu_run				sys_spu_run
++279	nospu	spu_create			sys_spu_create
++280	nospu	pselect6			sys_pselect6			compat_sys_pselect6
++281	nospu	ppoll				sys_ppoll			compat_sys_ppoll
++282	common	unshare				sys_unshare
++283	common	splice				sys_splice
++284	common	tee				sys_tee
++285	common	vmsplice			sys_vmsplice			compat_sys_vmsplice
++286	common	openat				sys_openat			compat_sys_openat
++287	common	mkdirat				sys_mkdirat
++288	common	mknodat				sys_mknodat
++289	common	fchownat			sys_fchownat
++290	common	futimesat			sys_futimesat			compat_sys_futimesat
++291	32	fstatat64			sys_fstatat64
++291	64	newfstatat			sys_newfstatat
++291	spu	newfstatat			sys_newfstatat
++292	common	unlinkat			sys_unlinkat
++293	common	renameat			sys_renameat
++294	common	linkat				sys_linkat
++295	common	symlinkat			sys_symlinkat
++296	common	readlinkat			sys_readlinkat
++297	common	fchmodat			sys_fchmodat
++298	common	faccessat			sys_faccessat
++299	common	get_robust_list			sys_get_robust_list		compat_sys_get_robust_list
++300	common	set_robust_list			sys_set_robust_list		compat_sys_set_robust_list
++301	common	move_pages			sys_move_pages			compat_sys_move_pages
++302	common	getcpu				sys_getcpu
++303	nospu	epoll_pwait			sys_epoll_pwait			compat_sys_epoll_pwait
++304	common	utimensat			sys_utimensat			compat_sys_utimensat
++305	common	signalfd			sys_signalfd			compat_sys_signalfd
++306	common	timerfd_create			sys_timerfd_create
++307	common	eventfd				sys_eventfd
++308	common	sync_file_range2		sys_sync_file_range2		compat_sys_sync_file_range2
++309	nospu	fallocate			sys_fallocate			compat_sys_fallocate
++310	nospu	subpage_prot			sys_subpage_prot
++311	common	timerfd_settime			sys_timerfd_settime		compat_sys_timerfd_settime
++312	common	timerfd_gettime			sys_timerfd_gettime		compat_sys_timerfd_gettime
++313	common	signalfd4			sys_signalfd4			compat_sys_signalfd4
++314	common	eventfd2			sys_eventfd2
++315	common	epoll_create1			sys_epoll_create1
++316	common	dup3				sys_dup3
++317	common	pipe2				sys_pipe2
++318	nospu	inotify_init1			sys_inotify_init1
++319	common	perf_event_open			sys_perf_event_open
++320	common	preadv				sys_preadv			compat_sys_preadv
++321	common	pwritev				sys_pwritev			compat_sys_pwritev
++322	nospu	rt_tgsigqueueinfo		sys_rt_tgsigqueueinfo		compat_sys_rt_tgsigqueueinfo
++323	nospu	fanotify_init			sys_fanotify_init
++324	nospu	fanotify_mark			sys_fanotify_mark		compat_sys_fanotify_mark
++325	common	prlimit64			sys_prlimit64
++326	common	socket				sys_socket
++327	common	bind				sys_bind
++328	common	connect				sys_connect
++329	common	listen				sys_listen
++330	common	accept				sys_accept
++331	common	getsockname			sys_getsockname
++332	common	getpeername			sys_getpeername
++333	common	socketpair			sys_socketpair
++334	common	send				sys_send
++335	common	sendto				sys_sendto
++336	common	recv				sys_recv			compat_sys_recv
++337	common	recvfrom			sys_recvfrom			compat_sys_recvfrom
++338	common	shutdown			sys_shutdown
++339	common	setsockopt			sys_setsockopt			compat_sys_setsockopt
++340	common	getsockopt			sys_getsockopt			compat_sys_getsockopt
++341	common	sendmsg				sys_sendmsg			compat_sys_sendmsg
++342	common	recvmsg				sys_recvmsg			compat_sys_recvmsg
++343	common	recvmmsg			sys_recvmmsg			compat_sys_recvmmsg
++344	common	accept4				sys_accept4
++345	common	name_to_handle_at		sys_name_to_handle_at
++346	common	open_by_handle_at		sys_open_by_handle_at		compat_sys_open_by_handle_at
++347	common	clock_adjtime			sys_clock_adjtime		compat_sys_clock_adjtime
++348	common	syncfs				sys_syncfs
++349	common	sendmmsg			sys_sendmmsg			compat_sys_sendmmsg
++350	common	setns				sys_setns
++351	nospu	process_vm_readv		sys_process_vm_readv		compat_sys_process_vm_readv
++352	nospu	process_vm_writev		sys_process_vm_writev		compat_sys_process_vm_writev
++353	nospu	finit_module			sys_finit_module
++354	nospu	kcmp				sys_kcmp
++355	common	sched_setattr			sys_sched_setattr
++356	common	sched_getattr			sys_sched_getattr
++357	common	renameat2			sys_renameat2
++358	common	seccomp				sys_seccomp
++359	common	getrandom			sys_getrandom
++360	common	memfd_create			sys_memfd_create
++361	common	bpf				sys_bpf
++362	nospu	execveat			sys_execveat			compat_sys_execveat
++363	32	switch_endian			sys_ni_syscall
++363	64	switch_endian			ppc_switch_endian
++363	spu	switch_endian			sys_ni_syscall
++364	common	userfaultfd			sys_userfaultfd
++365	common	membarrier			sys_membarrier
++378	nospu	mlock2				sys_mlock2
++379	nospu	copy_file_range			sys_copy_file_range
++380	common	preadv2				sys_preadv2			compat_sys_preadv2
++381	common	pwritev2			sys_pwritev2			compat_sys_pwritev2
++382	nospu	kexec_file_load			sys_kexec_file_load
++383	nospu	statx				sys_statx
++384	nospu	pkey_alloc			sys_pkey_alloc
++385	nospu	pkey_free			sys_pkey_free
++386	nospu	pkey_mprotect			sys_pkey_mprotect
++387	nospu	rseq				sys_rseq
++388	nospu	io_pgetevents			sys_io_pgetevents		compat_sys_io_pgetevents
+-- 
+2.14.5
 
->
-> Paolo
->
-> > +             flush = false;
-> > +     }
-> > +
->
-
-
---
-Best regards
-Tianyu Lan
