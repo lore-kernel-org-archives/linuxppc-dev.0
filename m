@@ -2,64 +2,63 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0334DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:42:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D5FAC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:43:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7EF2C206B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:42:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7EF2C206B7
+	by mail.kernel.org (Postfix) with ESMTPS id AAB03206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:43:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAB03206B7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bBbs626mzDqsZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 03:42:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bBdy4fZ3zDqnc
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 03:43:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bBGR1V1TzDqlm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:26:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bBGh0lcczDqnR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:27:07 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue108 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1MY64R-1gmkJt0Yvd-00YU3m; Thu, 10 Jan 2019 17:25:24 +0100
+ 1M8yoa-1gbZP519vi-0063I1; Thu, 10 Jan 2019 17:25:05 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 14/15] arch: add split IPC system calls where needed
-Date: Thu, 10 Jan 2019 17:24:34 +0100
-Message-Id: <20190110162435.309262-15-arnd@arndb.de>
+Subject: [PATCH 00/15] arch: synchronize syscall tables in preparation for
+ y2038
+Date: Thu, 10 Jan 2019 17:24:20 +0100
+Message-Id: <20190110162435.309262-1-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
-In-Reply-To: <20190110162435.309262-1-arnd@arndb.de>
-References: <20190110162435.309262-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:PwTwcqzC0fpvyGeS+vAcmjwlaVhIgjgqKpUNbO8jdK/MzyNDLxH
- AD43ww/mEbVyMlR/qBO/hkjHdcMLLros7Uhp2gNa5zLqweAyXbK92KKYYzxSiaXlEIhf96y
- c5q67JQboIHmgXAEjxzQ4irXT6aSruKmlUAsQ7aBg9/WtfSVK6H7RIzHVcKGsOVeUOmhOgG
- qQuRlraMboMxEyYeiTS3A==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:/LZQ6iPTUJo=:EqDjBEG0B6YX9cPxWcmZ4u
- cP2kpeIGX4W+yVbjKy2g0qqgHXvErCiIrml9QEL3tCFMa0QtzRa+/cDXp5SbnIiXHB5RlPM9X
- L5RuU0uGnmDgYyzpEII8MSmLVxznYX9sb8Tt48CdJAjJU+mBsAgITdJrZNUUZccnTDEFfpjWl
- Zfy38hBzxYejOCZddJkP8IjbpmTMDpoWQAGY0TFZFQ91ihbiuvS9l0GjaAbckx4ICzEO0ZhcT
- Bk0uD1cr+NZTy8/FQkqWwLXqdl8LPvgoLe598rlBY2lHOJ0XjWEpuGxWaxD51dUfTAQc+REWK
- /3Ty9946jYoVF0sZSUqFkl9LXiczko0W5HsurvSQrW5FTZyfjBktySCDENYzcM5hr5Hbngs7l
- o8XPaM1vVycoPvjZctkwRJ46eTW/ou94RkDZhZpKmOfL5amcEhzSK3NL1777+uTtptIJ9kCNv
- PW+1Wv5Y6dbQf1h20iL2pRIv7SJryn/XomOOv2cA16N+EYFLPVjw2WFO99AzGqHxvXx75o6Dm
- ckRKzKveUqoCXRTy3I+QLMs3ACm5wNZSVi3itI8R1xhYqyTmQuq3ZpEEujuoCLpTffgsEr4EO
- fLT0CJKC/exVpy0AJBwMw7sK/yNR2hIDeVUWWXlJF+kAGJkYFkyetitnjCnV3JYeE3TdhqWC+
- 3aj7J+QJ6DnYyDvWiSx9A3NOQMBBwQhKb0SFPJql3Fe4mTcxf9cr/QUTDuDB0mRfrHGRXnO9a
- 6nTtAOkVR8W4WludGMZ/OQ1J8EBHxHuUkG6MPw==
+X-Provags-ID: V03:K1:jhoE6/odjdfdBd6yrYoTQRylO8KTHs0vFajSRSOy3XKF9bGfqko
+ KtSukK0N0eaTZv6m1MEw3rEB/9fW1GAIssAzz4uJd1F6vdHonvwYJKMyB1s1aApsfbiJEC9
+ 5okxLH6hKdq1eSKydX2+7l6cR7QwTqF7aGCx8EhvPkPF3W7xFOzG77OECp6a+2EDAchEiTB
+ wNs3RaKtpG4cOPTeZ6RSg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:5xO5hqiOarE=:c+iZ9kLMNq1WpvagfFixUK
+ KblxgxXKOzW/ayE0xHmHoXJnWMfNLm+d1W4SA6omPPTDDVuCF8E6MnCsIP7s262/5hLKjuZwO
+ qw/U5gYgrED/GkEzYSGdZaw/AA4vdYj6X0aLPj0izwKjFa6jsx/59jseIoJa1W8bngmyt7353
+ jD8gBiL6F0FE+MbZgrHlVRclpEjuRNgEF9lUI3uL01eWryW+YtgueG06/Am2G2e1NsCx3Z/XD
+ VBRGKKTfNtFdrsc28Df5rzFIRmhvuPU57AHF9Cvcr7QoQ/Wl4L8OY/Qo2R8D5VvCf6SRKNkcS
+ JGefvNLcFQn+69gKWR7va/qMvAJbZPDrMOzIJyo9O7zQG956eZKK1JIQd0htZBjBO514W1Kxc
+ WAEAFcOmZfO50u8+Wr7cWmJtpCwN7HJ9zJqAXw8Yfjzb6NoZG8JHzaTkkTvfhc+Clrfgro1dp
+ 1O2r7nREhlppbmsMUz79/ZwxtZVsv1oMIL0sr8ZQFE0Tf0fKAunIpUxm6BLLNhszcpYtg8UfU
+ Yd/1M20ISzeIz/yiMCJ+2ithBwz84ZnftBpTFUeaqlQVJWLjVOcdH0+szWRuJ23O38qxwshFL
+ baJqqC1kB7kYZEwYHGYQprS4087AY4Exfl0pO+wSKjdPuAMQg0guC1OS9j7DGBCqkN+wQXQEV
+ z4ytAVckRafv+zejAZlDq+sZdRZ0w1XQCh24HQXujupgvCQKysD6SsYVl0QrM7VGNMM85xyI5
+ LBr4cgrZBGMkoOS2wYlsAoXV3QRR/h5DzYM9Dw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,182 +87,140 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The IPC system call handling is highly inconsistent across architectures,
-some use sys_ipc, some use separate calls, and some use both.  We also
-have some architectures that require passing IPC_64 in the flags, and
-others that set it implicitly.
+The system call tables have diverged a bit over the years, and a number
+of the recent additions never made it into all architectures, for one
+reason or another.
 
-For the additon of a y2083 safe semtimedop() system call, I chose to only
-support the separate entry points, but that requires first supporting
-the regular ones with their own syscall numbers.
+This is an attempt to clean it up as far as we can without breaking
+compatibility, doing a number of steps:
 
-The IPC_64 is now implied by the new semctl/shmctl/msgctl system
-calls even on the architectures that require passing it with the ipc()
-multiplexer.
+- Add system calls that have not yet been integrated into all
+  architectures but that we definitely want there.
 
-I'm not adding the new semtimedop() or semop() on 32-bit architectures,
-those will get implemented using the new semtimedop_time64() version
-that gets added along with the other time64 calls.
-Three 64-bit architectures (powerpc, s390 and sparc) get semtimedop().
+- Add the separate ipc syscalls on all architectures that
+  traditionally only had sys_ipc(). This version is done without
+  support for IPC_OLD that is we have in sys_ipc. The
+  new semtimedop_time64 syscall will only be added here, not
+  in sys_ipc
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-One aspect here that might be a bit controversial is the use of
-the same system call numbers across all architectures, synchronizing
-all of them with the x86-32 numbers. With the new syscall.tbl
-files, I hope we can just keep doing that in the future, and no
-longer require the architecture maintainers to assign a number.
+- Add syscall numbers for a couple of syscalls that we probably
+  don't need everywhere, in particular pkey_* and rseq,
+  for the purpose of symmetry: if it's in asm-generic/unistd.h,
+  it makes sense to have it everywhere.
 
-This is mainly useful for implementers of the C libraries: if
-we can add future system calls everywhere at the same time, using
-a particular version of the kernel headers also guarantees that
-the system call number macro is visible.
----
- arch/m68k/kernel/syscalls/syscall.tbl     | 11 +++++++++++
- arch/mips/kernel/syscalls/syscall_o32.tbl | 11 +++++++++++
- arch/powerpc/kernel/syscalls/syscall.tbl  | 12 ++++++++++++
- arch/s390/kernel/syscalls/syscall.tbl     | 12 ++++++++++++
- arch/sh/kernel/syscalls/syscall.tbl       | 11 +++++++++++
- arch/sparc/kernel/syscalls/syscall.tbl    | 12 ++++++++++++
- arch/x86/entry/syscalls/syscall_32.tbl    | 11 +++++++++++
- 7 files changed, 80 insertions(+)
+- Prepare for having the same system call numbers for any future
+  calls. In combination with the generated tables, this hopefully
+  makes it easier to add new calls across all architectures
+  together.
 
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index 85779d6ef935..5354ba02eed2 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -388,3 +388,14 @@
- 378	common	pwritev2			sys_pwritev2
- 379	common	statx				sys_statx
- 380	common	seccomp				sys_seccomp
-+# room for arch specific calls
-+393	common	semget				sys_semget
-+394	common	semctl				sys_semctl
-+395	common	shmget				sys_shmget
-+396	common	shmctl				sys_shmctl
-+397	common	shmat				sys_shmat
-+398	common	shmdt				sys_shmdt
-+399	common	msgget				sys_msgget
-+400	common	msgsnd				sys_msgsnd
-+401	common	msgrcv				sys_msgrcv
-+402	common	msgctl				sys_msgctl
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 3d5a47b80d2b..fa47ea8cc6ef 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -380,3 +380,14 @@
- 366	o32	statx				sys_statx
- 367	o32	rseq				sys_rseq
- 368	o32	io_pgetevents			sys_io_pgetevents		compat_sys_io_pgetevents
-+# room for arch specific calls
-+393	o32	semget				sys_semget
-+394	o32	semctl				sys_semctl			compat_sys_semctl
-+395	o32	shmget				sys_shmget
-+396	o32	shmctl				sys_shmctl			compat_sys_shmctl
-+397	o32	shmat				sys_shmat			compat_sys_shmat
-+398	o32	shmdt				sys_shmdt
-+399	o32	msgget				sys_msgget
-+400	o32	msgsnd				sys_msgsnd			compat_sys_msgsnd
-+401	o32	msgrcv				sys_msgrcv			compat_sys_msgrcv
-+402	o32	msgctl				sys_msgctl			compat_sys_msgctl
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index db3bbb8744af..1bffab54ff35 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -425,3 +425,15 @@
- 386	nospu	pkey_mprotect			sys_pkey_mprotect
- 387	nospu	rseq				sys_rseq
- 388	nospu	io_pgetevents			sys_io_pgetevents		compat_sys_io_pgetevents
-+# room for arch specific syscalls
-+392	64	semtimedop			sys_semtimedop
-+393	common	semget				sys_semget
-+394	common	semctl				sys_semctl			compat_sys_semctl
-+395	common	shmget				sys_shmget
-+396	common	shmctl				sys_shmctl			compat_sys_shmctl
-+397	common	shmat				sys_shmat			compat_sys_shmat
-+398	common	shmdt				sys_shmdt
-+399	common	msgget				sys_msgget
-+400	common	msgsnd				sys_msgsnd			compat_sys_msgsnd
-+401	common	msgrcv				sys_msgrcv			compat_sys_msgrcv
-+402	common	msgctl				sys_msgctl			compat_sys_msgctl
-diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-index 022fc099b628..428cf512a757 100644
---- a/arch/s390/kernel/syscalls/syscall.tbl
-+++ b/arch/s390/kernel/syscalls/syscall.tbl
-@@ -391,3 +391,15 @@
- 381  common	kexec_file_load		sys_kexec_file_load		compat_sys_kexec_file_load
- 382  common	io_pgetevents		sys_io_pgetevents		compat_sys_io_pgetevents
- 383  common	rseq			sys_rseq			compat_sys_rseq
-+# room for arch specific syscalls
-+392	64	semtimedop		sys_semtimedop			-
-+393  common	semget			sys_semget			sys_semget
-+394  common	semctl			sys_semctl			compat_sys_semctl
-+395  common	shmget			sys_shmget			sys_shmget
-+396  common	shmctl			sys_shmctl			compat_sys_shmctl
-+397  common	shmat			sys_shmat			compat_sys_shmat
-+398  common	shmdt			sys_shmdt 			sys_shmdt
-+399  common	msgget			sys_msgget			sys_msgget
-+400  common	msgsnd			sys_msgsnd			compat_sys_msgsnd
-+401  common	msgrcv			sys_msgrcv			compat_sys_msgrcv
-+402  common	msgctl			sys_msgctl			compat_sys_msgctl
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index a70db013dbc7..6d0b84e3ef2d 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -391,3 +391,14 @@
- 381	common	preadv2				sys_preadv2
- 382	common	pwritev2			sys_pwritev2
- 383	common	statx				sys_statx
-+# room for arch specific syscalls
-+393	common	semget				sys_semget
-+394	common	semctl				sys_semctl
-+395	common	shmget				sys_shmget
-+396	common	shmctl				sys_shmctl
-+397	common	shmat				sys_shmat
-+398	common	shmdt				sys_shmdt
-+399	common	msgget				sys_msgget
-+400	common	msgsnd				sys_msgsnd
-+401	common	msgrcv				sys_msgrcv
-+402	common	msgctl				sys_msgctl
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index c8c77c05ea97..8c9580302422 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -407,3 +407,15 @@
- 359	common	pwritev2		sys_pwritev2			compat_sys_pwritev2
- 360	common	statx			sys_statx
- 361	common	io_pgetevents		sys_io_pgetevents		compat_sys_io_pgetevents
-+# room for arch specific syscalls
-+392	64	semtimedop			sys_semtimedop
-+393	common	semget			sys_semget
-+394	common	semctl			sys_semctl			compat_sys_semctl
-+395	common	shmget			sys_shmget
-+396	common	shmctl			sys_shmctl			compat_sys_shmctl
-+397	common	shmat			sys_shmat			compat_sys_shmat
-+398	common	shmdt			sys_shmdt
-+399	common	msgget			sys_msgget
-+400	common	msgsnd			sys_msgsnd			compat_sys_msgsnd
-+401	common	msgrcv			sys_msgrcv			compat_sys_msgrcv
-+402	common	msgctl			sys_msgctl			compat_sys_msgctl
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index 3cf7b533b3d1..fef80b92eb7e 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -398,3 +398,14 @@
- 384	i386	arch_prctl		sys_arch_prctl			__ia32_compat_sys_arch_prctl
- 385	i386	io_pgetevents		sys_io_pgetevents		__ia32_compat_sys_io_pgetevents
- 386	i386	rseq			sys_rseq			__ia32_sys_rseq
-+# room for arch specific syscalls
-+393	i386	semget			sys_semget    			__ia32_sys_semget
-+394	i386	semctl			sys_semctl    			__ia32_compat_sys_semctl
-+395	i386	shmget			sys_shmget    			__ia32_sys_shmget
-+396	i386	shmctl			sys_shmctl    			__ia32_compat_sys_shmctl
-+397	i386	shmat			sys_shmat     			__ia32_compat_sys_shmat
-+398	i386	shmdt			sys_shmdt     			__ia32_sys_shmdt
-+399	i386	msgget			sys_msgget    			__ia32_sys_msgget
-+400	i386	msgsnd			sys_msgsnd    			__ia32_compat_sys_msgsnd
-+401	i386	msgrcv			sys_msgrcv    			__ia32_compat_sys_msgrcv
-+402	i386	msgctl			sys_msgctl    			__ia32_compat_sys_msgctl
+Most of the contents of this series are unrelated to the actual
+y2038 work, but for the moment, that second series is based on
+this one. If there are any concerns about changes here, I
+can drop or rewrite any individual patch in this series.
+
+My plan is to merge any patches in this series that are found
+to be good together with the y2038 patches for linux-5.1, so
+please review and provide Acks for merging through my tree,
+or pick them up for 5.0 if they seem urgent enough.
+
+      Arnd
+
+Arnd Bergmann (15):
+  ia64: add __NR_umount2 definition
+  ia64: add statx and io_pgetevents syscalls
+  ia64: assign syscall numbers for perf and seccomp
+  alpha: wire up io_pgetevents system call
+  alpha: update syscall macro definitions
+  ARM: add migrate_pages() system call
+  ARM: add kexec_file_load system call number
+  m68k: assign syscall number for seccomp
+  sh: remove duplicate unistd_32.h file
+  sh: add statx system call
+  mips: fix n32 compat_ipc_parse_version
+  sparc64: fix sparc_ipc type conversion
+  ipc: rename old-style shmctl/semctl/msgctl syscalls
+  arch: add split IPC system calls where needed
+  arch: add pkey and rseq syscall numbers everywhere
+
+ arch/alpha/include/asm/unistd.h             |  10 -
+ arch/alpha/include/uapi/asm/unistd.h        |   5 +
+ arch/alpha/kernel/syscalls/syscall.tbl      |  15 +-
+ arch/arm/include/asm/unistd.h               |   1 -
+ arch/arm/tools/syscall.tbl                  |   8 +-
+ arch/arm64/include/asm/unistd.h             |   2 +-
+ arch/arm64/include/asm/unistd32.h           |  10 +-
+ arch/ia64/include/asm/unistd.h              |  14 -
+ arch/ia64/include/uapi/asm/unistd.h         |   2 +
+ arch/ia64/kernel/syscalls/syscall.tbl       |  10 +-
+ arch/m68k/kernel/syscalls/syscall.tbl       |  16 +
+ arch/microblaze/kernel/syscalls/syscall.tbl |   6 +-
+ arch/mips/Kconfig                           |   1 +
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |   6 +-
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |   6 +-
+ arch/mips/kernel/syscalls/syscall_o32.tbl   |  11 +
+ arch/parisc/include/asm/unistd.h            |   3 -
+ arch/parisc/kernel/syscalls/syscall.tbl     |   4 +
+ arch/powerpc/kernel/syscalls/syscall.tbl    |  12 +
+ arch/s390/include/asm/unistd.h              |   3 -
+ arch/s390/kernel/syscalls/syscall.tbl       |  15 +
+ arch/sh/include/uapi/asm/unistd_32.h        | 403 --------------------
+ arch/sh/kernel/syscalls/syscall.tbl         |  16 +
+ arch/sparc/include/asm/unistd.h             |   5 -
+ arch/sparc/kernel/sys_sparc_64.c            |   2 +-
+ arch/sparc/kernel/syscalls/syscall.tbl      |  16 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |  11 +
+ arch/xtensa/kernel/syscalls/syscall.tbl     |   7 +-
+ include/linux/syscalls.h                    |   3 +
+ ipc/msg.c                                   |  39 +-
+ ipc/sem.c                                   |  39 +-
+ ipc/shm.c                                   |  40 +-
+ ipc/syscall.c                               |  12 +-
+ ipc/util.h                                  |  21 +-
+ kernel/sys_ni.c                             |   3 +
+ 35 files changed, 271 insertions(+), 506 deletions(-)
+ delete mode 100644 arch/sh/include/uapi/asm/unistd_32.h
+
 -- 
 2.20.0
-
+Cc: ink@jurassic.park.msu.ru
+Cc: mattst88@gmail.com
+Cc: linux@armlinux.org.uk
+Cc: catalin.marinas@arm.com
+Cc: will.deacon@arm.com
+Cc: tony.luck@intel.com
+Cc: fenghua.yu@intel.com
+Cc: geert@linux-m68k.org
+Cc: monstr@monstr.eu
+Cc: paul.burton@mips.com
+Cc: deller@gmx.de
+Cc: mpe@ellerman.id.au
+Cc: schwidefsky@de.ibm.com
+Cc: heiko.carstens@de.ibm.com
+Cc: dalias@libc.org
+Cc: davem@davemloft.net
+Cc: luto@kernel.org
+Cc: tglx@linutronix.de
+Cc: mingo@redhat.com
+Cc: hpa@zytor.com
+Cc: x86@kernel.org
+Cc: jcmvbkbc@gmail.com
+Cc: arnd@arndb.de
+Cc: firoz.khan@linaro.org
+Cc: ebiederm@xmission.com
+Cc: deepa.kernel@gmail.com
+Cc: linux@dominikbrodowski.net
+Cc: akpm@linux-foundation.org
+Cc: dave@stgolabs.net
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: linux-mips@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-api@vger.kernel.org
+CC: y2038@lists.linaro.org
