@@ -1,64 +1,98 @@
-Return-Path: <SRS0=h3rJ=PR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8C76C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 20:32:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86763C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 00:42:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19711206B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  9 Jan 2019 20:32:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19711206B6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 47F83214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 00:42:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 47F83214DA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Zglw6K8LzDqcm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 07:32:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZnJW5JH6zDqZw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 11:42:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43Zgjc3pfSzDqbC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 07:30:11 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43ZgjX2QCZz9v1FM;
- Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id a2BeVWl2OlM7; Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43ZgjX1v4Nz9v1FL;
- Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 59E088B84E;
- Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Iw-Xke2CbzRM; Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-Received: from PO15451.localdomain (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 315518B84A;
- Wed,  9 Jan 2019 21:30:08 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id E5F2269A7A; Wed,  9 Jan 2019 20:30:07 +0000 (UTC)
-Message-Id: <9b1d38ef4c4d26f9ef9b6a69a37949a4eee722df.1547025153.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: fix setting of pagetable for Abatron BDI debug
- tool.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  9 Jan 2019 20:30:07 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ZnGY5qP1zDqSW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 11:40:37 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0A0d3jG111305
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jan 2019 19:40:35 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2pwse44v4k-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2019 19:40:34 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 10 Jan 2019 00:40:33 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 10 Jan 2019 00:40:31 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0A0eUSg3211548
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 10 Jan 2019 00:40:30 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 94FF652054;
+ Thu, 10 Jan 2019 00:40:30 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id E6E2A5204F;
+ Thu, 10 Jan 2019 00:40:29 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id B3DB9A018C;
+ Thu, 10 Jan 2019 11:40:26 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc/powernv/npu: Fix oops in
+ pnv_try_setup_npu_table_group()
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru
+References: <20190109151342.19953-1-fbarrat@linux.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 10 Jan 2019 11:40:26 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190109151342.19953-1-fbarrat@linux.ibm.com>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 19011000-0008-0000-0000-000002AE99D2
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011000-0009-0000-0000-0000221A9D9B
+Message-Id: <c5f6b3e0-f926-ec81-e7e2-292c8c03941d@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-09_12:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901100003
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,41 +104,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 8c8c10b90d88 ("powerpc/8xx: fix handling of early NULL pointer
-dereference") moved the loading of r6 earlier in the code. As some
-functions are called inbetween, r6 needs to be loaded again with the
-address of swapper_pg_dir in order to set PTE pointers for
-the Abatron BDI.
+On 10/1/19 2:13 am, Frederic Barrat wrote:
+> With a recent change around IOMMU group, a system with an opencapi
+> adapter is no longer booting and we get a kernel oops:
+> 
+> BUG: Kernel NULL pointer dereference at 0x00000028
+> Faulting instruction address: 0xc0000000000aa38c
+> Oops: Kernel access of bad area, sig: 7 [#1]
+> LE SMP NR_CPUS=2048 NUMA PowerNV
+> Modules linked in:
+> CPU: 5 PID: 1 Comm: swapper/4 Not tainted 5.0.0-rc1-fxb-00001-g3bd6e94bec12
+> NIP:  c0000000000aa38c LR: c0000000000a6608 CTR: c000000000097480
+> REGS: c000000005783700 TRAP: 0300   Not tainted  (5.0.0-rc1-fxb-00001-g3bd6
+> MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 28000228  XER: 20
+> CFAR: c0000000000a6604 DAR: 0000000000000028 DSISR: 00080000 IRQMASK: 0
+> GPR00: c0000000000a6608 c000000005783990 c000000001036100 c0000007bf761860
+> GPR04: 0000000000000000 c000000005783834 0000000000000000 0000000000000000
+> GPR08: 69626d2c6e707500 0000000000000000 0000000000000000 9000000002001003
+> GPR12: 0000000000000000 c0000007bfff8300 c000000000010450 0000000000000000
+> GPR16: c000000000ced938 0000000000000100 c000000000ced948 00000000000a0000
+> GPR20: 00000000000bfffe c000000000ced9a8 0000000000000200 c000000000ced978
+> GPR24: 00000000006080c0 c000000716d09828 c00000002e6fd000 0000000000000000
+> GPR28: c0000007bf4aff68 c0000007bf8d0080 c000000000f23938 c0000007bf761860
+> NIP [c0000000000aa38c] pnv_try_setup_npu_table_group+0x1c/0x1a0
+> LR [c0000000000a6608] pnv_pci_ioda_fixup+0x1f8/0x660
+> Call Trace:
+> [c000000005783990] [c0000000000aa3d0] pnv_try_setup_npu_table_group+0x60/0x
+> [c0000000057839d0] [c0000000000a661c] pnv_pci_ioda_fixup+0x20c/0x660
+> [c000000005783ab0] [c000000000e1d4c0] pcibios_resource_survey+0x2c8/0x31c
+> [c000000005783b90] [c000000000e1caf4] pcibios_init+0xb0/0xe4
+> [c000000005783c10] [c000000000010054] do_one_initcall+0x64/0x264
+> [c000000005783ce0] [c000000000e1132c] kernel_init_freeable+0x36c/0x468
+> [c000000005783db0] [c000000000010474] kernel_init+0x2c/0x148
+> [c000000005783e20] [c00000000000b794] ret_from_kernel_thread+0x5c/0x68
+> 
+> An opencapi device is using a device PE, so the current code breaks
+> because pe->pbus is not defined.
+> 
+> More generally, there's no need to define an IOMMU group for opencapi,
+> as the device sends real addresses directly (admittedly, the
+> virtualization story is yet to be written). So let's fix it by
+> skipping the IOMMU group setup for opencapi PHBs.
+> 
+> Fixes: 0bd971676e68 ("powerpc/powernv/npu: Add compound IOMMU groups")
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-Fixes: 8c8c10b90d88 ("powerpc/8xx: fix handling of early NULL pointer dereference")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index aea5f367e4fe..ab0e6f1c98b0 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -885,11 +885,12 @@ start_here:
- 
- 	/* set up the PTE pointers for the Abatron bdiGDB.
- 	*/
--	tovirt(r6,r6)
- 	lis	r5, abatron_pteptrs@h
- 	ori	r5, r5, abatron_pteptrs@l
- 	stw	r5, 0xf0(0)	/* Must match your Abatron config file */
- 	tophys(r5,r5)
-+	lis	r6, swapper_pg_dir@h
-+	ori	r6, r6, swapper_pg_dir@l
- 	stw	r6, 0(r5)
- 
- /* Now turn on the MMU for real! */
+> ---
+>   arch/powerpc/platforms/powernv/pci-ioda.c | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 1d6406a051f1..7db3119f8a5b 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2681,7 +2681,8 @@ static void pnv_pci_ioda_setup_iommu_api(void)
+>   	list_for_each_entry(hose, &hose_list, list_node) {
+>   		phb = hose->private_data;
+>   
+> -		if (phb->type == PNV_PHB_NPU_NVLINK)
+> +		if (phb->type == PNV_PHB_NPU_NVLINK ||
+> +		    phb->type == PNV_PHB_NPU_OCAPI)
+>   			continue;
+>   
+>   		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+> 
+
 -- 
-2.13.3
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
