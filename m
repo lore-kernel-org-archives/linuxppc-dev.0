@@ -2,42 +2,67 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A574C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 05:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7821DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 06:44:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75AE4206B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 05:44:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75AE4206B7
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id B625B214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 06:44:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VEC0+MYi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B625B214DA
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43Zw0g1TRLzDq6W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:44:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZxLj2znSzDqdv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:44:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43Zvyt3VYwzDqYV
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 16:42:29 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id A4F2FAE8001E;
- Thu, 10 Jan 2019 00:42:23 -0500 (EST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH kernel] powerpc/stack_protector: Fix external modules
- building
-Date: Thu, 10 Jan 2019 16:42:16 +1100
-Message-Id: <20190110054216.74248-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="VEC0+MYi"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ZxJw2Kv3zDqR0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 17:43:11 +1100 (AEDT)
+Received: from dragon (61-216-91-114.HINET-IP.hinet.net [61.216.91.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6D3C8214DA;
+ Thu, 10 Jan 2019 06:43:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1547102589;
+ bh=RVtjTyJLKGFZRuEyHVwDNC25dNgB7DPh3M6yv0AsL0M=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=VEC0+MYihO2xcOYklPJZ2ZAwMQn9gHz1qI2dN5IOd0aminomj7v2FH99hb7vho2jG
+ h4Xz5yD8faC9jCETbZfSQUGFeU47X5slJpmp2VP2GPaVkDUWJE19ohXjEKa3Mu22aF
+ Ibw5h3xxK5g2mBet7l395qed6BpaYq3WfkIZ50L0=
+Date: Thu, 10 Jan 2019 14:42:57 +0800
+From: Shawn Guo <shawnguo@kernel.org>
+To: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 18/34] dt-bindings: arm: Convert FSL board/soc
+ bindings to json-schema
+Message-ID: <20190110064256.GA25218@dragon>
+References: <20181203213223.16986-1-robh@kernel.org>
+ <20181203213223.16986-19-robh@kernel.org>
+ <20181206023140.GZ3987@dragon>
+ <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
+ <20181208015835.GM3987@dragon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181208015835.GM3987@dragon>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,55 +74,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
+ Sean Hudson <darknighte@darknighte.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ ARM-SoC Maintainers <arm@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-c3ff2a519 "powerpc/32: add stack protector support" addes stack protector
-support so now powerpc's "prepare" target depends on prepare0 (via
-stack_protector_prepare target).
+On Sat, Dec 08, 2018 at 09:58:37AM +0800, Shawn Guo wrote:
+> On Thu, Dec 06, 2018 at 05:33:13PM -0600, Rob Herring wrote:
+> > On Wed, Dec 5, 2018 at 8:32 PM Shawn Guo <shawnguo@kernel.org> wrote:
+> > >
+> > > On Mon, Dec 03, 2018 at 03:32:07PM -0600, Rob Herring wrote:
+> > > > Convert Freescale SoC bindings to DT schema format using json-schema.
+> > > >
+> > > > Cc: Shawn Guo <shawnguo@kernel.org>
+> > > > Cc: Mark Rutland <mark.rutland@arm.com>
+> > > > Cc: devicetree@vger.kernel.org
+> > > > Signed-off-by: Rob Herring <robh@kernel.org>
+> > > > ---
+> > > >  .../devicetree/bindings/arm/armadeus.txt      |   6 -
+> > > >  Documentation/devicetree/bindings/arm/bhf.txt |   6 -
+> > > >  .../bindings/arm/compulab-boards.txt          |  25 --
+> > > >  Documentation/devicetree/bindings/arm/fsl.txt | 229 ------------------
+> > > >  .../devicetree/bindings/arm/fsl.yaml          | 214 ++++++++++++++++
+> > >
+> > > Rob,
+> > >
+> > > I do have any changes on bindings/arm/fsl.txt queued for 4.21 on my
+> > > tree, so please send it via your tree.
+> > 
+> > What about:
+> > 
+> > c386f362957b dt-bindings: Add compatible string for LS1028A-QDS
+> > 3671cd57de06 dt-bindings: ls1012a: Add FRWY-LS1012A device tree binding
+> 
+> Ah, sorry, I only checked on imx/dt branch and forgot imx/dt64.  I will
+> drop the changes on fsl.txt and update fsl.yaml after it hits mainline.
 
-It works fine until we try build an external module where it fails with:
-Run: 'make -j128 SYSSRC=/home/aik/p/kernel SYSOUT=/home/aik/pbuild/kernel-le-pseries/ ARCH=powerpc'
-make[1]: Entering directory '/home/aik/p/kernel'
-make[2]: Entering directory '/home/aik/pbuild/kernel-le-pseries'
-make[2]: *** No rule to make target 'prepare0', needed by 'stack_protector_prepare'.  Stop.
+What happened to this?  It seems the patch did not hit v5.0-rc1.
 
-The reason for that is that the main Linux Makefile defines "prepare0"
-only if KBUILD_EXTMOD=="".
-
-This hacks powerpc's Makefile to make external modules build again.
-
-Fixes: c3ff2a519 "powerpc/32: add stack protector support"
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-
-It has been suggested that there is a better way of fixing this hence RFC.
-
-
----
- arch/powerpc/Makefile | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 488c9ed..0492f62 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -419,7 +419,11 @@ archheaders:
- ifdef CONFIG_STACKPROTECTOR
- prepare: stack_protector_prepare
- 
-+ifeq ($(KBUILD_EXTMOD),)
- stack_protector_prepare: prepare0
-+else
-+stack_protector_prepare:
-+endif
- ifdef CONFIG_PPC64
- 	$(eval KBUILD_CFLAGS += -mstack-protector-guard-offset=$(shell awk '{if ($$2 == "PACA_CANARY") print $$3;}' include/generated/asm-offsets.h))
- else
--- 
-2.17.1
-
+Shawn
