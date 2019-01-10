@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A593C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:30:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28623C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:32:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E677420685
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:30:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E677420685
+	by mail.kernel.org (Postfix) with ESMTPS id A76CA20685
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:31:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A76CA20685
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b91408DTzDqhl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:30:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b93215FbzDqgj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:31:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,39 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b8c23l6nzDqPc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:12:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b8c45JYGzDqjk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:12:04 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43b8by0q09z9v0fF;
- Thu, 10 Jan 2019 16:11:58 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43b8c01Xj9z9v0f9;
+ Thu, 10 Jan 2019 16:12:00 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id DyrC6OKltPuD; Thu, 10 Jan 2019 16:11:58 +0100 (CET)
+ with ESMTP id GkASEmS-V-lv; Thu, 10 Jan 2019 16:12:00 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43b8by0Jv2z9v0f8;
- Thu, 10 Jan 2019 16:11:58 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43b8c00cHKz9v0f8;
+ Thu, 10 Jan 2019 16:12:00 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 81A528B8A0;
- Thu, 10 Jan 2019 16:11:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E8A38B8A0;
+ Thu, 10 Jan 2019 16:12:01 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2IoUKUxNZvhK; Thu, 10 Jan 2019 16:11:59 +0100 (CET)
+ with ESMTP id 6yfjW1o2106b; Thu, 10 Jan 2019 16:12:01 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5186D8B89F;
- Thu, 10 Jan 2019 16:11:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 62A728B89F;
+ Thu, 10 Jan 2019 16:12:01 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 127E26BF21; Thu, 10 Jan 2019 15:11:59 +0000 (UTC)
-Message-Id: <f9cb8d4b198cf836a4ab15a53649845b336ceb2a.1547132681.git.christophe.leroy@c-s.fr>
+ id 188C36BF21; Thu, 10 Jan 2019 15:12:01 +0000 (UTC)
+Message-Id: <89564282d74c3dd4130ac08ecb72963b3f624cdb.1547132681.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1547132681.git.christophe.leroy@c-s.fr>
 References: <cover.1547132681.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 10/15] powerpc/kconfig: define PAGE_SHIFT inside Kconfig
+Subject: [PATCH v2 11/15] powerpc/kconfig: define CONFIG_DATA_SHIFT and
+ CONFIG_ETEXT_SHIFT
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 10 Jan 2019 15:11:59 +0000 (UTC)
+Date: Thu, 10 Jan 2019 15:12:01 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,60 +78,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch defined CONFIG_PPC_PAGE_SHIFT in order
-to be able to use PAGE_SHIFT value inside Kconfig.
+CONFIG_STRICT_KERNEL_RWX requires a special alignment
+for DATA for some subarches. Today it is just defined
+as an #ifdef in vmlinux.lds.S
+
+In order to get more flexibility, this patch moves the
+definition of this alignment in Kconfig
+
+On some subarches, CONFIG_STRICT_KERNEL_RWX will
+require a special alignment of _etext.
+
+This patch also adds a configuration item for it in Kconfig
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig            |  7 +++++++
- arch/powerpc/include/asm/page.h | 13 ++-----------
- 2 files changed, 9 insertions(+), 11 deletions(-)
+ arch/powerpc/Kconfig              | 9 +++++++++
+ arch/powerpc/kernel/vmlinux.lds.S | 9 +++------
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2890d36eb531..d72caed57f2c 100644
+index d72caed57f2c..52d401a9f1a3 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -714,6 +714,13 @@ config PPC_256K_PAGES
+@@ -731,6 +731,15 @@ config THREAD_SHIFT
+ 	  Used to define the stack size. The default is almost always what you
+ 	  want. Only change this if you know what you are doing.
  
- endchoice
- 
-+config PPC_PAGE_SHIFT
++config ETEXT_SHIFT
 +	int
-+	default 18 if PPC_256K_PAGES
-+	default 16 if PPC_64K_PAGES
-+	default 14 if PPC_16K_PAGES
-+	default 12
++	default PPC_PAGE_SHIFT
 +
- config THREAD_SHIFT
- 	int "Thread shift" if EXPERT
- 	range 13 15
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 5c5ea2413413..bc4bb6c6efce 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -20,20 +20,11 @@
++config DATA_SHIFT
++	int
++	default 24 if STRICT_KERNEL_RWX && PPC64
++	default PPC_PAGE_SHIFT
++
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+ 	range 8 9 if PPC64 && PPC_64K_PAGES
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index ad1c77f71f54..4fb3cd420383 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -12,11 +12,8 @@
+ #include <asm/cache.h>
+ #include <asm/thread_info.h>
  
- /*
-  * On regular PPC32 page size is 4K (but we support 4K/16K/64K/256K pages
-- * on PPC44x). For PPC64 we support either 4K or 64K software
-+ * on PPC44x and 4K/16K on 8xx). For PPC64 we support either 4K or 64K software
-  * page size. When using 64K pages however, whether we are really supporting
-  * 64K pages in HW or not is irrelevant to those definitions.
-  */
--#if defined(CONFIG_PPC_256K_PAGES)
--#define PAGE_SHIFT		18
--#elif defined(CONFIG_PPC_64K_PAGES)
--#define PAGE_SHIFT		16
--#elif defined(CONFIG_PPC_16K_PAGES)
--#define PAGE_SHIFT		14
+-#if defined(CONFIG_STRICT_KERNEL_RWX) && !defined(CONFIG_PPC32)
+-#define STRICT_ALIGN_SIZE	(1 << 24)
 -#else
--#define PAGE_SHIFT		12
+-#define STRICT_ALIGN_SIZE	PAGE_SIZE
 -#endif
--
-+#define PAGE_SHIFT		CONFIG_PPC_PAGE_SHIFT
- #define PAGE_SIZE		(ASM_CONST(1) << PAGE_SHIFT)
++#define STRICT_ALIGN_SIZE	(1 << CONFIG_DATA_SHIFT)
++#define ETEXT_ALIGN_SIZE	(1 << CONFIG_ETEXT_SHIFT)
  
- #ifndef __ASSEMBLY__
+ ENTRY(_stext)
+ 
+@@ -131,7 +128,7 @@ SECTIONS
+ 
+ 	} :kernel
+ 
+-	. = ALIGN(PAGE_SIZE);
++	. = ALIGN(ETEXT_ALIGN_SIZE);
+ 	_etext = .;
+ 	PROVIDE32 (etext = .);
+ 
 -- 
 2.13.3
 
