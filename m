@@ -3,61 +3,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F54BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:05:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB63FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:08:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BAB2D20685
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:05:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAB2D20685
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3EAA320685
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:08:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EAA320685
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bC7B3wBfzDq9y
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:05:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bC9z2h1bzDqsM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:08:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.221.196; helo=mail-vk1-f196.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-vk1-f196.google.com (mail-vk1-f196.google.com
- [209.85.221.196])
+ (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
+ [209.85.160.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bBzz4H7VzDqWm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:59:24 +1100 (AEDT)
-Received: by mail-vk1-f196.google.com with SMTP id w72so2635425vkd.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 08:59:24 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bC845gMxzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:06:28 +1100 (AEDT)
+Received: by mail-qt1-f193.google.com with SMTP id t33so13998886qtt.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 09:06:28 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=Hw0e7GRKKordAWqSD7MEd/MdjXNL2gSRFLNoHST4yQU=;
- b=nb8sNcZL8tDUzYOodoP6h5gwnJP5dQ+dXTpniWfx9IPR54dvOLVTOFRq7vqkuVowHC
- nq8LlqgTJSnRTWLI+onDbf40/5xfTv9ji9lJISKIPFB9AFJZNP8p6bg1Z3Tbw9d2RSSB
- 5gphm+r5qnvq7S+vaWR7HO9Z7fyE5WXnbOG3HzIWdJ3fB1vzRV3IHY/4T6n0xlD8Rpje
- DLFvs5FwD3Exz9eFhciuUOVdgIQ/oK7YwMQB815ehSjZq05gILVBg3Rt+mn4bQdALTR6
- lonCxByMIULfvqpG0UZrFDMkhT2jZb7OfvqVxn8l+n2EWdVH4VwpfeAdQoEPxGIo6+cF
- 7/Zw==
-X-Gm-Message-State: AJcUukcpeAQUd6wgStiWcqET+7c+qxRWULa0ZiIy2zd9m2ie9HQUc1XS
- CQTnrC9YEy9CApd6mULTsIbrWU+ZC2Krd2GLVdU=
-X-Google-Smtp-Source: ALg8bN5fFE92/p210UY0O3VvZTR7XlFlqefe7/Td73EjJzfygMgDltkNFwFLL65t6V7dhJltD1zMZSFgvRHYqKmM9HE=
-X-Received: by 2002:a1f:a414:: with SMTP id n20mr4224838vke.83.1547139561779; 
- Thu, 10 Jan 2019 08:59:21 -0800 (PST)
+ bh=ppZcVQ/6kEa1+6j6RgrBmmjrAAts0gpmQru81oI2DjY=;
+ b=NitfHHghEDulNF5d3KwAhV9BSwyP3E/ztBoqCMkU+FppbHiQh2eh6Qi6fYMXkja7tk
+ XCtmwG8l9gCrXkuUNGAvNDHS5sp1u8zQWLmTpI3cajgvy7KHP90Cr1Pn+0ihvVpjG5X/
+ ocsiUFXK0uVpgq0v96N1pawfbjbGQnmeEPLvTeq4rRXcRsv/C8pPFAMWPa9e8/04WC9g
+ ddSVmY6SfVZpTh2e+Qu6QrdbX/ZMwmFtI+PVbQjGkWJ3kzECpW2JqbojAvGZ73tMFFAV
+ jR4NImAebgX+7G9QdUlIkYWdoEmc9nfAJ3EWwDYm1NCLoM364YwNw8FoPDN0sLMb1bHZ
+ tn5A==
+X-Gm-Message-State: AJcUukca67SevbtuiiWgZdHKmixMTYViC930t67hpO5O60+Z9uRAv8hS
+ 9p0FKoIrVqkek/gon4aDLGna0kWdUm/mTRNR1ak=
+X-Google-Smtp-Source: ALg8bN6AYimQvL2fk3CyhFYbTwHueixsV0cppMAFEDILJ7f9F0R4jNkQXt8J3yrK7O3RY2Kukmp6QEA1Mn21OLb0A00=
+X-Received: by 2002:a0c:e202:: with SMTP id q2mr10276671qvl.180.1547139986093; 
+ Thu, 10 Jan 2019 09:06:26 -0800 (PST)
 MIME-Version: 1.0
 References: <20190110162435.309262-1-arnd@arndb.de>
-In-Reply-To: <20190110162435.309262-1-arnd@arndb.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 10 Jan 2019 17:59:08 +0100
-Message-ID: <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
+ <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
+In-Reply-To: <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 10 Jan 2019 18:06:09 +0100
+Message-ID: <CAK8P3a0kmr2ju+sZE+f-+=-2t5Eu+t-DS-+r6OKrPVTAxHwf8w@mail.gmail.com>
 Subject: Re: [PATCH 00/15] arch: synchronize syscall tables in preparation for
  y2038
-To: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,31 +104,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Arnd,
-
-On Thu, Jan 10, 2019 at 5:26 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> The system call tables have diverged a bit over the years, and a number
-> of the recent additions never made it into all architectures, for one
-> reason or another.
+On Thu, Jan 10, 2019 at 5:59 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> This is an attempt to clean it up as far as we can without breaking
-> compatibility, doing a number of steps:
+> Hi Arnd,
+>
+> On Thu, Jan 10, 2019 at 5:26 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> > The system call tables have diverged a bit over the years, and a number
+> > of the recent additions never made it into all architectures, for one
+> > reason or another.
+> >
+> > This is an attempt to clean it up as far as we can without breaking
+> > compatibility, doing a number of steps:
+>
+> Thanks a lot!
+>
+> > - Add system calls that have not yet been integrated into all
+> >   architectures but that we definitely want there.
+>
+> It looks like you missed wiring up io_pgetevents() on m68k.
+> Is that intentional?
 
-Thanks a lot!
+Yes, I thought I had described that somewhere but maybe I
+forgot: semtimedop() and io_pgetevents() get replaced with
+time64 versions in the follow-up, so I only added them in
+64-bit architectures. If you think we should have both
+io_pgetevents() and io_pgetevents_time32() on all 32-bit
+architectures, I can add that as well.
 
-> - Add system calls that have not yet been integrated into all
->   architectures but that we definitely want there.
-
-It looks like you missed wiring up io_pgetevents() on m68k.
-Is that intentional?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+      Arnd
