@@ -2,67 +2,68 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7821DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 06:44:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9076CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 07:12:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B625B214DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 06:44:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VEC0+MYi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B625B214DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id BF455206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 07:12:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF455206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ZxLj2znSzDqdv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:44:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ZxyX50kHzDqc6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 18:12:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=shawnguo@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="VEC0+MYi"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ZxJw2Kv3zDqR0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 17:43:11 +1100 (AEDT)
-Received: from dragon (61-216-91-114.HINET-IP.hinet.net [61.216.91.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 6D3C8214DA;
- Thu, 10 Jan 2019 06:43:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1547102589;
- bh=RVtjTyJLKGFZRuEyHVwDNC25dNgB7DPh3M6yv0AsL0M=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=VEC0+MYihO2xcOYklPJZ2ZAwMQn9gHz1qI2dN5IOd0aminomj7v2FH99hb7vho2jG
- h4Xz5yD8faC9jCETbZfSQUGFeU47X5slJpmp2VP2GPaVkDUWJE19ohXjEKa3Mu22aF
- Ibw5h3xxK5g2mBet7l395qed6BpaYq3WfkIZ50L0=
-Date: Thu, 10 Jan 2019 14:42:57 +0800
-From: Shawn Guo <shawnguo@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 18/34] dt-bindings: arm: Convert FSL board/soc
- bindings to json-schema
-Message-ID: <20190110064256.GA25218@dragon>
-References: <20181203213223.16986-1-robh@kernel.org>
- <20181203213223.16986-19-robh@kernel.org>
- <20181206023140.GZ3987@dragon>
- <CAL_JsqK5nBdk-MiuTPMxr9oXqXnLqeMU3vtZi6AnT9V35_W55A@mail.gmail.com>
- <20181208015835.GM3987@dragon>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43Zxwn6vtpzDqXW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 18:10:48 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43Zxwg4y03z9v13h;
+ Thu, 10 Jan 2019 08:10:43 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 4UUqa-duhMsa; Thu, 10 Jan 2019 08:10:43 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43Zxwg4NrBz9v13g;
+ Thu, 10 Jan 2019 08:10:43 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 60C348B869;
+ Thu, 10 Jan 2019 08:10:44 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id RE53uaKKsBhH; Thu, 10 Jan 2019 08:10:44 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E74BD8B761;
+ Thu, 10 Jan 2019 08:10:43 +0100 (CET)
+Subject: Re: [PATCH] powerpc/vdso32: Drop -mabi=elfv1 for 32 bit objects
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20190110014258.20963-1-joel@jms.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <82aeb9f8-6d25-de79-487c-a073ea33ba69@c-s.fr>
+Date: Thu, 10 Jan 2019 08:10:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181208015835.GM3987@dragon>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <20190110014258.20963-1-joel@jms.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,49 +75,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kumar Gala <kumar.gala@linaro.org>, Grant Likely <grant.likely@arm.com>,
- Sean Hudson <darknighte@darknighte.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- ARM-SoC Maintainers <arm@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, Dec 08, 2018 at 09:58:37AM +0800, Shawn Guo wrote:
-> On Thu, Dec 06, 2018 at 05:33:13PM -0600, Rob Herring wrote:
-> > On Wed, Dec 5, 2018 at 8:32 PM Shawn Guo <shawnguo@kernel.org> wrote:
-> > >
-> > > On Mon, Dec 03, 2018 at 03:32:07PM -0600, Rob Herring wrote:
-> > > > Convert Freescale SoC bindings to DT schema format using json-schema.
-> > > >
-> > > > Cc: Shawn Guo <shawnguo@kernel.org>
-> > > > Cc: Mark Rutland <mark.rutland@arm.com>
-> > > > Cc: devicetree@vger.kernel.org
-> > > > Signed-off-by: Rob Herring <robh@kernel.org>
-> > > > ---
-> > > >  .../devicetree/bindings/arm/armadeus.txt      |   6 -
-> > > >  Documentation/devicetree/bindings/arm/bhf.txt |   6 -
-> > > >  .../bindings/arm/compulab-boards.txt          |  25 --
-> > > >  Documentation/devicetree/bindings/arm/fsl.txt | 229 ------------------
-> > > >  .../devicetree/bindings/arm/fsl.yaml          | 214 ++++++++++++++++
-> > >
-> > > Rob,
-> > >
-> > > I do have any changes on bindings/arm/fsl.txt queued for 4.21 on my
-> > > tree, so please send it via your tree.
-> > 
-> > What about:
-> > 
-> > c386f362957b dt-bindings: Add compatible string for LS1028A-QDS
-> > 3671cd57de06 dt-bindings: ls1012a: Add FRWY-LS1012A device tree binding
+
+
+Le 10/01/2019 à 02:42, Joel Stanley a écrit :
+> From: Daniel Axtens <dja@axtens.net>
 > 
-> Ah, sorry, I only checked on imx/dt branch and forgot imx/dt64.  I will
-> drop the changes on fsl.txt and update fsl.yaml after it hits mainline.
+> All 64-bit objects need to specify the flag to be compiled correctly, we
+> just don't need it for 32-bit objects. GCC just ignored it, but clang
+> doesn't.
+> 
+> Link: https://github.com/ClangBuiltLinux/linux/issues/240
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> ---
+>   arch/powerpc/kernel/vdso32/Makefile | 14 ++++++++++++++
+>   1 file changed, 14 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
+> index 50112d4473bb..6bd41756e0c7 100644
+> --- a/arch/powerpc/kernel/vdso32/Makefile
+> +++ b/arch/powerpc/kernel/vdso32/Makefile
+> @@ -34,6 +34,20 @@ obj-y += vdso32_wrapper.o
+>   extra-y += vdso32.lds
+>   CPPFLAGS_vdso32.lds += -P -C -Upowerpc
+>   
+> +# clang refuses to accept -mabi=elfv1 for when using the
+> +# 64-bit target in 32-bit mode
+> +ifdef CONFIG_CC_IS_CLANG
 
-What happened to this?  It seems the patch did not hit v5.0-rc1.
+If -mabi=elfv1 is unneeded even for GCC, why depend on CLANG ?
 
-Shawn
+> +ifdef CONFIG_PPC64
+> +AFLAGS_REMOVE_getcpu.o += -mabi=elfv1
+> +endif
+
+Why only this one is inside the ifdef ? powerpc Makefile only set 
+-mabi=elfv1 when CONFIG_PPC64 is set, so all objects should be handled 
+the same way.
+
+And would it harm just doing it all the time, regardless of CONFIG_PPC64 ?
+
+Christophe
+
+> +AFLAGS_REMOVE_sigtramp.o += -mabi=elfv1
+> +AFLAGS_REMOVE_gettimeofday.o += -mabi=elfv1
+> +AFLAGS_REMOVE_datapage.o += -mabi=elfv1
+> +AFLAGS_REMOVE_cacheflush.o += -mabi=elfv1
+> +AFLAGS_REMOVE_note.o += -mabi=elfv1
+> +endif
+> +
+> +
+>   # Force dependency (incbin is bad)
+>   $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
+>   
+> 
