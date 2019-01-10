@@ -2,61 +2,63 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A26C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:03:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F54BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:05:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 33AFD20685
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:03:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="j/zUBWTn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33AFD20685
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id BAB2D20685
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:05:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAB2D20685
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bC4j0c2yzDqwf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:03:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bC7B3wBfzDq9y
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:05:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=acme@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="j/zUBWTn"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.221.196; helo=mail-vk1-f196.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vk1-f196.google.com (mail-vk1-f196.google.com
+ [209.85.221.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bBx65DnhzDqWb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:56:58 +1100 (AEDT)
-Received: from quaco.ghostprotocols.net (unknown [190.15.121.82])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C0D2420685;
- Thu, 10 Jan 2019 16:56:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1547139417;
- bh=1sbwG4UXtNm8/r9OjoSGcOf9PRMAvycarJm89qf0WvM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=j/zUBWTnJNqu2316w5w5KXnGs9irmoWHEVvJWHGwE45BmdOd6/PL59HL7Xis8ONTX
- 5NIOU12ubsW8DKzTiytFtnPB+//QEsKOL1SSTc1UrKYSe2KLgGu6WwfjGaoLjMnxw8
- jX+Z7CD5gJ9LcEIsEjSZvHz7miECQmZP2h8oT82w=
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 4/4] tools headers powerpc: Remove unistd.h
-Date: Thu, 10 Jan 2019 13:56:36 -0300
-Message-Id: <20190110165636.19338-5-acme@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190110165636.19338-1-acme@kernel.org>
-References: <20190110165636.19338-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bBzz4H7VzDqWm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:59:24 +1100 (AEDT)
+Received: by mail-vk1-f196.google.com with SMTP id w72so2635425vkd.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 08:59:24 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Hw0e7GRKKordAWqSD7MEd/MdjXNL2gSRFLNoHST4yQU=;
+ b=nb8sNcZL8tDUzYOodoP6h5gwnJP5dQ+dXTpniWfx9IPR54dvOLVTOFRq7vqkuVowHC
+ nq8LlqgTJSnRTWLI+onDbf40/5xfTv9ji9lJISKIPFB9AFJZNP8p6bg1Z3Tbw9d2RSSB
+ 5gphm+r5qnvq7S+vaWR7HO9Z7fyE5WXnbOG3HzIWdJ3fB1vzRV3IHY/4T6n0xlD8Rpje
+ DLFvs5FwD3Exz9eFhciuUOVdgIQ/oK7YwMQB815ehSjZq05gILVBg3Rt+mn4bQdALTR6
+ lonCxByMIULfvqpG0UZrFDMkhT2jZb7OfvqVxn8l+n2EWdVH4VwpfeAdQoEPxGIo6+cF
+ 7/Zw==
+X-Gm-Message-State: AJcUukcpeAQUd6wgStiWcqET+7c+qxRWULa0ZiIy2zd9m2ie9HQUc1XS
+ CQTnrC9YEy9CApd6mULTsIbrWU+ZC2Krd2GLVdU=
+X-Google-Smtp-Source: ALg8bN5fFE92/p210UY0O3VvZTR7XlFlqefe7/Td73EjJzfygMgDltkNFwFLL65t6V7dhJltD1zMZSFgvRHYqKmM9HE=
+X-Received: by 2002:a1f:a414:: with SMTP id n20mr4224838vke.83.1547139561779; 
+ Thu, 10 Jan 2019 08:59:21 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190110162435.309262-1-arnd@arndb.de>
+In-Reply-To: <20190110162435.309262-1-arnd@arndb.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 10 Jan 2019 17:59:08 +0100
+Message-ID: <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
+Subject: Re: [PATCH 00/15] arch: synchronize syscall tables in preparation for
+ y2038
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,456 +70,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Clark Williams <williams@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
- Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@redhat.com>
+Cc: Rich Felker <dalias@libc.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Hi Arnd,
 
-We use syscall.tbl to generate system call table on powerpc.
+On Thu, Jan 10, 2019 at 5:26 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> The system call tables have diverged a bit over the years, and a number
+> of the recent additions never made it into all architectures, for one
+> reason or another.
+>
+> This is an attempt to clean it up as far as we can without breaking
+> compatibility, doing a number of steps:
 
-The unistd.h copy is no longer required now. Remove it.
+Thanks a lot!
 
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/20190110094936.3132-2-ravi.bangoria@linux.ibm.com
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/arch/powerpc/include/uapi/asm/unistd.h | 404 -------------------
- tools/perf/check-headers.sh                  |   1 -
- 2 files changed, 405 deletions(-)
- delete mode 100644 tools/arch/powerpc/include/uapi/asm/unistd.h
+> - Add system calls that have not yet been integrated into all
+>   architectures but that we definitely want there.
 
-diff --git a/tools/arch/powerpc/include/uapi/asm/unistd.h b/tools/arch/powerpc/include/uapi/asm/unistd.h
-deleted file mode 100644
-index 985534d0b448..000000000000
---- a/tools/arch/powerpc/include/uapi/asm/unistd.h
-+++ /dev/null
-@@ -1,404 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
--/*
-- * This file contains the system call numbers.
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--#ifndef _UAPI_ASM_POWERPC_UNISTD_H_
--#define _UAPI_ASM_POWERPC_UNISTD_H_
--
--
--#define __NR_restart_syscall	  0
--#define __NR_exit		  1
--#define __NR_fork		  2
--#define __NR_read		  3
--#define __NR_write		  4
--#define __NR_open		  5
--#define __NR_close		  6
--#define __NR_waitpid		  7
--#define __NR_creat		  8
--#define __NR_link		  9
--#define __NR_unlink		 10
--#define __NR_execve		 11
--#define __NR_chdir		 12
--#define __NR_time		 13
--#define __NR_mknod		 14
--#define __NR_chmod		 15
--#define __NR_lchown		 16
--#define __NR_break		 17
--#define __NR_oldstat		 18
--#define __NR_lseek		 19
--#define __NR_getpid		 20
--#define __NR_mount		 21
--#define __NR_umount		 22
--#define __NR_setuid		 23
--#define __NR_getuid		 24
--#define __NR_stime		 25
--#define __NR_ptrace		 26
--#define __NR_alarm		 27
--#define __NR_oldfstat		 28
--#define __NR_pause		 29
--#define __NR_utime		 30
--#define __NR_stty		 31
--#define __NR_gtty		 32
--#define __NR_access		 33
--#define __NR_nice		 34
--#define __NR_ftime		 35
--#define __NR_sync		 36
--#define __NR_kill		 37
--#define __NR_rename		 38
--#define __NR_mkdir		 39
--#define __NR_rmdir		 40
--#define __NR_dup		 41
--#define __NR_pipe		 42
--#define __NR_times		 43
--#define __NR_prof		 44
--#define __NR_brk		 45
--#define __NR_setgid		 46
--#define __NR_getgid		 47
--#define __NR_signal		 48
--#define __NR_geteuid		 49
--#define __NR_getegid		 50
--#define __NR_acct		 51
--#define __NR_umount2		 52
--#define __NR_lock		 53
--#define __NR_ioctl		 54
--#define __NR_fcntl		 55
--#define __NR_mpx		 56
--#define __NR_setpgid		 57
--#define __NR_ulimit		 58
--#define __NR_oldolduname	 59
--#define __NR_umask		 60
--#define __NR_chroot		 61
--#define __NR_ustat		 62
--#define __NR_dup2		 63
--#define __NR_getppid		 64
--#define __NR_getpgrp		 65
--#define __NR_setsid		 66
--#define __NR_sigaction		 67
--#define __NR_sgetmask		 68
--#define __NR_ssetmask		 69
--#define __NR_setreuid		 70
--#define __NR_setregid		 71
--#define __NR_sigsuspend		 72
--#define __NR_sigpending		 73
--#define __NR_sethostname	 74
--#define __NR_setrlimit		 75
--#define __NR_getrlimit		 76
--#define __NR_getrusage		 77
--#define __NR_gettimeofday	 78
--#define __NR_settimeofday	 79
--#define __NR_getgroups		 80
--#define __NR_setgroups		 81
--#define __NR_select		 82
--#define __NR_symlink		 83
--#define __NR_oldlstat		 84
--#define __NR_readlink		 85
--#define __NR_uselib		 86
--#define __NR_swapon		 87
--#define __NR_reboot		 88
--#define __NR_readdir		 89
--#define __NR_mmap		 90
--#define __NR_munmap		 91
--#define __NR_truncate		 92
--#define __NR_ftruncate		 93
--#define __NR_fchmod		 94
--#define __NR_fchown		 95
--#define __NR_getpriority	 96
--#define __NR_setpriority	 97
--#define __NR_profil		 98
--#define __NR_statfs		 99
--#define __NR_fstatfs		100
--#define __NR_ioperm		101
--#define __NR_socketcall		102
--#define __NR_syslog		103
--#define __NR_setitimer		104
--#define __NR_getitimer		105
--#define __NR_stat		106
--#define __NR_lstat		107
--#define __NR_fstat		108
--#define __NR_olduname		109
--#define __NR_iopl		110
--#define __NR_vhangup		111
--#define __NR_idle		112
--#define __NR_vm86		113
--#define __NR_wait4		114
--#define __NR_swapoff		115
--#define __NR_sysinfo		116
--#define __NR_ipc		117
--#define __NR_fsync		118
--#define __NR_sigreturn		119
--#define __NR_clone		120
--#define __NR_setdomainname	121
--#define __NR_uname		122
--#define __NR_modify_ldt		123
--#define __NR_adjtimex		124
--#define __NR_mprotect		125
--#define __NR_sigprocmask	126
--#define __NR_create_module	127
--#define __NR_init_module	128
--#define __NR_delete_module	129
--#define __NR_get_kernel_syms	130
--#define __NR_quotactl		131
--#define __NR_getpgid		132
--#define __NR_fchdir		133
--#define __NR_bdflush		134
--#define __NR_sysfs		135
--#define __NR_personality	136
--#define __NR_afs_syscall	137 /* Syscall for Andrew File System */
--#define __NR_setfsuid		138
--#define __NR_setfsgid		139
--#define __NR__llseek		140
--#define __NR_getdents		141
--#define __NR__newselect		142
--#define __NR_flock		143
--#define __NR_msync		144
--#define __NR_readv		145
--#define __NR_writev		146
--#define __NR_getsid		147
--#define __NR_fdatasync		148
--#define __NR__sysctl		149
--#define __NR_mlock		150
--#define __NR_munlock		151
--#define __NR_mlockall		152
--#define __NR_munlockall		153
--#define __NR_sched_setparam		154
--#define __NR_sched_getparam		155
--#define __NR_sched_setscheduler		156
--#define __NR_sched_getscheduler		157
--#define __NR_sched_yield		158
--#define __NR_sched_get_priority_max	159
--#define __NR_sched_get_priority_min	160
--#define __NR_sched_rr_get_interval	161
--#define __NR_nanosleep		162
--#define __NR_mremap		163
--#define __NR_setresuid		164
--#define __NR_getresuid		165
--#define __NR_query_module	166
--#define __NR_poll		167
--#define __NR_nfsservctl		168
--#define __NR_setresgid		169
--#define __NR_getresgid		170
--#define __NR_prctl		171
--#define __NR_rt_sigreturn	172
--#define __NR_rt_sigaction	173
--#define __NR_rt_sigprocmask	174
--#define __NR_rt_sigpending	175
--#define __NR_rt_sigtimedwait	176
--#define __NR_rt_sigqueueinfo	177
--#define __NR_rt_sigsuspend	178
--#define __NR_pread64		179
--#define __NR_pwrite64		180
--#define __NR_chown		181
--#define __NR_getcwd		182
--#define __NR_capget		183
--#define __NR_capset		184
--#define __NR_sigaltstack	185
--#define __NR_sendfile		186
--#define __NR_getpmsg		187	/* some people actually want streams */
--#define __NR_putpmsg		188	/* some people actually want streams */
--#define __NR_vfork		189
--#define __NR_ugetrlimit		190	/* SuS compliant getrlimit */
--#define __NR_readahead		191
--#ifndef __powerpc64__			/* these are 32-bit only */
--#define __NR_mmap2		192
--#define __NR_truncate64		193
--#define __NR_ftruncate64	194
--#define __NR_stat64		195
--#define __NR_lstat64		196
--#define __NR_fstat64		197
--#endif
--#define __NR_pciconfig_read	198
--#define __NR_pciconfig_write	199
--#define __NR_pciconfig_iobase	200
--#define __NR_multiplexer	201
--#define __NR_getdents64		202
--#define __NR_pivot_root		203
--#ifndef __powerpc64__
--#define __NR_fcntl64		204
--#endif
--#define __NR_madvise		205
--#define __NR_mincore		206
--#define __NR_gettid		207
--#define __NR_tkill		208
--#define __NR_setxattr		209
--#define __NR_lsetxattr		210
--#define __NR_fsetxattr		211
--#define __NR_getxattr		212
--#define __NR_lgetxattr		213
--#define __NR_fgetxattr		214
--#define __NR_listxattr		215
--#define __NR_llistxattr		216
--#define __NR_flistxattr		217
--#define __NR_removexattr	218
--#define __NR_lremovexattr	219
--#define __NR_fremovexattr	220
--#define __NR_futex		221
--#define __NR_sched_setaffinity	222
--#define __NR_sched_getaffinity	223
--/* 224 currently unused */
--#define __NR_tuxcall		225
--#ifndef __powerpc64__
--#define __NR_sendfile64		226
--#endif
--#define __NR_io_setup		227
--#define __NR_io_destroy		228
--#define __NR_io_getevents	229
--#define __NR_io_submit		230
--#define __NR_io_cancel		231
--#define __NR_set_tid_address	232
--#define __NR_fadvise64		233
--#define __NR_exit_group		234
--#define __NR_lookup_dcookie	235
--#define __NR_epoll_create	236
--#define __NR_epoll_ctl		237
--#define __NR_epoll_wait		238
--#define __NR_remap_file_pages	239
--#define __NR_timer_create	240
--#define __NR_timer_settime	241
--#define __NR_timer_gettime	242
--#define __NR_timer_getoverrun	243
--#define __NR_timer_delete	244
--#define __NR_clock_settime	245
--#define __NR_clock_gettime	246
--#define __NR_clock_getres	247
--#define __NR_clock_nanosleep	248
--#define __NR_swapcontext	249
--#define __NR_tgkill		250
--#define __NR_utimes		251
--#define __NR_statfs64		252
--#define __NR_fstatfs64		253
--#ifndef __powerpc64__
--#define __NR_fadvise64_64	254
--#endif
--#define __NR_rtas		255
--#define __NR_sys_debug_setcontext 256
--/* Number 257 is reserved for vserver */
--#define __NR_migrate_pages	258
--#define __NR_mbind		259
--#define __NR_get_mempolicy	260
--#define __NR_set_mempolicy	261
--#define __NR_mq_open		262
--#define __NR_mq_unlink		263
--#define __NR_mq_timedsend	264
--#define __NR_mq_timedreceive	265
--#define __NR_mq_notify		266
--#define __NR_mq_getsetattr	267
--#define __NR_kexec_load		268
--#define __NR_add_key		269
--#define __NR_request_key	270
--#define __NR_keyctl		271
--#define __NR_waitid		272
--#define __NR_ioprio_set		273
--#define __NR_ioprio_get		274
--#define __NR_inotify_init	275
--#define __NR_inotify_add_watch	276
--#define __NR_inotify_rm_watch	277
--#define __NR_spu_run		278
--#define __NR_spu_create		279
--#define __NR_pselect6		280
--#define __NR_ppoll		281
--#define __NR_unshare		282
--#define __NR_splice		283
--#define __NR_tee		284
--#define __NR_vmsplice		285
--#define __NR_openat		286
--#define __NR_mkdirat		287
--#define __NR_mknodat		288
--#define __NR_fchownat		289
--#define __NR_futimesat		290
--#ifdef __powerpc64__
--#define __NR_newfstatat		291
--#else
--#define __NR_fstatat64		291
--#endif
--#define __NR_unlinkat		292
--#define __NR_renameat		293
--#define __NR_linkat		294
--#define __NR_symlinkat		295
--#define __NR_readlinkat		296
--#define __NR_fchmodat		297
--#define __NR_faccessat		298
--#define __NR_get_robust_list	299
--#define __NR_set_robust_list	300
--#define __NR_move_pages		301
--#define __NR_getcpu		302
--#define __NR_epoll_pwait	303
--#define __NR_utimensat		304
--#define __NR_signalfd		305
--#define __NR_timerfd_create	306
--#define __NR_eventfd		307
--#define __NR_sync_file_range2	308
--#define __NR_fallocate		309
--#define __NR_subpage_prot	310
--#define __NR_timerfd_settime	311
--#define __NR_timerfd_gettime	312
--#define __NR_signalfd4		313
--#define __NR_eventfd2		314
--#define __NR_epoll_create1	315
--#define __NR_dup3		316
--#define __NR_pipe2		317
--#define __NR_inotify_init1	318
--#define __NR_perf_event_open	319
--#define __NR_preadv		320
--#define __NR_pwritev		321
--#define __NR_rt_tgsigqueueinfo	322
--#define __NR_fanotify_init	323
--#define __NR_fanotify_mark	324
--#define __NR_prlimit64		325
--#define __NR_socket		326
--#define __NR_bind		327
--#define __NR_connect		328
--#define __NR_listen		329
--#define __NR_accept		330
--#define __NR_getsockname	331
--#define __NR_getpeername	332
--#define __NR_socketpair		333
--#define __NR_send		334
--#define __NR_sendto		335
--#define __NR_recv		336
--#define __NR_recvfrom		337
--#define __NR_shutdown		338
--#define __NR_setsockopt		339
--#define __NR_getsockopt		340
--#define __NR_sendmsg		341
--#define __NR_recvmsg		342
--#define __NR_recvmmsg		343
--#define __NR_accept4		344
--#define __NR_name_to_handle_at	345
--#define __NR_open_by_handle_at	346
--#define __NR_clock_adjtime	347
--#define __NR_syncfs		348
--#define __NR_sendmmsg		349
--#define __NR_setns		350
--#define __NR_process_vm_readv	351
--#define __NR_process_vm_writev	352
--#define __NR_finit_module	353
--#define __NR_kcmp		354
--#define __NR_sched_setattr	355
--#define __NR_sched_getattr	356
--#define __NR_renameat2		357
--#define __NR_seccomp		358
--#define __NR_getrandom		359
--#define __NR_memfd_create	360
--#define __NR_bpf		361
--#define __NR_execveat		362
--#define __NR_switch_endian	363
--#define __NR_userfaultfd	364
--#define __NR_membarrier		365
--#define __NR_mlock2		378
--#define __NR_copy_file_range	379
--#define __NR_preadv2		380
--#define __NR_pwritev2		381
--#define __NR_kexec_file_load	382
--#define __NR_statx		383
--#define __NR_pkey_alloc		384
--#define __NR_pkey_free		385
--#define __NR_pkey_mprotect	386
--#define __NR_rseq		387
--#define __NR_io_pgetevents	388
--
--#endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
-diff --git a/tools/perf/check-headers.sh b/tools/perf/check-headers.sh
-index b51e952ab35f..7b55613924de 100755
---- a/tools/perf/check-headers.sh
-+++ b/tools/perf/check-headers.sh
-@@ -50,7 +50,6 @@ arch/parisc/include/uapi/asm/errno.h
- arch/powerpc/include/uapi/asm/errno.h
- arch/sparc/include/uapi/asm/errno.h
- arch/x86/include/uapi/asm/errno.h
--arch/powerpc/include/uapi/asm/unistd.h
- include/asm-generic/bitops/arch_hweight.h
- include/asm-generic/bitops/const_hweight.h
- include/asm-generic/bitops/__fls.h
+It looks like you missed wiring up io_pgetevents() on m68k.
+Is that intentional?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.20.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
