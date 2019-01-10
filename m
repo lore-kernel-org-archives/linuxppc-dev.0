@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EF20C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:27:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E232C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:28:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9F68214C6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:27:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9F68214C6
+	by mail.kernel.org (Postfix) with ESMTPS id BA63320685
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:28:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA63320685
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b8xM5HCszDqhb
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:27:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b8zF6XZDzDqSn
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:28:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,40 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b8by4GhLzDqCb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:11:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b8c046BLzDqk8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:12:00 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43b8bt0pR2z9v0fB;
- Thu, 10 Jan 2019 16:11:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43b8bw0FB5z9v0fC;
+ Thu, 10 Jan 2019 16:11:56 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Fqu0LuTrM7OV; Thu, 10 Jan 2019 16:11:54 +0100 (CET)
+ with ESMTP id UNeSJXpWqqtg; Thu, 10 Jan 2019 16:11:55 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43b8bt0K69z9v0f8;
- Thu, 10 Jan 2019 16:11:54 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 81D278B898;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43b8bv6srVz9v0f8;
  Thu, 10 Jan 2019 16:11:55 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 740CB8B89F;
+ Thu, 10 Jan 2019 16:11:57 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id AAPN7UT16Lcr; Thu, 10 Jan 2019 16:11:55 +0100 (CET)
+ with ESMTP id r6tFMXGFAgaO; Thu, 10 Jan 2019 16:11:57 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 46AE38B8A0;
- Thu, 10 Jan 2019 16:11:55 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 46B108B898;
+ Thu, 10 Jan 2019 16:11:57 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 05F766BF21; Thu, 10 Jan 2019 15:11:55 +0000 (UTC)
-Message-Id: <597539a98a4ac4b01b465408a26fba6bc9935a97.1547132681.git.christophe.leroy@c-s.fr>
+ id 0B7256BF21; Thu, 10 Jan 2019 15:11:57 +0000 (UTC)
+Message-Id: <b4ad853e98c4fac80236a5c44d1d47011fa34ecd.1547132681.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1547132681.git.christophe.leroy@c-s.fr>
 References: <cover.1547132681.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 08/15] powerpc/32: add helper to write into segment
- registers
+Subject: [PATCH v2 09/15] powerpc/mmu: add is_strict_kernel_rwx() helper
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 10 Jan 2019 15:11:55 +0000 (UTC)
+Date: Thu, 10 Jan 2019 15:11:57 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,30 +77,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch add an helper which wraps 'mtsrin' instruction
-to write into segment registers.
+Add a helper to know whether STRICT_KERNEL_RWX is enabled.
+
+This is based on rodata_enabled flag which is defined only
+when CONFIG_STRICT_KERNEL_RWX is selected.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/reg.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/include/asm/mmu.h | 11 +++++++++++
+ arch/powerpc/mm/init_32.c      |  4 +---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1c98ef1f2d5b..a70cbaf5c26f 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1425,6 +1425,11 @@ static inline void msr_check_and_clear(unsigned long bits)
- #define mfsrin(v)	({unsigned int rval; \
- 			asm volatile("mfsrin %0,%1" : "=r" (rval) : "r" (v)); \
- 					rval;})
-+
-+static inline void mtsrin(u32 val, u32 idx)
-+{
-+	asm volatile("mtsrin %0, %1" : : "r" (val), "r" (idx));
-+}
- #endif
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 25607604a7a5..f5e27f4a0c29 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -289,6 +289,17 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
+ }
+ #endif /* CONFIG_PPC_MEM_KEYS */
  
- #define proc_trap()	asm volatile("trap")
++#ifdef CONFIG_STRICT_KERNEL_RWX
++static inline bool strict_kernel_rwx_enabled(void)
++{
++	return rodata_enabled;
++}
++#else
++static inline bool strict_kernel_rwx_enabled(void)
++{
++	return false;
++}
++#endif
+ #endif /* !__ASSEMBLY__ */
+ 
+ /* The kernel use the constants below to index in the page sizes array.
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 3e59e5d64b01..ee5a430b9a18 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -108,12 +108,10 @@ static void __init MMU_setup(void)
+ 		__map_without_bats = 1;
+ 		__map_without_ltlbs = 1;
+ 	}
+-#ifdef CONFIG_STRICT_KERNEL_RWX
+-	if (rodata_enabled) {
++	if (strict_kernel_rwx_enabled()) {
+ 		__map_without_bats = 1;
+ 		__map_without_ltlbs = 1;
+ 	}
+-#endif
+ }
+ 
+ /*
 -- 
 2.13.3
 
