@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 079BEC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:13:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DA08C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:17:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 737C720874
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:13:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 737C720874
+	by mail.kernel.org (Postfix) with ESMTPS id 7944120874
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 17:17:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7944120874
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bCJN16ZQzDqM3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:13:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bCNB4vV2zDqM3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 04:16:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
+ (client-ip=209.85.160.194; helo=mail-qt1-f194.google.com;
  envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
+Received: from mail-qt1-f194.google.com (mail-qt1-f194.google.com
+ [209.85.160.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bCGV4QTnzDq5g
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:12:02 +1100 (AEDT)
-Received: by mail-qt1-f193.google.com with SMTP id u47so14039180qtj.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 09:12:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bCL44WvZzDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 04:15:08 +1100 (AEDT)
+Received: by mail-qt1-f194.google.com with SMTP id p17so14062411qtl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 09:15:08 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=h9Ub2IW9cySGL3QZFJM+qSZvbyYHJpNB32B/Hx6OxIg=;
- b=ZSc0t6qBghWuaehwQAMI34NA5q021lfCTPBKVquBZ4uoWp4U7Y3Rm6wRW6PQ17NEDd
- XMuayC7URl7S7CRqBy8pskBSiKQ/blHaMcRKEVB0dl+OCjkrfnv6HJfJrmKsbCOBYwNn
- 32+QrYVqMdOjUyato58SKyMWljsQ7IPde5HrBumG85sgiT2ovW4lmbAivlVudrONOlHH
- owqE1qLBfBwSsizZsGfNLoZTG6gbUnJWmadLGz8u9tDbQyJ6omeRCjkl1YmNtTFK/Z1N
- 3vpkdz08JI+de7rHcs/dzokkC76hmDJtnwIseP90Gl2QM671ClLxvIq6PuiLktG9os+S
- uzpA==
-X-Gm-Message-State: AJcUukcHgmAFg6flGHandQ/X3K8Va4FrTqrS5m/odTaSBcE7y+JcS2Rg
- tVMs9ZgxLYV4ll2Sv1y3xHJlbtVgOpOyQ87TPxs=
-X-Google-Smtp-Source: ALg8bN4Gur1wD3h0ELBSl0ybGvD7wc1qcQeOBkYMXly/Z0pb/J89D40WVoT3xz1IidS9G8IG/oXogEOscyYpZb29+TE=
-X-Received: by 2002:a0c:d992:: with SMTP id y18mr10912612qvj.161.1547140320327; 
- Thu, 10 Jan 2019 09:12:00 -0800 (PST)
+ bh=Vi+SvwsycUKtGhpMC3QEpN/Bk6bKq1AfTBDWYF1k7VQ=;
+ b=ijy9UaJb9pJGJoCAkKy5VEiPxL1AqJhfHM8cIxPiPq8MQWBO4LNaPTGYuLOArDQ/Ox
+ ALl2idsVfgnVUp30CWSctAimRcg3aajoX6lXZGV+ZKBPmSmUwFXN5dxBsTWE495JvVcw
+ zE1jp9dVJNM2u+/exch3fuF4cjBv16NFUvV3V+yc3KggxAuXzbdDcbx9FlJLcBMAbs4i
+ VKF1nhaJ+NveHiCh2IT9BrOf27GjVp4YGzRTeuwo3U0uxLa26VDesrvW6UVWKXY0A0gM
+ H1smH8siqQFORKTHjqp/5P04OulN347F+SLqKFrFIJ1Q0SAS4siFWHpTP7SIeQWwR6Nw
+ WOKQ==
+X-Gm-Message-State: AJcUukcEZiG0SQ+epWjcQd0pZLO8R7vvOOpUwSTfbPtkZXkV+Ml3cx94
+ 23SeuYEbIN1LULdek/cNO83kMaq+xTFRU6ixGv8=
+X-Google-Smtp-Source: ALg8bN4AdylggnguSr7egu7xIPGdOjTe436nAOiytiob3A7SfzgpinZUkBcCe85tXDNMw1nvzwC1nAoiCh7sWU6vHE4=
+X-Received: by 2002:ac8:1d12:: with SMTP id d18mr10355152qtl.343.1547140506273; 
+ Thu, 10 Jan 2019 09:15:06 -0800 (PST)
 MIME-Version: 1.0
 References: <20190110162435.309262-1-arnd@arndb.de>
- <20190110162435.309262-7-arnd@arndb.de>
- <20190110163220.GB31683@fuggles.cambridge.arm.com>
-In-Reply-To: <20190110163220.GB31683@fuggles.cambridge.arm.com>
+ <20190110162435.309262-8-arnd@arndb.de>
+ <20190110163908.GC31683@fuggles.cambridge.arm.com>
+In-Reply-To: <20190110163908.GC31683@fuggles.cambridge.arm.com>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 10 Jan 2019 18:11:44 +0100
-Message-ID: <CAK8P3a0TyDTTG7Eoz9dZF1J0SH-=OYQvQ6=YVThTkDfX-mnfWg@mail.gmail.com>
-Subject: Re: [PATCH 06/15] ARM: add migrate_pages() system call
+Date: Thu, 10 Jan 2019 18:14:50 +0100
+Message-ID: <CAK8P3a27hYDL+yjO+DFe8n_C_dyjGNKcKOcWz-p3Pc1LwcxKjw@mail.gmail.com>
+Subject: Re: [PATCH 07/15] ARM: add kexec_file_load system call number
 To: Will Deacon <will.deacon@arm.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -104,23 +104,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 5:32 PM Will Deacon <will.deacon@arm.com> wrote:
-
+On Thu, Jan 10, 2019 at 5:39 PM Will Deacon <will.deacon@arm.com> wrote:
+>
 > > diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-> > index 04ee190b90fe..355fe2bc035b 100644
+> > index 355fe2bc035b..19f3f58b6146 100644
 > > --- a/arch/arm64/include/asm/unistd32.h
 > > +++ b/arch/arm64/include/asm/unistd32.h
-> > @@ -821,6 +821,8 @@ __SYSCALL(__NR_statx, sys_statx)
-> >  __SYSCALL(__NR_rseq, sys_rseq)
-> >  #define __NR_io_pgetevents 399
+> > @@ -823,6 +823,8 @@ __SYSCALL(__NR_rseq, sys_rseq)
 > >  __SYSCALL(__NR_io_pgetevents, compat_sys_io_pgetevents)
-> > +#define __NR_migrate_pages 400
-> > +__SYSCALL(__NR_migrate_pages, sys_migrate_pages)
+> >  #define __NR_migrate_pages 400
+> >  __SYSCALL(__NR_migrate_pages, sys_migrate_pages)
+> > +#define __NR_kexec_file_load 401
+> > +__SYSCALL(__NR_kexec_file_load, sys_kexec_file_load)
 >
-> Should be compat_sys_migrate_pages instead?
+> Hmm, I wonder if we need a compat wrapper for this, or are we assuming
+> that the early entry code has already zero-extended the long and pointer
+> arguments?
 
-Yes, good catch! Fixed now.
+Yes, that is generally the assumption for compat syscalls.
 
-Thanks,
+s390 needs some extra magic to do a 31-to-64 extension on pointer
+arguments, and I think sometimes we need a special wrapper to
+do sign-extension of 32-bit arguments into 64-bit, but the arguments
+here should not need that.
 
-        Arnd
+     Arnd
