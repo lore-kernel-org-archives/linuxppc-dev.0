@@ -2,82 +2,62 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6577DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 14:47:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF3C4C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 14:58:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B192B2177B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 14:47:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="JiJ5Lcuh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B192B2177B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 52657214DA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 14:58:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 52657214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b83G4VS9zDqkd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 01:47:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b8Hw3FvHzDqcF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 01:58:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::841; helo=mail-qt1-x841.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="JiJ5Lcuh"; 
- dkim-atps=neutral
-Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com
- [IPv6:2607:f8b0:4864:20::841])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b81X3gH4zDqjG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 01:45:31 +1100 (AEDT)
-Received: by mail-qt1-x841.google.com with SMTP id d19so13074017qtq.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 06:45:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version:content-transfer-encoding;
- bh=yGNeuIkL24Gh5xySQwIRtRltWY8DxVmq9qFomorSdxs=;
- b=JiJ5Lcuhdi7fXVPTquwYY3xId5M9aAv0tSIrjFoZOYw1qn9TG7Z/yf+Q/O5MK+Oyhs
- 5whf0thPyb9STRlnJWOtUIQCJNWrMuhke+hEH1wYvLf1iQiQvub6nicxOXMCaa3WzHCy
- /WibwbjIPZzZPmMUBd+SxYOTwVEuEjYZGUwd0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version:content-transfer-encoding;
- bh=yGNeuIkL24Gh5xySQwIRtRltWY8DxVmq9qFomorSdxs=;
- b=nETpDvdSMTetW7KnACl5OkC2tJguf06CCiSg4S5YFHiTO+JELcoLGwFGWzHPJbZFct
- GZUb7A52vCXAvmpZQtIW3tjfOUUFPGgEa0zqQN9pZz7XKHcDJ/Nai8NfPSZ1tz+zlfqL
- /TYLxsFVSNdtOYIfACmSM/VLu4Bxcm29TKxlvkEhmm9oba5d+zrobZFCshb7Yy1GHGLj
- 2fp+EBq/GgBR/mM8WxZBFvaF2qd/1tKa/+H8JlyEzhxha1sMzDIKvDxF/ditNTbe0+Hw
- ja2gDVfNjOmrhr58uqTJvD8hZqRJTEYJfxuJxoa3bETsXHVTAymoldN6E4SXcudUAZ8z
- FEsg==
-X-Gm-Message-State: AJcUukfMB/VCW9srL1ssG7kGqS84NiSVTlZiv5wCpen4i7LRMWvRDWFF
- FzE8MbvCp8fxVPyGD8+EsPn5tw==
-X-Google-Smtp-Source: ALg8bN74zyoH1iF0rJdySfYiH1EKNIrdumPk04qjDacsz+pHpG0HHYT1ZAjBmRRn6UMUl4xJHsB8Lw==
-X-Received: by 2002:a37:99c5:: with SMTP id b188mr9903182qke.100.1547131529196; 
- Thu, 10 Jan 2019 06:45:29 -0800 (PST)
-Received: from localhost ([2001:67c:1562:8007::aac:4356])
- by smtp.gmail.com with ESMTPSA id n68sm36676930qte.66.2019.01.10.06.45.26
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 10 Jan 2019 06:45:27 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Joel Stanley <joel@jms.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/vdso32: Drop -mabi=elfv1 for 32 bit objects
-In-Reply-To: <82aeb9f8-6d25-de79-487c-a073ea33ba69@c-s.fr>
-References: <20190110014258.20963-1-joel@jms.id.au>
- <82aeb9f8-6d25-de79-487c-a073ea33ba69@c-s.fr>
-Date: Fri, 11 Jan 2019 01:45:23 +1100
-Message-ID: <8736q0po58.fsf@linkitivity.dja.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b8G75nSNzDqjZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 01:56:31 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43b8G20bGnz9v10Z;
+ Thu, 10 Jan 2019 15:56:26 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id rl9HS-dhm25l; Thu, 10 Jan 2019 15:56:26 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43b8G175pZz9v10W;
+ Thu, 10 Jan 2019 15:56:25 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 723B68B899;
+ Thu, 10 Jan 2019 15:56:27 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ht3OTm41Sfu5; Thu, 10 Jan 2019 15:56:27 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3323B8B898;
+ Thu, 10 Jan 2019 15:56:27 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id F37FE6BF21; Thu, 10 Jan 2019 14:56:26 +0000 (UTC)
+Message-Id: <d61e312b60352073192975746c24901a37d881c7.1547132111.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: replace most #ifdef by IS_ENABLED() in 8xx_mmu.c
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 10 Jan 2019 14:56:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,73 +69,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nick Desaulniers <ndesaulniers@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+This patch replaces most #ifdef mess by IS_ENABLED() in 8xx_mmu.c
+This has the advantage of allowing syntax verification at compile
+time regardless of selected options.
 
-> Le 10/01/2019 =C3=A0 02:42, Joel Stanley a =C3=A9crit=C2=A0:
->> From: Daniel Axtens <dja@axtens.net>
->>=20
->> All 64-bit objects need to specify the flag to be compiled correctly, we
->> just don't need it for 32-bit objects. GCC just ignored it, but clang
->> doesn't.
->>=20
->> Link: https://github.com/ClangBuiltLinux/linux/issues/240
->> Signed-off-by: Daniel Axtens <dja@axtens.net>
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
->> ---
->>   arch/powerpc/kernel/vdso32/Makefile | 14 ++++++++++++++
->>   1 file changed, 14 insertions(+)
->>=20
->> diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/v=
-dso32/Makefile
->> index 50112d4473bb..6bd41756e0c7 100644
->> --- a/arch/powerpc/kernel/vdso32/Makefile
->> +++ b/arch/powerpc/kernel/vdso32/Makefile
->> @@ -34,6 +34,20 @@ obj-y +=3D vdso32_wrapper.o
->>   extra-y +=3D vdso32.lds
->>   CPPFLAGS_vdso32.lds +=3D -P -C -Upowerpc
->>=20=20=20
->> +# clang refuses to accept -mabi=3Delfv1 for when using the
->> +# 64-bit target in 32-bit mode
->> +ifdef CONFIG_CC_IS_CLANG
->
-> If -mabi=3Delfv1 is unneeded even for GCC, why depend on CLANG ?
->
->> +ifdef CONFIG_PPC64
->> +AFLAGS_REMOVE_getcpu.o +=3D -mabi=3Delfv1
->> +endif
->
-> Why only this one is inside the ifdef ? powerpc Makefile only set=20
-> -mabi=3Delfv1 when CONFIG_PPC64 is set, so all objects should be handled=
-=20
-> the same way.
->
-> And would it harm just doing it all the time, regardless of CONFIG_PPC64 ?
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/8xx_mmu.c | 65 +++++++++++++++++++++--------------------------
+ 1 file changed, 29 insertions(+), 36 deletions(-)
 
-I designed the patch to mirror some code earlier on, and to be
-conservative in what it did. I have no issue with it being restructured,
-but I probably won't have the time to do it for a month or so. I'm very
-happy for you or Joel to rework it and to test any resulting patches.
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index 1f339deea7e2..2300fe88e1f2 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -66,26 +66,22 @@ unsigned long p_block_mapped(phys_addr_t pa)
+ void __init MMU_init_hw(void)
+ {
+ 	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
+-#ifdef CONFIG_PIN_TLB_DATA
+-	unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
+-	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
+-#ifdef CONFIG_PIN_TLB_IMMR
+-	int i = 29;
+-#else
+-	int i = 28;
+-#endif
+-	unsigned long addr = 0;
+-	unsigned long mem = total_lowmem;
+-
+-	for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
+-		mtspr(SPRN_MD_CTR, ctr | (i << 8));
+-		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
+-		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
+-		mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
+-		addr += LARGE_PAGE_SIZE_8M;
+-		mem -= LARGE_PAGE_SIZE_8M;
++	if (IS_ENABLED(CONFIG_PIN_TLB_DATA)) {
++		unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
++		unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
++		int i = IS_ENABLED(CONFIG_PIN_TLB_IMMR) ? 29 : 28;
++		unsigned long addr = 0;
++		unsigned long mem = total_lowmem;
++
++		for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
++			mtspr(SPRN_MD_CTR, ctr | (i << 8));
++			mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
++			mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
++			mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
++			addr += LARGE_PAGE_SIZE_8M;
++			mem -= LARGE_PAGE_SIZE_8M;
++		}
+ 	}
+-#endif
+ }
+ 
+ static void __init mmu_mapin_immr(void)
+@@ -110,18 +106,15 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+ 	if (__map_without_ltlbs) {
+ 		mapped = 0;
+ 		mmu_mapin_immr();
+-#ifndef CONFIG_PIN_TLB_IMMR
+-		patch_instruction_site(&patch__dtlbmiss_immr_jmp, PPC_INST_NOP);
+-#endif
+-#ifndef CONFIG_PIN_TLB_TEXT
+-		mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, 0);
+-#endif
++		if (!IS_ENABLED(CONFIG_PIN_TLB_IMMR))
++			patch_instruction_site(&patch__dtlbmiss_immr_jmp, PPC_INST_NOP);
++		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
++			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, 0);
+ 	} else {
+ 		mapped = top & ~(LARGE_PAGE_SIZE_8M - 1);
+-#ifndef CONFIG_PIN_TLB_TEXT
+-		mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top,
+-				    _ALIGN(__pa(_einittext), 8 << 20));
+-#endif
++		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
++			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top,
++					    _ALIGN(__pa(_einittext), 8 << 20));
+ 	}
+ 
+ 	mmu_patch_cmp_limit(&patch__dtlbmiss_linmem_top, mapped);
+@@ -166,14 +159,14 @@ void set_context(unsigned long id, pgd_t *pgd)
+ {
+ 	s16 offset = (s16)(__pa(swapper_pg_dir));
+ 
+-#ifdef CONFIG_BDI_SWITCH
+-	pgd_t	**ptr = *(pgd_t ***)(KERNELBASE + 0xf0);
++	if (IS_ENABLED(CONFIG_BDI_SWITCH)) {
++		pgd_t	**ptr = *(pgd_t ***)(KERNELBASE + 0xf0);
+ 
+-	/* Context switch the PTE pointer for the Abatron BDI2000.
+-	 * The PGDIR is passed as second argument.
+-	 */
+-	*(ptr + 1) = pgd;
+-#endif
++		/* Context switch the PTE pointer for the Abatron BDI2000.
++		 * The PGDIR is passed as second argument.
++		 */
++		*(ptr + 1) = pgd;
++	}
+ 
+ 	/* Register M_TWB will contain base address of level 1 table minus the
+ 	 * lower part of the kernel PGDIR base address, so that all accesses to
+-- 
+2.13.3
 
-Regards,
-Daniel
-
->
-> Christophe
->
->> +AFLAGS_REMOVE_sigtramp.o +=3D -mabi=3Delfv1
->> +AFLAGS_REMOVE_gettimeofday.o +=3D -mabi=3Delfv1
->> +AFLAGS_REMOVE_datapage.o +=3D -mabi=3Delfv1
->> +AFLAGS_REMOVE_cacheflush.o +=3D -mabi=3Delfv1
->> +AFLAGS_REMOVE_note.o +=3D -mabi=3Delfv1
->> +endif
->> +
->> +
->>   # Force dependency (incbin is bad)
->>   $(obj)/vdso32_wrapper.o : $(obj)/vdso32.so
->>=20=20=20
->>=20
