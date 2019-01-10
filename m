@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05FEAC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:28:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CBBFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:30:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B70C206B7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:28:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B70C206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 96F3920874
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 16:30:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96F3920874
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bBJj27hPzDqm9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 03:28:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bBLb3Xy0zDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 03:30:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
  (client-ip=217.72.192.73; helo=mout.kundenserver.de;
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bBG05ldlzDqHR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bBG105SfzDqkj
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 03:26:32 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue108 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1N6KQZ-1hNB0I3voH-016iww; Thu, 10 Jan 2019 17:25:20 +0100
+ 1N9Mh8-1hK9GT0x08-015KyR; Thu, 10 Jan 2019 17:25:09 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 11/15] mips: fix n32 compat_ipc_parse_version
-Date: Thu, 10 Jan 2019 17:24:31 +0100
-Message-Id: <20190110162435.309262-12-arnd@arndb.de>
+Subject: [PATCH 03/15] ia64: assign syscall numbers for perf and seccomp
+Date: Thu, 10 Jan 2019 17:24:23 +0100
+Message-Id: <20190110162435.309262-4-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20190110162435.309262-1-arnd@arndb.de>
 References: <20190110162435.309262-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:NTeLC7MR2Bco8KMPQbeHemq+c8XkDiSkrQwrov4uU0Z2HIvLK3h
- B70xuWmOCA+GgP9GbJW06L0FSoky+iyRXiPQtor05zQnX3nSWgbCFexomF8JWeeFg3drH3y
- rXvQCh8Qq2yvqHXdwWp+IqlKijE958CWOwGDX5zrvh45L7DSmguLRjdatci2FIWThGOBeMO
- 7Grv+aoRjg5U7DHRIfGJA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:G9+dY9LvBJI=:bKGBCt806147bZ4SdhcCjz
- CjfhFmq62oMPvk12bhL/NPBuD+5FlocKRN+VDrlu+h+1YO7B5XMKs1rQ3bMyWXFjXtyrfVUmf
- ROFcBae7Gm7dn55/DbQjGxJB0kf9LN8M3r7dfpsX/llHt7fhXBWYwXxcBTsUfD0welfTav328
- EDIRylUi4qTuCL5Iz1Nfi2GSWB4mXFvcQ3V2YCErrq9qaRl3dP0Xj/QHcw2UC5UHXD2RrZNun
- ajqDXU4WSW9wdw5rWh9WyppYeb+r8+uvy8qnSE4JZkaLcvMsJ4wyypUhZvpUSQX4QefATbLZd
- z51aUK8wUHE+2Egci+WDHRnqzes2wM5K6O/LXALHZJITLXvaigwteu6ieZqq10+GZdb3+ct8z
- czBjsXuimew+gJhrQLYucnaH0q1xO8HZpwXJus5JJIY7c7UipaP7g+Y4XOcfDevXN1QRC/PqW
- UDf3gCSIyz5BygoBlLNZlYIfD243aj1b2j7/b3cne1RchQTejvJtnWreir8CZpzVDssrP5t7p
- 2lbK8eWngwNVdCPotXiIUPbEC2XxM3avQAZj82p/+02ovqTGk11Z3iwL6txAojsEk31Q21+Ll
- 4yTnEhil5jv8i1KAoINI+qkfWyZbpyy5Xl8BgJBk/x1Zu7W4l6OI8S2bLKyO/j7NTkKOylmda
- UcIZbdDo1TJkxvo4XDfB2o6PCbxZ2+UvgAyNn37onfsy4lX/gDc7LwuqgrnG7rp7o4p0dybPS
- aALSWonHNDRdQhORpQPMx1dXI5BMScV7uDxMFw==
+X-Provags-ID: V03:K1:Aqo6N9d9grrvjwZZFEqN/kvQ31MLlDiiylB1bz3l3bnWOkX29Jb
+ FIpuJ/jDdTbyft/4m0XHsdrBBVlm/5kn3AxdnjdvfrdFVcnigok/cmoOYzEopX64Kvw6dls
+ WX4c0A3ajbuIPBhtDJnOxItEcolnrdicUdlbDH0vyMO4tFgIrLIN3zrBeur2mEJPy3oMIBX
+ ZH1cdK/uOrjSnDnCsmVEg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:DcqPdkrtZkA=:QS9oAutwixmbvSVltaI9L6
+ +m9uizBojpDw4Y/KGXSwSjuE5RFBEi7OZQFNyG/xCTeJGtb6VPYkwAOz9MsrA2pxEiUjFa9rG
+ fuJdxhEHR1LixU3L7SSftPuAu/E+HMI7cMR38HXeU8sTwYxz1Lhfz/ndk7VKbWpgR6e48hHTh
+ 52oG4XPC5Sd/bup/d7xyO1GwtMOv8KicBE7MTnwJg30UL0KV+2zy8+uaQIIBfpCDfWM6kjw1Y
+ 9zf/dxhuEvLX4cTqoUgQnILjvndG21zv6xai7n9Mo8+weKMX3oFsIyKniIqcYSLZpFjZZad6J
+ iFX8KqIDD2L15m14S+VUGqz3BXl9nnN+3YZmaY2aCgRLj+1lVPyqEAJNryhh8rK6FIJ8GHxDJ
+ b6kKEjdlplavAtZsSD6iylVr6KSzwNw62ShZ5OZvUL5XVI3/keVLJIlNTf9Dj4xsiQPsm/3YS
+ hBnYM2p500m6A4e6wcUThTchOc2YPdSSH2b1Gg0KaympGurdwlWM2AnEkcYg+rJMB8ejQK2OV
+ FvODRVy/7YsxTrzkyuDInaJdUb6X2TzSWEOoqh1ifvX44kfRzsj3wFkCRTG7Tcl0WUsDB/tak
+ aArpMEZ5ewfQfVdDVvG0xAc0R1LMlt+LCk6prUqgqK6D+A4b9mninT6hfcvtpKZL0P1KVrvKJ
+ elmxmdqcPPwGsxzlTz8rV4AOm/8m9AoXxIvPJ0wCPLcEf+m+XNV/BH5QBhqwba8jH8VLEyHqT
+ 16Toqp4Rzx0iHqbsVLKUtulq49kZQX99otz0fw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,46 +81,35 @@ Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, ink@jurassic.park.msu.ru, luto@kernel.org,
  tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, monstr@monstr.eu,
  tony.luck@intel.com, linux-parisc@vger.kernel.org, linux-mips@vger.kernel.org,
- stable@vger.kernel.org, paul.burton@mips.com, ebiederm@xmission.com,
- linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ paul.burton@mips.com, ebiederm@xmission.com, linux-alpha@vger.kernel.org,
+ schwidefsky@de.ibm.com, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-While reading through the sysvipc implementation, I noticed that the n32
-semctl/shmctl/msgctl system calls behave differently based on whether
-o32 support is enabled or not: Without o32, the IPC_64 flag passed by
-user space is rejected but calls without that flag get IPC_64 behavior.
+Most architectures have assigned numbers for both seccomp and
+perf_event_open, even when they do not implement either.
 
-As far as I can tell, this was inadvertently changed by a cleanup patch
-but never noticed by anyone, possibly nobody has tried using sysvipc
-on n32 after linux-3.19.
+ia64 is an exception here, so for consistency lets add numbers for both
+of them. Unless CONFIG_PERF_EVENTS and CONFIG_SECCOMP are implemented,
+the system calls just return -ENOSYS.
 
-Change it back to the old behavior now.
-
-Fixes: 78aaf956ba3a ("MIPS: Compat: Fix build error if CONFIG_MIPS32_COMPAT but no compat ABI.")
-Cc: stable@vger.kernel.org
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-As stated above, this was only found by inspection, the patch is not
-tested. Please review accordingly.
----
- arch/mips/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/ia64/kernel/syscalls/syscall.tbl | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 787290781b8c..0d14f51d0002 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -3155,6 +3155,7 @@ config MIPS32_O32
- config MIPS32_N32
- 	bool "Kernel support for n32 binaries"
- 	depends on 64BIT
-+	select ARCH_WANT_COMPAT_IPC_PARSE_VERSION
- 	select COMPAT
- 	select MIPS32_COMPAT
- 	select SYSVIPC_COMPAT if SYSVIPC
+diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
+index 52585281205b..2e93dbdcdb80 100644
+--- a/arch/ia64/kernel/syscalls/syscall.tbl
++++ b/arch/ia64/kernel/syscalls/syscall.tbl
+@@ -337,3 +337,5 @@
+ 325	common	pwritev2			sys_pwritev2
+ 326	common	statx				sys_statx
+ 327	common	io_pgetevents			sys_io_pgetevents
++328	common	perf_event_open			sys_perf_event_open
++329	common	seccomp				sys_seccomp
 -- 
 2.20.0
 
