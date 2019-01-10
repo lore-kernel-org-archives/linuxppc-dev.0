@@ -2,67 +2,61 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.5 required=3.0 tests=DATE_IN_PAST_12_24,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D856AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:46:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C2ABC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:56:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 59C8D2064C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:46:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 59C8D2064C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id CFFFD206B7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 22:56:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Ppf/PBuU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFFFD206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bLhw2LXdzDqsQ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 09:46:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bLvs6vXhzDqyl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 09:56:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bLdN0PxpzDqwb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:43:52 +1100 (AEDT)
-Received: by mail-qt1-f193.google.com with SMTP id t33so15871382qtt.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2019 14:43:51 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=8BQxy77aw0o+DSOGQG1SQtIdLEpkaKMICEdNR1LQ13U=;
- b=Dm9QgslPXcMrU6aUmGPvAf9qbTKRFBu/B0hw9wDP07eamccypEv/XB6/ZShKHMGIU3
- p9vc+9jRqDZTpw6XmgmXKxGrwSlK1KsB1OyN7TxAnCnxU3UaqV+Y3W2S1FZ2LolB6n15
- laUUv6LBxz9hF6f2KpuZ1Th7lvMFaKhxfRC2Zizp+wDQRUCstuP/7Fu1q9F6c8GVGr5M
- kyMwBoFV2MydFR0Dq2rOkGgD/rj9qD4/oLx+pi65EUU9LmTGTbVZlgSUb97tUiHR6XsS
- WUm7Hxd/+ho3mcOuKmNj8+rlVSh7ueqCkPDY53VgpbC+ItN/1MR9S8maSo/sBOrx+t2A
- VGng==
-X-Gm-Message-State: AJcUukff9Mmb35LL7YCP9i7AlFLhrukCEakWmXjXUXKTkqJUS0U1XG0m
- yDGN2VvIjZ4BJQ3ATBOFVtjLqgukeGOttSKsAkw=
-X-Google-Smtp-Source: ALg8bN6HaEyY/0zx6RGqFtKtlSPz+RZx+KrllRYiKjcCjzeA51uZ4VQUxl3HD7ARydoqD46n7kKW7Dhkol5Ir927zA4=
-X-Received: by 2002:ae9:d8c2:: with SMTP id
- u185mr10538686qkf.107.1547160230039; 
- Thu, 10 Jan 2019 14:43:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bLsw3sJbzDqwP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:54:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="Ppf/PBuU"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 43bLsw0wCHz9sCs; Fri, 11 Jan 2019 09:54:44 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1547160884;
+ bh=LitWFpvdKXNjMwZx0YTbEvvuJx/7dVVFpRuZO0vLFk4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=Ppf/PBuUjkRWx6hYiEH7S7Ki9EO5l9PfNgW7iHtaF1DnzV9sad8MfxtImGLzuaSnb
+ XvCSZdqL795ujNGsb232wLnt+trJyhcUoC0Uq2382BmDSJAQr2o+nvTTvYmmyoj65x
+ T2r0+Zzd4fONoEwytSQvxXyw73yKrnoSbojVgck0=
+Date: Thu, 10 Jan 2019 15:11:09 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH V6 0/4] mm/kvm/vfio/ppc64: Migrate compound pages out of
+ CMA region
+Message-ID: <20190110041109.GG6682@umbus.fritz.box>
+References: <20190108045110.28597-1-aneesh.kumar@linux.ibm.com>
+ <20190108115620.6ec22e7d60b86d5f609d5a87@linux-foundation.org>
+ <875zuyjk96.fsf@linux.ibm.com>
 MIME-Version: 1.0
-References: <20190110162435.309262-1-arnd@arndb.de>
- <CAMuHMdXYP3=TRHYqddVRfbRRaj_Ou=wfoX6ohKM7XNAx-c2RXw@mail.gmail.com>
- <CAK8P3a0kmr2ju+sZE+f-+=-2t5Eu+t-DS-+r6OKrPVTAxHwf8w@mail.gmail.com>
- <CAMuHMdVpUNUx-wdDYChYNzMYqYi79w5tzjk5x3JskdS88VQCQw@mail.gmail.com>
-In-Reply-To: <CAMuHMdVpUNUx-wdDYChYNzMYqYi79w5tzjk5x3JskdS88VQCQw@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 10 Jan 2019 23:43:32 +0100
-Message-ID: <CAK8P3a07yNiadLCJcA0Tyfo90YeQ0P2XF-wOEy9XAb8cDTFObw@mail.gmail.com>
-Subject: Re: [PATCH 00/15] arch: synchronize syscall tables in preparation for
- y2038
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="0z5c7mBtSy1wdr4F"
+Content-Disposition: inline
+In-Reply-To: <875zuyjk96.fsf@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,68 +68,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>,
- Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- alpha <linux-alpha@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 7:11 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Thu, Jan 10, 2019 at 6:06 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Thu, Jan 10, 2019 at 5:59 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > On Thu, Jan 10, 2019 at 5:26 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> > > > The system call tables have diverged a bit over the years, and a number
-> > > > of the recent additions never made it into all architectures, for one
-> > > > reason or another.
-> > > >
-> > > > This is an attempt to clean it up as far as we can without breaking
-> > > > compatibility, doing a number of steps:
-> > >
-> > > Thanks a lot!
-> > >
-> > > > - Add system calls that have not yet been integrated into all
-> > > >   architectures but that we definitely want there.
-> > >
-> > > It looks like you missed wiring up io_pgetevents() on m68k.
-> > > Is that intentional?
+
+--0z5c7mBtSy1wdr4F
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jan 09, 2019 at 02:11:25PM +0530, Aneesh Kumar K.V wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>=20
+> > On Tue,  8 Jan 2019 10:21:06 +0530 "Aneesh Kumar K.V" <aneesh.kumar@lin=
+ux.ibm.com> wrote:
 > >
-> > Yes, I thought I had described that somewhere but maybe I
-> > forgot: semtimedop() and io_pgetevents() get replaced with
-> > time64 versions in the follow-up, so I only added them in
-> > 64-bit architectures. If you think we should have both
-> > io_pgetevents() and io_pgetevents_time32() on all 32-bit
-> > architectures, I can add that as well.
->
-> Thanks, sounds fine to me.
+> >> ppc64 use CMA area for the allocation of guest page table (hash page t=
+able). We won't
+> >> be able to start guest if we fail to allocate hash page table. We have=
+ observed
+> >> hash table allocation failure because we failed to migrate pages out o=
+f CMA region
+> >> because they were pinned. This happen when we are using VFIO. VFIO on =
+ppc64 pins
+> >> the entire guest RAM. If the guest RAM pages get allocated out of CMA =
+region, we
+> >> won't be able to migrate those pages. The pages are also pinned for th=
+e lifetime of the
+> >> guest.
+> >>=20
+> >> Currently we support migration of non-compound pages. With THP and wit=
+h the addition of
+> >>  hugetlb migration we can end up allocating compound pages from CMA re=
+gion. This
+> >> patch series add support for migrating compound pages. The first path =
+adds the helper
+> >> get_user_pages_cma_migrate() which pin the page making sure we migrate=
+ them out of
+> >> CMA region before incrementing the reference count.=20
+> >
+> > Does this code do anything for architectures other than powerpc?  If
+> > not, should we be adding the ifdefs to avoid burdening other
+> > architectures with unused code?
+>=20
+> Any architecture enabling CMA may need this. I will move most of this bel=
+ow
+> CONFIG_CMA.
 
-Just to be sure, you mean it's fine to not add it, not that we should
-add it?
+In theory it could affect any architecture using CMA.  I suspect it's
+much less likely to bite in practice on architectures other than ppc.
+IIUC the main use of CMA there is to allocate things like framebuffers
+or other large contiguous blocks used for hardware devices.  That's
+usually going to happen rarely and during boot up.  What makes ppc
+different is that we need a substantial CMA allocation every time we
+start a (POWER8) guest for the HPT.  It's the fact that running guests
+on a system both means we need the CMA unfragment and (with vfio added
+in) can cause CMA fragmentation which makes this particularly
+problematic.
 
-     Arnd
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--0z5c7mBtSy1wdr4F
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlw2xdsACgkQbDjKyiDZ
+s5J9sBAA5lc1/Su5Mk8Js41SPXyYqpqL564xEbq/qnGSLpg3S6KalgBl3t2cwN/0
+mcd68QCi6vsD659ZwKtvraQDMA5Mk5mCMXaJo59WnN5eaio+gjQ6e5Ii8AjZjO/N
+peQhvsmk1TAy5GIC+h+s8o3g8r2gr5N/XxYnLBSz5DZhGtLH1Kpge1e6Gpk0dhlM
+CM59ss0KWfO912VtHicpWwsOt2ac2Nfk9HKBlPtboefLKjAf8lc/Yggaz7NWrm/Q
+Of5QXd94PaoH41Fy/t89LMOt4NuqTywx6/H0fcVCrYOxtHi9AMZ4o0xnEe+d1NqE
+1LWVs6UTDgtSNkwygki7d3p3nY5vdLOsR84iioKZN5Ssvlv99pEDyBu55fhNvEO6
+l4Q5cJigSk2Wxonn26Ktf50Ye3UV1JDFzvv4JQx19EfzvOI8aZREQWAJPvS0/s6n
+vb2NZg6MG8jLy7havZxqxGpTZEqWLt4u3ksDbAeOL2qNpYzrELIeNb+rKJOnF/BN
+wFWZ22vtrlXxJFDyTlOWTKLtX95PhYeviuZAqTqc8nTRbpe963rDpztxGOOclBG1
+nipPp01RnwPG2XaqTdYnANWVFG0EHjdO+qQ8Ea9J5QCOswHjP02kbdPjPG5fb2zC
+/gdOd9+Co4t0tZjCreB96Bn/1GAzaj0TCyADV4hWEwlhUoKnBSI=
+=f8fd
+-----END PGP SIGNATURE-----
+
+--0z5c7mBtSy1wdr4F--
