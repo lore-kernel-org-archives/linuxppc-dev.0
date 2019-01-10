@@ -2,80 +2,65 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98D8EC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 13:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1359FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 13:46:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1CFE520879
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 13:44:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1CFE520879
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 862D320879
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 13:46:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bZ00d93D"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 862D320879
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b6g10sxNzDqTs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 00:44:29 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b6Zx59VlzDqgj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 00:40:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b6j93hhqzDqgN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 00:46:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43b6Zx4G2rz8tQ2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 00:40:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43b6Zx3plqz9sN4; Fri, 11 Jan 2019 00:40:57 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=acme@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="bZ00d93D"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b6bC32zgzDqfy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 00:41:11 +1100 (AEDT)
+Received: from quaco.ghostprotocols.net (unknown [189.40.103.104])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43b6Zw74kqz9sMp
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2019 00:40:56 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43b6Zr3PPgz9v11h;
- Thu, 10 Jan 2019 14:40:52 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 5q2gI40D6CRl; Thu, 10 Jan 2019 14:40:52 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43b6Zr2qM1z9v10L;
- Thu, 10 Jan 2019 14:40:52 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C23298B88F;
- Thu, 10 Jan 2019 14:40:53 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id yH9PKtrhDSOH; Thu, 10 Jan 2019 14:40:53 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 798958B87D;
- Thu, 10 Jan 2019 14:40:53 +0100 (CET)
-Subject: Re: [PATCH v2 2/3] powerpc: Show PAGE_SIZE in __die() output
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20190110115737.30931-1-mpe@ellerman.id.au>
- <20190110115737.30931-2-mpe@ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <6b0e80cc-1664-bdc8-c6aa-a69c5d8b14c6@c-s.fr>
-Date: Thu, 10 Jan 2019 14:40:53 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.3
+ by mail.kernel.org (Postfix) with ESMTPSA id 50C32214C6;
+ Thu, 10 Jan 2019 13:41:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1547127668;
+ bh=2skcZmn5Hir+DwrUAGWpiDEwIcic/jEqamdotvoyD1c=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=bZ00d93DcFzOmXUqmeeqFRYBYH4vBnZpgVXxt508mhmaF3Xyry6CwuFx/TtKzvgit
+ bsLAauxfbbs4NVEE7V3EqbdC73ffazrVPcIw3yOla4YERo/GZhHiUtsb5LR/sJscnX
+ 4CRNYoraa4rchJTsZCykG3o0OaQO6C1IWEAbPfOk=
+Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
+ id 3ADE140355; Thu, 10 Jan 2019 10:41:04 -0300 (-03)
+Date: Thu, 10 Jan 2019 10:41:04 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Subject: Re: [PATCH 1/2] perf powerpc: Rework syscall table generation
+Message-ID: <20190110134104.GD22483@kernel.org>
+References: <20190110094936.3132-1-ravi.bangoria@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20190110115737.30931-2-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190110094936.3132-1-ravi.bangoria@linux.ibm.com>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,47 +72,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Em Thu, Jan 10, 2019 at 03:19:35PM +0530, Ravi Bangoria escreveu:
+> Commit aff850393200 ("powerpc: add system call table generation support")
+> changed how systemcall table is generated for powerpc. Incorporate these
+> changes into perf as well.
 
+Thanks, applied and performed the following tests, noted on the commit
+log message:
 
-Le 10/01/2019 à 12:57, Michael Ellerman a écrit :
-> The page size the kernel is built with is useful info when debugging a
-> crash, so add it to the output in __die().
-> 
-> Result looks like eg:
-> 
->    kernel BUG at drivers/misc/lkdtm/bugs.c:63!
->    Oops: Exception in kernel mode, sig: 5 [#1]
->    LE PAGE_SIZE=64K SMP NR_CPUS=2048 NUMA pSeries
->    Modules linked in: vmx_crypto kvm binfmt_misc ip_tables
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Committer testing:
 
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
-
-> ---
->   arch/powerpc/kernel/traps.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> v2: Adapt to single printk.
-> 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 164fc92895be..a872c64618ad 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -257,8 +257,9 @@ static int __die(const char *str, struct pt_regs *regs, long err)
->   {
->   	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
->   
-> -	printk("%s %s%s%s%s%s %s\n",
-> +	printk("%s PAGE_SIZE=%luK%s%s%s%s%s %s\n",
->   	       IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
-> +	       PAGE_SIZE / 1024,
->   	       IS_ENABLED(CONFIG_PREEMPT) ? " PREEMPT" : "",
->   	       IS_ENABLED(CONFIG_SMP) ? " SMP" : "",
->   	       IS_ENABLED(CONFIG_SMP) ? (" NR_CPUS=" __stringify(NR_CPUS)) : "",
-> 
+  $ podman run --entrypoint=/bin/sh --privileged -v /home/acme/git:/git --rm -ti docker.io/acmel/linux-perf-tools-build-ubuntu:18.04-x-powerpc64
+  perfbuilder@d7a7af166a80:/git/perf$ head -2 /etc/os-release 
+  NAME="Ubuntu"
+  VERSION="18.04.1 LTS (Bionic Beaver)"
+  perfbuilder@d7a7af166a80:/git/perf$
+  perfbuilder@d7a7af166a80:/git/perf$ make ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu- -C /git/linux/tools/perf O=/tmp/build/perf
+  make: Entering directory '/git/linux/tools/perf'
+    BUILD:   Doing 'make -j8' parallel build
+    HOSTCC   /tmp/build/perf/fixdep.o
+    HOSTLD   /tmp/build/perf/fixdep-in.o
+    LINK     /tmp/build/perf/fixdep
+  
+  Auto-detecting system features:
+  ...                         dwarf: [ on  ]
+  ...            dwarf_getlocations: [ on  ]
+  ...                         glibc: [ on  ]
+  ...                          gtk2: [ OFF ]
+  ...                      libaudit: [ OFF ]
+  ...                        libbfd: [ OFF ]
+  ...                        libelf: [ on  ]
+  ...                       libnuma: [ OFF ]
+  ...        numa_num_possible_cpus: [ OFF ]
+  ...                       libperl: [ OFF ]
+  ...                     libpython: [ OFF ]
+  ...                      libslang: [ OFF ]
+  ...                     libcrypto: [ OFF ]
+  ...                     libunwind: [ OFF ]
+  ...            libdw-dwarf-unwind: [ on  ]
+  ...                          zlib: [ on  ]
+  ...                          lzma: [ OFF ]
+  ...                     get_cpuid: [ OFF ]
+  ...                           bpf: [ on  ]
+  
+  Makefile.config:445: No sys/sdt.h found, no SDT events are defined, please install systemtap-sdt-devel or systemtap-sdt-dev
+  Makefile.config:491: No libunwind found. Please install libunwind-dev[el] >= 1.1 and/or set LIBUNWIND_DIR
+  Makefile.config:583: No libcrypto.h found, disables jitted code injection, please install libssl-devel or libssl-dev
+  Makefile.config:598: slang not found, disables TUI support. Please install slang-devel, libslang-dev or libslang2-dev
+  Makefile.config:612: GTK2 not found, disables GTK2 support. Please install gtk2-devel or libgtk2.0-dev
+  Makefile.config:639: Missing perl devel files. Disabling perl scripting support, please install perl-ExtUtils-Embed/libperl-dev
+  Makefile.config:666: No python interpreter was found: disables Python support - please install python-devel/python-dev
+  Makefile.config:721: No bfd.h/libbfd found, please install binutils-dev[el]/zlib-static/libiberty-dev to gain symbol demangling
+  Makefile.config:750: No liblzma found, disables xz kernel module decompression, please install xz-devel/liblzma-dev
+  Makefile.config:763: No numa.h found, disables 'perf bench numa mem' benchmark, please install numactl-devel/libnuma-devel/libnuma-dev
+  Makefile.config:814: No libbabeltrace found, disables 'perf data' CTF format support, please install libbabeltrace-dev[el]/libbabeltrace-ctf-dev
+  Makefile.config:840: No alternatives command found, you need to set JDIR= to point to the root of your Java directory
+    GEN      /tmp/build/perf/common-cmds.h
+  <SNIP>
+    CC       /tmp/build/perf/util/syscalltbl.o
+  <SNIP>
+    LD       /tmp/build/perf/libperf-in.o
+    AR       /tmp/build/perf/libperf.a
+    LINK     /tmp/build/perf/perf
+  make: Leaving directory '/git/linux/tools/perf'
+  perfbuilder@d7a7af166a80:/git/perf$ head /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_64.c 
+  static const char *syscalltbl_powerpc_64[] = {
+  	[0] = "restart_syscall",
+  	[1] = "exit",
+  	[2] = "fork",
+  	[3] = "read",
+  	[4] = "write",
+  	[5] = "open",
+  	[6] = "close",
+  	[7] = "waitpid",
+  	[8] = "creat",
+  perfbuilder@d7a7af166a80:/git/perf$ tail /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_64.c 
+  	[381] = "pwritev2",
+  	[382] = "kexec_file_load",
+  	[383] = "statx",
+  	[384] = "pkey_alloc",
+  	[385] = "pkey_free",
+  	[386] = "pkey_mprotect",
+  	[387] = "rseq",
+  	[388] = "io_pgetevents",
+  };
+  #define SYSCALLTBL_POWERPC_64_MAX_ID 388
+  perfbuilder@d7a7af166a80:/git/perf$ head /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c 
+  static const char *syscalltbl_powerpc_32[] = {
+  	[0] = "restart_syscall",
+  	[1] = "exit",
+  	[2] = "fork",
+  	[3] = "read",
+  	[4] = "write",
+  	[5] = "open",
+  	[6] = "close",
+  	[7] = "waitpid",
+  	[8] = "creat",
+  perfbuilder@d7a7af166a80:/git/perf$ tail /tmp/build/perf/arch/powerpc/include/generated/asm/syscalls_32.c 
+  	[381] = "pwritev2",
+  	[382] = "kexec_file_load",
+  	[383] = "statx",
+  	[384] = "pkey_alloc",
+  	[385] = "pkey_free",
+  	[386] = "pkey_mprotect",
+  	[387] = "rseq",
+  	[388] = "io_pgetevents",
+  };
+  #define SYSCALLTBL_POWERPC_32_MAX_ID 388
+  perfbuilder@d7a7af166a80:/git/perf$ 
