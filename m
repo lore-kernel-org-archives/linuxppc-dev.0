@@ -2,69 +2,63 @@ Return-Path: <SRS0=xr3w=PS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18068C43444
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63096C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:14:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 550B5214DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:08:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NLZQlgo+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 550B5214DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id D95F2214C6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jan 2019 15:14:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D95F2214C6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43b8XH4HwRzDqmq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:08:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+29c58aa94a33a714bb69+5618+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43b8fP6mxNzDqhl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 02:14:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="NLZQlgo+"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43b8VR75N8zDqhn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:07:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=lvfzosJuddrFKfxlTxirJtxC4G1KmQ//h+Z1IYceZJQ=; b=NLZQlgo+50c/ncNqv2uiv5/ze
- NVtabWHCSC7UWzbrdOdkoJ+xVMCp7QU88jUdlLOeO9PEVuoskCncA3OSX68ioNXb65c5QNbQbVRK3
- omz5NI8dTfzJ5GZyhCRx46i5CZ+zuBbjsiJvnQmuTcW4/gElZFTx3cYukN1uArLlx25htZdzNyO0m
- J5Pd0RvSjuHmJOYyzzLyliFvi42BJfMRDvwS0ZE8CX09Y1Dv+nKqhf9R/Vo2uLm2a3xFrBOoN/E+b
- 77p7P/AoGH3+WIepAz6T79G6l0gmMFGM1FHKl2v4RhLHp8foqQHqNTmClm3ytkzV1qhULatAfo9kB
- h/g7hQf5A==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1ghbvD-00071a-Rj; Thu, 10 Jan 2019 15:07:03 +0000
-Date: Thu, 10 Jan 2019 07:07:03 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ibmvscsi: use GFP_ATOMIC with dma_alloc_coherent in
- map_sg_data
-Message-ID: <20190110150703.GA26696@infradead.org>
-References: <1547089136-20264-1-git-send-email-tyreld@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1547089136-20264-1-git-send-email-tyreld@linux.vnet.ibm.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43b8bf3x0NzDqCb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 02:11:42 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43b8bY6kk1z9txVh;
+ Thu, 10 Jan 2019 16:11:37 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id OB5aXy-xxub9; Thu, 10 Jan 2019 16:11:37 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43b8bY5rgPz9v113;
+ Thu, 10 Jan 2019 16:11:37 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 49E458B89F;
+ Thu, 10 Jan 2019 16:11:39 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id VPY-PNP9W8vp; Thu, 10 Jan 2019 16:11:39 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E90158B898;
+ Thu, 10 Jan 2019 16:11:38 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id BFEBB6BF21; Thu, 10 Jan 2019 15:11:38 +0000 (UTC)
+Message-Id: <cover.1547132681.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 00/15] powerpc/32s: Use BATs/LTLBs for STRICT_KERNEL_RWX
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ j.neuschaefer@gmx.net
+Date: Thu, 10 Jan 2019 15:11:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,25 +70,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
- stable@vger.kernel.org, james.bottomley@hansenpartnership.com,
- brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 09, 2019 at 06:58:56PM -0800, Tyrel Datwyler wrote:
-> While mapping DMA for scatter list when a scsi command is queued the
-> existing call to dma_alloc_coherent() in our map_sg_data() function
-> passes zero for the gfp_flags parameter. We are most definitly in atomic
-> context at this point as queue_command() is called in softirq context
-> and further we have a spinlock holding the scsi host lock.
-> 
-> Fix this by passing GFP_ATOMIC to dma_alloc_coherent() to prevent any
-> sort of sleeping in atomic context deadlock.
+The purpose of this serie is to:
+- use BATs with STRICT_KERNEL_RWX on book3s (See patch 12 for details.)
+- use LTLBs with STRICT_KERNEL_RWX on 8xx (See patch 14 for a few details.)
 
-This is a pretty clear sign you should not be using dma_alloc_coherent
-to start with.  GFP_ATOMIC support in many of the implementations either
-doesn't work at all or is severly constrained.  Given that the
-descriptor is written by the OS and read by the hardware exactly once
-there is no point in having the coherent mapping to start with.
+v2:
+- Fix patch 2 (was patch 3 in v1) based on feedback from Jonathan.
+- Added support for 8xx with LTLBs.
+- Added systematic population of pagetables for Abatron BDI.
+
+Christophe Leroy (15):
+  powerpc/mm/32: add base address to mmu_mapin_ram()
+  powerpc/mm/32s: rework mmu_mapin_ram()
+  powerpc/mm/32s: use generic mmu_mapin_ram() for all blocks.
+  powerpc/32: always populate page tables for Abatron BDI.
+  powerpc/wii: remove wii_mmu_mapin_mem2()
+  powerpc/mm/32s: use _PAGE_EXEC in setbat()
+  powerpc/mm/32s: add setibat() clearibat() and update_bats()
+  powerpc/32: add helper to write into segment registers
+  powerpc/mmu: add is_strict_kernel_rwx() helper
+  powerpc/kconfig: define PAGE_SHIFT inside Kconfig
+  powerpc/kconfig: define CONFIG_DATA_SHIFT and CONFIG_ETEXT_SHIFT
+  powerpc/mm/32s: Use BATs for STRICT_KERNEL_RWX
+  powerpc/kconfig: make _etext and data areas alignment configurable on
+    Book3s 32
+  powerpc/8xx: don't disable large TLBs with CONFIG_STRICT_KERNEL_RWX
+  powerpc/kconfig: make _etext and data areas alignment configurable on
+    8xx
+
+ arch/powerpc/Kconfig                          |  60 +++++++++
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   2 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |  11 ++
+ arch/powerpc/include/asm/mmu.h                |  11 ++
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   3 +-
+ arch/powerpc/include/asm/page.h               |  13 +-
+ arch/powerpc/include/asm/reg.h                |   5 +
+ arch/powerpc/kernel/head_32.S                 |  35 +++++
+ arch/powerpc/kernel/head_8xx.S                |  33 ++++-
+ arch/powerpc/kernel/vmlinux.lds.S             |   9 +-
+ arch/powerpc/mm/40x_mmu.c                     |   2 +-
+ arch/powerpc/mm/44x_mmu.c                     |   2 +-
+ arch/powerpc/mm/8xx_mmu.c                     |  33 ++++-
+ arch/powerpc/mm/fsl_booke_mmu.c               |   2 +-
+ arch/powerpc/mm/init_32.c                     |   6 +-
+ arch/powerpc/mm/mmu_decl.h                    |  10 +-
+ arch/powerpc/mm/pgtable_32.c                  |  38 +++---
+ arch/powerpc/mm/ppc_mmu_32.c                  | 178 ++++++++++++++++++++++----
+ arch/powerpc/platforms/embedded6xx/wii.c      |  24 ----
+ 19 files changed, 378 insertions(+), 99 deletions(-)
+
+-- 
+2.13.3
+
