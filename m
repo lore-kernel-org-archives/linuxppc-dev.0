@@ -2,23 +2,23 @@ Return-Path: <SRS0=2HDf=PT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6F13C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:32:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16978C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:35:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 001F020836
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:32:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 001F020836
+	by mail.kernel.org (Postfix) with ESMTPS id 966CF20870
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:35:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966CF20870
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bqgr3PBNzDr4L
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 04:32:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bqkl4bCdzDr3j
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 04:35:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
@@ -29,35 +29,35 @@ Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
  [209.85.160.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bqdz0BDCzDqwJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 04:31:02 +1100 (AEDT)
-Received: by mail-qt1-f196.google.com with SMTP id e5so19615995qtr.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:31:02 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bqhh1yXPzDqwJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 04:33:24 +1100 (AEDT)
+Received: by mail-qt1-f196.google.com with SMTP id p17so19672019qtl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:33:24 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=SGHCnfowgHn30T+nuPC0hqbUSrYY8+wFH1Oi3pXaRzM=;
- b=SnC3jiQu0nJg2In7tKqAGlM6JhVdIe8Ml/u5mrBhNfQri9mRgquYQ1TQJWvIh5f/eM
- wABvMo+tZyA8HYYZbgc46QRe/k7pPpqeNqvrIpeig7fMj/zYy44EScYs9YC+aF5bzXZh
- YqEY5wZiYPnLjsEDaG3+p6KwEhPWjGJV0I4+yoWFqZlWhOFbR/FY9P9bzpl92ylfSluN
- SxSdO9kakWhz0c9qlW0QhinQH0kwA79waYldEjfpeTSo1wJ4JE4UlD2bGjImj6D7se7S
- CR/MkvcYpiL77EA5MSpAm81+MgKdCpOE0x0/tY6iqzy4lVh6DcstwSXP3rOUS2R6iMpv
- Pbbw==
-X-Gm-Message-State: AJcUuke4ZU7JfKbDNsMZgcniXGXubJVJ/MoV/pTeZvtqy+XZQhkXlZ3t
- zq0QS2nlEjO8J02X84iCZWGxKOtzExTAjpllrbY=
-X-Google-Smtp-Source: ALg8bN775BnYYqpcTaMAandAOOVFGcb1fag8zY9M3WMS/TPmNFpmSdRaCOyAJ14+1Aq8ng+YTuIZvIzlZbwDHzn2U4I=
-X-Received: by 2002:ac8:2c34:: with SMTP id d49mr14875090qta.152.1547227860501; 
- Fri, 11 Jan 2019 09:31:00 -0800 (PST)
+ bh=PlXu3O61pUFPLleZ5AMTVxcoWeFNM1mKAK5t7dNAM0o=;
+ b=WGHZRnOgFJD7ojCj3L96CxLKmYD1AoQlZX7UEJ0uWvxpz7BVFVCI+3AkxgkM3AgP8S
+ gip1gICvpK7+sdiAMKjslb1CvWMi+q/EicvBF1wv1JtMGrwkeUkXCLvE07yjVWzOM/dK
+ 9bc5jKiE+Jsq2KZRJNX6yq9eqUR5u6AGIkdscHZWSNqasHgScLb5cs+0MffvadLVIZB5
+ 9XffSHbeHcY9gRWce+i6L+Ro2BEDCdEQBA3xG1pGtbTzgAj7CfdHpNEXG30yOgJNZqAx
+ mM3cCM7HXsYRuELZlnI+QRsTDrYfsyD18DXjlG27J2UIDYmZs5xtDr4aztaJBuqoTuMn
+ LpjA==
+X-Gm-Message-State: AJcUuke+zPqiH2RodZGN0miw+gmdBVUaaafjBXcWD3j+BtbZEKAMOPYN
+ 4dkgt7z7aLUsxw757rv2wdK8GBJ5Z75piv1bLag=
+X-Google-Smtp-Source: ALg8bN69vX9vcq63IXhYC33aOwWxtfAvEwzhoWorTBpfa9Zlf+nERekjdxP7iJFo0Zjh4Gu5ospxdXcZfV6z9FLdQY4=
+X-Received: by 2002:ac8:1d12:: with SMTP id d18mr14381544qtl.343.1547228002113; 
+ Fri, 11 Jan 2019 09:33:22 -0800 (PST)
 MIME-Version: 1.0
 References: <20190110162435.309262-1-arnd@arndb.de>
- <20190110162435.309262-16-arnd@arndb.de>
- <20190110203638.GB3676@osiris>
-In-Reply-To: <20190110203638.GB3676@osiris>
+ <20190110162435.309262-15-arnd@arndb.de>
+ <20190110203253.GA3676@osiris>
+In-Reply-To: <20190110203253.GA3676@osiris>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 11 Jan 2019 18:30:43 +0100
-Message-ID: <CAK8P3a0M6qSJQAtFNKVS5muissKvyzeE9MSYT_uwKnM4BKCAug@mail.gmail.com>
-Subject: Re: [PATCH 15/15] arch: add pkey and rseq syscall numbers everywhere
+Date: Fri, 11 Jan 2019 18:33:05 +0100
+Message-ID: <CAK8P3a0PahP8Bbc7OfiqrRcoxMReDuoyn8Hw=aSFtPjNeyrjcA@mail.gmail.com>
+Subject: Re: [PATCH 14/15] arch: add split IPC system calls where needed
 To: Heiko Carstens <heiko.carstens@de.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -103,27 +103,45 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 9:36 PM Heiko Carstens
+On Thu, Jan 10, 2019 at 9:33 PM Heiko Carstens
 <heiko.carstens@de.ibm.com> wrote:
-> On Thu, Jan 10, 2019 at 05:24:35PM +0100, Arnd Bergmann wrote:
+> On Thu, Jan 10, 2019 at 05:24:34PM +0100, Arnd Bergmann wrote:
 
-> Since you only need/want the system call numbers, could you please
-> change these lines to:
+> > diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
+> > index 022fc099b628..428cf512a757 100644
+> > --- a/arch/s390/kernel/syscalls/syscall.tbl
+> > +++ b/arch/s390/kernel/syscalls/syscall.tbl
+> > @@ -391,3 +391,15 @@
+> >  381  common  kexec_file_load         sys_kexec_file_load             compat_sys_kexec_file_load
+> >  382  common  io_pgetevents           sys_io_pgetevents               compat_sys_io_pgetevents
+> >  383  common  rseq                    sys_rseq                        compat_sys_rseq
+> > +# room for arch specific syscalls
+> > +392  64      semtimedop              sys_semtimedop                  -
+> > +393  common  semget                  sys_semget                      sys_semget
+> ...
+> > +395  common  shmget                  sys_shmget                      sys_shmget
+> ...
+> > +398  common  shmdt                   sys_shmdt                       sys_shmdt
+> > +399  common  msgget                  sys_msgget                      sys_msgget
 >
-> > +384  common  pkey_alloc              -                               -
-> > +385  common  pkey_free               -                               -
-> > +386  common  pkey_mprotect           -                               -
+> These four need compat system call wrappers, unfortunately... (well,
+> actually only shmget and shmdt require them, but let's add them for
+> all four). See arch/s390/kernel/compat_wrapper.c
 >
-> Otherwise it _looks_ like we would need compat wrappers here as well,
-> even though all of them would just jump to sys_ni_syscall() in this
-> case. Making this explicit seems to better.
+> I'm afraid this compat special handling will be even more annoying in
+> the future, since s390 will be the only architecture which requires
+> this special handling.
+>
+> _Maybe_ it would make sense to automatically generate a weak compat
+> system call wrapper for s390 with the SYSCALL_DEFINE macros, but that
+> probably won't work in all cases.
 
-Ok, fair enough. I considered doing this originally and then
-decided against it for consistency with the asm-generic file,
-but I don't care much either way.
+For some reason I was under the impression that s390 already did that.
+However, it seems that x86 does, so I'll try to convert the x86 version
+for s390, and see if I can get rid of all the wrappers that way.
 
-Is this something you may want to add later? I'm not sure exactly
-how pkey compares to s390 storage keys, or if this is something
-completely unrelated.
+It would certainly be safer to have the wrappers always present,
+especially if we expect future system calls to be added to the
+s390 table by whoever implements the syscall itself.
 
-     Arnd
+      Arnd
