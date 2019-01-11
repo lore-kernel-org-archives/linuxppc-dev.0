@@ -2,106 +2,69 @@ Return-Path: <SRS0=2HDf=PT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 102F2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 19:32:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A5C6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 19:56:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6673E218C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 19:32:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9D3D520836
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 19:56:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="NCjj78+q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6673E218C3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mbohqD2Q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D3D520836
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43btLN1BRKzDr3T
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 06:32:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43btsY3k2SzDr4t
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 06:56:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
- (client-ip=40.107.73.123; helo=nam05-dm3-obe.outbound.protection.outlook.com;
- envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
+ spf=permerror (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org;
+ envelope-from=mchehab+samsung@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=mips.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=wavesemi.onmicrosoft.com
- header.i=@wavesemi.onmicrosoft.com header.b="NCjj78+q"; 
- dkim-atps=neutral
-Received: from NAM05-DM3-obe.outbound.protection.outlook.com
- (mail-eopbgr730123.outbound.protection.outlook.com [40.107.73.123])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="mbohqD2Q"; dkim-atps=neutral
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:8b0:10b:1236::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bt9x6H2vzDqyG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 06:25:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=VH+nqXecd4XJOdhRgHxpM/1XQtILUU9L91QvDoEgzww=;
- b=NCjj78+qHrdaWHvF36kvYcifQwiTlShNqitusFWX8FlkfYZYnVZlu0TgAx0Nyp59H7hnbCOMXriPBOXL/YJ/njF7TKOdelFamkHdOCkef6z+AFnvVirKghfw1XhJZOhPk59leKyLIgS+m+4lRG6dn1VIDiD3535x5xk0R+3/pII=
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
- MWHSPR00MB2400.namprd22.prod.outlook.com (10.171.151.23) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1516.13; Fri, 11 Jan 2019 19:25:18 +0000
-Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::595e:ffcc:435b:9110]) by MWHPR2201MB1277.namprd22.prod.outlook.com
- ([fe80::595e:ffcc:435b:9110%4]) with mapi id 15.20.1516.016; Fri, 11 Jan 2019
- 19:25:18 +0000
-From: Paul Burton <paul.burton@mips.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 11/15] mips: fix n32 compat_ipc_parse_version
-Thread-Topic: [PATCH 11/15] mips: fix n32 compat_ipc_parse_version
-Thread-Index: AQHUqQEbv9GqBtrBzEy9nMrieVYZQaWqdMAA
-Date: Fri, 11 Jan 2019 19:25:17 +0000
-Message-ID: <MWHPR2201MB12776696BE1B1E8EF4A90DA1C1850@MWHPR2201MB1277.namprd22.prod.outlook.com>
-References: <20190110162435.309262-12-arnd@arndb.de>
-In-Reply-To: <20190110162435.309262-12-arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: BYAPR07CA0005.namprd07.prod.outlook.com
- (2603:10b6:a02:bc::18) To MWHPR2201MB1277.namprd22.prod.outlook.com
- (2603:10b6:301:24::17)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=pburton@wavecomp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-originating-ip: [67.207.99.198]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; MWHSPR00MB2400;
- 6:SomTMk/mVKaMESAK/AXinLQxx/KsR+jQ6+cxfWH8/DfmPdFYzDy2DiA6f4gQ1FwZCI/dh9I4muNf/2q8fl8IclVtFDPXv2DMMgNQT5I4IsbqRtnZFuQGEPk0Kv/6RGt23rVnVrJEFemySL/Er1wWL+DKDfrgNcYoloJlqOVoEpYkK2obzaT4+XP4Kj3Vawu2WwvfJo7Grmd1gKFodNktqz5XC7pkq+Sna74Pu6FtQg/8y0B6sE+w/rBOIbmRpSrAT2szZpgZFLGjBdYHOkEkvXeXmHU3Q+HMvGYF9SvOWvEX6xx2m6ZMsc+F2TabJ9/6XeXPLnbUNRPZb3Q9YbnWJFpbN9aB8PHatcHh2wxfAjKFZ/CmVk2Dx0TJ2kHhH4ecXpOP9CUFTJVt7Lyrt9O0jvBJoKavrioaSZQRdECEvqq0i/CPzMcGTixmC3q75ltXKw2j1ceS4vrMRDO7EWNPPQ==;
- 5:vkBX1ZtpLgkD7z9AqqBKAMMYvw5lqig9JV5hKLvl+zWhOGJ7boU73g7EQMYZ0dm9DUwQRNeffzJ2A7wepWq8MuEgPLo/szTOUNx8gCDBSUhsjYkbsxkZkdU2KVU6yzeDalr0WvzBGWs9du30ECUkTUYXCPLkYDC4NoOYXf73wqDzj3Sd1QcFWMM/Y36TE9PjVFlvNgJJPbRmVbqbVXFqtg==;
- 7:CdVq2cvIX4pqHNIEaQbWsYCjeHWu9/WRBUQijm+nLmdBKrOr7zwjWjx10H0q4Jm25V41smG8SjfCItF7vRK1ftjDCE6uI8KrlzuuJu3haojImZp+rmSWfl9700ptp6UcHj6LLYx4zlRh78ScfCzmEA==
-x-ms-office365-filtering-correlation-id: 8dfe35c1-c55c-4d6f-ca7d-08d677fa84ec
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(2017052603328)(7153060)(7193020);
- SRVR:MWHSPR00MB2400; 
-x-ms-traffictypediagnostic: MWHSPR00MB2400:
-x-microsoft-antispam-prvs: <MWHSPR00MB2400D3A06B87CF91EBC600A5C1850@MWHSPR00MB2400.namprd22.prod.outlook.com>
-x-forefront-prvs: 09144DB0F7
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(376002)(39850400004)(346002)(396003)(366004)(136003)(199004)(189003)(102836004)(229853002)(8676002)(74316002)(7416002)(305945005)(81166006)(5660300001)(81156014)(7736002)(6116002)(68736007)(8936002)(3846002)(6246003)(478600001)(7406005)(55016002)(9686003)(25786009)(2906002)(6916009)(53936002)(66066001)(6436002)(97736004)(4326008)(11346002)(446003)(476003)(39060400002)(4744005)(186003)(256004)(26005)(42882007)(33656002)(71200400001)(71190400001)(44832011)(316002)(486006)(54906003)(14454004)(111086002)(52116002)(6506007)(106356001)(386003)(76176011)(105586002)(7696005)(99286004);
- DIR:OUT; SFP:1102; SCL:1; SRVR:MWHSPR00MB2400;
- H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: wavecomp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: aY2u+5Lnnma1NCwo4chyHeUpst2HmyyPHtyLbO13mo/vsrZbHvvSgCPRDP3xa8hlorcUc7R9v6F2g5g1JDCfcfheS/olYUY0kWLBJIQ20bvhVHJDvxUkJ71LaPTHnpeWBQDz7ybmb5xdIJSkM7zov8T28EU7rXBati2rlnlYS0tTsifbnFSoZsPF1OkWLuKS5/nzzLEtTy9WQfP1yPSQLCo6JHizqVnDMc9X1MIhEuJd+gHtiUHV/2CAOh+aPyRypXZtCOBAl+mDvv4DGTd8+J6rfyqpc32Uue+UEkT7AA59RCCkt1UvRwChgsz9U6/mIHh1txZWoKT4Hx+XuqlcdnO7Ez3X54h63bIPcDF6fKfDghqstBD0fFk3kDzGtLB0QkIgmfxA2tOdUSfvj5ixSaos0UBNaeWm/nEPwN7Zctg=
-spamdiagnosticoutput: 1:99
-spamdiagnosticmetadata: NSPM
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43btqk3Z92zDr4L
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 06:54:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+ MIME-Version:References:In-Reply-To:Message-ID:Subject:Cc:To:From:Date:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=fMcNvquDgQQYlKE4Y7lNw6Nx1C1EhjU6J5BGveGlj+4=; b=mbohqD2QpEMefQWwUsKCJJR0wu
+ XLxAF7/7GnD3lzQsYsgzRvoy1zuL7Ej70GIMeFRCcP6OoqrQ5zEbi3ymwpEXuE8uU+YWZg1Gp5EQ/
+ 4otHAYmsRlUMimv7+sUOhH7xlI537dTWBlz21EilYEsoRClF7Mc76ZM5aJlB5CO9fzeeNiq95PRcv
+ tU1bQ5OdGrT9SQgptnDn1p/CqPKxQJW/h9+Bmc6E0J675O13PXHHI8iN7g+v+ZnA5MjEoLdWoyrVa
+ oLvXi+/a8wZ3SkoSbTiyARozxYoYa3ppl0LF0X5BNi1DgOEj2LhBA7evi/bgAhBuyyDGHmrPx6s9Q
+ MIxVgPSA==;
+Received: from 177.17.174.42.dynamic.adsl.gvt.net.br ([177.17.174.42]
+ helo=coco.lan)
+ by casper.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gi2sp-0000fE-UV; Fri, 11 Jan 2019 19:54:24 +0000
+Date: Fri, 11 Jan 2019 17:54:16 -0200
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 3/3] videobuf2: replace a layering violation with
+ dma_map_resource
+Message-ID: <20190111175416.7d291e25@coco.lan>
+In-Reply-To: <20190111181731.11782-4-hch@lst.de>
+References: <20190111181731.11782-1-hch@lst.de>
+ <20190111181731.11782-4-hch@lst.de>
+X-Mailer: Claws Mail 3.17.3 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-X-OriginatorOrg: mips.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8dfe35c1-c55c-4d6f-ca7d-08d677fa84ec
-X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Jan 2019 19:25:17.8656 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHSPR00MB2400
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,71 +76,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Burton <pburton@wavecomp.com>, "dalias@libc.org" <dalias@libc.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "linux@dominikbrodowski.net" <linux@dominikbrodowski.net>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- "jcmvbkbc@gmail.com" <jcmvbkbc@gmail.com>,
- "deepa.kernel@gmail.com" <deepa.kernel@gmail.com>,
- "hpa@zytor.com" <hpa@zytor.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "dave@stgolabs.net" <dave@stgolabs.net>,
- "y2038@lists.linaro.org" <y2038@lists.linaro.org>,
- "deller@gmx.de" <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "geert@linux-m68k.org" <geert@linux-m68k.org>,
- "firoz.khan@linaro.org" <firoz.khan@linaro.org>,
- "mattst88@gmail.com" <mattst88@gmail.com>,
- "fenghua.yu@intel.com" <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- "heiko.carstens@de.ibm.com" <heiko.carstens@de.ibm.com>,
- "linux-m68k@lists.linux-m68k.org" <linux-m68k@lists.linux-m68k.org>,
- "ink@jurassic.park.msu.ru" <ink@jurassic.park.msu.ru>,
- "luto@kernel.org" <luto@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "monstr@monstr.eu" <monstr@monstr.eu>,
- "tony.luck@intel.com" <tony.luck@intel.com>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>,
- "ebiederm@xmission.com" <ebiederm@xmission.com>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- "schwidefsky@de.ibm.com" <schwidefsky@de.ibm.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Cc: Niklas =?UTF-8?B?U8O2ZGVybHVuZA==?=
+ <niklas.soderlund+renesas@ragnatech.se>, Pawel Osciak <pawel@osciak.com>,
+ Russell King <linux@armlinux.org.uk>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+ linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+Em Fri, 11 Jan 2019 19:17:31 +0100
+Christoph Hellwig <hch@lst.de> escreveu:
 
-Arnd Bergmann wrote:
-> While reading through the sysvipc implementation, I noticed that the n32
-> semctl/shmctl/msgctl system calls behave differently based on whether
-> o32 support is enabled or not: Without o32, the IPC_64 flag passed by
-> user space is rejected but calls without that flag get IPC_64 behavior.
->=20
-> As far as I can tell, this was inadvertently changed by a cleanup patch
-> but never noticed by anyone, possibly nobody has tried using sysvipc
-> on n32 after linux-3.19.
->=20
-> Change it back to the old behavior now.
->=20
-> Fixes: 78aaf956ba3a ("MIPS: Compat: Fix build error if CONFIG_MIPS32_COMP=
-AT but no compat ABI.")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> vb2_dc_get_userptr pokes into arm direct mapping details to get the
+> resemblance of a dma address for a a physical address that does is
+> not backed by a page struct.  Not only is this not portable to other
+> architectures with dma direct mapping offsets, but also not to uses
+> of IOMMUs of any kind.  Switch to the proper dma_map_resource /
+> dma_unmap_resource interface instead.
 
-Applied to mips-fixes.
+Makes sense to me. I'm assuming that you'll be pushing it together
+with other mm patches, so:
+
+Acked-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  .../common/videobuf2/videobuf2-dma-contig.c   | 41 ++++---------------
+>  1 file changed, 9 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/media/common/videobuf2/videobuf2-dma-contig.c b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> index aff0ab7bf83d..82389aead6ed 100644
+> --- a/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> +++ b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> @@ -439,42 +439,14 @@ static void vb2_dc_put_userptr(void *buf_priv)
+>  				set_page_dirty_lock(pages[i]);
+>  		sg_free_table(sgt);
+>  		kfree(sgt);
+> +	} else {
+> +		dma_unmap_resource(buf->dev, buf->dma_addr, buf->size,
+> +				   buf->dma_dir, 0);
+>  	}
+>  	vb2_destroy_framevec(buf->vec);
+>  	kfree(buf);
+>  }
+>  
+> -/*
+> - * For some kind of reserved memory there might be no struct page available,
+> - * so all that can be done to support such 'pages' is to try to convert
+> - * pfn to dma address or at the last resort just assume that
+> - * dma address == physical address (like it has been assumed in earlier version
+> - * of videobuf2-dma-contig
+> - */
+> -
+> -#ifdef __arch_pfn_to_dma
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__arch_pfn_to_dma(dev, pfn);
+> -}
+> -#elif defined(__pfn_to_bus)
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__pfn_to_bus(pfn);
+> -}
+> -#elif defined(__pfn_to_phys)
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__pfn_to_phys(pfn);
+> -}
+> -#else
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	/* really, we cannot do anything better at this point */
+> -	return (dma_addr_t)(pfn) << PAGE_SHIFT;
+> -}
+> -#endif
+> -
+>  static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+>  	unsigned long size, enum dma_data_direction dma_dir)
+>  {
+> @@ -528,7 +500,12 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+>  		for (i = 1; i < n_pages; i++)
+>  			if (nums[i-1] + 1 != nums[i])
+>  				goto fail_pfnvec;
+> -		buf->dma_addr = vb2_dc_pfn_to_dma(buf->dev, nums[0]);
+> +		buf->dma_addr = dma_map_resource(buf->dev,
+> +				__pfn_to_phys(nums[0]), size, buf->dma_dir, 0);
+> +		if (dma_mapping_error(buf->dev, buf->dma_addr)) {
+> +			ret = -ENOMEM;
+> +			goto fail_pfnvec;
+> +		}
+>  		goto out;
+>  	}
+>  
+
+
 
 Thanks,
-    Paul
-
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paul.burton@mips.com to report it. ]
+Mauro
