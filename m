@@ -2,64 +2,74 @@ Return-Path: <SRS0=2HDf=PT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16978C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:35:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 712F4C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 18:19:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 966CF20870
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 17:35:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966CF20870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id C5B17205C9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 18:19:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qpU1faoJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5B17205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bqkl4bCdzDr3j
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 04:35:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43brjl1TgGzDr5V
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 05:19:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+7463624bcd8ccf6d3e50+5619+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
- [209.85.160.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="qpU1faoJ"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bqhh1yXPzDqwJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 04:33:24 +1100 (AEDT)
-Received: by mail-qt1-f196.google.com with SMTP id p17so19672019qtl.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 09:33:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=PlXu3O61pUFPLleZ5AMTVxcoWeFNM1mKAK5t7dNAM0o=;
- b=WGHZRnOgFJD7ojCj3L96CxLKmYD1AoQlZX7UEJ0uWvxpz7BVFVCI+3AkxgkM3AgP8S
- gip1gICvpK7+sdiAMKjslb1CvWMi+q/EicvBF1wv1JtMGrwkeUkXCLvE07yjVWzOM/dK
- 9bc5jKiE+Jsq2KZRJNX6yq9eqUR5u6AGIkdscHZWSNqasHgScLb5cs+0MffvadLVIZB5
- 9XffSHbeHcY9gRWce+i6L+Ro2BEDCdEQBA3xG1pGtbTzgAj7CfdHpNEXG30yOgJNZqAx
- mM3cCM7HXsYRuELZlnI+QRsTDrYfsyD18DXjlG27J2UIDYmZs5xtDr4aztaJBuqoTuMn
- LpjA==
-X-Gm-Message-State: AJcUuke+zPqiH2RodZGN0miw+gmdBVUaaafjBXcWD3j+BtbZEKAMOPYN
- 4dkgt7z7aLUsxw757rv2wdK8GBJ5Z75piv1bLag=
-X-Google-Smtp-Source: ALg8bN69vX9vcq63IXhYC33aOwWxtfAvEwzhoWorTBpfa9Zlf+nERekjdxP7iJFo0Zjh4Gu5ospxdXcZfV6z9FLdQY4=
-X-Received: by 2002:ac8:1d12:: with SMTP id d18mr14381544qtl.343.1547228002113; 
- Fri, 11 Jan 2019 09:33:22 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43brgv6LTPzDqxm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 05:17:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=YQgQah55bxS74bCpAdOJ7aACrg7TuJ0ocAk2SxZT1V8=; b=qpU1faoJOgW0Wubl2RI7LY3laT
+ qH2oMsAv68GWgFmOOMlzQdzUiCR5Jrygw++PYUACrverNpTQec1AbX177RgCQWd486fWkFHDPChme
+ JdgY5ksca+/MEWyFFM2mSldXM2FfC4io5HFY7uMKU7m8lpb04AfUifHjyjfVeSJuPY1a+ptv6aRTE
+ aVNT+JcRHHV61W/DYramXvFA0XJRmccSaRIuTsiUhtxM4L6/6qQRAHWSGebVKnm58tC81GOteDfUx
+ yuHgryYJ6MsTMTJLSibIL2rHndFkoTEZmeD/muBZG2VxGdpAJe/K1Lk9mB7ydebRaDck947UDHilI
+ WyOb+xUA==;
+Received: from 089144213167.atnat0022.highway.a1.net ([89.144.213.167]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gi1NE-0000vv-An; Fri, 11 Jan 2019 18:17:40 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Pawel Osciak <pawel@osciak.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 1/3] dma-mapping: remove the default map_resource
+ implementation
+Date: Fri, 11 Jan 2019 19:17:29 +0100
+Message-Id: <20190111181731.11782-2-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190111181731.11782-1-hch@lst.de>
+References: <20190111181731.11782-1-hch@lst.de>
 MIME-Version: 1.0
-References: <20190110162435.309262-1-arnd@arndb.de>
- <20190110162435.309262-15-arnd@arndb.de>
- <20190110203253.GA3676@osiris>
-In-Reply-To: <20190110203253.GA3676@osiris>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 11 Jan 2019 18:33:05 +0100
-Message-ID: <CAK8P3a0PahP8Bbc7OfiqrRcoxMReDuoyn8Hw=aSFtPjNeyrjcA@mail.gmail.com>
-Subject: Re: [PATCH 14/15] arch: add split IPC system calls where needed
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,77 +81,144 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- alpha <linux-alpha@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 10, 2019 at 9:33 PM Heiko Carstens
-<heiko.carstens@de.ibm.com> wrote:
-> On Thu, Jan 10, 2019 at 05:24:34PM +0100, Arnd Bergmann wrote:
+Just returning the physical address when not map_resource method is
+present is highly dangerous as it doesn't take any offset in the
+direct mapping into account and does the completely wrong thing for
+IOMMUs.  Instead provide a proper implementation in the direct mapping
+code, and also wire it up for arm and powerpc.
 
-> > diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-> > index 022fc099b628..428cf512a757 100644
-> > --- a/arch/s390/kernel/syscalls/syscall.tbl
-> > +++ b/arch/s390/kernel/syscalls/syscall.tbl
-> > @@ -391,3 +391,15 @@
-> >  381  common  kexec_file_load         sys_kexec_file_load             compat_sys_kexec_file_load
-> >  382  common  io_pgetevents           sys_io_pgetevents               compat_sys_io_pgetevents
-> >  383  common  rseq                    sys_rseq                        compat_sys_rseq
-> > +# room for arch specific syscalls
-> > +392  64      semtimedop              sys_semtimedop                  -
-> > +393  common  semget                  sys_semget                      sys_semget
-> ...
-> > +395  common  shmget                  sys_shmget                      sys_shmget
-> ...
-> > +398  common  shmdt                   sys_shmdt                       sys_shmdt
-> > +399  common  msgget                  sys_msgget                      sys_msgget
->
-> These four need compat system call wrappers, unfortunately... (well,
-> actually only shmget and shmdt require them, but let's add them for
-> all four). See arch/s390/kernel/compat_wrapper.c
->
-> I'm afraid this compat special handling will be even more annoying in
-> the future, since s390 will be the only architecture which requires
-> this special handling.
->
-> _Maybe_ it would make sense to automatically generate a weak compat
-> system call wrapper for s390 with the SYSCALL_DEFINE macros, but that
-> probably won't work in all cases.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/arm/mm/dma-mapping.c         |  2 ++
+ arch/powerpc/kernel/dma-swiotlb.c |  1 +
+ arch/powerpc/kernel/dma.c         |  1 +
+ include/linux/dma-mapping.h       | 12 +++++++-----
+ kernel/dma/direct.c               | 14 ++++++++++++++
+ 5 files changed, 25 insertions(+), 5 deletions(-)
 
-For some reason I was under the impression that s390 already did that.
-However, it seems that x86 does, so I'll try to convert the x86 version
-for s390, and see if I can get rid of all the wrappers that way.
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index f1e2922e447c..3c8534904209 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -188,6 +188,7 @@ const struct dma_map_ops arm_dma_ops = {
+ 	.unmap_page		= arm_dma_unmap_page,
+ 	.map_sg			= arm_dma_map_sg,
+ 	.unmap_sg		= arm_dma_unmap_sg,
++	.map_resource		= dma_direct_map_resource,
+ 	.sync_single_for_cpu	= arm_dma_sync_single_for_cpu,
+ 	.sync_single_for_device	= arm_dma_sync_single_for_device,
+ 	.sync_sg_for_cpu	= arm_dma_sync_sg_for_cpu,
+@@ -211,6 +212,7 @@ const struct dma_map_ops arm_coherent_dma_ops = {
+ 	.get_sgtable		= arm_dma_get_sgtable,
+ 	.map_page		= arm_coherent_dma_map_page,
+ 	.map_sg			= arm_dma_map_sg,
++	.map_resource		= dma_direct_map_resource,
+ 	.dma_supported		= arm_dma_supported,
+ };
+ EXPORT_SYMBOL(arm_coherent_dma_ops);
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 7d5fc9751622..fbb2506a414e 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -55,6 +55,7 @@ const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+ 	.dma_supported = swiotlb_dma_supported,
+ 	.map_page = dma_direct_map_page,
+ 	.unmap_page = dma_direct_unmap_page,
++	.map_resource = dma_direct_map_resource,
+ 	.sync_single_for_cpu = dma_direct_sync_single_for_cpu,
+ 	.sync_single_for_device = dma_direct_sync_single_for_device,
+ 	.sync_sg_for_cpu = dma_direct_sync_sg_for_cpu,
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index b1903ebb2e9c..258b9e8ebb99 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -273,6 +273,7 @@ const struct dma_map_ops dma_nommu_ops = {
+ 	.dma_supported			= dma_nommu_dma_supported,
+ 	.map_page			= dma_nommu_map_page,
+ 	.unmap_page			= dma_nommu_unmap_page,
++	.map_resource			= dma_direct_map_resource,
+ 	.get_required_mask		= dma_nommu_get_required_mask,
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ 	.sync_single_for_cpu 		= dma_nommu_sync_single,
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index cef2127e1d70..d3087829a6df 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -208,6 +208,8 @@ dma_addr_t dma_direct_map_page(struct device *dev, struct page *page,
+ 		unsigned long attrs);
+ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 		enum dma_data_direction dir, unsigned long attrs);
++dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
++		size_t size, enum dma_data_direction dir, unsigned long attrs);
+ 
+ #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+     defined(CONFIG_SWIOTLB)
+@@ -346,19 +348,19 @@ static inline dma_addr_t dma_map_resource(struct device *dev,
+ 					  unsigned long attrs)
+ {
+ 	const struct dma_map_ops *ops = get_dma_ops(dev);
+-	dma_addr_t addr;
++	dma_addr_t addr = DMA_MAPPING_ERROR;
+ 
+ 	BUG_ON(!valid_dma_direction(dir));
+ 
+ 	/* Don't allow RAM to be mapped */
+ 	BUG_ON(pfn_valid(PHYS_PFN(phys_addr)));
+ 
+-	addr = phys_addr;
+-	if (ops && ops->map_resource)
++	if (dma_is_direct(ops))
++		addr = dma_direct_map_resource(dev, phys_addr, size, dir, attrs);
++	else if (ops->map_resource)
+ 		addr = ops->map_resource(dev, phys_addr, size, dir, attrs);
+ 
+ 	debug_dma_map_resource(dev, phys_addr, size, dir, addr);
+-
+ 	return addr;
+ }
+ 
+@@ -369,7 +371,7 @@ static inline void dma_unmap_resource(struct device *dev, dma_addr_t addr,
+ 	const struct dma_map_ops *ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!valid_dma_direction(dir));
+-	if (ops && ops->unmap_resource)
++	if (!dma_is_direct(ops) && ops->unmap_resource)
+ 		ops->unmap_resource(dev, addr, size, dir, attrs);
+ 	debug_dma_unmap_resource(dev, addr, size, dir);
+ }
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 355d16acee6d..8e0359b04957 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -356,6 +356,20 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ }
+ EXPORT_SYMBOL(dma_direct_map_sg);
+ 
++dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
++		size_t size, enum dma_data_direction dir, unsigned long attrs)
++{
++	dma_addr_t dma_addr = phys_to_dma(dev, paddr);
++
++	if (unlikely(!dma_direct_possible(dev, dma_addr, size))) {
++		report_addr(dev, dma_addr, size);
++		return DMA_MAPPING_ERROR;
++	}
++
++	return dma_addr;
++}
++EXPORT_SYMBOL(dma_direct_map_resource);
++
+ /*
+  * Because 32-bit DMA masks are so common we expect every architecture to be
+  * able to satisfy them - either by not supporting more physical memory, or by
+-- 
+2.20.1
 
-It would certainly be safer to have the wrappers always present,
-especially if we expect future system calls to be added to the
-s390 table by whoever implements the syscall itself.
-
-      Arnd
