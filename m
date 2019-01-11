@@ -2,49 +2,63 @@ Return-Path: <SRS0=2HDf=PT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLACK,URIBL_BLOCKED
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F43BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 05:27:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2931C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 05:35:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AD8CA20870
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 05:27:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD8CA20870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 94EEE20870
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 05:35:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="vOtw4gAI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94EEE20870
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43bWZm2cN4zDr2l
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 16:27:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43bWXv42cszDr0s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 16:25:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43bWly4x04zDr3G
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 16:35:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=5qap=pt=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43bWXt46Gwz9sN1;
- Fri, 11 Jan 2019 16:25:34 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [RFC PATCH kernel] powerpc/stack_protector: Fix external modules
- building
-In-Reply-To: <CAK7LNAQUDMhXxku2wqq=VX2cbntMWgsvrFL4C5Bk=x1TU79wjg@mail.gmail.com>
-References: <20190110054216.74248-1-aik@ozlabs.ru>
- <CAK7LNAQUDMhXxku2wqq=VX2cbntMWgsvrFL4C5Bk=x1TU79wjg@mail.gmail.com>
-Date: Fri, 11 Jan 2019 16:25:33 +1100
-Message-ID: <877efbg3zm.fsf@concordia.ellerman.id.au>
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="vOtw4gAI"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43bWkD6ts0zDqrm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 16:33:40 +1100 (AEDT)
+Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 025F820870;
+ Fri, 11 Jan 2019 05:33:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1547184818;
+ bh=87y3t+Sr7bcxLc3Qv5o6z5HgzHBecJvvmq1YVGwbsYY=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=vOtw4gAIwpAlsLW3stVrHc9EHM6wS0abSXux3mfxi3I1dCJWi5AOC0p5UYhJg225f
+ XOce66PyaLKsZdccn3ms/HPOtdwm9raRO/rTY8V2gVgs0C4Q+FWURzYob9n12X+Lk6
+ iKaT5pH80lyPI9/cotLUDzFnE3vmbGoAuPtNyps0=
+Date: Fri, 11 Jan 2019 06:33:34 +0100
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Nathan Chancellor <natechancellor@gmail.com>
+Subject: Re: Patch series for 4.19 to compile powerpc with Clang
+Message-ID: <20190111053334.GA24945@kroah.com>
+References: <20190110171738.GA15747@flashbox>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190110171738.GA15747@flashbox>
+User-Agent: Mutt/1.11.2 (2019-01-07)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,38 +70,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sasha Levin <sashal@kernel.org>, Nick Desaulniers <ndesaulniers@google.com>,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> On Thu, Jan 10, 2019 at 2:44 PM Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-...
->> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->> index 488c9ed..0492f62 100644
->> --- a/arch/powerpc/Makefile
->> +++ b/arch/powerpc/Makefile
->> @@ -419,7 +419,11 @@ archheaders:
->>  ifdef CONFIG_STACKPROTECTOR
->>  prepare: stack_protector_prepare
->>
->> +ifeq ($(KBUILD_EXTMOD),)
->>  stack_protector_prepare: prepare0
->> +else
->> +stack_protector_prepare:
->> +endif
->
->
-> Honestly, I think this is ugly.
+On Thu, Jan 10, 2019 at 10:17:38AM -0700, Nathan Chancellor wrote:
+> Hi Greg and Sasha,
+> 
+> Attached is an mbox with a series of patches to allow building the
+> powerpc kernel with Clang. We have been running continuous integration
+> that builds and boots the kernel in QEMU for almost two months now with
+> no regressions. This is on top of 4.19.14, there should be no conflicts
+> but let me know if I messed something up.
+> 
+> I will send a series for 4.14 in a little bit as well.
 
-Yes I would call it a hack :)
+All now queued up for 4.19 as well.
 
-> Do you want me to send an alternative solution?
+thanks,
 
-I don't grok how external modules are built well enough to work out what
-the right solution is. So if you can come up with something better that
-would be awesome.
-
-cheers
+greg k-h
