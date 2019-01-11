@@ -2,55 +2,84 @@ Return-Path: <SRS0=2HDf=PT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5742C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 22:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A868DC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 23:52:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 090B42084C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 22:20:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 090B42084C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id D4DD920874
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 11 Jan 2019 23:52:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O36enOsH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4DD920874
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=jms.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43by481K1PzDr3l
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 09:20:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43c06D54KyzDr7F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 10:52:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.13; helo=inva020.nxp.com;
- envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=joel.stan@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-X-Greylist: delayed 452 seconds by postgrey-1.36 at bilbo;
- Sat, 12 Jan 2019 09:19:01 AEDT
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=jms.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="O36enOsH"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43by2F1gcjzDr3j
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 09:19:00 +1100 (AEDT)
-Received: from inva020.nxp.com (localhost [127.0.0.1])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 1E9061A0200;
- Fri, 11 Jan 2019 23:11:24 +0100 (CET)
-Received: from smtp.na-rdc02.nxp.com (inv1260.us-phx01.nxp.com [134.27.49.11])
- by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id D891D1A01FC;
- Fri, 11 Jan 2019 23:11:23 +0100 (CET)
-Received: from someleo.am.freescale.net (someleo.am.freescale.net
- [10.81.33.49])
- by inv1260.us-phx01.nxp.com (Postfix) with ESMTP id F0C5D40CAF;
- Fri, 11 Jan 2019 15:11:22 -0700 (MST)
-From: Li Yang <leoyang.li@nxp.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@osadl.org>,
- Scott Wood <oss@buserror.net>
-Subject: [PATCH] soc: fsl: guts: reuse machine name from device tree
-Date: Fri, 11 Jan 2019 16:11:07 -0600
-Message-Id: <20190111221107.952-1-leoyang.li@nxp.com>
-X-Mailer: git-send-email 2.17.1
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43c04W3ytfzDr5T
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 10:51:06 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id b7so7659235pfi.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2019 15:51:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=++9eEDdsUT8HBO5NqeOGNP4Jfp/w9i2O3P5HVjSpccQ=;
+ b=O36enOsHXbdOHfU0fcOij9uLZ/7cCOo1Vajr/22thr94ZlwKktbWwU/RXGXmPoVfV/
+ Q6gq2mod36ZR000V9/oM4ZDlqkZJD3xcUdVJX2aX3nV6XTYDMMnBA+Qu89LbAV6fN5dA
+ SDz5dQpZmubRrP9K4xdAFyhWPGL+ampTVDBYEMej62ojyw0Km5ERMg2mREPuZkgQ0sJV
+ XHFR27BWlzTCJ/axxeOSCTpoQ23x1IbbxfXwRwxCjtu4ZGCniskiHgmLK9PG0OGQwtPo
+ OefCJEfcr0wv48iskXObsTiv91xIFvGVfm2etlwJgjpcj6rihTbkLwOyKo1iaRDljsAe
+ 9FdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=++9eEDdsUT8HBO5NqeOGNP4Jfp/w9i2O3P5HVjSpccQ=;
+ b=a0qVbOx9ySSFAUa0Kp9dnGhKDQ2iC7n/weMjaUW+Z/1KgTXOEjq3CzudllImUDCuWY
+ 5XdRONSAAXwbTeQU+H4AhTrPHeJ9rxV37n1OJYRtrKRv84dhUGcEXxb+R+UA37buR+ix
+ AVZcRiSTGGCEhkHvCMEHmECUs26lWowvPc6ifXkb9nj2k1elmCCXP/HlIcJALUr22gqj
+ TkxXPhZB2t6i30rxQaK7eu4LtYSxaP71AwVSBwp0qJR7xaBXstockT8z248iaWAD239y
+ 8i3i04/kyS3VoEYWXR829LW6Mklf2Wyr/z0A154RDMuSd/OtkiHevsyHb1q352g9qMc3
+ IZbA==
+X-Gm-Message-State: AJcUukcjeCLm13fR2wn/YIjx4jGNY6TK73yMVSitU86KXIsBae0A9Y1V
+ 5Pve3wJMlTQcjeMEnkDojOLX+9+e
+X-Google-Smtp-Source: ALg8bN5R3n5LJ2+b0+n6r0ppGGK+Dl2ZuvewiNFy+8shfvW+s7nguucbu80NEkmuWUwnp8LpLJ2IFQ==
+X-Received: by 2002:a63:6906:: with SMTP id e6mr14900118pgc.144.1547250664361; 
+ Fri, 11 Jan 2019 15:51:04 -0800 (PST)
+Received: from aurora.jms.id.au (natp-s01-129-78-56-201.gw.usyd.edu.au.
+ [129.78.56.201])
+ by smtp.gmail.com with ESMTPSA id 22sm101643100pgd.85.2019.01.11.15.51.01
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 11 Jan 2019 15:51:03 -0800 (PST)
+Received: by aurora.jms.id.au (sSMTP sendmail emulation);
+ Sat, 12 Jan 2019 10:50:58 +1100
+From: Joel Stanley <joel@jms.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Use ALIGN instead of BLOCK
+Date: Sat, 12 Jan 2019 10:50:56 +1100
+Message-Id: <20190111235056.27435-1-joel@jms.id.au>
+X-Mailer: git-send-email 2.19.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,62 +91,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Li Yang <leoyang.li@nxp.com>
+Cc: Nick Desaulniers <ndesaulniers@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reuse the string machine from the device tree data structure instead
-of duplicating the data again.  This also prevents a potential memory
-allocation failure that was not handled previously.  Also fixes an early
-put of root device node.
+In the ld documentation under Builtin Functions:
 
-Reported-by: Nicholas Mc Guire <hofrat@osadl.org>
-Signed-off-by: Li Yang <leoyang.li@nxp.com>
+  BLOCK(exp)
+
+    This is a synonym for ALIGN, for compatibility with older linker scripts.
+
+Clang's linker (lld) doesn't know about BLOCK so remove this use of it.
+
+Link: https://github.com/ClangBuiltLinux/linux/issues/253
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
- drivers/soc/fsl/guts.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c
-index 302e0c8d69d9..4f9655087bd7 100644
---- a/drivers/soc/fsl/guts.c
-+++ b/drivers/soc/fsl/guts.c
-@@ -32,6 +32,7 @@ struct fsl_soc_die_attr {
- static struct guts *guts;
- static struct soc_device_attribute soc_dev_attr;
- static struct soc_device *soc_dev;
-+static struct device_node *root;
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index ad1c77f71f54..3ae4c959f95b 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -86,11 +86,11 @@ SECTIONS
  
- 
- /* SoC die attribute definition for QorIQ platform */
-@@ -132,7 +133,7 @@ EXPORT_SYMBOL(fsl_guts_get_svr);
- 
- static int fsl_guts_probe(struct platform_device *pdev)
- {
--	struct device_node *root, *np = pdev->dev.of_node;
-+	struct device_node *np = pdev->dev.of_node;
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
- 	const struct fsl_soc_die_attr *soc_die;
-@@ -155,9 +156,8 @@ static int fsl_guts_probe(struct platform_device *pdev)
- 	root = of_find_node_by_path("/");
- 	if (of_property_read_string(root, "model", &machine))
- 		of_property_read_string_index(root, "compatible", 0, &machine);
--	of_node_put(root);
- 	if (machine)
--		soc_dev_attr.machine = devm_kstrdup(dev, machine, GFP_KERNEL);
-+		soc_dev_attr.machine = machine;
- 
- 	svr = fsl_guts_get_svr();
- 	soc_die = fsl_soc_die_match(svr, fsl_soc_die);
-@@ -192,6 +192,7 @@ static int fsl_guts_probe(struct platform_device *pdev)
- static int fsl_guts_remove(struct platform_device *dev)
- {
- 	soc_device_unregister(soc_dev);
-+	of_node_put(root);
- 	return 0;
- }
- 
+ #ifdef CONFIG_PPC64
+ 	/*
+-	 * BLOCK(0) overrides the default output section alignment because
++	 * ALIGN(0) overrides the default output section alignment because
+ 	 * this needs to start right after .head.text in order for fixed
+ 	 * section placement to work.
+ 	 */
+-	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
++	.text ALIGN(0) : AT(ADDR(.text) - LOAD_OFFSET) {
+ #ifdef CONFIG_LD_HEAD_STUB_CATCH
+ 		KEEP(*(.linker_stub_catch));
+ 		. = . ;
 -- 
-2.17.1
+2.19.1
 
