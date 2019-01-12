@@ -2,68 +2,67 @@ Return-Path: <SRS0=eeko=PU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7958BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 16:24:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4AABC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 16:28:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 018E12084C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 16:24:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 018E12084C
+	by mail.kernel.org (Postfix) with ESMTPS id 35DF62084E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 16:28:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35DF62084E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gmx.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43cQ7B0ktbzDqtW
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 03:24:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43cQCr0dLzzDqDS
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 03:28:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmx.net
- (client-ip=212.227.15.15; helo=mout.gmx.net;
+ (client-ip=212.227.17.21; helo=mout.gmx.net;
  envelope-from=j.neuschaefer@gmx.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=gmx.net
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+X-Greylist: delayed 330 seconds by postgrey-1.36 at bilbo;
+ Sun, 13 Jan 2019 03:27:28 AEDT
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43cQ3q50X9zDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2019 03:21:59 +1100 (AEDT)
-Received: from longitude ([109.90.232.48]) by mail.gmx.com (mrgmx003
- [212.227.17.190]) with ESMTPSA (Nemesis) id 0MMjgF-1gcZPY1xLb-008Z06; Sat, 12
- Jan 2019 17:21:39 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43cQB86pZszDqCF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2019 03:27:28 +1100 (AEDT)
+Received: from longitude ([109.90.232.48]) by mail.gmx.com (mrgmx101
+ [212.227.17.168]) with ESMTPSA (Nemesis) id 0Lusmr-1hQrxH3aUb-0101Mb; Sat, 12
+ Jan 2019 17:21:34 +0100
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: wii.dts: Add GPIO keys
-Date: Sat, 12 Jan 2019 17:21:24 +0100
-Message-Id: <20190112162124.3341-3-j.neuschaefer@gmx.net>
+Subject: [PATCH 0/2] powerpc: wii.dts: GPIO interrupt and button support
+Date: Sat, 12 Jan 2019 17:21:22 +0100
+Message-Id: <20190112162124.3341-1-j.neuschaefer@gmx.net>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190112162124.3341-1-j.neuschaefer@gmx.net>
-References: <20190112162124.3341-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:TpDGHZe2O+O8zBRP6TK8+6lMXbL49NlvpGmpjKng9ZctZKOUc/F
- Z72QFHW3FC3AZhCKcnvIuTrIT9ulk96lzwh2dDtaCiqb9UyhwsFVj8ktP9yL510fxtmGEo/
- iOUsG/oUb/4Y+RFHfR/qyjMqGVxgluobN9NM0Bqtlyx9v185yPB25IqsOrR5X0IHa63pfCL
- c6FLyABT5QMUOjyrrPKqw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:QudKOvcbQuI=:A23n77WeV+djuACoRh6Y8j
- 678NyZZPrPqR3R3vbdx3X3mOsHvFMX2y396lh442olJRXGO5vHu0IC6IcTFPbzzfPxtfWwj83
- qjSH46cmUGpI6Yrv4cmxMpnkQ+k12w00oP97M0XUa3GZrr0U1wH1aW55mH6cKrMbgfM+0yFY6
- DfxDbiuMftSkA1IToikBO1CJqF4atu5iF9qcebymCqKGGCdl61lc0UVqjvKtr0nmFIgOAyAj/
- xb+5RKV3qjKDM8rKrLdOc9HJ0UxZKKIZbWaYWxgea9s9Ys4lr2z9trRG1sfqdiOc/uU5TsJR+
- 8SLlYe8FaSf2Kr6O6JmWZqHYJPSn/78PyrsOD6vPymxa+x2HYpOjyd+TlPydLopqG4NdHLjKO
- oOkzyN1kzV03K94DqPon2yO0C6YEGJd3ai/d8Vyt9YDyy6+YQSXRur4N87I528OrEnI0GH6H9
- CboNcveO5rgzB0wOsnSZpi96PJjjv2vwFzbHxRFnY9jtEuEqmLCUHSSpVsbgkIXNDVQ0EH3TD
- GTTdVQFJ+R4v9Gnlz+FvdqX7rFU+KNy/6U38nFUsg3iuIKu2Hnn8T/tl1trPH7qK8senj7Mtk
- 1RbjOjpIIcc7+lQkpC1g2PC5bKbN7a+jtvcpmH7kQ//+/URa78VcOGOCY3QQTh4YJ6FMnJAXM
- PhtV04jPekaPFv1HhxUEpfJNiMC8NKKusl/kUXu3L4E0OjC3/u+eB4XLdu18wAidkIEY3LMiu
- WnILchWIkPB4EB40h//wZMyio9fwAhSCzOtu2ov5svl5FKb9pOf24Wz3ZksXOFyivvMSbHLrb
- 6CEpNwfwQkqKSd4BL9OFWqGntHArkcBBVK6k71XDUytNDS19NtwpRaSo0UJmTlT3CAfs0SDcv
- KYgjgzMGwRyXCrK+Flx8x3t9RYOLiobvbEgqJt4iryGRK2JSjC+GzK44Y2dmS+CajqsVf+onS
- CRbtIEaIFVw==
+X-Provags-ID: V03:K1:NvSI0Cn9AkS944gBf8AO4c2SIPinsXmyo1eQWzZU5kvzefHaxLa
+ TbSLldJGLjkVAvigiWClgZRNcwwtP0+RAzeXQlMa9s8S/i1MylnKghvWYCP6hMh/7ZZtO7Q
+ 7IkF3TIyO4OJdKqSMeqpPZQRS91MlbZwHy4ejqbQaq/sKvkutDB/Kd1C2TjVDQm08Q7kouG
+ 3Ya53DmxFA9u6KfZMCg1g==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:nJFY3hkbaFI=:gQp/+XPnOmm9NiCj6vuBIS
+ 9y144ptedV6vgS4T+OBtEVXuEQ02xLkdupVF5MzCAEBP6RaR0N/qC88tLHFsxxknYtPmiM5qy
+ ELEKj6lYbfWrJCRnxCOU+kFZy1AQUEaAWO5xpngLS4R9AZDEe232KfIOJ3COoirs0jibpv3R0
+ AArt5JimDKA8k4aKSi9r05ddfAyZg6tQXPiAow91L+8DLqKuNNBtCKGkWBjTi1voHMBW+djWL
+ C8WSO8nBVHzg86KoZDCZXHdAmOgnPOq4qqupAWtk93mcRU0Nr1aEgRQcg4hCM0RSMgKKh0ShN
+ ykkHeuXpajhKjHCiQKD6KBz4sef1pLlfieTjDODgOX4EhEe0HVb9VkSQfvUU1PW51ZFMJNXIt
+ AzyvTB6MC61P1CQyGLGCt8fxOpspLKCm1SAfVE5c8NfXBzI/wFxQDTAdOiewtpfHRWSX4/Rh6
+ YTxQqssPuODsoXxbocxk2ynAs/rmS7/2bXrYxp51gpzp89wnbnPE9pEDH0LgokEFuFlUspsrY
+ a/EK3CT3zeKVUiwUBypNCbaClJzD8di+IQ7CzOaAfd7W8R+csjjxV8p9b9C6EqHWCXvqDcKDS
+ D5PLSJn4wUq0G1ZWZ1J+iXZdZ9RRI17TbJMKnxTQT5C15JUyLzMkFdoRuFwfSWurVWGy2sT9u
+ dKI/wc8lECMGd6Qx0G26n284Ttn7cFhgTl09SXn+6DuXY/07JClQAz7H3HqFNPuQ9b4FnUZM3
+ VhB/ucQMgCcUqeZeNtBHEPFe8KijDsGgfC/zzplU9yWMNhpJopezm6ZU7so9oePPsA9Jyi4r9
+ W6xm9tmseC7qsNgQyi0HeJY+FyfIOfZ5m2gd9UzcEI1NUFORrrdoSAHZgyPDheQeS9YMemTie
+ 2IPgeb9d7tQkQ/zSm/v2tg5byEEoppS4hzHSse/8x+WUoQCZqEkd0CtzrFhmpwMINx9zZ5K1n
+ uY903NxOFMQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,50 +82,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Wii has POWER and EJECT buttons, which are connected through
-normalization logic to the GPIO controller (the length of an assertion
-of these signals is always the same, regardless of how long the user
-pressed the buttons).
+This patchset adds the necessary bits to wii.dts to enable interrupt
+support in the GPIO controller, and defines two GPIO-based buttons,
+the POWER button and the EJECT button.
 
-Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
----
- arch/powerpc/boot/dts/wii.dts | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+I will send another patchset which will implement interrupt support in
+the GPIO driver (gpio-hlwd.c).
 
-diff --git a/arch/powerpc/boot/dts/wii.dts b/arch/powerpc/boot/dts/wii.dts
-index 864e5a17aa1d..64f886a6327f 100644
---- a/arch/powerpc/boot/dts/wii.dts
-+++ b/arch/powerpc/boot/dts/wii.dts
-@@ -14,6 +14,7 @@
- 
- /dts-v1/;
- #include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/input/input.h>
- 
- /*
-  * This is commented-out for now.
-@@ -249,5 +250,21 @@
- 			gpios = <&GPIO 8 GPIO_ACTIVE_HIGH>;
- 		};
- 	};
-+
-+	gpio-keys {
-+		compatible = "gpio-keys";
-+
-+		power {
-+			label = "Power Button";
-+			gpios = <&GPIO 0 GPIO_ACTIVE_HIGH>;
-+			linux,code = <KEY_POWER>;
-+		};
-+
-+		eject {
-+			label = "Eject Button";
-+			gpios = <&GPIO 6 GPIO_ACTIVE_HIGH>;
-+			linux,code = <KEY_EJECTCD>;
-+		};
-+	};
- };
- 
+Jonathan Neuschäfer (2):
+  powerpc: wii.dts: Add interrupt-related properties to GPIO node
+  powerpc: wii.dts: Add GPIO keys
+
+ arch/powerpc/boot/dts/wii.dts | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
 -- 
 2.20.1
 
