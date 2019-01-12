@@ -2,65 +2,48 @@ Return-Path: <SRS0=eeko=PU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7120BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 10:12:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 838A1C43387
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 10:29:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ECD1120870
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 10:12:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECD1120870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id B64C92086C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 10:29:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B64C92086C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43cFsR12s0zDr68
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 21:12:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43cGDf2sP7zDr9M
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jan 2019 21:29:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43cFVL4t2BzDr5k
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 20:55:54 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43cFVD5cCDz9vCJB;
- Sat, 12 Jan 2019 10:55:48 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id RYDiNUq-PhEz; Sat, 12 Jan 2019 10:55:48 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43cFVD56K8z9vCJ7;
- Sat, 12 Jan 2019 10:55:48 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 78FDD8B77F;
- Sat, 12 Jan 2019 10:55:51 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id OhEhaUPJ23NM; Sat, 12 Jan 2019 10:55:51 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 33A188B74C;
- Sat, 12 Jan 2019 10:55:51 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id F1FAF7183D; Sat, 12 Jan 2019 09:55:50 +0000 (UTC)
-Message-Id: <dafc3f3034f550d1b9fa16abe5ea071b1b0356c8.1547195978.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1547195976.git.christophe.leroy@c-s.fr>
-References: <cover.1547195976.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v13 09/10] powerpc/64: Remove CURRENT_THREAD_INFO
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.ibm.com>
-Date: Sat, 12 Jan 2019 09:55:50 +0000 (UTC)
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43cGC129sKzDr1X
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2019 21:27:39 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BD876EBD;
+ Sat, 12 Jan 2019 02:27:36 -0800 (PST)
+Received: from p8cg001049571a15.blr.arm.com (p8cg001049571a15.blr.arm.com
+ [10.162.40.80])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 31D2D3F5AF;
+ Sat, 12 Jan 2019 02:27:26 -0800 (PST)
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+To: linux-mm@kvack.org, akpm@linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org,
+ kvmarm@lists.cs.columbia.edu
+Subject: [PATCH] mm: Introduce GFP_PGTABLE
+Date: Sat, 12 Jan 2019 15:56:38 +0530
+Message-Id: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,197 +55,396 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: mark.rutland@arm.com, mhocko@suse.com, peterz@infradead.org,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
+ aneesh.kumar@linux.ibm.com, linux@armlinux.org.uk, mingo@redhat.com,
+ rientjes@google.com, marc.zyngier@arm.com, rppt@linux.vnet.ibm.com,
+ shakeelb@google.com, kirill@shutemov.name, tglx@linutronix.de, vbabka@suse.cz,
+ ard.biesheuvel@linaro.org, steve.capper@arm.com, christoffer.dall@arm.com,
+ james.morse@arm.com, robin.murphy@arm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Now that current_thread_info is located at the beginning of 'current'
-task struct, CURRENT_THREAD_INFO macro is not really needed any more.
+All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
+__GFP_ZERO) and using it for allocating page table pages. This causes some
+code duplication which can be easily avoided. GFP_KERNEL allocated and
+cleared out pages (__GFP_ZERO) are required for page tables on any given
+architecture. This creates a new generic GFP flag flag which can be used
+for any page table page allocation. Does not cause any functional change.
 
-This patch replaces it by loads of the value at PACACURRENT(r13).
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h       |  4 ++--
- arch/powerpc/include/asm/thread_info.h         |  4 ----
- arch/powerpc/kernel/entry_64.S                 | 10 +++++-----
- arch/powerpc/kernel/exceptions-64e.S           |  2 +-
- arch/powerpc/kernel/exceptions-64s.S           |  2 +-
- arch/powerpc/kernel/idle_book3e.S              |  2 +-
- arch/powerpc/kernel/idle_power4.S              |  2 +-
- arch/powerpc/kernel/trace/ftrace_64_mprofile.S |  6 +++---
- 8 files changed, 14 insertions(+), 18 deletions(-)
+ arch/arm/include/asm/pgalloc.h               |  8 +++-----
+ arch/arm/mm/mmu.c                            |  2 +-
+ arch/arm64/include/asm/pgalloc.h             |  9 ++++-----
+ arch/arm64/mm/mmu.c                          |  2 +-
+ arch/arm64/mm/pgd.c                          |  4 ++--
+ arch/powerpc/include/asm/book3s/64/pgalloc.h |  4 ++--
+ arch/powerpc/include/asm/pgalloc.h           |  2 --
+ arch/powerpc/mm/pgtable-frag.c               |  4 ++--
+ arch/sh/mm/pgtable.c                         |  6 ++----
+ arch/unicore32/include/asm/pgalloc.h         |  6 ++----
+ arch/x86/kernel/espfix_64.c                  |  6 ++----
+ arch/x86/mm/pgtable.c                        | 14 ++++++--------
+ include/linux/gfp.h                          |  1 +
+ virt/kvm/arm/mmu.c                           |  2 +-
+ 14 files changed, 29 insertions(+), 41 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 3b4767ed3ec5..dd6a5ae7a769 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -671,7 +671,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
+diff --git a/arch/arm/include/asm/pgalloc.h b/arch/arm/include/asm/pgalloc.h
+index 17ab72f..72be6f5 100644
+--- a/arch/arm/include/asm/pgalloc.h
++++ b/arch/arm/include/asm/pgalloc.h
+@@ -57,8 +57,6 @@ static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ extern pgd_t *pgd_alloc(struct mm_struct *mm);
+ extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
  
- #define RUNLATCH_ON				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r3, r1);		\
-+	ld	r3, PACACURRENT(r13);		\
- 	ld	r4,TI_LOCAL_FLAGS(r3);		\
- 	andi.	r0,r4,_TLF_RUNLATCH;		\
- 	beql	ppc64_runlatch_on_trampoline;	\
-@@ -721,7 +721,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
- #ifdef CONFIG_PPC_970_NAP
- #define FINISH_NAP				\
- BEGIN_FTR_SECTION				\
--	CURRENT_THREAD_INFO(r11, r1);		\
-+	ld	r11, PACACURRENT(r13);		\
- 	ld	r9,TI_LOCAL_FLAGS(r11);		\
- 	andi.	r10,r9,_TLF_NAPPING;		\
- 	bnel	power4_fixup_nap;		\
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index c959b8d66cac..8e1d0195ac36 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -17,10 +17,6 @@
- 
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
- 
--#ifdef CONFIG_PPC64
--#define CURRENT_THREAD_INFO(dest, sp)	stringify_in_c(ld dest, PACACURRENT(r13))
--#endif
+-#define PGALLOC_GFP	(GFP_KERNEL | __GFP_ZERO)
 -
- #ifndef __ASSEMBLY__
- #include <linux/cache.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 01d0706d873f..83bddacd7a17 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -166,7 +166,7 @@ system_call:			/* label this so stack traces look sane */
- 	li	r10,IRQS_ENABLED
- 	std	r10,SOFTE(r1)
+ static inline void clean_pte_table(pte_t *pte)
+ {
+ 	clean_dcache_area(pte + PTE_HWTABLE_PTRS, PTE_HWTABLE_SIZE);
+@@ -85,7 +83,7 @@ pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+ 	pte_t *pte;
  
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
- 	bne	.Lsyscall_dotrace		/* does not return */
-@@ -213,7 +213,7 @@ system_call:			/* label this so stack traces look sane */
- 	ld	r3,RESULT(r1)
+-	pte = (pte_t *)__get_free_page(PGALLOC_GFP);
++	pte = (pte_t *)__get_free_page(GFP_PGTABLE);
+ 	if (pte)
+ 		clean_pte_table(pte);
+ 
+@@ -98,9 +96,9 @@ pte_alloc_one(struct mm_struct *mm)
+ 	struct page *pte;
+ 
+ #ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
++	pte = alloc_pages(GFP_PGTABLE | __GFP_HIGHMEM, 0);
+ #else
+-	pte = alloc_pages(PGALLOC_GFP, 0);
++	pte = alloc_pages(GFP_PGTABLE, 0);
+ #endif
+ 	if (!pte)
+ 		return NULL;
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index f5cc1cc..6d47784 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -733,7 +733,7 @@ static void __init *early_alloc(unsigned long sz)
+ 
+ static void *__init late_alloc(unsigned long sz)
+ {
+-	void *ptr = (void *)__get_free_pages(PGALLOC_GFP, get_order(sz));
++	void *ptr = (void *)__get_free_pages(GFP_PGTABLE, get_order(sz));
+ 
+ 	if (!ptr || !pgtable_page_ctor(virt_to_page(ptr)))
+ 		BUG();
+diff --git a/arch/arm64/include/asm/pgalloc.h b/arch/arm64/include/asm/pgalloc.h
+index 52fa47c..d5c75bf 100644
+--- a/arch/arm64/include/asm/pgalloc.h
++++ b/arch/arm64/include/asm/pgalloc.h
+@@ -26,14 +26,13 @@
+ 
+ #define check_pgt_cache()		do { } while (0)
+ 
+-#define PGALLOC_GFP	(GFP_KERNEL | __GFP_ZERO)
+ #define PGD_SIZE	(PTRS_PER_PGD * sizeof(pgd_t))
+ 
+ #if CONFIG_PGTABLE_LEVELS > 2
+ 
+ static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pmd_t *)__get_free_page(PGALLOC_GFP);
++	return (pmd_t *)__get_free_page(GFP_PGTABLE);
+ }
+ 
+ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmdp)
+@@ -62,7 +61,7 @@ static inline void __pud_populate(pud_t *pudp, phys_addr_t pmdp, pudval_t prot)
+ 
+ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+ {
+-	return (pud_t *)__get_free_page(PGALLOC_GFP);
++	return (pud_t *)__get_free_page(GFP_PGTABLE);
+ }
+ 
+ static inline void pud_free(struct mm_struct *mm, pud_t *pudp)
+@@ -93,7 +92,7 @@ extern void pgd_free(struct mm_struct *mm, pgd_t *pgdp);
+ static inline pte_t *
+ pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+-	return (pte_t *)__get_free_page(PGALLOC_GFP);
++	return (pte_t *)__get_free_page(GFP_PGTABLE);
+ }
+ 
+ static inline pgtable_t
+@@ -101,7 +100,7 @@ pte_alloc_one(struct mm_struct *mm)
+ {
+ 	struct page *pte;
+ 
+-	pte = alloc_pages(PGALLOC_GFP, 0);
++	pte = alloc_pages(GFP_PGTABLE, 0);
+ 	if (!pte)
+ 		return NULL;
+ 	if (!pgtable_page_ctor(pte)) {
+diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+index b6f5aa5..07b1c0f 100644
+--- a/arch/arm64/mm/mmu.c
++++ b/arch/arm64/mm/mmu.c
+@@ -372,7 +372,7 @@ static void __create_pgd_mapping(pgd_t *pgdir, phys_addr_t phys,
+ 
+ static phys_addr_t pgd_pgtable_alloc(void)
+ {
+-	void *ptr = (void *)__get_free_page(PGALLOC_GFP);
++	void *ptr = (void *)__get_free_page(GFP_PGTABLE);
+ 	if (!ptr || !pgtable_page_ctor(virt_to_page(ptr)))
+ 		BUG();
+ 
+diff --git a/arch/arm64/mm/pgd.c b/arch/arm64/mm/pgd.c
+index 289f911..5b28e2b 100644
+--- a/arch/arm64/mm/pgd.c
++++ b/arch/arm64/mm/pgd.c
+@@ -31,9 +31,9 @@ static struct kmem_cache *pgd_cache __ro_after_init;
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+ 	if (PGD_SIZE == PAGE_SIZE)
+-		return (pgd_t *)__get_free_page(PGALLOC_GFP);
++		return (pgd_t *)__get_free_page(GFP_PGTABLE);
+ 	else
+-		return kmem_cache_alloc(pgd_cache, PGALLOC_GFP);
++		return kmem_cache_alloc(pgd_cache, GFP_PGTABLE);
+ }
+ 
+ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 9c11732..8a7235e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -52,10 +52,10 @@ void pte_frag_destroy(void *pte_frag);
+ static inline pgd_t *radix__pgd_alloc(struct mm_struct *mm)
+ {
+ #ifdef CONFIG_PPC_64K_PAGES
+-	return (pgd_t *)__get_free_page(pgtable_gfp_flags(mm, PGALLOC_GFP));
++	return (pgd_t *)__get_free_page(pgtable_gfp_flags(mm, GFP_PGTABLE));
+ #else
+ 	struct page *page;
+-	page = alloc_pages(pgtable_gfp_flags(mm, PGALLOC_GFP | __GFP_RETRY_MAYFAIL),
++	page = alloc_pages(pgtable_gfp_flags(mm, GFP_PGTABLE | __GFP_RETRY_MAYFAIL),
+ 				4);
+ 	if (!page)
+ 		return NULL;
+diff --git a/arch/powerpc/include/asm/pgalloc.h b/arch/powerpc/include/asm/pgalloc.h
+index e11f030..3b11e8b 100644
+--- a/arch/powerpc/include/asm/pgalloc.h
++++ b/arch/powerpc/include/asm/pgalloc.h
+@@ -18,8 +18,6 @@ static inline gfp_t pgtable_gfp_flags(struct mm_struct *mm, gfp_t gfp)
+ }
+ #endif /* MODULE */
+ 
+-#define PGALLOC_GFP (GFP_KERNEL | __GFP_ZERO)
+-
+ #ifdef CONFIG_PPC_BOOK3S
+ #include <asm/book3s/pgalloc.h>
+ #else
+diff --git a/arch/powerpc/mm/pgtable-frag.c b/arch/powerpc/mm/pgtable-frag.c
+index a7b0521..211aaa7 100644
+--- a/arch/powerpc/mm/pgtable-frag.c
++++ b/arch/powerpc/mm/pgtable-frag.c
+@@ -58,7 +58,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 	struct page *page;
+ 
+ 	if (!kernel) {
+-		page = alloc_page(PGALLOC_GFP | __GFP_ACCOUNT);
++		page = alloc_page(GFP_PGTABLE | __GFP_ACCOUNT);
+ 		if (!page)
+ 			return NULL;
+ 		if (!pgtable_page_ctor(page)) {
+@@ -66,7 +66,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 			return NULL;
+ 		}
+ 	} else {
+-		page = alloc_page(PGALLOC_GFP);
++		page = alloc_page(GFP_PGTABLE);
+ 		if (!page)
+ 			return NULL;
+ 	}
+diff --git a/arch/sh/mm/pgtable.c b/arch/sh/mm/pgtable.c
+index 5c8f924..324732dc5 100644
+--- a/arch/sh/mm/pgtable.c
++++ b/arch/sh/mm/pgtable.c
+@@ -2,8 +2,6 @@
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+ 
+-#define PGALLOC_GFP GFP_KERNEL | __GFP_ZERO
+-
+ static struct kmem_cache *pgd_cachep;
+ #if PAGETABLE_LEVELS > 2
+ static struct kmem_cache *pmd_cachep;
+@@ -32,7 +30,7 @@ void pgtable_cache_init(void)
+ 
+ pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+-	return kmem_cache_alloc(pgd_cachep, PGALLOC_GFP);
++	return kmem_cache_alloc(pgd_cachep, GFP_PGTABLE);
+ }
+ 
+ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+@@ -48,7 +46,7 @@ void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
+ 
+ pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long address)
+ {
+-	return kmem_cache_alloc(pmd_cachep, PGALLOC_GFP);
++	return kmem_cache_alloc(pmd_cachep, GFP_PGTABLE);
+ }
+ 
+ void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+diff --git a/arch/unicore32/include/asm/pgalloc.h b/arch/unicore32/include/asm/pgalloc.h
+index 7cceabe..a3506e5 100644
+--- a/arch/unicore32/include/asm/pgalloc.h
++++ b/arch/unicore32/include/asm/pgalloc.h
+@@ -28,8 +28,6 @@ extern void free_pgd_slow(struct mm_struct *mm, pgd_t *pgd);
+ #define pgd_alloc(mm)			get_pgd_slow(mm)
+ #define pgd_free(mm, pgd)		free_pgd_slow(mm, pgd)
+ 
+-#define PGALLOC_GFP	(GFP_KERNEL | __GFP_ZERO)
+-
+ /*
+  * Allocate one PTE table.
+  */
+@@ -38,7 +36,7 @@ pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+ 	pte_t *pte;
+ 
+-	pte = (pte_t *)__get_free_page(PGALLOC_GFP);
++	pte = (pte_t *)__get_free_page(GFP_PGTABLE);
+ 	if (pte)
+ 		clean_dcache_area(pte, PTRS_PER_PTE * sizeof(pte_t));
+ 
+@@ -50,7 +48,7 @@ pte_alloc_one(struct mm_struct *mm)
+ {
+ 	struct page *pte;
+ 
+-	pte = alloc_pages(PGALLOC_GFP, 0);
++	pte = alloc_pages(GFP_PGTABLE, 0);
+ 	if (!pte)
+ 		return NULL;
+ 	if (!PageHighMem(pte)) {
+diff --git a/arch/x86/kernel/espfix_64.c b/arch/x86/kernel/espfix_64.c
+index aebd0d5..dae28cc 100644
+--- a/arch/x86/kernel/espfix_64.c
++++ b/arch/x86/kernel/espfix_64.c
+@@ -57,8 +57,6 @@
+ # error "Need more virtual address space for the ESPFIX hack"
  #endif
  
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
+-#define PGALLOC_GFP (GFP_KERNEL | __GFP_ZERO)
+-
+ /* This contains the *bottom* address of the espfix stack */
+ DEFINE_PER_CPU_READ_MOSTLY(unsigned long, espfix_stack);
+ DEFINE_PER_CPU_READ_MOSTLY(unsigned long, espfix_waddr);
+@@ -172,7 +170,7 @@ void init_espfix_ap(int cpu)
+ 	pud_p = &espfix_pud_page[pud_index(addr)];
+ 	pud = *pud_p;
+ 	if (!pud_present(pud)) {
+-		struct page *page = alloc_pages_node(node, PGALLOC_GFP, 0);
++		struct page *page = alloc_pages_node(node, GFP_PGTABLE, 0);
  
- 	ld	r8,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3S
-@@ -348,7 +348,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+ 		pmd_p = (pmd_t *)page_address(page);
+ 		pud = __pud(__pa(pmd_p) | (PGTABLE_PROT & ptemask));
+@@ -184,7 +182,7 @@ void init_espfix_ap(int cpu)
+ 	pmd_p = pmd_offset(&pud, addr);
+ 	pmd = *pmd_p;
+ 	if (!pmd_present(pmd)) {
+-		struct page *page = alloc_pages_node(node, PGALLOC_GFP, 0);
++		struct page *page = alloc_pages_node(node, GFP_PGTABLE, 0);
  
- 	/* Repopulate r9 and r10 for the syscall path */
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
--	CURRENT_THREAD_INFO(r10, r1)
-+	ld	r10, PACACURRENT(r13)
- 	ld	r10,TI_FLAGS(r10)
+ 		pte_p = (pte_t *)page_address(page);
+ 		pmd = __pmd(__pa(pte_p) | (PGTABLE_PROT & ptemask));
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index 7bd0170..d608b03 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -13,19 +13,17 @@ phys_addr_t physical_mask __ro_after_init = (1ULL << __PHYSICAL_MASK_SHIFT) - 1;
+ EXPORT_SYMBOL(physical_mask);
+ #endif
  
- 	cmpldi	r0,NR_syscalls
-@@ -746,7 +746,7 @@ _GLOBAL(ret_from_except_lite)
- 	mtmsrd	r10,1		  /* Update machine state */
- #endif /* CONFIG_PPC_BOOK3E */
+-#define PGALLOC_GFP (GFP_KERNEL_ACCOUNT | __GFP_ZERO)
+-
+ #ifdef CONFIG_HIGHPTE
+ #define PGALLOC_USER_GFP __GFP_HIGHMEM
+ #else
+ #define PGALLOC_USER_GFP 0
+ #endif
  
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r3,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3E
- 	ld	r10,PACACURRENT(r13)
-@@ -860,7 +860,7 @@ resume_kernel:
- 1:	bl	preempt_schedule_irq
+-gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
++gfp_t __userpte_alloc_gfp = GFP_PGTABLE | PGALLOC_USER_GFP;
  
- 	/* Re-test flags and eventually loop */
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	bne	1b
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 20f14996281d..04ee24789f80 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -493,7 +493,7 @@ exc_##n##_bad_stack:							    \
-  * interrupts happen before the wait instruction.
-  */
- #define CHECK_NAPPING()							\
--	CURRENT_THREAD_INFO(r11, r1);					\
-+	ld	r11, PACACURRENT(r13);					\
- 	ld	r10,TI_LOCAL_FLAGS(r11);				\
- 	andi.	r9,r10,_TLF_NAPPING;					\
- 	beq+	1f;							\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9e253ce27e08..c7c4e2d6f98f 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1629,7 +1629,7 @@ do_hash_page:
- 	ori	r0,r0,DSISR_BAD_FAULT_64S@l
- 	and.	r0,r4,r0		/* weird error? */
- 	bne-	handle_page_fault	/* if not, try to insert a HPTE */
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
- 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
- 	bne	77f			/* then don't call hash_page now */
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 4e0d94d02030..31e732c378ad 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -63,7 +63,7 @@ _GLOBAL(\name)
- 1:	/* Let's set the _TLF_NAPPING flag so interrupts make us return
- 	 * to the right spot
- 	*/
--	CURRENT_THREAD_INFO(r11, r1)
-+	ld	r11, PACACURRENT(r13)
- 	ld	r10,TI_LOCAL_FLAGS(r11)
- 	ori	r10,r10,_TLF_NAPPING
- 	std	r10,TI_LOCAL_FLAGS(r11)
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index a09b3c7ca176..61ac89fd0a05 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -68,7 +68,7 @@ BEGIN_FTR_SECTION
- 	DSSALL
- 	sync
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r9, PACACURRENT(r13)
- 	ld	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
- 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
- 	std	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
-diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-index 32476a6e4e9c..202bec086e3b 100644
---- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-+++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
-@@ -229,7 +229,7 @@ ftrace_call:
- 	 *  - r0, r11 & r12 are free
+ pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
+ {
+-	return (pte_t *)__get_free_page(PGALLOC_GFP & ~__GFP_ACCOUNT);
++	return (pte_t *)__get_free_page(GFP_PGTABLE & ~__GFP_ACCOUNT);
+ }
+ 
+ pgtable_t pte_alloc_one(struct mm_struct *mm)
+@@ -235,7 +233,7 @@ static int preallocate_pmds(struct mm_struct *mm, pmd_t *pmds[], int count)
+ {
+ 	int i;
+ 	bool failed = false;
+-	gfp_t gfp = PGALLOC_GFP;
++	gfp_t gfp = GFP_PGTABLE;
+ 
+ 	if (mm == &init_mm)
+ 		gfp &= ~__GFP_ACCOUNT;
+@@ -401,14 +399,14 @@ static inline pgd_t *_pgd_alloc(void)
+ 	 * We allocate one page for pgd.
  	 */
- livepatch_handler:
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
+ 	if (!SHARED_KERNEL_PMD)
+-		return (pgd_t *)__get_free_pages(PGALLOC_GFP,
++		return (pgd_t *)__get_free_pages(GFP_PGTABLE,
+ 						 PGD_ALLOCATION_ORDER);
  
- 	/* Allocate 3 x 8 bytes */
- 	ld	r11, TI_livepatch_sp(r12)
-@@ -256,7 +256,7 @@ livepatch_handler:
- 	 * restore it.
+ 	/*
+ 	 * Now PAE kernel is not running as a Xen domain. We can allocate
+ 	 * a 32-byte slab for pgd to save memory space.
  	 */
+-	return kmem_cache_alloc(pgd_cache, PGALLOC_GFP);
++	return kmem_cache_alloc(pgd_cache, GFP_PGTABLE);
+ }
  
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
+ static inline void _pgd_free(pgd_t *pgd)
+@@ -422,7 +420,7 @@ static inline void _pgd_free(pgd_t *pgd)
  
- 	ld	r11, TI_livepatch_sp(r12)
+ static inline pgd_t *_pgd_alloc(void)
+ {
+-	return (pgd_t *)__get_free_pages(PGALLOC_GFP, PGD_ALLOCATION_ORDER);
++	return (pgd_t *)__get_free_pages(GFP_PGTABLE, PGD_ALLOCATION_ORDER);
+ }
  
-@@ -273,7 +273,7 @@ livepatch_handler:
- 	ld	r2,  -24(r11)
+ static inline void _pgd_free(pgd_t *pgd)
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 5f5e25f..a8414be 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -300,6 +300,7 @@ struct vm_area_struct;
+ #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
+ 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
+ #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
++#define GFP_PGTABLE	(GFP_KERNEL | __GFP_ZERO)
  
- 	/* Pop livepatch stack frame */
--	CURRENT_THREAD_INFO(r12, r1)
-+	ld	r12, PACACURRENT(r13)
- 	subi	r11, r11, 24
- 	std	r11, TI_livepatch_sp(r12)
- 
+ /* Convert GFP flags to their corresponding migrate type */
+ #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
+diff --git a/virt/kvm/arm/mmu.c b/virt/kvm/arm/mmu.c
+index fbdf3ac..f60a5b8 100644
+--- a/virt/kvm/arm/mmu.c
++++ b/virt/kvm/arm/mmu.c
+@@ -143,7 +143,7 @@ static int mmu_topup_memory_cache(struct kvm_mmu_memory_cache *cache,
+ 	if (cache->nobjs >= min)
+ 		return 0;
+ 	while (cache->nobjs < max) {
+-		page = (void *)__get_free_page(PGALLOC_GFP);
++		page = (void *)__get_free_page(GFP_PGTABLE);
+ 		if (!page)
+ 			return -ENOMEM;
+ 		cache->objects[cache->nobjs++] = page;
 -- 
-2.13.3
+2.7.4
 
