@@ -2,103 +2,88 @@ Return-Path: <SRS0=jSa2=PV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A77C43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 00:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E06EFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 12:36:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D1CC2086C
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 00:31:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 18465206B7
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 12:36:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=sholland.org header.i=@sholland.org header.b="0qS+OE57";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="A+CivTrQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D1CC2086C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sholland.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sToe6NVO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18465206B7
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ccwg35NRzDqwN
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 11:31:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43cx0n39pSzDqXQ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 23:36:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=sholland.org
- (client-ip=66.111.4.25; helo=out1-smtp.messagingengine.com;
- envelope-from=samuel@sholland.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=sholland.org
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=sholland.org header.i=@sholland.org header.b="0qS+OE57";
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="A+CivTrQ"; dkim-atps=neutral
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="sToe6NVO"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43cbd41N68zDqdx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2019 10:32:48 +1100 (AEDT)
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
- by mailout.nyi.internal (Postfix) with ESMTP id 1F8F621AAD;
- Sat, 12 Jan 2019 18:32:44 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute5.internal (MEProxy); Sat, 12 Jan 2019 18:32:44 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sholland.org; h=
- subject:to:cc:references:from:message-id:date:mime-version
- :in-reply-to:content-type:content-transfer-encoding; s=fm1; bh=3
- NxPxNIGiSzNWT0s/W2ZCnb7jgAT5mi9uinyciQgQYg=; b=0qS+OE57rXAooGNNb
- rArDHRPMKxhpX6VJabM+AShz7kU6/Oeh7Tmygg8qW8qceWcVDssd98RYODtl0OiX
- U4jJlNe7TpRyqyI3+x89Gey7KZkRqN0ewHSwgIxXIymgB0EzTLBF1fDoVhWcyjCg
- yMlxMew7SXyDwv4NcofqibWbDkZT4OSR6HfwUewnYFLRiLB15WIZsdh4j+KA4rNQ
- rXuqGi550bQw6RyKBNfNUlNxPaLeI/q5NEuVBjn05VQAMAOqop3gMTOdzh5rnyGe
- XIR3Ekx6hd/dM24y/wVPn+L8GE0isQ42+YrK9mU9MiCyQ1xpdqb8UE61J6rwqQbW
- nICyQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm1; bh=3NxPxNIGiSzNWT0s/W2ZCnb7jgAT5mi9uinyciQgQ
- Yg=; b=A+CivTrQx9vckpl+WJviaMFcSaWU7ZvGAHAEIdpjMSGxsBueqYAPwgjyJ
- dt4+w8UbZ45wKUB9RQVlNerNlvAyiSxG65RozHESfPM8QJu0BLEVg8buarL2soLv
- SBDPyKI+k/0v5fbBwyOmQ+I0KBZbd/7U5ciO8Af90wd5D5BafnAsAUKCUQVlciFm
- I+Ihd3TPEF+BWEdZ97evxxr/bucSR4tS20N8Br6vRrll3dnZqlW7c1PQwGw0XBc2
- owuO7mMk6u7aKVxV2gnpDkMKcGrIcekZazMyo1tm5kpMK/Y9lblFMwFOMVTGMUcV
- GmuUCjOnABgRTvAeUvVPYHYhwnqpQ==
-X-ME-Sender: <xms:Gnk6XGrOgXrpP71bWIsdlTvNYg-bYPrYF87-BNypbxaMQFlUcwmWEQ>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtledrfeejgddujeehucetufdoteggodetrfdotf
- fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfquhhtnecuuegrihhlohhuthemucef
- tddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefuvfhfhffkff
- gfgggjtgfgsehtjeertddtfeejnecuhfhrohhmpefurghmuhgvlhcujfholhhlrghnugcu
- oehsrghmuhgvlhesshhhohhllhgrnhgurdhorhhgqeenucffohhmrghinhepkhgvrhhnvg
- hlrdhorhhgnecukfhppeejtddrudefhedrudegkedrudehudenucfrrghrrghmpehmrghi
- lhhfrhhomhepshgrmhhuvghlsehshhholhhlrghnugdrohhrghenucevlhhushhtvghruf
- hiiigvpedt
-X-ME-Proxy: <xmx:Gnk6XNxMqGAgXCiOY-2ZsfyvaLS1XzAbZ97Ofp2Rcq-Y9xh0eO6_1g>
- <xmx:Gnk6XEHUqpNBBiUVcqoLxZge4DpUDAL3mftDTm7C4gK_EKl1zaci3A>
- <xmx:Gnk6XIi5dfReuShwwg3dVoOMDOqROzcifZkiYhjainwOFP6pGOP7-g>
- <xmx:HHk6XMH3CO0XSDkO6vayjnDrqjwe5v9_IPH0OjKXnKZeetV02p01ow>
-Received: from [192.168.50.162]
- (70-135-148-151.lightspeed.stlsmo.sbcglobal.net [70.135.148.151])
- by mail.messagingengine.com (Postfix) with ESMTPA id 3C994100E5;
- Sat, 12 Jan 2019 18:32:42 -0500 (EST)
-Subject: Re: [PATCH v5 1/2] powerpc/32: add stack protector support
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-References: <8e81b0647fea15e533a73ad4e9063c059fdfc6df.1537987712.git.christophe.leroy@c-s.fr>
-From: Samuel Holland <samuel@sholland.org>
-Message-ID: <f5600a1d-71ca-f1d7-3973-026462990059@sholland.org>
-Date: Sat, 12 Jan 2019 17:32:40 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43cwyM2lT7zDqX6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2019 23:34:03 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id w4so8889517plz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2019 04:34:03 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=vkY6g5Vqw/ZcPB3+ASMRoGn4tKrtMQnoGHCgEri+h4c=;
+ b=sToe6NVOVkEom92efLv70SEU3rada5B2vsTWOSDUDI5zIPuhy+TyYWwbw/QeR7iK8p
+ JH1OMPXX+8xzNEHKc/FbZ8Vt8fGYSX0ikWz9rsOCTF7jiqV8NsDzolK9LtTxSGx0BiSD
+ kRX+h2ecEb2zS++ct7GSBZ54MCFLGuO14LnFSVTlt6FyTqGVBAkaXoPSu6yL23tluq+A
+ uCHqKKy8yggrNWTArhtIjBiKsn3FSvsnQcBppJahmNkOSXO8/icjgQjAsoG8uyLNyt0u
+ d+0uqQfEVJIeQ4tbUnOi2Yyk2FfNoZ22BKSb7+982GNPiLnKTCinugbLcP2eoDOtjuAB
+ 1q7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=vkY6g5Vqw/ZcPB3+ASMRoGn4tKrtMQnoGHCgEri+h4c=;
+ b=NAtfqFW30Sd4LZbFez6dhTEDiWhW6OnGATPbaf1gzA5506j9Ekkqfd6s0BU7/67UbO
+ jfoR75PCzNRLr4WXeOjzJDF9SSwD8r4W8A2vOfbRlfsYV6ghrPM3Lzq5NJwKlWpQOQjP
+ Xjc9UPM2pTSZFap2eRf2ddoISWREs8bXxUBA5Q0vNDmW1nMtCJoFsb/FzuvylgiNPc0J
+ Y4dpQ76I17FhPKxBGHMa7SyxM4TFlOPJn6SqXHyegxvXGUsFPj+yP/rmoSNj9ntemhB/
+ /nyvm0Bio2t5IGJ5nZ4FAaMtMpkLaW+dEiOxugYTJdLXvTmbTwaVIFmv1+3WjWYsdNoN
+ XzRw==
+X-Gm-Message-State: AJcUukcOFh8+2uJOnF3rtK0kyMdGkNh+c5RbfNhzut8w6q6bXPLAX2oX
+ zlzSxY/e1f+hZKaTtLBy7P0=
+X-Google-Smtp-Source: ALg8bN4dB+C4g9JtLNHp7SyR95TpouuAZTp6SiLy1woSWmhuEb4R+8Lg6NDJC27Mbg+ReF4SMETS/A==
+X-Received: by 2002:a17:902:690c:: with SMTP id
+ j12mr21488290plk.206.1547382840505; 
+ Sun, 13 Jan 2019 04:34:00 -0800 (PST)
+Received: from localhost (14-202-194-140.static.tpgi.com.au. [14.202.194.140])
+ by smtp.gmail.com with ESMTPSA id
+ r4sm165801214pgn.54.2019.01.13.04.33.58
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Sun, 13 Jan 2019 04:33:59 -0800 (PST)
+Date: Sun, 13 Jan 2019 23:33:56 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: ppc64le reliable stack unwinder and scheduled tasks
+Message-ID: <20190113123356.GA26056@350D>
+References: <7f468285-b149-37e2-e782-c9e538b997a9@redhat.com>
+ <20190112010914.GB10427@350D>
+ <20190112084541.GK14180@gate.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <8e81b0647fea15e533a73ad4e9063c059fdfc6df.1537987712.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Sun, 13 Jan 2019 11:30:02 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190112084541.GK14180@gate.crashing.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,81 +95,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Jason A. Donenfeld" <Jason@zx2c4.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Joe Lawrence <joe.lawrence@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+ linux-kernel@vger.kernel.org, Torsten Duwe <duwe@lst.de>,
+ live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello all,
+On Sat, Jan 12, 2019 at 02:45:41AM -0600, Segher Boessenkool wrote:
+> On Sat, Jan 12, 2019 at 12:09:14PM +1100, Balbir Singh wrote:
+> > Could you please define interesting frame on top a bit more? Usually
+> > the topmost return address is in LR
+> 
+> There is no reliable way (other than DWARF unwind info) to find out where
+> the value of LR at function entry currently lives (if anywhere). It may or
+> may not be still available in LR, it may or may not be saved to the return
+> stack slot.  It can also live in some GPR, or in some other stack slot.
+> 
+> (The same is true for all other registers).
+> 
+> The only thing the ABI guarantees you is that you can find all stack frames
+> via the back chain.  If you want more you can use some heuristics and do
+> some heroics (like GDB does), but this is not fully reliable.  Using DWARF
+> unwind info is, but that requires big tables.
+>
 
-On 09/27/18 02:05, Christophe Leroy wrote:
-[..snip..]
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 07d9dce7eda6..45b8eb4d8fe7 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -112,6 +112,9 @@ KBUILD_LDFLAGS	+= -m elf$(BITS)$(LDEMULATION)
->  KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
->  endif
->  
-> +cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard=tls
-> +cflags-$(CONFIG_STACKPROTECTOR)	+= -mstack-protector-guard-reg=r2
-> +
->  LDFLAGS_vmlinux-y := -Bstatic
->  LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
->  LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-> @@ -404,6 +407,13 @@ archclean:
->  
->  archprepare: checkbin
->  
-> +ifdef CONFIG_STACKPROTECTOR
-> +prepare: stack_protector_prepare
-> +
-> +stack_protector_prepare: prepare0
-> +	$(eval KBUILD_CFLAGS += -mstack-protector-guard-offset=$(shell awk '{if ($$2 == "TASK_CANARY") print $$3;}' include/generated/asm-offsets.h))
-> +endif
-> +
+Thanks, so are you suggesting that a reliable stack is not possible on
+ppc64le? Even with the restricted scope of the kernel?
 
-This breaks when building out-of-tree kernel modules. GCC is not getting passed
-the -mstack-protector-guard-offset argument, so the default offset is used. The
-kernel then panics the first time a function with stack protector is called.
-
-I'm seeing this on powerpc64. It looks like it was reported for powerpc on
-kernel bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=201891
-
-Linux 4.20 does not have a "prepare" target when KBUILD_EXTMOD is set. One is
-added by:
-
-  commit e07db28eea38ed4e332b3a89f3995c86b713cb5b
-  Author: Masahiro Yamada <yamada.masahiro@socionext.com>
-  Date:   Thu Nov 22 08:11:54 2018 +0900
-
-      kbuild: fix single target build for external module
-
-However, after cherry-picking that patch, the build fails because it's missing
-prepare0. I applied the patch below and I successfully built an out-of-tree
-module with CONFIG_STACKPROTECTOR=y.
-
-diff --git a/Makefile b/Makefile
-index 826826553085..f0a93e1ba1b6 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1596,9 +1596,10 @@ help:
-        @echo  ''
-
- # Dummies...
--PHONY += prepare scripts
--prepare:
-+PHONY += prepare prepare0 scripts
-+prepare: prepare0
-        $(cmd_crmodverdir)
-+prepare0: ;
- scripts: ;
- endif # KBUILD_EXTMOD
-
-The context has been changed some in later patches, but I think a change like
-this one should go into 5.0, and it e07db28eea38 should go into 4.20.y.
-
-Thanks,
-Samuel
+Balbir Singh.
+ 
