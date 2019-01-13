@@ -2,54 +2,49 @@ Return-Path: <SRS0=jSa2=PV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11B6DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 13:07:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C744C43387
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 17:37:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4563820836
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 13:07:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4563820836
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id BB283206B6
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Jan 2019 17:37:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB283206B6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43cxhv1JPMzDqW7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 00:07:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43d3hW4t0ZzDqQN
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:37:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=duwe@lst.de;
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43cxgB26p8zDqRJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 00:05:51 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 107)
- id 6548A68C8E; Sun, 13 Jan 2019 14:05:47 +0100 (CET)
-Received: from blackhole (p5B0D8EE3.dip0.t-ipconnect.de [91.13.142.227])
- by newverein.lst.de (Postfix) with ESMTPSA id A9EE067329;
- Sun, 13 Jan 2019 14:05:44 +0100 (CET)
-Date: Sun, 13 Jan 2019 14:05:38 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: ppc64le reliable stack unwinder and scheduled tasks
-Message-ID: <20190113140512.44eac0e0@blackhole>
-In-Reply-To: <20190113123356.GA26056@350D>
-References: <7f468285-b149-37e2-e782-c9e538b997a9@redhat.com>
- <20190112010914.GB10427@350D>
- <20190112084541.GK14180@gate.crashing.org>
- <20190113123356.GA26056@350D>
-Organization: LST e.V.
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-suse-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43d3fq6s7ZzDqQN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 04:36:02 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 8527AAD0A;
+ Sun, 13 Jan 2019 17:35:58 +0000 (UTC)
+Date: Sun, 13 Jan 2019 18:35:55 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH] mm: Introduce GFP_PGTABLE
+Message-ID: <20190113173555.GC1578@dhcp22.suse.cz>
+References: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,47 +56,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joe Lawrence <joe.lawrence@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
- linux-kernel@vger.kernel.org, live-patching@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvmarm@lists.cs.columbia.edu,
+ linux@armlinux.org.uk, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com,
+ marc.zyngier@arm.com, rppt@linux.vnet.ibm.com, shakeelb@google.com,
+ kirill@shutemov.name, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
+ christoffer.dall@arm.com, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 13 Jan 2019 23:33:56 +1100
-Balbir Singh <bsingharora@gmail.com> wrote:
+On Sat 12-01-19 15:56:38, Anshuman Khandual wrote:
+> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
+> __GFP_ZERO) and using it for allocating page table pages. This causes some
+> code duplication which can be easily avoided. GFP_KERNEL allocated and
+> cleared out pages (__GFP_ZERO) are required for page tables on any given
+> architecture. This creates a new generic GFP flag flag which can be used
+> for any page table page allocation. Does not cause any functional change.
 
-> On Sat, Jan 12, 2019 at 02:45:41AM -0600, Segher Boessenkool wrote:
-> > On Sat, Jan 12, 2019 at 12:09:14PM +1100, Balbir Singh wrote:
-> > > Could you please define interesting frame on top a bit more?
-> > > Usually the topmost return address is in LR
-> > 
-> > There is no reliable way (other than DWARF unwind info) to find out
-> > where the value of LR at function entry currently lives (if
-> > anywhere). It may or may not be still available in LR, it may or
-> > may not be saved to the return stack slot.  It can also live in
-> > some GPR, or in some other stack slot.
-> > 
-> > (The same is true for all other registers).
-> > 
-> > The only thing the ABI guarantees you is that you can find all
-> > stack frames via the back chain.  If you want more you can use some
-> > heuristics and do some heroics (like GDB does), but this is not
-> > fully reliable.  Using DWARF unwind info is, but that requires big
-> > tables.
-> >
-> 
-> Thanks, so are you suggesting that a reliable stack is not possible on
-> ppc64le? Even with the restricted scope of the kernel?
+I agree that some unification is due but GFP_PGTABLE is not something to
+expose in generic gfp.h IMHO. It just risks an abuse. I would be looking
+at providing asm-generic implementation and reuse it to remove the code
+duplication. But I haven't tried that to know that it will work out due
+to small/subtle differences between arches.
 
-The LR value location is _always_ hard to determine for the topmost
-frame. This is not a problem for voluntarily sleeping tasks, because the
-topmost function will always be well known. It is a problem for tasks preempted
-by an interrupt, or those handling an exception, that's why these need
-to report "unreliable".
-
-Note that this is a very general problem, across _all_ RISC-like
-architectures. It should thus be handled as generically as possible.
-
-	Torsten
-
+> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+-- 
+Michal Hocko
+SUSE Labs
