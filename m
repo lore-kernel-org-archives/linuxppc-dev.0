@@ -4,40 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DCE45C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:18:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8722BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:19:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 916DF20659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:18:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 916DF20659
+	by mail.kernel.org (Postfix) with ESMTPS id 0BA0820659
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:19:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BA0820659
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dTtw3lXxzDqMb
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 21:18:00 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dTww1H41zDqSs
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 21:19:44 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dTm92FRJzDq7X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 21:12:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dTmB0TfCzDq7X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 21:12:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43dTm86z85z9sDL; Mon, 14 Jan 2019 21:12:08 +1100 (AEDT)
+ id 43dTm95wMKz9sDT; Mon, 14 Jan 2019 21:12:09 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 897bc3df8c5aebb54c32d831f917592e873d0559
+X-powerpc-patch-commit: 6bca515917515b66b7e1dfc1d1d3b7bd8058315c
 X-Patchwork-Hint: ignore
-In-Reply-To: <1547039805-7979-1-git-send-email-leitao@debian.org>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20190109151342.19953-1-fbarrat@linux.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, andrew.donnellan@au1.ibm.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/tm: Limit TM code inside PPC_TRANSACTIONAL_MEM
-Message-Id: <43dTm86z85z9sDL@ozlabs.org>
-Date: Mon, 14 Jan 2019 21:12:08 +1100 (AEDT)
+Subject: Re: powerpc/powernv/npu: Fix oops in pnv_try_setup_npu_table_group()
+Message-Id: <43dTm95wMKz9sDT@ozlabs.org>
+Date: Mon, 14 Jan 2019 21:12:09 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,38 +50,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Breno Leitao <leitao@debian.org>, gregkh@linuxfoundation.org,
- mikey@neuling.org, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-01-09 at 13:16:45 UTC, Breno Leitao wrote:
-> Commit e1c3743e1a20 ("powerpc/tm: Set MSR[TS] just prior to recheckpoint")
-> moved a code block around and this block uses a 'msr' variable outside of
-> the CONFIG_PPC_TRANSACTIONAL_MEM, however the 'msr' variable is declared
-> inside a CONFIG_PPC_TRANSACTIONAL_MEM block, causing a possible error when
-> CONFIG_PPC_TRANSACTION_MEM is not defined.
+On Wed, 2019-01-09 at 15:13:42 UTC, Frederic Barrat wrote:
+> With a recent change around IOMMU group, a system with an opencapi
+> adapter is no longer booting and we get a kernel oops:
 > 
-> 	error: 'msr' undeclared (first use in this function)
+> BUG: Kernel NULL pointer dereference at 0x00000028
+> Faulting instruction address: 0xc0000000000aa38c
+> Oops: Kernel access of bad area, sig: 7 [#1]
+> LE SMP NR_CPUS=2048 NUMA PowerNV
+> Modules linked in:
+> CPU: 5 PID: 1 Comm: swapper/4 Not tainted 5.0.0-rc1-fxb-00001-g3bd6e94bec12
+> NIP:  c0000000000aa38c LR: c0000000000a6608 CTR: c000000000097480
+> REGS: c000000005783700 TRAP: 0300   Not tainted  (5.0.0-rc1-fxb-00001-g3bd6
+> MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 28000228  XER: 20
+> CFAR: c0000000000a6604 DAR: 0000000000000028 DSISR: 00080000 IRQMASK: 0
+> GPR00: c0000000000a6608 c000000005783990 c000000001036100 c0000007bf761860
+> GPR04: 0000000000000000 c000000005783834 0000000000000000 0000000000000000
+> GPR08: 69626d2c6e707500 0000000000000000 0000000000000000 9000000002001003
+> GPR12: 0000000000000000 c0000007bfff8300 c000000000010450 0000000000000000
+> GPR16: c000000000ced938 0000000000000100 c000000000ced948 00000000000a0000
+> GPR20: 00000000000bfffe c000000000ced9a8 0000000000000200 c000000000ced978
+> GPR24: 00000000006080c0 c000000716d09828 c00000002e6fd000 0000000000000000
+> GPR28: c0000007bf4aff68 c0000007bf8d0080 c000000000f23938 c0000007bf761860
+> NIP [c0000000000aa38c] pnv_try_setup_npu_table_group+0x1c/0x1a0
+> LR [c0000000000a6608] pnv_pci_ioda_fixup+0x1f8/0x660
+> Call Trace:
+> [c000000005783990] [c0000000000aa3d0] pnv_try_setup_npu_table_group+0x60/0x
+> [c0000000057839d0] [c0000000000a661c] pnv_pci_ioda_fixup+0x20c/0x660
+> [c000000005783ab0] [c000000000e1d4c0] pcibios_resource_survey+0x2c8/0x31c
+> [c000000005783b90] [c000000000e1caf4] pcibios_init+0xb0/0xe4
+> [c000000005783c10] [c000000000010054] do_one_initcall+0x64/0x264
+> [c000000005783ce0] [c000000000e1132c] kernel_init_freeable+0x36c/0x468
+> [c000000005783db0] [c000000000010474] kernel_init+0x2c/0x148
+> [c000000005783e20] [c00000000000b794] ret_from_kernel_thread+0x5c/0x68
 > 
-> This is not causing a compilation error in the mainline kernel, because
-> 'msr' is being used as an argument of MSR_TM_ACTIVE(), which is defined as
-> the following when CONFIG_PPC_TRANSACTIONAL_MEM is *not* set:
+> An opencapi device is using a device PE, so the current code breaks
+> because pe->pbus is not defined.
 > 
-> 	#define MSR_TM_ACTIVE(x) 0
+> More generally, there's no need to define an IOMMU group for opencapi,
+> as the device sends real addresses directly (admittedly, the
+> virtualization story is yet to be written). So let's fix it by
+> skipping the IOMMU group setup for opencapi PHBs.
 > 
-> This patch just fixes this issue avoiding the 'msr' variable usage outside
-> the CONFIG_PPC_TRANSACTIONAL_MEM block, avoiding trusting in the
-> MSR_TM_ACTIVE() definition.
-> 
-> Cc: stable@vger.kernel.org
-> Reported-by: Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
-> Fixes: e1c3743e1a20 ("powerpc/tm: Set MSR[TS] just prior to recheckpoint")
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+> Fixes: 0bd971676e68 ("powerpc/powernv/npu: Add compound IOMMU groups")
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> Reviewed-by: Greg Kurz <groug@kaod.org>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/897bc3df8c5aebb54c32d831f917592e
+https://git.kernel.org/powerpc/c/6bca515917515b66b7e1dfc1d1d3b7bd
 
 cheers
