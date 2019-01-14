@@ -2,129 +2,51 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 997F8C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 12:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93F8FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:02:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D464620656
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 12:45:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="WxB/wrsj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D464620656
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
+	by mail.kernel.org (Postfix) with ESMTPS id D913E20657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:02:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D913E20657
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dY8k2qmpzDqSf
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 23:45:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dYXv4k2XzDqWQ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 00:02:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=samsung.com
- (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com;
- envelope-from=m.szyprowski@samsung.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=samsung.com header.i=@samsung.com header.b="WxB/wrsj"; 
- dkim-atps=neutral
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dY5j1MszzDqT1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 23:42:31 +1100 (AEDT)
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
- by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
- 20190114124227euoutp02aad7866a024029e69dcbcb39d37d0449~5t4lin6XJ3104831048euoutp028
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 12:42:27 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
- 20190114124227euoutp02aad7866a024029e69dcbcb39d37d0449~5t4lin6XJ3104831048euoutp028
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
- s=mail20170921; t=1547469747;
- bh=JkEUB/1etH5HwCAXK5XQVE51QY576xSQ+oOLRoEdTo4=;
- h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
- b=WxB/wrsjzNm/oPYCYyWojDl04dJdH/qcSBe0q5NXZ+fhCzZkQAjhODUe0E2+5EKEU
- 5ecllJTmSrTr6I8faFf2kUn6aPVEREmFbf3Y57KCpE1m9Vpyy8kDRpH7dZzoop83Tn
- PGDyvDmz0X4LR5Ma/jqkemIISb1dfvcB3kfeXmhw=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
- eucas1p1.samsung.com (KnoxPortal) with ESMTP id
- 20190114124226eucas1p18c02e40c1d8f2e16dc9b8301b473a9bb~5t4k4zJlz2526725267eucas1p10;
- Mon, 14 Jan 2019 12:42:26 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
- eusmges3new.samsung.com (EUCPMTA) with SMTP id E3.96.04806.2B38C3C5; Mon, 14
- Jan 2019 12:42:26 +0000 (GMT)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
- eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
- 20190114124225eucas1p1b6a3be0a59408c78ce17ff2e27665f99~5t4jrTm-12526825268eucas1p1z;
- Mon, 14 Jan 2019 12:42:25 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
- eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
- 20190114124225eusmtrp2d17053cb57772f09b8c7dcd061959277~5t4jcf_cZ0469204692eusmtrp2O;
- Mon, 14 Jan 2019 12:42:25 +0000 (GMT)
-X-AuditID: cbfec7f5-367ff700000012c6-f1-5c3c83b28e63
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
- eusmgms2.samsung.com (EUCPMTA) with SMTP id C8.0D.04128.1B38C3C5; Mon, 14
- Jan 2019 12:42:25 +0000 (GMT)
-Received: from [106.116.147.30] (unknown [106.116.147.30]) by
- eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
- 20190114124224eusmtip2baec9451d28ae77dfcf4ef3317c0caf8~5t4i0jU620772007720eusmtip2J;
- Mon, 14 Jan 2019 12:42:24 +0000 (GMT)
-Subject: Re: [PATCH 3/3] videobuf2: replace a layering violation with
- dma_map_resource
-To: Christoph Hellwig <hch@lst.de>, Pawel Osciak <pawel@osciak.com>,
- Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Niklas_S=c3=b6derlund?=
- <niklas.soderlund+renesas@ragnatech.se>
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Message-ID: <6f8892ac-c2aa-10df-c74f-ba032bf75160@samsung.com>
-Date: Mon, 14 Jan 2019 13:42:26 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <20190111181731.11782-4-hch@lst.de>
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRju29nOjkdnX1PzRaVkXcBuGvrjhCJ2o4MQBCFYrXLl8VI6ZZsu
- NcwLqYlYdKFaywwyy+i2vMecTnKIt8qalkQXTSszS7M0l+U8Wv57nud7n/d5XvgoQmoVeVCx
- Sg2nUiriZCQtrGya6FhryA6S+zVU+zA3bz0SMMWmQKYt67OYMfRaRUxnrZ5kCu5ViBjzOSNi
- Jn9OiZjrBpuAedW8hjk7NCEOcWQ7rU8I1lB2gmQfXDvGnukuRWzHhauIffgig2R7f30k2YHO
- nyRbWF6G2FHDkh30bjookouLTeZUvsERdExe+TkiMcvzyP2SfkEGGnHLRw4U4ADoudwiykc0
- JcU3ENRNtiOefEcw3jop5MkogvrWL2jOkm38PWspRfCm0kTyZBhBWa5+2kJRLjgcxvq32XVX
- bETQnnNyxkFgGwJLUdvMKhKvh/yhfNKOJTgYupvqZ3QhXgFVL20zi9ywHI530vzIImi+2Ce0
- YwfsB8b3zwV2TOClUDWkJ3jsDi/7rgjsWYDHxGC1nZ+tvWW66aCQxy7wyVIu5rEX/KmZM2Qj
- yL2gE/OkAEGFvprkpwKh0fJEZG9EYB+4W+vLyxvhQ2EpYZcBO0P30CK+hDOcrjw/K0sgL0fK
- T68EneXOv9iGx0+JU0imm3eabt45unnn6P7nFiNhGXLnktTx0ZzaX8lp16kV8eokZfS6gwnx
- BjT921qmLGPVqM52wIwwhWROErgUKJeKFMnqlHgzAoqQuUqSNwXJpZJIRUoqp0rYr0qK49Rm
- 5EkJZe6StAVv9khxtELDHea4RE419yqgHDwy0Ab3XSMLnF9rvMMoL9fxfaOtobethyA0Ki5s
- kNDS2H/5ri4iJtySec/W80A+bEqLGq5olNZouj3Ss5Rfn30L6TIlKMXlRzM35/gHLI5VlqaK
- 8oZXE7FZb53afPv1EXuB3lqiCQLTzgQn74Uj2vSigRvL9m3Rbm//4Ug3vZPXyITqGMX6VYRK
- rfgLloMPVWkDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrJIsWRmVeSWpSXmKPExsVy+t/xe7obm21iDB7eEbNYufook8WC/dYW
- Z5vesFtsenyN1eLyrjlsFj0btrJaHJq6l9Hi9/d/rBbLNv1hsrh7Usdiytuf7A7cHpevXWT2
- 2LSqk81j85J6j8k3ljN6nJ+xkNFj980GNo/Hv16yeTy//J3No2/LKkaPz5vkArii9GyK8ktL
- UhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX07WxSUnMyy1KL9O0S9DI6tkxlLmiSrti4
- 9BlTA+Mn0S5GTg4JAROJ5r1/WbsYuTiEBJYySix9upEVIiEjcXJaA5QtLPHnWhcbRNFbRok9
- 234ydzFycAgLREh8feYOEhcR2Msocf/0XbAiZoF/jBLze3cwQnSsZJR48r8JbBSbgKFE11uQ
- UZwcvAJ2EjeOHWAEsVkEVCW23/rDAmKLCsRIzHrSxw5RIyhxcuYTsDingIHE3qdXmUBsZgF1
- iT/zLjFD2PIS29/OgbLFJW49mc80gVFoFpL2WUhaZiFpmYWkZQEjyypGkdTS4tz03GIjveLE
- 3OLSvHS95PzcTYzAaN527OcWoIfeBR9iFOBgVOLhlZhtHSPEmlhWXJl7iFGCg1lJhLfMySZG
- iDclsbIqtSg/vqg0J7X4EKMp0HMTmaVEk/OBiSavJN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBA
- emJJanZqakFqEUwfEwenVAOjzW6udM6jHy4tWq/LuP22+OQF8zKdmJyCnpdcOPCsZK3U3JLy
- /l9Viqff6RQqrchZ/bD7kQHrtlwb8X9r1I879nPWvj57yiFt0c6961ZGzf756wfHDC1ujx9q
- ku/X1uzbYLzNNGyP2ZdP8zoyz67cMeOT6vfIyyKLmHIOCv++v8nVkWEJ7+ciSSWW4oxEQy3m
- ouJEACyoswL8AgAA
-X-CMS-MailID: 20190114124225eucas1p1b6a3be0a59408c78ce17ff2e27665f99
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190111181812epcas2p1eeb68a16701631513eaf297073f7299f
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190111181812epcas2p1eeb68a16701631513eaf297073f7299f
-References: <20190111181731.11782-1-hch@lst.de>
- <CGME20190111181812epcas2p1eeb68a16701631513eaf297073f7299f@epcas2p1.samsung.com>
- <20190111181731.11782-4-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dYTD62zYzDqVD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 23:59:28 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 7237413AA1;
+ Mon, 14 Jan 2019 12:59:23 +0000 (UTC)
+Received: from t460s.redhat.com (unknown [10.36.118.91])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 7E2185D756;
+ Mon, 14 Jan 2019 12:59:04 +0000 (UTC)
+From: David Hildenbrand <david@redhat.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v2 0/9] mm: PG_reserved cleanups and documentation
+Date: Mon, 14 Jan 2019 13:58:54 +0100
+Message-Id: <20190114125903.24845-1-david@redhat.com>
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Mon, 14 Jan 2019 12:59:26 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -136,106 +58,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
+ CHANDAN VN <chandan.vn@samsung.com>, David Hildenbrand <david@redhat.com>,
+ David Airlie <airlied@linux.ie>, Bhupesh Sharma <bhsharma@redhat.com>,
+ Palmer Dabbelt <palmer@sifive.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Tony Luck <tony.luck@intel.com>, Stefan Agner <stefan@agner.ch>,
+ Michal Hocko <mhocko@kernel.org>, David Howells <dhowells@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linux-riscv@lists.infradead.org,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Logan Gunthorpe <logang@deltatee.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Matthew Wilcox <willy@infradead.org>,
+ AKASHI Takahiro <takahiro.akashi@linaro.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Anthony Yznaga <anthony.yznaga@oracle.com>,
+ Tobias Klauser <tklauser@distanz.ch>, Laura Abbott <labbott@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Marc Zyngier <marc.zyngier@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Kristina Martsenko <kristina.martsenko@arm.com>,
+ linux-m68k@lists.linux-m68k.org, Dave Kleikamp <dave.kleikamp@oracle.com>,
+ linux-mediatek@lists.infradead.org, Oleg Nesterov <oleg@redhat.com>,
+ Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
+ Matthias Brugger <mbrugger@suse.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
+ Miles Chen <miles.chen@mediatek.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ James Morse <james.morse@arm.com>, Souptick Joarder <jrdr.linux@gmail.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Greg Hackmann <ghackmann@android.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christoph,
+Nothing major changed since the last version. I would be happy about
+additional ACKs. If there are no further comments, can this go via the
+mm-tree in one chunk?
 
-On 2019-01-11 19:17, Christoph Hellwig wrote:
-> vb2_dc_get_userptr pokes into arm direct mapping details to get the
-> resemblance of a dma address for a a physical address that does is
-> not backed by a page struct.  Not only is this not portable to other
-> architectures with dma direct mapping offsets, but also not to uses
-> of IOMMUs of any kind.  Switch to the proper dma_map_resource /
-> dma_unmap_resource interface instead.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+I was recently going over all users of PG_reserved. Short story: it is
+difficult and sometimes not really clear if setting/checking for
+PG_reserved is only a relict from the past. Easy to break things. I
+guess I now have a pretty good idea wh things are like that
+nowadays and how they evolved.
 
-There are checks for IOMMU presence in other places in vb2-dma-contig,
-so it was used only when no IOMMU is available, but I agree that the
-hacky code should be replaced by a generic code if possible.
+I had way more cleanups in this series inititally,
+but some architectures take PG_reserved as a way to apply a different
+caching strategy (for MMIO pages). So I decided to only include the most
+obvious changes (that are less likely to break something). So the big
+chunk of manual SetPageReserved users are MMIO/DMA related things on
+device buffers.
 
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Most notably, for device memory we will hopefully soon stop setting
+PG_reserved. Then the documentation has to be updated.
 
-V4L2 pipeline works fine on older Exynos-based boards with CMA and IOMMU
-disabled.
+v1 -> v2:
+- Minor speeling errors in "mm: better document PG_reserved" fixed
+- Added ACKs
 
-> ---
->  .../common/videobuf2/videobuf2-dma-contig.c   | 41 ++++---------------
->  1 file changed, 9 insertions(+), 32 deletions(-)
->
-> diff --git a/drivers/media/common/videobuf2/videobuf2-dma-contig.c b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
-> index aff0ab7bf83d..82389aead6ed 100644
-> --- a/drivers/media/common/videobuf2/videobuf2-dma-contig.c
-> +++ b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
-> @@ -439,42 +439,14 @@ static void vb2_dc_put_userptr(void *buf_priv)
->  				set_page_dirty_lock(pages[i]);
->  		sg_free_table(sgt);
->  		kfree(sgt);
-> +	} else {
-> +		dma_unmap_resource(buf->dev, buf->dma_addr, buf->size,
-> +				   buf->dma_dir, 0);
->  	}
->  	vb2_destroy_framevec(buf->vec);
->  	kfree(buf);
->  }
->  
-> -/*
-> - * For some kind of reserved memory there might be no struct page available,
-> - * so all that can be done to support such 'pages' is to try to convert
-> - * pfn to dma address or at the last resort just assume that
-> - * dma address == physical address (like it has been assumed in earlier version
-> - * of videobuf2-dma-contig
-> - */
-> -
-> -#ifdef __arch_pfn_to_dma
-> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
-> -{
-> -	return (dma_addr_t)__arch_pfn_to_dma(dev, pfn);
-> -}
-> -#elif defined(__pfn_to_bus)
-> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
-> -{
-> -	return (dma_addr_t)__pfn_to_bus(pfn);
-> -}
-> -#elif defined(__pfn_to_phys)
-> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
-> -{
-> -	return (dma_addr_t)__pfn_to_phys(pfn);
-> -}
-> -#else
-> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
-> -{
-> -	/* really, we cannot do anything better at this point */
-> -	return (dma_addr_t)(pfn) << PAGE_SHIFT;
-> -}
-> -#endif
-> -
->  static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
->  	unsigned long size, enum dma_data_direction dma_dir)
->  {
-> @@ -528,7 +500,12 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
->  		for (i = 1; i < n_pages; i++)
->  			if (nums[i-1] + 1 != nums[i])
->  				goto fail_pfnvec;
-> -		buf->dma_addr = vb2_dc_pfn_to_dma(buf->dev, nums[0]);
-> +		buf->dma_addr = dma_map_resource(buf->dev,
-> +				__pfn_to_phys(nums[0]), size, buf->dma_dir, 0);
-> +		if (dma_mapping_error(buf->dev, buf->dma_addr)) {
-> +			ret = -ENOMEM;
-> +			goto fail_pfnvec;
-> +		}
->  		goto out;
->  	}
->  
+RFC -> v1:
+- Add more details to "mm: better document PG_reserved"
+- Add "arm64: kdump: No need to mark crashkernel pages manually
+       PG_reserved"
+- Add "ia64: perfmon: Don't mark buffer pages as PG_reserved"
+- Added ACKs
 
-Best regards
+
+David Hildenbrand (9):
+  agp: efficeon: no need to set PG_reserved on GATT tables
+  s390/vdso: don't clear PG_reserved
+  powerpc/vdso: don't clear PG_reserved
+  riscv/vdso: don't clear PG_reserved
+  m68k/mm: use __ClearPageReserved()
+  arm64: kexec: no need to ClearPageReserved()
+  arm64: kdump: No need to mark crashkernel pages manually PG_reserved
+  ia64: perfmon: Don't mark buffer pages as PG_reserved
+  mm: better document PG_reserved
+
+ arch/arm64/kernel/machine_kexec.c |  3 +-
+ arch/arm64/mm/init.c              | 27 --------------
+ arch/ia64/kernel/perfmon.c        | 59 +++----------------------------
+ arch/m68k/mm/memory.c             |  2 +-
+ arch/powerpc/kernel/vdso.c        |  2 --
+ arch/riscv/kernel/vdso.c          |  1 -
+ arch/s390/kernel/vdso.c           |  2 --
+ drivers/char/agp/efficeon-agp.c   |  2 --
+ include/linux/page-flags.h        | 33 +++++++++++++++--
+ 9 files changed, 37 insertions(+), 94 deletions(-)
+
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+2.17.2
 
