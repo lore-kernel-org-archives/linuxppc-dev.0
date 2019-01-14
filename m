@@ -2,94 +2,78 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AF302C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 08:33:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8FB7C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 09:36:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F261A20660
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 08:33:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F261A20660
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2282520659
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 09:36:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="cG3zM3rO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2282520659
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dRYv5xmVzDqRL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 19:33:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dSzW36QczDqR5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 20:36:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=de.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=heiko.carstens@de.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
+ envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=de.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="cG3zM3rO"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
+ [IPv6:2607:f8b0:4864:20::d41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dRX50Q8xzDqPg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 19:31:32 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x0E8PMmw067491
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 03:31:30 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2q0n6smg3m-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 03:31:30 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
- Mon, 14 Jan 2019 08:31:27 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 14 Jan 2019 08:31:17 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0E8VFL935848340
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 14 Jan 2019 08:31:15 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A898CA4057;
- Mon, 14 Jan 2019 08:31:15 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A4C28A404D;
- Mon, 14 Jan 2019 08:31:14 +0000 (GMT)
-Received: from osiris (unknown [9.152.212.95])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 14 Jan 2019 08:31:14 +0000 (GMT)
-Date: Mon, 14 Jan 2019 09:31:13 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 15/15] arch: add pkey and rseq syscall numbers everywhere
-References: <20190110162435.309262-1-arnd@arndb.de>
- <20190110162435.309262-16-arnd@arndb.de>
- <20190110203638.GB3676@osiris>
- <CAK8P3a0M6qSJQAtFNKVS5muissKvyzeE9MSYT_uwKnM4BKCAug@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dSxY1nxYzDqQx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 20:35:06 +1100 (AEDT)
+Received: by mail-io1-xd41.google.com with SMTP id m19so17099209ioh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 01:35:06 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=Pn0/rZ2B5GkSLOkvstRq19Y+ZB+KVKjQ5D4UTrTEcFQ=;
+ b=cG3zM3rOJqP9xq8n8LMwEKTXJUQ4xh2O+zaaNyos6gkTdiT0UhD5YRj4zebrVQCK79
+ lTszCU7lJZs+wRyNh/NZEjWDrwgO2XiRVx6xv0Ra/FQU9iclaLSOhmErIuO/HUVBzWr2
+ nP3swD1jtKwthtzn03IXwPV9QFMWMIlVuHp1iQ0d6KMQztjWe8TBkSZdAUMrRjMh6WUN
+ nStPiAZ/dUsrozxjVmfHco6C7wBa+7K1swBrAUHWvFubg/nw/9+fY4NJgHI7e9+NBb5/
+ WSU1YAmgtOKm2strY0meX98AhNuQy8M3JmpV81bLo/b6PGT3C4i+VArU5y5WdeeW+yk+
+ q0SQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Pn0/rZ2B5GkSLOkvstRq19Y+ZB+KVKjQ5D4UTrTEcFQ=;
+ b=fGkNyEvallsDxVNqHpqUlTazAhCY4uf9cYjLO4Koc8aKCB2GT3wr1QIIzTxOfI9sEm
+ EUi/vH13gteAQeB6gvkFDPIlqgRlhXkKwKlB0iugWC892FcG4FUaImTZJJu+0XObI/Mg
+ 5XvIRmmKsiWYtlQKhjqKchtsEwFLLQFYpI4F7SdJScRcMJPcgeqRXT7kbpofITGKnGGk
+ YQzdPstgUxMEWyoBrnA7CD94rc0ayoVl7XO9ZMXk7iodG4Q1cOo4/RJmH2j+Pw6mOGlt
+ TL/CBn4X7f+eOO9R3NNsVpjyrGYAwUka7E9nprhMFoRkYEi0howZyGa2C6mg1g0zX6l9
+ EQyQ==
+X-Gm-Message-State: AJcUukcl78sAlaakSKNEQ+2tWw6EyVxbXRavWQjIhL+fc/n77X61RYfW
+ ReAYrOrvLSbT4lFzdskjcfOVgUd3n4v1camIbecQOA==
+X-Google-Smtp-Source: ALg8bN4Izjtfz8Gtik6EdgfSYlWSdQko5wrdsb98M1TQUO3p0k+tlZJCo9+xkTjkJb9IBNvEfs6/1WGPTInaXLkvDLg=
+X-Received: by 2002:a6b:fa01:: with SMTP id p1mr9451772ioh.271.1547458504276; 
+ Mon, 14 Jan 2019 01:35:04 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a0M6qSJQAtFNKVS5muissKvyzeE9MSYT_uwKnM4BKCAug@mail.gmail.com>
-X-TM-AS-GCONF: 00
-x-cbid: 19011408-0020-0000-0000-0000030625BC
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19011408-0021-0000-0000-0000215735B7
-Message-Id: <20190114083113.GB15160@osiris>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-14_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=5 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=792 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901140072
+References: <cover.1547289808.git.christophe.leroy@c-s.fr>
+ <0c854dd6b110ac2b81ef1681f6e097f59f84af8b.1547289808.git.christophe.leroy@c-s.fr>
+In-Reply-To: <0c854dd6b110ac2b81ef1681f6e097f59f84af8b.1547289808.git.christophe.leroy@c-s.fr>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Mon, 14 Jan 2019 10:34:52 +0100
+Message-ID: <CACT4Y+aEsLWqhJmXETNsGtKdbfHDFL1NF8ofv3KwvQPraXdFyw@mail.gmail.com>
+Subject: Re: [PATCH v3 1/3] powerpc/mm: prepare kernel for KAsan on PPC32
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,62 +85,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
- Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- alpha <linux-alpha@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>,
+ kasan-dev <kasan-dev@googlegroups.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 11, 2019 at 06:30:43PM +0100, Arnd Bergmann wrote:
-> On Thu, Jan 10, 2019 at 9:36 PM Heiko Carstens
-> <heiko.carstens@de.ibm.com> wrote:
-> > On Thu, Jan 10, 2019 at 05:24:35PM +0100, Arnd Bergmann wrote:
-> 
-> > Since you only need/want the system call numbers, could you please
-> > change these lines to:
-> >
-> > > +384  common  pkey_alloc              -                               -
-> > > +385  common  pkey_free               -                               -
-> > > +386  common  pkey_mprotect           -                               -
-> >
-> > Otherwise it _looks_ like we would need compat wrappers here as well,
-> > even though all of them would just jump to sys_ni_syscall() in this
-> > case. Making this explicit seems to better.
-> 
-> Ok, fair enough. I considered doing this originally and then
-> decided against it for consistency with the asm-generic file,
-> but I don't care much either way.
-> 
-> Is this something you may want to add later? I'm not sure exactly
-> how pkey compares to s390 storage keys, or if this is something
-> completely unrelated.
+On Sat, Jan 12, 2019 at 12:16 PM Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+&gt;
+&gt; In kernel/cputable.c, explicitly use memcpy() in order
+&gt; to allow GCC to replace it with __memcpy() when KASAN is
+&gt; selected.
+&gt;
+&gt; Since commit 400c47d81ca38 ("powerpc32: memset: only use dcbz once cache is
+&gt; enabled"), memset() can be used before activation of the cache,
+&gt; so no need to use memset_io() for zeroing the BSS.
+&gt;
+&gt; Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+&gt; ---
+&gt;  arch/powerpc/kernel/cputable.c | 4 ++--
+&gt;  arch/powerpc/kernel/setup_32.c | 6 ++----
+&gt;  2 files changed, 4 insertions(+), 6 deletions(-)
+&gt;
+&gt; diff --git a/arch/powerpc/kernel/cputable.c
+b/arch/powerpc/kernel/cputable.c
+&gt; index 1eab54bc6ee9..84814c8d1bcb 100644
+&gt; --- a/arch/powerpc/kernel/cputable.c
+&gt; +++ b/arch/powerpc/kernel/cputable.c
+&gt; @@ -2147,7 +2147,7 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
+&gt;         struct cpu_spec *t = &amp;the_cpu_spec;
+&gt;
+&gt;         t = PTRRELOC(t);
+&gt; -       *t = *s;
+&gt; +       memcpy(t, s, sizeof(*t));
 
-I don't think pkeys will ever work on s390, since they require a key
-per mapping, while the s390 storage keys are per physical page.
+Hi Christophe,
 
+I understand why you are doing this, but this looks a bit fragile and
+non-scalable. This may not work with the next version of compiler,
+just different than yours version of compiler, clang, etc.
+
+Does using -ffreestanding and/or -fno-builtin-memcpy (-memset) help?
+If it helps, perhaps it makes sense to add these flags to
+KASAN_SANITIZE := n files.
+
+
+>         *PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+>  }
+> @@ -2162,7 +2162,7 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
+>         old = *t;
+>
+>         /* Copy everything, then do fixups */
+> -       *t = *s;
+> +       memcpy(t, s, sizeof(*t));
+>
+>         /*
+>          * If we are overriding a previous value derived from the real
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+> index 947f904688b0..5e761eb16a6d 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -73,10 +73,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
+>  {
+>         unsigned long offset = reloc_offset();
+>
+> -       /* First zero the BSS -- use memset_io, some platforms don't have
+> -        * caches on yet */
+> -       memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
+> -                       __bss_stop - __bss_start);
+> +       /* First zero the BSS */
+> +       memset(PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
+>
+>         /*
+>          * Identify the CPU type and fix up code sections
+> --
+> 2.13.3
+>
