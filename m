@@ -2,70 +2,73 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=BITCOIN_SPAM_02,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66F5BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 18:24:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C5FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 19:19:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E296A20659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 18:24:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E296A20659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id CC65020651
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 19:19:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC65020651
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dhhc6LRhzDqTJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 05:24:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43djv64Nq5zDqWC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:18:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
+ envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=fail (p=none dis=none) header.from=nxp.com
+Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
+ [209.85.210.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dhfn3FsyzDqKt
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 05:23:13 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43dhfh3075z9vCHq;
- Mon, 14 Jan 2019 19:23:08 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id iZ-ulGqJOV6r; Mon, 14 Jan 2019 19:23:08 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43dhfh2Vmlz9vCHp;
- Mon, 14 Jan 2019 19:23:08 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D3C2C8B7CF;
- Mon, 14 Jan 2019 19:23:08 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VMAGwYmdKohg; Mon, 14 Jan 2019 19:23:08 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D752E8B7AC;
- Mon, 14 Jan 2019 19:23:07 +0100 (CET)
-Subject: Re: [PATCH v2 00/15] powerpc/32s: Use BATs/LTLBs for STRICT_KERNEL_RWX
-To: =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>
-References: <cover.1547132681.git.christophe.leroy@c-s.fr>
- <20190113181621.GA22334@latitude>
- <714e78ba-1e92-a856-3dd6-a1fb96ad3785@c-s.fr>
- <20190113210227.GB22334@latitude>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <334b1b02-b652-499c-904e-09e6f7164b8c@c-s.fr>
-Date: Mon, 14 Jan 2019 19:23:07 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43djs34yZ3zDqW6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 06:17:11 +1100 (AEDT)
+Received: by mail-ot1-f68.google.com with SMTP id w25so93273otm.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:17:11 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=OM/aIfnBVafWaMBtKs+zpeHlo8uj5Rb6aKAakxLObyk=;
+ b=t+G6yfZoQ+xv7G5O+LHB0Y91PHUFTaQxvIUMVn2vFyei8dRA5mqlixFCD/CAlCu+cZ
+ DYo7D6V7fi4CvYfkgu2FwEqb1VSkIC54XQ3xSu2O51jbEN2ksvRmyNuBwAS65B9z5/22
+ UoFp+iO7/26D65RABTMXY+3o5W1DGGepkyjT0aduc5ciM5wpQwC7OCHCXPmRGZp3OZRa
+ vbe+pm29uHkfF9EIxpLAmtSvDaTP1yWbDDqMW9TBWVVE7bq2arrfnQ8fToK9HhG34n5N
+ zM8UFpgmrq5PCXZ7ecB0GcBiB6o+OZEQp6Hp/JJLdVSqvWfqvEo0/Ysr0tugqepcz9+6
+ KKLw==
+X-Gm-Message-State: AJcUukcipJKGXUJ9XdJ39bahFNEjAEKl1VEufKbFiUe7RXsO2032K8Sm
+ Wb946piYx/mgJcpT13jvomJ3ShAA
+X-Google-Smtp-Source: ALg8bN6yTLj0fFcBrmxzVMwd70jnVrfEMxz2jmMigzHRVs4tUy51uGQSzBVI2NUh+6korsKkOaK+Iw==
+X-Received: by 2002:a9d:2184:: with SMTP id s4mr24141otb.46.1547493429188;
+ Mon, 14 Jan 2019 11:17:09 -0800 (PST)
+Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com.
+ [209.85.210.53])
+ by smtp.gmail.com with ESMTPSA id 31sm1244964otw.55.2019.01.14.11.17.07
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 14 Jan 2019 11:17:09 -0800 (PST)
+Received: by mail-ot1-f53.google.com with SMTP id k98so158904otk.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:17:07 -0800 (PST)
+X-Received: by 2002:a9d:1405:: with SMTP id h5mr16517479oth.331.1547493427615; 
+ Mon, 14 Jan 2019 11:17:07 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20190113210227.GB22334@latitude>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <20190114050237.32140-1-Bharat.Bhushan@nxp.com>
+In-Reply-To: <20190114050237.32140-1-Bharat.Bhushan@nxp.com>
+From: Li Yang <leoyang.li@nxp.com>
+Date: Mon, 14 Jan 2019 13:16:56 -0600
+X-Gmail-Original-Message-ID: <CADRPPNRXgR_c+7tT9nv5QVBsHxm662T0sYwAhHS1PO=O9SC5Tw@mail.gmail.com>
+Message-ID: <CADRPPNRXgR_c+7tT9nv5QVBsHxm662T0sYwAhHS1PO=O9SC5Tw@mail.gmail.com>
+Subject: Re: [PATCH] soc: fsl: dpio: fix cpu range check
+To: Bharat Bhushan <bharat.bhushan@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,46 +80,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: Roy Pledge <roy.pledge@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "bharatb.yadav@gmail.com" <bharatb.yadav@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Sun, Jan 13, 2019 at 11:13 PM Bharat Bhushan <bharat.bhushan@nxp.com> wrote:
+>
+> cpu_possible(cpu) will always return true when cpu parameter
+> is from cpumask_next().
+> Check for nr_cpu_ids rather than !cpu_possible(cpu).
 
+There is another patch pending merge seems to cover this issue too.
+Please let me know if it doesn't.
 
-Le 13/01/2019 à 22:02, Jonathan Neuschäfer a écrit :
-> On Sun, Jan 13, 2019 at 08:43:07PM +0100, Christophe Leroy wrote:
->> Le 13/01/2019 à 19:16, Jonathan Neuschäfer a écrit :
->>> I just tested the whole series on my Wii (I didn't test any intermediate
->>> steps). Without CONFIG_STRICT_KERNEL_RWX, it seems to work fine, but
->>> with it, I get the following error while booting:
->>
->> Argh !
->>
->> Can you please send the System.map file generated at compile time ?
-> 
-> Here:
->    https://gist.githubusercontent.com/neuschaefer/12ccc87ff8aeff543fad558e8742cd2b/raw/d49d321709cac364779e6893bbd91ff5a80bcb03/System.map
-> 
-> And here's the config, reduced with 'make savedefconfig':
->    https://gist.githubusercontent.com/neuschaefer/12ccc87ff8aeff543fad558e8742cd2b/raw/d49d321709cac364779e6893bbd91ff5a80bcb03/config
-> 
-> The exact code I used is here:
->    https://github.com/neuschaefer/linux/tree/ppcbat-test
+https://lore.kernel.org/patchwork/patch/1020905/
 
-Thanks
-
-I can't see anything special in your setup, and this failure looks 
-rather unexpected because I can't see anything done that early when 
-CONFIG_STRICT_KERNEL_RWX is selected.
-
-Does CONFIG_STRICT_KERNEL_RWX works properly without my serie ?
-
-Christophe
-
-> 
-> 
-> Thanks,
-> Jonathan
-> 
+Leo
+>
+> Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
+> ---
+>  drivers/soc/fsl/dpio/dpio-driver.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
+> index e58fcc9096e8..eb369dd9e0a7 100644
+> --- a/drivers/soc/fsl/dpio/dpio-driver.c
+> +++ b/drivers/soc/fsl/dpio/dpio-driver.c
+> @@ -133,7 +133,7 @@ static int dpaa2_dpio_probe(struct fsl_mc_device *dpio_dev)
+>         else
+>                 next_cpu = cpumask_next(next_cpu, cpu_online_mask);
+>
+> -       if (!cpu_possible(next_cpu)) {
+> +       if (next_cpu >= nr_cpu_ids) {
+>                 dev_err(dev, "probe failed. Number of DPIOs exceeds NR_CPUS.\n");
+>                 err = -ERANGE;
+>                 goto err_allocate_irqs;
+> --
+> 2.20.1
+>
