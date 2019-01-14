@@ -2,52 +2,59 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EE30C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:02:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0845C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:11:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CBE8D20657
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:02:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBE8D20657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 534A420660
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:11:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 534A420660
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dKZ60yYhzDqJB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 15:02:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dKln0rzgzDqRX
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 15:11:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=joe.lawrence@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dKX25nKgzDqSG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 15:01:06 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7078780D;
- Sun, 13 Jan 2019 20:01:04 -0800 (PST)
-Received: from [10.162.42.129] (p8cg001049571a15.blr.arm.com [10.162.42.129])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 2C24C3F5BD; Sun, 13 Jan 2019 20:00:54 -0800 (PST)
-Subject: Re: [PATCH] mm: Introduce GFP_PGTABLE
-To: Michal Hocko <mhocko@kernel.org>
-References: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
- <20190113173555.GC1578@dhcp22.suse.cz>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <f9f333a5-5533-996a-dc8e-1ff1096c1d19@arm.com>
-Date: Mon, 14 Jan 2019 09:30:55 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dKk01DR0zDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 15:09:43 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 10C3CDC8E0;
+ Mon, 14 Jan 2019 04:09:41 +0000 (UTC)
+Received: from redhat.com (ovpn-120-146.rdu2.redhat.com [10.10.120.146])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 6628160BEC;
+ Mon, 14 Jan 2019 04:09:39 +0000 (UTC)
+Date: Sun, 13 Jan 2019 23:09:37 -0500
+From: Joe Lawrence <joe.lawrence@redhat.com>
+To: Nicolai Stange <nstange@suse.de>
+Subject: Re: ppc64le reliable stack unwinder and scheduled tasks
+Message-ID: <20190114040937.GA6739@redhat.com>
+References: <7f468285-b149-37e2-e782-c9e538b997a9@redhat.com>
+ <87bm4ocbbt.fsf@suse.de> <20190111010808.GA17858@redhat.com>
+ <87fttzbpid.fsf@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20190113173555.GC1578@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fttzbpid.fsf@suse.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.38]); Mon, 14 Jan 2019 04:09:41 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,45 +66,135 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
- catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvmarm@lists.cs.columbia.edu,
- linux@armlinux.org.uk, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com,
- marc.zyngier@arm.com, rppt@linux.vnet.ibm.com, shakeelb@google.com,
- kirill@shutemov.name, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
- christoffer.dall@arm.com, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 01/13/2019 11:05 PM, Michal Hocko wrote:
-> On Sat 12-01-19 15:56:38, Anshuman Khandual wrote:
->> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
->> __GFP_ZERO) and using it for allocating page table pages. This causes some
->> code duplication which can be easily avoided. GFP_KERNEL allocated and
->> cleared out pages (__GFP_ZERO) are required for page tables on any given
->> architecture. This creates a new generic GFP flag flag which can be used
->> for any page table page allocation. Does not cause any functional change.
+On Fri, Jan 11, 2019 at 08:51:54AM +0100, Nicolai Stange wrote:
+> Joe Lawrence <joe.lawrence@redhat.com> writes:
 > 
-> I agree that some unification is due but GFP_PGTABLE is not something to
-> expose in generic gfp.h IMHO. It just risks an abuse. I would be looking
+> > On Fri, Jan 11, 2019 at 01:00:38AM +0100, Nicolai Stange wrote:
 
-Why would you think that it risks an abuse ? It does not create new semantics
-of allocation in the buddy. Its just uses existing GFP_KERNEL allocation which
-is then getting zeroed out. The risks (if any) is exactly same as GFP_KERNEL.
+[ ... snip ... ]
 
-> at providing asm-generic implementation and reuse it to remove the code
+> >> For testing, could you try whether clearing the word at STACK_FRAME_MARKER
+> >> from _switch() helps?
+> >> 
+> >> I.e. something like (completely untested):
+> >
+> > I'll kick off some builds tonight and try to get tests lined up
+> > tomorrow.  Unfortunately these take a bit of time to run setup, schedule
+> > and complete, so perhaps by next week.
+> 
+> Ok, that's probably still a good test for confirmation, but the solution
+> you proposed below is much better.
 
-Does that mean GFP_PGTABLE can be created but not in gfp.h but in some other
-memory related header file ?
+Good news, 40 tests (RHEL-7 backport) with clearing out the
+STACK_FRAME_MARKER were all successful.  Previously I would see stalled
+livepatch transitions due to the unreliable report in ~10% of test
+cases.
 
-> duplication. But I haven't tried that to know that it will work out due
-> to small/subtle differences between arches.
+> >> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> >> index 435927f549c4..b747d0647ec4 100644
+> >> --- a/arch/powerpc/kernel/entry_64.S
+> >> +++ b/arch/powerpc/kernel/entry_64.S
+> >> @@ -596,6 +596,10 @@ _GLOBAL(_switch)
+> >>  	SAVE_8GPRS(14, r1)
+> >>  	SAVE_10GPRS(22, r1)
+> >>  	std	r0,_NIP(r1)	/* Return to switch caller */
+> >> +
+> >> +	li	r23,0
+> >> +	std	r23,96(r1)	/* 96 == STACK_FRAME_MARKER * sizeof(long) */
+> >> +
+> >>  	mfcr	r23
+> >>  	std	r23,_CCR(r1)
+> >>  	std	r1,KSP(r3)	/* Set old stack pointer */
+> >> 
+> >> 
+> >
+> > This may be sufficient to avoid the condition, but if the contents of
+> > frame 0 are truely uninitialized (not to be trusted), should the
+> > unwinder be even looking at that frame (for STACK_FRAMES_REGS_MARKER),
+> > aside from the LR and other stack size geometry sanity checks?
+> 
+> That's a very good point: we'll only ever be examining scheduled out tasks
+> and current (which at that time is running klp_try_complete_transition()).
+> 
+> current won't be in an interrupt/exception when it's walking its own
+> stack. And scheduled out tasks can't have an exception/interrupt frame
+> as their frame 0, correct?
+> 
+> Thus, AFAICS, whenever klp_try_complete_transition() finds a
+> STACK_FRAMES_REGS_MARKER in frame 0, it is known to be garbage, as you
+> said.
 
-IIUC from the allocation perspective GFP_ACCOUNT is the only thing which gets
-added with GFP_PGTABLE for user page table for memcg accounting purpose. There
-does not seem to be any other differences unless I am missing something.
+I gave this about 20 tests and they were also all successful, what do
+you think?  (The log could probably use some trimming and cleanup.)  I
+think either solution would fix the issue.
+
+-->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8--
+
+From edd3fb9e8a16d5a7ccc98759e9397f386f0e82ca Mon Sep 17 00:00:00 2001
+From: Joe Lawrence <joe.lawrence@redhat.com>
+Date: Fri, 11 Jan 2019 10:25:26 -0500
+Subject: [PATCH] powerpc/livepatch: relax reliable stack tracer exception
+ check
+
+The ppc64le reliable stack tracer iterates over a given task's stack,
+verifying a set of conditions to determine whether the trace is
+'reliable'.  These checks include the presence of any exception frames.
+
+We should be careful when inspecting the bottom-most stack frame (the
+first to be unwound), particularly for scheduled-out tasks.  As Nicolai
+Stange explains, "If I'm reading the code in _switch() correctly, the
+first frame is completely uninitialized except for the pointer back to
+the caller's stack frame."  If a previous do_IRQ() invocation, for
+example, has left a residual exception-marker on the first frame, the
+stack tracer would incorrectly report this task's trace as unreliable.
+
+save_stack_trace_tsk_reliable() already skips the first frame when
+verifying the saved Link Register.  It should do the same when looking
+for the STACK_FRAME_REGS_MARKER.  The task it is unwinding will be
+either 'current', in which case the tracer will have never been called
+from an exception path, or the task will be inactive and its first
+frame's contents will be uninitialized (aside from backchain pointer).
+
+Fixes: df78d3f61480 ("powerpc/livepatch: Implement reliable stack tracing for the consistency model")
+Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
+---
+ arch/powerpc/kernel/stacktrace.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index e2c50b55138f..0793e75c45a6 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -84,6 +84,12 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+ EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+ 
+ #ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
++/*
++ * This function returns an error if it detects any unreliable features of the
++ * stack.  Otherwise it guarantees that the stack trace is reliable.
++ *
++ * If the task is not 'current', the caller *must* ensure the task is inactive.
++ */
+ int
+ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 				struct stack_trace *trace)
+@@ -143,7 +149,7 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 			return 1;
+ 
+ 		/* Mark stacktraces with exception frames as unreliable. */
+-		if (sp <= stack_end - STACK_INT_FRAME_SIZE &&
++		if (!firstframe && sp <= stack_end - STACK_INT_FRAME_SIZE &&
+ 		    stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
+ 			return 1;
+ 		}
+-- 
+2.20.1
+
+
