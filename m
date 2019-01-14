@@ -2,129 +2,129 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 490C8C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 997F8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 12:45:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BBE820659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:54:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D464620656
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 12:45:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="gWUNYsnP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BBE820659
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="WxB/wrsj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D464620656
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dX2V2xXHzDqTJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 22:54:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dY8k2qmpzDqSf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 23:45:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=samsung.com
- (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com;
+ (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com;
  envelope-from=m.szyprowski@samsung.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=samsung.com header.i=@samsung.com header.b="gWUNYsnP"; 
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="WxB/wrsj"; 
  dkim-atps=neutral
-X-Greylist: delayed 581 seconds by postgrey-1.36 at bilbo;
- Mon, 14 Jan 2019 22:52:52 AEDT
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11])
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dX0N1BK2zDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 22:52:51 +1100 (AEDT)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
- by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
- 20190114114304euoutp01a2e6649dde254745d68e893be5e92784~5tEvdyvzV0357603576euoutp01U
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:43:04 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
- 20190114114304euoutp01a2e6649dde254745d68e893be5e92784~5tEvdyvzV0357603576euoutp01U
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dY5j1MszzDqT1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 23:42:31 +1100 (AEDT)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20190114124227euoutp02aad7866a024029e69dcbcb39d37d0449~5t4lin6XJ3104831048euoutp028
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 12:42:27 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20190114124227euoutp02aad7866a024029e69dcbcb39d37d0449~5t4lin6XJ3104831048euoutp028
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
- s=mail20170921; t=1547466184;
- bh=U9uIC6yWPkSg7QSEG2aexBV6gezSOjVmFO2Om9ea8Ak=;
+ s=mail20170921; t=1547469747;
+ bh=JkEUB/1etH5HwCAXK5XQVE51QY576xSQ+oOLRoEdTo4=;
  h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
- b=gWUNYsnPcocodsY6503EipN0oHh18ZERQGWC+LPToqYlfa09K9hbjly0s0NynCdIw
- ytdkdA9FDP88OhJmV1vex/4htJjJMA3TLNbs0dxZ9S3vgD+XqwoQ4uLhIH7kXUgF1L
- V4ExAsaRJ5YNYhea9i5ye8iU+kQTodwYJFbv3we0=
+ b=WxB/wrsjzNm/oPYCYyWojDl04dJdH/qcSBe0q5NXZ+fhCzZkQAjhODUe0E2+5EKEU
+ 5ecllJTmSrTr6I8faFf2kUn6aPVEREmFbf3Y57KCpE1m9Vpyy8kDRpH7dZzoop83Tn
+ PGDyvDmz0X4LR5Ma/jqkemIISb1dfvcB3kfeXmhw=
 Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
  eucas1p1.samsung.com (KnoxPortal) with ESMTP id
- 20190114114304eucas1p1d12bde6b0139100fb9af9e609a05de8a~5tEu8oscA2130921309eucas1p1M;
- Mon, 14 Jan 2019 11:43:04 +0000 (GMT)
+ 20190114124226eucas1p18c02e40c1d8f2e16dc9b8301b473a9bb~5t4k4zJlz2526725267eucas1p10;
+ Mon, 14 Jan 2019 12:42:26 +0000 (GMT)
 Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
- eusmges3new.samsung.com (EUCPMTA) with SMTP id 23.EB.04806.8C57C3C5; Mon, 14
- Jan 2019 11:43:04 +0000 (GMT)
+ eusmges3new.samsung.com (EUCPMTA) with SMTP id E3.96.04806.2B38C3C5; Mon, 14
+ Jan 2019 12:42:26 +0000 (GMT)
 Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
- eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
- 20190114114303eucas1p2c028bcf1ca155e9aa91c83c2f4ba57f0~5tEt68Tgb0174101741eucas1p2Q;
- Mon, 14 Jan 2019 11:43:03 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
+ 20190114124225eucas1p1b6a3be0a59408c78ce17ff2e27665f99~5t4jrTm-12526825268eucas1p1z;
+ Mon, 14 Jan 2019 12:42:25 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
  eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
- 20190114114303eusmtrp2adf80bdabbfdd277b4a176dfece853da~5tEtsMr-c2057220572eusmtrp2w;
- Mon, 14 Jan 2019 11:43:03 +0000 (GMT)
-X-AuditID: cbfec7f5-34dff700000012c6-e1-5c3c75c835d3
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
- eusmgms1.samsung.com (EUCPMTA) with SMTP id 91.3F.04284.6C57C3C5; Mon, 14
- Jan 2019 11:43:02 +0000 (GMT)
+ 20190114124225eusmtrp2d17053cb57772f09b8c7dcd061959277~5t4jcf_cZ0469204692eusmtrp2O;
+ Mon, 14 Jan 2019 12:42:25 +0000 (GMT)
+X-AuditID: cbfec7f5-367ff700000012c6-f1-5c3c83b28e63
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id C8.0D.04128.1B38C3C5; Mon, 14
+ Jan 2019 12:42:25 +0000 (GMT)
 Received: from [106.116.147.30] (unknown [106.116.147.30]) by
- eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
- 20190114114302eusmtip1e002d0c52e9dd06c708d580f39700661~5tEtIIoqq2681126811eusmtip1K;
- Mon, 14 Jan 2019 11:43:02 +0000 (GMT)
-Subject: Re: fix a layering violation in videobuf2 and improve dma_map_resource
+ eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+ 20190114124224eusmtip2baec9451d28ae77dfcf4ef3317c0caf8~5t4i0jU620772007720eusmtip2J;
+ Mon, 14 Jan 2019 12:42:24 +0000 (GMT)
+Subject: Re: [PATCH 3/3] videobuf2: replace a layering violation with
+ dma_map_resource
 To: Christoph Hellwig <hch@lst.de>, Pawel Osciak <pawel@osciak.com>,
  Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Niklas_S=c3=b6derlund?=
  <niklas.soderlund+renesas@ragnatech.se>
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Message-ID: <141501f5-a9f4-98d7-e958-ca40fc870454@samsung.com>
-Date: Mon, 14 Jan 2019 12:43:03 +0100
+Message-ID: <6f8892ac-c2aa-10df-c74f-ba032bf75160@samsung.com>
+Date: Mon, 14 Jan 2019 13:42:26 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190111181731.11782-1-hch@lst.de>
+In-Reply-To: <20190111181731.11782-4-hch@lst.de>
 Content-Transfer-Encoding: 7bit
 Content-Language: en-US
-X-Brightmail-Tracker: H4sIAAAAAAAAA01SaUwTYRD163a3S7Xmo6BM0KhpgomNB0RjNikiGo0b/3j8Exu1yqYYoZou
- RdEghMOjqRdi0BYFjBHEM5VLaBExWA1ChSLigaLUKMZa5FIOUdoV5d97M29m3kuGJuRtZCi9
- W5fI6XWaeAUlFZc/GnIuemyIVIeXGEnm2vV6EVNwX8U0pn+VMNauNpJxVeVRjOlOGcnUnbMj
- ZuTHGMlctY6KmI4nC5kcz5AkeirramsmWGvJcYq9eyWVPdtehFjn+ULEVr9Mo9iu4W6K/eT6
- QbEnS0sQ22eds1EaI42M5eJ3J3H6JVE7pHH5vUfRvhPUgcGXuVQaGhAbUQANeBm0WnrGsZSW
- 42IELd4WJJB+BGmvhymB9CEoNrnRxIj1tZfyYTkuQpD7USqIvAi8rgbS1wjCm8Bz6rPE1wjG
- dgRNR06RPkLgUQSOS43+VRSOAKPH6F8lw1Fg+1ztdyXGYZBpey4yIpqegdWQ5ZIKkkB4csHt
- lwTgcHhnL5D4MIHnQoUnjxBwCLxy54t8twB/l8DlogpKsL0G3veP/E0dBF8cpRIBz4bf9yYG
- MhAcPW+WCMSEoCyv8u+0Ch46mkmfIwIvgNtVS4TyKuh5keEvA54O7Z5AwcR0yC7PJYSyDI4d
- kQvq+WB23Pp39sGzFuI0UpgnRTNPimOeFMf8/24BEpegEM7AJ2g5fqmO27+Y1yTwBp128a69
- CVY0/m0NY46BSlQzurMOYRoppsnAolLLSU0Sn5xQh4AmFMGypNWRarksVpN8kNPv3a43xHN8
- HZpFixUhskNTOrfKsVaTyO3huH2cfqIrogNC01CEaQVa8W3z2dZ161IaCp1qVe0vzVOM+ubZ
- PNqVOZ1RTc7WLPeHwp/ZxeUblmbwhwdaiAWSzSHa6uGL9plnwuvTq4a2pXj7o2udjt5eW0Vi
- r3KOrmAwtVK5xRt9Mzw/dOZJy421OW+734StV8ZYM7NHMhWhNbUiy/K24OMdXx6fUYj5OE2E
- ktDzmj+7Wk/zaQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrFIsWRmVeSWpSXmKPExsVy+t/xu7rHSm1iDH5etLJYufook8WC/dYW
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Sa0hTYRju29nOjkdnX1PzRaVkXcBuGvrjhCJ2o4MQBCFYrXLl8VI6ZZsu
+ NcwLqYlYdKFaywwyy+i2vMecTnKIt8qalkQXTSszS7M0l+U8Wv57nud7n/d5XvgoQmoVeVCx
+ Sg2nUiriZCQtrGya6FhryA6S+zVU+zA3bz0SMMWmQKYt67OYMfRaRUxnrZ5kCu5ViBjzOSNi
+ Jn9OiZjrBpuAedW8hjk7NCEOcWQ7rU8I1lB2gmQfXDvGnukuRWzHhauIffgig2R7f30k2YHO
+ nyRbWF6G2FHDkh30bjookouLTeZUvsERdExe+TkiMcvzyP2SfkEGGnHLRw4U4ADoudwiykc0
+ JcU3ENRNtiOefEcw3jop5MkogvrWL2jOkm38PWspRfCm0kTyZBhBWa5+2kJRLjgcxvq32XVX
+ bETQnnNyxkFgGwJLUdvMKhKvh/yhfNKOJTgYupvqZ3QhXgFVL20zi9ywHI530vzIImi+2Ce0
+ YwfsB8b3zwV2TOClUDWkJ3jsDi/7rgjsWYDHxGC1nZ+tvWW66aCQxy7wyVIu5rEX/KmZM2Qj
+ yL2gE/OkAEGFvprkpwKh0fJEZG9EYB+4W+vLyxvhQ2EpYZcBO0P30CK+hDOcrjw/K0sgL0fK
+ T68EneXOv9iGx0+JU0imm3eabt45unnn6P7nFiNhGXLnktTx0ZzaX8lp16kV8eokZfS6gwnx
+ BjT921qmLGPVqM52wIwwhWROErgUKJeKFMnqlHgzAoqQuUqSNwXJpZJIRUoqp0rYr0qK49Rm
+ 5EkJZe6StAVv9khxtELDHea4RE419yqgHDwy0Ab3XSMLnF9rvMMoL9fxfaOtobethyA0Ki5s
+ kNDS2H/5ri4iJtySec/W80A+bEqLGq5olNZouj3Ss5Rfn30L6TIlKMXlRzM35/gHLI5VlqaK
+ 8oZXE7FZb53afPv1EXuB3lqiCQLTzgQn74Uj2vSigRvL9m3Rbm//4Ug3vZPXyITqGMX6VYRK
+ rfgLloMPVWkDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrJIsWRmVeSWpSXmKPExsVy+t/xe7obm21iDB7eEbNYufook8WC/dYW
  Z5vesFtsenyN1eLyrjlsFj0btrJaHJq6l9Hi9/d/rBbLNv1hsrh7Usdiytuf7A7cHpevXWT2
  2LSqk81j85J6j8k3ljN6nJ+xkNFj980GNo/Hv16yeTy//J3No2/LKkaPz5vkArii9GyK8ktL
- UhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX07WxSUnMyy1KL9O0S9DLmf2pnLOhlq/h2
- czpbA+NXli5GTg4JAROJTbffs3UxcnEICSxllOi5sYYdIiEjcXJaAyuELSzx51oXVNFbRom/
- F+aBJYQFAiXe9r9gB0mICOxllLh/+i5YFbPAP0aJ+b07GCFamhkl/i8+xATSwiZgKNH1FmQW
- JwevgJ3Enhe7wQ5hEVCVaNlzFaxGVCBGYtaTPnaIGkGJkzOfgNVwChhI3N+7ACzOLKAu8Wfe
- JWYIW15i+9s5ULa4xK0n85kmMArNQtI+C0nLLCQts5C0LGBkWcUoklpanJueW2yoV5yYW1ya
- l66XnJ+7iREYz9uO/dy8g/HSxuBDjAIcjEo8vBKzrWOEWBPLiitzDzFKcDArifCWOdnECPGm
- JFZWpRblxxeV5qQWH2I0BXpuIrOUaHI+MNXklcQbmhqaW1gamhubG5tZKInznjeojBISSE8s
- Sc1OTS1ILYLpY+LglGpgtN/qdPhqrqPJzOrX3xSutYvret7ascU7aer/7Eea9i+3fT3yV0Ts
- yOvkvrpL+/Ym+Riz82Ut+Pmbpzfwka/TdHPX2Jye96xpc6wern7gdtB7e13YjkWmAsV2G4WX
- 3ylgsTjNma3/yjskk7G0Jiq2Su1Qq3mfJfu/x2v7/+64J9WStfSF4DUmJZbijERDLeai4kQA
- 8HzmnP0CAAA=
-X-CMS-MailID: 20190114114303eucas1p2c028bcf1ca155e9aa91c83c2f4ba57f0
+ UhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX07WxSUnMyy1KL9O0S9DI6tkxlLmiSrti4
+ 9BlTA+Mn0S5GTg4JAROJ5r1/WbsYuTiEBJYySix9upEVIiEjcXJaA5QtLPHnWhcbRNFbRok9
+ 234ydzFycAgLREh8feYOEhcR2Msocf/0XbAiZoF/jBLze3cwQnSsZJR48r8JbBSbgKFE11uQ
+ UZwcvAJ2EjeOHWAEsVkEVCW23/rDAmKLCsRIzHrSxw5RIyhxcuYTsDingIHE3qdXmUBsZgF1
+ iT/zLjFD2PIS29/OgbLFJW49mc80gVFoFpL2WUhaZiFpmYWkZQEjyypGkdTS4tz03GIjveLE
+ 3OLSvHS95PzcTYzAaN527OcWoIfeBR9iFOBgVOLhlZhtHSPEmlhWXJl7iFGCg1lJhLfMySZG
+ iDclsbIqtSg/vqg0J7X4EKMp0HMTmaVEk/OBiSavJN7Q1NDcwtLQ3Njc2MxCSZz3vEFllJBA
+ emJJanZqakFqEUwfEwenVAOjzW6udM6jHy4tWq/LuP22+OQF8zKdmJyCnpdcOPCsZK3U3JLy
+ /l9Viqff6RQqrchZ/bD7kQHrtlwb8X9r1I879nPWvj57yiFt0c6961ZGzf756wfHDC1ujx9q
+ ku/X1uzbYLzNNGyP2ZdP8zoyz67cMeOT6vfIyyKLmHIOCv++v8nVkWEJ7+ciSSWW4oxEQy3m
+ ouJEACyoswL8AgAA
+X-CMS-MailID: 20190114124225eucas1p1b6a3be0a59408c78ce17ff2e27665f99
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b
+X-RootMTR: 20190111181812epcas2p1eeb68a16701631513eaf297073f7299f
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b
-References: <CGME20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b@epcas3p2.samsung.com>
- <20190111181731.11782-1-hch@lst.de>
+X-CMS-RootMailID: 20190111181812epcas2p1eeb68a16701631513eaf297073f7299f
+References: <20190111181731.11782-1-hch@lst.de>
+ <CGME20190111181812epcas2p1eeb68a16701631513eaf297073f7299f@epcas2p1.samsung.com>
+ <20190111181731.11782-4-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -147,20 +147,92 @@ Sender: "Linuxppc-dev"
 Hi Christoph,
 
 On 2019-01-11 19:17, Christoph Hellwig wrote:
-> Hi all,
+> vb2_dc_get_userptr pokes into arm direct mapping details to get the
+> resemblance of a dma address for a a physical address that does is
+> not backed by a page struct.  Not only is this not portable to other
+> architectures with dma direct mapping offsets, but also not to uses
+> of IOMMUs of any kind.  Switch to the proper dma_map_resource /
+> dma_unmap_resource interface instead.
 >
-> this series fixes a rather gross layering violation in videobuf2, which
-> pokes into arm DMA mapping internals to get a DMA address for memory that
-> does not have a page structure, and to do so fixes up the dma_map_resource
-> implementation to be practically useful.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Thanks for rewriting this 'temporary code'! It predates
-dma_map_resource() and that time this was the only way to get it working
-somehow. Good that now it is possible to implement in it a clean way
-without any unwritten assumptions about the DMA mapping internals. Feel
-free to add my:
+There are checks for IOMMU presence in other places in vb2-dma-contig,
+so it was used only when no IOMMU is available, but I agree that the
+hacky code should be replaced by a generic code if possible.
 
-Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+V4L2 pipeline works fine on older Exynos-based boards with CMA and IOMMU
+disabled.
+
+> ---
+>  .../common/videobuf2/videobuf2-dma-contig.c   | 41 ++++---------------
+>  1 file changed, 9 insertions(+), 32 deletions(-)
+>
+> diff --git a/drivers/media/common/videobuf2/videobuf2-dma-contig.c b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> index aff0ab7bf83d..82389aead6ed 100644
+> --- a/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> +++ b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+> @@ -439,42 +439,14 @@ static void vb2_dc_put_userptr(void *buf_priv)
+>  				set_page_dirty_lock(pages[i]);
+>  		sg_free_table(sgt);
+>  		kfree(sgt);
+> +	} else {
+> +		dma_unmap_resource(buf->dev, buf->dma_addr, buf->size,
+> +				   buf->dma_dir, 0);
+>  	}
+>  	vb2_destroy_framevec(buf->vec);
+>  	kfree(buf);
+>  }
+>  
+> -/*
+> - * For some kind of reserved memory there might be no struct page available,
+> - * so all that can be done to support such 'pages' is to try to convert
+> - * pfn to dma address or at the last resort just assume that
+> - * dma address == physical address (like it has been assumed in earlier version
+> - * of videobuf2-dma-contig
+> - */
+> -
+> -#ifdef __arch_pfn_to_dma
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__arch_pfn_to_dma(dev, pfn);
+> -}
+> -#elif defined(__pfn_to_bus)
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__pfn_to_bus(pfn);
+> -}
+> -#elif defined(__pfn_to_phys)
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	return (dma_addr_t)__pfn_to_phys(pfn);
+> -}
+> -#else
+> -static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+> -{
+> -	/* really, we cannot do anything better at this point */
+> -	return (dma_addr_t)(pfn) << PAGE_SHIFT;
+> -}
+> -#endif
+> -
+>  static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+>  	unsigned long size, enum dma_data_direction dma_dir)
+>  {
+> @@ -528,7 +500,12 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+>  		for (i = 1; i < n_pages; i++)
+>  			if (nums[i-1] + 1 != nums[i])
+>  				goto fail_pfnvec;
+> -		buf->dma_addr = vb2_dc_pfn_to_dma(buf->dev, nums[0]);
+> +		buf->dma_addr = dma_map_resource(buf->dev,
+> +				__pfn_to_phys(nums[0]), size, buf->dma_dir, 0);
+> +		if (dma_mapping_error(buf->dev, buf->dma_addr)) {
+> +			ret = -ENOMEM;
+> +			goto fail_pfnvec;
+> +		}
+>  		goto out;
+>  	}
+>  
 
 Best regards
 -- 
