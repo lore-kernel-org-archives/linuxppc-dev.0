@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49118C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D5A9C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:23:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C571020659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:21:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C571020659
+	by mail.kernel.org (Postfix) with ESMTPS id C3A9D20659
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:23:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A9D20659
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dYyQ0ZtwzDqC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 00:21:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dZ0L1TczzDqP4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 00:22:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
@@ -28,27 +28,27 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dYVl6CHjzDqVq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 00:00:47 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dYVq6NWBzDqVx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 00:00:51 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
  [10.5.11.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id E1E207FD56;
- Mon, 14 Jan 2019 13:00:44 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id D235DA7EF;
+ Mon, 14 Jan 2019 13:00:48 +0000 (UTC)
 Received: from t460s.redhat.com (unknown [10.36.118.91])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 41B9E5D76A;
- Mon, 14 Jan 2019 13:00:03 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 0990F5D784;
+ Mon, 14 Jan 2019 13:00:44 +0000 (UTC)
 From: David Hildenbrand <david@redhat.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v2 8/9] ia64: perfmon: Don't mark buffer pages as PG_reserved
-Date: Mon, 14 Jan 2019 13:59:02 +0100
-Message-Id: <20190114125903.24845-9-david@redhat.com>
+Subject: [PATCH v2 9/9] mm: better document PG_reserved
+Date: Mon, 14 Jan 2019 13:59:03 +0100
+Message-Id: <20190114125903.24845-10-david@redhat.com>
 In-Reply-To: <20190114125903.24845-1-david@redhat.com>
 References: <20190114125903.24845-1-david@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.27]); Mon, 14 Jan 2019 13:00:46 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.29]); Mon, 14 Jan 2019 13:00:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,152 +60,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- David Hildenbrand <david@redhat.com>, Michal Hocko <mhocko@suse.com>,
- linux-kernel@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
- Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>,
- linux-m68k@lists.linux-m68k.org, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- linux-mediatek@lists.infradead.org, linux-riscv@lists.infradead.org,
+Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
+ Miles Chen <miles.chen@mediatek.com>, David Hildenbrand <david@redhat.com>,
+ Alexander Duyck <alexander.h.duyck@linux.intel.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Dan Williams <dan.j.williams@intel.com>,
+ linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>, yi.z.zhang@linux.intel.com,
+ linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
+ Anthony Yznaga <anthony.yznaga@oracle.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linux-riscv@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
  linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In the old days, remap_pfn_range() required pages to be marked as
-PG_reserved, so they would e.g. never get swapped out. This was required
-for special mappings. Nowadays, this is fully handled via the VMA
-(VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP inside remap_pfn_range()
-to be precise). PG_reserved is no longer required but only a relict from
-the past.
+The usage of PG_reserved and how PG_reserved pages are to be treated is
+buried deep down in different parts of the kernel. Let's shine some light
+onto these details by documenting current users and expected
+behavior.
 
-So only architecture specific MM handling might require it (e.g. to
-detect them as MMIO pages). As there are no architecture specific checks
-for PageReserved() apart from MCA handling in ia64code, this can go. Use
-simple vzalloc()/vfree() instead.
+Especially, clarify on the "Some of them might not even exist" case.
+These are physical memory gaps that will never be dumped as they
+are not marked as IORESOURCE_SYSRAM. PG_reserved does in general not
+hinder anybody from dumping or swapping. In some cases, these pages
+will not be stored in the hibernation image.
 
-Note that before calling vzalloc(), size has already been aligned to
-PAGE_SIZE, no need to align again.
-
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
 Cc: Michal Hocko <mhocko@suse.com>
+Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
+Cc: Miles Chen <miles.chen@mediatek.com>
+Cc: yi.z.zhang@linux.intel.com
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- arch/ia64/kernel/perfmon.c | 59 +++-----------------------------------
- 1 file changed, 4 insertions(+), 55 deletions(-)
+ include/linux/page-flags.h | 33 +++++++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 46bff1661836..7a969f4c3534 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -583,17 +583,6 @@ pfm_put_task(struct task_struct *task)
- 	if (task != current) put_task_struct(task);
- }
- 
--static inline void
--pfm_reserve_page(unsigned long a)
--{
--	SetPageReserved(vmalloc_to_page((void *)a));
--}
--static inline void
--pfm_unreserve_page(unsigned long a)
--{
--	ClearPageReserved(vmalloc_to_page((void*)a));
--}
--
- static inline unsigned long
- pfm_protect_ctx_ctxsw(pfm_context_t *x)
- {
-@@ -816,44 +805,6 @@ pfm_reset_msgq(pfm_context_t *ctx)
- 	DPRINT(("ctx=%p msgq reset\n", ctx));
- }
- 
--static void *
--pfm_rvmalloc(unsigned long size)
--{
--	void *mem;
--	unsigned long addr;
--
--	size = PAGE_ALIGN(size);
--	mem  = vzalloc(size);
--	if (mem) {
--		//printk("perfmon: CPU%d pfm_rvmalloc(%ld)=%p\n", smp_processor_id(), size, mem);
--		addr = (unsigned long)mem;
--		while (size > 0) {
--			pfm_reserve_page(addr);
--			addr+=PAGE_SIZE;
--			size-=PAGE_SIZE;
--		}
--	}
--	return mem;
--}
--
--static void
--pfm_rvfree(void *mem, unsigned long size)
--{
--	unsigned long addr;
--
--	if (mem) {
--		DPRINT(("freeing physical buffer @%p size=%lu\n", mem, size));
--		addr = (unsigned long) mem;
--		while ((long) size > 0) {
--			pfm_unreserve_page(addr);
--			addr+=PAGE_SIZE;
--			size-=PAGE_SIZE;
--		}
--		vfree(mem);
--	}
--	return;
--}
--
- static pfm_context_t *
- pfm_context_alloc(int ctx_flags)
- {
-@@ -1498,7 +1449,7 @@ pfm_free_smpl_buffer(pfm_context_t *ctx)
- 	/*
- 	 * free the buffer
- 	 */
--	pfm_rvfree(ctx->ctx_smpl_hdr, ctx->ctx_smpl_size);
-+	vfree(ctx->ctx_smpl_hdr);
- 
- 	ctx->ctx_smpl_hdr  = NULL;
- 	ctx->ctx_smpl_size = 0UL;
-@@ -2137,7 +2088,7 @@ pfm_close(struct inode *inode, struct file *filp)
- 	 * All memory free operations (especially for vmalloc'ed memory)
- 	 * MUST be done with interrupts ENABLED.
- 	 */
--	if (smpl_buf_addr)  pfm_rvfree(smpl_buf_addr, smpl_buf_size);
-+	vfree(smpl_buf_addr);
- 
- 	/*
- 	 * return the memory used by the context
-@@ -2266,10 +2217,8 @@ pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t
- 
- 	/*
- 	 * We do the easy to undo allocations first.
-- 	 *
--	 * pfm_rvmalloc(), clears the buffer, so there is no leak
- 	 */
--	smpl_buf = pfm_rvmalloc(size);
-+	smpl_buf = vzalloc(size);
- 	if (smpl_buf == NULL) {
- 		DPRINT(("Can't allocate sampling buffer\n"));
- 		return -ENOMEM;
-@@ -2346,7 +2295,7 @@ pfm_smpl_buffer_alloc(struct task_struct *task, struct file *filp, pfm_context_t
- error:
- 	vm_area_free(vma);
- error_kmem:
--	pfm_rvfree(smpl_buf, size);
-+	vfree(smpl_buf);
- 
- 	return -ENOMEM;
- }
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index 808b4183e30d..9f8712a4b1a5 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -17,8 +17,37 @@
+ /*
+  * Various page->flags bits:
+  *
+- * PG_reserved is set for special pages, which can never be swapped out. Some
+- * of them might not even exist...
++ * PG_reserved is set for special pages. The "struct page" of such a page
++ * should in general not be touched (e.g. set dirty) except by its owner.
++ * Pages marked as PG_reserved include:
++ * - Pages part of the kernel image (including vDSO) and similar (e.g. BIOS,
++ *   initrd, HW tables)
++ * - Pages reserved or allocated early during boot (before the page allocator
++ *   was initialized). This includes (depending on the architecture) the
++ *   initial vmemmap, initial page tables, crashkernel, elfcorehdr, and much
++ *   much more. Once (if ever) freed, PG_reserved is cleared and they will
++ *   be given to the page allocator.
++ * - Pages falling into physical memory gaps - not IORESOURCE_SYSRAM. Trying
++ *   to read/write these pages might end badly. Don't touch!
++ * - The zero page(s)
++ * - Pages not added to the page allocator when onlining a section because
++ *   they were excluded via the online_page_callback() or because they are
++ *   PG_hwpoison.
++ * - Pages allocated in the context of kexec/kdump (loaded kernel image,
++ *   control pages, vmcoreinfo)
++ * - MMIO/DMA pages. Some architectures don't allow to ioremap pages that are
++ *   not marked PG_reserved (as they might be in use by somebody else who does
++ *   not respect the caching strategy).
++ * - Pages part of an offline section (struct pages of offline sections should
++ *   not be trusted as they will be initialized when first onlined).
++ * - MCA pages on ia64
++ * - Pages holding CPU notes for POWER Firmware Assisted Dump
++ * - Device memory (e.g. PMEM, DAX, HMM)
++ * Some PG_reserved pages will be excluded from the hibernation image.
++ * PG_reserved does in general not hinder anybody from dumping or swapping
++ * and is no longer required for remap_pfn_range(). ioremap might require it.
++ * Consequently, PG_reserved for a page mapped into user space can indicate
++ * the zero page, the vDSO, MMIO pages or device memory.
+  *
+  * The PG_private bitflag is set on pagecache pages if they contain filesystem
+  * specific data (which is normally at page->private). It can be used by
 -- 
 2.17.2
 
