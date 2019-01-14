@@ -2,73 +2,83 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50C5FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 19:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BEFD7C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 20:15:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC65020651
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 19:19:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC65020651
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0629F2064C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 20:15:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LJeLztXb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0629F2064C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43djv64Nq5zDqWC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:18:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dl7z5X2wzDqXm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 07:15:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.68; helo=mail-ot1-f68.google.com;
- envelope-from=pku.leo@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2a00:1450:4864:20::443; helo=mail-wr1-x443.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=nxp.com
-Received: from mail-ot1-f68.google.com (mail-ot1-f68.google.com
- [209.85.210.68])
+ dmarc=none (p=none dis=none) header.from=debian.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LJeLztXb"; 
+ dkim-atps=neutral
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com
+ [IPv6:2a00:1450:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43djs34yZ3zDqW6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 06:17:11 +1100 (AEDT)
-Received: by mail-ot1-f68.google.com with SMTP id w25so93273otm.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:17:11 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dl685B14zDqVZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 07:13:36 +1100 (AEDT)
+Received: by mail-wr1-x443.google.com with SMTP id 96so392155wrb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 12:13:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=wWmKbA5d1oGoKuQguYAEN7zBM2H2HtNTPi7BgyT+znE=;
+ b=LJeLztXb9zgZvHzDWbseGTWidNnpW/yFUY8r0TRpnoVtSGfyr+9cFKpMGTtbygxsgK
+ EgXfYwfB9M8h/ktpa3VziHuaHkuqqWAwPJOXZ4D++YHxdi6zcf94D0CUTVRQhrnN9P4K
+ tFMJLetWqC7sNybYyHUclTfS/A5oCIyzb6JmWOs4eVlNErNMvNDNXkGvX0KleqXd64yB
+ YzNlZyMJyPhu6mRBEF79jK9+qMe9VWrx1V4Q8ZJpIyE7jnY6wFRBu4N6dx3+Fy370gw3
+ HMyQT9VDw9ehIpGJE1J0Gk7SPI0k4st4NyUmWqRMnvx9TXibRhjw8uuj+PM5cNFFsxfV
+ Uc5g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=OM/aIfnBVafWaMBtKs+zpeHlo8uj5Rb6aKAakxLObyk=;
- b=t+G6yfZoQ+xv7G5O+LHB0Y91PHUFTaQxvIUMVn2vFyei8dRA5mqlixFCD/CAlCu+cZ
- DYo7D6V7fi4CvYfkgu2FwEqb1VSkIC54XQ3xSu2O51jbEN2ksvRmyNuBwAS65B9z5/22
- UoFp+iO7/26D65RABTMXY+3o5W1DGGepkyjT0aduc5ciM5wpQwC7OCHCXPmRGZp3OZRa
- vbe+pm29uHkfF9EIxpLAmtSvDaTP1yWbDDqMW9TBWVVE7bq2arrfnQ8fToK9HhG34n5N
- zM8UFpgmrq5PCXZ7ecB0GcBiB6o+OZEQp6Hp/JJLdVSqvWfqvEo0/Ysr0tugqepcz9+6
- KKLw==
-X-Gm-Message-State: AJcUukcipJKGXUJ9XdJ39bahFNEjAEKl1VEufKbFiUe7RXsO2032K8Sm
- Wb946piYx/mgJcpT13jvomJ3ShAA
-X-Google-Smtp-Source: ALg8bN6yTLj0fFcBrmxzVMwd70jnVrfEMxz2jmMigzHRVs4tUy51uGQSzBVI2NUh+6korsKkOaK+Iw==
-X-Received: by 2002:a9d:2184:: with SMTP id s4mr24141otb.46.1547493429188;
- Mon, 14 Jan 2019 11:17:09 -0800 (PST)
-Received: from mail-ot1-f53.google.com (mail-ot1-f53.google.com.
- [209.85.210.53])
- by smtp.gmail.com with ESMTPSA id 31sm1244964otw.55.2019.01.14.11.17.07
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 14 Jan 2019 11:17:09 -0800 (PST)
-Received: by mail-ot1-f53.google.com with SMTP id k98so158904otk.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:17:07 -0800 (PST)
-X-Received: by 2002:a9d:1405:: with SMTP id h5mr16517479oth.331.1547493427615; 
- Mon, 14 Jan 2019 11:17:07 -0800 (PST)
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=wWmKbA5d1oGoKuQguYAEN7zBM2H2HtNTPi7BgyT+znE=;
+ b=ihjvmV7ZkuKmcJy+g9sNF3PWlZxQrPAW2ePOzAHt1PoUlJUEzPEcbD+7CQvNqOctcU
+ JMyPD5KdjYBpV/pDh3gzAouFfHjW4A2H8YZWxs7+QoXV1AYLGV+BzkRf9wzxDp+WaC9f
+ /9ZdUOe7l5VxNIj8XPGpvCW5eSKLYPHi8sWsFnEZXB2mJYSimV7HPQM3vypXUQiTe0kq
+ NasUNlNquCcPT7GZb44AORmR0P/+iSlu5+zpvmwi+KHpi/1AMMJ9LCYgSfMP8fwukuAc
+ BuXhRAQmB9QJ/O6OQQOpL4GJkJ0fyqRaeeLB+xuMDl1wGB6Mc1DR2/ikqGFePmpy7pwN
+ 5ltA==
+X-Gm-Message-State: AJcUukfvuipLHMWokhOkMV+Ygh4elbUw8CRShWMRR//d3YJPH+QwWO66
+ 3Jrnkk7BE8bZiYHbjnQ8Fr4=
+X-Google-Smtp-Source: ALg8bN7bqye7llULIjL7t/Z3TLbFTkFMfki7ki2Lrd+nu5U0G8/6XBBCi0iF7q74/cXWuqyYK4jwqg==
+X-Received: by 2002:a5d:5409:: with SMTP id g9mr176312wrv.88.1547496813706;
+ Mon, 14 Jan 2019 12:13:33 -0800 (PST)
+Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
+ [78.225.224.134])
+ by smtp.gmail.com with ESMTPSA id c15sm24265536wml.27.2019.01.14.12.13.31
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 14 Jan 2019 12:13:31 -0800 (PST)
+Received: by macbookpro.malat.net (Postfix, from userid 1000)
+ id ADE5D11422AD; Mon, 14 Jan 2019 21:13:30 +0100 (CET)
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: Allow CPU selection of G4/74xx variant
+Date: Mon, 14 Jan 2019 21:13:04 +0100
+Message-Id: <20190114201304.10783-1-malat@debian.org>
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-References: <20190114050237.32140-1-Bharat.Bhushan@nxp.com>
-In-Reply-To: <20190114050237.32140-1-Bharat.Bhushan@nxp.com>
-From: Li Yang <leoyang.li@nxp.com>
-Date: Mon, 14 Jan 2019 13:16:56 -0600
-X-Gmail-Original-Message-ID: <CADRPPNRXgR_c+7tT9nv5QVBsHxm662T0sYwAhHS1PO=O9SC5Tw@mail.gmail.com>
-Message-ID: <CADRPPNRXgR_c+7tT9nv5QVBsHxm662T0sYwAhHS1PO=O9SC5Tw@mail.gmail.com>
-Subject: Re: [PATCH] soc: fsl: dpio: fix cpu range check
-To: Bharat Bhushan <bharat.bhushan@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,46 +90,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Roy Pledge <roy.pledge@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "bharatb.yadav@gmail.com" <bharatb.yadav@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, Jan 13, 2019 at 11:13 PM Bharat Bhushan <bharat.bhushan@nxp.com> wrote:
->
-> cpu_possible(cpu) will always return true when cpu parameter
-> is from cpumask_next().
-> Check for nr_cpu_ids rather than !cpu_possible(cpu).
+GCC supports -mcpu=G4
 
-There is another patch pending merge seems to cover this issue too.
-Please let me know if it doesn't.
+This patch gives the opportunity to select ALTIVEC for this variant.
 
-https://lore.kernel.org/patchwork/patch/1020905/
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+ arch/powerpc/platforms/Kconfig.cputype | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Leo
->
-> Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
-> ---
->  drivers/soc/fsl/dpio/dpio-driver.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
-> index e58fcc9096e8..eb369dd9e0a7 100644
-> --- a/drivers/soc/fsl/dpio/dpio-driver.c
-> +++ b/drivers/soc/fsl/dpio/dpio-driver.c
-> @@ -133,7 +133,7 @@ static int dpaa2_dpio_probe(struct fsl_mc_device *dpio_dev)
->         else
->                 next_cpu = cpumask_next(next_cpu, cpu_online_mask);
->
-> -       if (!cpu_possible(next_cpu)) {
-> +       if (next_cpu >= nr_cpu_ids) {
->                 dev_err(dev, "probe failed. Number of DPIOs exceeds NR_CPUS.\n");
->                 err = -ERANGE;
->                 goto err_allocate_irqs;
-> --
-> 2.20.1
->
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 8c7464c3f27f..7c544607ba32 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -153,6 +153,11 @@ config E300C3_CPU
+ 	bool "e300c3 (831x)"
+ 	depends on PPC_BOOK3S_32
+ 
++config G4_CPU
++	bool "G4 (74xx)"
++	depends on PPC_BOOK3S_32
++	select ALTIVEC
++
+ endchoice
+ 
+ config TARGET_CPU_BOOL
+@@ -171,6 +176,7 @@ config TARGET_CPU
+ 	default "860" if 860_CPU
+ 	default "e300c2" if E300C2_CPU
+ 	default "e300c3" if E300C3_CPU
++	default "G4" if G4_CPU
+ 
+ config PPC_BOOK3S
+ 	def_bool y
+-- 
+2.19.2
+
