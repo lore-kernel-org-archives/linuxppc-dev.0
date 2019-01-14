@@ -3,36 +3,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A3CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 03:42:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ADC1C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:01:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E75B920659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 03:42:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E75B920659
+	by mail.kernel.org (Postfix) with ESMTPS id 5F37720657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 04:01:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5F37720657
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dK656kB7zDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 14:42:05 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dKXM3PrVzDqRc
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 15:01:23 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dK4G1zkxzDqRJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 14:40:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dKVT15w1zDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 14:59:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43dK433MFKz9s9G;
- Mon, 14 Jan 2019 14:40:17 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43dKVQ4Bklz9s9G;
+ Mon, 14 Jan 2019 14:59:42 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Arnd Bergmann <arnd@arndb.de>, y2038@lists.linaro.org,
  linux-api@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -40,8 +40,8 @@ Subject: Re: [PATCH 14/15] arch: add split IPC system calls where needed
 In-Reply-To: <20190110162435.309262-15-arnd@arndb.de>
 References: <20190110162435.309262-1-arnd@arndb.de>
  <20190110162435.309262-15-arnd@arndb.de>
-Date: Mon, 14 Jan 2019 14:40:14 +1100
-Message-ID: <87r2df29gh.fsf@concordia.ellerman.id.au>
+Date: Mon, 14 Jan 2019 14:59:41 +1100
+Message-ID: <87pnsz28k2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -139,9 +139,10 @@ I'll try and send them today.
 We already have a gap at 366-377 from when we tried to add the split IPC
 calls a few years back.
 
-I guess I don't mind leaving that gap and using the common numbers.
+I guess I don't mind leaving that gap and using the common numbers as
+you've done here.
 
-But would be good to add a comment pointing out that we have room there
-for arch specific syscalls as well.
+But it would be good to add a comment pointing out that we have room
+at 366 for more arch specific syscalls as well.
 
 cheers
