@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AECDC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:01:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57456C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:03:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B76962086D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:01:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B76962086D
+	by mail.kernel.org (Postfix) with ESMTPS id D4CE62086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 10:03:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D4CE62086D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dTWq4rjczDqST
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 21:01:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dTZD4r2pzDqNG
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 21:03:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,41 +29,41 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dTNV0w64zDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 20:55:05 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dTNX0BwCzDqRW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 20:55:07 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x0E9mWQM082318
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 04:55:03 -0500
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q0jt7qune-1
+ x0E9mWB5011201
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 04:55:05 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q0mxwrv31-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 04:55:02 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 04:55:03 -0500
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 14 Jan 2019 09:54:56 -0000
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
+ Mon, 14 Jan 2019 09:55:01 -0000
+Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 14 Jan 2019 09:54:54 -0000
+ Mon, 14 Jan 2019 09:54:58 -0000
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0E9srW523527472
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0E9svCI20971746
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 14 Jan 2019 09:54:53 GMT
+ Mon, 14 Jan 2019 09:54:57 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 70495AE060;
- Mon, 14 Jan 2019 09:54:53 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 6C3FBAE064;
+ Mon, 14 Jan 2019 09:54:57 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E320AAE06A;
- Mon, 14 Jan 2019 09:54:50 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DF6FCAE063;
+ Mon, 14 Jan 2019 09:54:54 +0000 (GMT)
 Received: from skywalker.in.ibm.com (unknown [9.124.31.106])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 14 Jan 2019 09:54:50 +0000 (GMT)
+ Mon, 14 Jan 2019 09:54:54 +0000 (GMT)
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
  Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -71,21 +71,21 @@ To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
  Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
 Subject: [PATCH V7 2/4] mm: Update get_user_pages_longterm to migrate pages
  allocated from CMA region
-Date: Mon, 14 Jan 2019 15:24:34 +0530
+Date: Mon, 14 Jan 2019 15:24:35 +0530
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
 References: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19011409-0052-0000-0000-000003780AE9
+x-cbid: 19011409-0064-0000-0000-0000039658E1
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010402; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000274; SDB=6.01146283; UDB=6.00597007; IPR=6.00926570; 
- MB=3.00025118; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-14 09:54:56
+ PH=3.00000004; SC=3.00000274; SDB=6.01146284; UDB=6.00597007; IPR=6.00926570; 
+ MB=3.00025118; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-14 09:55:01
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19011409-0053-0000-0000-00005F75E2D8
-Message-Id: <20190114095438.32470-3-aneesh.kumar@linux.ibm.com>
+x-cbparentid: 19011409-0065-0000-0000-00003C07A8A8
+Message-Id: <20190114095438.32470-4-aneesh.kumar@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-14_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
