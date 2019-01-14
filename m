@@ -2,23 +2,23 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,TVD_SUBJ_WIPE_DEBT,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27115C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 00:42:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F814C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 00:43:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CC2F4206DD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 00:42:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC2F4206DD
+	by mail.kernel.org (Postfix) with ESMTPS id 0278C20656
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 00:43:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0278C20656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dF6R6dgmzDqRk
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:42:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dF8L0T0RzDqKj
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:43:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
  (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
@@ -26,17 +26,17 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dF4b4vXfzDqQk
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:40:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dF6X1G3nzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:42:12 +1100 (AEDT)
 Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 6EACCAE80001;
- Sun, 13 Jan 2019 19:40:29 -0500 (EST)
+ by ozlabs.ru (Postfix) with ESMTP id C8454AE80001;
+ Sun, 13 Jan 2019 19:41:39 -0500 (EST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel] powerpc/powernv: Remove never used
- pnv_power9_force_smt4
-Date: Mon, 14 Jan 2019 11:40:27 +1100
-Message-Id: <20190114004027.130325-1-aik@ozlabs.ru>
+Subject: [PATCH kernel] powerpc/powernv/npu: Remove obsolete comment about
+ TCE_KILL_INVAL_ALL
+Date: Mon, 14 Jan 2019 11:41:38 +1100
+Message-Id: <20190114004138.130559-1-aik@ozlabs.ru>
 X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -54,30 +54,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This removes never used symbol - pnv_power9_force_smt4.
+TCE_KILL_INVAL_ALL has moved long ago but the comment was forgotted so
+finish the move and remove the comment.
 
-Note that we might still want to add stubs for:
-	void pnv_power9_force_smt4_catch(void);
-	void pnv_power9_force_smt4_release(void);
-
-Fixes: 7672691a08c88 "powerpc/powernv: Provide a way to force a core into SMT4 mode"
+Fixes: 0bbcdb437da0c4a "powerpc/powernv/npu: TCE Kill helpers cleanup"
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/powernv.h | 1 -
- 1 file changed, 1 deletion(-)
+ arch/powerpc/platforms/powernv/npu-dma.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
-index 2f3ff7a..362ea12 100644
---- a/arch/powerpc/include/asm/powernv.h
-+++ b/arch/powerpc/include/asm/powernv.h
-@@ -40,7 +40,6 @@ static inline int pnv_npu2_handle_fault(struct npu_context *context,
- }
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index d7f742e..2ca7982 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -28,10 +28,6 @@
+  */
+ static DEFINE_SPINLOCK(npu_context_lock);
  
- static inline void pnv_tm_init(void) { }
--static inline void pnv_power9_force_smt4(void) { }
- #endif
- 
- #endif /* _ASM_POWERNV_H */
+-/*
+- * Other types of TCE cache invalidation are not functional in the
+- * hardware.
+- */
+ static struct pci_dev *get_pci_dev(struct device_node *dn)
+ {
+ 	struct pci_dn *pdn = PCI_DN(dn);
 -- 
 2.17.1
 
