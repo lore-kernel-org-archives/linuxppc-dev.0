@@ -2,50 +2,60 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64DFCC43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 17:10:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 12165C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 17:12:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF77E20659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 17:10:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF77E20659
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id BDAED2086D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 17:12:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BDAED2086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dg326hzmzDqWX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:10:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dg5F1n6kzDqWg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:12:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=jpoimboe@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dg191M3tzDqW5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 04:09:00 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 0861268D93; Mon, 14 Jan 2019 18:08:56 +0100 (CET)
-Date: Mon, 14 Jan 2019 18:08:55 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [PATCH 1/3] dma-mapping: remove the default map_resource
- implementation
-Message-ID: <20190114170855.GA7485@lst.de>
-References: <20190111181731.11782-1-hch@lst.de>
- <20190111181731.11782-2-hch@lst.de>
- <c882430e-1dbd-df86-d686-0381dcaa668e@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dg1y5HkRzDqY3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 04:09:39 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id C17E49D432;
+ Mon, 14 Jan 2019 17:09:37 +0000 (UTC)
+Received: from treble (ovpn-120-232.rdu2.redhat.com [10.10.120.232])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 7B7565D744;
+ Mon, 14 Jan 2019 17:09:34 +0000 (UTC)
+Date: Mon, 14 Jan 2019 11:09:32 -0600
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Joe Lawrence <joe.lawrence@redhat.com>
+Subject: Re: ppc64le reliable stack unwinder and scheduled tasks
+Message-ID: <20190114170932.awhuv7livfxhrcee@treble>
+References: <7f468285-b149-37e2-e782-c9e538b997a9@redhat.com>
+ <87bm4ocbbt.fsf@suse.de> <20190111010808.GA17858@redhat.com>
+ <87fttzbpid.fsf@suse.de> <20190114040937.GA6739@redhat.com>
+ <877ef7bt6j.fsf@suse.de> <20190114164659.GA18643@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <c882430e-1dbd-df86-d686-0381dcaa668e@arm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20190114164659.GA18643@redhat.com>
+User-Agent: NeoMutt/20180716
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.39]); Mon, 14 Jan 2019 17:09:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,64 +67,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Niklas =?iso-8859-1?Q?S=F6derlund?=
- <niklas.soderlund+renesas@ragnatech.se>, linux-media@vger.kernel.org,
- Pawel Osciak <pawel@osciak.com>, Russell King <linux@armlinux.org.uk>,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Nicolai Stange <nstange@suse.de>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, Jiri Kosina <jkosina@suse.cz>,
+ live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 14, 2019 at 01:12:33PM +0000, Robin Murphy wrote:
-> Ignoring the offset was kind of intentional there, because at the time I 
-> was primarily thinking about it in terms of the Keystone 2 platform where 
-> the peripherals are all in the same place (0-2GB) in both the bus and CPU 
-> physical address maps, and only the view of RAM differs between the two 
-> (2-4GB vs. 32-34GB). However, on something like BCM283x, the peripherals 
-> region is also offset from its bus address in the CPU view, but at a 
-> *different* offset relative to that of RAM.
+On Mon, Jan 14, 2019 at 11:46:59AM -0500, Joe Lawrence wrote:
+> @@ -158,11 +158,21 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+>  			return 1; /* invalid backlink, too far up. */
+>  		}
+>  
+> +		/* We can only trust the bottom frame's backlink, the rest
+> +		 * of the frame may be uninitialized, continue to the next. */
+> +		if (firstframe--)
+> +			goto next;
 
-I was more thinking of the PCIe P2P case, where we need to apply a
-consistent offset to translate between the CPU and the bus view.
+Won't this decrement firstframe on every iteration, so when firstframe
+is 0, it will decrement it to -1, causing it to 'goto next' on all
+future iterations?
 
-But this isn't really used for PCIe P2P, so I guess keeping the original
-sematics might be a better idea.  That being said the videobuf code seems
-to rely on these offsets, so we might be between a rock and a hard place.
-
-> Fortunately, I'm not aware of any platform which has a DMA engine behind an 
-> IOMMU (and thus *needs* to use dma_map_resource() to avoid said IOMMU 
-> blocking the slave device register reads/writes) and also has any nonzero 
-> offsets, and AFAIK the IOMMU-less platforms above aren't using 
-> dma_map_resource() at all, so this change shouldn't actually break 
-> anything, but I guess we have a bit of a problem making it truly generic 
-> and robust :(
-
-Note that we don't actually use the code in this patch for ARM/ARM64
-platforms with IOMMUs, as both the ARM and the ARM64 iommu code have
-their own implementations of ->map_resource that actually program
-the iommu (which at least for the PCIe P2P case would be wrong).
-
-> Is this perhaps another shove in the direction of overhauling 
-> dma_pfn_offset into an arbitrary "DMA ranges" lookup table?
-
-It is long overdue anyway.
-
->>   		addr = ops->map_resource(dev, phys_addr, size, dir, attrs);
->
-> Might it be reasonable to do:
->
-> 	if (!dma_is_direct(ops) && ops->map_resource)
-> 		addr = ops->map_resource(...);
-> 	else
-> 		addr = dma_direct_map_resource(...);
->
-> and avoid having to explicitly wire up the dma_direct callback elsewhere?
-
-No, I absolutely _want_ the callback explicitly wired up.  That is the
-only way to ensure we actually intentionally support it and don't just
-get a default that often won't work.  Same issue for ->mmap and
-->get_sgtable.
+-- 
+Josh
