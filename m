@@ -2,50 +2,129 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D740C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:50:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 490C8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:54:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 927F420659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:50:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 927F420659
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 6BBE820659
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 11:54:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="gWUNYsnP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BBE820659
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dWy46pLqzDqM9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 22:50:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dX2V2xXHzDqTJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 22:54:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=samsung.com
+ (client-ip=210.118.77.11; helo=mailout1.w1.samsung.com;
+ envelope-from=m.szyprowski@samsung.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="gWUNYsnP"; 
+ dkim-atps=neutral
+X-Greylist: delayed 581 seconds by postgrey-1.36 at bilbo;
+ Mon, 14 Jan 2019 22:52:52 AEDT
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dWvt6k6ZzDq5x
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 22:48:58 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 0B748ADD6;
- Mon, 14 Jan 2019 11:48:55 +0000 (UTC)
-Date: Mon, 14 Jan 2019 12:48:53 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH] x86, numa: always initialize all possible nodes
-Message-ID: <20190114114853.GE21345@dhcp22.suse.cz>
-References: <20190114082416.30939-1-mhocko@kernel.org>
- <87pnszzg9s.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dX0N1BK2zDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 22:52:51 +1100 (AEDT)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20190114114304euoutp01a2e6649dde254745d68e893be5e92784~5tEvdyvzV0357603576euoutp01U
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 11:43:04 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com
+ 20190114114304euoutp01a2e6649dde254745d68e893be5e92784~5tEvdyvzV0357603576euoutp01U
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1547466184;
+ bh=U9uIC6yWPkSg7QSEG2aexBV6gezSOjVmFO2Om9ea8Ak=;
+ h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+ b=gWUNYsnPcocodsY6503EipN0oHh18ZERQGWC+LPToqYlfa09K9hbjly0s0NynCdIw
+ ytdkdA9FDP88OhJmV1vex/4htJjJMA3TLNbs0dxZ9S3vgD+XqwoQ4uLhIH7kXUgF1L
+ V4ExAsaRJ5YNYhea9i5ye8iU+kQTodwYJFbv3we0=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+ eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+ 20190114114304eucas1p1d12bde6b0139100fb9af9e609a05de8a~5tEu8oscA2130921309eucas1p1M;
+ Mon, 14 Jan 2019 11:43:04 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+ eusmges3new.samsung.com (EUCPMTA) with SMTP id 23.EB.04806.8C57C3C5; Mon, 14
+ Jan 2019 11:43:04 +0000 (GMT)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20190114114303eucas1p2c028bcf1ca155e9aa91c83c2f4ba57f0~5tEt68Tgb0174101741eucas1p2Q;
+ Mon, 14 Jan 2019 11:43:03 +0000 (GMT)
+Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20190114114303eusmtrp2adf80bdabbfdd277b4a176dfece853da~5tEtsMr-c2057220572eusmtrp2w;
+ Mon, 14 Jan 2019 11:43:03 +0000 (GMT)
+X-AuditID: cbfec7f5-34dff700000012c6-e1-5c3c75c835d3
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms1.samsung.com (EUCPMTA) with SMTP id 91.3F.04284.6C57C3C5; Mon, 14
+ Jan 2019 11:43:02 +0000 (GMT)
+Received: from [106.116.147.30] (unknown [106.116.147.30]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20190114114302eusmtip1e002d0c52e9dd06c708d580f39700661~5tEtIIoqq2681126811eusmtip1K;
+ Mon, 14 Jan 2019 11:43:02 +0000 (GMT)
+Subject: Re: fix a layering violation in videobuf2 and improve dma_map_resource
+To: Christoph Hellwig <hch@lst.de>, Pawel Osciak <pawel@osciak.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Niklas_S=c3=b6derlund?=
+ <niklas.soderlund+renesas@ragnatech.se>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Message-ID: <141501f5-a9f4-98d7-e958-ca40fc870454@samsung.com>
+Date: Mon, 14 Jan 2019 12:43:03 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87pnszzg9s.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190111181731.11782-1-hch@lst.de>
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Brightmail-Tracker: H4sIAAAAAAAAA01SaUwTYRD163a3S7Xmo6BM0KhpgomNB0RjNikiGo0b/3j8Exu1yqYYoZou
+ RdEghMOjqRdi0BYFjBHEM5VLaBExWA1ChSLigaLUKMZa5FIOUdoV5d97M29m3kuGJuRtZCi9
+ W5fI6XWaeAUlFZc/GnIuemyIVIeXGEnm2vV6EVNwX8U0pn+VMNauNpJxVeVRjOlOGcnUnbMj
+ ZuTHGMlctY6KmI4nC5kcz5AkeirramsmWGvJcYq9eyWVPdtehFjn+ULEVr9Mo9iu4W6K/eT6
+ QbEnS0sQ22eds1EaI42M5eJ3J3H6JVE7pHH5vUfRvhPUgcGXuVQaGhAbUQANeBm0WnrGsZSW
+ 42IELd4WJJB+BGmvhymB9CEoNrnRxIj1tZfyYTkuQpD7USqIvAi8rgbS1wjCm8Bz6rPE1wjG
+ dgRNR06RPkLgUQSOS43+VRSOAKPH6F8lw1Fg+1ztdyXGYZBpey4yIpqegdWQ5ZIKkkB4csHt
+ lwTgcHhnL5D4MIHnQoUnjxBwCLxy54t8twB/l8DlogpKsL0G3veP/E0dBF8cpRIBz4bf9yYG
+ MhAcPW+WCMSEoCyv8u+0Ch46mkmfIwIvgNtVS4TyKuh5keEvA54O7Z5AwcR0yC7PJYSyDI4d
+ kQvq+WB23Pp39sGzFuI0UpgnRTNPimOeFMf8/24BEpegEM7AJ2g5fqmO27+Y1yTwBp128a69
+ CVY0/m0NY46BSlQzurMOYRoppsnAolLLSU0Sn5xQh4AmFMGypNWRarksVpN8kNPv3a43xHN8
+ HZpFixUhskNTOrfKsVaTyO3huH2cfqIrogNC01CEaQVa8W3z2dZ161IaCp1qVe0vzVOM+ubZ
+ PNqVOZ1RTc7WLPeHwp/ZxeUblmbwhwdaiAWSzSHa6uGL9plnwuvTq4a2pXj7o2udjt5eW0Vi
+ r3KOrmAwtVK5xRt9Mzw/dOZJy421OW+734StV8ZYM7NHMhWhNbUiy/K24OMdXx6fUYj5OE2E
+ ktDzmj+7Wk/zaQMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrFIsWRmVeSWpSXmKPExsVy+t/xu7rHSm1iDH5etLJYufook8WC/dYW
+ Z5vesFtsenyN1eLyrjlsFj0btrJaHJq6l9Hi9/d/rBbLNv1hsrh7Usdiytuf7A7cHpevXWT2
+ 2LSqk81j85J6j8k3ljN6nJ+xkNFj980GNo/Hv16yeTy//J3No2/LKkaPz5vkArii9GyK8ktL
+ UhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX07WxSUnMyy1KL9O0S9DLmf2pnLOhlq/h2
+ czpbA+NXli5GTg4JAROJTbffs3UxcnEICSxllOi5sYYdIiEjcXJaAyuELSzx51oXVNFbRom/
+ F+aBJYQFAiXe9r9gB0mICOxllLh/+i5YFbPAP0aJ+b07GCFamhkl/i8+xATSwiZgKNH1FmQW
+ JwevgJ3Enhe7wQ5hEVCVaNlzFaxGVCBGYtaTPnaIGkGJkzOfgNVwChhI3N+7ACzOLKAu8Wfe
+ JWYIW15i+9s5ULa4xK0n85kmMArNQtI+C0nLLCQts5C0LGBkWcUoklpanJueW2yoV5yYW1ya
+ l66XnJ+7iREYz9uO/dy8g/HSxuBDjAIcjEo8vBKzrWOEWBPLiitzDzFKcDArifCWOdnECPGm
+ JFZWpRblxxeV5qQWH2I0BXpuIrOUaHI+MNXklcQbmhqaW1gamhubG5tZKInznjeojBISSE8s
+ Sc1OTS1ILYLpY+LglGpgtN/qdPhqrqPJzOrX3xSutYvret7ascU7aer/7Eea9i+3fT3yV0Ts
+ yOvkvrpL+/Ym+Riz82Ut+Pmbpzfwka/TdHPX2Jye96xpc6wern7gdtB7e13YjkWmAsV2G4WX
+ 3ylgsTjNma3/yjskk7G0Jiq2Su1Qq3mfJfu/x2v7/+64J9WStfSF4DUmJZbijERDLeai4kQA
+ 8HzmnP0CAAA=
+X-CMS-MailID: 20190114114303eucas1p2c028bcf1ca155e9aa91c83c2f4ba57f0
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b
+References: <CGME20190111181841epcas3p2d7c0bf8f5c11a9863e22ec1b12da6e1b@epcas3p2.samsung.com>
+ <20190111181731.11782-1-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,130 +136,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Dave Hansen <dave.hansen@intel.com>, Peter Zijlstra <peterz@infradead.org>,
- x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Pingfan Liu <kernelfans@gmail.com>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon 14-01-19 21:26:39, Michael Ellerman wrote:
-> Michal Hocko <mhocko@kernel.org> writes:
-> 
-> > From: Michal Hocko <mhocko@suse.com>
-> >
-> > Pingfan Liu has reported the following splat
-> > [    5.772742] BUG: unable to handle kernel paging request at 0000000000002088
-> > [    5.773618] PGD 0 P4D 0
-> > [    5.773618] Oops: 0000 [#1] SMP NOPTI
-> > [    5.773618] CPU: 2 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc1+ #3
-> > [    5.773618] Hardware name: Dell Inc. PowerEdge R7425/02MJ3T, BIOS 1.4.3 06/29/2018
-> > [    5.773618] RIP: 0010:__alloc_pages_nodemask+0xe2/0x2a0
-> > [    5.773618] Code: 00 00 44 89 ea 80 ca 80 41 83 f8 01 44 0f 44 ea 89 da c1 ea 08 83 e2 01 88 54 24 20 48 8b 54 24 08 48 85 d2 0f 85 46 01 00 00 <3b> 77 08 0f 82 3d 01 00 00 48 89 f8 44 89 ea 48 89
-> > e1 44 89 e6 89
-> > [    5.773618] RSP: 0018:ffffaa600005fb20 EFLAGS: 00010246
-> > [    5.773618] RAX: 0000000000000000 RBX: 00000000006012c0 RCX: 0000000000000000
-> > [    5.773618] RDX: 0000000000000000 RSI: 0000000000000002 RDI: 0000000000002080
-> > [    5.773618] RBP: 00000000006012c0 R08: 0000000000000000 R09: 0000000000000002
-> > [    5.773618] R10: 00000000006080c0 R11: 0000000000000002 R12: 0000000000000000
-> > [    5.773618] R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000002
-> > [    5.773618] FS:  0000000000000000(0000) GS:ffff8c69afe00000(0000) knlGS:0000000000000000
-> > [    5.773618] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> > [    5.773618] CR2: 0000000000002088 CR3: 000000087e00a000 CR4: 00000000003406e0
-> > [    5.773618] Call Trace:
-> > [    5.773618]  new_slab+0xa9/0x570
-> > [    5.773618]  ___slab_alloc+0x375/0x540
-> > [    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
-> > [    5.773618]  __slab_alloc+0x1c/0x38
-> > [    5.773618]  __kmalloc_node_track_caller+0xc8/0x270
-> > [    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
-> > [    5.773618]  devm_kmalloc+0x28/0x60
-> > [    5.773618]  pinctrl_bind_pins+0x2b/0x2a0
-> > [    5.773618]  really_probe+0x73/0x420
-> > [    5.773618]  driver_probe_device+0x115/0x130
-> > [    5.773618]  __driver_attach+0x103/0x110
-> > [    5.773618]  ? driver_probe_device+0x130/0x130
-> > [    5.773618]  bus_for_each_dev+0x67/0xc0
-> > [    5.773618]  ? klist_add_tail+0x3b/0x70
-> > [    5.773618]  bus_add_driver+0x41/0x260
-> > [    5.773618]  ? pcie_port_setup+0x4d/0x4d
-> > [    5.773618]  driver_register+0x5b/0xe0
-> > [    5.773618]  ? pcie_port_setup+0x4d/0x4d
-> > [    5.773618]  do_one_initcall+0x4e/0x1d4
-> > [    5.773618]  ? init_setup+0x25/0x28
-> > [    5.773618]  kernel_init_freeable+0x1c1/0x26e
-> > [    5.773618]  ? loglevel+0x5b/0x5b
-> > [    5.773618]  ? rest_init+0xb0/0xb0
-> > [    5.773618]  kernel_init+0xa/0x110
-> > [    5.773618]  ret_from_fork+0x22/0x40
-> > [    5.773618] Modules linked in:
-> > [    5.773618] CR2: 0000000000002088
-> > [    5.773618] ---[ end trace 1030c9120a03d081 ]---
-> >
-> > with his AMD machine with the following topology
-> >   NUMA node0 CPU(s):     0,8,16,24
-> >   NUMA node1 CPU(s):     2,10,18,26
-> >   NUMA node2 CPU(s):     4,12,20,28
-> >   NUMA node3 CPU(s):     6,14,22,30
-> >   NUMA node4 CPU(s):     1,9,17,25
-> >   NUMA node5 CPU(s):     3,11,19,27
-> >   NUMA node6 CPU(s):     5,13,21,29
-> >   NUMA node7 CPU(s):     7,15,23,31
-> >
-> > [    0.007418] Early memory node ranges
-> > [    0.007419]   node   1: [mem 0x0000000000001000-0x000000000008efff]
-> > [    0.007420]   node   1: [mem 0x0000000000090000-0x000000000009ffff]
-> > [    0.007422]   node   1: [mem 0x0000000000100000-0x000000005c3d6fff]
-> > [    0.007422]   node   1: [mem 0x00000000643df000-0x0000000068ff7fff]
-> > [    0.007423]   node   1: [mem 0x000000006c528000-0x000000006fffffff]
-> > [    0.007424]   node   1: [mem 0x0000000100000000-0x000000047fffffff]
-> > [    0.007425]   node   5: [mem 0x0000000480000000-0x000000087effffff]
-> >
-> > and nr_cpus set to 4. The underlying reason is tha the device is bound
-> > to node 2 which doesn't have any memory and init_cpu_to_node only
-> > initializes memory-less nodes for possible cpus which nr_cpus restrics.
-> > This in turn means that proper zonelists are not allocated and the page
-> > allocator blows up.
-> >
-> > Fix the issue by reworking how x86 initializes the memory less nodes.
-> > The current implementation is hacked into the workflow and it doesn't
-> > allow any flexibility. There is init_memory_less_node called for each
-> > offline node that has a CPU as already mentioned above. This will make
-> > sure that we will have a new online node without any memory. Much later
-> > on we build a zone list for this node and things seem to work, except
-> > they do not (e.g. due to nr_cpus). Not to mention that it doesn't really
-> > make much sense to consider an empty node as online because we just
-> > consider this node whenever we want to iterate nodes to use and empty
-> > node is obviously not the best candidate. This is all just too fragile.
-> >
-> > Reported-by: Pingfan Liu <kernelfans@gmail.com>
-> > Tested-by: Pingfan Liu <kernelfans@gmail.com>
-> > Signed-off-by: Michal Hocko <mhocko@suse.com>
-> > ---
-> >
-> > Hi,
-> > I am sending this as an RFC because I am not sure this is the proper way
-> > to go myself. I am especially not sure about other architectures
-> > supporting memoryless nodes (ppc and ia64 AFAICS or are there more?).
-> >
-> > I would appreciate a help with those architectures because I couldn't
-> > really grasp how the memoryless nodes are really initialized there. E.g.
-> > ppc only seem to call setup_node_data for online nodes but I couldn't
-> > find any special treatment for nodes without any memory.
-> 
-> We have a somewhat dubious hack in our hotplug code, see:
-> 
-> e67e02a544e9 ("powerpc/pseries: Fix cpu hotplug crash with memoryless nodes")
-> 
-> Which basically onlines the node when we hotplug a CPU into it.
+Hi Christoph,
 
-Hmm, interesting. So what happens if somebody tries to allocate a memory
-from a node when it is not online yet? E.g. something like the above.
+On 2019-01-11 19:17, Christoph Hellwig wrote:
+> Hi all,
+>
+> this series fixes a rather gross layering violation in videobuf2, which
+> pokes into arm DMA mapping internals to get a DMA address for memory that
+> does not have a page structure, and to do so fixes up the dma_map_resource
+> implementation to be practically useful.
 
-And do I get it right that this patch will not break the current ppc
-code?
+Thanks for rewriting this 'temporary code'! It predates
+dma_map_resource() and that time this was the only way to get it working
+somehow. Good that now it is possible to implement in it a clean way
+without any unwritten assumptions about the DMA mapping internals. Feel
+free to add my:
+
+Reviewed-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Best regards
 -- 
-Michal Hocko
-SUSE Labs
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
