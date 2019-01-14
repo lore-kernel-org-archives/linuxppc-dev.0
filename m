@@ -2,64 +2,60 @@ Return-Path: <SRS0=iwfG=PW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC374C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 15:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 039CBC43387
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 16:48:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 32CFC206B7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 15:55:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32CFC206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 14684206B7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 16:48:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14684206B7
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ddNb15W3zDqWH
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 02:55:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dfYd0hVGzDqWW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 03:48:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.167.67; helo=mail-lf1-f67.google.com;
- envelope-from=bhsharma@redhat.com; receiver=<UNKNOWN>)
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=joe.lawrence@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-lf1-f67.google.com (mail-lf1-f67.google.com
- [209.85.167.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ddLN1R0zzDqW7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 02:53:47 +1100 (AEDT)
-Received: by mail-lf1-f67.google.com with SMTP id z13so15936831lfe.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 07:53:47 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=wZITMFUMV0zEIamJ3VVbE4heK6bK4WYzVzsFXzCFVH0=;
- b=mrE2Ieb902oQLoD6xqT30zPFSVMeVPzpaH+MrQOrxk+LyKSUtzxsKMY2UhMyb7i8Eh
- XUvN+7N4EgezfQOS7yBV83Or87NG8tVrmNxO2j0kBkC75yvjmUxGJG+S+fK/kS6PgwVR
- qmhaWd3+0VoKXqDVEIZ2A8PuPwCOd6hlp99lBANVPs5bTu0ihDbIAYczsn/osEuKzD+b
- Q6X34t5zMjbRiZxppZdz8HHS8oF5DDdtXNLNEVNz4pY+WRdgiRYAwOqqGofXt/XM4LJI
- e+0q7dLEOlyTk1J0C338/VMvDNo+qT/Ufh0o/XZP2mC2tkeU1mxbeSrCFYtOY2v2P/zh
- yyKw==
-X-Gm-Message-State: AJcUukft+GkDDbh9z6xXnF2YKMNNZXga5+757fsIjBtx2NSN+/nYfEJA
- M85PoOHCpTspvMzGUpwCVsLUaV3HV70HnjNlucG/jw==
-X-Google-Smtp-Source: ALg8bN74ZQTuDIjsqUhLgFMGYUxSw81lMr9Ia6Rp9LV1zOdpgU9nkrJsrZPjHC4E0QC4PQUfRTidFXCqru+uICR4BPA=
-X-Received: by 2002:ac2:51af:: with SMTP id f15mr13329880lfk.44.1547481224807; 
- Mon, 14 Jan 2019 07:53:44 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43dfWr3P2HzDqWT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 03:47:04 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 5C4FB8553D;
+ Mon, 14 Jan 2019 16:47:02 +0000 (UTC)
+Received: from redhat.com (dhcp-17-208.bos.redhat.com [10.18.17.208])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 40A7619C7C;
+ Mon, 14 Jan 2019 16:47:01 +0000 (UTC)
+Date: Mon, 14 Jan 2019 11:46:59 -0500
+From: Joe Lawrence <joe.lawrence@redhat.com>
+To: Nicolai Stange <nstange@suse.de>
+Subject: Re: ppc64le reliable stack unwinder and scheduled tasks
+Message-ID: <20190114164659.GA18643@redhat.com>
+References: <7f468285-b149-37e2-e782-c9e538b997a9@redhat.com>
+ <87bm4ocbbt.fsf@suse.de> <20190111010808.GA17858@redhat.com>
+ <87fttzbpid.fsf@suse.de> <20190114040937.GA6739@redhat.com>
+ <877ef7bt6j.fsf@suse.de>
 MIME-Version: 1.0
-References: <20190114125903.24845-1-david@redhat.com>
- <20190114125903.24845-8-david@redhat.com>
-In-Reply-To: <20190114125903.24845-8-david@redhat.com>
-From: Bhupesh Sharma <bhsharma@redhat.com>
-Date: Mon, 14 Jan 2019 21:22:49 +0530
-Message-ID: <CACi5LpPphoJzfKXPN5kSV42aF27=2ZjqXSVLQjEtMdSN8+6bsA@mail.gmail.com>
-Subject: Re: [PATCH v2 7/9] arm64: kdump: No need to mark crashkernel pages
- manually PG_reserved
-To: David Hildenbrand <david@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <877ef7bt6j.fsf@suse.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.28]); Mon, 14 Jan 2019 16:47:02 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,129 +67,173 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
- CHANDAN VN <chandan.vn@samsung.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Stefan Agner <stefan@agner.ch>,
- linux-mm@kvack.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Laura Abbott <labbott@redhat.com>,
- Kristina Martsenko <kristina.martsenko@arm.com>,
- linux-m68k@lists.linux-m68k.org, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- linux-mediatek@lists.infradead.org,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Logan Gunthorpe <logang@deltatee.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dave Kleikamp <dave.kleikamp@oracle.com>, James Morse <james.morse@arm.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Greg Hackmann <ghackmann@android.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi David,
+On Mon, Jan 14, 2019 at 08:21:40AM +0100, Nicolai Stange wrote:
+> Joe Lawrence <joe.lawrence@redhat.com> writes:
+> 
+> > We should be careful when inspecting the bottom-most stack frame (the
+> > first to be unwound), particularly for scheduled-out tasks.  As Nicolai
+> > Stange explains, "If I'm reading the code in _switch() correctly, the
+> > first frame is completely uninitialized except for the pointer back to
+> > the caller's stack frame."  If a previous do_IRQ() invocation, for
+> > example, has left a residual exception-marker on the first frame, the
+> > stack tracer would incorrectly report this task's trace as unreliable.
+> >
+> 
+> FWIW, it's not been do_IRQ() who wrote the exception marker, but it's
+> caller hardware_interrupt_common(), more specifically the
+> EXCEPTION_PROLOG_COMMON_3 part therof.
+> 
 
-On Mon, Jan 14, 2019 at 6:30 PM David Hildenbrand <david@redhat.com> wrote:
->
-> The crashkernel is reserved via memblock_reserve(). memblock_free_all()
-> will call free_low_memory_core_early(), which will go over all reserved
-> memblocks, marking the pages as PG_reserved.
->
-> So manually marking pages as PG_reserved is not necessary, they are
-> already in the desired state (otherwise they would have been handed over
-> to the buddy as free pages and bad things would happen).
->
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: James Morse <james.morse@arm.com>
-> Cc: Bhupesh Sharma <bhsharma@redhat.com>
-> Cc: David Hildenbrand <david@redhat.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Dave Kleikamp <dave.kleikamp@oracle.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Florian Fainelli <f.fainelli@gmail.com>
-> Cc: Stefan Agner <stefan@agner.ch>
-> Cc: Laura Abbott <labbott@redhat.com>
-> Cc: Greg Hackmann <ghackmann@android.com>
-> Cc: Johannes Weiner <hannes@cmpxchg.org>
-> Cc: Kristina Martsenko <kristina.martsenko@arm.com>
-> Cc: CHANDAN VN <chandan.vn@samsung.com>
-> Cc: AKASHI Takahiro <takahiro.akashi@linaro.org>
-> Cc: Logan Gunthorpe <logang@deltatee.com>
-> Reviewed-by: Matthias Brugger <mbrugger@suse.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  arch/arm64/kernel/machine_kexec.c |  2 +-
->  arch/arm64/mm/init.c              | 27 ---------------------------
->  2 files changed, 1 insertion(+), 28 deletions(-)
->
-> diff --git a/arch/arm64/kernel/machine_kexec.c b/arch/arm64/kernel/machine_kexec.c
-> index 6f0587b5e941..66b5d697d943 100644
-> --- a/arch/arm64/kernel/machine_kexec.c
-> +++ b/arch/arm64/kernel/machine_kexec.c
-> @@ -321,7 +321,7 @@ void crash_post_resume(void)
->   * but does not hold any data of loaded kernel image.
->   *
->   * Note that all the pages in crash dump kernel memory have been initially
-> - * marked as Reserved in kexec_reserve_crashkres_pages().
-> + * marked as Reserved as memory was allocated via memblock_reserve().
->   *
->   * In hibernation, the pages which are Reserved and yet "nosave" are excluded
->   * from the hibernation iamge. crash_is_nosave() does thich check for crash
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index 7205a9085b4d..c38976b70069 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -118,35 +118,10 @@ static void __init reserve_crashkernel(void)
->         crashk_res.start = crash_base;
->         crashk_res.end = crash_base + crash_size - 1;
->  }
-> -
-> -static void __init kexec_reserve_crashkres_pages(void)
-> -{
-> -#ifdef CONFIG_HIBERNATION
-> -       phys_addr_t addr;
-> -       struct page *page;
-> -
-> -       if (!crashk_res.end)
-> -               return;
-> -
-> -       /*
-> -        * To reduce the size of hibernation image, all the pages are
-> -        * marked as Reserved initially.
-> -        */
-> -       for (addr = crashk_res.start; addr < (crashk_res.end + 1);
-> -                       addr += PAGE_SIZE) {
-> -               page = phys_to_page(addr);
-> -               SetPageReserved(page);
-> -       }
-> -#endif
-> -}
->  #else
->  static void __init reserve_crashkernel(void)
->  {
->  }
-> -
-> -static void __init kexec_reserve_crashkres_pages(void)
-> -{
-> -}
->  #endif /* CONFIG_KEXEC_CORE */
->
->  #ifdef CONFIG_CRASH_DUMP
-> @@ -586,8 +561,6 @@ void __init mem_init(void)
->         /* this will put all unused low memory onto the freelists */
->         memblock_free_all();
->
-> -       kexec_reserve_crashkres_pages();
-> -
->         mem_init_print_info(NULL);
->
->         /*
-> --
-> 2.17.2
+Hi Nicolai,
 
-LGTM, so:
-Reviewed-by: Bhupesh Sharma <bhsharma@redhat.com>
+Yeah, I was sloppy with the description there. :)
+
+> I thought about this a little more and can't see anything that would
+> prevent higher, i.e. non-_switch() frames to also alias with prior
+> exception frames. That STACK_FRAME_REGS_MARKER is written to a stack
+> frame's "parameter area" and most functions probably don't initialize
+> this either. So, AFAICS, higher stack frames could potentially be
+> affected by the very same problem.
+
+Hmm, I suppose a callee could leave that stack-word untouched and then
+make subsquent calls, which would be confusing for the unwinder.
+
+> I think the best solution would be to clear the STACK_FRAME_REGS_MARKER
+> upon exception return. I have a patch ready for that and will post it
+> after it has passed some basic testing -- hopefully later this day.
+> 
+
+I agree that this seems like the simplest way to clean up the exception
+stack frame state. 
+
+> That being said, I still think that your patch should also get applied
+> in some form -- looking at unitialized memory is just not a good thing
+> to do.
+> 
+> [ ... snip ...]
+
+> I would perhaps not limit this to the STACK_FRAME_REGS_MARKER, but also
+> not emit the ip obtained from the first frame into the resulting trace.
+> 
+> I.e., how about moving all the sp/newsp handling to the beginning of the
+> loop and doing an 'if (firstframe) continue;' right after that?
+
+Good point, there is a bunch of ip and trace entries bookkeeping that
+shouldn't apply in this case.
+
+I gave the following some very light testing (5.0.0-rc2 + Petr's atomic
+patches as to include and run the selftests) ... if you want to take a
+bigger hammer to refactor some of the sp/newsp code (perhaps it could be
+incorporated into the for() loop itself), feel free to go for it.  You
+could add something like this as a 2nd patch to the previously mentioned
+STACK_FRAME_REGS_MARKER cleanup fix.
+
+Thanks,
+
+-- Joe
+
+-->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8--
+
+From b87f9e81cf59a6e7e2309400e1b417562414cd5c Mon Sep 17 00:00:00 2001
+From: Joe Lawrence <joe.lawrence@redhat.com>
+Date: Sun, 13 Jan 2019 21:02:01 -0500
+Subject: [PATCH] powerpc/livepatch: relax reliable stack tracer checks for
+ first-frame
+
+The bottom-most stack frame (the first to be unwound) may be largely
+uninitialized, for the "Power Architecture 64-Bit ELF V2 ABI" only
+requires its backchain pointer to be set.
+
+The reliable stack tracer should be careful when verifying this frame:
+skip checks on STACK_FRAME_LR_SAVE and STACK_FRAME_MARKER offsets that
+may contain uninitialized residual data.
+
+Fixes: df78d3f61480 ("powerpc/livepatch: Implement reliable stack tracing for the consistency model")
+Suggested-by: Nicolai Stange <nstange@suse.de>
+Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
+---
+ arch/powerpc/kernel/stacktrace.c | 33 +++++++++++++++++++++-----------
+ 1 file changed, 22 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index e2c50b55138f..46096687a5a8 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -84,6 +84,12 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+ EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+ 
+ #ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
++/*
++ * This function returns an error if it detects any unreliable features of the
++ * stack.  Otherwise it guarantees that the stack trace is reliable.
++ *
++ * If the task is not 'current', the caller *must* ensure the task is inactive.
++ */
+ int
+ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 				struct stack_trace *trace)
+@@ -142,12 +148,6 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 		if (sp & 0xF)
+ 			return 1;
+ 
+-		/* Mark stacktraces with exception frames as unreliable. */
+-		if (sp <= stack_end - STACK_INT_FRAME_SIZE &&
+-		    stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
+-			return 1;
+-		}
+-
+ 		newsp = stack[0];
+ 		/* Stack grows downwards; unwinder may only go up. */
+ 		if (newsp <= sp)
+@@ -158,11 +158,21 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 			return 1; /* invalid backlink, too far up. */
+ 		}
+ 
++		/* We can only trust the bottom frame's backlink, the rest
++		 * of the frame may be uninitialized, continue to the next. */
++		if (firstframe--)
++			goto next;
++
++		/* Mark stacktraces with exception frames as unreliable. */
++		if (sp <= stack_end - STACK_INT_FRAME_SIZE &&
++		    stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
++			return 1;
++		}
++
+ 		/* Examine the saved LR: it must point into kernel code. */
+ 		ip = stack[STACK_FRAME_LR_SAVE];
+-		if (!firstframe && !__kernel_text_address(ip))
++		if (!__kernel_text_address(ip))
+ 			return 1;
+-		firstframe = 0;
+ 
+ 		/*
+ 		 * FIXME: IMHO these tests do not belong in
+@@ -183,12 +193,13 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 		else
+ 			trace->skip--;
+ 
+-		if (newsp == stack_end)
+-			break;
+-
+ 		if (trace->nr_entries >= trace->max_entries)
+ 			return -E2BIG;
+ 
++next:
++		if (newsp == stack_end)
++			break;
++
+ 		sp = newsp;
+ 	}
+ 	return 0;
+-- 
+2.20.1
+
+
