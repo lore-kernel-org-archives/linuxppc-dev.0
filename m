@@ -6,49 +6,52 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D5A9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BA42C43612
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:39:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3A9D20659
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:23:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A9D20659
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id BAE40206B7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Jan 2019 13:39:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAE40206B7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dZ0L1TczzDqP4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 00:22:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dZMM4fx1zDqP9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 00:39:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=robin.murphy@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43dYVq6NWBzDqVx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 00:00:51 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D235DA7EF;
- Mon, 14 Jan 2019 13:00:48 +0000 (UTC)
-Received: from t460s.redhat.com (unknown [10.36.118.91])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 0990F5D784;
- Mon, 14 Jan 2019 13:00:44 +0000 (UTC)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v2 9/9] mm: better document PG_reserved
-Date: Mon, 14 Jan 2019 13:59:03 +0100
-Message-Id: <20190114125903.24845-10-david@redhat.com>
-In-Reply-To: <20190114125903.24845-1-david@redhat.com>
-References: <20190114125903.24845-1-david@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.29]); Mon, 14 Jan 2019 13:00:49 +0000 (UTC)
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dYmZ18b5zDqWG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 00:12:39 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 523E8A78;
+ Mon, 14 Jan 2019 05:12:37 -0800 (PST)
+Received: from [10.1.196.75] (e110467-lin.cambridge.arm.com [10.1.196.75])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5F4F73F5AF;
+ Mon, 14 Jan 2019 05:12:35 -0800 (PST)
+Subject: Re: [PATCH 1/3] dma-mapping: remove the default map_resource
+ implementation
+To: Christoph Hellwig <hch@lst.de>, Pawel Osciak <pawel@osciak.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+References: <20190111181731.11782-1-hch@lst.de>
+ <20190111181731.11782-2-hch@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <c882430e-1dbd-df86-d686-0381dcaa668e@arm.com>
+Date: Mon, 14 Jan 2019 13:12:33 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <20190111181731.11782-2-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,92 +63,174 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- Miles Chen <miles.chen@mediatek.com>, David Hildenbrand <david@redhat.com>,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- Randy Dunlap <rdunlap@infradead.org>, Dan Williams <dan.j.williams@intel.com>,
- linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, yi.z.zhang@linux.intel.com,
- linux-m68k@lists.linux-m68k.org, linux-mediatek@lists.infradead.org,
- Anthony Yznaga <anthony.yznaga@oracle.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linux-riscv@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The usage of PG_reserved and how PG_reserved pages are to be treated is
-buried deep down in different parts of the kernel. Let's shine some light
-onto these details by documenting current users and expected
-behavior.
+On 11/01/2019 18:17, Christoph Hellwig wrote:
+> Just returning the physical address when not map_resource method is
+> present is highly dangerous as it doesn't take any offset in the
+> direct mapping into account and does the completely wrong thing for
+> IOMMUs.  Instead provide a proper implementation in the direct mapping
+> code, and also wire it up for arm and powerpc.
 
-Especially, clarify on the "Some of them might not even exist" case.
-These are physical memory gaps that will never be dumped as they
-are not marked as IORESOURCE_SYSRAM. PG_reserved does in general not
-hinder anybody from dumping or swapping. In some cases, these pages
-will not be stored in the hibernation image.
+Ignoring the offset was kind of intentional there, because at the time I 
+was primarily thinking about it in terms of the Keystone 2 platform 
+where the peripherals are all in the same place (0-2GB) in both the bus 
+and CPU physical address maps, and only the view of RAM differs between 
+the two (2-4GB vs. 32-34GB). However, on something like BCM283x, the 
+peripherals region is also offset from its bus address in the CPU view, 
+but at a *different* offset relative to that of RAM.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Anthony Yznaga <anthony.yznaga@oracle.com>
-Cc: Miles Chen <miles.chen@mediatek.com>
-Cc: yi.z.zhang@linux.intel.com
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- include/linux/page-flags.h | 33 +++++++++++++++++++++++++++++++--
- 1 file changed, 31 insertions(+), 2 deletions(-)
+Fortunately, I'm not aware of any platform which has a DMA engine behind 
+an IOMMU (and thus *needs* to use dma_map_resource() to avoid said IOMMU 
+blocking the slave device register reads/writes) and also has any 
+nonzero offsets, and AFAIK the IOMMU-less platforms above aren't using 
+dma_map_resource() at all, so this change shouldn't actually break 
+anything, but I guess we have a bit of a problem making it truly generic 
+and robust :(
 
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 808b4183e30d..9f8712a4b1a5 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -17,8 +17,37 @@
- /*
-  * Various page->flags bits:
-  *
-- * PG_reserved is set for special pages, which can never be swapped out. Some
-- * of them might not even exist...
-+ * PG_reserved is set for special pages. The "struct page" of such a page
-+ * should in general not be touched (e.g. set dirty) except by its owner.
-+ * Pages marked as PG_reserved include:
-+ * - Pages part of the kernel image (including vDSO) and similar (e.g. BIOS,
-+ *   initrd, HW tables)
-+ * - Pages reserved or allocated early during boot (before the page allocator
-+ *   was initialized). This includes (depending on the architecture) the
-+ *   initial vmemmap, initial page tables, crashkernel, elfcorehdr, and much
-+ *   much more. Once (if ever) freed, PG_reserved is cleared and they will
-+ *   be given to the page allocator.
-+ * - Pages falling into physical memory gaps - not IORESOURCE_SYSRAM. Trying
-+ *   to read/write these pages might end badly. Don't touch!
-+ * - The zero page(s)
-+ * - Pages not added to the page allocator when onlining a section because
-+ *   they were excluded via the online_page_callback() or because they are
-+ *   PG_hwpoison.
-+ * - Pages allocated in the context of kexec/kdump (loaded kernel image,
-+ *   control pages, vmcoreinfo)
-+ * - MMIO/DMA pages. Some architectures don't allow to ioremap pages that are
-+ *   not marked PG_reserved (as they might be in use by somebody else who does
-+ *   not respect the caching strategy).
-+ * - Pages part of an offline section (struct pages of offline sections should
-+ *   not be trusted as they will be initialized when first onlined).
-+ * - MCA pages on ia64
-+ * - Pages holding CPU notes for POWER Firmware Assisted Dump
-+ * - Device memory (e.g. PMEM, DAX, HMM)
-+ * Some PG_reserved pages will be excluded from the hibernation image.
-+ * PG_reserved does in general not hinder anybody from dumping or swapping
-+ * and is no longer required for remap_pfn_range(). ioremap might require it.
-+ * Consequently, PG_reserved for a page mapped into user space can indicate
-+ * the zero page, the vDSO, MMIO pages or device memory.
-  *
-  * The PG_private bitflag is set on pagecache pages if they contain filesystem
-  * specific data (which is normally at page->private). It can be used by
--- 
-2.17.2
+Is this perhaps another shove in the direction of overhauling 
+dma_pfn_offset into an arbitrary "DMA ranges" lookup table?
 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   arch/arm/mm/dma-mapping.c         |  2 ++
+>   arch/powerpc/kernel/dma-swiotlb.c |  1 +
+>   arch/powerpc/kernel/dma.c         |  1 +
+>   include/linux/dma-mapping.h       | 12 +++++++-----
+>   kernel/dma/direct.c               | 14 ++++++++++++++
+>   5 files changed, 25 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+> index f1e2922e447c..3c8534904209 100644
+> --- a/arch/arm/mm/dma-mapping.c
+> +++ b/arch/arm/mm/dma-mapping.c
+> @@ -188,6 +188,7 @@ const struct dma_map_ops arm_dma_ops = {
+>   	.unmap_page		= arm_dma_unmap_page,
+>   	.map_sg			= arm_dma_map_sg,
+>   	.unmap_sg		= arm_dma_unmap_sg,
+> +	.map_resource		= dma_direct_map_resource,
+>   	.sync_single_for_cpu	= arm_dma_sync_single_for_cpu,
+>   	.sync_single_for_device	= arm_dma_sync_single_for_device,
+>   	.sync_sg_for_cpu	= arm_dma_sync_sg_for_cpu,
+> @@ -211,6 +212,7 @@ const struct dma_map_ops arm_coherent_dma_ops = {
+>   	.get_sgtable		= arm_dma_get_sgtable,
+>   	.map_page		= arm_coherent_dma_map_page,
+>   	.map_sg			= arm_dma_map_sg,
+> +	.map_resource		= dma_direct_map_resource,
+>   	.dma_supported		= arm_dma_supported,
+>   };
+>   EXPORT_SYMBOL(arm_coherent_dma_ops);
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+> index 7d5fc9751622..fbb2506a414e 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -55,6 +55,7 @@ const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+>   	.dma_supported = swiotlb_dma_supported,
+>   	.map_page = dma_direct_map_page,
+>   	.unmap_page = dma_direct_unmap_page,
+> +	.map_resource = dma_direct_map_resource,
+>   	.sync_single_for_cpu = dma_direct_sync_single_for_cpu,
+>   	.sync_single_for_device = dma_direct_sync_single_for_device,
+>   	.sync_sg_for_cpu = dma_direct_sync_sg_for_cpu,
+> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> index b1903ebb2e9c..258b9e8ebb99 100644
+> --- a/arch/powerpc/kernel/dma.c
+> +++ b/arch/powerpc/kernel/dma.c
+> @@ -273,6 +273,7 @@ const struct dma_map_ops dma_nommu_ops = {
+>   	.dma_supported			= dma_nommu_dma_supported,
+>   	.map_page			= dma_nommu_map_page,
+>   	.unmap_page			= dma_nommu_unmap_page,
+> +	.map_resource			= dma_direct_map_resource,
+>   	.get_required_mask		= dma_nommu_get_required_mask,
+>   #ifdef CONFIG_NOT_COHERENT_CACHE
+>   	.sync_single_for_cpu 		= dma_nommu_sync_single,
+> diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+> index cef2127e1d70..d3087829a6df 100644
+> --- a/include/linux/dma-mapping.h
+> +++ b/include/linux/dma-mapping.h
+> @@ -208,6 +208,8 @@ dma_addr_t dma_direct_map_page(struct device *dev, struct page *page,
+>   		unsigned long attrs);
+>   int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+>   		enum dma_data_direction dir, unsigned long attrs);
+> +dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
+> +		size_t size, enum dma_data_direction dir, unsigned long attrs);
+>   
+>   #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+>       defined(CONFIG_SWIOTLB)
+> @@ -346,19 +348,19 @@ static inline dma_addr_t dma_map_resource(struct device *dev,
+>   					  unsigned long attrs)
+>   {
+>   	const struct dma_map_ops *ops = get_dma_ops(dev);
+> -	dma_addr_t addr;
+> +	dma_addr_t addr = DMA_MAPPING_ERROR;
+>   
+>   	BUG_ON(!valid_dma_direction(dir));
+>   
+>   	/* Don't allow RAM to be mapped */
+>   	BUG_ON(pfn_valid(PHYS_PFN(phys_addr)));
+>   
+> -	addr = phys_addr;
+> -	if (ops && ops->map_resource)
+> +	if (dma_is_direct(ops))
+> +		addr = dma_direct_map_resource(dev, phys_addr, size, dir, attrs);
+> +	else if (ops->map_resource)
+>   		addr = ops->map_resource(dev, phys_addr, size, dir, attrs);
+
+Might it be reasonable to do:
+
+	if (!dma_is_direct(ops) && ops->map_resource)
+		addr = ops->map_resource(...);
+	else
+		addr = dma_direct_map_resource(...);
+
+and avoid having to explicitly wire up the dma_direct callback elsewhere?
+
+Robin.
+
+>   
+>   	debug_dma_map_resource(dev, phys_addr, size, dir, addr);
+> -
+>   	return addr;
+>   }
+>   
+> @@ -369,7 +371,7 @@ static inline void dma_unmap_resource(struct device *dev, dma_addr_t addr,
+>   	const struct dma_map_ops *ops = get_dma_ops(dev);
+>   
+>   	BUG_ON(!valid_dma_direction(dir));
+> -	if (ops && ops->unmap_resource)
+> +	if (!dma_is_direct(ops) && ops->unmap_resource)
+>   		ops->unmap_resource(dev, addr, size, dir, attrs);
+>   	debug_dma_unmap_resource(dev, addr, size, dir);
+>   }
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 355d16acee6d..8e0359b04957 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -356,6 +356,20 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+>   }
+>   EXPORT_SYMBOL(dma_direct_map_sg);
+>   
+> +dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
+> +		size_t size, enum dma_data_direction dir, unsigned long attrs)
+> +{
+> +	dma_addr_t dma_addr = phys_to_dma(dev, paddr);
+> +
+> +	if (unlikely(!dma_direct_possible(dev, dma_addr, size))) {
+> +		report_addr(dev, dma_addr, size);
+> +		return DMA_MAPPING_ERROR;
+> +	}
+> +
+> +	return dma_addr;
+> +}
+> +EXPORT_SYMBOL(dma_direct_map_resource);
+> +
+>   /*
+>    * Because 32-bit DMA masks are so common we expect every architecture to be
+>    * able to satisfy them - either by not supporting more physical memory, or by
+> 
