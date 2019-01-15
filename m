@@ -3,73 +3,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04C3DC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 16:32:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D84AAC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 16:38:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D7AF20657
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 16:32:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D7AF20657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 5D75720873
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 16:38:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D75720873
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fG8S6PPhzDqX9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 03:32:24 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fG6p0LQQzDqC9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 03:30:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fGHT28lbzDqc1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 03:38:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43fG6n6mMTz8tFS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 03:30:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43fG6n6MPYz9sDB; Wed, 16 Jan 2019 03:30:57 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.193; helo=mail-qt1-f193.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f193.google.com (mail-qt1-f193.google.com
- [209.85.160.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.68; helo=mail-ua1-f68.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-ua1-f68.google.com (mail-ua1-f68.google.com
+ [209.85.222.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43fG6n2wwmz9sCs
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2019 03:30:57 +1100 (AEDT)
-Received: by mail-qt1-f193.google.com with SMTP id y20so3550247qtm.13
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2019 08:30:57 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fGDp5tpNzDqXg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 03:36:10 +1100 (AEDT)
+Received: by mail-ua1-f68.google.com with SMTP id e16so1125953uam.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 08:36:10 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=/amndcJcfW1SK/+m/Y5kbHQg99CPR00NbuyxNYL6Afc=;
- b=hxORsKAQAeTHGPmazLIEeZ14iWnNBNRZw9BpT5cu1yH4AVAjv/Uhvw1nBerXTVQOur
- y5U8hg+GpBhh4ayWjtay2p1FeQi2ChHIb2WEPQzao8CUpgvqockubUNCFMRkLYHj6jkU
- W1IT1I4Gy/azKwrL6DBJ7jVNv4LT7oP2tQYLhpuYTSujJaJPmQh3DrkSlXOLww1a2qPg
- m521egBMnW5IQck2NwztZdODlcIkQyYqiDxCW5EhfEVzPuHccg/2jS77vy2REa0KgBYQ
- 1emMWMKh2WnguatFPptWci8b9VKrujQQZm1kiQKThBaugk8lnWEhdyx7aWv7ISZ2PKtg
- vzrw==
-X-Gm-Message-State: AJcUukf0d7XcfpBzN6GIN3hYiQNKCcFOh3+yr9mgusQ3zVVm6QyYhBkZ
- XOiglOWYKXVi6NAhqUt+N9Btmui6YiFMLU6pKgQ=
-X-Google-Smtp-Source: ALg8bN53WfpjN7Kuz33kA6KZYIxkkSaz5835OGdarBLSpS1BZTHm4euoaPWLod/oE4v96P8aOpK0H0IsFQZumpkeCPw=
-X-Received: by 2002:a05:6214:1087:: with SMTP id
- o7mr3598899qvr.115.1547569855503; 
- Tue, 15 Jan 2019 08:30:55 -0800 (PST)
+ bh=adm1Mw3mLDDQkb5Mftiy3lAZ198qNeHBJOL4SrY1tf8=;
+ b=qjkneT14OuyhPQds2sTwADIlzNvZbxchjDE2ZLx4D3AIsfdp5HR2N/G/uMPgaplB3b
+ cHqylmVP6cqwfyxC/0e3UK0uhgYy3Y/FCRBwpELkxLxkTgDWNLZ2jI3Sc+/cLTVOv0pp
+ uydZUjJSH7nzj1ib3g1os8jqD0SanBNYuWMu+Aqrp3WH06pCCF699mk90o2lWniFt7y+
+ /YF9yk4rEvOFEsLIrN565WycWLV5/zGQoffB50rs6T3cTmCsBl/L2EpkDRtUAH9SOBFi
+ UJZ2te48AZQAryj0LkCNgLv/O/5dHiZbq0jHUglO8hvc48XfPvSRjCnlA1WcSbvuD1Fh
+ +Buw==
+X-Gm-Message-State: AJcUukfh9TBWSZHyJsYh94dqLy24LwrGQQMYO07g6r8iHyyxz9pxlXd0
+ xCn0vFvm5jlv9EHFVdrRFHtZh/Mlr7skFGl3/zU=
+X-Google-Smtp-Source: ALg8bN5nyuahVho846ktl4afIc2BkzN7/rQ1M7vxhSJ6rgU6eyfffsa43/9sALd1FvtSGdvtLkpiFjHkbityoUbDtSg=
+X-Received: by 2002:ab0:210e:: with SMTP id d14mr1882691ual.20.1547570168071; 
+ Tue, 15 Jan 2019 08:36:08 -0800 (PST)
 MIME-Version: 1.0
-References: <20190114113620.17558-1-mpe@ellerman.id.au>
- <20190114113620.17558-3-mpe@ellerman.id.au>
-In-Reply-To: <20190114113620.17558-3-mpe@ellerman.id.au>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 15 Jan 2019 17:30:38 +0100
-Message-ID: <CAK8P3a1X5e=DvJM_0RsKXnpPZ=QWG48+JOyCdyHDQBMS45L3_w@mail.gmail.com>
-Subject: Re: [RFC PATCH 3/5] powerpc/syscalls: Split SPU-ness out of ABI
-To: Michael Ellerman <mpe@ellerman.id.au>
+References: <20190110162435.309262-1-arnd@arndb.de>
+ <20190110162435.309262-15-arnd@arndb.de>
+ <87pnsz28k2.fsf@concordia.ellerman.id.au>
+ <CAK8P3a0uas76i2W1yjFvxHT-2=A8_egUZeAUM-Vya6386+87Xg@mail.gmail.com>
+ <CAK8P3a3eUzGDrJtV2ySpgHwjKHwZYr+1xHp6tChCt1gWi=mJ+g@mail.gmail.com>
+In-Reply-To: <CAK8P3a3eUzGDrJtV2ySpgHwjKHwZYr+1xHp6tChCt1gWi=mJ+g@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 15 Jan 2019 17:35:55 +0100
+Message-ID: <CAMuHMdVw1mBLGdn4hkiNVyoJ_oxMwi3d=_e7WL5ru+ALA4MKbw@mail.gmail.com>
+Subject: Re: [PATCH 14/15] arch: add split IPC system calls where needed
+To: Arnd Bergmann <arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,36 +73,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, Firoz Khan <firoz.khan@linaro.org>
+Cc: Rich Felker <dalias@libc.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Firoz Khan <firoz.khan@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 14, 2019 at 12:36 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Using the ABI field to encode whether a syscall is usable by SPU
-> programs or not is a bit of kludge.
->
-> The ABI of the syscall doesn't change depending on the SPU-ness, but
-> in order to make the syscall generation work we have to pretend that
-> it does.
->
-> It also means we have more duplicated syscall lines than we need to,
-> and the SPU logic is not well contained, instead all of the syscall
-> generation targets need to know if they are spu or nospu.
->
-> So instead add another column to the table which is a boolean SPU
-> field. If the field has the value "spu" then the syscall is available
-> to SPU programs, any other value means the syscall is not available to
-> SPu programs.
+Hi Arnd,
 
-This change unfortunately makes the format of the file incompatible
-with the other architectures, which prevents us from adding common
-scripts.
+On Tue, Jan 15, 2019 at 4:19 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tue, Jan 15, 2019 at 4:01 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Mon, Jan 14, 2019 at 4:59 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > > Arnd Bergmann <arnd@arndb.de> writes:
+> > > >  arch/m68k/kernel/syscalls/syscall.tbl     | 11 +++++++++++
+> > > >  arch/mips/kernel/syscalls/syscall_o32.tbl | 11 +++++++++++
+> > > >  arch/powerpc/kernel/syscalls/syscall.tbl  | 12 ++++++++++++
+> > >
+> > > I have some changes I'd like to make to our syscall table that will
+> > > clash with this.
+> > >
+> > > I'll try and send them today.
+> >
+> > Ok. Are those for 5.0 or 5.1? If they are intended for 5.0, it would be
+> > nice for me to have a branch based on 5.0-rc1 that I can put
+> > the other patches on top of.
+>
+> There is also another change that I considered:
+>
+> At the end of my series, we have a lot of entries like
+>
+> 245     32      clock_settime                   sys_clock_settime32
+> 245     64      clock_settime                   sys_clock_settime
+> 245     spu     clock_settime                   sys_clock_settime
+>
+> which could be folded into
+>
+> 245     32      clock_settime                   sys_clock_settime32
+> 245     spu64 clock_settime                   sys_clock_settime
+>
+> if we just add another option to the ABI field. Any thoughts on
+> that?
 
-There are obviously the existing scripts that we want to generalize
-across architectures, but also further ones, like a suggestion by
-David Miller to check that each native 32-bit syscall comes with
-a matching compat syscall.
+So "spu64" would mean "spu + 64"?
+That makes it more difficult to read, and to grep.
+What about allowing multiple ABIs, separated by commas?
+So that line would become:
 
-       Arnd
+    245     spu,64 clock_settime                   sys_clock_settime
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
