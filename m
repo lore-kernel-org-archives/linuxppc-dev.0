@@ -3,53 +3,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46E3EC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:13:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01900C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:49:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C608520656
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:13:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C608520656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2E91920657
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:49:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E91920657
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fC3j5VWYzDqHR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 01:13:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fCsB1gCLzDqcb
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 01:49:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.195; helo=mail-qk1-f195.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43fC2167WGzDqVV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 01:11:36 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8B198A78;
- Tue, 15 Jan 2019 06:11:34 -0800 (PST)
-Received: from [10.163.1.4] (unknown [10.163.1.4])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7FFAC3F739;
- Tue, 15 Jan 2019 06:11:25 -0800 (PST)
-Subject: Re: [PATCH] mm: Introduce GFP_PGTABLE
-To: Michal Hocko <mhocko@kernel.org>
-References: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
- <20190113173555.GC1578@dhcp22.suse.cz>
- <f9f333a5-5533-996a-dc8e-1ff1096c1d19@arm.com>
- <20190114070137.GB21345@dhcp22.suse.cz>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <a81dd27a-b7d1-ddad-e104-4ce51699ac3d@arm.com>
-Date: Tue, 15 Jan 2019 19:41:24 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qk1-f195.google.com (mail-qk1-f195.google.com
+ [209.85.222.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fCqT4smGzDqQ6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 01:47:33 +1100 (AEDT)
+Received: by mail-qk1-f195.google.com with SMTP id g125so1676196qke.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 06:47:33 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=CJSgcbSLHBpkQA1mStr0T4cc3D19F0djyMHOoCBmTQM=;
+ b=eq4OV9iR1nySxwhRPn1T2/XrHmb78S2KMFCQIDsGcFWV0M1DxwG0aflzKpjLvyCoWx
+ M43r6dubl+aXrDxaH+vyr6/aQdhi7CmqB0OERZ/ASstLR2Dsj4MDhvt1SWnqd6bL4TlV
+ zP4OLRTCdbQSZ7WLS+Q5JfPKV1iw4OZmAvXWf/RWuwe/rV5myNbgBzGjeQzWyz1O6Xbe
+ TmD6R4tWTkhkHPpeX5tMK/jBzrrxoEAj7c3A1jzrZbBS1Y8q8Qpag+HOxtax5HObqlKk
+ AidEdnnNo6mO1EuS8OBL+tGCUTWwJHGEpfoCaV9lA07141M5cHwYCrPE34pcuAXm64m2
+ LeJA==
+X-Gm-Message-State: AJcUukdP1GcPb0prtDFQnTofV4u233HmPCWfzOZRXJ+9L5v4i62b8za8
+ kkQenTrgQ+Her3iKFJtEPBzQl0bDlSFIccTQd50=
+X-Google-Smtp-Source: ALg8bN7NyBBLgCUds8tYMS0JcD3kjA3gSFqxzkmVv/3Wlh5Gl2kGahA1WPnfsZKIUU3QSibwFh0em/FK52DjAc3L5UI=
+X-Received: by 2002:ae9:d8c2:: with SMTP id u185mr2838414qkf.107.1547563651094; 
+ Tue, 15 Jan 2019 06:47:31 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20190114070137.GB21345@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20190110162435.309262-1-arnd@arndb.de>
+ <20190110162435.309262-16-arnd@arndb.de>
+ <20190115115229.mcrmmpwdmjxf2cra@e5254000004ec.dyn.armlinux.org.uk>
+In-Reply-To: <20190115115229.mcrmmpwdmjxf2cra@e5254000004ec.dyn.armlinux.org.uk>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 15 Jan 2019 15:47:14 +0100
+Message-ID: <CAK8P3a1Xb4z-mbhBTPZ0Cpy0Hy_s2wwT-8UG9yO6AGbUTjdkyw@mail.gmail.com>
+Subject: Re: [PATCH 15/15] arch: add pkey and rseq syscall numbers everywhere
+To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,79 +71,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
- catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvmarm@lists.cs.columbia.edu,
- linux@armlinux.org.uk, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com,
- marc.zyngier@arm.com, rppt@linux.vnet.ibm.com, shakeelb@google.com,
- kirill@shutemov.name, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
- christoffer.dall@arm.com, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Firoz Khan <firoz.khan@linaro.org>,
+ Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Will Deacon <will.deacon@arm.com>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ alpha <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Tue, Jan 15, 2019 at 12:52 PM Russell King - ARM Linux admin
+<linux@armlinux.org.uk> wrote:
+>
+> On Thu, Jan 10, 2019 at 05:24:35PM +0100, Arnd Bergmann wrote:
+> > Most architectures define system call numbers for the rseq and pkey system
+> > calls, even when they don't support the features, and perhaps never will.
+> >
+> > Only a few architectures are missing these, so just define them anyway
+> > for consistency. If we decide to add them later to one of these, the
+> > system call numbers won't get out of sync then.
+>
+> I was lambasted for adding the pkey syscalls for 32-bit ARM in 2016,
+> which will probably never support it.  Why has the attitude towards
+> this kind of thing now apparently become acceptable?
 
+I was (and still am) a bit unsure about this one. A number of architectures
+added the numbers that won't ever support them, but I wasn't sure if
+any of those that didn't add them might need it later.
 
-On 01/14/2019 12:31 PM, Michal Hocko wrote:
-> On Mon 14-01-19 09:30:55, Anshuman Khandual wrote:
->>
->>
->> On 01/13/2019 11:05 PM, Michal Hocko wrote:
->>> On Sat 12-01-19 15:56:38, Anshuman Khandual wrote:
->>>> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
->>>> __GFP_ZERO) and using it for allocating page table pages. This causes some
->>>> code duplication which can be easily avoided. GFP_KERNEL allocated and
->>>> cleared out pages (__GFP_ZERO) are required for page tables on any given
->>>> architecture. This creates a new generic GFP flag flag which can be used
->>>> for any page table page allocation. Does not cause any functional change.
->>>
->>> I agree that some unification is due but GFP_PGTABLE is not something to
->>> expose in generic gfp.h IMHO. It just risks an abuse. I would be looking
->>
->> Why would you think that it risks an abuse ? It does not create new semantics
->> of allocation in the buddy. Its just uses existing GFP_KERNEL allocation which
->> is then getting zeroed out. The risks (if any) is exactly same as GFP_KERNEL.
-> 
-> Beucase my experience just tells me that people tend to use whatever
-> they find and name fits what they think they need.
-> 
->>> at providing asm-generic implementation and reuse it to remove the code
->>
->> Does that mean GFP_PGTABLE can be created but not in gfp.h but in some other
->> memory related header file ?
-> 
-> I would just keep it close to its users. If that is a single arch
-> generic place then only better. But I suspect some arches have special
-> requirements.
+I tried to just go by the rule that anything that we list in
+asm-generic/unistd.h
+is probably important enough that we want to list it everywhere, even if
+that includes a couple that we end up being rather architecture specific.
 
-We can move the definition into include/asm-generic/pgtable.h which can be
-used by all archs. If there any special requirements those can be added on
-this generic and common minimum allocation flag. The minimum required flag
-should not be duplicated every where.
+I'm happy to drop this patch if you or others feel that we're better off
+without it though.
 
-> 
->>> duplication. But I haven't tried that to know that it will work out due
->>> to small/subtle differences between arches.
->>
->> IIUC from the allocation perspective GFP_ACCOUNT is the only thing which gets
->> added with GFP_PGTABLE for user page table for memcg accounting purpose. There
->> does not seem to be any other differences unless I am missing something.
-> 
-> It's been some time since I've checked the last time. Some arches were
-> using GPF_REPEAT (__GFP_RETRY_MAYFAIL) back then. I have removed most of
-> those but some were doing a higher order allocations so they probably
-> have stayed.
-
-A simple grep shows that still there are some places which use the flag
-__GFP_RETRY_MAYFAIL. But that can be added on GFP_PGTABLE for these archs.
-
-arch/nds32/include/asm/pgalloc.h:           (pte_t *) __get_free_page(GFP_KERNEL | __GFP_RETRY_MAYFAIL |
-arch/nds32/include/asm/pgalloc.h:       pte = alloc_pages(GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO, 0);
-arch/powerpc/include/asm/book3s/64/pgalloc.h:   page = alloc_pages(pgtable_gfp_flags(mm, PGALLOC_GFP | __GFP_RETRY_MAYFAIL),
-arch/powerpc/kvm/book3s_64_mmu_hv.c:            hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_RETRY_MAYFAIL
-arch/riscv/include/asm/pgalloc.h:               GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
-arch/riscv/include/asm/pgalloc.h:               GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
-arch/riscv/include/asm/pgalloc.h:       pte = alloc_page(GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
-arch/sparc/kernel/mdesc.c:      base = kmalloc(handle_size + 15, GFP_KERNEL | __GFP_RETRY_MAYFAIL);
+      Arnd
