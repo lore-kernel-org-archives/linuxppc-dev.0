@@ -2,80 +2,101 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4984C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 11:16:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D70D9C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 11:37:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0FD9A20657
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 11:16:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="SwjA/ixW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0FD9A20657
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id F246620651
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 11:37:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F246620651
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43f78P65g5zDqfG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 22:16:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43f7Nw3BFpzDqfP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 22:27:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::d41; helo=mail-io1-xd41.google.com;
- envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="SwjA/ixW"; 
- dkim-atps=neutral
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com
- [IPv6:2607:f8b0:4864:20::d41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43f76114kXzDqZy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 22:14:48 +1100 (AEDT)
-Received: by mail-io1-xd41.google.com with SMTP id g8so1745482iok.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 03:14:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=qsV+aqXVBvoYu4pL4QZpfvMi167TM8gOAx6NETd+SBM=;
- b=SwjA/ixW7FNY+NX5f46xAM5B3PubG5co1+eOpVbM9y2UCXzByTOzV/5dBCYSUP7eL7
- kkkIC7Vl3TuHao0CJbSzkfetOUm/CKmc9u4Gz3WWnVEBRnuW6uXGI2OQMiaN8N2r2FL+
- +jtO8sdGOSov5N4ZZdAS45Ivd5BJ+gCshu4G3Z7+kGx5H5iakFTG5il+BSCtWAYc8F1X
- S9g7e11ZjFCC5Chim2p+3UwQ6MmosH8X9LWKBRW6UofLIk7S9hbBFyhuJG4QC/X+RzWq
- uIZq1vmdw07F7UwXCYQXKkx5qGEnjpIFkRd570XpBMqdJWFLznEu39sLmZHZnJOJUVad
- U61A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=qsV+aqXVBvoYu4pL4QZpfvMi167TM8gOAx6NETd+SBM=;
- b=GGjcoOILfuSTI0TsOxwOPB3opoM2iLPJSCqi2xfCaSeM26aPfJylzJKy23Xuq3oL8s
- LXomC/CwNMvQhqAb+jWdWnP3bMhHgTcjVRYKvU0FJaBB9xfHBZ4E86jlHzbuoW8ou7on
- r5biVIA5OsrF/H5xcnpeL9N6JhbQJ/aEIn5cIPTjc6dpRa+zX0ugrDfTtCOv/fjYfJdQ
- KyM8GsI89vYic57ySIUo0k65hpYAeo2tlkA0gObk1fx6Vbs8bc/iaEcY/fu9LqL3xj5v
- HpKYMEsLejWS6ery8nedZNR6Tl0v1OJXmJC+5Se8vgCimcroD5vZGezcd42WsCLAeJCN
- NPUA==
-X-Gm-Message-State: AJcUukfuOuN4B2fWwz1aGh7xpYPcfN6n53kiBQDfdIS2zD40VdjzzptD
- MRseNrhMWCuJLX/NKchxf/0e0aISlJCPp4lpyBWHUQ==
-X-Google-Smtp-Source: ALg8bN5HZsOooPEZE4Ngupk4zGw6GRfDgO/Bqfsa0epv4ApaPxWfUPrOe2kzQOgDPc9sGgTpLsZEWkbUeb34lP3PkO0=
-X-Received: by 2002:a5d:9456:: with SMTP id x22mr1377869ior.282.1547550886384; 
- Tue, 15 Jan 2019 03:14:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43f7M65jzvzDqdc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 22:26:10 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0FBO7B8082572
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 06:26:07 -0500
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q1dmeaxpy-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 06:26:07 -0500
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 15 Jan 2019 11:26:07 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 15 Jan 2019 11:26:02 -0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0FBQ10P23986220
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 15 Jan 2019 11:26:01 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CACFFAE05C;
+ Tue, 15 Jan 2019 11:26:01 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F3970AE060;
+ Tue, 15 Jan 2019 11:25:58 +0000 (GMT)
+Received: from [9.85.74.182] (unknown [9.85.74.182])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 15 Jan 2019 11:25:58 +0000 (GMT)
+Subject: Re: [PATCH V7 5/5] testing
+To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
+References: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
+ <20190114095438.32470-7-aneesh.kumar@linux.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Tue, 15 Jan 2019 16:55:57 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.3.1
 MIME-Version: 1.0
-References: <cover.1547289808.git.christophe.leroy@c-s.fr>
- <0c854dd6b110ac2b81ef1681f6e097f59f84af8b.1547289808.git.christophe.leroy@c-s.fr>
- <CACT4Y+aEsLWqhJmXETNsGtKdbfHDFL1NF8ofv3KwvQPraXdFyw@mail.gmail.com>
- <801c7d58-417d-1e65-68a0-b8cf02f9f956@c-s.fr>
-In-Reply-To: <801c7d58-417d-1e65-68a0-b8cf02f9f956@c-s.fr>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Tue, 15 Jan 2019 12:14:35 +0100
-Message-ID: <CACT4Y+ZdA-w5OeebZg3PYPB+BX5wDxw_DxNe2==VJfbpy2eJ7A@mail.gmail.com>
-Subject: Re: [PATCH v3 1/3] powerpc/mm: prepare kernel for KAsan on PPC32
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190114095438.32470-7-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19011511-0072-0000-0000-000003EA0EE1
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010410; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000274; SDB=6.01146788; UDB=6.00597313; IPR=6.00927080; 
+ MB=3.00025134; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-15 11:26:05
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011511-0073-0000-0000-00004AD11BE4
+Message-Id: <bd6b4237-064d-0059-3b2c-1f14cdf466f2@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-15_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901150097
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,193 +108,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>,
- kasan-dev <kasan-dev@googlegroups.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 15, 2019 at 8:27 AM Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
->
->
->
-> On 01/14/2019 09:34 AM, Dmitry Vyukov wrote:
-> > On Sat, Jan 12, 2019 at 12:16 PM Christophe Leroy
-> > <christophe.leroy@c-s.fr> wrote:
-> > &gt;
-> > &gt; In kernel/cputable.c, explicitly use memcpy() in order
-> > &gt; to allow GCC to replace it with __memcpy() when KASAN is
-> > &gt; selected.
-> > &gt;
-> > &gt; Since commit 400c47d81ca38 ("powerpc32: memset: only use dcbz once cache is
-> > &gt; enabled"), memset() can be used before activation of the cache,
-> > &gt; so no need to use memset_io() for zeroing the BSS.
-> > &gt;
-> > &gt; Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > &gt; ---
-> > &gt;  arch/powerpc/kernel/cputable.c | 4 ++--
-> > &gt;  arch/powerpc/kernel/setup_32.c | 6 ++----
-> > &gt;  2 files changed, 4 insertions(+), 6 deletions(-)
-> > &gt;
-> > &gt; diff --git a/arch/powerpc/kernel/cputable.c
-> > b/arch/powerpc/kernel/cputable.c
-> > &gt; index 1eab54bc6ee9..84814c8d1bcb 100644
-> > &gt; --- a/arch/powerpc/kernel/cputable.c
-> > &gt; +++ b/arch/powerpc/kernel/cputable.c
-> > &gt; @@ -2147,7 +2147,7 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
-> > &gt;         struct cpu_spec *t = &amp;the_cpu_spec;
-> > &gt;
-> > &gt;         t = PTRRELOC(t);
-> > &gt; -       *t = *s;
-> > &gt; +       memcpy(t, s, sizeof(*t));
-> >
-> > Hi Christophe,
-> >
-> > I understand why you are doing this, but this looks a bit fragile and
-> > non-scalable. This may not work with the next version of compiler,
-> > just different than yours version of compiler, clang, etc.
->
-> My felling would be that this change makes it more solid.
->
-> My understanding is that when you do *t = *s, the compiler can use
-> whatever way it wants to do the copy.
-> When you do memcpy(), you ensure it will do it that way and not another
-> way, don't you ?
+You can ignore this one.
 
-It makes this single line more deterministic wrt code-gen (though,
-strictly saying compiler can turn memcpy back into inlines
-instructions, it knows memcpy semantics anyway).
-But the problem I meant is that the set of places that are subject to
-this problem is not deterministic. So if we go with this solution,
-after this change it's in the status "works on your machine" and we
-either need to commit to not using struct copies and zeroing
-throughout kernel code or potentially have a long tail of other
-similar cases, and since they can be triggered by another compiler
-version, we may need to backport these changes to previous releases
-too. Whereas if we would go with compiler flags, it would prevent the
-problem in all current and future places and with other past/future
-versions of compilers.
+On 1/14/19 3:24 PM, Aneesh Kumar K.V wrote:
+> ---
+>   mm/gup.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/gup.c b/mm/gup.c
+> index 6e8152594e83..91849c39931a 100644
+> --- a/mm/gup.c
+> +++ b/mm/gup.c
+> @@ -1226,7 +1226,7 @@ static long check_and_migrate_cma_pages(unsigned long start, long nr_pages,
+>   		 * be pinning these entries, we might as well move them out
+>   		 * of the CMA zone if possible.
+>   		 */
+> -		if (is_migrate_cma_page(pages[i])) {
+> +		if (true || is_migrate_cma_page(pages[i])) {
+>   
+>   			struct page *head = compound_head(pages[i]);
+>   
+> @@ -1256,6 +1256,7 @@ static long check_and_migrate_cma_pages(unsigned long start, long nr_pages,
+>   		for (i = 0; i < nr_pages; i++)
+>   			put_page(pages[i]);
+>   
+> +		pr_emerg("migrating nr_pages");
+>   		if (migrate_pages(&cma_page_list, new_non_cma_page,
+>   				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
+>   			/*
+> @@ -1274,10 +1275,11 @@ static long check_and_migrate_cma_pages(unsigned long start, long nr_pages,
+>   		nr_pages = get_user_pages(start, nr_pages, gup_flags, pages, vmas);
+>   		if ((nr_pages > 0) && migrate_allow) {
+>   			drain_allow = true;
+> -			goto check_again;
+> +			//goto check_again;
+>   		}
+>   	}
+>   
+> +	pr_emerg("Returning with %ld\n", nr_pages);
+>   	return nr_pages;
+>   }
+>   #else
+> 
 
-
-> My problem is that when using *t = *s, the function set_cur_cpu_spec()
-> always calls memcpy(), not taking into account the following define
-> which is in arch/powerpc/include/asm/string.h (other arches do the same):
->
-> #if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
-> /*
->   * For files that are not instrumented (e.g. mm/slub.c) we
->   * should use not instrumented version of mem* functions.
->   */
-> #define memcpy(dst, src, len) __memcpy(dst, src, len)
-> #define memmove(dst, src, len) __memmove(dst, src, len)
-> #define memset(s, c, n) __memset(s, c, n)
-> #endif
->
-> void __init set_cur_cpu_spec(struct cpu_spec *s)
-> {
->         struct cpu_spec *t = &the_cpu_spec;
->
->         t = PTRRELOC(t);
->         *t = *s;
->
->         *PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-> }
->
-> 00000000 <set_cur_cpu_spec>:
->     0:   94 21 ff f0     stwu    r1,-16(r1)
->     4:   7c 08 02 a6     mflr    r0
->     8:   bf c1 00 08     stmw    r30,8(r1)
->     c:   3f e0 00 00     lis     r31,0
->                          e: R_PPC_ADDR16_HA      .data..read_mostly
->    10:   3b ff 00 00     addi    r31,r31,0
->                          12: R_PPC_ADDR16_LO     .data..read_mostly
->    14:   7c 7e 1b 78     mr      r30,r3
->    18:   7f e3 fb 78     mr      r3,r31
->    1c:   90 01 00 14     stw     r0,20(r1)
->    20:   48 00 00 01     bl      20 <set_cur_cpu_spec+0x20>
->                          20: R_PPC_REL24 add_reloc_offset
->    24:   7f c4 f3 78     mr      r4,r30
->    28:   38 a0 00 58     li      r5,88
->    2c:   48 00 00 01     bl      2c <set_cur_cpu_spec+0x2c>
->                          2c: R_PPC_REL24 memcpy
->    30:   38 7f 00 58     addi    r3,r31,88
->    34:   48 00 00 01     bl      34 <set_cur_cpu_spec+0x34>
->                          34: R_PPC_REL24 add_reloc_offset
->    38:   93 e3 00 00     stw     r31,0(r3)
->    3c:   80 01 00 14     lwz     r0,20(r1)
->    40:   bb c1 00 08     lmw     r30,8(r1)
->    44:   7c 08 03 a6     mtlr    r0
->    48:   38 21 00 10     addi    r1,r1,16
->    4c:   4e 80 00 20     blr
->
->
-> When replacing *t = *s by memcpy(t, s, sizeof(*t)), GCC replace it by
-> __memcpy() as expected.
->
-> >
-> > Does using -ffreestanding and/or -fno-builtin-memcpy (-memset) help?
->
-> No it doesn't and to be honest I can't see how it would. My
-> understanding is that it could be even worse because it would mean
-> adding calls to memcpy() also in all trivial places where GCC does the
-> copy itself by default.
-
-The idea was that with -ffreestanding compiler must not assume
-presence of any runtime support library, so it must not emit any calls
-that are not explicitly present in the source code. However, after
-reading more docs, it seems that even with -ffreestanding gcc and
-clang still assume presence of a runtime library that provides at
-least memcpy,  memmove, memset and memcmp. There does not seem to be a
-way to prevent clang and gcc from doing it. So I guess this approach
-is our only option:
-
-Acked-by: Dmitry Vyukov <dvyukov@google.com>
-
-Though, a comment may be useful so that a next person does not try to
-revert it back.
-
-
-> Do you see any alternative ?
->
-> Christophe
->
-> > If it helps, perhaps it makes sense to add these flags to
-> > KASAN_SANITIZE := n files.
-> >
-> >
-> >>          *PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-> >>   }
-> >> @@ -2162,7 +2162,7 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
-> >>          old = *t;
-> >>
-> >>          /* Copy everything, then do fixups */
-> >> -       *t = *s;
-> >> +       memcpy(t, s, sizeof(*t));
-> >>
-> >>          /*
-> >>           * If we are overriding a previous value derived from the real
-> >> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> >> index 947f904688b0..5e761eb16a6d 100644
-> >> --- a/arch/powerpc/kernel/setup_32.c
-> >> +++ b/arch/powerpc/kernel/setup_32.c
-> >> @@ -73,10 +73,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
-> >>   {
-> >>          unsigned long offset = reloc_offset();
-> >>
-> >> -       /* First zero the BSS -- use memset_io, some platforms don't have
-> >> -        * caches on yet */
-> >> -       memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
-> >> -                       __bss_stop - __bss_start);
-> >> +       /* First zero the BSS */
-> >> +       memset(PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
-> >>
-> >>          /*
-> >>           * Identify the CPU type and fix up code sections
-> >> --
-> >> 2.13.3
-> >>
