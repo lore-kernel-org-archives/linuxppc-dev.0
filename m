@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D253EC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:28:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4562C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:29:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5816220859
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:28:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5816220859
+	by mail.kernel.org (Postfix) with ESMTPS id 5BC2A20859
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:29:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BC2A20859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dy503xsJzDqJj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:28:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dy6k3gFVzDqYP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:29:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,18 +27,22 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyC1wB9zDqWy
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyC21WWzDqX7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:26 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id C4B9929E64; Mon, 14 Jan 2019 23:22:23 -0500 (EST)
+ id EF3D629E66; Mon, 14 Jan 2019 23:22:23 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Message-Id: <40e675256e1e3270360440c933085c48b4da38cd.1547525936.git.fthain@telegraphics.com.au>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Message-Id: <7de1ad4d2647a5c4df703afa66705195f4d843f9.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 03/22] char/nvram: Re-order functions to remove forward
- declarations and #ifdefs
+Subject: [PATCH v9 04/22] nvram: Replace nvram_* function exports with static
+ functions
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -52,254 +56,246 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Also give functions more sensible names: nvram_misc_* for misc device ops,
-nvram_proc_* for proc file ops and nvram_module_* for init and exit
-functions. This prevents name collisions with nvram.h helper functions
-and improves readability.
+Replace nvram_* functions with static functions in nvram.h. These will
+become wrappers for struct nvram_ops method calls.
 
+This patch effectively disables existing NVRAM functionality so as to
+allow the rest of the series to be bisected without build failures.
+That functionality is gradually re-implemented in subsequent patches.
+
+Replace the sole validate-checksum-and-read-byte sequence with a call to
+nvram_read() which will gain the same semantics in subsequent patches.
+
+Remove unused exports.
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/char/nvram.c | 167 +++++++++++++++++++------------------------
- 1 file changed, 72 insertions(+), 95 deletions(-)
+ arch/m68k/atari/nvram.c   | 39 +++------------------------------------
+ drivers/char/nvram.c      | 27 +++++----------------------
+ drivers/scsi/atari_scsi.c |  8 +++++---
+ include/linux/nvram.h     | 32 +++++++++++++++++++++++++-------
+ 4 files changed, 38 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index a9d4652f9e90..c660cff9faf4 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -55,11 +55,6 @@ static int nvram_open_mode;	/* special open modes */
- #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
- #define NVRAM_EXCL		2 /* opened with O_EXCL */
- 
--#ifdef CONFIG_PROC_FS
--static void pc_nvram_proc_read(unsigned char *contents, struct seq_file *seq,
--			       void *offset);
--#endif
--
- /*
-  * These functions are provided to be called internally or by other parts of
-  * the kernel. It's up to the caller to ensure correct checksum before reading
-@@ -171,14 +166,14 @@ void nvram_set_checksum(void)
-  * The are the file operation function for user access to /dev/nvram
+diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
+index a8c457e40b0b..1d767847ffa6 100644
+--- a/arch/m68k/atari/nvram.c
++++ b/arch/m68k/atari/nvram.c
+@@ -34,38 +34,17 @@
+  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
   */
  
--static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
-+static loff_t nvram_misc_llseek(struct file *file, loff_t offset, int origin)
+-unsigned char __nvram_read_byte(int i)
++static unsigned char __nvram_read_byte(int i)
  {
- 	return generic_file_llseek_size(file, offset, origin, MAX_LFS_FILESIZE,
- 					NVRAM_BYTES);
+ 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
  }
  
--static ssize_t nvram_read(struct file *file, char __user *buf,
--						size_t count, loff_t *ppos)
-+static ssize_t nvram_misc_read(struct file *file, char __user *buf,
-+			       size_t count, loff_t *ppos)
+-unsigned char nvram_read_byte(int i)
+-{
+-	unsigned long flags;
+-	unsigned char c;
+-
+-	spin_lock_irqsave(&rtc_lock, flags);
+-	c = __nvram_read_byte(i);
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-	return c;
+-}
+-EXPORT_SYMBOL(nvram_read_byte);
+-
+ /* This races nicely with trying to read with checksum checking */
+-void __nvram_write_byte(unsigned char c, int i)
++static void __nvram_write_byte(unsigned char c, int i)
  {
- 	unsigned char contents[NVRAM_BYTES];
- 	unsigned i = *ppos;
-@@ -206,8 +201,8 @@ static ssize_t nvram_read(struct file *file, char __user *buf,
- 	return -EIO;
+ 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
  }
  
--static ssize_t nvram_write(struct file *file, const char __user *buf,
--						size_t count, loff_t *ppos)
-+static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
-+				size_t count, loff_t *ppos)
- {
- 	unsigned char contents[NVRAM_BYTES];
- 	unsigned i = *ppos;
-@@ -245,8 +240,8 @@ static ssize_t nvram_write(struct file *file, const char __user *buf,
- 	return -EIO;
- }
+-void nvram_write_byte(unsigned char c, int i)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&rtc_lock, flags);
+-	__nvram_write_byte(c, i);
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-}
+-
+ /* On Ataris, the checksum is over all bytes except the checksum bytes
+  * themselves; these are at the very end.
+  */
+@@ -73,7 +52,7 @@ void nvram_write_byte(unsigned char c, int i)
+ #define ATARI_CKS_RANGE_END	47
+ #define ATARI_CKS_LOC		48
  
--static long nvram_ioctl(struct file *file, unsigned int cmd,
--			unsigned long arg)
-+static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
-+			     unsigned long arg)
+-int __nvram_check_checksum(void)
++static int __nvram_check_checksum(void)
  {
  	int i;
+ 	unsigned char sum = 0;
+@@ -84,18 +63,6 @@ int __nvram_check_checksum(void)
+ 	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
+ }
  
-@@ -286,7 +281,7 @@ static long nvram_ioctl(struct file *file, unsigned int cmd,
+-int nvram_check_checksum(void)
+-{
+-	unsigned long flags;
+-	int rv;
+-
+-	spin_lock_irqsave(&rtc_lock, flags);
+-	rv = __nvram_check_checksum();
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-	return rv;
+-}
+-EXPORT_SYMBOL(nvram_check_checksum);
+-
+ static void __nvram_set_checksum(void)
+ {
+ 	int i;
+diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
+index c660cff9faf4..c98775bfd896 100644
+--- a/drivers/char/nvram.c
++++ b/drivers/char/nvram.c
+@@ -74,13 +74,12 @@ static int nvram_open_mode;	/* special open modes */
+  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
+  */
+ 
+-unsigned char __nvram_read_byte(int i)
++static unsigned char __nvram_read_byte(int i)
+ {
+ 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
+ }
+-EXPORT_SYMBOL(__nvram_read_byte);
+ 
+-unsigned char nvram_read_byte(int i)
++static unsigned char pc_nvram_read_byte(int i)
+ {
+ 	unsigned long flags;
+ 	unsigned char c;
+@@ -90,16 +89,14 @@ unsigned char nvram_read_byte(int i)
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 	return c;
+ }
+-EXPORT_SYMBOL(nvram_read_byte);
+ 
+ /* This races nicely with trying to read with checksum checking (nvram_read) */
+-void __nvram_write_byte(unsigned char c, int i)
++static void __nvram_write_byte(unsigned char c, int i)
+ {
+ 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
+ }
+-EXPORT_SYMBOL(__nvram_write_byte);
+ 
+-void nvram_write_byte(unsigned char c, int i)
++static void pc_nvram_write_byte(unsigned char c, int i)
+ {
+ 	unsigned long flags;
+ 
+@@ -107,14 +104,13 @@ void nvram_write_byte(unsigned char c, int i)
+ 	__nvram_write_byte(c, i);
+ 	spin_unlock_irqrestore(&rtc_lock, flags);
+ }
+-EXPORT_SYMBOL(nvram_write_byte);
+ 
+ /* On PCs, the checksum is built only over bytes 2..31 */
+ #define PC_CKS_RANGE_START	2
+ #define PC_CKS_RANGE_END	31
+ #define PC_CKS_LOC		32
+ 
+-int __nvram_check_checksum(void)
++static int __nvram_check_checksum(void)
+ {
+ 	int i;
+ 	unsigned short sum = 0;
+@@ -126,19 +122,6 @@ int __nvram_check_checksum(void)
+ 	    __nvram_read_byte(PC_CKS_LOC+1);
+ 	return (sum & 0xffff) == expect;
+ }
+-EXPORT_SYMBOL(__nvram_check_checksum);
+-
+-int nvram_check_checksum(void)
+-{
+-	unsigned long flags;
+-	int rv;
+-
+-	spin_lock_irqsave(&rtc_lock, flags);
+-	rv = __nvram_check_checksum();
+-	spin_unlock_irqrestore(&rtc_lock, flags);
+-	return rv;
+-}
+-EXPORT_SYMBOL(nvram_check_checksum);
+ 
+ static void __nvram_set_checksum(void)
+ {
+diff --git a/drivers/scsi/atari_scsi.c b/drivers/scsi/atari_scsi.c
+index 78b43200c99e..e809493d0d06 100644
+--- a/drivers/scsi/atari_scsi.c
++++ b/drivers/scsi/atari_scsi.c
+@@ -759,13 +759,15 @@ static int __init atari_scsi_probe(struct platform_device *pdev)
+ 		atari_scsi_template.this_id = setup_hostid & 7;
+ 	} else if (IS_REACHABLE(CONFIG_NVRAM)) {
+ 		/* Test if a host id is set in the NVRam */
+-		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
+-			unsigned char b = nvram_read_byte(16);
++		if (ATARIHW_PRESENT(TT_CLK)) {
++			unsigned char b;
++			loff_t offset = 16;
++			ssize_t count = nvram_read(&b, 1, &offset);
+ 
+ 			/* Arbitration enabled? (for TOS)
+ 			 * If yes, use configured host ID
+ 			 */
+-			if (b & 0x80)
++			if ((count == 1) && (b & 0x80))
+ 				atari_scsi_template.this_id = b & 7;
+ 		}
  	}
- }
+diff --git a/include/linux/nvram.h b/include/linux/nvram.h
+index 28bfb9ab94ca..eb5b52a9a747 100644
+--- a/include/linux/nvram.h
++++ b/include/linux/nvram.h
+@@ -2,13 +2,31 @@
+ #ifndef _LINUX_NVRAM_H
+ #define _LINUX_NVRAM_H
  
--static int nvram_open(struct inode *inode, struct file *file)
-+static int nvram_misc_open(struct inode *inode, struct file *file)
- {
- 	spin_lock(&nvram_state_lock);
++#include <linux/errno.h>
+ #include <uapi/linux/nvram.h>
  
-@@ -308,7 +303,7 @@ static int nvram_open(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int nvram_release(struct inode *inode, struct file *file)
-+static int nvram_misc_release(struct inode *inode, struct file *file)
- {
- 	spin_lock(&nvram_state_lock);
- 
-@@ -325,87 +320,6 @@ static int nvram_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--#ifndef CONFIG_PROC_FS
--static int nvram_add_proc_fs(void)
--{
--	return 0;
--}
--
--#else
--
--static int nvram_proc_read(struct seq_file *seq, void *offset)
--{
--	unsigned char contents[NVRAM_BYTES];
--	int i = 0;
--
--	spin_lock_irq(&rtc_lock);
--	for (i = 0; i < NVRAM_BYTES; ++i)
--		contents[i] = __nvram_read_byte(i);
--	spin_unlock_irq(&rtc_lock);
--
--	pc_nvram_proc_read(contents, seq, offset);
--
--	return 0;
--}
--
--static int nvram_add_proc_fs(void)
--{
--	if (!proc_create_single("driver/nvram", 0, NULL, nvram_proc_read))
--		return -ENOMEM;
--	return 0;
--}
--
--#endif /* CONFIG_PROC_FS */
--
--static const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= nvram_llseek,
--	.read		= nvram_read,
--	.write		= nvram_write,
--	.unlocked_ioctl	= nvram_ioctl,
--	.open		= nvram_open,
--	.release	= nvram_release,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
--static int __init nvram_init(void)
--{
--	int ret;
--
--	ret = misc_register(&nvram_dev);
--	if (ret) {
--		printk(KERN_ERR "nvram: can't misc_register on minor=%d\n",
--		    NVRAM_MINOR);
--		goto out;
--	}
--	ret = nvram_add_proc_fs();
--	if (ret) {
--		printk(KERN_ERR "nvram: can't create /proc/driver/nvram\n");
--		goto outmisc;
--	}
--	ret = 0;
--	printk(KERN_INFO "Non-volatile memory driver v" NVRAM_VERSION "\n");
--out:
--	return ret;
--outmisc:
--	misc_deregister(&nvram_dev);
--	goto out;
--}
--
--static void __exit nvram_cleanup_module(void)
--{
--	remove_proc_entry("driver/nvram", NULL);
--	misc_deregister(&nvram_dev);
--}
--
--module_init(nvram_init);
--module_exit(nvram_cleanup_module);
--
- #ifdef CONFIG_PROC_FS
- 
- static const char * const floppy_types[] = {
-@@ -483,7 +397,70 @@ static void pc_nvram_proc_read(unsigned char *nvram, struct seq_file *seq,
- 	return;
- }
- 
-+static int nvram_proc_read(struct seq_file *seq, void *offset)
+-/* __foo is foo without grabbing the rtc_lock - get it yourself */
+-extern unsigned char __nvram_read_byte(int i);
+-extern unsigned char nvram_read_byte(int i);
+-extern void __nvram_write_byte(unsigned char c, int i);
+-extern void nvram_write_byte(unsigned char c, int i);
+-extern int __nvram_check_checksum(void);
+-extern int nvram_check_checksum(void);
++static inline ssize_t nvram_get_size(void)
 +{
-+	unsigned char contents[NVRAM_BYTES];
-+	int i = 0;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (i = 0; i < NVRAM_BYTES; ++i)
-+		contents[i] = __nvram_read_byte(i);
-+	spin_unlock_irq(&rtc_lock);
-+
-+	pc_nvram_proc_read(contents, seq, offset);
-+
-+	return 0;
-+}
- #endif /* CONFIG_PROC_FS */
- 
-+static const struct file_operations nvram_misc_fops = {
-+	.owner		= THIS_MODULE,
-+	.llseek		= nvram_misc_llseek,
-+	.read		= nvram_misc_read,
-+	.write		= nvram_misc_write,
-+	.unlocked_ioctl	= nvram_misc_ioctl,
-+	.open		= nvram_misc_open,
-+	.release	= nvram_misc_release,
-+};
-+
-+static struct miscdevice nvram_misc = {
-+	NVRAM_MINOR,
-+	"nvram",
-+	&nvram_misc_fops,
-+};
-+
-+static int __init nvram_module_init(void)
-+{
-+	int ret;
-+
-+	ret = misc_register(&nvram_misc);
-+	if (ret) {
-+		pr_err("nvram: can't misc_register on minor=%d\n", NVRAM_MINOR);
-+		return ret;
-+	}
-+
-+#ifdef CONFIG_PROC_FS
-+	if (!proc_create_single("driver/nvram", 0, NULL, nvram_proc_read)) {
-+		pr_err("nvram: can't create /proc/driver/nvram\n");
-+		misc_deregister(&nvram_misc);
-+		return -ENOMEM;
-+	}
-+#endif
-+
-+	pr_info("Non-volatile memory driver v" NVRAM_VERSION "\n");
-+	return 0;
++	return -ENODEV;
 +}
 +
-+static void __exit nvram_module_exit(void)
++static inline unsigned char nvram_read_byte(int addr)
 +{
-+#ifdef CONFIG_PROC_FS
-+	remove_proc_entry("driver/nvram", NULL);
-+#endif
-+	misc_deregister(&nvram_misc);
++	return 0xFF;
 +}
 +
-+module_init(nvram_module_init);
-+module_exit(nvram_module_exit);
++static inline void nvram_write_byte(unsigned char val, int addr)
++{
++}
 +
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
++static inline ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
++{
++	return -ENODEV;
++}
++
++static inline ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
++{
++	return -ENODEV;
++}
++
+ #endif  /* _LINUX_NVRAM_H */
 -- 
 2.19.2
 
