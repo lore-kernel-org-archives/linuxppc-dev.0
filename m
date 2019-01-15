@@ -3,68 +3,98 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A881FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 07:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B729EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 08:02:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 267D620859
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 07:30:08 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 267D620859
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id C35CE2085A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 08:02:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C35CE2085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43f26l05gvzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 18:30:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43f2rX1FD7zDqcV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 19:02:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43f23b0G1mzDqcj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 18:27:22 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43f23T6NFqz9vBKd;
- Tue, 15 Jan 2019 08:27:17 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 8iABMgLbTwDs; Tue, 15 Jan 2019 08:27:17 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43f23T5fwCz9vBKb;
- Tue, 15 Jan 2019 08:27:17 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3B5BD8B7D1;
- Tue, 15 Jan 2019 08:27:19 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uBlYK9Snm838; Tue, 15 Jan 2019 08:27:19 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 459988B761;
- Tue, 15 Jan 2019 08:27:18 +0100 (CET)
-Subject: Re: [PATCH v3 1/3] powerpc/mm: prepare kernel for KAsan on PPC32
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43f2pN1MrYzDqbX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 19:00:59 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ x0F7xOhU146700
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 03:00:57 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q19egw368-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 03:00:55 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 15 Jan 2019 08:00:33 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 15 Jan 2019 08:00:31 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0F80VbV5636402
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 15 Jan 2019 08:00:31 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D96FFA4057;
+ Tue, 15 Jan 2019 08:00:30 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4B609A408C;
+ Tue, 15 Jan 2019 08:00:30 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 15 Jan 2019 08:00:30 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E31A8A01D7;
+ Tue, 15 Jan 2019 19:00:28 +1100 (AEDT)
+Subject: Re: [RFC PATCH] powerpc: Enable kcov
 To: Dmitry Vyukov <dvyukov@google.com>
-References: <cover.1547289808.git.christophe.leroy@c-s.fr>
- <0c854dd6b110ac2b81ef1681f6e097f59f84af8b.1547289808.git.christophe.leroy@c-s.fr>
- <CACT4Y+aEsLWqhJmXETNsGtKdbfHDFL1NF8ofv3KwvQPraXdFyw@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <801c7d58-417d-1e65-68a0-b8cf02f9f956@c-s.fr>
-Date: Tue, 15 Jan 2019 07:27:17 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.7.0
-MIME-Version: 1.0
-In-Reply-To: <CACT4Y+aEsLWqhJmXETNsGtKdbfHDFL1NF8ofv3KwvQPraXdFyw@mail.gmail.com>
+References: <20190115042017.13342-1-andrew.donnellan@au1.ibm.com>
+ <CACT4Y+ZBKWB1FdF9uiSu11-SpGVx0yy=OJaF9-R4u+Nrdy6e_Q@mail.gmail.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 15 Jan 2019 19:00:28 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+In-Reply-To: <CACT4Y+ZBKWB1FdF9uiSu11-SpGVx0yy=OJaF9-R4u+Nrdy6e_Q@mail.gmail.com>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 19011508-0008-0000-0000-000002B132CA
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19011508-0009-0000-0000-0000221D45C1
+Message-Id: <72b38bf8-d066-ec78-fa2b-b49827242af9@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: Quoted-printable
+MIME-Version: 1.0
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-15_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901150069
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,160 +106,162 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Linux-MM <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>,
- kasan-dev <kasan-dev@googlegroups.com>, linuxppc-dev@lists.ozlabs.org
+Cc: syzkaller <syzkaller@googlegroups.com>, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-On 01/14/2019 09:34 AM, Dmitry Vyukov wrote:
-> On Sat, Jan 12, 2019 at 12:16 PM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
-> &gt;
-> &gt; In kernel/cputable.c, explicitly use memcpy() in order
-> &gt; to allow GCC to replace it with __memcpy() when KASAN is
-> &gt; selected.
-> &gt;
-> &gt; Since commit 400c47d81ca38 ("powerpc32: memset: only use dcbz once cache is
-> &gt; enabled"), memset() can be used before activation of the cache,
-> &gt; so no need to use memset_io() for zeroing the BSS.
-> &gt;
-> &gt; Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> &gt; ---
-> &gt;  arch/powerpc/kernel/cputable.c | 4 ++--
-> &gt;  arch/powerpc/kernel/setup_32.c | 6 ++----
-> &gt;  2 files changed, 4 insertions(+), 6 deletions(-)
-> &gt;
-> &gt; diff --git a/arch/powerpc/kernel/cputable.c
-> b/arch/powerpc/kernel/cputable.c
-> &gt; index 1eab54bc6ee9..84814c8d1bcb 100644
-> &gt; --- a/arch/powerpc/kernel/cputable.c
-> &gt; +++ b/arch/powerpc/kernel/cputable.c
-> &gt; @@ -2147,7 +2147,7 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
-> &gt;         struct cpu_spec *t = &amp;the_cpu_spec;
-> &gt;
-> &gt;         t = PTRRELOC(t);
-> &gt; -       *t = *s;
-> &gt; +       memcpy(t, s, sizeof(*t));
-> 
-> Hi Christophe,
-> 
-> I understand why you are doing this, but this looks a bit fragile and
-> non-scalable. This may not work with the next version of compiler,
-> just different than yours version of compiler, clang, etc.
-
-My felling would be that this change makes it more solid.
-
-My understanding is that when you do *t = *s, the compiler can use 
-whatever way it wants to do the copy.
-When you do memcpy(), you ensure it will do it that way and not another 
-way, don't you ?
-
-My problem is that when using *t = *s, the function set_cur_cpu_spec() 
-always calls memcpy(), not taking into account the following define 
-which is in arch/powerpc/include/asm/string.h (other arches do the same):
-
-#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
-/*
-  * For files that are not instrumented (e.g. mm/slub.c) we
-  * should use not instrumented version of mem* functions.
-  */
-#define memcpy(dst, src, len) __memcpy(dst, src, len)
-#define memmove(dst, src, len) __memmove(dst, src, len)
-#define memset(s, c, n) __memset(s, c, n)
-#endif
-
-void __init set_cur_cpu_spec(struct cpu_spec *s)
-{
-	struct cpu_spec *t = &the_cpu_spec;
-
-	t = PTRRELOC(t);
-	*t = *s;
-
-	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
-}
-
-00000000 <set_cur_cpu_spec>:
-    0:   94 21 ff f0     stwu    r1,-16(r1)
-    4:   7c 08 02 a6     mflr    r0
-    8:   bf c1 00 08     stmw    r30,8(r1)
-    c:   3f e0 00 00     lis     r31,0
-                         e: R_PPC_ADDR16_HA      .data..read_mostly
-   10:   3b ff 00 00     addi    r31,r31,0
-                         12: R_PPC_ADDR16_LO     .data..read_mostly
-   14:   7c 7e 1b 78     mr      r30,r3
-   18:   7f e3 fb 78     mr      r3,r31
-   1c:   90 01 00 14     stw     r0,20(r1)
-   20:   48 00 00 01     bl      20 <set_cur_cpu_spec+0x20>
-                         20: R_PPC_REL24 add_reloc_offset
-   24:   7f c4 f3 78     mr      r4,r30
-   28:   38 a0 00 58     li      r5,88
-   2c:   48 00 00 01     bl      2c <set_cur_cpu_spec+0x2c>
-                         2c: R_PPC_REL24 memcpy
-   30:   38 7f 00 58     addi    r3,r31,88
-   34:   48 00 00 01     bl      34 <set_cur_cpu_spec+0x34>
-                         34: R_PPC_REL24 add_reloc_offset
-   38:   93 e3 00 00     stw     r31,0(r3)
-   3c:   80 01 00 14     lwz     r0,20(r1)
-   40:   bb c1 00 08     lmw     r30,8(r1)
-   44:   7c 08 03 a6     mtlr    r0
-   48:   38 21 00 10     addi    r1,r1,16
-   4c:   4e 80 00 20     blr
-
-
-When replacing *t = *s by memcpy(t, s, sizeof(*t)), GCC replace it by 
-__memcpy() as expected.
-
-> 
-> Does using -ffreestanding and/or -fno-builtin-memcpy (-memset) help?
-
-No it doesn't and to be honest I can't see how it would. My 
-understanding is that it could be even worse because it would mean 
-adding calls to memcpy() also in all trivial places where GCC does the 
-copy itself by default.
-
-Do you see any alternative ?
-
-Christophe
-
-> If it helps, perhaps it makes sense to add these flags to
-> KASAN_SANITIZE := n files.
-> 
-> 
->>          *PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
->>   }
->> @@ -2162,7 +2162,7 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
->>          old = *t;
+On 15/1/19 5:40 pm, Dmitry Vyukov wrote:
+> On Tue, Jan 15, 2019 at 5:20 AM Andrew Donnellan
+> <andrew.donnellan@au1.ibm.com> wrote:
 >>
->>          /* Copy everything, then do fixups */
->> -       *t = *s;
->> +       memcpy(t, s, sizeof(*t));
+>> kcov provides kernel coverage data that's useful for fuzzing tools like
+>> syzkaller.
 >>
->>          /*
->>           * If we are overriding a previous value derived from the real
->> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
->> index 947f904688b0..5e761eb16a6d 100644
->> --- a/arch/powerpc/kernel/setup_32.c
->> +++ b/arch/powerpc/kernel/setup_32.c
->> @@ -73,10 +73,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
->>   {
->>          unsigned long offset = reloc_offset();
+>> Wire up kcov support on powerpc. Disable kcov instrumentation on the same
+>> files where we currently disable gcov and UBSan instrumentation.
 >>
->> -       /* First zero the BSS -- use memset_io, some platforms don't have
->> -        * caches on yet */
->> -       memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
->> -                       __bss_stop - __bss_start);
->> +       /* First zero the BSS */
->> +       memset(PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
+>> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>=20
+> Hi Andrew,
+>=20
+> The patch looks good to me. Any reason to mail it as RFC rather than
+> final patch?
+>=20
+> Acked-by: Dmitry Vyukov <dvyukov@google.com>
+
+Thanks!
+
+Just the issues mentioned below, but if mpe feels like merging it anyway...
+
+
+Andrew
+
+>=20
+>> ---
 >>
->>          /*
->>           * Identify the CPU type and fix up code sections
+>> kcov looks like it's working okay, both kcovtrace and syzkaller seem to =
+be
+>> working. I did see some issues with compiling and booting kernels with g=
+cc
+>> 6.3 and earlier versions which disappeared when I upgraded to gcc 8.2, I
+>> need to investigate that more.
+>>
+>> ---
+>>   arch/powerpc/Kconfig                | 1 +
+>>   arch/powerpc/kernel/Makefile        | 7 ++++++-
+>>   arch/powerpc/kernel/trace/Makefile  | 3 ++-
+>>   arch/powerpc/kernel/vdso32/Makefile | 1 +
+>>   arch/powerpc/kernel/vdso64/Makefile | 1 +
+>>   arch/powerpc/xmon/Makefile          | 1 +
+>>   6 files changed, 12 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 2890d36eb531..d3698dae0e60 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -134,6 +134,7 @@ config PPC
+>>          select ARCH_HAS_ELF_RANDOMIZE
+>>          select ARCH_HAS_FORTIFY_SOURCE
+>>          select ARCH_HAS_GCOV_PROFILE_ALL
+>> +       select ARCH_HAS_KCOV
+>>          select ARCH_HAS_PHYS_TO_DMA
+>>          select ARCH_HAS_PMEM_API                if PPC64
+>>          select ARCH_HAS_PTE_SPECIAL
+>> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+>> index cb7f0bb9ee71..961f44eabb65 100644
+>> --- a/arch/powerpc/kernel/Makefile
+>> +++ b/arch/powerpc/kernel/Makefile
+>> @@ -142,16 +142,21 @@ endif
+>>   obj-$(CONFIG_EPAPR_PARAVIRT)   +=3D epapr_paravirt.o epapr_hcalls.o
+>>   obj-$(CONFIG_KVM_GUEST)                +=3D kvm.o kvm_emul.o
+>>
+>> -# Disable GCOV & sanitizers in odd or sensitive code
+>> +# Disable GCOV, KCOV & sanitizers in odd or sensitive code
+>>   GCOV_PROFILE_prom_init.o :=3D n
+>> +KCOV_INSTRUMENT_prom_init.o :=3D n
+>>   UBSAN_SANITIZE_prom_init.o :=3D n
+>>   GCOV_PROFILE_machine_kexec_64.o :=3D n
+>> +KCOV_INSTRUMENT_machine_kexec_64.o :=3D n
+>>   UBSAN_SANITIZE_machine_kexec_64.o :=3D n
+>>   GCOV_PROFILE_machine_kexec_32.o :=3D n
+>> +KCOV_INSTRUMENT_machine_kexec_32.o :=3D n
+>>   UBSAN_SANITIZE_machine_kexec_32.o :=3D n
+>>   GCOV_PROFILE_kprobes.o :=3D n
+>> +KCOV_INSTRUMENT_kprobes.o :=3D n
+>>   UBSAN_SANITIZE_kprobes.o :=3D n
+>>   GCOV_PROFILE_kprobes-ftrace.o :=3D n
+>> +KCOV_INSTRUMENT_kprobes-ftrace.o :=3D n
+>>   UBSAN_SANITIZE_kprobes-ftrace.o :=3D n
+>>   UBSAN_SANITIZE_vdso.o :=3D n
+>>
+>> diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/tr=
+ace/Makefile
+>> index b1725ad3e13d..858503775c58 100644
+>> --- a/arch/powerpc/kernel/trace/Makefile
+>> +++ b/arch/powerpc/kernel/trace/Makefile
+>> @@ -23,6 +23,7 @@ obj-$(CONFIG_TRACING)                 +=3D trace_clock=
+.o
+>>   obj-$(CONFIG_PPC64)                    +=3D $(obj64-y)
+>>   obj-$(CONFIG_PPC32)                    +=3D $(obj32-y)
+>>
+>> -# Disable GCOV & sanitizers in odd or sensitive code
+>> +# Disable GCOV, KCOV & sanitizers in odd or sensitive code
+>>   GCOV_PROFILE_ftrace.o :=3D n
+>> +KCOV_INSTRUMENT_ftrace.o :=3D n
+>>   UBSAN_SANITIZE_ftrace.o :=3D n
+>> diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/v=
+dso32/Makefile
+>> index 50112d4473bb..ce199f6e4256 100644
+>> --- a/arch/powerpc/kernel/vdso32/Makefile
+>> +++ b/arch/powerpc/kernel/vdso32/Makefile
+>> @@ -23,6 +23,7 @@ targets :=3D $(obj-vdso32) vdso32.so vdso32.so.dbg
+>>   obj-vdso32 :=3D $(addprefix $(obj)/, $(obj-vdso32))
+>>
+>>   GCOV_PROFILE :=3D n
+>> +KCOV_INSTRUMENT :=3D n
+>>   UBSAN_SANITIZE :=3D n
+>>
+>>   ccflags-y :=3D -shared -fno-common -fno-builtin
+>> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/v=
+dso64/Makefile
+>> index 69cecb346269..28e7d112aa2f 100644
+>> --- a/arch/powerpc/kernel/vdso64/Makefile
+>> +++ b/arch/powerpc/kernel/vdso64/Makefile
+>> @@ -9,6 +9,7 @@ targets :=3D $(obj-vdso64) vdso64.so vdso64.so.dbg
+>>   obj-vdso64 :=3D $(addprefix $(obj)/, $(obj-vdso64))
+>>
+>>   GCOV_PROFILE :=3D n
+>> +KCOV_INSTRUMENT :=3D n
+>>   UBSAN_SANITIZE :=3D n
+>>
+>>   ccflags-y :=3D -shared -fno-common -fno-builtin
+>> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+>> index 878f9c1d3615..3050f9323254 100644
+>> --- a/arch/powerpc/xmon/Makefile
+>> +++ b/arch/powerpc/xmon/Makefile
+>> @@ -5,6 +5,7 @@
+>>   subdir-ccflags-y :=3D $(call cc-disable-warning, builtin-requires-head=
+er)
+>>
+>>   GCOV_PROFILE :=3D n
+>> +KCOV_INSTRUMENT :=3D n
+>>   UBSAN_SANITIZE :=3D n
+>>
+>>   # Disable ftrace for the entire directory
 >> --
->> 2.13.3
+>> 2.11.0
 >>
+>> --
+>> You received this message because you are subscribed to the Google Group=
+s "syzkaller" group.
+>> To unsubscribe from this group and stop receiving emails from it, send a=
+n email to syzkaller+unsubscribe@googlegroups.com.
+>> For more options, visit https://groups.google.com/d/optout.
+>=20
+
+--=20
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
+
