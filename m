@@ -2,88 +2,54 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB75AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 08:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8114C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 10:24:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 20A3120656
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 08:51:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="a+BSftFC"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20A3120656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id D416120656
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 10:24:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D416120656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43f3wL6kLrzDqgV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 19:51:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5302::12; helo=mo6-p02-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="a+BSftFC"; 
- dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43f5zn0SkLzDqfp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 21:24:21 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43f3tc0gW2zDqdm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 19:49:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1547542178;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=zhLQ4U4mkyYe4kYcnyvArUE1WBCXU3qBTv78kXC8sb8=;
- b=a+BSftFCKl1A6GErVMDEfxMfq0tJkmw+iYAqiaUn0GUFBOX5+FVA2HhfioR65lt62i
- ZNAMldOcecPOLFBDOtTLM+5Ikhy4b4m42gkZJZ3aiaXacrgZNIWE8W+xhwmyY10MSWuu
- +AtUY418QwVUjD3kR0qPrxGpBjTERkmLkQz/1ugJzY5Umrq/q1B/JL492SmzrZ75CvRJ
- I7dFBevMDh6E7MPIKcf2cB6fXut98/Pp+A93Fw6fIXlgP/9hvzXJtIPGXH5BQu+vbe1M
- h682PnTyc13WWfrYAHMRLVlu7MKCtI5tAyoea8VqJqkB422WOY64AhaA/+vXj/W259UJ
- LLyw==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkNi0C2kzEbDQg0vrQvOCYvo/qC"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:25bb:7249:5b2a:1f0]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0F8nMqTT
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Tue, 15 Jan 2019 09:49:22 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <2242B4B2-6311-492E-BFF9-6740E36EC6D4@xenosoft.de>
- <84558d7f-5a7f-5219-0c3a-045e6b4c494f@xenosoft.de>
- <20181213091021.GA2106@lst.de>
- <835bd119-081e-a5ea-1899-189d439c83d6@xenosoft.de>
- <76bc684a-b4d2-1d26-f18d-f5c9ba65978c@xenosoft.de>
- <20181213112511.GA4574@lst.de>
- <e109de27-f4af-147d-dc0e-067c8bafb29b@xenosoft.de>
- <ad5a5a8a-d232-d523-a6f7-e9377fc3857b@xenosoft.de>
- <e60d6ca3-860c-f01d-8860-c5e022ec7179@xenosoft.de>
- <008c981e-bdd2-21a7-f5f7-c57e4850ae9a@xenosoft.de>
- <20190103073622.GA24323@lst.de>
- <71A251A5-FA06-4019-B324-7AED32F7B714@xenosoft.de>
- <1b0c5c21-2761-d3a3-651b-3687bb6ae694@xenosoft.de>
- <3504ee70-02de-049e-6402-2d530bf55a84@xenosoft.de>
- <23284859-bf0a-9cd5-a480-2a7fd7802056@xenosoft.de>
- <075f70e3-7a4a-732f-b501-05a1a8e3c853@xenosoft.de>
- <b04d08ea-61f9-3212-b9a3-ad79e3b8bd05@xenosoft.de>
-Message-ID: <21f72a6a-9095-7034-f169-95e876228b2a@xenosoft.de>
-Date: Tue, 15 Jan 2019 09:49:22 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43f5xm03nrzDqWL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 21:22:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43f5xk5hG3z9s9G;
+ Tue, 15 Jan 2019 21:22:34 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Jonathan =?utf-8?Q?Neusch?=
+ =?utf-8?Q?=C3=A4fer?= <j.neuschaefer@gmx.net>
+Subject: Re: [PATCH v2 00/15] powerpc/32s: Use BATs/LTLBs for STRICT_KERNEL_RWX
+In-Reply-To: <b37e3635-9c69-0cfc-1283-25459b394033@c-s.fr>
+References: <cover.1547132681.git.christophe.leroy@c-s.fr>
+ <20190113181621.GA22334@latitude>
+ <714e78ba-1e92-a856-3dd6-a1fb96ad3785@c-s.fr>
+ <20190113210227.GB22334@latitude>
+ <334b1b02-b652-499c-904e-09e6f7164b8c@c-s.fr>
+ <20190115003353.GD22334@latitude>
+ <b37e3635-9c69-0cfc-1283-25459b394033@c-s.fr>
+Date: Tue, 15 Jan 2019 21:22:32 +1100
+Message-ID: <87fttuz0d3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <b04d08ea-61f9-3212-b9a3-ad79e3b8bd05@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,199 +61,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Next step: 63a6e350e037a21e9a88c8b710129bea7049a80f (powerpc/dma: use 
-the dma_direct mapping routines)
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> Le 15/01/2019 =C3=A0 01:33, Jonathan Neusch=C3=A4fer a =C3=A9crit=C2=A0:
+...
+>>=20
+>> - patches 7 to 11 fail to build with this error (really a warning, but
+>>    arch/powerpc doesn't allow warnings by default):
+>>=20
+>> 	  CC      arch/powerpc/mm/ppc_mmu_32.o
+>> 	../arch/powerpc/mm/ppc_mmu_32.c:133:13: error: =E2=80=98clearibat=E2=80=
+=99 defined but not used [-Werror=3Dunused-function]
+>> 	 static void clearibat(int index)
+>> 		     ^~~~~~~~~
+>> 	../arch/powerpc/mm/ppc_mmu_32.c:115:13: error: =E2=80=98setibat=E2=80=
+=99 defined but not used [-Werror=3Dunused-function]
+>> 	 static void setibat(int index, unsigned long virt, phys_addr_t phys,
+>> 		     ^~~~~~~
+>> 	cc1: all warnings being treated as errors
+>
+> Argh ! I have to squash the patch bringing the new functions with the=20
+> one using them (patch 12). The result is a big messy patch which is more=
+=20
+> difficult to review but that's life.
 
-git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+You don't *have* to squash them.
 
-git checkout 63a6e350e037a21e9a88c8b710129bea7049a80f
+We like to preserve bisectability, but it's not a 100% hard requirement.
 
-Error message:
+Someone trying to bisect through those patches can always turn off
+-Werror with PPC_DISABLE_WERROR. But they probably can just skip them
+because they just add new code that's not called yet.
 
-arch/powerpc/kernel/dma.o:(.data.rel.ro+0x0): undefined reference to 
-`__dma_nommu_alloc_coherent'
-arch/powerpc/kernel/dma.o:(.data.rel.ro+0x8): undefined reference to 
-`__dma_nommu_free_coherent'
-Makefile:1027: recipe for target 'vmlinux' failed
-make: *** [vmlinux] Error 1
+So I won't object if you send them as-is.
 
--- Christian
-
-
-On 15 January 2019 at 09:07AM, Christian Zigotzky wrote:
-> Next step: 240d7ecd7f6fa62e074e8a835e620047954f0b28 (powerpc/dma: use 
-> the dma-direct allocator for coherent platforms)
->
-> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
->
-> git checkout 240d7ecd7f6fa62e074e8a835e620047954f0b28
->
-> Link to the Git: 
-> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
->
-> env LANG=C make CROSS_COMPILE=powerpc-linux-gnu- ARCH=powerpc zImage
->
-> Error message:
->
-> arch/powerpc/kernel/dma.o:(.data.rel.ro+0x0): undefined reference to 
-> `__dma_nommu_alloc_coherent'
-> arch/powerpc/kernel/dma.o:(.data.rel.ro+0x8): undefined reference to 
-> `__dma_nommu_free_coherent'
-> Makefile:1027: recipe for target 'vmlinux' failed
-> make: *** [vmlinux] Error 1
->
-> -- Christian
->
->
-> On 12 January 2019 at 7:14PM, Christian Zigotzky wrote:
->> Next step: 4558b6e1ddf3dcf5a86d6a5d16c2ac1600c7df39 (swiotlb: remove 
->> swiotlb_dma_supported)
->>
->> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
->>
->> git checkout 4558b6e1ddf3dcf5a86d6a5d16c2ac1600c7df39
->>
->> Output:
->>
->> You are in 'detached HEAD' state. You can look around, make experimental
->> changes and commit them, and you can discard any commits you make in 
->> this
->> state without impacting any branches by performing another checkout.
->>
->> If you want to create a new branch to retain commits you create, you may
->> do so (now or later) by using -b with the checkout command again. 
->> Example:
->>
->>   git checkout -b <new-branch-name>
->>
->> HEAD is now at 4558b6e... swiotlb: remove swiotlb_dma_supported
->>
->> ----
->>
->> Link to the Git: 
->> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
->>
->> Results: PASEMI onboard ethernet (X1000) works and the X5000 (P5020 
->> board) boots. I also successfully tested sound, hardware 3D 
->> acceleration, Bluetooth, network, booting with a label etc. The 
->> uImages work also in a virtual e5500 quad-core QEMU machine.
->>
->> -- Christian
->>
->>
->> On 11 January 2019 at 03:10AM, Christian Zigotzky wrote:
->>> Next step: 891dcc1072f1fa27a83da920d88daff6ca08fc02 (powerpc/dma: 
->>> remove dma_nommu_dma_supported)
->>>
->>> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
->>>
->>> git checkout 891dcc1072f1fa27a83da920d88daff6ca08fc02
->>>
->>> Output:
->>>
->>> Note: checking out '891dcc1072f1fa27a83da920d88daff6ca08fc02'.
->>>
->>> You are in 'detached HEAD' state. You can look around, make 
->>> experimental
->>> changes and commit them, and you can discard any commits you make in 
->>> this
->>> state without impacting any branches by performing another checkout.
->>>
->>> If you want to create a new branch to retain commits you create, you 
->>> may
->>> do so (now or later) by using -b with the checkout command again. 
->>> Example:
->>>
->>> git checkout -b <new-branch-name>
->>>
->>> HEAD is now at 891dcc1... powerpc/dma: remove dma_nommu_dma_supported
->>>
->>> ---
->>>
->>> Link to the Git: 
->>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
->>>
->>> Results: PASEMI onboard ethernet works and the X5000 (P5020 board) 
->>> boots. I also successfully tested sound, hardware 3D acceleration, 
->>> Bluetooth, network, booting with a label etc. The uImages work also 
->>> in a virtual e5500 quad-core QEMU machine.
->>>
->>> -- Christian
->>>
->>>
->>> On 09 January 2019 at 10:31AM, Christian Zigotzky wrote:
->>>> Next step: a64e18ba191ba9102fb174f27d707485ffd9389c (powerpc/dma: 
->>>> remove dma_nommu_get_required_mask)
->>>>
->>>> git clone git://git.infradead.org/users/hch/misc.git -b 
->>>> powerpc-dma.6 a
->>>>
->>>> git checkout a64e18ba191ba9102fb174f27d707485ffd9389c
->>>>
->>>> Link to the Git: 
->>>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
->>>>
->>>> Results: PASEMI onboard ethernet works and the X5000 (P5020 board) 
->>>> boots. I also successfully tested sound, hardware 3D acceleration, 
->>>> Bluetooth, network, booting with a label etc. The uImages work also 
->>>> in a virtual e5500 quad-core QEMU machine.
->>>>
->>>> -- Christian
->>>>
->>>>
->>>> On 05 January 2019 at 5:03PM, Christian Zigotzky wrote:
->>>>> Next step: c446404b041130fbd9d1772d184f24715cf2362f (powerpc/dma: 
->>>>> remove dma_nommu_mmap_coherent)
->>>>>
->>>>> git clone git://git.infradead.org/users/hch/misc.git -b 
->>>>> powerpc-dma.6 a
->>>>>
->>>>> git checkout c446404b041130fbd9d1772d184f24715cf2362f
->>>>>
->>>>> Output:
->>>>>
->>>>> Note: checking out 'c446404b041130fbd9d1772d184f24715cf2362f'.
->>>>>
->>>>> You are in 'detached HEAD' state. You can look around, make 
->>>>> experimental
->>>>> changes and commit them, and you can discard any commits you make 
->>>>> in this
->>>>> state without impacting any branches by performing another checkout.
->>>>>
->>>>> If you want to create a new branch to retain commits you create, 
->>>>> you may
->>>>> do so (now or later) by using -b with the checkout command again. 
->>>>> Example:
->>>>>
->>>>>   git checkout -b <new-branch-name>
->>>>>
->>>>> HEAD is now at c446404... powerpc/dma: remove dma_nommu_mmap_coherent
->>>>>
->>>>> -----
->>>>>
->>>>> Link to the Git: 
->>>>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
->>>>>
->>>>> Result: PASEMI onboard ethernet works and the X5000 (P5020 board) 
->>>>> boots.
->>>>>
->>>>> -- Christian
->>>>>
->>>>
->>>>
->>>
->>>
->>
->>
->
->
-
+cheers
