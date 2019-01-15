@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87480C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:54:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FAF6C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:56:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0BE732085A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:54:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BE732085A
+	by mail.kernel.org (Postfix) with ESMTPS id 093DE20651
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:56:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 093DE20651
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dygF0wjCzDqVj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:54:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dyjC14TTzDqW6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:56:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,20 +27,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyH06BkzDqWs
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyG6Z14zDqX1
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:30 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id A764129E80; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
+ id 9136929E7F; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Message-Id: <a8c6ce1f4d10df9396f67076ce4656cd39309577.1547525936.git.fthain@telegraphics.com.au>
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Joshua Thompson <funaho@jurai.org>
+Message-Id: <fc5f13c7e60b846f533de41b179d904a95f58aea.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 17/22] powerpc: Define missing ppc_md.nvram_size for CHRP
- and PowerMac
+Subject: [PATCH v9 15/22] m68k: Dispatch nvram_ops calls to Atari or Mac
+ functions
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -59,112 +59,302 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the nvram_size() function to those PowerPC platforms that don't already
-have one: CHRP and PowerMac. This means that the ppc_md.nvram_size()
-function can be called by nvram_get_size().
+A multi-platform kernel binary has to decide at run-time how to dispatch
+the arch_nvram_ops calls. Add a platform-independent arch_nvram_ops
+struct for this, to replace the atari-specific one.
 
-Since we are addressing CHRP inconsistencies here, rename chrp_nvram_read
-and chrp_nvram_write, which break the naming convention used across
-powerpc platforms for NVRAM accessor functions.
+Enable CONFIG_HAVE_ARCH_NVRAM_OPS for Macs.
 
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
 Changed since v8:
- - Renamed functions to correspond with ppc_md member names.
+ - Adopted nvram_read_bytes() and nvram_write_bytes() where possible.
 ---
- arch/powerpc/platforms/chrp/nvram.c     | 14 ++++++++++----
- arch/powerpc/platforms/powermac/nvram.c |  9 +++++++++
- 2 files changed, 19 insertions(+), 4 deletions(-)
+ arch/m68k/Kconfig.machine         |  1 +
+ arch/m68k/atari/nvram.c           | 21 ++------
+ arch/m68k/include/asm/atarihw.h   |  6 +++
+ arch/m68k/include/asm/macintosh.h |  4 ++
+ arch/m68k/kernel/setup_mm.c       | 82 ++++++++++++++++++++++++++++++-
+ arch/m68k/mac/misc.c              | 11 +++++
+ 6 files changed, 108 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/nvram.c b/arch/powerpc/platforms/chrp/nvram.c
-index 791b86398e1d..37ac20ccbb19 100644
---- a/arch/powerpc/platforms/chrp/nvram.c
-+++ b/arch/powerpc/platforms/chrp/nvram.c
-@@ -24,7 +24,7 @@ static unsigned int nvram_size;
- static unsigned char nvram_buf[4];
- static DEFINE_SPINLOCK(nvram_lock);
- 
--static unsigned char chrp_nvram_read(int addr)
-+static unsigned char chrp_nvram_read_val(int addr)
- {
- 	unsigned int done;
- 	unsigned long flags;
-@@ -46,7 +46,7 @@ static unsigned char chrp_nvram_read(int addr)
- 	return ret;
+diff --git a/arch/m68k/Kconfig.machine b/arch/m68k/Kconfig.machine
+index ad584e3eb8f7..c01e103492fd 100644
+--- a/arch/m68k/Kconfig.machine
++++ b/arch/m68k/Kconfig.machine
+@@ -27,6 +27,7 @@ config MAC
+ 	bool "Macintosh support"
+ 	depends on MMU
+ 	select MMU_MOTOROLA if MMU
++	select HAVE_ARCH_NVRAM_OPS
+ 	help
+ 	  This option enables support for the Apple Macintosh series of
+ 	  computers (yes, there is experimental support now, at least for part
+diff --git a/arch/m68k/atari/nvram.c b/arch/m68k/atari/nvram.c
+index c347fd206ddf..7000d2443aa3 100644
+--- a/arch/m68k/atari/nvram.c
++++ b/arch/m68k/atari/nvram.c
+@@ -74,7 +74,7 @@ static void __nvram_set_checksum(void)
+ 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
  }
  
--static void chrp_nvram_write(int addr, unsigned char val)
-+static void chrp_nvram_write_val(int addr, unsigned char val)
+-static long atari_nvram_set_checksum(void)
++long atari_nvram_set_checksum(void)
  {
- 	unsigned int done;
- 	unsigned long flags;
-@@ -64,6 +64,11 @@ static void chrp_nvram_write(int addr, unsigned char val)
- 	spin_unlock_irqrestore(&nvram_lock, flags);
+ 	spin_lock_irq(&rtc_lock);
+ 	__nvram_set_checksum();
+@@ -82,7 +82,7 @@ static long atari_nvram_set_checksum(void)
+ 	return 0;
  }
  
-+static ssize_t chrp_nvram_size(void)
+-static long atari_nvram_initialize(void)
++long atari_nvram_initialize(void)
+ {
+ 	loff_t i;
+ 
+@@ -94,7 +94,7 @@ static long atari_nvram_initialize(void)
+ 	return 0;
+ }
+ 
+-static ssize_t atari_nvram_read(char *buf, size_t count, loff_t *ppos)
++ssize_t atari_nvram_read(char *buf, size_t count, loff_t *ppos)
+ {
+ 	char *p = buf;
+ 	loff_t i;
+@@ -112,7 +112,7 @@ static ssize_t atari_nvram_read(char *buf, size_t count, loff_t *ppos)
+ 	return p - buf;
+ }
+ 
+-static ssize_t atari_nvram_write(char *buf, size_t count, loff_t *ppos)
++ssize_t atari_nvram_write(char *buf, size_t count, loff_t *ppos)
+ {
+ 	char *p = buf;
+ 	loff_t i;
+@@ -131,22 +131,11 @@ static ssize_t atari_nvram_write(char *buf, size_t count, loff_t *ppos)
+ 	return p - buf;
+ }
+ 
+-static ssize_t atari_nvram_get_size(void)
++ssize_t atari_nvram_get_size(void)
+ {
+-	if (!MACH_IS_ATARI)
+-		return -ENODEV;
+ 	return NVRAM_BYTES;
+ }
+ 
+-const struct nvram_ops arch_nvram_ops = {
+-	.read           = atari_nvram_read,
+-	.write          = atari_nvram_write,
+-	.get_size       = atari_nvram_get_size,
+-	.set_checksum   = atari_nvram_set_checksum,
+-	.initialize     = atari_nvram_initialize,
+-};
+-EXPORT_SYMBOL(arch_nvram_ops);
+-
+ #ifdef CONFIG_PROC_FS
+ static struct {
+ 	unsigned char val;
+diff --git a/arch/m68k/include/asm/atarihw.h b/arch/m68k/include/asm/atarihw.h
+index 9000b249d225..533008262b69 100644
+--- a/arch/m68k/include/asm/atarihw.h
++++ b/arch/m68k/include/asm/atarihw.h
+@@ -33,6 +33,12 @@ extern int atari_dont_touch_floppy_select;
+ 
+ extern int atari_SCC_reset_done;
+ 
++extern ssize_t atari_nvram_read(char *, size_t, loff_t *);
++extern ssize_t atari_nvram_write(char *, size_t, loff_t *);
++extern ssize_t atari_nvram_get_size(void);
++extern long atari_nvram_set_checksum(void);
++extern long atari_nvram_initialize(void);
++
+ /* convenience macros for testing machine type */
+ #define MACH_IS_ST	((atari_mch_cookie >> 16) == ATARI_MCH_ST)
+ #define MACH_IS_STE	((atari_mch_cookie >> 16) == ATARI_MCH_STE && \
+diff --git a/arch/m68k/include/asm/macintosh.h b/arch/m68k/include/asm/macintosh.h
+index 08cee11180e6..d9a08bed4b12 100644
+--- a/arch/m68k/include/asm/macintosh.h
++++ b/arch/m68k/include/asm/macintosh.h
+@@ -19,6 +19,10 @@ extern void mac_init_IRQ(void);
+ extern void mac_irq_enable(struct irq_data *data);
+ extern void mac_irq_disable(struct irq_data *data);
+ 
++extern unsigned char mac_pram_read_byte(int);
++extern void mac_pram_write_byte(unsigned char, int);
++extern ssize_t mac_pram_get_size(void);
++
+ /*
+  *	Macintosh Table
+  */
+diff --git a/arch/m68k/kernel/setup_mm.c b/arch/m68k/kernel/setup_mm.c
+index ad0195cbe042..528484feff80 100644
+--- a/arch/m68k/kernel/setup_mm.c
++++ b/arch/m68k/kernel/setup_mm.c
+@@ -24,6 +24,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/module.h>
++#include <linux/nvram.h>
+ #include <linux/initrd.h>
+ 
+ #include <asm/bootinfo.h>
+@@ -37,13 +38,14 @@
+ #ifdef CONFIG_AMIGA
+ #include <asm/amigahw.h>
+ #endif
+-#ifdef CONFIG_ATARI
+ #include <asm/atarihw.h>
++#ifdef CONFIG_ATARI
+ #include <asm/atari_stram.h>
+ #endif
+ #ifdef CONFIG_SUN3X
+ #include <asm/dvma.h>
+ #endif
++#include <asm/macintosh.h>
+ #include <asm/natfeat.h>
+ 
+ #if !FPSTATESIZE || !NR_IRQS
+@@ -547,3 +549,81 @@ static int __init adb_probe_sync_enable (char *str) {
+ 
+ __setup("adb_sync", adb_probe_sync_enable);
+ #endif /* CONFIG_ADB */
++
++#if IS_ENABLED(CONFIG_NVRAM)
++#ifdef CONFIG_MAC
++static unsigned char m68k_nvram_read_byte(int addr)
 +{
-+	return nvram_size;
++	if (MACH_IS_MAC)
++		return mac_pram_read_byte(addr);
++	return 0xff;
 +}
 +
- void __init chrp_nvram_init(void)
- {
- 	struct device_node *nvram;
-@@ -85,8 +90,9 @@ void __init chrp_nvram_init(void)
- 	printk(KERN_INFO "CHRP nvram contains %u bytes\n", nvram_size);
- 	of_node_put(nvram);
- 
--	ppc_md.nvram_read_val = chrp_nvram_read;
--	ppc_md.nvram_write_val = chrp_nvram_write;
-+	ppc_md.nvram_read_val  = chrp_nvram_read_val;
-+	ppc_md.nvram_write_val = chrp_nvram_write_val;
-+	ppc_md.nvram_size      = chrp_nvram_size;
- 
- 	return;
- }
-diff --git a/arch/powerpc/platforms/powermac/nvram.c b/arch/powerpc/platforms/powermac/nvram.c
-index ae54d7fe68f3..9360cdc408c1 100644
---- a/arch/powerpc/platforms/powermac/nvram.c
-+++ b/arch/powerpc/platforms/powermac/nvram.c
-@@ -147,6 +147,11 @@ static ssize_t core99_nvram_size(void)
- static volatile unsigned char __iomem *nvram_addr;
- static int nvram_mult;
- 
-+static ssize_t ppc32_nvram_size(void)
++static void m68k_nvram_write_byte(unsigned char val, int addr)
 +{
-+	return NVRAM_SIZE;
++	if (MACH_IS_MAC)
++		mac_pram_write_byte(val, addr);
++}
++#endif /* CONFIG_MAC */
++
++#ifdef CONFIG_ATARI
++static ssize_t m68k_nvram_read(char *buf, size_t count, loff_t *ppos)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_read(buf, count, ppos);
++	else if (MACH_IS_MAC)
++		return nvram_read_bytes(buf, count, ppos);
++	return -EINVAL;
 +}
 +
- static unsigned char direct_nvram_read_byte(int addr)
++static ssize_t m68k_nvram_write(char *buf, size_t count, loff_t *ppos)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_write(buf, count, ppos);
++	else if (MACH_IS_MAC)
++		return nvram_write_bytes(buf, count, ppos);
++	return -EINVAL;
++}
++
++static long m68k_nvram_set_checksum(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_set_checksum();
++	return -EINVAL;
++}
++
++static long m68k_nvram_initialize(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_initialize();
++	return -EINVAL;
++}
++#endif /* CONFIG_ATARI */
++
++static ssize_t m68k_nvram_get_size(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_get_size();
++	else if (MACH_IS_MAC)
++		return mac_pram_get_size();
++	return -ENODEV;
++}
++
++/* Atari device drivers call .read (to get checksum validation) whereas
++ * Mac and PowerMac device drivers just use .read_byte.
++ */
++const struct nvram_ops arch_nvram_ops = {
++#ifdef CONFIG_MAC
++	.read_byte      = m68k_nvram_read_byte,
++	.write_byte     = m68k_nvram_write_byte,
++#endif
++#ifdef CONFIG_ATARI
++	.read           = m68k_nvram_read,
++	.write          = m68k_nvram_write,
++	.set_checksum   = m68k_nvram_set_checksum,
++	.initialize     = m68k_nvram_initialize,
++#endif
++	.get_size       = m68k_nvram_get_size,
++};
++EXPORT_SYMBOL(arch_nvram_ops);
++#endif /* CONFIG_NVRAM */
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index d016ca2e0d10..5dc8d1e985e7 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -36,6 +36,7 @@
+ 
+ static void (*rom_reset)(void);
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ #ifdef CONFIG_ADB_CUDA
+ static unsigned char cuda_pram_read_byte(int offset)
  {
- 	return in_8(&nvram_data[(addr & (NVRAM_SIZE - 1)) * nvram_mult]);
-@@ -590,21 +595,25 @@ int __init pmac_nvram_init(void)
- 		nvram_mult = 1;
- 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
- 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
-+		ppc_md.nvram_size	= ppc32_nvram_size;
- 	} else if (nvram_naddrs == 1) {
- 		nvram_data = ioremap(r1.start, s1);
- 		nvram_mult = (s1 + NVRAM_SIZE - 1) / NVRAM_SIZE;
- 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
- 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
-+		ppc_md.nvram_size	= ppc32_nvram_size;
- 	} else if (nvram_naddrs == 2) {
- 		nvram_addr = ioremap(r1.start, s1);
- 		nvram_data = ioremap(r2.start, s2);
- 		ppc_md.nvram_read_val	= indirect_nvram_read_byte;
- 		ppc_md.nvram_write_val	= indirect_nvram_write_byte;
-+		ppc_md.nvram_size	= ppc32_nvram_size;
- 	} else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
- #ifdef CONFIG_ADB_PMU
- 		nvram_naddrs = -1;
- 		ppc_md.nvram_read_val	= pmu_nvram_read_byte;
- 		ppc_md.nvram_write_val	= pmu_nvram_write_byte;
-+		ppc_md.nvram_size	= ppc32_nvram_size;
+@@ -84,6 +85,7 @@ static void pmu_pram_write_byte(unsigned char data, int offset)
+ 	pmu_wait_complete(&req);
+ }
  #endif /* CONFIG_ADB_PMU */
- 	} else {
- 		printk(KERN_ERR "Incompatible type of NVRAM\n");
++#endif /* CONFIG_NVRAM */
+ 
+ /*
+  * VIA PRAM/RTC access routines
+@@ -205,6 +207,7 @@ static void via_rtc_command(int command, __u8 *data)
+ 	local_irq_restore(flags);
+ }
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ static unsigned char via_pram_read_byte(int offset)
+ {
+ 	unsigned char temp;
+@@ -227,6 +230,7 @@ static void via_pram_write_byte(unsigned char data, int offset)
+ 	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
+ 	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ }
++#endif /* CONFIG_NVRAM */
+ 
+ /*
+  * Return the current time in seconds since January 1, 1904.
+@@ -372,6 +376,7 @@ static void cuda_shutdown(void)
+  *-------------------------------------------------------------------
+  */
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ unsigned char mac_pram_read_byte(int addr)
+ {
+ 	switch (macintosh_config->adb_type) {
+@@ -417,6 +422,12 @@ void mac_pram_write_byte(unsigned char val, int addr)
+ 	}
+ }
+ 
++ssize_t mac_pram_get_size(void)
++{
++	return 256;
++}
++#endif /* CONFIG_NVRAM */
++
+ void mac_poweroff(void)
+ {
+ 	if (oss_present) {
 -- 
 2.19.2
 
