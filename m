@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 662F2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:57:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0ABEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:59:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E006B20656
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:57:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E006B20656
+	by mail.kernel.org (Postfix) with ESMTPS id 36C8D20656
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:59:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36C8D20656
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dykq75NFzDqBj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:57:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dymV2XswzDqbW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:59:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,19 +27,19 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyG6ZXbzDqXJ
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyG6ZBKzDqXG
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:30 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 021A729E87; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
+ id BFA2D29E83; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Message-Id: <94c2689ae1bf690a82b427d0c4f96b197865e1a7.1547525936.git.fthain@telegraphics.com.au>
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Message-Id: <204f2532af36aeb92b4c585d67f4c66690330acc.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 22/22] powerpc: Adopt nvram module for PPC64
+Subject: [PATCH v9 19/22] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when
+ CONFIG_PPC32 && CONFIG_PPC_PMAC && CONFIG_NVRAM
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -53,333 +53,318 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-fbdev@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Adopt nvram module to reduce code duplication. This means CONFIG_NVRAM
-becomes available to PPC64 builds. Previously it was only available to
-PPC32 builds because it depended on CONFIG_GENERIC_NVRAM.
+This patch addresses inconsistencies in Mac framebuffer drivers and their
+use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
 
-The IOC_NVRAM_GET_OFFSET ioctl as implemented on PPC64 validates the
-offset returned by pmac_get_partition(). Do the same in the nvram module.
+The defined(CONFIG_NVRAM) condition is replaced with the weaker
+IS_REACHABLE(CONFIG_NVRAM) condition, like atari_scsi.
 
-Note that the old PPC32 generic_nvram module lacked this test.
-So when CONFIG_PPC32 && CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET ioctl
-would have returned 0 (always). But when CONFIG_PPC64 && CONFIG_PPC_PMAC,
-the IOC_NVRAM_GET_OFFSET ioctl would have returned -1 (which is -EPERM)
-when the requested partition was not found.
+Macintosh framebuffer drivers use default settings for color mode and
+video mode that are found in NVRAM. On PCI Macs, MacOS stores display
+settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
+there is no NR partition and MacOS stores display mode settings in PRAM**.
 
-With this patch, the result is now -EINVAL on both PPC32 and PPC64 when
-the requested PowerMac NVRAM partition is not found. This is a userspace-
-visible change, in the non-existent partition case, which would be in
-an error path for an IOC_NVRAM_GET_OFFSET ioctl syscall.
+Early-model Macs are the ones most likely to benefit from these settings,
+since they are more likely to have a fixed-frequency monitor connected to
+the built-in framebuffer device. Moreover, a single NV_CMODE value and
+a single NV_VMODE value provide for only one display.
 
-Tested-by: Stan Johnson <userm57@yahoo.com>
+The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
+partition for Old World machines. This also suggests that these defaults
+are not useful on later models. The NR partition seems to be optional on
+New World machines. CONFIG_NVRAM cannot be enabled on PPC64 at present.
+
+It is safe to say that NVRAM support in PowerMac fbdev drivers is only
+applicable to CONFIG_PPC32 so make this condition explicit. This means
+matroxfb driver won't crash on PPC64 when CONFIG_NVRAM becomes available
+there.
+
+For imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
+since PPC64 does not implement nvram_read_byte(). Also add a missing
+machine_is(powermac) check. Change the inconsistent dependency on
+CONFIG_PPC and the matching #ifdef tests to CONFIG_PPC_PMAC.
+
+For valkyriefb, to improve clarity and consistency with the other PowerMac
+fbdev drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
+bogus comment regarding PRAM.
+
+* See GetPreferredConfiguration and SavePreferredConfiguration in
+"Designing PCI Cards and Drivers for Power Macintosh Computers".
+
+** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
+for the Macintosh Family".
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
-BTW, the IOC_NVRAM_SYNC ioctl call returns an error on PPC64. This patch
-retains this behaviour though it might be better to actually perform a sync
-since both PPC64 and PPC32 do implement ppc_md.nvram_sync() for Core99.
-
 Changed since v8:
- - Dropped the arch_nvram_ops struct in favour of equivalent ppc_md
-method calls. Regardless of the actual implementation, the presence of
-this functionality is indicated by CONFIG_HAVE_ARCH_NVRAM_OPS=y.
-
-Changed since v7:
- - Dropped pointless comment edit.
+ - Replaced defined(CONFIG_NVRAM) with IS_REACHABLE(CONFIG_NVRAM) as
+suggested by James Bottomley.
+ - Changed #ifdef to if as suggested by Christophe Leroy.
+ - Expanded the patch to include controlfb.c and platinumfb.c due to the
+conversion from '#if defined(CONFIG_NVRAM)' to
+'if (IS_REACHABLE(CONFIG_NVRAM))'.
 ---
- arch/powerpc/Kconfig                     |   2 +-
- arch/powerpc/kernel/nvram_64.c           | 158 +----------------------
- arch/powerpc/platforms/powermac/Makefile |   2 -
- arch/powerpc/platforms/powermac/setup.c  |   2 +-
- arch/powerpc/platforms/powermac/time.c   |   2 +-
- arch/powerpc/platforms/pseries/nvram.c   |   2 -
- drivers/char/nvram.c                     |   4 +
- 7 files changed, 9 insertions(+), 163 deletions(-)
+ drivers/video/fbdev/Kconfig                |  2 +-
+ drivers/video/fbdev/controlfb.c            | 42 ++++++++--------------
+ drivers/video/fbdev/imsttfb.c              | 23 ++++++------
+ drivers/video/fbdev/matrox/matroxfb_base.c |  5 +--
+ drivers/video/fbdev/platinumfb.c           | 21 +++++------
+ drivers/video/fbdev/valkyriefb.c           | 30 ++++++----------
+ 6 files changed, 48 insertions(+), 75 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index f62e6a3f9c4e..621912365508 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -178,7 +178,7 @@ config PPC
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
--	select HAVE_ARCH_NVRAM_OPS		if PPC32
-+	select HAVE_ARCH_NVRAM_OPS
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_CBPF_JIT			if !PPC64
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 38b03a330cd2..244d2462e781 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -7,12 +7,6 @@
-  *      2 of the License, or (at your option) any later version.
-  *
-  * /dev/nvram driver for PPC64
-- *
-- * This perhaps should live in drivers/char
-- *
-- * TODO: Split the /dev/nvram part (that one can use
-- *       drivers/char/generic_nvram.c) from the arch & partition
-- *       parsing code.
-  */
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index ae7712c9687a..58a9590c9db6 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -536,7 +536,7 @@ config FB_IMSTT
+ 	bool "IMS Twin Turbo display support"
+ 	depends on (FB = y) && PCI
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_MACMODES if PPC
++	select FB_MACMODES if PPC_PMAC
+ 	help
+ 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
+ 	  many Macintosh and compatible computers.
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 9cb0ef7ac29e..7af8db28bb80 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -411,35 +411,23 @@ static int __init init_control(struct fb_info_control *p)
+ 	full = p->total_vram == 0x400000;
  
- #include <linux/types.h>
-@@ -714,137 +708,6 @@ static void oops_to_nvram(struct kmsg_dumper *dumper,
- 	spin_unlock_irqrestore(&lock, flags);
- }
- 
--static loff_t dev_nvram_llseek(struct file *file, loff_t offset, int origin)
--{
--	if (ppc_md.nvram_size == NULL)
--		return -ENODEV;
--	return generic_file_llseek_size(file, offset, origin, MAX_LFS_FILESIZE,
--					ppc_md.nvram_size());
--}
--
--
--static ssize_t dev_nvram_read(struct file *file, char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	ssize_t ret;
--	char *tmp = NULL;
--	ssize_t size;
--
--	if (!ppc_md.nvram_size) {
--		ret = -ENODEV;
--		goto out;
--	}
--
--	size = ppc_md.nvram_size();
--	if (size < 0) {
--		ret = size;
--		goto out;
--	}
--
--	if (*ppos >= size) {
--		ret = 0;
--		goto out;
--	}
--
--	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
--
--	tmp = kmalloc(count, GFP_KERNEL);
--	if (!tmp) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	ret = ppc_md.nvram_read(tmp, count, ppos);
--	if (ret <= 0)
--		goto out;
--
--	if (copy_to_user(buf, tmp, ret))
--		ret = -EFAULT;
--
--out:
--	kfree(tmp);
--	return ret;
--
--}
--
--static ssize_t dev_nvram_write(struct file *file, const char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	ssize_t ret;
--	char *tmp = NULL;
--	ssize_t size;
--
--	ret = -ENODEV;
--	if (!ppc_md.nvram_size)
--		goto out;
--
--	ret = 0;
--	size = ppc_md.nvram_size();
--	if (*ppos >= size || size < 0)
--		goto out;
--
--	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
--
--	tmp = memdup_user(buf, count);
--	if (IS_ERR(tmp)) {
--		ret = PTR_ERR(tmp);
--		goto out;
--	}
--
--	ret = ppc_md.nvram_write(tmp, count, ppos);
--
--	kfree(tmp);
--out:
--	return ret;
--}
--
--static long dev_nvram_ioctl(struct file *file, unsigned int cmd,
--			    unsigned long arg)
--{
--	switch(cmd) {
--#ifdef CONFIG_PPC_PMAC
--	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
--		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
--		/* fall through */
--	case IOC_NVRAM_GET_OFFSET: {
--		int part, offset;
--
--		if (!machine_is(powermac))
--			return -EINVAL;
--		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
--			return -EFAULT;
--		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
--			return -EINVAL;
--		offset = pmac_get_partition(part);
--		if (offset < 0)
--			return offset;
--		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
--			return -EFAULT;
--		return 0;
--	}
--#endif /* CONFIG_PPC_PMAC */
--	default:
--		return -EINVAL;
--	}
--}
--
--static const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= dev_nvram_llseek,
--	.read		= dev_nvram_read,
--	.write		= dev_nvram_write,
--	.unlocked_ioctl	= dev_nvram_ioctl,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
--
- #ifdef DEBUG_NVRAM
- static void __init nvram_print_partitions(char * label)
- {
-@@ -992,6 +855,8 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	long size = 0;
- 	int rc;
- 
-+	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
-+
- 	/* Convert sizes from bytes to blocks */
- 	req_size = _ALIGN_UP(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
- 	min_size = _ALIGN_UP(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
-@@ -1192,22 +1057,3 @@ int __init nvram_scan_partitions(void)
- 	kfree(header);
- 	return err;
- }
--
--static int __init nvram_init(void)
--{
--	int rc;
--	
--	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
--
--	if (ppc_md.nvram_size == NULL || ppc_md.nvram_size() <= 0)
--		return  -ENODEV;
--
--  	rc = misc_register(&nvram_dev);
--	if (rc != 0) {
--		printk(KERN_ERR "nvram_init: failed to register device\n");
--		return rc;
--	}
--  	
--  	return rc;
--}
--device_initcall(nvram_init);
-diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
-index 923bfb340433..20ebf35d7913 100644
---- a/arch/powerpc/platforms/powermac/Makefile
-+++ b/arch/powerpc/platforms/powermac/Makefile
-@@ -15,7 +15,5 @@ obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
- # need this to be a bool.  Cheat here and pretend CONFIG_NVRAM=m is really
- # CONFIG_NVRAM=y
- obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
--# ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
--obj-$(CONFIG_PPC64)		+= nvram.o
- obj-$(CONFIG_PPC32)		+= bootx_init.o
- obj-$(CONFIG_SMP)		+= smp.o
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index b47f49cf9c4d..b7efcf336589 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -316,7 +316,7 @@ static void __init pmac_setup_arch(void)
- 	find_via_pmu();
- 	smu_init();
- 
--#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
-+#if IS_ENABLED(CONFIG_NVRAM)
- 	pmac_nvram_init();
- #endif
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
-index f157e3d071f2..b36ddee17c87 100644
---- a/arch/powerpc/platforms/powermac/time.c
-+++ b/arch/powerpc/platforms/powermac/time.c
-@@ -68,7 +68,7 @@
- long __init pmac_time_init(void)
- {
- 	s32 delta = 0;
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
 -#ifdef CONFIG_NVRAM
-+#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
- 	int dst;
- 	
- 	delta = ((s32)pmac_xpram_read(PMAC_XPRAM_MACHINE_LOC + 0x9)) << 16;
-diff --git a/arch/powerpc/platforms/pseries/nvram.c b/arch/powerpc/platforms/pseries/nvram.c
-index 69cedc1b3b8a..1136a38ff039 100644
---- a/arch/powerpc/platforms/pseries/nvram.c
-+++ b/arch/powerpc/platforms/pseries/nvram.c
-@@ -7,8 +7,6 @@
-  *      2 of the License, or (at your option) any later version.
-  *
-  * /dev/nvram driver for PPC64
-- *
-- * This perhaps should live in drivers/char
-  */
+-	if (default_cmode == CMODE_NVRAM) {
++	cmode = default_cmode;
++	if (IS_REACHABLE(CONFIG_NVRAM) && cmode == CMODE_NVRAM)
+ 		cmode = nvram_read_byte(NV_CMODE);
+-		if(cmode < CMODE_8 || cmode > CMODE_32)
+-			cmode = CMODE_8;
+-	} else
+-#endif
+-		cmode=default_cmode;
+-#ifdef CONFIG_NVRAM
+-	if (default_vmode == VMODE_NVRAM) {
++	if (cmode < CMODE_8 || cmode > CMODE_32)
++		cmode = CMODE_8;
++
++	vmode = default_vmode;
++	if (IS_REACHABLE(CONFIG_NVRAM) && vmode == VMODE_NVRAM)
+ 		vmode = nvram_read_byte(NV_VMODE);
+-		if (vmode < 1 || vmode > VMODE_MAX ||
+-		    control_mac_modes[vmode - 1].m[full] < cmode) {
+-			sense = read_control_sense(p);
+-			printk("Monitor sense value = 0x%x, ", sense);
+-			vmode = mac_map_monitor_sense(sense);
+-			if (control_mac_modes[vmode - 1].m[full] < cmode)
+-				vmode = VMODE_640_480_60;
+-		}
+-	} else
+-#endif
+-	{
+-		vmode=default_vmode;
+-		if (control_mac_modes[vmode - 1].m[full] < cmode) {
+-			if (cmode > CMODE_8)
+-				cmode--;
+-			else
+-				vmode = VMODE_640_480_60;
+-		}
++	if (vmode < 1 || vmode > VMODE_MAX ||
++	    control_mac_modes[vmode - 1].m[full] < cmode) {
++		sense = read_control_sense(p);
++		printk(KERN_CONT "Monitor sense value = 0x%x, ", sense);
++		vmode = mac_map_monitor_sense(sense);
++		if (control_mac_modes[vmode - 1].m[full] < 0)
++			vmode = VMODE_640_480_60;
++		cmode = min(cmode, control_mac_modes[vmode - 1].m[full]);
+ 	}
  
+ 	/* Initialize info structure */
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index 901ca4ed10e9..5d9670daf60e 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -30,9 +30,8 @@
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
  
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index 944f05fddacd..eff1e3f1b3a2 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -302,6 +302,8 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
- 			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
- 				return -EINVAL;
- 			offset = pmac_get_partition(part);
-+			if (offset < 0)
-+				return -EINVAL;
- 			if (copy_to_user((void __user *)arg,
- 					 &offset, sizeof(offset)) != 0)
- 				return -EFAULT;
-@@ -309,6 +311,7 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
- 		}
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ #include <linux/nvram.h>
+-#include <asm/prom.h>
+ #include "macmodes.h"
  #endif
- 		break;
-+#ifdef CONFIG_PPC32
- 	case IOC_NVRAM_SYNC:
- 		if (ppc_md.nvram_sync != NULL) {
- 			mutex_lock(&nvram_mutex);
-@@ -317,6 +320,7 @@ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+ 
+@@ -327,14 +326,13 @@ enum {
+ 	TVP = 1
+ };
+ 
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
+ 
+ static int inverse = 0;
+ static char fontname[40] __initdata = { 0 };
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ static signed char init_vmode = -1, init_cmode = -1;
+ #endif
+ 
+@@ -1390,8 +1388,8 @@ static void init_imstt(struct fb_info *info)
  		}
- 		ret = 0;
- 		break;
-+#endif
- #elif defined(CONFIG_X86) || defined(CONFIG_M68K)
- 	case NVRAM_INIT:
- 		/* initialize NVRAM contents and checksum */
+ 	}
+ 
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
+-	{
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
++	if (IS_REACHABLE(CONFIG_NVRAM) && machine_is(powermac)) {
+ 		int vmode = init_vmode, cmode = init_cmode;
+ 
+ 		if (vmode == -1) {
+@@ -1409,12 +1407,13 @@ static void init_imstt(struct fb_info *info)
+ 			info->var.yres = info->var.yres_virtual = INIT_YRES;
+ 			info->var.bits_per_pixel = INIT_BPP;
+ 		}
+-	}
+-#else
+-	info->var.xres = info->var.xres_virtual = INIT_XRES;
+-	info->var.yres = info->var.yres_virtual = INIT_YRES;
+-	info->var.bits_per_pixel = INIT_BPP;
++	} else
+ #endif
++	{
++		info->var.xres = info->var.xres_virtual = INIT_XRES;
++		info->var.yres = info->var.yres_virtual = INIT_YRES;
++		info->var.bits_per_pixel = INIT_BPP;
++	}
+ 
+ 	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> 3) > info->fix.smem_len
+ 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
+@@ -1565,7 +1564,7 @@ imsttfb_setup(char *options)
+ 			inverse = 1;
+ 			fb_invert_cmaps();
+ 		}
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ 		else if (!strncmp(this_opt, "vmode:", 6)) {
+ 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
+ 			if (vmode > 0 && vmode <= VMODE_MAX)
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index 0a4e5bad33f4..d11b5e6210ed 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -1872,10 +1872,11 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
+ #ifndef MODULE
+ 	if (machine_is(powermac)) {
+ 		struct fb_var_screeninfo var;
++
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
+ 			default_vmode = VMODE_640_480_60;
+-#ifdef CONFIG_NVRAM
+-		if (default_cmode == CMODE_NVRAM)
++#if defined(CONFIG_PPC32)
++		if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode == CMODE_NVRAM)
+ 			default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index bf6b7fb83cf4..76f299375a00 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -345,23 +345,18 @@ static int platinum_init_fb(struct fb_info *info)
+ 
+ 	sense = read_platinum_sense(pinfo);
+ 	printk(KERN_INFO "platinumfb: Monitor sense value = 0x%x, ", sense);
+-	if (default_vmode == VMODE_NVRAM) {
+-#ifdef CONFIG_NVRAM
++
++	if (IS_REACHABLE(CONFIG_NVRAM) && default_vmode == VMODE_NVRAM)
+ 		default_vmode = nvram_read_byte(NV_VMODE);
+-		if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
+-		    !platinum_reg_init[default_vmode-1])
+-#endif
+-			default_vmode = VMODE_CHOOSE;
+-	}
+-	if (default_vmode == VMODE_CHOOSE) {
++	if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
++	    !platinum_reg_init[default_vmode - 1]) {
+ 		default_vmode = mac_map_monitor_sense(sense);
++		if (!platinum_reg_init[default_vmode - 1])
++			default_vmode = VMODE_640_480_60;
+ 	}
+-	if (default_vmode <= 0 || default_vmode > VMODE_MAX)
+-		default_vmode = VMODE_640_480_60;
+-#ifdef CONFIG_NVRAM
+-	if (default_cmode == CMODE_NVRAM)
++
++	if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode == CMODE_NVRAM)
+ 		default_cmode = nvram_read_byte(NV_CMODE);
+-#endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode = CMODE_8;
+ 	/*
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index d51c3a8009cb..e04fde9c1fcd 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -63,15 +63,8 @@
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+ 
+-#ifdef CONFIG_MAC
+-/* We don't yet have functions to read the PRAM... perhaps we can
+-   adapt them from the PPC code? */
+-static int default_vmode = VMODE_CHOOSE;
+-static int default_cmode = CMODE_8;
+-#else
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
+-#endif
+ 
+ struct fb_par_valkyrie {
+ 	int	vmode, cmode;
+@@ -283,24 +276,21 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
+ 
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+-	if (default_vmode == VMODE_NVRAM) {
++#ifdef CONFIG_PPC_PMAC
++	if (IS_REACHABLE(CONFIG_NVRAM) && default_vmode == VMODE_NVRAM)
+ 		default_vmode = nvram_read_byte(NV_VMODE);
+-		if (default_vmode <= 0
+-		 || default_vmode > VMODE_MAX
+-		 || !valkyrie_reg_init[default_vmode - 1])
+-			default_vmode = VMODE_CHOOSE;
+-	}
+ #endif
+-	if (default_vmode == VMODE_CHOOSE)
++	if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
++	    !valkyrie_reg_init[default_vmode - 1]) {
+ 		default_vmode = mac_map_monitor_sense(p->sense);
+-	if (!valkyrie_reg_init[default_vmode - 1])
+-		default_vmode = VMODE_640_480_67;
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+-	if (default_cmode == CMODE_NVRAM)
++		if (!valkyrie_reg_init[default_vmode - 1])
++			default_vmode = VMODE_640_480_67;
++	}
++
++#ifdef CONFIG_PPC_PMAC
++	if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode == CMODE_NVRAM)
+ 		default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
+-
+ 	/*
+ 	 * Reduce the pixel size if we don't have enough VRAM or bandwidth.
+ 	 */
 -- 
 2.19.2
 
