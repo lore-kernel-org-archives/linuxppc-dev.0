@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4784C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:51:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1A19C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:53:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6BEBE20651
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:51:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6BEBE20651
+	by mail.kernel.org (Postfix) with ESMTPS id 2205420651
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:53:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2205420651
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dyc03TNTzDqTn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:51:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dydd5dknzDqcH
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:53:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,17 +27,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyG4tTDzDqX7
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyG3lk1zDqWy
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:30 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id E6ACD29E86; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
+ id D811729E84; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Message-Id: <959d4937f28b0823fc8bc5a618b196a33bbb1fbe.1547525936.git.fthain@telegraphics.com.au>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Message-Id: <1e72318aab0051f813c3f636ea43f5ef288e00dd.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 21/22] char/generic_nvram: Remove as unused
+Subject: [PATCH v9 20/22] powerpc: Enable HAVE_ARCH_NVRAM_OPS and disable
+ GENERIC_NVRAM
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,196 +59,246 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Switch PPC32 kernels from the generic_nvram module to the nvram module.
+
+Also fix a theoretical bug where CHRP omits the chrp_nvram_init() call
+when CONFIG_NVRAM_MODULE=m.
+
+Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/char/Makefile        |   6 +-
- drivers/char/generic_nvram.c | 160 -----------------------------------
- 2 files changed, 1 insertion(+), 165 deletions(-)
- delete mode 100644 drivers/char/generic_nvram.c
+The change in the name of the module is visible to userspace. The module
+that implements /dev/nvram on PowerPC now has suitable aliases, i.e.
+MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
+MODULE_ALIAS("devname:nvram");
+so that the device special file can be automatically created and the
+module automatically loaded when needed. Previously this was not the case.
 
-diff --git a/drivers/char/Makefile b/drivers/char/Makefile
-index b8d42b4e979b..fbea7dd12932 100644
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -26,11 +26,7 @@ obj-$(CONFIG_RTC)		+= rtc.o
- obj-$(CONFIG_HPET)		+= hpet.o
- obj-$(CONFIG_EFI_RTC)		+= efirtc.o
- obj-$(CONFIG_XILINX_HWICAP)	+= xilinx_hwicap/
--ifeq ($(CONFIG_GENERIC_NVRAM),y)
--  obj-$(CONFIG_NVRAM)	+= generic_nvram.o
--else
--  obj-$(CONFIG_NVRAM)	+= nvram.o
--endif
-+obj-$(CONFIG_NVRAM)		+= nvram.o
- obj-$(CONFIG_TOSHIBA)		+= toshiba.o
- obj-$(CONFIG_DS1620)		+= ds1620.o
- obj-$(CONFIG_HW_RANDOM)		+= hw_random/
-diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-deleted file mode 100644
-index 0c22b9503e84..000000000000
---- a/drivers/char/generic_nvram.c
-+++ /dev/null
-@@ -1,160 +0,0 @@
--/*
-- * Generic /dev/nvram driver for architectures providing some
-- * "generic" hooks, that is :
-- *
-- * nvram_read_byte, nvram_write_byte, nvram_sync, nvram_get_size
-- *
-- * Note that an additional hook is supported for PowerMac only
-- * for getting the nvram "partition" informations
-- *
-- */
+Changed since v8:
+ - Moved the HAVE_ARCH_NVRAM_OPS symbol to common code as suggested by
+Christoph Hellwig.
+ - Changed arch_nvram_ops method calls to ppc_md method calls.
+ - Removed the now unused nvram_sync() export.
+
+Changed since v7:
+ - Improved Kconfig help text for CONFIG_NVRAM.
+ - Changed the default for CONFIG_NVRAM, which used to be "n". This is to
+reduce the risk that CONFIG_GENERIC_NVRAM=y accidentally gets changed to
+CONFIG_NVRAM=n.
+---
+ arch/powerpc/Kconfig                    |  6 +-----
+ arch/powerpc/include/asm/nvram.h        |  3 ---
+ arch/powerpc/kernel/setup_32.c          | 11 -----------
+ arch/powerpc/platforms/chrp/Makefile    |  2 +-
+ arch/powerpc/platforms/chrp/setup.c     |  2 +-
+ arch/powerpc/platforms/powermac/setup.c |  3 +--
+ drivers/char/Kconfig                    | 19 +++++++++----------
+ include/linux/nvram.h                   | 20 ++++++++++++++++++++
+ 8 files changed, 33 insertions(+), 33 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2890d36eb531..f62e6a3f9c4e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -178,6 +178,7 @@ config PPC
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_MMAP_RND_BITS
+ 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
++	select HAVE_ARCH_NVRAM_OPS		if PPC32
+ 	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_CBPF_JIT			if !PPC64
+@@ -274,11 +275,6 @@ config SYSVIPC_COMPAT
+ 	depends on COMPAT && SYSVIPC
+ 	default y
+ 
+-# All PPC32s use generic nvram driver through ppc_md
+-config GENERIC_NVRAM
+-	bool
+-	default y if PPC32
 -
--#define NVRAM_VERSION "1.1"
+ config SCHED_OMIT_FRAME_POINTER
+ 	bool
+ 	default y
+diff --git a/arch/powerpc/include/asm/nvram.h b/arch/powerpc/include/asm/nvram.h
+index 56a388da9c4f..629a5cdcc865 100644
+--- a/arch/powerpc/include/asm/nvram.h
++++ b/arch/powerpc/include/asm/nvram.h
+@@ -78,9 +78,6 @@ extern int	pmac_get_partition(int partition);
+ extern u8	pmac_xpram_read(int xpaddr);
+ extern void	pmac_xpram_write(int xpaddr, u8 data);
+ 
+-/* Synchronize NVRAM */
+-extern void	nvram_sync(void);
 -
--#include <linux/module.h>
+ /* Initialize NVRAM OS partition */
+ extern int __init nvram_init_os_partition(struct nvram_os_partition *part);
+ 
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index f5107796e2d7..c31082233a25 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -148,17 +148,6 @@ static int __init ppc_setup_l3cr(char *str)
+ }
+ __setup("l3cr=", ppc_setup_l3cr);
+ 
+-#ifdef CONFIG_GENERIC_NVRAM
 -
--#include <linux/types.h>
--#include <linux/errno.h>
--#include <linux/fs.h>
--#include <linux/miscdevice.h>
--#include <linux/fcntl.h>
--#include <linux/init.h>
--#include <linux/mutex.h>
--#include <linux/nvram.h>
--#include <linux/pagemap.h>
--#include <linux/uaccess.h>
--#include <asm/nvram.h>
--#ifdef CONFIG_PPC_PMAC
--#include <asm/machdep.h>
--#endif
--
--#define NVRAM_SIZE	8192
--
--static DEFINE_MUTEX(nvram_mutex);
--static ssize_t nvram_len;
--
--static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+-void nvram_sync(void)
 -{
--	return generic_file_llseek_size(file, offset, origin,
--					MAX_LFS_FILESIZE, nvram_len);
+-	if (ppc_md.nvram_sync)
+-		ppc_md.nvram_sync();
 -}
+-EXPORT_SYMBOL(nvram_sync);
 -
--static ssize_t read_nvram(struct file *file, char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	char __user *p = buf;
+-#endif /* CONFIG_NVRAM */
 -
--	if (!access_ok(buf, count))
--		return -EFAULT;
--	if (*ppos >= nvram_len)
--		return 0;
--	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
--		if (__put_user(nvram_read_byte(i), p))
--			return -EFAULT;
--	*ppos = i;
--	return p - buf;
--}
+ static int __init ppc_init(void)
+ {
+ 	/* clear the progress line */
+diff --git a/arch/powerpc/platforms/chrp/Makefile b/arch/powerpc/platforms/chrp/Makefile
+index 4b3bfadc70fa..dc3465cc8bc6 100644
+--- a/arch/powerpc/platforms/chrp/Makefile
++++ b/arch/powerpc/platforms/chrp/Makefile
+@@ -1,3 +1,3 @@
+ obj-y				+= setup.o time.o pegasos_eth.o pci.o
+ obj-$(CONFIG_SMP)		+= smp.o
+-obj-$(CONFIG_NVRAM)		+= nvram.o
++obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index e66644e0fb40..e8e804289c8e 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -550,7 +550,7 @@ static void __init chrp_init_IRQ(void)
+ static void __init
+ chrp_init2(void)
+ {
+-#ifdef CONFIG_NVRAM
++#if IS_ENABLED(CONFIG_NVRAM)
+ 	chrp_nvram_init();
+ #endif
+ 
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 2e8221e20ee8..b47f49cf9c4d 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -316,8 +316,7 @@ static void __init pmac_setup_arch(void)
+ 	find_via_pmu();
+ 	smu_init();
+ 
+-#if defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE) || \
+-    defined(CONFIG_PPC64)
++#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
+ 	pmac_nvram_init();
+ #endif
+ #ifdef CONFIG_PPC32
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index ce9979529cf3..72866a004f07 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -244,25 +244,24 @@ source "drivers/char/hw_random/Kconfig"
+ 
+ config NVRAM
+ 	tristate "/dev/nvram support"
+-	depends on X86 || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
+-	default M68K
++	depends on X86 || HAVE_ARCH_NVRAM_OPS
++	default M68K || PPC
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/nvram
+ 	  with major number 10 and minor number 144 using mknod ("man mknod"),
+-	  you get read and write access to the extra bytes of non-volatile
+-	  memory in the real time clock (RTC), which is contained in every PC
+-	  and most Ataris.  The actual number of bytes varies, depending on the
+-	  nvram in the system, but is usually 114 (128-14 for the RTC).
 -
--static ssize_t write_nvram(struct file *file, const char __user *buf,
--			   size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	const char __user *p = buf;
--	char c;
--
--	if (!access_ok(buf, count))
--		return -EFAULT;
--	if (*ppos >= nvram_len)
--		return 0;
--	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
--		if (__get_user(c, p))
--			return -EFAULT;
--		nvram_write_byte(c, i);
--	}
--	*ppos = i;
--	return p - buf;
--}
--
--static int nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--{
--	switch(cmd) {
--#ifdef CONFIG_PPC_PMAC
--	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
--		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
--	case IOC_NVRAM_GET_OFFSET: {
--		int part, offset;
--
--		if (!machine_is(powermac))
--			return -EINVAL;
--		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
--			return -EFAULT;
--		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
--			return -EINVAL;
--		offset = pmac_get_partition(part);
--		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
--			return -EFAULT;
--		break;
--	}
--#endif /* CONFIG_PPC_PMAC */
--	case IOC_NVRAM_SYNC:
--		nvram_sync();
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static long nvram_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--{
--	int ret;
--
--	mutex_lock(&nvram_mutex);
--	ret = nvram_ioctl(file, cmd, arg);
--	mutex_unlock(&nvram_mutex);
--
--	return ret;
--}
--
--const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= nvram_llseek,
--	.read		= read_nvram,
--	.write		= write_nvram,
--	.unlocked_ioctl	= nvram_unlocked_ioctl,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
--int __init nvram_init(void)
--{
--	int ret = 0;
--
--	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
--		NVRAM_VERSION);
--	ret = misc_register(&nvram_dev);
--	if (ret != 0)
--		goto out;
--
--	nvram_len = nvram_get_size();
--	if (nvram_len < 0)
--		nvram_len = NVRAM_SIZE;
--
--out:
--	return ret;
--}
--
--void __exit nvram_cleanup(void)
--{
--        misc_deregister( &nvram_dev );
--}
--
--module_init(nvram_init);
--module_exit(nvram_cleanup);
--MODULE_LICENSE("GPL");
+-	  This memory is conventionally called "CMOS RAM" on PCs and "NVRAM"
+-	  on Ataris. /dev/nvram may be used to view settings there, or to
+-	  change them (with some utility). It could also be used to frequently
++	  you get read and write access to the non-volatile memory.
++
++	  /dev/nvram may be used to view settings in NVRAM or to change them
++	  (with some utility). It could also be used to frequently
+ 	  save a few bits of very important data that may not be lost over
+ 	  power-off and for which writing to disk is too insecure. Note
+ 	  however that most NVRAM space in a PC belongs to the BIOS and you
+ 	  should NEVER idly tamper with it. See Ralf Brown's interrupt list
+ 	  for a guide to the use of CMOS bytes by your BIOS.
+ 
++	  This memory is conventionally called "NVRAM" on PowerPC machines,
++	  "CMOS RAM" on PCs, "NVRAM" on Ataris and "PRAM" on Macintoshes.
++
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called nvram.
+ 
+diff --git a/include/linux/nvram.h b/include/linux/nvram.h
+index 9e3a957c8f1f..d29d9c93a927 100644
+--- a/include/linux/nvram.h
++++ b/include/linux/nvram.h
+@@ -5,6 +5,10 @@
+ #include <linux/errno.h>
+ #include <uapi/linux/nvram.h>
+ 
++#ifdef CONFIG_PPC
++#include <asm/machdep.h>
++#endif
++
+ /**
+  * struct nvram_ops - NVRAM functionality made available to drivers
+  * @read: validate checksum (if any) then load a range of bytes from NVRAM
+@@ -42,6 +46,8 @@ extern const struct nvram_ops arch_nvram_ops;
+ static inline ssize_t nvram_get_size(void)
+ {
+ #ifdef CONFIG_PPC
++	if (ppc_md.nvram_size)
++		return ppc_md.nvram_size();
+ #else
+ 	if (arch_nvram_ops.get_size)
+ 		return arch_nvram_ops.get_size();
+@@ -52,6 +58,8 @@ static inline ssize_t nvram_get_size(void)
+ static inline unsigned char nvram_read_byte(int addr)
+ {
+ #ifdef CONFIG_PPC
++	if (ppc_md.nvram_read_val)
++		return ppc_md.nvram_read_val(addr);
+ #else
+ 	if (arch_nvram_ops.read_byte)
+ 		return arch_nvram_ops.read_byte(addr);
+@@ -62,6 +70,8 @@ static inline unsigned char nvram_read_byte(int addr)
+ static inline void nvram_write_byte(unsigned char val, int addr)
+ {
+ #ifdef CONFIG_PPC
++	if (ppc_md.nvram_write_val)
++		ppc_md.nvram_write_val(addr, val);
+ #else
+ 	if (arch_nvram_ops.write_byte)
+ 		arch_nvram_ops.write_byte(val, addr);
+@@ -98,15 +108,25 @@ static inline ssize_t nvram_write_bytes(char *buf, size_t count, loff_t *ppos)
+ 
+ static inline ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+ {
++#ifdef CONFIG_PPC
++	if (ppc_md.nvram_read)
++		return ppc_md.nvram_read(buf, count, ppos);
++#else
+ 	if (arch_nvram_ops.read)
+ 		return arch_nvram_ops.read(buf, count, ppos);
++#endif
+ 	return nvram_read_bytes(buf, count, ppos);
+ }
+ 
+ static inline ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
+ {
++#ifdef CONFIG_PPC
++	if (ppc_md.nvram_write)
++		return ppc_md.nvram_write(buf, count, ppos);
++#else
+ 	if (arch_nvram_ops.write)
+ 		return arch_nvram_ops.write(buf, count, ppos);
++#endif
+ 	return nvram_write_bytes(buf, count, ppos);
+ }
+ 
 -- 
 2.19.2
 
