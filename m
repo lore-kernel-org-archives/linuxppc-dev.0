@@ -2,23 +2,24 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF58C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:36:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4800C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:37:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D91920859
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:36:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D91920859
+	by mail.kernel.org (Postfix) with ESMTPS id 3586420859
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:37:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3586420859
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dyG72WfMzDqPK
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:36:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dyHr2hJszDqM9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:37:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,17 +28,20 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyF2lMxzDqWw
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyF3MzBzDqX7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:28 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id 2C83329E69; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
+ id 6921A29E6F; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Message-Id: <c5050570b7659d8094c5fccbb63c153357079062.1547525936.git.fthain@telegraphics.com.au>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Joshua Thompson <funaho@jurai.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <95b208ccdb3276ad6a0a2aacc5de828550a8a024.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 07/22] char/nvram: Adopt arch_nvram_ops
+Subject: [PATCH v9 12/22] m68k/mac: Use macros for RTC accesses not magic
+ numbers
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,180 +60,133 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-NVRAMs on different platforms and architectures have different attributes
-and access methods. E.g. some platforms have byte-at-a-time accessor
-functions while others have byte-range accessor functions. Some have
-checksum functionality while others do not. By calling ops struct methods
-via the common wrapper functions, the nvram module and other drivers can
-make use of the available NVRAM functionality in a portable way.
+This is intended to improve code style and not affect code behaviour.
 
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
-It might be nice if the NVRAM Kconfig symbol depended only on
-HAVE_ARCH_NVRAM_OPS and all the x86 code here were moved to arch/x86.
-This driver would then be more "generic". However, that x86 code would
-have to be built-in when used by thinkpad_acpi or else a new module
-would have to be added to arch/x86 too. Better to avoid that bloat
-because most x86 platforms won't benefit.
+ arch/m68k/mac/misc.c | 59 ++++++++++++++++++++++++++++++--------------
+ 1 file changed, 41 insertions(+), 18 deletions(-)
 
-Changed since v8:
- - Added kernel-doc comment describing the nvram_ops methods.
- - Renamed static nvram_* functions to avoid name collisions.
- - Converted arch_nvram_ops method calls to nvram.h wrapper function calls.
----
- drivers/char/nvram.c  | 30 ++++++++++++++++++++++++------
- include/linux/nvram.h | 32 ++++++++++++++++++++++++++++++++
- 2 files changed, 56 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index c98775bfd896..2df391f78986 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -52,9 +52,11 @@ static DEFINE_MUTEX(nvram_mutex);
- static DEFINE_SPINLOCK(nvram_state_lock);
- static int nvram_open_cnt;	/* #times opened */
- static int nvram_open_mode;	/* special open modes */
-+static ssize_t nvram_size;
- #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
- #define NVRAM_EXCL		2 /* opened with O_EXCL */
- 
-+#ifdef CONFIG_X86
- /*
-  * These functions are provided to be called internally or by other parts of
-  * the kernel. It's up to the caller to ensure correct checksum before reading
-@@ -145,6 +147,19 @@ void nvram_set_checksum(void)
- }
- #endif  /*  0  */
- 
-+static ssize_t pc_nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
-+}
-+
-+const struct nvram_ops arch_nvram_ops = {
-+	.read_byte      = pc_nvram_read_byte,
-+	.write_byte     = pc_nvram_write_byte,
-+	.get_size       = pc_nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+#endif /* CONFIG_X86 */
-+
- /*
-  * The are the file operation function for user access to /dev/nvram
-  */
-@@ -152,7 +167,7 @@ void nvram_set_checksum(void)
- static loff_t nvram_misc_llseek(struct file *file, loff_t offset, int origin)
- {
- 	return generic_file_llseek_size(file, offset, origin, MAX_LFS_FILESIZE,
--					NVRAM_BYTES);
-+					nvram_size);
- }
- 
- static ssize_t nvram_misc_read(struct file *file, char __user *buf,
-@@ -303,8 +318,7 @@ static int nvram_misc_release(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--#ifdef CONFIG_PROC_FS
--
-+#if defined(CONFIG_X86) && defined(CONFIG_PROC_FS)
- static const char * const floppy_types[] = {
- 	"none", "5.25'' 360k", "5.25'' 1.2M", "3.5'' 720k", "3.5'' 1.44M",
- 	"3.5'' 2.88M", "3.5'' 2.88M"
-@@ -394,7 +408,7 @@ static int nvram_proc_read(struct seq_file *seq, void *offset)
- 
- 	return 0;
- }
--#endif /* CONFIG_PROC_FS */
-+#endif /* CONFIG_X86 && CONFIG_PROC_FS */
- 
- static const struct file_operations nvram_misc_fops = {
- 	.owner		= THIS_MODULE,
-@@ -416,13 +430,17 @@ static int __init nvram_module_init(void)
- {
- 	int ret;
- 
-+	nvram_size = nvram_get_size();
-+	if (nvram_size < 0)
-+		return nvram_size;
-+
- 	ret = misc_register(&nvram_misc);
- 	if (ret) {
- 		pr_err("nvram: can't misc_register on minor=%d\n", NVRAM_MINOR);
- 		return ret;
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index 78c807025436..af000a015f68 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -136,6 +136,21 @@ static void via_rtc_send(__u8 data)
  	}
+ }
  
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_X86) && defined(CONFIG_PROC_FS)
- 	if (!proc_create_single("driver/nvram", 0, NULL, nvram_proc_read)) {
- 		pr_err("nvram: can't create /proc/driver/nvram\n");
- 		misc_deregister(&nvram_misc);
-@@ -436,7 +454,7 @@ static int __init nvram_module_init(void)
- 
- static void __exit nvram_module_exit(void)
- {
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_X86) && defined(CONFIG_PROC_FS)
- 	remove_proc_entry("driver/nvram", NULL);
- #endif
- 	misc_deregister(&nvram_misc);
-diff --git a/include/linux/nvram.h b/include/linux/nvram.h
-index 79431dab87a1..bb4ea8cc6ea6 100644
---- a/include/linux/nvram.h
-+++ b/include/linux/nvram.h
-@@ -5,8 +5,30 @@
- #include <linux/errno.h>
- #include <uapi/linux/nvram.h>
- 
-+/**
-+ * struct nvram_ops - NVRAM functionality made available to drivers
-+ * @read: validate checksum (if any) then load a range of bytes from NVRAM
-+ * @write: store a range of bytes to NVRAM then update checksum (if any)
-+ * @read_byte: load a single byte from NVRAM
-+ * @write_byte: store a single byte to NVRAM
-+ * @get_size: return the fixed number of bytes in the NVRAM
-+ *
-+ * Architectures which provide an nvram ops struct need not implement all
-+ * of these methods. If the NVRAM hardware can be accessed only one byte
-+ * at a time then it may be sufficient to provide .read_byte and .write_byte.
-+ * If the NVRAM has a checksum (and it is to be checked) the .read and
-+ * .write methods can be used to implement that efficiently.
-+ *
-+ * Portable drivers may use the wrapper functions defined here.
-+ * The nvram_read() and nvram_write() functions call the .read and .write
-+ * methods when available and fall back on the .read_byte and .write_byte
-+ * methods otherwise.
++/*
++ * These values can be found in Inside Macintosh vol. III ch. 2
++ * which has a description of the RTC chip in the original Mac.
 + */
 +
- struct nvram_ops {
- 	ssize_t         (*get_size)(void);
-+	unsigned char   (*read_byte)(int);
-+	void            (*write_byte)(unsigned char, int);
- 	ssize_t         (*read)(char *, size_t, loff_t *);
- 	ssize_t         (*write)(char *, size_t, loff_t *);
- };
-@@ -25,11 +47,21 @@ static inline ssize_t nvram_get_size(void)
++#define RTC_FLG_READ            BIT(7)
++#define RTC_FLG_WRITE_PROTECT   BIT(7)
++#define RTC_CMD_READ(r)         (RTC_FLG_READ | (r << 2))
++#define RTC_CMD_WRITE(r)        (r << 2)
++#define RTC_REG_SECONDS_0       0
++#define RTC_REG_SECONDS_1       1
++#define RTC_REG_SECONDS_2       2
++#define RTC_REG_SECONDS_3       3
++#define RTC_REG_WRITE_PROTECT   13
++
+ /*
+  * Execute a VIA PRAM/RTC command. For read commands
+  * data should point to a one-byte buffer for the
+@@ -145,13 +160,17 @@ static void via_rtc_send(__u8 data)
+  * This function disables all interrupts while running.
+  */
  
- static inline unsigned char nvram_read_byte(int addr)
+-static void via_pram_command(int command, __u8 *data)
++static void via_rtc_command(int command, __u8 *data)
  {
-+#ifdef CONFIG_PPC
-+#else
-+	if (arch_nvram_ops.read_byte)
-+		return arch_nvram_ops.read_byte(addr);
-+#endif
- 	return 0xFF;
+ 	unsigned long flags;
+ 	int is_read;
+ 
+ 	local_irq_save(flags);
+ 
++	/* The least significant bits must be 0b01 according to Inside Mac */
++
++	command = (command & ~3) | 1;
++
+ 	/* Enable the RTC and make sure the strobe line is high */
+ 
+ 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
+@@ -159,10 +178,10 @@ static void via_pram_command(int command, __u8 *data)
+ 	if (command & 0xFF00) {		/* extended (two-byte) command */
+ 		via_rtc_send((command & 0xFF00) >> 8);
+ 		via_rtc_send(command & 0xFF);
+-		is_read = command & 0x8000;
++		is_read = command & (RTC_FLG_READ << 8);
+ 	} else {			/* one-byte command */
+ 		via_rtc_send(command);
+-		is_read = command & 0x80;
++		is_read = command & RTC_FLG_READ;
+ 	}
+ 	if (is_read) {
+ 		*data = via_rtc_recv();
+@@ -201,10 +220,10 @@ static time64_t via_read_time(void)
+ 	} result, last_result;
+ 	int count = 1;
+ 
+-	via_pram_command(0x81, &last_result.cdata[3]);
+-	via_pram_command(0x85, &last_result.cdata[2]);
+-	via_pram_command(0x89, &last_result.cdata[1]);
+-	via_pram_command(0x8D, &last_result.cdata[0]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0), &last_result.cdata[3]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1), &last_result.cdata[2]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2), &last_result.cdata[1]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3), &last_result.cdata[0]);
+ 
+ 	/*
+ 	 * The NetBSD guys say to loop until you get the same reading
+@@ -212,10 +231,14 @@ static time64_t via_read_time(void)
+ 	 */
+ 
+ 	while (1) {
+-		via_pram_command(0x81, &result.cdata[3]);
+-		via_pram_command(0x85, &result.cdata[2]);
+-		via_pram_command(0x89, &result.cdata[1]);
+-		via_pram_command(0x8D, &result.cdata[0]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0),
++		                &result.cdata[3]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1),
++		                &result.cdata[2]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2),
++		                &result.cdata[1]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3),
++		                &result.cdata[0]);
+ 
+ 		if (result.idata == last_result.idata)
+ 			return (time64_t)result.idata - RTC_OFFSET;
+@@ -254,18 +277,18 @@ static void via_set_rtc_time(struct rtc_time *tm)
+ 	/* Clear the write protect bit */
+ 
+ 	temp = 0x55;
+-	via_pram_command(0x35, &temp);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ 
+ 	data.idata = lower_32_bits(time + RTC_OFFSET);
+-	via_pram_command(0x01, &data.cdata[3]);
+-	via_pram_command(0x05, &data.cdata[2]);
+-	via_pram_command(0x09, &data.cdata[1]);
+-	via_pram_command(0x0D, &data.cdata[0]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_0), &data.cdata[3]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_1), &data.cdata[2]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_2), &data.cdata[1]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_3), &data.cdata[0]);
+ 
+ 	/* Set the write protect bit */
+ 
+-	temp = 0xD5;
+-	via_pram_command(0x35, &temp);
++	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
  }
  
- static inline void nvram_write_byte(unsigned char val, int addr)
- {
-+#ifdef CONFIG_PPC
-+#else
-+	if (arch_nvram_ops.write_byte)
-+		arch_nvram_ops.write_byte(val, addr);
-+#endif
- }
- 
- static inline ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+ static void via_shutdown(void)
 -- 
 2.19.2
 
