@@ -2,82 +2,54 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B09CDC43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 13:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46E3EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:13:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DBBA520657
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 13:58:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="RrLLUPfX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DBBA520657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id C608520656
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 14:13:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C608520656
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fBlL1l0HzDqDV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 00:58:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fC3j5VWYzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 01:13:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5302::7; helo=mo6-p02-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="RrLLUPfX"; 
- dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::7])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fBj13HQHzDqdb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 00:56:52 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1547560608;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=qjQYj2poIqFNPGRwB16+nYsywTx1PQvvhTI5rvcaBgI=;
- b=RrLLUPfXurj0+YXCgH50VklEz+dEeI8cf8rkCHM3Xm6pQtWP1e9yR6TyHQxU1kQB0d
- p6riTy+KGFyJcbcqySmKH8tgMKtWXYyqfyyMVCBle227nXoISTsNt4HJ2U82XF0GPJw4
- 3xZ9NgQBlgCfLL1/lKJNRP7L2vQX03eF3W4ZWF5WcBD5/2vo2Ygz32tcDt3tQ6lKkKvJ
- DzEgfUgS6YdzsBEbVNttGrlDPoKSumSg9mne2pM/a+kdGGH986t+9e0mP8qhK7iIMVaC
- PG2WbYDlgHgfdvNwc4aPvqcnCxyVw3pexFXwbp/iLEts1r5wuO+AAuHmoV2dPlYaKl2Z
- jC3Q==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkNi0C2kzEbDQg0vrQvOCYvo/qC"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:25bb:7249:5b2a:1f0]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0FDuYsN4
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Tue, 15 Jan 2019 14:56:34 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-To: Christoph Hellwig <hch@lst.de>
-References: <008c981e-bdd2-21a7-f5f7-c57e4850ae9a@xenosoft.de>
- <20190103073622.GA24323@lst.de>
- <71A251A5-FA06-4019-B324-7AED32F7B714@xenosoft.de>
- <1b0c5c21-2761-d3a3-651b-3687bb6ae694@xenosoft.de>
- <3504ee70-02de-049e-6402-2d530bf55a84@xenosoft.de>
- <23284859-bf0a-9cd5-a480-2a7fd7802056@xenosoft.de>
- <075f70e3-7a4a-732f-b501-05a1a8e3c853@xenosoft.de>
- <b04d08ea-61f9-3212-b9a3-ad79e3b8bd05@xenosoft.de>
- <21f72a6a-9095-7034-f169-95e876228b2a@xenosoft.de>
- <27148ac2-2a92-5536-d886-2c0971ab43d9@xenosoft.de>
- <20190115133558.GA29225@lst.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <685f0c06-af1b-0bec-ac03-f9bf1f7a2b35@xenosoft.de>
-Date: Tue, 15 Jan 2019 14:56:34 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43fC2167WGzDqVV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 01:11:36 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8B198A78;
+ Tue, 15 Jan 2019 06:11:34 -0800 (PST)
+Received: from [10.163.1.4] (unknown [10.163.1.4])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7FFAC3F739;
+ Tue, 15 Jan 2019 06:11:25 -0800 (PST)
+Subject: Re: [PATCH] mm: Introduce GFP_PGTABLE
+To: Michal Hocko <mhocko@kernel.org>
+References: <1547288798-10243-1-git-send-email-anshuman.khandual@arm.com>
+ <20190113173555.GC1578@dhcp22.suse.cz>
+ <f9f333a5-5533-996a-dc8e-1ff1096c1d19@arm.com>
+ <20190114070137.GB21345@dhcp22.suse.cz>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Message-ID: <a81dd27a-b7d1-ddad-e104-4ce51699ac3d@arm.com>
+Date: Tue, 15 Jan 2019 19:41:24 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20190115133558.GA29225@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+In-Reply-To: <20190114070137.GB21345@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,67 +61,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvmarm@lists.cs.columbia.edu,
+ linux@armlinux.org.uk, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com,
+ marc.zyngier@arm.com, rppt@linux.vnet.ibm.com, shakeelb@google.com,
+ kirill@shutemov.name, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
+ christoffer.dall@arm.com, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15 January 2019 at 2:35PM, Christoph Hellwig wrote:
-> On Tue, Jan 15, 2019 at 11:55:25AM +0100, Christian Zigotzky wrote:
->> Next step: 21074ef03c0816ae158721a78cabe9035938dddd (powerpc/dma: use the
->> generic direct mapping bypass)
+
+
+On 01/14/2019 12:31 PM, Michal Hocko wrote:
+> On Mon 14-01-19 09:30:55, Anshuman Khandual wrote:
 >>
->> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
 >>
->> git checkout 21074ef03c0816ae158721a78cabe9035938dddd
+>> On 01/13/2019 11:05 PM, Michal Hocko wrote:
+>>> On Sat 12-01-19 15:56:38, Anshuman Khandual wrote:
+>>>> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
+>>>> __GFP_ZERO) and using it for allocating page table pages. This causes some
+>>>> code duplication which can be easily avoided. GFP_KERNEL allocated and
+>>>> cleared out pages (__GFP_ZERO) are required for page tables on any given
+>>>> architecture. This creates a new generic GFP flag flag which can be used
+>>>> for any page table page allocation. Does not cause any functional change.
+>>>
+>>> I agree that some unification is due but GFP_PGTABLE is not something to
+>>> expose in generic gfp.h IMHO. It just risks an abuse. I would be looking
 >>
->> I was able to compile the kernel for the AmigaOne X1000 (Nemo board with PA
->> Semi PA6T-1682M SoC). It boots but the PA Semi onboard ethernet doesn't
->> work.
-> Thanks.  But we are exactly missing the steps that are relevant.  I've
-> pushed a fixed up powerpc-dma.6 tree, which will only change starting from
-> the first commit that didn't link.
->
-> The first commit that changed from the old one is this one:
->
-> http://git.infradead.org/users/hch/misc.git/commitdiff/257002094bc5935dd63207a380d9698ab81f0775
->
-> which was that one that your compile failed on first.
->
-> Thanks again for all your work!
->
-Thank you! I tried the commit 240d7ecd7f6fa62e074e8a835e620047954f0b28 
-(powerpc/dma: use the dma-direct allocator for coherent platforms) again.
+>> Why would you think that it risks an abuse ? It does not create new semantics
+>> of allocation in the buddy. Its just uses existing GFP_KERNEL allocation which
+>> is then getting zeroed out. The risks (if any) is exactly same as GFP_KERNEL.
+> 
+> Beucase my experience just tells me that people tend to use whatever
+> they find and name fits what they think they need.
+> 
+>>> at providing asm-generic implementation and reuse it to remove the code
+>>
+>> Does that mean GFP_PGTABLE can be created but not in gfp.h but in some other
+>> memory related header file ?
+> 
+> I would just keep it close to its users. If that is a single arch
+> generic place then only better. But I suspect some arches have special
+> requirements.
 
-git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+We can move the definition into include/asm-generic/pgtable.h which can be
+used by all archs. If there any special requirements those can be added on
+this generic and common minimum allocation flag. The minimum required flag
+should not be duplicated every where.
 
-git checkout 240d7ecd7f6fa62e074e8a835e620047954f0b28
+> 
+>>> duplication. But I haven't tried that to know that it will work out due
+>>> to small/subtle differences between arches.
+>>
+>> IIUC from the allocation perspective GFP_ACCOUNT is the only thing which gets
+>> added with GFP_PGTABLE for user page table for memcg accounting purpose. There
+>> does not seem to be any other differences unless I am missing something.
+> 
+> It's been some time since I've checked the last time. Some arches were
+> using GPF_REPEAT (__GFP_RETRY_MAYFAIL) back then. I have removed most of
+> those but some were doing a higher order allocations so they probably
+> have stayed.
 
-I modified the 'dma.c' patch because of the undefined references to 
-'__dma_nommu_free_coherent' and '__dma_nommu_alloc_coherent':
+A simple grep shows that still there are some places which use the flag
+__GFP_RETRY_MAYFAIL. But that can be added on GFP_PGTABLE for these archs.
 
----
-
-@@ -163,8 +99,13 @@ static inline void dma_nommu_sync_single(struct 
-device *dev,
-  #endif
-
-  const struct dma_map_ops dma_nommu_ops = {
-+       .alloc                          = dma_direct_alloc,
-+       .free                           = dma_direct_free,
-         .map_sg                         = dma_nommu_map_sg,
-         .unmap_sg                       = dma_nommu_unmap_sg,
-         .dma_supported                  = dma_direct_supported,
-
----
-
-The X1000 boots and the PASEMI onboard ethernet works! X5000 (P5020 
-board): U-Boot loads the kernel and the dtb file. Then the kernel starts 
-but it doesn't find any hard disks (partitions).
-
--- Christian
-
+arch/nds32/include/asm/pgalloc.h:           (pte_t *) __get_free_page(GFP_KERNEL | __GFP_RETRY_MAYFAIL |
+arch/nds32/include/asm/pgalloc.h:       pte = alloc_pages(GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO, 0);
+arch/powerpc/include/asm/book3s/64/pgalloc.h:   page = alloc_pages(pgtable_gfp_flags(mm, PGALLOC_GFP | __GFP_RETRY_MAYFAIL),
+arch/powerpc/kvm/book3s_64_mmu_hv.c:            hpt = __get_free_pages(GFP_KERNEL|__GFP_ZERO|__GFP_RETRY_MAYFAIL
+arch/riscv/include/asm/pgalloc.h:               GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
+arch/riscv/include/asm/pgalloc.h:               GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
+arch/riscv/include/asm/pgalloc.h:       pte = alloc_page(GFP_KERNEL | __GFP_RETRY_MAYFAIL | __GFP_ZERO);
+arch/sparc/kernel/mdesc.c:      base = kmalloc(handle_size + 15, GFP_KERNEL | __GFP_RETRY_MAYFAIL);
