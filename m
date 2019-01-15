@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A60C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:47:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FF71C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:48:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4E5420651
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:47:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4E5420651
+	by mail.kernel.org (Postfix) with ESMTPS id A727220651
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 04:48:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A727220651
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43dyVV0MfQzDqc1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:46:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43dyXH07YSzDqbg
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 15:48:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
  (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
@@ -27,17 +27,19 @@ Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=telegraphics.com.au
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43dxyF63JHzDqX8
+ by lists.ozlabs.org (Postfix) with ESMTP id 43dxyF5dk2zDqWt
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 15:22:29 +1100 (AEDT)
 Received: by kvm5.telegraphics.com.au (Postfix, from userid 502)
- id A143529E81; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
+ id 77C5729E7E; Mon, 14 Jan 2019 23:22:24 -0500 (EST)
 To: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Message-Id: <db2b7560f081f6087db96d1714bd0fcc348798a3.1547525936.git.fthain@telegraphics.com.au>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Joshua Thompson <funaho@jurai.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Message-Id: <7fecc680c01b3d47eaf7eca741ae01636aa53a8d.1547525936.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 References: <cover.1547525936.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v9 16/22] char/nvram: Add "devname:nvram" module alias
+Subject: [PATCH v9 13/22] m68k/mac: Fix PRAM accessors
 Date: Tue, 15 Jan 2019 15:18:56 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -56,20 +58,115 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+PMU-based m68k Macs pre-date PowerMac-style NVRAM. Use the appropriate
+PMU commands. Also implement the missing XPRAM accessors for VIA-based
+Macs.
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/char/nvram.c | 1 +
- 1 file changed, 1 insertion(+)
+Changed since v7:
+ - Revised PMU response decoding due to via-pmu68k driver replacement.
+---
+ arch/m68k/mac/misc.c     | 43 ++++++++++++++++++++++++++++++----------
+ include/uapi/linux/pmu.h |  2 ++
+ 2 files changed, 35 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/char/nvram.c b/drivers/char/nvram.c
-index adcc213c331e..c9e295d73dc5 100644
---- a/drivers/char/nvram.c
-+++ b/drivers/char/nvram.c
-@@ -503,3 +503,4 @@ module_exit(nvram_module_exit);
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index af000a015f68..d016ca2e0d10 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -66,23 +66,22 @@ static unsigned char pmu_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
  
- MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
-+MODULE_ALIAS("devname:nvram");
+-	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
+-			(offset >> 8) & 0xFF, offset & 0xFF) < 0)
++	if (pmu_request(&req, NULL, 3, PMU_READ_XPRAM,
++	                offset & 0xFF, 1) < 0)
+ 		return 0;
+-	while (!req.complete)
+-		pmu_poll();
+-	return req.reply[3];
++	pmu_wait_complete(&req);
++
++	return req.reply[0];
+ }
+ 
+ static void pmu_pram_write_byte(unsigned char data, int offset)
+ {
+ 	struct adb_request req;
+ 
+-	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
+-			(offset >> 8) & 0xFF, offset & 0xFF, data) < 0)
++	if (pmu_request(&req, NULL, 4, PMU_WRITE_XPRAM,
++	                offset & 0xFF, 1, data) < 0)
+ 		return;
+-	while (!req.complete)
+-		pmu_poll();
++	pmu_wait_complete(&req);
+ }
+ #endif /* CONFIG_ADB_PMU */
+ 
+@@ -151,6 +150,16 @@ static void via_rtc_send(__u8 data)
+ #define RTC_REG_SECONDS_3       3
+ #define RTC_REG_WRITE_PROTECT   13
+ 
++/*
++ * Inside Mac has no information about two-byte RTC commands but
++ * the MAME/MESS source code has the essentials.
++ */
++
++#define RTC_REG_XPRAM           14
++#define RTC_CMD_XPRAM_READ      (RTC_CMD_READ(RTC_REG_XPRAM) << 8)
++#define RTC_CMD_XPRAM_WRITE     (RTC_CMD_WRITE(RTC_REG_XPRAM) << 8)
++#define RTC_CMD_XPRAM_ARG(a)    (((a & 0xE0) << 3) | ((a & 0x1F) << 2))
++
+ /*
+  * Execute a VIA PRAM/RTC command. For read commands
+  * data should point to a one-byte buffer for the
+@@ -198,11 +207,25 @@ static void via_rtc_command(int command, __u8 *data)
+ 
+ static unsigned char via_pram_read_byte(int offset)
+ {
+-	return 0;
++	unsigned char temp;
++
++	via_rtc_command(RTC_CMD_XPRAM_READ | RTC_CMD_XPRAM_ARG(offset), &temp);
++
++	return temp;
+ }
+ 
+ static void via_pram_write_byte(unsigned char data, int offset)
+ {
++	unsigned char temp;
++
++	temp = 0x55;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
++
++	temp = data;
++	via_rtc_command(RTC_CMD_XPRAM_WRITE | RTC_CMD_XPRAM_ARG(offset), &temp);
++
++	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ }
+ 
+ /*
+diff --git a/include/uapi/linux/pmu.h b/include/uapi/linux/pmu.h
+index 97256f90e6df..f2fc1bd80017 100644
+--- a/include/uapi/linux/pmu.h
++++ b/include/uapi/linux/pmu.h
+@@ -19,7 +19,9 @@
+ #define PMU_POWER_CTRL		0x11	/* control power of some devices */
+ #define PMU_ADB_CMD		0x20	/* send ADB packet */
+ #define PMU_ADB_POLL_OFF	0x21	/* disable ADB auto-poll */
++#define PMU_WRITE_XPRAM		0x32	/* write eXtended Parameter RAM */
+ #define PMU_WRITE_NVRAM		0x33	/* write non-volatile RAM */
++#define PMU_READ_XPRAM		0x3a	/* read eXtended Parameter RAM */
+ #define PMU_READ_NVRAM		0x3b	/* read non-volatile RAM */
+ #define PMU_SET_RTC		0x30	/* set real-time clock */
+ #define PMU_READ_RTC		0x38	/* read real-time clock */
 -- 
 2.19.2
 
