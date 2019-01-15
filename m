@@ -2,47 +2,77 @@ Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 981F6C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:42:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37713C43387
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:43:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2277F20656
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:42:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2277F20656
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id A1DAE20859
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 06:43:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="Ypb9IXpq"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1DAE20859
+Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43f13H6KBvzDqf4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 17:42:03 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43f15D3Kf0zDqc3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 17:43:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=google.com
+ (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
+ envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=google.com header.i=@google.com header.b="Ypb9IXpq"; 
+ dkim-atps=neutral
+Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
+ [IPv6:2607:f8b0:4864:20::d43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43f0zm6ZNjzDqdr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 17:39:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43f0zm4PK4z9s3q;
- Tue, 15 Jan 2019 17:39:00 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, Juliet Kim <minkim@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: Split CPU readd for single CPU systems
-In-Reply-To: <20190110210709.28750.54652.stgit@powerkvm6.aus.stglabs.ibm.com>
-References: <20190110210709.28750.54652.stgit@powerkvm6.aus.stglabs.ibm.com>
-Date: Tue, 15 Jan 2019 17:38:59 +1100
-Message-ID: <87k1j6zapo.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43f12C71SlzDqjG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 17:41:07 +1100 (AEDT)
+Received: by mail-io1-xd43.google.com with SMTP id t24so1283423ioi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2019 22:41:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=TkNY5HPD0ktz7aiARJ4ys+DVJnTbcayhI0qVYKg1E7U=;
+ b=Ypb9IXpqakd72fbgVbU1YPzcB/PiC6ZfpWT4ZQ9Jpw48f/k5tVU+9L1Ib+naRtdENp
+ It2nOy6k6LsLdH7MB5KQkGyXBZntbwljmJck+en4k4odEVz65GZ6rA4FVyUkkUjH0XOo
+ PzT/mUg2AF/DXngBWWXgFNFl8c7zQfBmu8CcDLixdr7ATCGpDNIIr6PdO1F6Dn3FnS1V
+ uNQijjMQMZvQzuPMxc7AgG5q+tqXFC0Xs1n+BsmncCWZfgwmrc17BEHnl9Ww1u6j3TsR
+ V4gJUVpa6Sjqa5RvT/On0MEcBroUmGbllozu7ZFqywUzpOnP6WbUG/u/2XzcalcxENGe
+ FPjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=TkNY5HPD0ktz7aiARJ4ys+DVJnTbcayhI0qVYKg1E7U=;
+ b=gDqkbl89UCM03SDhHPGDGU9H22uG1E0lCeOn8i/Lhz4psP5u2/TL6F2Ch6HhbCu+4O
+ C+Up38xfriCYP/U/HZftqJmXgnUzZ8qVRMUNuz2rVwqwUxefP/uxoxEUoJo+mPllZxy3
+ JzkoDSJx/LMg+0MNYSFB3IWa86Of1jKZXR9bLUTYRHjhbLNKRcWMLwmEuFMlkHe8qtUz
+ i6Yu4SoIuyY0pPsCotik5scQoyt97swD4Hl/olYHxW92vYPnFQpzG8y7X8/PsvM45iqI
+ MA/dDnTONZOCg2EBYNiu4NVgzOqMaXlU8sQ/3mcBQr/sm4G0Nqgd91eVdPo4dMjsqOuK
+ yYZw==
+X-Gm-Message-State: AJcUukeguZpIxzQQMMvLhzdpnE0gZfpKiEA5wz7f/utQuuqiick/5+jj
+ 6F7Vr+C1cbPRiRmnG4KbiD5fKpSVXm8r1yRz63Kv4w==
+X-Google-Smtp-Source: ALg8bN5V39EHF5H/wRSp6O++DJSHgYOjqDTd3PruCQkEAPCA1xGXLvPffRT8BfiDbQwvC5EMI63W2xJ9tIM27Vz1qlk=
+X-Received: by 2002:a6b:fa01:: with SMTP id p1mr1063581ioh.271.1547534465678; 
+ Mon, 14 Jan 2019 22:41:05 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20190115042017.13342-1-andrew.donnellan@au1.ibm.com>
+In-Reply-To: <20190115042017.13342-1-andrew.donnellan@au1.ibm.com>
+From: Dmitry Vyukov <dvyukov@google.com>
+Date: Tue, 15 Jan 2019 07:40:52 +0100
+Message-ID: <CACT4Y+ZBKWB1FdF9uiSu11-SpGVx0yy=OJaF9-R4u+Nrdy6e_Q@mail.gmail.com>
+Subject: Re: [RFC PATCH] powerpc: Enable kcov
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,419 +84,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mwb@linux.vnet.ibm.com, tlfalcon@linux.vnet.ibm.com,
- tyreld@linux.vnet.ibm.com
+Cc: syzkaller <syzkaller@googlegroups.com>, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> [FYI: Please post to linuxppc-dev mailing list when you are ready.
->       Good luck.]
-
-???
-
-I guess I'll ignore this and look at the other version you posted? :)
-
-cheers
-
-> We have encountered cases where DLPAR CPU 'readd' fails on single
-> CPU platforms, because the system needs a minimum amount of resources
-> to keep operating.  The current implementation attempts to add, and
-> remove all of the threads of a specified core at once, and will fail
-> if there is a problem removing any of the thread cpus.  In single CPU
-> platforms, the system must hold onto at least some resources to keep
-> operating i.e. at least one thread of a CPU.  So in such environments,
-> attempting to remove and add the single core and all of its CPU threads
-> in order to reset and flush system structures and/or caches fails.
+On Tue, Jan 15, 2019 at 5:20 AM Andrew Donnellan
+<andrew.donnellan@au1.ibm.com> wrote:
 >
-> This problem has been observed on PowerVM and qemu environments.
+> kcov provides kernel coverage data that's useful for fuzzing tools like
+> syzkaller.
 >
-> This change attempts to resolve such situations by breaking up the
-> DLPAR CPU 'readd' operation into multiple steps, performing the
-> remove+readd of the CPU threads until an error occurs, and then
-> continuing the 'readd' operation for the threads that could not be
-> removed during the first phase of the operation.
+> Wire up kcov support on powerpc. Disable kcov instrumentation on the same
+> files where we currently disable gcov and UBSan instrumentation.
 >
-> Requires: ("powerpc/pseries: Perform full re-add of CPU for topology update post-migration")
-> Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+Hi Andrew,
+
+The patch looks good to me. Any reason to mail it as RFC rather than
+final patch?
+
+Acked-by: Dmitry Vyukov <dvyukov@google.com>
+
 > ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |  187 ++++++++++++++++----------
->  1 file changed, 117 insertions(+), 70 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 97feb6e..b33e066 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -342,7 +342,8 @@ static void pseries_remove_processor(struct device_node *np)
->  	cpu_maps_update_done();
->  }
->  
-> -static int dlpar_online_cpu(struct device_node *dn)
-> +static int dlpar_online_cpu(struct device_node *dn, cpumask_t *whichcpus,
-> +				int partial)
->  {
->  	int rc = 0;
->  	unsigned int cpu;
-> @@ -359,6 +360,8 @@ static int dlpar_online_cpu(struct device_node *dn)
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
->  		thread = be32_to_cpu(intserv[i]);
-> +		if (partial && !cpumask_test_cpu(thread, whichcpus))
-> +			continue;
->  		for_each_present_cpu(cpu) {
->  			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
-> @@ -371,7 +374,6 @@ static int dlpar_online_cpu(struct device_node *dn)
->  			if (rc)
->  				goto out;
->  			cpu_maps_update_begin();
-> -
->  			break;
->  		}
->  		if (cpu == num_possible_cpus())
-> @@ -432,7 +434,10 @@ static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
->  	return found;
->  }
->  
-> -static ssize_t dlpar_cpu_add(u32 drc_index)
-> +static struct device_node *cpu_drc_index_to_dn(u32 drc_index);
-> +
-> +static ssize_t dlpar_cpu_add(u32 drc_index, cpumask_t *whichcpus,
-> +				bool partial)
->  {
->  	struct device_node *dn, *parent;
->  	int rc, saved_rc;
-> @@ -445,10 +450,12 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->  		return -ENODEV;
->  	}
->  
-> -	if (dlpar_cpu_exists(parent, drc_index)) {
-> -		of_node_put(parent);
-> -		pr_warn("CPU with drc index %x already exists\n", drc_index);
-> -		return -EINVAL;
-> +	if (!parent) {
-> +		if (dlpar_cpu_exists(parent, drc_index)) {
-> +			of_node_put(parent);
-> +			pr_warn("CPU with drc index %x already exists\n", drc_index);
-> +			return -EINVAL;
-> +		}
->  	}
->  
->  	if (!valid_cpu_drc_index(parent, drc_index)) {
-> @@ -457,49 +464,59 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->  		return -EINVAL;
->  	}
->  
-> -	rc = dlpar_acquire_drc(drc_index);
-> -	if (rc) {
-> -		pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
-> -			rc, drc_index);
-> -		of_node_put(parent);
-> -		return -EINVAL;
-> -	}
-> +	if (!partial) {
-> +		rc = dlpar_acquire_drc(drc_index);
-> +		if (rc) {
-> +			pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
-> +				rc, drc_index);
-> +			of_node_put(parent);
-> +			return -EINVAL;
-> +		}
->  
-> -	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
-> -	if (!dn) {
-> -		pr_warn("Failed call to configure-connector, drc index: %x\n",
-> -			drc_index);
-> -		dlpar_release_drc(drc_index);
-> -		of_node_put(parent);
-> -		return -EINVAL;
-> -	}
-> +		dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
-> +		if (!dn) {
-> +			pr_warn("Failed call to configure-connector, drc index: %x\n",
-> +				drc_index);
-> +			dlpar_release_drc(drc_index);
-> +			of_node_put(parent);
-> +			return -EINVAL;
-> +		}
->  
-> -	rc = dlpar_attach_node(dn, parent);
-> +		rc = dlpar_attach_node(dn, parent);
->  
-> -	/* Regardless we are done with parent now */
-> -	of_node_put(parent);
-> +		/* Regardless we are done with parent now */
-> +		of_node_put(parent);
->  
-> -	if (rc) {
-> -		saved_rc = rc;
-> -		pr_warn("Failed to attach node %pOFn, rc: %d, drc index: %x\n",
-> -			dn, rc, drc_index);
-> +		if (rc) {
-> +			saved_rc = rc;
-> +			pr_warn("Failed to attach node %pOFn, rc: %d, drc index: %x\n",
-> +				dn, rc, drc_index);
->  
-> -		rc = dlpar_release_drc(drc_index);
-> -		if (!rc)
-> -			dlpar_free_cc_nodes(dn);
-> +			rc = dlpar_release_drc(drc_index);
-> +			if (!rc)
-> +				dlpar_free_cc_nodes(dn);
->  
-> -		return saved_rc;
-> +			return saved_rc;
-> +		}
-> +	} else {
-> +		dn = cpu_drc_index_to_dn(drc_index);
-> +		if (!dn) {
-> +			pr_warn("Cannot find CPU (drc index %x) to add.\n", drc_index);
-> +			return -EINVAL;
-> +		}
->  	}
->  
-> -	rc = dlpar_online_cpu(dn);
-> +	rc = dlpar_online_cpu(dn, whichcpus, partial);
->  	if (rc) {
->  		saved_rc = rc;
->  		pr_warn("Failed to online cpu %pOFn, rc: %d, drc index: %x\n",
->  			dn, rc, drc_index);
->  
-> -		rc = dlpar_detach_node(dn);
-> -		if (!rc)
-> -			dlpar_release_drc(drc_index);
-> +		if (!partial || (cpumask_weight(whichcpus) == 0)) {
-> +			rc = dlpar_detach_node(dn);
-> +			if (!rc)
-> +				dlpar_release_drc(drc_index);
-> +		}
->  
->  		return saved_rc;
->  	}
-> @@ -509,7 +526,8 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->  	return rc;
->  }
->  
-> -static int dlpar_offline_cpu(struct device_node *dn)
-> +static int dlpar_offline_cpu(struct device_node *dn, cpumask_t *whichcpus,
-> +				int partial)
->  {
->  	int rc = 0;
->  	unsigned int cpu;
-> @@ -526,6 +544,8 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  	cpu_maps_update_begin();
->  	for (i = 0; i < nthreads; i++) {
->  		thread = be32_to_cpu(intserv[i]);
-> +		if (partial && cpumask_test_cpu(thread, whichcpus))
-> +			continue;
->  		for_each_present_cpu(cpu) {
->  			if (get_hard_smp_processor_id(cpu) != thread)
->  				continue;
-> @@ -542,8 +562,9 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  				if (rc)
->  					goto out;
->  				cpu_maps_update_begin();
-> +				if (whichcpus)
-> +					cpumask_set_cpu(cpu, whichcpus);
->  				break;
-> -
->  			}
->  
->  			/*
-> @@ -566,41 +587,45 @@ static int dlpar_offline_cpu(struct device_node *dn)
->  
->  }
->  
-> -static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
-> +static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index,
-> +				cpumask_t *whichcpus, bool partial)
->  {
->  	int rc;
->  
->  	pr_debug("Attempting to remove CPU %pOFn, drc index: %x\n",
->  		 dn, drc_index);
->  
-> -	rc = dlpar_offline_cpu(dn);
-> +	rc = dlpar_offline_cpu(dn, whichcpus, partial);
->  	if (rc) {
->  		pr_warn("Failed to offline CPU %pOFn, rc: %d\n", dn, rc);
->  		return -EINVAL;
->  	}
->  
-> -	rc = dlpar_release_drc(drc_index);
-> -	if (rc) {
-> -		pr_warn("Failed to release drc (%x) for CPU %pOFn, rc: %d\n",
-> -			drc_index, dn, rc);
-> -		dlpar_online_cpu(dn);
-> -		return rc;
-> -	}
-> +	if (!partial) {
-> +		rc = dlpar_release_drc(drc_index);
-> +		if (rc) {
-> +			pr_warn("Failed to release drc (%x) for CPU %pOFn, rc: %d\n",
-> +				drc_index, dn, rc);
-> +			dlpar_online_cpu(dn, whichcpus, partial);
-> +			return rc;
-> +		}
->  
-> -	rc = dlpar_detach_node(dn);
-> -	if (rc) {
-> -		int saved_rc = rc;
-> +		rc = dlpar_detach_node(dn);
-> +		if (rc) {
-> +			int saved_rc = rc;
->  
-> -		pr_warn("Failed to detach CPU %pOFn, rc: %d", dn, rc);
-> +			pr_warn("Failed to detach CPU %pOFn, rc: %d", dn, rc);
->  
-> -		rc = dlpar_acquire_drc(drc_index);
-> -		if (!rc)
-> -			dlpar_online_cpu(dn);
-> +			rc = dlpar_acquire_drc(drc_index);
-> +			if (!rc)
-> +				dlpar_online_cpu(dn, whichcpus, partial);
->  
-> -		return saved_rc;
-> +			return saved_rc;
-> +		}
-> +
-> +		pr_debug("Successfully removed CPU, drc index: %x\n", drc_index);
->  	}
->  
-> -	pr_debug("Successfully removed CPU, drc index: %x\n", drc_index);
->  	return 0;
->  }
->  
-> @@ -622,7 +647,8 @@ static struct device_node *cpu_drc_index_to_dn(u32 drc_index)
->  	return dn;
->  }
->  
-> -static int dlpar_cpu_remove_by_index(u32 drc_index)
-> +static int dlpar_cpu_remove_by_index(u32 drc_index, cpumask_t *whichcpus,
-> +					bool partial)
->  {
->  	struct device_node *dn;
->  	int rc;
-> @@ -634,7 +660,7 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
->  		return -ENODEV;
->  	}
->  
-> -	rc = dlpar_cpu_remove(dn, drc_index);
-> +	rc = dlpar_cpu_remove(dn, drc_index, whichcpus, partial);
->  	of_node_put(dn);
->  	return rc;
->  }
-> @@ -699,7 +725,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
->  	}
->  
->  	for (i = 0; i < cpus_to_remove; i++) {
-> -		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
-> +		rc = dlpar_cpu_remove_by_index(cpu_drcs[i], NULL, false);
->  		if (rc)
->  			break;
->  
-> @@ -710,7 +736,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
->  		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
->  
->  		for (i = 0; i < cpus_removed; i++)
-> -			dlpar_cpu_add(cpu_drcs[i]);
-> +			dlpar_cpu_add(cpu_drcs[i], NULL, false);
->  
->  		rc = -EINVAL;
->  	} else {
-> @@ -780,7 +806,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
->  	}
->  
->  	for (i = 0; i < cpus_to_add; i++) {
-> -		rc = dlpar_cpu_add(cpu_drcs[i]);
-> +		rc = dlpar_cpu_add(cpu_drcs[i], NULL, false);
->  		if (rc)
->  			break;
->  
-> @@ -791,7 +817,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
->  		pr_warn("CPU hot-add failed, removing any added CPUs\n");
->  
->  		for (i = 0; i < cpus_added; i++)
-> -			dlpar_cpu_remove_by_index(cpu_drcs[i]);
-> +			dlpar_cpu_remove_by_index(cpu_drcs[i], NULL, false);
->  
->  		rc = -EINVAL;
->  	} else {
-> @@ -807,16 +833,36 @@ int dlpar_cpu_readd(int cpu)
->  	struct device_node *dn;
->  	struct device *dev;
->  	u32 drc_index;
-> -	int rc;
-> +	const __be32 *intserv;
-> +	cpumask_t whichcpus;
-> +	int rc, len, nthreads;
->  
->  	dev = get_cpu_device(cpu);
->  	dn = dev->of_node;
->  
-> +	intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s", &len);
-> +	if (!intserv)
-> +		return -EINVAL;
-> +	nthreads = len / sizeof(u32);
-> +	cpumask_clear(&whichcpus);
-> +
->  	rc = of_property_read_u32(dn, "ibm,my-drc-index", &drc_index);
->  
-> -	rc = dlpar_cpu_remove_by_index(drc_index);
-> +	rc = dlpar_cpu_remove_by_index(drc_index, &whichcpus, false);
->  	if (!rc)
-> -		rc = dlpar_cpu_add(drc_index);
-> +		rc = dlpar_cpu_add(drc_index, &whichcpus, false);
-> +
-> +	if (cpumask_weight(&whichcpus) < nthreads) {
-> +		cpumask_t whichcpus2;
-> +
-> +		rc = dlpar_cpu_add(drc_index, &whichcpus, false);
-> +
-> +		cpumask_copy(&whichcpus2, &whichcpus);
-> +		dlpar_cpu_remove_by_index(drc_index, &whichcpus2, true);
-> +
-> +		cpumask_andnot(&whichcpus2, &whichcpus2, &whichcpus);
-> +		dlpar_cpu_add(drc_index, &whichcpus2, true);
-> +	}
->  
->  	return rc;
->  }
-> @@ -836,7 +882,8 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->  		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
->  			rc = dlpar_cpu_remove_by_count(count);
->  		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> -			rc = dlpar_cpu_remove_by_index(drc_index);
-> +			rc = dlpar_cpu_remove_by_index(drc_index,
-> +					NULL, false);
->  		else
->  			rc = -EINVAL;
->  		break;
-> @@ -844,7 +891,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->  		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
->  			rc = dlpar_cpu_add_by_count(count);
->  		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> -			rc = dlpar_cpu_add(drc_index);
-> +			rc = dlpar_cpu_add(drc_index, NULL, false);
->  		else
->  			rc = -EINVAL;
->  		break;
-> @@ -869,7 +916,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
->  	if (rc)
->  		return -EINVAL;
->  
-> -	rc = dlpar_cpu_add(drc_index);
-> +	rc = dlpar_cpu_add(drc_index, NULL, false);
->  
->  	return rc ? rc : count;
->  }
-> @@ -890,7 +937,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->  		return -EINVAL;
->  	}
->  
-> -	rc = dlpar_cpu_remove(dn, drc_index);
-> +	rc = dlpar_cpu_remove(dn, drc_index, NULL, false);
->  	of_node_put(dn);
->  
->  	return rc ? rc : count;
+> kcov looks like it's working okay, both kcovtrace and syzkaller seem to be
+> working. I did see some issues with compiling and booting kernels with gcc
+> 6.3 and earlier versions which disappeared when I upgraded to gcc 8.2, I
+> need to investigate that more.
+>
+> ---
+>  arch/powerpc/Kconfig                | 1 +
+>  arch/powerpc/kernel/Makefile        | 7 ++++++-
+>  arch/powerpc/kernel/trace/Makefile  | 3 ++-
+>  arch/powerpc/kernel/vdso32/Makefile | 1 +
+>  arch/powerpc/kernel/vdso64/Makefile | 1 +
+>  arch/powerpc/xmon/Makefile          | 1 +
+>  6 files changed, 12 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 2890d36eb531..d3698dae0e60 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -134,6 +134,7 @@ config PPC
+>         select ARCH_HAS_ELF_RANDOMIZE
+>         select ARCH_HAS_FORTIFY_SOURCE
+>         select ARCH_HAS_GCOV_PROFILE_ALL
+> +       select ARCH_HAS_KCOV
+>         select ARCH_HAS_PHYS_TO_DMA
+>         select ARCH_HAS_PMEM_API                if PPC64
+>         select ARCH_HAS_PTE_SPECIAL
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index cb7f0bb9ee71..961f44eabb65 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -142,16 +142,21 @@ endif
+>  obj-$(CONFIG_EPAPR_PARAVIRT)   += epapr_paravirt.o epapr_hcalls.o
+>  obj-$(CONFIG_KVM_GUEST)                += kvm.o kvm_emul.o
+>
+> -# Disable GCOV & sanitizers in odd or sensitive code
+> +# Disable GCOV, KCOV & sanitizers in odd or sensitive code
+>  GCOV_PROFILE_prom_init.o := n
+> +KCOV_INSTRUMENT_prom_init.o := n
+>  UBSAN_SANITIZE_prom_init.o := n
+>  GCOV_PROFILE_machine_kexec_64.o := n
+> +KCOV_INSTRUMENT_machine_kexec_64.o := n
+>  UBSAN_SANITIZE_machine_kexec_64.o := n
+>  GCOV_PROFILE_machine_kexec_32.o := n
+> +KCOV_INSTRUMENT_machine_kexec_32.o := n
+>  UBSAN_SANITIZE_machine_kexec_32.o := n
+>  GCOV_PROFILE_kprobes.o := n
+> +KCOV_INSTRUMENT_kprobes.o := n
+>  UBSAN_SANITIZE_kprobes.o := n
+>  GCOV_PROFILE_kprobes-ftrace.o := n
+> +KCOV_INSTRUMENT_kprobes-ftrace.o := n
+>  UBSAN_SANITIZE_kprobes-ftrace.o := n
+>  UBSAN_SANITIZE_vdso.o := n
+>
+> diff --git a/arch/powerpc/kernel/trace/Makefile b/arch/powerpc/kernel/trace/Makefile
+> index b1725ad3e13d..858503775c58 100644
+> --- a/arch/powerpc/kernel/trace/Makefile
+> +++ b/arch/powerpc/kernel/trace/Makefile
+> @@ -23,6 +23,7 @@ obj-$(CONFIG_TRACING)                 += trace_clock.o
+>  obj-$(CONFIG_PPC64)                    += $(obj64-y)
+>  obj-$(CONFIG_PPC32)                    += $(obj32-y)
+>
+> -# Disable GCOV & sanitizers in odd or sensitive code
+> +# Disable GCOV, KCOV & sanitizers in odd or sensitive code
+>  GCOV_PROFILE_ftrace.o := n
+> +KCOV_INSTRUMENT_ftrace.o := n
+>  UBSAN_SANITIZE_ftrace.o := n
+> diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
+> index 50112d4473bb..ce199f6e4256 100644
+> --- a/arch/powerpc/kernel/vdso32/Makefile
+> +++ b/arch/powerpc/kernel/vdso32/Makefile
+> @@ -23,6 +23,7 @@ targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
+>  obj-vdso32 := $(addprefix $(obj)/, $(obj-vdso32))
+>
+>  GCOV_PROFILE := n
+> +KCOV_INSTRUMENT := n
+>  UBSAN_SANITIZE := n
+>
+>  ccflags-y := -shared -fno-common -fno-builtin
+> diff --git a/arch/powerpc/kernel/vdso64/Makefile b/arch/powerpc/kernel/vdso64/Makefile
+> index 69cecb346269..28e7d112aa2f 100644
+> --- a/arch/powerpc/kernel/vdso64/Makefile
+> +++ b/arch/powerpc/kernel/vdso64/Makefile
+> @@ -9,6 +9,7 @@ targets := $(obj-vdso64) vdso64.so vdso64.so.dbg
+>  obj-vdso64 := $(addprefix $(obj)/, $(obj-vdso64))
+>
+>  GCOV_PROFILE := n
+> +KCOV_INSTRUMENT := n
+>  UBSAN_SANITIZE := n
+>
+>  ccflags-y := -shared -fno-common -fno-builtin
+> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+> index 878f9c1d3615..3050f9323254 100644
+> --- a/arch/powerpc/xmon/Makefile
+> +++ b/arch/powerpc/xmon/Makefile
+> @@ -5,6 +5,7 @@
+>  subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header)
+>
+>  GCOV_PROFILE := n
+> +KCOV_INSTRUMENT := n
+>  UBSAN_SANITIZE := n
+>
+>  # Disable ftrace for the entire directory
+> --
+> 2.11.0
+>
+> --
+> You received this message because you are subscribed to the Google Groups "syzkaller" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to syzkaller+unsubscribe@googlegroups.com.
+> For more options, visit https://groups.google.com/d/optout.
