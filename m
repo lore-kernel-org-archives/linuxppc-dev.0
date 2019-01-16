@@ -6,79 +6,66 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14AF7C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:03:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3C5AC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:22:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 884BA20651
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:03:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EE03D20578
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:22:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="unknown key hash" (0-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Khwl8Sdf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 884BA20651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ejGwBCRo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE03D20578
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ftnP3d4TzDqlr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 04:03:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fvDF5vYZzDqnD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 04:22:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=geoff@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="unknown key hash" (0-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Khwl8Sdf"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="ejGwBCRo"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ftjK1dX6zDqkq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 03:59:33 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43ftjD3zfTz9vBmT;
- Wed, 16 Jan 2019 17:59:28 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Khwl8Sdf; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id wQTomXkCom_3; Wed, 16 Jan 2019 17:59:28 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43ftjD2XzQz9vBmJ;
- Wed, 16 Jan 2019 17:59:28 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1547657968; bh=VS0H/GV7FY7nPJrZuJkENuwqd89d98HCiR9a0gQHbK0=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Khwl8SdfOqxJHr3TpI4Ab+XN4eSlHofcgIrMBmybK/gWc5pwMocRAVp83IpnJPZq3
- znvEFmndmjTzi87TTQhg7VgK93YoP8wDLDM4QWLw/eSeC7Gu/IgnaHDlp7sXyrWc2G
- ttiL9QqBkoagXDpe0x05dR233sXigz7frh3vgV+I=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD6738B84F;
- Wed, 16 Jan 2019 17:59:29 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id vMtuhXty79AC; Wed, 16 Jan 2019 17:59:29 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8300D8B84C;
- Wed, 16 Jan 2019 17:59:29 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 4C18A7187C; Wed, 16 Jan 2019 16:59:29 +0000 (UTC)
-Message-Id: <afd95fa4747f1c1eb66677025c2c7c9055f43cce.1547652372.git.christophe.leroy@c-s.fr>
-In-Reply-To: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
-References: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 2/2] powerpc: use probe_user_read()
-To: Kees Cook <keescook@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fvBS5R7dzDqlF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 04:21:20 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=Content-Transfer-Encoding:Content-Type:
+ In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender
+ :Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+ Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=HjB4WyTG0y963TSzDm2EKwD/+zJ5pPanwxddC7G0mTw=; b=ejGwBCRoKP4jizHf4jljpbq8Ge
+ ocCCBkkxl47KYLXCdgdiSlP1dPQ4T+/v7X9oPIF96L33/f6dIitqjyFlq0jNCV2n7uDwd9bcp5gcu
+ 1CmaOIU+Hz15IHxd+zAJc4JWyEOQzUJCFr64ukBPVoMOvn6B66p3jrlLgYdx/Fs7TMSMvTAbH1827
+ TQL888u1TxkBcoqcj5Mc8C6ZQSSiwIo2pynIwahqkRuXq6a6lUs2+czBg+iHGFb5nxpvsV93YVz8D
+ 2KRhJFDorEc5PSVa7knXcLCqEkAap6W/kCR7dyMgPqJ808vj9ZJ79fmvbIeyLjncdF18CEl1YnEcb
+ y+oADF8A==;
+Received: from [199.233.58.37] (helo=[10.83.93.157])
+ by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gjosL-0002gO-7t; Wed, 16 Jan 2019 17:21:13 +0000
+Subject: Re: [PATCH] powerpc/ps3: Use struct_size() in kzalloc()
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mike Rapoport <rppt@linux.ibm.com>
-Date: Wed, 16 Jan 2019 16:59:29 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20190108210010.GA980@embeddedor>
+From: Geoff Levand <geoff@infradead.org>
+Message-ID: <595f7b4b-9e26-ae72-de5f-270dce677c65@infradead.org>
+Date: Wed, 16 Jan 2019 09:21:12 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <20190108210010.GA980@embeddedor>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,176 +77,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of opencoding, use probe_user_read() to failessly
-read a user location.
+Hi Gustavo,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v3: No change
+On 1/8/19 1:00 PM, Gustavo A. R. Silva wrote:
+> One of the more common cases of allocation size calculations is finding the
+> size of a structure that has a zero-sized array at the end, along with memory
+> for some number of elements for that array. For example:
+> 
+> struct foo {
+>     int stuff;
+>     void *entry[];
+> };
+> 
+> instance = kzalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
+> 
+> Instead of leaving these open-coded and prone to type mistakes, we can now
+> use the new struct_size() helper:
+> 
+> instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL);
+> 
+> This code was detected with the help of Coccinelle.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> ---
+>  arch/powerpc/platforms/ps3/device-init.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+> index e7075aaff1bb..59587b75493d 100644
+> --- a/arch/powerpc/platforms/ps3/device-init.c
+> +++ b/arch/powerpc/platforms/ps3/device-init.c
+> @@ -354,9 +354,7 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+>  		 repo->dev_index, repo->dev_type, port, blk_size, num_blocks,
+>  		 num_regions);
+>  
+> -	p = kzalloc(sizeof(struct ps3_storage_device) +
+> -		    num_regions * sizeof(struct ps3_storage_region),
+> -		    GFP_KERNEL);
+> +	p = kzalloc(struct_size(p, regions, num_regions), GFP_KERNEL);
+>  	if (!p) {
+>  		result = -ENOMEM;
+>  		goto fail_malloc;
+It seems to me the motivation for this change is just to have a
+code change.  As I've said for other similar patches, I'm reluctant
+to accept such trivial changes to the PS3 code because it makes
+it harder for me to maintain the code in the long term.  When I
+need to do a git bisect to track down a problem I generally have
+a set of debugging patches that I apply on top of the bisect.  A
+change to the code like this creates the potential for a patch
+conflict that I then need to manually edit to resolve.
 
- v2: Using probe_user_read() instead of probe_user_address()
+If this change was for relatively new code, or better, for a patch
+that was submitted but not yet merged, then my feelings would be
+different.  I think it would be really useful to have something
+that scans patches in patchwork.
 
- arch/powerpc/kernel/process.c   | 12 +-----------
- arch/powerpc/mm/fault.c         |  6 +-----
- arch/powerpc/perf/callchain.c   | 20 +++-----------------
- arch/powerpc/perf/core-book3s.c |  8 +-------
- arch/powerpc/sysdev/fsl_pci.c   | 10 ++++------
- 5 files changed, 10 insertions(+), 46 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ce393df243aa..6a4b59d574c2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1298,16 +1298,6 @@ void show_user_instructions(struct pt_regs *regs)
- 
- 	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
- 
--	/*
--	 * Make sure the NIP points at userspace, not kernel text/data or
--	 * elsewhere.
--	 */
--	if (!__access_ok(pc, NR_INSN_TO_PRINT * sizeof(int), USER_DS)) {
--		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
--			current->comm, current->pid);
--		return;
--	}
--
- 	seq_buf_init(&s, buf, sizeof(buf));
- 
- 	while (n) {
-@@ -1318,7 +1308,7 @@ void show_user_instructions(struct pt_regs *regs)
- 		for (i = 0; i < 8 && n; i++, n--, pc += sizeof(int)) {
- 			int instr;
- 
--			if (probe_kernel_address((const void *)pc, instr)) {
-+			if (probe_user_read(&instr, (void __user *)pc, sizeof(instr))) {
- 				seq_buf_printf(&s, "XXXXXXXX ");
- 				continue;
- 			}
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 887f11bcf330..ec74305fa330 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -276,12 +276,8 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
- 		if ((flags & FAULT_FLAG_WRITE) && (flags & FAULT_FLAG_USER) &&
- 		    access_ok(nip, sizeof(*nip))) {
- 			unsigned int inst;
--			int res;
- 
--			pagefault_disable();
--			res = __get_user_inatomic(inst, nip);
--			pagefault_enable();
--			if (!res)
-+			if (!probe_user_read(&inst, nip, sizeof(inst)))
- 				return !store_updates_sp(inst);
- 			*must_retry = true;
- 		}
-diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index 0af051a1974e..0680efb2237b 100644
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -159,12 +159,8 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
- 	    ((unsigned long)ptr & 7))
- 		return -EFAULT;
- 
--	pagefault_disable();
--	if (!__get_user_inatomic(*ret, ptr)) {
--		pagefault_enable();
-+	if (!probe_user_read(ret, ptr, sizeof(*ret)))
- 		return 0;
--	}
--	pagefault_enable();
- 
- 	return read_user_stack_slow(ptr, ret, 8);
- }
-@@ -175,12 +171,8 @@ static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
- 	    ((unsigned long)ptr & 3))
- 		return -EFAULT;
- 
--	pagefault_disable();
--	if (!__get_user_inatomic(*ret, ptr)) {
--		pagefault_enable();
-+	if (!probe_user_read(ret, ptr, sizeof(*ret)))
- 		return 0;
--	}
--	pagefault_enable();
- 
- 	return read_user_stack_slow(ptr, ret, 4);
- }
-@@ -307,17 +299,11 @@ static inline int current_is_64bit(void)
-  */
- static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
- {
--	int rc;
--
- 	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
- 	    ((unsigned long)ptr & 3))
- 		return -EFAULT;
- 
--	pagefault_disable();
--	rc = __get_user_inatomic(*ret, ptr);
--	pagefault_enable();
--
--	return rc;
-+	return probe_user_read(ret, ptr, sizeof(*ret));
- }
- 
- static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index b0723002a396..4b64ddf0db68 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -416,7 +416,6 @@ static void power_pmu_sched_task(struct perf_event_context *ctx, bool sched_in)
- static __u64 power_pmu_bhrb_to(u64 addr)
- {
- 	unsigned int instr;
--	int ret;
- 	__u64 target;
- 
- 	if (is_kernel_addr(addr)) {
-@@ -427,13 +426,8 @@ static __u64 power_pmu_bhrb_to(u64 addr)
- 	}
- 
- 	/* Userspace: need copy instruction here then translate it */
--	pagefault_disable();
--	ret = __get_user_inatomic(instr, (unsigned int __user *)addr);
--	if (ret) {
--		pagefault_enable();
-+	if (probe_user_read(&instr, (unsigned int __user *)addr, sizeof(instr)))
- 		return 0;
--	}
--	pagefault_enable();
- 
- 	target = branch_target(&instr);
- 	if ((!target) || (instr & BRANCH_ABSOLUTE))
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 918be816b097..c8a1b26489f5 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -1068,13 +1068,11 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
- 	addr += mfspr(SPRN_MCAR);
- 
- 	if (is_in_pci_mem_space(addr)) {
--		if (user_mode(regs)) {
--			pagefault_disable();
--			ret = get_user(inst, (__u32 __user *)regs->nip);
--			pagefault_enable();
--		} else {
-+		if (user_mode(regs))
-+			ret = probe_user_read(&inst, (void __user *)regs->nip,
-+					      sizeof(inst));
-+		else
- 			ret = probe_kernel_address((void *)regs->nip, inst);
--		}
- 
- 		if (!ret && mcheck_handle_load(regs, inst)) {
- 			regs->nip += 4;
--- 
-2.13.3
-
+-Geoff
