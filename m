@@ -2,85 +2,74 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 637DFC43612
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFF3CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:40:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E09A3206C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:38:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E09A3206C2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2589920675
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:40:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="UeiglUNB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2589920675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fqZv5VsszDqM6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:38:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fqct1xTFzDqnD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:40:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.com
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jgross@suse.com;
- receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.com
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="UeiglUNB"; 
+ dkim-atps=neutral
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fqRX53F4zDqn1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:32:17 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay1.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id EE424AFCD;
- Wed, 16 Jan 2019 14:32:12 +0000 (UTC)
-Subject: Re: [Xen-devel] [PATCH 19/21] treewide: add checks for the return
- value of memblock_alloc*()
-To: Mike Rapoport <rppt@linux.ibm.com>, linux-mm@kvack.org
-References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
- <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
-From: Juergen Gross <jgross@suse.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=jgross@suse.com; prefer-encrypt=mutual; keydata=
- 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
-Message-ID: <1c04fc81-7e7c-9b4a-cab2-c9b023e1a3b1@suse.com>
-Date: Wed, 16 Jan 2019 15:32:03 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fqVJ75gDzDqSx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:34:48 +1100 (AEDT)
+Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com
+ [209.85.221.171]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id x0GEYC0C021654
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 23:34:13 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com x0GEYC0C021654
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1547649253;
+ bh=LeZvenWAyFhQpFAc6vVeaym8dil5fWgTRHvB0UI5JKo=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=UeiglUNBUHfrtsie89ag31RuIsIVtxplGQ6nRZTeEkq6WOihkzHEX8Sg/cmvqFl72
+ /ofxuZfbR66yI6pMmPekiRmIF+3U56Dr6uXuAqc6XqMDZLc4C8tj1FZt4sdXN0lG2F
+ VgEGJ3QMEAr3zH51VfE/1i7GyjJNLtJ6+aFeQcyk991HP0EfT8Hzlt8ziHPkYxfOg5
+ eXW0FrYXqQX3e2Bp4FGyDtoneycWW8GM65HfF3jgiiJQAdmP2G75VJ70/gsQKOO4Ha
+ J+e7Cq+N9BsLx3bnCXVOxGzlQzI+ImfL0pnxdP+Cbr6Nq4Gc/QprbzCeyIkXG+4bzf
+ lndOFGNoS3c8Q==
+X-Nifty-SrcIP: [209.85.221.171]
+Received: by mail-vk1-f171.google.com with SMTP id s184so1457564vkd.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 06:34:13 -0800 (PST)
+X-Gm-Message-State: AJcUukfzOWNCGT9Hz9uhELJ1mDxAxdydHz142XGvQnkAFOu7k5+NNZ1f
+ eFWRgErH8STPTtEEi2x1nVGEtLp8CHgIXfbHc/s=
+X-Google-Smtp-Source: ALg8bN48zfMaV+AYClsEiSt7txS7WccQZ9Pp9d2+4k0CSh3ouq2pbZgy1dZWwsRLrOuyeCFnNqfUwZHIK9K/ocgjusw=
+X-Received: by 2002:a1f:9350:: with SMTP id v77mr3627366vkd.64.1547649251970; 
+ Wed, 16 Jan 2019 06:34:11 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: de-DE
-Content-Transfer-Encoding: 7bit
+References: <1547536740-1572-1-git-send-email-yamada.masahiro@socionext.com>
+In-Reply-To: <1547536740-1572-1-git-send-email-yamada.masahiro@socionext.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 16 Jan 2019 23:33:36 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAQKuW8f7BgX8q-Eqa480o6Ch_mZsHyY52h96kifnYepHg@mail.gmail.com>
+Message-ID: <CAK7LNAQKuW8f7BgX8q-Eqa480o6Ch_mZsHyY52h96kifnYepHg@mail.gmail.com>
+Subject: Re: [PATCH] kbuild: mark prepare0 as PHONY to fix external module
+ build
+To: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,56 +81,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Petr Mladek <pmladek@suse.com>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
- sparclinux@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
- linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, x86@kernel.org,
- Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
- linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
- devicetree@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- Rob Herring <robh+dt@kernel.org>, Greentime Hu <green.hu@gmail.com>,
- xen-devel@lists.xenproject.org, Stafford Horne <shorne@gmail.com>,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-mips@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
- Vineet Gupta <vgupta@synopsys.com>, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, openrisc@lists.librecores.org
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Samuel Holland <samuel@sholland.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-stable # v4 . 20" <stable@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 16/01/2019 14:44, Mike Rapoport wrote:
-> Add check for the return value of memblock_alloc*() functions and call
-> panic() in case of error.
-> The panic message repeats the one used by panicing memblock allocators with
-> adjustment of parameters to include only relevant ones.
-> 
-> The replacement was mostly automated with semantic patches like the one
-> below with manual massaging of format strings.
-> 
-> @@
-> expression ptr, size, align;
-> @@
-> ptr = memblock_alloc(size, align);
-> + if (!ptr)
-> + 	panic("%s: Failed to allocate %lu bytes align=0x%lx\n", __func__,
-> size, align);
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+On Tue, Jan 15, 2019 at 5:07 PM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> Commit c3ff2a5193fa ("powerpc/32: add stack protector support")
+> caused kernel panic on PowerPC if an external module is used with
+> CONFIG_STACKPROTECTOR because the 'prepare' target was not executed
+> for the external module build.
+>
+> Commit e07db28eea38 ("kbuild: fix single target build for external
+> module") turned it into a build error because the 'prepare' target is
+> now executed but the 'prepare0' target is missing for the external
+> module build.
+>
+> External module on arm/arm64 with CONFIG_STACKPROTECTOR_PER_TASK is
+> also broken in the same way.
+>
+> Move 'PHONY += prepare0' to the common place. Make is fine with missing
+> rule for phony targets.
+>
+> I minimize the change so it can be easily backported to 4.20.x
+>
+> To fix v4.20 for external modules of PowerPC, please backport
+> e07db28eea38 ("kbuild: fix single target build for external module"),
+> and then this commit.
+>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=201891
+> Fixes: e07db28eea38 ("kbuild: fix single target build for external module")
+> Fixes: c3ff2a5193fa ("powerpc/32: add stack protector support")
+> Fixes: 189af4657186 ("ARM: smp: add support for per-task stack canaries")
+> Fixes: 0a1213fa7432 ("arm64: enable per-task stack canaries")
+> Cc: linux-stable <stable@vger.kernel.org> # v4.20
+> Reported-by: Samuel Holland <samuel@sholland.org>
+> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
 
-For the Xen part:
-
-Reviewed-by: Juergen Gross <jgross@suse.com>
+Applied to linux-kbuild/fixes.
 
 
-Juergen
+>  Makefile | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/Makefile b/Makefile
+> index 499b968..789b332 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -955,6 +955,7 @@ ifdef CONFIG_STACK_VALIDATION
+>    endif
+>  endif
+>
+> +PHONY += prepare0
+>
+>  ifeq ($(KBUILD_EXTMOD),)
+>  core-y         += kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/
+> @@ -1061,8 +1062,7 @@ scripts: scripts_basic scripts_dtc
+>  # archprepare is used in arch Makefiles and when processed asm symlink,
+>  # version.h and scripts_basic is processed / created.
+>
+> -# Listed in dependency order
+> -PHONY += prepare archprepare prepare0 prepare1 prepare2 prepare3
+> +PHONY += prepare archprepare prepare1 prepare2 prepare3
+>
+>  # prepare3 is used to check if we are building in a separate output directory,
+>  # and if so do:
+> --
+> 2.7.4
+>
+
+
+-- 
+Best Regards
+Masahiro Yamada
