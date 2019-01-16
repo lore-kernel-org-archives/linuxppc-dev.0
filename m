@@ -2,76 +2,66 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E3C4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 10:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D331C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 12:33:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8197920840
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 10:21:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8197920840
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id AC74D20651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 12:33:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lNphx2C7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC74D20651
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fjsg2yWFzDqXM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 21:21:11 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fjqs2tyVzDqTY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 21:19:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fmpL6VY3zDqYC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 23:33:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43fjqs0zfNz8tQK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 21:19:37 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43fjqs0bgdz9sDB; Wed, 16 Jan 2019 21:19:37 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.160.196; helo=mail-qt1-f196.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qt1-f196.google.com (mail-qt1-f196.google.com
- [209.85.160.196])
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="lNphx2C7"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43fjqr33gyz9sCX
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2019 21:19:36 +1100 (AEDT)
-Received: by mail-qt1-f196.google.com with SMTP id n32so6480879qte.11
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2019 02:19:36 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=5aPMi4lYidLibL1tjnFXjVPtp1TMBYAyap8CKfQrzHI=;
- b=dRhiow5Iwaptj+Zx38mWmr4buGtJ6TU5/tOKa/uqS+LRM8w64DaYLqGwf6LBQjPl5h
- pPS7DVblFbl9ToNwUFQBBaTXyrV/laxft+UtU1DG629Dfi29q6Jysl+AvWJe/Otpqq6j
- pZt9LYQFpoV9fon1gfBTOj6DrgZIbFknKrESPMvxO0o42yx+hHxeUpVi7jDsfk75ZlCB
- 0WWFSYqzm4Zgyyb275RuWw7fBN/9ynkFTm1jDxvkX3jGrmNvw8WKl47Ln2O6m68Z8Qwe
- A6uCTgTk0kGyzLgzcX/G38Qz+8DMogfmdtu29pifpIhpEQsmfaMDheEZ94OZ4s4AmWV+
- 7FAQ==
-X-Gm-Message-State: AJcUukfiYrHIvdN1rC29qta2lu1uANgcncG28pARHqI8tnSAAd9vtfkD
- fWUGGEDacvy1K5rE54GyGmvI9vdyF4XShVBB9rI=
-X-Google-Smtp-Source: ALg8bN5w6XcX9Pk4it7kSliUuMSLTHj/vYT0K21uPgFoTOGwnXZP0lcpphcgD/mND8WIIr4IvN+xo/BDkI/2ITb1bu8=
-X-Received: by 2002:a0c:dc0f:: with SMTP id s15mr6299511qvk.40.1547633974016; 
- Wed, 16 Jan 2019 02:19:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fmks67cGzDqWg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 23:30:27 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=hbXvLzXUjWRA8mvWs4q87Q48DPDygjGmEj0NoNFx3hs=; b=lNphx2C7jDquNNBJnKZgSUFRL
+ dyHKgdNqqoc95W/4shDztc1/5Il66cPkk2DWcKaOfNeJYH4MnXwa8bN7zOjURxCTQZTZxdEWMjFu+
+ siyAKwPaIVUnX/t706vQrfNCnReNYSx7yItpfJsz6WkL296seVxXC3PNgroy3+XgeYzYQo6boq8cH
+ rWnPSDEQMlDIxhO5rXQLJNqzPUknCi51kK9eZBpWw/iaCTNthz3cUJ7t7So1w4wf22fxlCRBIl4tI
+ M8uAfnbr2pIJ83GDMRWAEN9I/rCOZcJ3pX8zwidYXe00X9AVyYO8Q+Dw4JRMtPAbxVNfvinWmzbwQ
+ if5zfw4bA==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1gjkKo-0003iy-9p; Wed, 16 Jan 2019 12:30:18 +0000
+Date: Wed, 16 Jan 2019 04:30:18 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH V2] mm: Introduce GFP_PGTABLE
+Message-ID: <20190116123018.GF6310@bombadil.infradead.org>
+References: <1547619692-7946-1-git-send-email-anshuman.khandual@arm.com>
+ <20190116065703.GE24149@dhcp22.suse.cz>
 MIME-Version: 1.0
-References: <20190114113620.17558-1-mpe@ellerman.id.au>
- <CAK8P3a3PnbJ1Mr01HeRUzk+cfK4t-yok4YTJdNrBs6f==fVrnw@mail.gmail.com>
- <87y37lxx1s.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87y37lxx1s.fsf@concordia.ellerman.id.au>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 16 Jan 2019 11:19:17 +0100
-Message-ID: <CAK8P3a2UA9n8VmdpRMp-2HakOk=w1UaRiPvmLhF7A4_4Z0sENw@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/5] powerpc/syscalls: Remove unused offset parameter
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190116065703.GE24149@dhcp22.suse.cz>
+User-Agent: Mutt/1.9.2 (2017-12-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,67 +73,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, Firoz Khan <firoz.khan@linaro.org>
+Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
+ christoffer.dall@arm.com, linux-mm@kvack.org, linux-riscv@lists.infradead.org,
+ kvmarm@lists.cs.columbia.edu, greentime@andestech.com, linux@armlinux.org.uk,
+ mingo@redhat.com, vbabka@suse.cz, rientjes@google.com, palmer@sifive.com,
+ Anshuman Khandual <anshuman.khandual@arm.com>, marc.zyngier@arm.com,
+ rppt@linux.vnet.ibm.com, shakeelb@google.com, kirill@shutemov.name,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
+ linux-kernel@vger.kernel.org, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 16, 2019 at 1:31 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Arnd Bergmann <arnd@arndb.de> writes:
-> > On Mon, Jan 14, 2019 at 12:36 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >>
-> >> We never pass a value for offset, nor do we need to, so remove the
-> >> offset logic.
-> >>
-> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> >
-> > This change and the next three defeat the idea of having a shared script across
-> > all architectures.
->
-> The scripts are < 100 lines total, so sharing them across arches is
-> really not much of a win. Especially if it requires compromising the
-> format of the table on some architectures. Shoe horning the SPU
-> visibility into the ABI field was a good hack but I really dislike it
-> being the permanent state of our syscall table.
+On Wed, Jan 16, 2019 at 07:57:03AM +0100, Michal Hocko wrote:
+> On Wed 16-01-19 11:51:32, Anshuman Khandual wrote:
+> > All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
+> > __GFP_ZERO) and using it for allocating page table pages. This causes some
+> > code duplication which can be easily avoided. GFP_KERNEL allocated and
+> > cleared out pages (__GFP_ZERO) are required for page tables on any given
+> > architecture. This creates a new generic GFP flag flag which can be used
+> > for any page table page allocation. Does not cause any functional change.
+> > 
+> > GFP_PGTABLE is being added into include/asm-generic/pgtable.h which is the
+> > generic page tabe header just to prevent it's potential misuse as a general
+> > allocation flag if included in include/linux/gfp.h.
+> 
+> I haven't reviewed the patch yet but I am wondering whether this is
+> really worth it without going all the way down to unify the common code
+> and remove much more code duplication. Or is this not possible for some
+> reason?
 
-IMHO the main advantage is that sharing the scripts guarantees that
-the format remains compatible across all architectures, which in turn
-allows us to build additional tooling around these files, and make it
-less error-prone to do cross-architecture changes.
+Exactly what I suggested doing in response to v1.
 
-> > Firoz has already posted patches to move the scripts to scripts/syscalltbl.sh
->
-> Those don't work for x86 AFAICS?
-
-I hope we can address that in a follow-up step, integrating all of arm, s390 and
-x86, which had the scripts first.
-
-> > and I think it's better to go on with those patches, as they
-> > also guarantee that the format of the files remains consistent across all
-> > architectures.
->
-> Why is that a requirement?
->
-> Another possibility is that we have a separate file that stores the SPU
-> visibility, that way our syscall.tbl would have the same format as other
-> arches, and we could probably share the scripts, but we'd need our own
-> script for generating the SPU table.
->
-> I'll hack that up and see how it looks.
-
-Ok. See also what x86 has done, they also have some extensions to
-their copy of the script.
-
-I still think that keeping the information about the SPU in the same file
-is best, otherwise it becomes harder to maintain as changes to the
-main table are done, unless we decide that we don't want to leave
-the SPU syscalls as explicit opt-in for future additions.
-
-Even as CellBE hardware was being actively marketed, the syscall
-interfaces were never overly popular, so it's unlikely that anyone relies
-on future syscalls here anway. From the newlib repository, I see only
-eight system calls being used in total: getpid, gettid, pread, pwrite,
-read, write, readv, and writev.
-
-      Arnd
+Also, the approach taken here is crazy.  x86 has a feature that no other
+architecture has bothered to implement yet -- accounting page tables
+to the process.  Yet instead of spreading that goodness to all other
+architectures, Anshuman has gone to more effort to avoid doing that.
