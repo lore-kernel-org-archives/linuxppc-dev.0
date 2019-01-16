@@ -2,67 +2,80 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A828CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 07:56:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D18BFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 08:23:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D00982082F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 07:56:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D00982082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4847F20859
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 08:23:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="khRVGQJS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4847F20859
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fffh2MwszDqV7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 18:56:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fgG24vhpzDqWg
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 19:23:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
- envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+ (client-ip=2a00:1450:4864:20::543; helo=mail-ed1-x543.google.com;
+ envelope-from=daniel.baluta@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="khRVGQJS"; 
+ dkim-atps=neutral
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
+ [IPv6:2a00:1450:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ffcw6B69zDqTY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 18:54:56 +1100 (AEDT)
-Received: by mail-ot1-f67.google.com with SMTP id k98so5751739otk.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2019 23:54:56 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fgDN05D9zDqTw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 19:22:08 +1100 (AEDT)
+Received: by mail-ed1-x543.google.com with SMTP id b3so4743442ede.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 00:22:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=aPWM1AqWAmZUC/KtGael9gqXqDnamd2rhQqXFyqQd3M=;
+ b=khRVGQJS6dPOfa2vFbkTo7tuY9Me8XKCVkflHPDCbNrFC3N+nMY4wRg79Ee3LkEp2i
+ +lScQRVIjdSaTy4uyjMXZ+fynsgkLk5aX0nz6hROR8CVFcPxzw6o/8P6UzGzc7a+lJ7+
+ 6kFaKBAFNla3gZTReW/I0O3DRz+cjFK+vO/kqcPGYsIOwls1HgXQmHkE4mRDOgn30/UE
+ c99fifx6oPMI7a0jnay9G0C3rERTVY41OVabgv/7z2AApq7PZXvBXLHNbVgDX+Jx7oFW
+ yUPKOMZ8+V1XiqDy3kfQJ81VmMiya7d8npCtxNzym2+6tqEWB15R+bYeWl3o4UtAgN6z
+ L6kA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=RWsiSaftMEBKmmywsi2EkXVXmbS3OnzSZBL07Cn3ls8=;
- b=D2ubwhouY9J/EPuMbZjAnaF8JOvVvquAzRxiB9p3ptBCRr3itmOyw7fMLyss+aP5pK
- yonxfwvg7OSN4ypyzsp3d4on7QSLFNF6UcSqk0dcoyo00IcAfuNLVXIIEN3zoTlxhYl1
- +HXKrm58krCfJpOYhtGFdcEFUZmDe2rHrGqYKYeXuAQG5Vi5FQiYjPJ1IdCWRbJx1spL
- 0SXhTJ9b4ayj0KnoeZD6vsxif+p8/5jvnpVazf4GqagPtLS8ZGne+9eX1vrlL4GngzwD
- 1jher6nsddlVEOUhnVU54Eg3CrrqgjrQy+doTFIqNOzvmlR1eODUMAQ7tu1Z1EPCFIwv
- +yIw==
-X-Gm-Message-State: AJcUukc58bUtvwrFheA8l7lyXRvWf1ZsZ1GFe9FuUZlijhBjIQ+EKjqv
- O3IFdvwlC1O/GKWijJKZwHJvRO4rHmPqQ1dZCUg=
-X-Google-Smtp-Source: ALg8bN7XJ6QMAbHUDIdjLNXizJatFEwChjGNmTRv/giEQsIPcEemi1VLHVhMBwsLhK9gIRaHzwJrN1yJRdtlMvyjvyk=
-X-Received: by 2002:a05:6808:13:: with SMTP id
- u19mr4333137oic.57.1547625294429; 
- Tue, 15 Jan 2019 23:54:54 -0800 (PST)
+ :message-id:subject:to:cc;
+ bh=aPWM1AqWAmZUC/KtGael9gqXqDnamd2rhQqXFyqQd3M=;
+ b=eJHbnlHOwyKa8nVCBocFLo73caktReo4JHeTnsnXQdHx3Fe6mNX20ZuSjRChciSyyV
+ XwEpCUc0Wrp3IiZFG0Z+CBrwX41zNkWB+TqTSpBFrzKSiXos9Bf4+T/6J7RqDa/C4nHn
+ CahY8JZNJPBjcJS7eKeLg175vxvLFG1WY9lP70pJEnBJDTbhaYuExG7l7iHQUkMZyxp2
+ wOBbT1nwFLBG//XwsKlWyvaDtwHBvcb2kUkqiGMYeHsKJX1aEhyLIDsTeVedK9ps6byh
+ NxFtmoXoIP8vj5Odgz6peZWFfY51Gwxnwvv/h3WyfbdXS+qTv9sHwIWsrtY2HYKxLYzf
+ J28w==
+X-Gm-Message-State: AJcUukfT6S+cgqHHQyiKLMmHxEjw+taAYcsZMAlBZPgiLqdUXxwVaCcH
+ bR1hrFBhR+UzIr/WQW80MwUwGu4Ja7Y/rK9SoSI=
+X-Google-Smtp-Source: ALg8bN5G8+j3piIu1jyD1/QrlP+u8pPbCrvw1t8ary/awQnXCyTt2aEO1EXKQeuLvuc2Gb5cfxfuDUE0lNysbn/8p3A=
+X-Received: by 2002:a50:a125:: with SMTP id 34mr6560393edj.175.1547626923895; 
+ Wed, 16 Jan 2019 00:22:03 -0800 (PST)
 MIME-Version: 1.0
-References: <20190115042017.13342-1-andrew.donnellan@au1.ibm.com>
- <CA+7wUsy5xbp_t4fiEUw9C0HKQ8GohcBJZkj8qZnna5990Gm1-w@mail.gmail.com>
- <ea8a051c-481d-ef97-7d1d-8621f194e41e@c-s.fr>
- <87tvi9xk7s.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87tvi9xk7s.fsf@concordia.ellerman.id.au>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 16 Jan 2019 08:54:43 +0100
-Message-ID: <CA+7wUswdOrD9w-j1ohXDnCTOoO7z2anf5YsJXAw6NjJJ8oC4vg@mail.gmail.com>
-Subject: Re: gcc 6.3 vs 8.2 Re: [RFC PATCH] powerpc: Enable kcov
-To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1546952716-2743-1-git-send-email-viorel.suman@nxp.com>
+ <1546952716-2743-5-git-send-email-viorel.suman@nxp.com>
+ <20190115205755.GA4022@bogus>
+In-Reply-To: <20190115205755.GA4022@bogus>
+From: Daniel Baluta <daniel.baluta@gmail.com>
+Date: Wed, 16 Jan 2019 10:21:52 +0200
+Message-ID: <CAEnQRZBn7nM-KrGSvnzPWuU=a+jyRxfEKhZSsDD4wTqr6spkwg@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH v2 4/4] ASoC: add imx-audmix DT binding
+ documentation
+To: Rob Herring <robh@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,31 +87,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, "S.j. Wang" <shengjiu.wang@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Daniel Baluta <daniel.baluta@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
+ Viorel Suman <viorel.suman@nxp.com>, Viorel Suman <viorel.suman@gmail.com>,
+ Cosmin Samoila <cosmin.samoila@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 16, 2019 at 6:09 AM Michael Ellerman <mpe@ellerman.id.au> wrote=
-:
+On Tue, Jan 15, 2019 at 10:58 PM Rob Herring <robh@kernel.org> wrote:
 >
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> > Le 15/01/2019 =C3=A0 08:26, Mathieu Malaterre a =C3=A9crit :
-> ...
-> >>
-> >> I did check that `custom_defconfig` is the minimal defconfig generated
-> >> by `savedefconfig` in both cases.
-> >>
-> >> Hints or comments welcome, thanks much.
+> On Tue, Jan 08, 2019 at 01:05:51PM +0000, Viorel Suman wrote:
+> > Add the DT binding documentation for Audio Mixer
+> > machine driver.
 > >
-> > I think you should do:
+> > Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+> > ---
+> >  .../devicetree/bindings/sound/imx-audmix.txt       | 24 ++++++++++++++++++++++
+> >  1 file changed, 24 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/sound/imx-audmix.txt
 > >
-> > make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-gnu- custom_defconfig
-> > make ARCH=3Dpowerpc CROSS_COMPILE=3Dpowerpc-linux-gnu-
+> > diff --git a/Documentation/devicetree/bindings/sound/imx-audmix.txt b/Documentation/devicetree/bindings/sound/imx-audmix.txt
+> > new file mode 100644
+> > index 0000000..6ac1230
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/sound/imx-audmix.txt
+> > @@ -0,0 +1,24 @@
+> > +NXP Audio Mixer (AUDMIX) machine driver.
+> > +
+> > +Required properties:
+> > +===================================
+> > +  - compatible               : Compatible list, contains "fsl,imx-audmix"
+> > +
+> > +  - model            : Short audio card description.
+> > +
+> > +  - dais             : Must contain a list of phandles to AUDMIX connected
+> > +                       DAIs. The current implementation requires two phandles
+> > +                       to SAI interfaces to be provided, the first SAI in the
+> > +                       list being used to route the AUDMIX output.
+> > +
+> > +  - audmix-controller        : Must contain the phandle to the AUDMIX device node.
 >
-> Yep, you definitely need to use the same compiler for configuring and
-> building.
+> I don't think you need 2 nodes for this as this one is just a virtual
+> device. Just add the dais property to the audmix node.
 
-<facepalm>
-That was it. Thanks for the help !
+Hi Rob,
+
+Thanks for the suggestion. We want to understand better the reasoning
+behind this.
+
+Is it because dais are physically connected to AUDMIX node?
+
+In ALSA we usually add all the components inside the
+associated machine driver virtual node.
+
+thanks,
+Daniel.
