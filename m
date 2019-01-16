@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 364D3C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:09:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F467C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:10:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B4F720657
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:09:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B4F720657
+	by mail.kernel.org (Postfix) with ESMTPS id 9AA0A20657
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:10:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AA0A20657
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fpwd4gvWzDqLk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:09:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fpyY6DfYzDqgB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:10:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,62 +29,63 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fpPc5rdmzDqPn
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:45:40 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fpPg4QvlzDqNJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:45:43 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- x0GDeXI7044069
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 08:45:38 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q24cmm016-1
+ x0GDeYP8079251
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 08:45:41 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q2303fw8q-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 08:45:38 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 08:45:41 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Wed, 16 Jan 2019 13:45:34 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 16 Jan 2019 13:45:37 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 16 Jan 2019 13:45:21 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0GDjKH033685522
+ Wed, 16 Jan 2019 13:45:26 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0GDjP6Z49348698
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 16 Jan 2019 13:45:20 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8D72442049;
- Wed, 16 Jan 2019 13:45:20 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6586442042;
- Wed, 16 Jan 2019 13:45:16 +0000 (GMT)
+ Wed, 16 Jan 2019 13:45:25 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 632F711C052;
+ Wed, 16 Jan 2019 13:45:25 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3BC7111C050;
+ Wed, 16 Jan 2019 13:45:21 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.8.226])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 16 Jan 2019 13:45:16 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 16 Jan 2019 13:45:21 +0000 (GMT)
 Received: by rapoport-lnx (sSMTP sendmail emulation);
- Wed, 16 Jan 2019 15:45:15 +0200
+ Wed, 16 Jan 2019 15:45:20 +0200
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH 11/21] memblock: make memblock_find_in_range_node() and
- choose_memblock_flags() static
-Date: Wed, 16 Jan 2019 15:44:11 +0200
+Subject: [PATCH 12/21] arch: use memblock_alloc() instead of
+ memblock_alloc_from(size, align, 0)
+Date: Wed, 16 Jan 2019 15:44:12 +0200
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
 References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19011613-0020-0000-0000-0000030747C6
+x-cbid: 19011613-0012-0000-0000-000002E8D1C9
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19011613-0021-0000-0000-000021586463
-Message-Id: <1547646261-32535-12-git-send-email-rppt@linux.ibm.com>
+x-cbparentid: 19011613-0013-0000-0000-0000211FE9F4
+Message-Id: <1547646261-32535-13-git-send-email-rppt@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-16_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=714 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1901160114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -125,58 +126,152 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These functions are not used outside memblock. Make them static.
+The last parameter of memblock_alloc_from() is the lower limit for the
+memory allocation. When it is 0, the call is equivalent to
+memblock_alloc().
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- include/linux/memblock.h | 4 ----
- mm/memblock.c            | 4 ++--
- 2 files changed, 2 insertions(+), 6 deletions(-)
+ arch/alpha/kernel/core_cia.c  |  2 +-
+ arch/alpha/kernel/pci_iommu.c |  4 ++--
+ arch/alpha/kernel/setup.c     |  2 +-
+ arch/ia64/kernel/mca.c        |  3 +--
+ arch/mips/kernel/traps.c      |  2 +-
+ arch/sparc/kernel/prom_32.c   |  2 +-
+ arch/sparc/mm/init_32.c       |  2 +-
+ arch/sparc/mm/srmmu.c         | 10 +++++-----
+ 8 files changed, 13 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index cf4cd9c..f5a83a1 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -111,9 +111,6 @@ void memblock_discard(void);
- #define memblock_dbg(fmt, ...) \
- 	if (memblock_debug) printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+diff --git a/arch/alpha/kernel/core_cia.c b/arch/alpha/kernel/core_cia.c
+index 867e873..466cd44 100644
+--- a/arch/alpha/kernel/core_cia.c
++++ b/arch/alpha/kernel/core_cia.c
+@@ -331,7 +331,7 @@ cia_prepare_tbia_workaround(int window)
+ 	long i;
  
--phys_addr_t memblock_find_in_range_node(phys_addr_t size, phys_addr_t align,
--					phys_addr_t start, phys_addr_t end,
--					int nid, enum memblock_flags flags);
- phys_addr_t memblock_find_in_range(phys_addr_t start, phys_addr_t end,
- 				   phys_addr_t size, phys_addr_t align);
- void memblock_allow_resize(void);
-@@ -130,7 +127,6 @@ int memblock_clear_hotplug(phys_addr_t base, phys_addr_t size);
- int memblock_mark_mirror(phys_addr_t base, phys_addr_t size);
- int memblock_mark_nomap(phys_addr_t base, phys_addr_t size);
- int memblock_clear_nomap(phys_addr_t base, phys_addr_t size);
--enum memblock_flags choose_memblock_flags(void);
+ 	/* Use minimal 1K map. */
+-	ppte = memblock_alloc_from(CIA_BROKEN_TBIA_SIZE, 32768, 0);
++	ppte = memblock_alloc(CIA_BROKEN_TBIA_SIZE, 32768);
+ 	pte = (virt_to_phys(ppte) >> (PAGE_SHIFT - 1)) | 1;
  
- unsigned long memblock_free_all(void);
- void reset_node_managed_pages(pg_data_t *pgdat);
-diff --git a/mm/memblock.c b/mm/memblock.c
-index 739f769..03b3929 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -125,7 +125,7 @@ static int memblock_can_resize __initdata_memblock;
- static int memblock_memory_in_slab __initdata_memblock = 0;
- static int memblock_reserved_in_slab __initdata_memblock = 0;
+ 	for (i = 0; i < CIA_BROKEN_TBIA_SIZE / sizeof(unsigned long); ++i)
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index aa0f50d..e4cf77b 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -87,13 +87,13 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
+ 		printk("%s: couldn't allocate arena ptes from node %d\n"
+ 		       "    falling back to system-wide allocation\n",
+ 		       __func__, nid);
+-		arena->ptes = memblock_alloc_from(mem_size, align, 0);
++		arena->ptes = memblock_alloc(mem_size, align);
+ 	}
  
--enum memblock_flags __init_memblock choose_memblock_flags(void)
-+static enum memblock_flags __init_memblock choose_memblock_flags(void)
+ #else /* CONFIG_DISCONTIGMEM */
+ 
+ 	arena = memblock_alloc(sizeof(*arena), SMP_CACHE_BYTES);
+-	arena->ptes = memblock_alloc_from(mem_size, align, 0);
++	arena->ptes = memblock_alloc(mem_size, align);
+ 
+ #endif /* CONFIG_DISCONTIGMEM */
+ 
+diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
+index 4b5b1b2..5d4c76a 100644
+--- a/arch/alpha/kernel/setup.c
++++ b/arch/alpha/kernel/setup.c
+@@ -293,7 +293,7 @@ move_initrd(unsigned long mem_limit)
+ 	unsigned long size;
+ 
+ 	size = initrd_end - initrd_start;
+-	start = memblock_alloc_from(PAGE_ALIGN(size), PAGE_SIZE, 0);
++	start = memblock_alloc(PAGE_ALIGN(size), PAGE_SIZE);
+ 	if (!start || __pa(start) + size > mem_limit) {
+ 		initrd_start = initrd_end = 0;
+ 		return NULL;
+diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
+index 91bd1e1..74d148b 100644
+--- a/arch/ia64/kernel/mca.c
++++ b/arch/ia64/kernel/mca.c
+@@ -1835,8 +1835,7 @@ format_mca_init_stack(void *mca_data, unsigned long offset,
+ /* Caller prevents this from being called after init */
+ static void * __ref mca_bootmem(void)
  {
- 	return system_has_some_mirror ? MEMBLOCK_MIRROR : MEMBLOCK_NONE;
+-	return memblock_alloc_from(sizeof(struct ia64_mca_cpu),
+-				   KERNEL_STACK_SIZE, 0);
++	return memblock_alloc(sizeof(struct ia64_mca_cpu), KERNEL_STACK_SIZE);
  }
-@@ -254,7 +254,7 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
-  * Return:
-  * Found address on success, 0 on failure.
-  */
--phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
-+static phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
- 					phys_addr_t align, phys_addr_t start,
- 					phys_addr_t end, int nid,
- 					enum memblock_flags flags)
+ 
+ /* Do per-CPU MCA-related initialization.  */
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index c91097f..2bbdee5 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -2291,7 +2291,7 @@ void __init trap_init(void)
+ 		phys_addr_t ebase_pa;
+ 
+ 		ebase = (unsigned long)
+-			memblock_alloc_from(size, 1 << fls(size), 0);
++			memblock_alloc(size, 1 << fls(size));
+ 
+ 		/*
+ 		 * Try to ensure ebase resides in KSeg0 if possible.
+diff --git a/arch/sparc/kernel/prom_32.c b/arch/sparc/kernel/prom_32.c
+index 42d7f2a..38940af 100644
+--- a/arch/sparc/kernel/prom_32.c
++++ b/arch/sparc/kernel/prom_32.c
+@@ -32,7 +32,7 @@ void * __init prom_early_alloc(unsigned long size)
+ {
+ 	void *ret;
+ 
+-	ret = memblock_alloc_from(size, SMP_CACHE_BYTES, 0UL);
++	ret = memblock_alloc(size, SMP_CACHE_BYTES);
+ 	if (ret != NULL)
+ 		memset(ret, 0, size);
+ 
+diff --git a/arch/sparc/mm/init_32.c b/arch/sparc/mm/init_32.c
+index d900952..a8ff298 100644
+--- a/arch/sparc/mm/init_32.c
++++ b/arch/sparc/mm/init_32.c
+@@ -264,7 +264,7 @@ void __init mem_init(void)
+ 	i = last_valid_pfn >> ((20 - PAGE_SHIFT) + 5);
+ 	i += 1;
+ 	sparc_valid_addr_bitmap = (unsigned long *)
+-		memblock_alloc_from(i << 2, SMP_CACHE_BYTES, 0UL);
++		memblock_alloc(i << 2, SMP_CACHE_BYTES);
+ 
+ 	if (sparc_valid_addr_bitmap == NULL) {
+ 		prom_printf("mem_init: Cannot alloc valid_addr_bitmap.\n");
+diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
+index b609362..a400ec3 100644
+--- a/arch/sparc/mm/srmmu.c
++++ b/arch/sparc/mm/srmmu.c
+@@ -303,13 +303,13 @@ static void __init srmmu_nocache_init(void)
+ 
+ 	bitmap_bits = srmmu_nocache_size >> SRMMU_NOCACHE_BITMAP_SHIFT;
+ 
+-	srmmu_nocache_pool = memblock_alloc_from(srmmu_nocache_size,
+-						 SRMMU_NOCACHE_ALIGN_MAX, 0UL);
++	srmmu_nocache_pool = memblock_alloc(srmmu_nocache_size,
++					    SRMMU_NOCACHE_ALIGN_MAX);
+ 	memset(srmmu_nocache_pool, 0, srmmu_nocache_size);
+ 
+ 	srmmu_nocache_bitmap =
+-		memblock_alloc_from(BITS_TO_LONGS(bitmap_bits) * sizeof(long),
+-				    SMP_CACHE_BYTES, 0UL);
++		memblock_alloc(BITS_TO_LONGS(bitmap_bits) * sizeof(long),
++			       SMP_CACHE_BYTES);
+ 	bit_map_init(&srmmu_nocache_map, srmmu_nocache_bitmap, bitmap_bits);
+ 
+ 	srmmu_swapper_pg_dir = __srmmu_get_nocache(SRMMU_PGD_TABLE_SIZE, SRMMU_PGD_TABLE_SIZE);
+@@ -467,7 +467,7 @@ static void __init sparc_context_init(int numctx)
+ 	unsigned long size;
+ 
+ 	size = numctx * sizeof(struct ctx_list);
+-	ctx_list_pool = memblock_alloc_from(size, SMP_CACHE_BYTES, 0UL);
++	ctx_list_pool = memblock_alloc(size, SMP_CACHE_BYTES);
+ 
+ 	for (ctx = 0; ctx < numctx; ctx++) {
+ 		struct ctx_list *clist;
 -- 
 2.7.4
 
