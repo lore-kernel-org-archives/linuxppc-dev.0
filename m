@@ -2,71 +2,64 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B127CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70074C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:36:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B29D20675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:34:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="umaZGSlS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B29D20675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id A639D20675
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:36:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A639D20675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fqVJ0Vf3zDqMv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:34:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fqXJ3K6pzDqMB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:36:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="umaZGSlS"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.221.194; helo=mail-vk1-f194.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vk1-f194.google.com (mail-vk1-f194.google.com
+ [209.85.221.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fq9s1plHzDqGT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:20:33 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Transfer-Encoding
- :Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
- Sender:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
- Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
- List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=SOzqtRQnhrzBV/2kqoR/jW1DTahkUHWwkEGG0EIDlt8=; b=umaZGSlS/Mx6cAOQCY2BhcS56F
- JTft6i3pABnXS+1yEzVxc6J/HnMUqGhP0z1/U/ELpC9SPiGJZcpycToje9yk1SCtTpJbuIjaAZfmP
- 9hgJTa4oK7erwr+7pkqsEdHsRPFYxHJAVeOHEDkR3daRz6oJ+hfPDRkmAFSHXgwkYW03JUr4iiiII
- pwe6c5cQNXDArfmTdHshCR5u/eyVvFEO+8x+kCLvbRtYRUabVSSELftUY6vgPIKuKwP7gszL4UsYi
- SgiqQeZoXMooGlZZ0v46pl3O6+uIH4DVqAg7COtrdlYJg5fVyENBSsXIpN1paT+qMmm9LyeLLhLV1
- yd5Thhxg==;
-Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1gjm3C-0006U0-M1; Wed, 16 Jan 2019 14:20:14 +0000
-Date: Wed, 16 Jan 2019 06:20:14 -0800
-From: Matthew Wilcox <willy@infradead.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH V2] mm: Introduce GFP_PGTABLE
-Message-ID: <20190116142014.GJ6310@bombadil.infradead.org>
-References: <1547619692-7946-1-git-send-email-anshuman.khandual@arm.com>
- <20190116065703.GE24149@dhcp22.suse.cz>
- <20190116123018.GF6310@bombadil.infradead.org>
- <07d6a264-dccd-78ab-e8a9-2410bbef7b97@arm.com>
- <20190116131827.GH6310@bombadil.infradead.org>
- <521d8511-4c87-49c6-de03-67a71d5bacca@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fqLH2DlyzDqgf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:27:51 +1100 (AEDT)
+Received: by mail-vk1-f194.google.com with SMTP id 197so1457355vkf.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 06:27:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=UQM6mniKlKxrnOmNQBuQkbxwhizn1F4ro8TFUMtXkmo=;
+ b=iKTxOYiYgxlJ0m7PhP4HI8H4AmR1WKYO/VES83+hov5fPpc9HzfKaDxY1xoJyCZ+h1
+ yd9Jlld6SznLVsj8k3F+SEnUYVoAkk0cy3abta8peJyxFwlC9jYV0RKXrJ6X/099AsAe
+ 6EKL++1PLZgEwl2SEJMOjS4LXnMFh4vIAxevb6o3ZKobtTBZWL385YmjFLNGzyjtVxqA
+ semjtSbtmImqgQRp2Dh0sxij/+Z0qLlWiQvXBnemXNqW4GJKTPND76XWBzR/mtsPh80w
+ Bo4TeFdb86gP9ULDxABvzR8b7hw/xTM4ZTX7gI1wofZYG9ApjC3lR+c1R9i5PR9GnjMW
+ k+oQ==
+X-Gm-Message-State: AJcUukfkr+sc13ctrsUaDFz6EmZSzco4h2MNOCxBi939oNx5+AQ1hOk0
+ mTEI7uB3Tw0xM5YBSo6IDxqKHuwimoLjlYejj4s=
+X-Google-Smtp-Source: ALg8bN6VwI1ArYelHZvmR1PaA1MLFLrSrq7A9DMWJ0UBcwJmVEmORYrACtE6Zw/o+h9WHLVB78c6er2JrxSMrNC9Lxk=
+X-Received: by 2002:a1f:2ed7:: with SMTP id u206mr3609173vku.72.1547648869025; 
+ Wed, 16 Jan 2019 06:27:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <521d8511-4c87-49c6-de03-67a71d5bacca@c-s.fr>
-User-Agent: Mutt/1.9.2 (2017-12-15)
+References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
+ <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
+In-Reply-To: <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 16 Jan 2019 15:27:35 +0100
+Message-ID: <CAMuHMdWKPj-2Let44rmaVwh-b6kkGg+0cFPQ-+3k9LP86pB7NA@mail.gmail.com>
+Subject: Re: [PATCH 19/21] treewide: add checks for the return value of
+ memblock_alloc*()
+To: Mike Rapoport <rppt@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,47 +71,104 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, christoffer.dall@arm.com, linux-sh@vger.kernel.org,
- peterz@infradead.org, catalin.marinas@arm.com, palmer@sifive.com,
- will.deacon@arm.com, Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
- aneesh.kumar@linux.ibm.com, greentime@andestech.com, linux@armlinux.org.uk,
- mingo@redhat.com, linux-arm-kernel@lists.infradead.org, rientjes@google.com,
- dave.hansen@linux.intel.com, Anshuman Khandual <anshuman.khandual@arm.com>,
- marc.zyngier@arm.com, rppt@linux.vnet.ibm.com, shakeelb@google.com,
- kirill@shutemov.name, tglx@linutronix.de, vbabka@suse.cz,
- ard.biesheuvel@linaro.org, linuxppc-dev@lists.ozlabs.org, steve.capper@arm.com,
- linux-kernel@vger.kernel.org, james.morse@arm.com, akpm@linux-foundation.org,
- robin.murphy@arm.com
+Cc: Rich Felker <dalias@libc.org>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ the arch/x86 maintainers <x86@kernel.org>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+ linux-s390 <linux-s390@vger.kernel.org>, linux-c6x-dev@linux-c6x.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Weinberger <richard@nod.at>, Linux-sh list <linux-sh@vger.kernel.org>,
+ Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
+ Mark Salter <msalter@redhat.com>, Dennis Zhou <dennis@kernel.org>,
+ Matt Turner <mattst88@gmail.com>, arcml <linux-snps-arc@lists.infradead.org>,
+ "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
+ Petr Mladek <pmladek@suse.com>, linux-xtensa@linux-xtensa.org,
+ alpha <linux-alpha@vger.kernel.org>, linux-um@lists.infradead.org,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>, Rob Herring <robh+dt@kernel.org>,
+ Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Linux MM <linux-mm@kvack.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ USB list <linux-usb@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>, Vineet Gupta <vgupta@synopsys.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Openrisc <openrisc@lists.librecores.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 16, 2019 at 02:47:16PM +0100, Christophe Leroy wrote:
-> Le 16/01/2019 à 14:18, Matthew Wilcox a écrit :
-> > I disagree with your objective.  Making more code common is a great idea,
-> > but this patch is too unambitious.  We should be heading towards one or
-> > two page table allocation functions instead of having every architecture do
-> > its own thing.
-> > 
-> > So start there.  Move the x86 function into common code and convert one
-> > other architecture to use it too.
-> 
-> Are we talking about pte_alloc_one_kernel() and pte_alloc_one() ?
-> 
-> I'm not sure x86 function is the best common one, as it seems to allocate a
-> multiple of PAGE_SIZE only.
+Hi Mike,
 
-And that's the common case.  Most architectures use a single page for at
-least one level of the pte/pmd/pud/p4d/pgd hierarchy.  Some use multiple
-pages and some use a fraction of a page.
+On Wed, Jan 16, 2019 at 2:46 PM Mike Rapoport <rppt@linux.ibm.com> wrote:
+> Add check for the return value of memblock_alloc*() functions and call
+> panic() in case of error.
+> The panic message repeats the one used by panicing memblock allocators with
+> adjustment of parameters to include only relevant ones.
+>
+> The replacement was mostly automated with semantic patches like the one
+> below with manual massaging of format strings.
+>
+> @@
+> expression ptr, size, align;
+> @@
+> ptr = memblock_alloc(size, align);
+> + if (!ptr)
+> +       panic("%s: Failed to allocate %lu bytes align=0x%lx\n", __func__,
 
-> Some arches like powerpc use pagetables which are smaller than a page, for
-> instance powerpc 8xx uses 4k pagetables even with 16k pages, which means a
-> single page can be used by 4 pagetables.
+In general, you want to use %zu for size_t
 
-Those can be added later.  Note I said "one or two", and that's what I
-had in mind; I think we want one function that allocates just a page
-and another that allocates a page fragment.  Then we can have a good
-discussion about what method we use; s390 and ppc use different techniques
-today and there's really no good reason for that.
+> size, align);
+>
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+
+Thanks for your patch!
+
+>  74 files changed, 415 insertions(+), 29 deletions(-)
+
+I'm wondering if this is really an improvement?
+For the normal memory allocator, the trend is to remove printing of errors
+from all callers, as the core takes care of that.
+
+> --- a/arch/alpha/kernel/core_marvel.c
+> +++ b/arch/alpha/kernel/core_marvel.c
+> @@ -83,6 +83,9 @@ mk_resource_name(int pe, int port, char *str)
+>
+>         sprintf(tmp, "PCI %s PE %d PORT %d", str, pe, port);
+>         name = memblock_alloc(strlen(tmp) + 1, SMP_CACHE_BYTES);
+> +       if (!name)
+> +               panic("%s: Failed to allocate %lu bytes\n", __func__,
+
+%zu, as strlen() returns size_t.
+
+> +                     strlen(tmp) + 1);
+>         strcpy(name, tmp);
+>
+>         return name;
+> @@ -118,6 +121,9 @@ alloc_io7(unsigned int pe)
+>         }
+>
+>         io7 = memblock_alloc(sizeof(*io7), SMP_CACHE_BYTES);
+> +       if (!io7)
+> +               panic("%s: Failed to allocate %lu bytes\n", __func__,
+
+%zu, as sizeof() returns size_t.
+Probably there are more. Yes, it's hard to get them right in all callers.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
