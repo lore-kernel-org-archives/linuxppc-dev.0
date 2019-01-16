@@ -3,72 +3,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFF3CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:40:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22D3EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:59:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2589920675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:40:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 94C20205C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:59:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="UeiglUNB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2589920675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="w4Gj/294"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94C20205C9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fqct1xTFzDqnD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:40:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fr3G2SM0zDqdW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:59:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=robh@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="UeiglUNB"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="w4Gj/294"; 
  dkim-atps=neutral
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fqVJ75gDzDqSx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:34:48 +1100 (AEDT)
-Received: from mail-vk1-f171.google.com (mail-vk1-f171.google.com
- [209.85.221.171]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id x0GEYC0C021654
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 23:34:13 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com x0GEYC0C021654
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1547649253;
- bh=LeZvenWAyFhQpFAc6vVeaym8dil5fWgTRHvB0UI5JKo=;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fr1F1yf5zDqSF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 01:58:08 +1100 (AEDT)
+Received: from mail-qt1-f178.google.com (mail-qt1-f178.google.com
+ [209.85.160.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7894F2086D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 14:58:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1547650686;
+ bh=nt0t9pYYsdnSuuPbQv9J52WaQ4atxiCDmVt76SSqRfE=;
  h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=UeiglUNBUHfrtsie89ag31RuIsIVtxplGQ6nRZTeEkq6WOihkzHEX8Sg/cmvqFl72
- /ofxuZfbR66yI6pMmPekiRmIF+3U56Dr6uXuAqc6XqMDZLc4C8tj1FZt4sdXN0lG2F
- VgEGJ3QMEAr3zH51VfE/1i7GyjJNLtJ6+aFeQcyk991HP0EfT8Hzlt8ziHPkYxfOg5
- eXW0FrYXqQX3e2Bp4FGyDtoneycWW8GM65HfF3jgiiJQAdmP2G75VJ70/gsQKOO4Ha
- J+e7Cq+N9BsLx3bnCXVOxGzlQzI+ImfL0pnxdP+Cbr6Nq4Gc/QprbzCeyIkXG+4bzf
- lndOFGNoS3c8Q==
-X-Nifty-SrcIP: [209.85.221.171]
-Received: by mail-vk1-f171.google.com with SMTP id s184so1457564vkd.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 06:34:13 -0800 (PST)
-X-Gm-Message-State: AJcUukfzOWNCGT9Hz9uhELJ1mDxAxdydHz142XGvQnkAFOu7k5+NNZ1f
- eFWRgErH8STPTtEEi2x1nVGEtLp8CHgIXfbHc/s=
-X-Google-Smtp-Source: ALg8bN48zfMaV+AYClsEiSt7txS7WccQZ9Pp9d2+4k0CSh3ouq2pbZgy1dZWwsRLrOuyeCFnNqfUwZHIK9K/ocgjusw=
-X-Received: by 2002:a1f:9350:: with SMTP id v77mr3627366vkd.64.1547649251970; 
- Wed, 16 Jan 2019 06:34:11 -0800 (PST)
+ b=w4Gj/294M9xsXIyGGPb6u6u2bJKtX8cZPwwEEKmrd17Es66QdsgWd7/g1emDN1Q8q
+ qNKCzwpIZTdMtSB+LPadUh4eTayc4MB2G59TmneGms+gTa2H2Nca3JcFrVnP1EjmgE
+ sHFEVb9aMYpfYEitbi/co8OYfV6PJPKIrG5Vnvic=
+Received: by mail-qt1-f178.google.com with SMTP id t13so7439476qtn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 06:58:06 -0800 (PST)
+X-Gm-Message-State: AJcUukcN9DnL/zhFkivCyrY7COSc1YH2ilwf6WQmArOArw350NZcIa86
+ bijZXRW34T0hoTH924pcDTqe6xq4VKRdTKoeAA==
+X-Google-Smtp-Source: ALg8bN5/JPYhJySu8yj+5+78GK5ulWxogQKP9CP+KUx7IZPKBDkRJqkdxOSoKlnmasroQ3tGSb2ajhyDrHSVYk2220o=
+X-Received: by 2002:a0c:9e05:: with SMTP id p5mr7196569qve.246.1547650685554; 
+ Wed, 16 Jan 2019 06:58:05 -0800 (PST)
 MIME-Version: 1.0
-References: <1547536740-1572-1-git-send-email-yamada.masahiro@socionext.com>
-In-Reply-To: <1547536740-1572-1-git-send-email-yamada.masahiro@socionext.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 16 Jan 2019 23:33:36 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQKuW8f7BgX8q-Eqa480o6Ch_mZsHyY52h96kifnYepHg@mail.gmail.com>
-Message-ID: <CAK7LNAQKuW8f7BgX8q-Eqa480o6Ch_mZsHyY52h96kifnYepHg@mail.gmail.com>
-Subject: Re: [PATCH] kbuild: mark prepare0 as PHONY to fix external module
- build
-To: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+References: <1546952716-2743-1-git-send-email-viorel.suman@nxp.com>
+ <1546952716-2743-5-git-send-email-viorel.suman@nxp.com>
+ <20190115205755.GA4022@bogus>
+ <CAEnQRZBn7nM-KrGSvnzPWuU=a+jyRxfEKhZSsDD4wTqr6spkwg@mail.gmail.com>
+In-Reply-To: <CAEnQRZBn7nM-KrGSvnzPWuU=a+jyRxfEKhZSsDD4wTqr6spkwg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 16 Jan 2019 08:57:53 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqKzmqubd8BVPdju2hLwZNMsen-1+uuHT+S-yirXaSNyHw@mail.gmail.com>
+Message-ID: <CAL_JsqKzmqubd8BVPdju2hLwZNMsen-1+uuHT+S-yirXaSNyHw@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH v2 4/4] ASoC: add imx-audmix DT binding
+ documentation
+To: Daniel Baluta <daniel.baluta@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -81,85 +80,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>,
- Samuel Holland <samuel@sholland.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-stable # v4 . 20" <stable@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, "S.j. Wang" <shengjiu.wang@nxp.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Daniel Baluta <daniel.baluta@nxp.com>, Takashi Iwai <tiwai@suse.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
+ Viorel Suman <viorel.suman@nxp.com>, Viorel Suman <viorel.suman@gmail.com>,
+ Cosmin Samoila <cosmin.samoila@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 15, 2019 at 5:07 PM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
+On Wed, Jan 16, 2019 at 2:22 AM Daniel Baluta <daniel.baluta@gmail.com> wrote:
 >
-> Commit c3ff2a5193fa ("powerpc/32: add stack protector support")
-> caused kernel panic on PowerPC if an external module is used with
-> CONFIG_STACKPROTECTOR because the 'prepare' target was not executed
-> for the external module build.
+> On Tue, Jan 15, 2019 at 10:58 PM Rob Herring <robh@kernel.org> wrote:
+> >
+> > On Tue, Jan 08, 2019 at 01:05:51PM +0000, Viorel Suman wrote:
+> > > Add the DT binding documentation for Audio Mixer
+> > > machine driver.
+> > >
+> > > Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+> > > ---
+> > >  .../devicetree/bindings/sound/imx-audmix.txt       | 24 ++++++++++++++++++++++
+> > >  1 file changed, 24 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/sound/imx-audmix.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/sound/imx-audmix.txt b/Documentation/devicetree/bindings/sound/imx-audmix.txt
+> > > new file mode 100644
+> > > index 0000000..6ac1230
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/sound/imx-audmix.txt
+> > > @@ -0,0 +1,24 @@
+> > > +NXP Audio Mixer (AUDMIX) machine driver.
+> > > +
+> > > +Required properties:
+> > > +===================================
+> > > +  - compatible               : Compatible list, contains "fsl,imx-audmix"
+> > > +
+> > > +  - model            : Short audio card description.
+> > > +
+> > > +  - dais             : Must contain a list of phandles to AUDMIX connected
+> > > +                       DAIs. The current implementation requires two phandles
+> > > +                       to SAI interfaces to be provided, the first SAI in the
+> > > +                       list being used to route the AUDMIX output.
+> > > +
+> > > +  - audmix-controller        : Must contain the phandle to the AUDMIX device node.
+> >
+> > I don't think you need 2 nodes for this as this one is just a virtual
+> > device. Just add the dais property to the audmix node.
 >
-> Commit e07db28eea38 ("kbuild: fix single target build for external
-> module") turned it into a build error because the 'prepare' target is
-> now executed but the 'prepare0' target is missing for the external
-> module build.
+> Hi Rob,
 >
-> External module on arm/arm64 with CONFIG_STACKPROTECTOR_PER_TASK is
-> also broken in the same way.
+> Thanks for the suggestion. We want to understand better the reasoning
+> behind this.
 >
-> Move 'PHONY += prepare0' to the common place. Make is fine with missing
-> rule for phony targets.
+> Is it because dais are physically connected to AUDMIX node?
 >
-> I minimize the change so it can be easily backported to 4.20.x
->
-> To fix v4.20 for external modules of PowerPC, please backport
-> e07db28eea38 ("kbuild: fix single target build for external module"),
-> and then this commit.
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=201891
-> Fixes: e07db28eea38 ("kbuild: fix single target build for external module")
-> Fixes: c3ff2a5193fa ("powerpc/32: add stack protector support")
-> Fixes: 189af4657186 ("ARM: smp: add support for per-task stack canaries")
-> Fixes: 0a1213fa7432 ("arm64: enable per-task stack canaries")
-> Cc: linux-stable <stable@vger.kernel.org> # v4.20
-> Reported-by: Samuel Holland <samuel@sholland.org>
-> Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
+> In ALSA we usually add all the components inside the
+> associated machine driver virtual node.
 
-Applied to linux-kbuild/fixes.
+Yes, but in those cases, there's a bunch of components (DAIs, DMA,
+DSP, amp, codecs, etc.) with no main device. That doesn't really
+appear to be the case here (or your example was incomplete).
 
+It's simply that we try to avoid such virtual devices unless
+absolutely necessary.
 
->  Makefile | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/Makefile b/Makefile
-> index 499b968..789b332 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -955,6 +955,7 @@ ifdef CONFIG_STACK_VALIDATION
->    endif
->  endif
->
-> +PHONY += prepare0
->
->  ifeq ($(KBUILD_EXTMOD),)
->  core-y         += kernel/ certs/ mm/ fs/ ipc/ security/ crypto/ block/
-> @@ -1061,8 +1062,7 @@ scripts: scripts_basic scripts_dtc
->  # archprepare is used in arch Makefiles and when processed asm symlink,
->  # version.h and scripts_basic is processed / created.
->
-> -# Listed in dependency order
-> -PHONY += prepare archprepare prepare0 prepare1 prepare2 prepare3
-> +PHONY += prepare archprepare prepare1 prepare2 prepare3
->
->  # prepare3 is used to check if we are building in a separate output directory,
->  # and if so do:
-> --
-> 2.7.4
->
-
-
--- 
-Best Regards
-Masahiro Yamada
+Rob
