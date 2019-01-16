@@ -2,59 +2,52 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC94C43444
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE159C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:48:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 840162082F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:44:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="vEE+NR6q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 840162082F
+	by mail.kernel.org (Postfix) with ESMTPS id D6551206C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:48:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D6551206C2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fpNk1PBdzDqLH
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:44:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fpSY02KkzDqgd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:48:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="vEE+NR6q"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fpBV5Pb4zDqfH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:36:02 +1100 (AEDT)
-Received: from localhost (unknown [23.100.24.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id BA78B2086D;
- Wed, 16 Jan 2019 13:36:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1547645761;
- bh=X/DAXLw7/sg/0G1inZRVPjEB/phJVFGQj0oG7WJyfm8=;
- h=Date:From:To:To:To:Cc:Cc:Cc:Subject:In-Reply-To:References:From;
- b=vEE+NR6qiX9CAeqKPlVJ1SlPZchY6YZ2yKX3Q+dbSBMXPQzfQ44fGe+Qs7gMup/Sg
- YjfmGHDUFXdhPBhsgFSBmt8hvW0cBPE3oflwVoc4I9yh+BX9HnKknyBVFsrBrsgo16
- v8vKDbi6Svt7dcC/yOKc+dlZDMCTecSblQRL3ZS4=
-Date: Wed, 16 Jan 2019 13:35:59 +0000
-From: Sasha Levin <sashal@kernel.org>
-To: Sasha Levin <sashal@kernel.org>
-To: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/tm: Limit TM code inside PPC_TRANSACTIONAL_MEM
-In-Reply-To: <1547039805-7979-1-git-send-email-leitao@debian.org>
-References: <1547039805-7979-1-git-send-email-leitao@debian.org>
-Message-Id: <20190116133600.BA78B2086D@mail.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fpCP3TS1zDqZX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:36:49 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 34AA6AF71;
+ Wed, 16 Jan 2019 13:36:46 +0000 (UTC)
+Date: Wed, 16 Jan 2019 14:36:45 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: Anshuman Khandual <anshuman.khandual@arm.com>
+Subject: Re: [PATCH V2] mm: Introduce GFP_PGTABLE
+Message-ID: <20190116133645.GO24149@dhcp22.suse.cz>
+References: <1547619692-7946-1-git-send-email-anshuman.khandual@arm.com>
+ <20190116065703.GE24149@dhcp22.suse.cz>
+ <20190116123018.GF6310@bombadil.infradead.org>
+ <20190116124431.GK24149@dhcp22.suse.cz>
+ <d074a7aa-9582-b95a-dce0-d95ac3d3c949@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d074a7aa-9582-b95a-dce0-d95ac3d3c949@arm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,45 +59,81 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: , mikey@neuling.org, stable@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
+ catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ linux@armlinux.org.uk, Matthew Wilcox <willy@infradead.org>, mingo@redhat.com,
+ vbabka@suse.cz, rientjes@google.com, palmer@sifive.com,
+ greentime@andestech.com, marc.zyngier@arm.com, rppt@linux.vnet.ibm.com,
+ shakeelb@google.com, kirill@shutemov.name, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, ard.biesheuvel@linaro.org,
+ robin.murphy@arm.com, steve.capper@arm.com, christoffer.dall@arm.com,
+ james.morse@arm.com, aneesh.kumar@linux.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On Wed 16-01-19 18:57:13, Anshuman Khandual wrote:
+> 
+> 
+> On 01/16/2019 06:14 PM, Michal Hocko wrote:
+> > On Wed 16-01-19 04:30:18, Matthew Wilcox wrote:
+> >> On Wed, Jan 16, 2019 at 07:57:03AM +0100, Michal Hocko wrote:
+> >>> On Wed 16-01-19 11:51:32, Anshuman Khandual wrote:
+> >>>> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
+> >>>> __GFP_ZERO) and using it for allocating page table pages. This causes some
+> >>>> code duplication which can be easily avoided. GFP_KERNEL allocated and
+> >>>> cleared out pages (__GFP_ZERO) are required for page tables on any given
+> >>>> architecture. This creates a new generic GFP flag flag which can be used
+> >>>> for any page table page allocation. Does not cause any functional change.
+> >>>>
+> >>>> GFP_PGTABLE is being added into include/asm-generic/pgtable.h which is the
+> >>>> generic page tabe header just to prevent it's potential misuse as a general
+> >>>> allocation flag if included in include/linux/gfp.h.
+> >>>
+> >>> I haven't reviewed the patch yet but I am wondering whether this is
+> >>> really worth it without going all the way down to unify the common code
+> >>> and remove much more code duplication. Or is this not possible for some
+> >>> reason?
+> >>
+> >> Exactly what I suggested doing in response to v1.
+> >>
+> >> Also, the approach taken here is crazy.  x86 has a feature that no other
+> >> architecture has bothered to implement yet -- accounting page tables
+> >> to the process.  Yet instead of spreading that goodness to all other
+> >> architectures, Anshuman has gone to more effort to avoid doing that.
+> > 
+> > Yes, I believe the only reason this is x86 only is that each arch would
+> > have to be tweaked separately. So a cleanup in _that_ regard would be
+> > helpful. There is no real reason to have ptes accounted only for x86.
+> > There might be some exceptions but well, our asm-generic allows to opt
+> > in for generic implementation or override it with a special one. The
+> > later should be an exception rather than the rule.
+> 
+> Fair enough. So we seem to have agreement over __GFP_ACCOUNT for user page
+> tables but not for the kernel. But should we accommodate __GFP_RETRY_MAYFAIL
+> or drop them altogether (including multi order allocation requests) ?
 
-[This is an automated email]
+__GFP_RETRY_MAYFAIL is a leftover from __GFP_REPEAT times and from my
+recollection it was pointless there. Or do we have any pte allocations
+which are costly high order or that would rather fail than OOM kill and
+retry.
 
-This commit has been processed because it contains a "Fixes:" tag,
-fixing commit: e1c3743e1a20 powerpc/tm: Set MSR[TS] just prior to recheckpoint.
+Really there is no reason to preserve some code just because it is
+written that way.
 
-The bot has tested the following trees: v4.20.2, v4.19.15, v4.14.93, v4.9.150.
+Anyway, as Mathew already pointed out. There is no real reason to
+convert all arches at once. If you carve out a common implementation and
+make it arch generic then you can go once arch at the time a reuse the
+generic implementation. If there are still some arches which differ only
+by __GFP_RETRY_MAYFAIL then talk to respective maintainers and ask them
+what is the underlying reason.
 
-v4.20.2: Failed to apply! Possible dependencies:
-    Unable to calculate
+See how that is a completely different and much more efficient way than
+trying to make GFP_PGTABLE special and keep the code around?
 
-v4.19.15: Failed to apply! Possible dependencies:
-    Unable to calculate
-
-v4.14.93: Failed to apply! Possible dependencies:
-    0d60619e1c0c ("powerpc: Add missing prototype for sys_debug_setcontext()")
-    67b464a89c21 ("powerpc/32: Mark both tmp variables as unused")
-    6f5b9f018f4c ("powerpc/tm: Unset MSR[TS] if not recheckpointing")
-    b53875c4b4f2 ("powerpc: Add missing prototypes for sys_sigreturn() & sys_rt_sigreturn()")
-    bf7fb32dd5fc ("powerpc: Add missing prototypes for ppc_select() & ppc_fadvise64_64()")
-    f3675644e172 ("powerpc/syscalls: signal_{32, 64} - switch to SYSCALL_DEFINE")
-
-v4.9.150: Failed to apply! Possible dependencies:
-    0d60619e1c0c ("powerpc: Add missing prototype for sys_debug_setcontext()")
-    67b464a89c21 ("powerpc/32: Mark both tmp variables as unused")
-    6f5b9f018f4c ("powerpc/tm: Unset MSR[TS] if not recheckpointing")
-    b53875c4b4f2 ("powerpc: Add missing prototypes for sys_sigreturn() & sys_rt_sigreturn()")
-    bf7fb32dd5fc ("powerpc: Add missing prototypes for ppc_select() & ppc_fadvise64_64()")
-    f3675644e172 ("powerpc/syscalls: signal_{32, 64} - switch to SYSCALL_DEFINE")
-
-
-How should we proceed with this patch?
-
---
-Thanks,
-Sasha
+-- 
+Michal Hocko
+SUSE Labs
