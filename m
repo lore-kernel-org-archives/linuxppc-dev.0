@@ -2,88 +2,76 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D80F4C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:28:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC8F8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:30:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 515F520675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:28:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="unknown key hash" (0-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="h6bDEpcf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 515F520675
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 4D72620675
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 14:30:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D72620675
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fqMC2BtpzDqNb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:28:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org;
- dkim=fail reason="unknown key hash" (0-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="h6bDEpcf"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fqPM6FpKzDqKr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 01:30:31 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fpRb5gM1zDqfN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:47:23 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43fpRW16Rdz9vBL9;
- Wed, 16 Jan 2019 14:47:19 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=h6bDEpcf; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id vTxn3aznp6JG; Wed, 16 Jan 2019 14:47:19 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43fpRV6xvbz9vBL5;
- Wed, 16 Jan 2019 14:47:18 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1547646439; bh=lH8phfL2dc2xvrucZHWB7D4b5ZzaHKfGAG4MvWdpo94=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=h6bDEpcfHoPi7+K8iDB5P2D8Msf7Cxay7+XiKbclC3/MBH8MSFbPurZAHmoagmvkW
- Ef/q/jgPKVOgfJwRlPktA6kj61l8TiftNxvgf/CRtWQBZcf2d0rDXPE2LDLtrhQ72n
- qx3IFMrMR7vXjtN8R9DD2KfjwhDzpyEy2mqQ6kN8=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4DB7F8B84D;
- Wed, 16 Jan 2019 14:47:20 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id QK8m5vIbXNH2; Wed, 16 Jan 2019 14:47:20 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4435E8B830;
- Wed, 16 Jan 2019 14:47:17 +0100 (CET)
-Subject: Re: [PATCH V2] mm: Introduce GFP_PGTABLE
-To: Matthew Wilcox <willy@infradead.org>,
- Anshuman Khandual <anshuman.khandual@arm.com>
-References: <1547619692-7946-1-git-send-email-anshuman.khandual@arm.com>
- <20190116065703.GE24149@dhcp22.suse.cz>
- <20190116123018.GF6310@bombadil.infradead.org>
- <07d6a264-dccd-78ab-e8a9-2410bbef7b97@arm.com>
- <20190116131827.GH6310@bombadil.infradead.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <521d8511-4c87-49c6-de03-67a71d5bacca@c-s.fr>
-Date: Wed, 16 Jan 2019 14:47:16 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fpb53YktzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:53:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43fpb44tvcz8tQK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:53:52 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43fpb441QWz9sDB; Thu, 17 Jan 2019 00:53:52 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
+ [209.85.160.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43fpb35dp7z9sBZ
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2019 00:53:51 +1100 (AEDT)
+Received: by mail-qt1-f195.google.com with SMTP id d19so7144200qtq.9
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2019 05:53:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=GWmQa5APdWA0NhYAwkE9/EiMtG/Tl/I99k8uNevo5WQ=;
+ b=FIoTTihL7ZPTiHm/SNobqOYjUa/YqT7Kaz4cLKRtvwnGRddoM7K3mZBv8dVUGLrVI2
+ M/vHqTCbl9CN8ZkR9m64jRwECSRUAmGcwPGXz9xUSac6iX3qyekovgE5SWiw2DoZSpfM
+ wyJ2aEahRd0fqJbwooJuTjM8cJ9wKP0mkvQunNpgLj6on9kHHpzEMu8rAtl1GhrbDAuw
+ GlOba7SgwoEnTCsNBPH+qRcOwdE55ECwhQIBgSQxCcTDw/S7KVi8SDN7JqywkQMcWvVq
+ 67JK0rxm+6MuNI+quXYVcAh/C8dfyARu2KF1goSz43hFC5PZQZ/dTvXx1IvNS0pWSJo0
+ p/oA==
+X-Gm-Message-State: AJcUukeLeBqsNqoD3D5rZYjBtXXWLqVDGV1NmyZio+xgzPYYVuwfpTOr
+ FLplQObTb21Zu24og1Tc3OJGf0YL8TLExAscfxk=
+X-Google-Smtp-Source: ALg8bN56jT0Rv1woXnY45M5yHXkrBuQ8uf3O9SpSQdDiOtwydf5pdZG9YSC+SB+A3/Q2jRAZMkohHfmlBDBjVugA+Lw=
+X-Received: by 2002:a0c:f50c:: with SMTP id j12mr6908957qvm.149.1547646828836; 
+ Wed, 16 Jan 2019 05:53:48 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20190116131827.GH6310@bombadil.infradead.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <20190116132714.20094-1-mpe@ellerman.id.au>
+ <20190116132714.20094-5-mpe@ellerman.id.au>
+In-Reply-To: <20190116132714.20094-5-mpe@ellerman.id.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 16 Jan 2019 14:53:32 +0100
+Message-ID: <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 5/5] powerpc/syscalls: Allow none instead of
+ sys_ni_syscall
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,74 +83,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, christoffer.dall@arm.com, linux-sh@vger.kernel.org,
- peterz@infradead.org, catalin.marinas@arm.com, palmer@sifive.com,
- will.deacon@arm.com, Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
- aneesh.kumar@linux.ibm.com, linux@armlinux.org.uk, mingo@redhat.com,
- linux-arm-kernel@lists.infradead.org, rientjes@google.com,
- dave.hansen@linux.intel.com, greentime@andestech.com, marc.zyngier@arm.com,
- rppt@linux.vnet.ibm.com, shakeelb@google.com, kirill@shutemov.name,
- tglx@linutronix.de, vbabka@suse.cz, ard.biesheuvel@linaro.org,
- linuxppc-dev@lists.ozlabs.org, steve.capper@arm.com,
- linux-kernel@vger.kernel.org, james.morse@arm.com, akpm@linux-foundation.org,
- robin.murphy@arm.com
+Cc: linuxppc-dev@ozlabs.org, Firoz Khan <firoz.khan@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wed, Jan 16, 2019 at 2:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> sys_ni_syscall is the "not-implemented" syscall syscall, which just
+> returns -ENOSYS.
+>
+> But unless you know that it's not obvious what it does, and even if
+> you do know what it means it doesn't stand out that well from other
+> real syscalls.
+>
+> So teach the scripts to treat "none" as a synonym for
+> "sys_ni_syscall". This makes the table more readable.
 
+Hmm, this actually breaks the proposed script to find bugs
+in the compat handling, i.e. detecting those that have no
+compat handler but only a native one.
 
-Le 16/01/2019 à 14:18, Matthew Wilcox a écrit :
-> On Wed, Jan 16, 2019 at 06:42:22PM +0530, Anshuman Khandual wrote:
->> On 01/16/2019 06:00 PM, Matthew Wilcox wrote:
->>> On Wed, Jan 16, 2019 at 07:57:03AM +0100, Michal Hocko wrote:
->>>> On Wed 16-01-19 11:51:32, Anshuman Khandual wrote:
->>>>> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
->>>>> __GFP_ZERO) and using it for allocating page table pages. This causes some
->>>>> code duplication which can be easily avoided. GFP_KERNEL allocated and
->>>>> cleared out pages (__GFP_ZERO) are required for page tables on any given
->>>>> architecture. This creates a new generic GFP flag flag which can be used
->>>>> for any page table page allocation. Does not cause any functional change.
->>>>>
->>>>> GFP_PGTABLE is being added into include/asm-generic/pgtable.h which is the
->>>>> generic page tabe header just to prevent it's potential misuse as a general
->>>>> allocation flag if included in include/linux/gfp.h.
->>>>
->>>> I haven't reviewed the patch yet but I am wondering whether this is
->>>> really worth it without going all the way down to unify the common code
->>>> and remove much more code duplication. Or is this not possible for some
->>>> reason?
->>>
->>> Exactly what I suggested doing in response to v1.
->>>
->>> Also, the approach taken here is crazy.  x86 has a feature that no other
->>> architecture has bothered to implement yet -- accounting page tables
->>> to the process.  Yet instead of spreading that goodness to all other
->>> architectures, Anshuman has gone to more effort to avoid doing that.
->>
->> The basic objective for this patch is to create a common minimum allocation
->> flag that can be used by architectures but that still allows archs to add
->> on additional constraints if they see fit. This patch does not intend to
->> change functionality for any arch.
-> 
-> I disagree with your objective.  Making more code common is a great idea,
-> but this patch is too unambitious.  We should be heading towards one or
-> two page table allocation functions instead of having every architecture do
-> its own thing.
-> 
-> So start there.  Move the x86 function into common code and convert one
-> other architecture to use it too.
+> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+> index c5907a2dbc86..988a7e29245f 100644
+> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
+> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+> @@ -24,28 +24,28 @@
+>  14     common  mknod                           sys_mknod
+>  15     common  chmod                           sys_chmod
+>  16     common  lchown                          sys_lchown
+> -17     common  break                           sys_ni_syscall
+> -18     32      oldstat                         sys_stat                        sys_ni_syscall
+> -18     64      oldstat                         sys_ni_syscall
+> +17     common  break                           none
+> +18     32      oldstat                         sys_stat                        none
+> +18     64      oldstat                         none
 
-Are we talking about pte_alloc_one_kernel() and pte_alloc_one() ?
+The '64 oldstat' line can simply get dropped here, it has no value
+(I failed to notice this earlier).
 
-I'm not sure x86 function is the best common one, as it seems to 
-allocate a multiple of PAGE_SIZE only.
+For break, i.e. a syscall number without any implementation,
+we use a different syntax on x86 (leaving out the sys_* entirely),
+and on s390 (using '-', which is visually better than 'none' IMHO).
 
-Some arches like powerpc use pagetables which are smaller than a page, 
-for instance powerpc 8xx uses 4k pagetables even with 16k pages, which 
-means a single page can be used by 4 pagetables.
+We might also just remove those entirely across all architectures.
+Some have already done this, and some have done it partially.
+I can only see a couple of syscalls that got removed in the entire
+git history (set_zone_reclaim, nfsservctl, vm86, timerfd), any other
+ones are now literally pre-historic, and presumably nobody would
+miss the macros when building a program that has no chance to
+run on any kernel since at least 2.6.12.
 
-Therefore, I would suggest to start with powerpc functions.
+For 32-bit oldstat, I'd argue that this should actually get fixed by adding
+the compat syscall logic. I think this was discussed when Firoz
+first posted his patches. Something like this:
 
-Christophe
+diff --git a/arch/powerpc/include/asm/unistd.h
+b/arch/powerpc/include/asm/unistd.h
+index f44dbc65e38e..d954c2fc4e2f 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -41,9 +41,7 @@
+ #define __ARCH_WANT_SYS_OLDUMOUNT
+ #define __ARCH_WANT_SYS_SIGPENDING
+ #define __ARCH_WANT_SYS_SIGPROCMASK
+-#ifdef CONFIG_PPC32
+ #define __ARCH_WANT_OLD_STAT
+-#endif
+ #ifdef CONFIG_PPC64
+ #define __ARCH_WANT_SYS_TIME
+ #define __ARCH_WANT_SYS_UTIME
+diff --git a/arch/powerpc/include/uapi/asm/stat.h
+b/arch/powerpc/include/uapi/asm/stat.h
+index afd25f2ff4e8..8331b350c12b 100644
+--- a/arch/powerpc/include/uapi/asm/stat.h
++++ b/arch/powerpc/include/uapi/asm/stat.h
+@@ -11,7 +11,7 @@
+
+ #define STAT_HAVE_NSEC 1
+
+-#ifndef __powerpc64__
++#if defined(__KERNEL__) || !defined(__powerpc64__)
+ struct __old_kernel_stat {
+        unsigned short st_dev;
+        unsigned short st_ino;
+@@ -25,7 +25,7 @@ struct __old_kernel_stat {
+        unsigned long  st_mtime;
+        unsigned long  st_ctime;
+ };
+-#endif /* !__powerpc64__ */
++#endif /* __KERNEL__ || !__powerpc64__ */
+
+ struct stat {
+        unsigned long   st_dev;
+diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl
+b/arch/powerpc/kernel/syscalls/syscall.tbl
+index 740dc9dbf689..cd85718c7039 100644
+--- a/arch/powerpc/kernel/syscalls/syscall.tbl
++++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+@@ -27,7 +27,7 @@
+ 15     common  chmod                           sys_chmod
+ 16     common  lchown                          sys_lchown
+ 17     common  break                           sys_ni_syscall
+-18     32      oldstat                         sys_stat
+         sys_ni_syscall
++18     32      oldstat                         sys_stat
+ 18     64      oldstat                         sys_ni_syscall
+ 18     spu     oldstat                         sys_ni_syscall
+ 19     common  lseek                           sys_lseek
+         compat_sys_lseek
+@@ -43,7 +43,7 @@
+ 25     spu     stime                           sys_stime
+ 26     nospu   ptrace                          sys_ptrace
+         compat_sys_ptrace
+ 27     common  alarm                           sys_alarm
+-28     32      oldfstat                        sys_fstat
+         sys_ni_syscall
++28     32      oldfstat                        sys_fstat
+ 28     64      oldfstat                        sys_ni_syscall
+ 28     spu     oldfstat                        sys_ni_syscall
+ 29     nospu   pause                           sys_pause
+@@ -114,7 +114,7 @@
+ 82     64      select                          sys_ni_syscall
+ 82     spu     select                          sys_ni_syscall
+ 83     common  symlink                         sys_symlink
+-84     32      oldlstat                        sys_lstat
+         sys_ni_syscall
++84     32      oldlstat                        sys_lstat
+ 84     64      oldlstat                        sys_ni_syscall
+ 84     spu     oldlstat                        sys_ni_syscall
+ 85     common  readlink                        sys_readlink
