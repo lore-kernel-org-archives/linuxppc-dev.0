@@ -3,41 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3308C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:33:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F7D8C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:34:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57C0120675
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:33:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57C0120675
+	by mail.kernel.org (Postfix) with ESMTPS id D37F020675
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:34:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D37F020675
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fp7B3Hk7zDqbx
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:33:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fp930znDzDqBX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:34:47 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fp0Y1VJ4zDqQ0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:27:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fp0c1kbqzDqQ0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:27:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 43fp0V53tZz9sBZ; Thu, 17 Jan 2019 00:27:22 +1100 (AEDT)
+ id 43fp0b0zjgz9sDP; Thu, 17 Jan 2019 00:27:27 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43fp0V0Ffrz9sD9; Thu, 17 Jan 2019 00:27:21 +1100 (AEDT)
+ id 43fp0Y6xrQz9sDT; Thu, 17 Jan 2019 00:27:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH v2 1/5] powerpc/syscalls: Use the number when building SPU
- syscall table
-Date: Thu, 17 Jan 2019 00:27:10 +1100
-Message-Id: <20190116132714.20094-1-mpe@ellerman.id.au>
+Subject: [RFC PATCH v2 3/5] powerpc/syscalls: Remove unused prefix parameter
+Date: Thu, 17 Jan 2019 00:27:12 +1100
+Message-Id: <20190116132714.20094-3-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190116132714.20094-1-mpe@ellerman.id.au>
+References: <20190116132714.20094-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -56,39 +57,52 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently the macro that inserts entries into the SPU syscall table
-doesn't actually use the "nr" (syscall number) parameter.
-
-This does work, but it relies on the exact right number of syscall
-entries being emitted in order for the syscal numbers to line up with
-the array entries. If for example we had two entries with the same
-syscall number we wouldn't get an error, it would just cause all
-subsequent syscalls to be off by one in the spu_syscall_table.
-
-So instead change the macro to assign to the specific entry of the
-array, meaning any numbering overlap will be caught by the compiler.
+We never pass a prefix so remove the logic for it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/platforms/cell/spu_callbacks.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/syscalls/Makefile      | 3 +--
+ arch/powerpc/kernel/syscalls/syscallhdr.sh | 4 +---
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-v2: Add Arnd's ack.
+v2: No change.
 
-diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
-index 2f03671ac8db..8f94acdd6d6d 100644
---- a/arch/powerpc/platforms/cell/spu_callbacks.c
-+++ b/arch/powerpc/platforms/cell/spu_callbacks.c
-@@ -34,7 +34,7 @@
-  */
+diff --git a/arch/powerpc/kernel/syscalls/Makefile b/arch/powerpc/kernel/syscalls/Makefile
+index 5e65f68fb7b7..3d9d4e07f725 100644
+--- a/arch/powerpc/kernel/syscalls/Makefile
++++ b/arch/powerpc/kernel/syscalls/Makefile
+@@ -11,8 +11,7 @@ systbl := $(srctree)/$(src)/syscalltbl.sh
  
- void *spu_syscall_table[] = {
--#define __SYSCALL(nr, entry, nargs) entry,
-+#define __SYSCALL(nr, entry, nargs) [nr] = entry,
- #include <asm/syscall_table_spu.h>
- #undef __SYSCALL
- };
+ quiet_cmd_syshdr = SYSHDR  $@
+       cmd_syshdr = $(CONFIG_SHELL) '$(syshdr)' '$<' '$@'	\
+-		   '$(syshdr_abis_$(basetarget))'		\
+-		   '$(syshdr_pfx_$(basetarget))'
++		   '$(syshdr_abis_$(basetarget))'
+ 
+ quiet_cmd_systbl = SYSTBL  $@
+       cmd_systbl = $(CONFIG_SHELL) '$(systbl)' '$<' '$@'	\
+diff --git a/arch/powerpc/kernel/syscalls/syscallhdr.sh b/arch/powerpc/kernel/syscalls/syscallhdr.sh
+index e1e490ea10ab..9e066d026eeb 100644
+--- a/arch/powerpc/kernel/syscalls/syscallhdr.sh
++++ b/arch/powerpc/kernel/syscalls/syscallhdr.sh
+@@ -4,7 +4,6 @@
+ in="$1"
+ out="$2"
+ my_abis=`echo "($3)" | tr ',' '|'`
+-prefix="$4"
+ 
+ fileguard=_UAPI_ASM_POWERPC_`basename "$out" | sed \
+ 	-e 'y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/' \
+@@ -16,8 +15,7 @@ grep -E "^[0-9A-Fa-fXx]+[[:space:]]+${my_abis}" "$in" | sort -n | (
+ 
+ 	nxt=0
+ 	while read nr abi name entry compat ; do
+-		printf "#define __NR_%s%s\t%s\n" \
+-			"${prefix}" "${name}" "${nr}"
++		printf "#define __NR_%s\t%s\n" "${name}" "${nr}"
+ 		nxt=$((nr+1))
+ 	done
+ 
 -- 
 2.20.1
 
