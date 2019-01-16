@@ -2,53 +2,77 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.5 required=3.0 tests=FREEMAIL_FORGED_FROMDOMAIN,
+	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FCBEC43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:14:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B355C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:18:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EA3D20651
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:14:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EA3D20651
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 0165B20651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 13:18:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0165B20651
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gmx.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fnj625DRzDqcT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:14:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fnpP5r8nzDqZ2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 00:18:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=anshuman.khandual@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmx.net
+ (client-ip=212.227.15.18; helo=mout.gmx.net;
+ envelope-from=j.neuschaefer@gmx.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43fngS14h7zDqTY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:12:34 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 61DE080D;
- Wed, 16 Jan 2019 05:12:33 -0800 (PST)
-Received: from [10.162.42.129] (p8cg001049571a15.blr.arm.com [10.162.42.129])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 89A743F70D; Wed, 16 Jan 2019 05:12:22 -0800 (PST)
-Subject: Re: [PATCH V2] mm: Introduce GFP_PGTABLE
-To: Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@kernel.org>
-References: <1547619692-7946-1-git-send-email-anshuman.khandual@arm.com>
- <20190116065703.GE24149@dhcp22.suse.cz>
- <20190116123018.GF6310@bombadil.infradead.org>
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Message-ID: <07d6a264-dccd-78ab-e8a9-2410bbef7b97@arm.com>
-Date: Wed, 16 Jan 2019 18:42:22 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ dmarc=none (p=none dis=none) header.from=gmx.net
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fnmT6crhzDqY7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 00:16:57 +1100 (AEDT)
+Received: from longitude ([109.90.232.48]) by mail.gmx.com (mrgmx003
+ [212.227.17.190]) with ESMTPSA (Nemesis) id 0MhAVV-1gwllR2jyb-00MO6N; Wed, 16
+ Jan 2019 14:16:40 +0100
+Date: Wed, 16 Jan 2019 14:16:37 +0100
+From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 00/15] powerpc/32s: Use BATs/LTLBs for STRICT_KERNEL_RWX
+Message-ID: <20190116131637.GF22334@latitude>
+References: <cover.1547132681.git.christophe.leroy@c-s.fr>
+ <20190113181621.GA22334@latitude>
+ <714e78ba-1e92-a856-3dd6-a1fb96ad3785@c-s.fr>
+ <20190113210227.GB22334@latitude>
+ <334b1b02-b652-499c-904e-09e6f7164b8c@c-s.fr>
+ <20190115003353.GD22334@latitude>
+ <b37e3635-9c69-0cfc-1283-25459b394033@c-s.fr>
+ <20190116003535.GE22334@latitude>
+ <f434aafc-7e5f-dfa2-4cfa-03119c27463a@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <20190116123018.GF6310@bombadil.infradead.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="O98KdSgI27dgYlM5"
+Content-Disposition: inline
+In-Reply-To: <f434aafc-7e5f-dfa2-4cfa-03119c27463a@c-s.fr>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Provags-ID: V03:K1:fpG6AMWNkQdp2tjrCTsVorVYxqLjUeGTOfvO1EVLuFud+eT92zH
+ +ryYU2l50qvRNFVxElXvN6Nf+MnuZOsEObeBshLRl8qv4brQdJDWhM/WxNwK3SX8AZYChWy
+ JR1MRyhcwGLV3r6JSvBZfWv5VIIhr1eabdq7v4WzWmASa3au7BeMpha5uiNc4FM+jTKRiC8
+ WePrunfkF70BvPmC+zkXA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:BXedORg982o=:3kMQxHeF0iEcjem1LPBHWC
+ tluDmUH/0TarG9abyClSy5YTP/qW67ycpyyc+TQnQ+KBDUZjQA0DM8Xf/QiQO7hH07y2hw4BB
+ xOcL8DiaNWt6Z98jNpLHeOgGXR/BvNxltOMF/9D3wdu5MYHu0YXgRzIdsV/8DzZqN4xb7zgyD
+ sVlFYvjRafFhdZ1x9Bs6lIZHbAibNj1sZzdCPz97djeDzhbmBKOKKk30uXFs9wxMvIB/nxxMO
+ 0QOrqXK+9k3NvclgXoQhYQhvE73ugFpFVzTxSYMq4zKnuGcc0Hc5pxZHP4Ose1q/FvKUAHFB3
+ XZhSGr0Yb1iI6xfXgI3mCOCqPNnQlY/FK2seuB0eom8AblLMObCSh1ceygGvgSzKXFleqsFgL
+ 05inGdLeTj3/7ANgleflQH32h87cp5we7ViuBlAsABDPFEqZbm/geAFDpkCysBtLd6RV3PgQB
+ 0CgsMofNXieqo07rX74meFmxnYKRHyORkOv3MbLZt8uFzDa5UqoF4htjuM3MqqV3Lm03AXU6E
+ mZWA1OF4Tsm3//fOdN4qOw10BYO/I7e9h6NmpWnEpw26cPwwnow9JldmNPvxQj1NPLzmKgB8z
+ sjj3FJjncmvRDswzNG/ZblHUvjOwyC/r/hcheGE0/LtOiTmJtX8hm+sZk47EN+wMcW4Z741ce
+ KH98/5uJAI38KRKpAw2JOsgmZcW/Sor9R0xmXqi+40V///e/vDUSJ5KZkJvzKucGqaf7n1HeI
+ M3O5pp9DLY9ZxlDRjuHLx0KKbiKp73C8fFbuT65sUepmqb8lHjz2xKOdBKCMlX+Cv49GZnsdK
+ aYDIBYFraWHJXZTxRqlUp4lZTu0zT4+2XlWzlZkq7VenGVZzq1r2AvuWE/vEUR6gnXzeZ/F5O
+ BFbg1vwXppw4H/J4PS90kdU8dESkH77YFQ742lb7bAoFbEDAX2hNbft6Ukft46FTS30mX/kyw
+ P4UI2r6+xVA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,65 +84,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, linux-sh@vger.kernel.org, peterz@infradead.org,
- catalin.marinas@arm.com, dave.hansen@linux.intel.com, will.deacon@arm.com,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-riscv@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
- linux@armlinux.org.uk, mingo@redhat.com, vbabka@suse.cz, rientjes@google.com,
- palmer@sifive.com, greentime@andestech.com, marc.zyngier@arm.com,
- rppt@linux.vnet.ibm.com, shakeelb@google.com, kirill@shutemov.name,
- tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- ard.biesheuvel@linaro.org, robin.murphy@arm.com, steve.capper@arm.com,
- christoffer.dall@arm.com, james.morse@arm.com, aneesh.kumar@linux.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
+--O98KdSgI27dgYlM5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 01/16/2019 06:00 PM, Matthew Wilcox wrote:
-> On Wed, Jan 16, 2019 at 07:57:03AM +0100, Michal Hocko wrote:
->> On Wed 16-01-19 11:51:32, Anshuman Khandual wrote:
->>> All architectures have been defining their own PGALLOC_GFP as (GFP_KERNEL |
->>> __GFP_ZERO) and using it for allocating page table pages. This causes some
->>> code duplication which can be easily avoided. GFP_KERNEL allocated and
->>> cleared out pages (__GFP_ZERO) are required for page tables on any given
->>> architecture. This creates a new generic GFP flag flag which can be used
->>> for any page table page allocation. Does not cause any functional change.
->>>
->>> GFP_PGTABLE is being added into include/asm-generic/pgtable.h which is the
->>> generic page tabe header just to prevent it's potential misuse as a general
->>> allocation flag if included in include/linux/gfp.h.
->>
->> I haven't reviewed the patch yet but I am wondering whether this is
->> really worth it without going all the way down to unify the common code
->> and remove much more code duplication. Or is this not possible for some
->> reason?
-> 
-> Exactly what I suggested doing in response to v1.
-> 
-> Also, the approach taken here is crazy.  x86 has a feature that no other
-> architecture has bothered to implement yet -- accounting page tables
-> to the process.  Yet instead of spreading that goodness to all other
-> architectures, Anshuman has gone to more effort to avoid doing that.
-> 
+On Wed, Jan 16, 2019 at 07:55:29AM +0100, Christophe Leroy wrote:
+> Le 16/01/2019 =C3=A0 01:35, Jonathan Neusch=C3=A4fer a =C3=A9crit=C2=A0:
+> > Thinning the kernel down a bit actually makes it boot again. Ooops...!
+> > Maybe enabling CONFIG_STRICT_KERNEL_RWX has made it just large enough to
+> > fail the hash table allocation, but there may have been other factors
+> > involved (I'm not sure exactly).  Sorry for the confusion!
+>=20
+> Ok, that must be the reason. Thanks for testing.
+>=20
+> What about the following modification which maps a second 256Mb BAT, does=
+ it
+> helps ?
+>=20
+>=20
+>=20
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+> index c2f564690778..ea574596de37 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -1160,6 +1160,14 @@ initial_bats:
+>  	mtspr	SPRN_DBAT0U,r11		/* bit in upper BAT register */
+>  	mtspr	SPRN_IBAT0L,r8
+>  	mtspr	SPRN_IBAT0U,r11
+> +#ifdef CONFIG_WII
+> +	addis	r11,r11,0x10000000@h
+> +	addis	r8,r8,0x10000000@h
+> +	mtspr	SPRN_DBAT2L,r8
+> +	mtspr	SPRN_DBAT2U,r11
+> +	mtspr	SPRN_IBAT2L,r8
+> +	mtspr	SPRN_IBAT2U,r11
+> +#endif
+>  	isync
+>  	blr
+>=20
+> diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+> index 3f4193201ee7..a334fd5210a8 100644
+> --- a/arch/powerpc/mm/ppc_mmu_32.c
+> +++ b/arch/powerpc/mm/ppc_mmu_32.c
+> @@ -259,6 +259,8 @@ void setup_initial_memory_limit(phys_addr_t
+> first_memblock_base,
+>  	/* 601 can only access 16MB at the moment */
+>  	if (PVR_VER(mfspr(SPRN_PVR)) =3D=3D 1)
+>  		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01000000)=
+);
+> +	else if (IS_ENABLED(CONFIG_WII))
+> +		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x20000000)=
+);
+>  	else /* Anything else has 256M mapped */
+>  		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x10000000)=
+);
+>  }
 
-The basic objective for this patch is to create a common minimum allocation
-flag that can be used by architectures but that still allows archs to add
-on additional constraints if they see fit. This patch does not intend to
-change functionality for any arch.
+I haven't tested it, but this patch won't be enough, because we're only
+looking at the first memblock, and the additional memory in the Wii
+(MEM2) is the second memblock.
 
-Yes. There is opportunity for further clean up and consolidation like the
-one you mentioned about accounting. Uses pages tables should have
-__GFP_ACCOUNT and kernel ones should not. IIUC unfortunately not all arch
-implement this right now. It is something which should not be arch specific.
-Accounting semantics should be common for all archs. A default function
-switching between GFP_PGTABLE for kernel and GFP_PGTABLE | __GFP_ACCOUNT
-looking into mm_struct can help here.
 
-Then there is __GFP_RETRY_MAYFAIL. Some archs use it for multi order page
-allocation but some use for a single page as well.
+Jonathan
 
-If there is an agreement on __GFP_ACCOUNT and __GFP_RETRY_MAYFAIL we can
-clean this up further.
+--O98KdSgI27dgYlM5
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEvHAHGBBjQPVy+qvDCDBEmo7zX9sFAlw/LqwACgkQCDBEmo7z
+X9tVhQ/+K0qBCdq2jx8ptrEmd9ekgPcZH7I9etDfa9QBmeHTqxy3nBA+e3opOgCo
+ulvADJFZpUByjsfQgFap1TRdM+2l9wNaBuNHSm6A4dSlB7oaIYHyFxLGWFCItgTY
+gBcCJvl2HbN/orFfrWqAGBB19AUQrjh6zGZfTP2My/n2ga6TrbwoZuyqhqt6DGpc
+cWmKzIdNX4PUfedG9+TDK+2SlZHpfp1GrP5EIWuwPEQxg5IgwqEfTKtSdh6OdWkE
+IdDT/mWxYIJWVgCSGSbliU8aJTCbqU7lZwLIJYie05Zrc6r6yZkzEw0IVBHg5nwe
+h1EM0KlaNzrcKORammbczZPFhcrwt5XoZKqQtupdPlb1iB2BZqcEPuBqXkbJHv23
+98FzRq9Vmr96Tvvnp/3fmGhSV7PFRbVoL673zaLyQ4q+CvNfsTMHH1Me6zos/E/V
+HioulcBSJUKQf6xBAjuk6WdcP68cu2/Hsn82WEDoJSGn7t6MEtdyU9w0cI9PxUAE
+3oL2xpm/IlyK+Aiw/9FT5dom9ZEmriyCvtVxB5/Ds4xu6xSyKhmroK1Huyp5+XQ3
+wdGw24Vf8qKrowz0G8TGx8A7UUUR9ndpAo9fTRuySiwU5eylrwQ3oasNG1ovST+C
+YcXzooVUrllHLBx9psbZaicJir9wfPMDWqz9rqj1vrT54X37Y9k=
+=bYLA
+-----END PGP SIGNATURE-----
+
+--O98KdSgI27dgYlM5--
