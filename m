@@ -2,57 +2,82 @@ Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82A88C43387
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:24:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08830C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 18:35:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 07BEF20578
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 17:24:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 07BEF20578
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 392E520866
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 18:35:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 392E520866
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fvFx0459zDqlh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 04:24:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fwrW4Z99zDqmF
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 05:35:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.49.179; helo=gateway23.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Greylist: delayed 1500 seconds by postgrey-1.36 at bilbo;
+ Thu, 17 Jan 2019 05:34:26 AEDT
+Received: from gateway23.websitewelcome.com (gateway23.websitewelcome.com
+ [192.185.49.179])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fvC74j6YzDqmJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 04:21:54 +1100 (AEDT)
-Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::bf5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id 58B4C14B56D28;
- Wed, 16 Jan 2019 09:21:48 -0800 (PST)
-Date: Wed, 16 Jan 2019 09:21:47 -0800 (PST)
-Message-Id: <20190116.092147.2222967221278304230.davem@davemloft.net>
-To: rppt@linux.ibm.com
-Subject: Re: [PATCH 15/21] sparc: add checks for the return value of
- memblock_alloc*()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1547646261-32535-16-git-send-email-rppt@linux.ibm.com>
-References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
- <1547646261-32535-16-git-send-email-rppt@linux.ibm.com>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fwpp1rD1zDqMl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 05:34:26 +1100 (AEDT)
+Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
+ by gateway23.websitewelcome.com (Postfix) with ESMTP id CD6F22D05C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 11:46:35 -0600 (CST)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id jpGtg3KCH90onjpGtgVzsG; Wed, 16 Jan 2019 11:46:35 -0600
+X-Authority-Reason: nr=8
+Received: from [189.250.130.205] (port=34128 helo=[192.168.43.131])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1gjpGs-001OZt-PY; Wed, 16 Jan 2019 11:46:35 -0600
+Subject: Re: [PATCH] powerpc/ps3: Use struct_size() in kzalloc()
+To: Geoff Levand <geoff@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <20190108210010.GA980@embeddedor>
+ <595f7b4b-9e26-ae72-de5f-270dce677c65@infradead.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Message-ID: <0673a5d1-5b4b-b432-6fc9-ff020ee0ba5e@embeddedor.com>
+Date: Wed, 16 Jan 2019 11:46:29 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
+MIME-Version: 1.0
+In-Reply-To: <595f7b4b-9e26-ae72-de5f-270dce677c65@infradead.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Wed, 16 Jan 2019 09:21:50 -0800 (PST)
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.130.205
+X-Source-L: No
+X-Exim-ID: 1gjpGs-001OZt-PY
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.43.131]) [189.250.130.205]:34128
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 5
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,43 +89,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, devicetree@vger.kernel.org,
- catalin.marinas@arm.com, heiko.carstens@de.ibm.com, x86@kernel.org,
- linux-mips@vger.kernel.org, jcmvbkbc@gmail.com, guoren@kernel.org,
- sparclinux@vger.kernel.org, hch@lst.de, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, ysato@users.sourceforge.jp, richard@nod.at,
- linux-sh@vger.kernel.org, linux@armlinux.org.uk, kasan-dev@googlegroups.com,
- geert@linux-m68k.org, msalter@redhat.com, dennis@kernel.org,
- mattst88@gmail.com, linux-snps-arc@lists.infradead.org,
- uclinux-h8-devel@lists.sourceforge.jp, pmladek@suse.com,
- linux-xtensa@linux-xtensa.org, linux-alpha@vger.kernel.org,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- robh+dt@kernel.org, green.hu@gmail.com, xen-devel@lists.xenproject.org,
- shorne@gmail.com, gxt@pku.edu.cn, linux-arm-kernel@lists.infradead.org,
- monstr@monstr.eu, tony.luck@intel.com, linux-mm@kvack.org,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, paul.burton@mips.com, vgupta@synopsys.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- openrisc@lists.librecores.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mike Rapoport <rppt@linux.ibm.com>
-Date: Wed, 16 Jan 2019 15:44:15 +0200
+Hi Geoff,
 
-> Add panic() calls if memblock_alloc*() returns NULL.
+On 1/16/19 11:21 AM, Geoff Levand wrote:
+> Hi Gustavo,
 > 
-> Most of the changes are simply addition of
+> On 1/8/19 1:00 PM, Gustavo A. R. Silva wrote:
+>> One of the more common cases of allocation size calculations is finding the
+>> size of a structure that has a zero-sized array at the end, along with memory
+>> for some number of elements for that array. For example:
+>>
+>> struct foo {
+>>      int stuff;
+>>      void *entry[];
+>> };
+>>
+>> instance = kzalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
+>>
+>> Instead of leaving these open-coded and prone to type mistakes, we can now
+>> use the new struct_size() helper:
+>>
+>> instance = kzalloc(struct_size(instance, entry, count), GFP_KERNEL);
+>>
+>> This code was detected with the help of Coccinelle.
+>>
+>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>> ---
+>>   arch/powerpc/platforms/ps3/device-init.c | 4 +---
+>>   1 file changed, 1 insertion(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
+>> index e7075aaff1bb..59587b75493d 100644
+>> --- a/arch/powerpc/platforms/ps3/device-init.c
+>> +++ b/arch/powerpc/platforms/ps3/device-init.c
+>> @@ -354,9 +354,7 @@ static int ps3_setup_storage_dev(const struct ps3_repository_device *repo,
+>>   		 repo->dev_index, repo->dev_type, port, blk_size, num_blocks,
+>>   		 num_regions);
+>>   
+>> -	p = kzalloc(sizeof(struct ps3_storage_device) +
+>> -		    num_regions * sizeof(struct ps3_storage_region),
+>> -		    GFP_KERNEL);
+>> +	p = kzalloc(struct_size(p, regions, num_regions), GFP_KERNEL);
+>>   	if (!p) {
+>>   		result = -ENOMEM;
+>>   		goto fail_malloc;
+> It seems to me the motivation for this change is just to have a
+> code change.  As I've said for other similar patches, I'm reluctant
+> to accept such trivial changes to the PS3 code because it makes
+> it harder for me to maintain the code in the long term.  When I
+> need to do a git bisect to track down a problem I generally have
+> a set of debugging patches that I apply on top of the bisect.  A
+> change to the code like this creates the potential for a patch
+> conflict that I then need to manually edit to resolve.
 > 
->         if(!ptr)
->                 panic();
-> 
-> statements after the calls to memblock_alloc*() variants.
-> 
-> Exceptions are pcpu_populate_pte() and kernel_map_range() that were
-> slightly refactored to accommodate the change.
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 
-Acked-by: David S. Miller <davem@davemloft.net>
+This patch is part of a treewide effort aimed at preventing potential
+integer overflows during allocation. As the commit log says, the
+intention is to promote the use of struct_size instead of an
+open-coded form that can be prone to mistakes. This macro is a
+defense-in-depth strategy against overflows and it is a good idea
+to use it as widely as possible.
+
+I'm not stopping to see how old the code is. I'm only focusing on the
+particular context of the memory allocation to understand what is the
+name of the zero-sized array that should be used for struct_size(),
+and if this macro can accurately replace the open-coded form.
+
+> If this change was for relatively new code, or better, for a patch
+> that was submitted but not yet merged, then my feelings would be
+> different.  I think it would be really useful to have something
+> that scans patches in patchwork.
+> 
+
+I understand your point.
+
+Thanks
+--
+Gustavo
