@@ -1,60 +1,51 @@
-Return-Path: <SRS0=xHiI=PX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=yyDT=PY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85AF9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 22:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19240C43387
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 00:11:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E97A1208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jan 2019 22:58:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E97A1208E4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=tmux.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4209D206C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 00:11:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4209D206C2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43fQjj3HYdzDqWR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 09:58:17 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43fSKd2CYlzDqWh
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 16 Jan 2019 11:11:01 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43fQgz6wYyzDqW1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 09:56:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=tmux.org
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43fQgz5rwFz8tRJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 09:56:47 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43fQgz54Wsz9sDn; Wed, 16 Jan 2019 09:56:47 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=fail (mailfrom) smtp.mailfrom=tmux.org
- (client-ip=2001:41d0:a:1408::1; helo=atom2.tmux.org;
- envelope-from=tobiasu@tmux.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=tmux.org
-X-Greylist: delayed 415 seconds by postgrey-1.36 at bilbo;
- Wed, 16 Jan 2019 09:56:46 AEDT
-Received: from atom2.tmux.org (unknown [IPv6:2001:41d0:a:1408::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43fQgy3Ph5z9sD4
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2019 09:56:46 +1100 (AEDT)
-Received: by atom2.tmux.org (Postfix, from userid 1000)
- id 7016761F9D; Tue, 15 Jan 2019 22:49:45 +0000 (UTC)
-Date: Tue, 15 Jan 2019 23:49:45 +0100
-From: Tobias Ulmer <tobiasu@tmux.org>
-To: linuxppc-dev@ozlabs.org
-Subject: G5 Quad hangs early on 4.20.2 / 5.0-rc2+
-Message-ID: <20190115224945.fvyrjjf3mjywq7u6@atom2.tmux.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43fSHl1YRpzDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2019 11:09:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43fSHb5L9yz9sBQ;
+ Wed, 16 Jan 2019 11:09:15 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 14/15] arch: add split IPC system calls where needed
+In-Reply-To: <CAK8P3a3eUzGDrJtV2ySpgHwjKHwZYr+1xHp6tChCt1gWi=mJ+g@mail.gmail.com>
+References: <20190110162435.309262-1-arnd@arndb.de>
+ <20190110162435.309262-15-arnd@arndb.de>
+ <87pnsz28k2.fsf@concordia.ellerman.id.au>
+ <CAK8P3a0uas76i2W1yjFvxHT-2=A8_egUZeAUM-Vya6386+87Xg@mail.gmail.com>
+ <CAK8P3a3eUzGDrJtV2ySpgHwjKHwZYr+1xHp6tChCt1gWi=mJ+g@mail.gmail.com>
+Date: Wed, 16 Jan 2019 11:09:12 +1100
+Message-ID: <874la9zcnr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: NeoMutt/20170113 (1.7.2)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,24 +57,76 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dominik Brodowski <linux@dominikbrodowski.net>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Deepa Dinamani <deepa.kernel@gmail.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Ingo Molnar <mingo@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ Linux API <linux-api@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>, "Eric W .
+ Biederman" <ebiederm@xmission.com>, alpha <linux-alpha@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+Arnd Bergmann <arnd@arndb.de> writes:
 
-both the latest stable 4.20.2 and 5.0 rc2+ hang early on the G5 Quad.
+> On Tue, Jan 15, 2019 at 4:01 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>>
+>> On Mon, Jan 14, 2019 at 4:59 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> > Arnd Bergmann <arnd@arndb.de> writes:
+>> > >  arch/m68k/kernel/syscalls/syscall.tbl     | 11 +++++++++++
+>> > >  arch/mips/kernel/syscalls/syscall_o32.tbl | 11 +++++++++++
+>> > >  arch/powerpc/kernel/syscalls/syscall.tbl  | 12 ++++++++++++
+>> >
+>> > I have some changes I'd like to make to our syscall table that will
+>> > clash with this.
+>> >
+>> > I'll try and send them today.
+>>
+>> Ok. Are those for 5.0 or 5.1? If they are intended for 5.0, it would be
+>> nice for me to have a branch based on 5.0-rc1 that I can put
+>> the other patches on top of.
+>
+> There is also another change that I considered:
+>
+> At the end of my series, we have a lot of entries like
+>
+> 245     32      clock_settime                   sys_clock_settime32
+> 245     64      clock_settime                   sys_clock_settime
+> 245     spu     clock_settime                   sys_clock_settime
+>
+> which could be folded into
+>
+> 245     32      clock_settime                   sys_clock_settime32
+> 245     spu64 clock_settime                   sys_clock_settime
+>
+> if we just add another option to the ABI field. Any thoughts on
+> that?
 
-Surely I'm not the first to run into this, but I couldn't find any
-discussion or bug report. Sorry if you're already aware.
+My series splits spu out into a separate field. So the above would be:
 
-You can see it hang here (5.0 rc2+, 4.20.2 is nearly identical) until
-the watchdog triggers a reboot:
+245     32	-	clock_settime                   sys_clock_settime32
+245     64	spu	clock_settime                   sys_clock_settime
 
-https://i.imgur.com/UiCVRuG.jpg
-
-If I had to make an uneducated guess, it seems to boot into the same
-codepath twice (mpic was already initialized, then it starts again right
-after smp bringup). Maybe on a second CPU?
-
-To narrow it down a little, my last known good was 4.18.9
+cheers
