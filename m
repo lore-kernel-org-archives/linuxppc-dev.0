@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96FB9C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 13:36:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B815FC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 13:38:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4899C205C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 13:36:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4899C205C9
+	by mail.kernel.org (Postfix) with ESMTPS id 6B2E5205C9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 13:38:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B2E5205C9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gQ8c3NdCzDqsR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 00:36:32 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gQBM4JFBzDqrT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 00:38:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gQ274jzpzDqnl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 00:30:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gQ2931NCzDqnp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 00:30:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 43gQ271HY7z9sDP; Fri, 18 Jan 2019 00:30:55 +1100 (AEDT)
+ id 43gQ276ZShz9sDP; Fri, 18 Jan 2019 00:30:55 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43gQ264FV0z9sDL; Fri, 18 Jan 2019 00:30:54 +1100 (AEDT)
+ id 43gQ275K9lz9sDT; Fri, 18 Jan 2019 00:30:55 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 3/7] powerpc/64: Add logical PVR to the dump stack arch
+Subject: [PATCH v2 4/7] powerpc: Add device-tree model to dump stack arch
  description
-Date: Fri, 18 Jan 2019 00:30:38 +1100
-Message-Id: <20190117133042.793-3-mpe@ellerman.id.au>
+Date: Fri, 18 Jan 2019 00:30:39 +1100
+Message-Id: <20190117133042.793-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190117133042.793-1-mpe@ellerman.id.au>
 References: <20190117133042.793-1-mpe@ellerman.id.au>
@@ -58,34 +58,63 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-If we detect a logical PVR add that to the dump stack arch
-description, which is printed in case of an oops.
+As soon as we know the model of the machine we're on, add it to the
+dump stack arch description, which is printed in case of an oops.
 
-eg: Hardware name: ... lpvr:0xf000004
+eg: Hardware name: model:'IBM,8247-22L'
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/prom.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-v2: new.
+v2: Qualify the string with 'model'.
 
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index ea2c3498067d..38a90097469a 100644
+index 38a90097469a..70af26a1eedd 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -371,8 +371,10 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
- 	 */
- 	if (!dt_cpu_ftrs_in_use()) {
- 		prop = of_get_flat_dt_prop(node, "cpu-version", NULL);
--		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000)
-+		if (prop && (be32_to_cpup(prop) & 0xff000000) == 0x0f000000) {
- 			identify_cpu(0, be32_to_cpup(prop));
-+			dump_stack_add_arch_desc("lpvr:0x%04x", be32_to_cpup(prop));
-+		}
+@@ -34,6 +34,7 @@
+ #include <linux/of_fdt.h>
+ #include <linux/libfdt.h>
+ #include <linux/cpu.h>
++#include <linux/printk.h>
  
- 		check_cpu_feature_properties(node);
- 		check_cpu_pa_features(node);
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -687,6 +688,23 @@ static void __init tm_init(void)
+ static void tm_init(void) { }
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
++static int __init
++early_init_dt_scan_model(unsigned long node, const char *uname,
++			 int depth, void *data)
++{
++	const char *prop;
++
++	if (depth != 0)
++		return 0;
++
++	prop = of_get_flat_dt_prop(node, "model", NULL);
++	if (prop)
++		dump_stack_add_arch_desc("model:'%s'", prop);
++
++	/* break now */
++	return 1;
++}
++
+ void __init early_init_devtree(void *params)
+ {
+ 	phys_addr_t limit;
+@@ -697,6 +715,8 @@ void __init early_init_devtree(void *params)
+ 	if (!early_init_dt_verify(params))
+ 		panic("BUG: Failed verifying flat device tree, bad version?");
+ 
++	of_scan_flat_dt(early_init_dt_scan_model, NULL);
++
+ #ifdef CONFIG_PPC_RTAS
+ 	/* Some machines might need RTAS info for debugging, grab it now. */
+ 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
 -- 
 2.20.1
 
