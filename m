@@ -2,43 +2,72 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8247C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 11:37:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B19DFC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 11:51:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB25C2054F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 11:37:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB25C2054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 2DA5420657
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 11:51:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2DA5420657
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gMW45cxnzDqfJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 22:37:20 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gMq52FPTzDqpv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 22:51:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.222.194; helo=mail-qk1-f194.google.com;
+ envelope-from=breno.debian@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-qk1-f194.google.com (mail-qk1-f194.google.com
+ [209.85.222.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gMSk0VZxzDqfJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 22:35:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 43gMSj5RPcz9sCX; Thu, 17 Jan 2019 22:35:17 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 43gMSj4czyz9sCh; Thu, 17 Jan 2019 22:35:17 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64s: Remove MSR_RI optimisation in system_call_exit()
-Date: Thu, 17 Jan 2019 22:35:10 +1100
-Message-Id: <20190117113510.4265-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gMmn2lwMzDqdb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 22:49:12 +1100 (AEDT)
+Received: by mail-qk1-f194.google.com with SMTP id y16so5783878qki.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 03:49:12 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=VrkXYLFOreGPO2PvicgsOzrSETWH+R5V7cE6kyE8Wqg=;
+ b=amb28rP+x+3OFzNZnWT+mnoCa3Irts48BhvBoD/gfd+yxR8MVXYriwrlfcccHHuRoJ
+ tor+FY+hUzv1Df7UE8mbGu4GNRAAqVc9k8gd4mqelbQbchV3VGDiVvxmA5VNvWRJO1wV
+ SD2ZB9/yvigVP12NBRwOZCyA3kfSdELn3GNB/6h2WSA+2FQD8nhkdO1VCVCeiGd4kapk
+ ZBCISekrhyliAvteorc0cUjAQ4+fTiRXR641KZLI0OJN4CaT+6XSkrYfYghQ0YgEQvfp
+ tvIduTQOUyuCTF/0Wg1uk39XnNrOSc/9Cj9b9wdmjVik9Q7cHryMqVo9UCEyseTLmafI
+ WICA==
+X-Gm-Message-State: AJcUukdO7g6lgV9eToMMzJScfwcl0riKZ/upPQpBw9gIWE7IajImAJie
+ lD5DFCJZAGmIJ5oZtqEV5Lk=
+X-Google-Smtp-Source: ALg8bN730DE2pd1omadwvvTI3LhgwRuKyKx88jiLOgM2pYbb8MsRCI/ubht6WXReE55cgy4u/Bd2ng==
+X-Received: by 2002:a37:4f4e:: with SMTP id d75mr10436430qkb.257.1547725750893; 
+ Thu, 17 Jan 2019 03:49:10 -0800 (PST)
+Received: from [10.0.0.8] ([189.29.25.55])
+ by smtp.gmail.com with ESMTPSA id d193sm66043110qka.91.2019.01.17.03.49.08
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 17 Jan 2019 03:49:10 -0800 (PST)
+Subject: Re: [PATCH] powerpc/tm: Limit TM code inside PPC_TRANSACTIONAL_MEM
+To: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+References: <1547039805-7979-1-git-send-email-leitao@debian.org>
+ <20190116133600.BA78B2086D@mail.kernel.org>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <bc20e375-09a0-1672-f61c-f90375c31a61@debian.org>
+Date: Thu, 17 Jan 2019 09:49:05 -0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190116133600.BA78B2086D@mail.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,112 +79,52 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: mikey@neuling.org, stable@vger.kernel.org, gregkh@linuxfoundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently in system_call_exit() we have an optimisation where we
-disable MSR_RI (recoverable interrupt) and MSR_EE (external interrupt
-enable) in a single mtmsrd instruction.
+hi Sasha,
 
-Unfortunately this will no longer work with THREAD_INFO_IN_TASK,
-because then the load of TI_FLAGS might fault and faulting with MSR_RI
-clear is treated as an unrecoverable exception which leads to a
-panic().
+On 1/16/19 11:35 AM, Sasha Levin wrote:
+> Hi,
+> 
+> [This is an automated email]
+> 
+> This commit has been processed because it contains a "Fixes:" tag,
+> fixing commit: e1c3743e1a20 powerpc/tm: Set MSR[TS] just prior to recheckpoint.
+> 
+> The bot has tested the following trees: v4.20.2, v4.19.15, v4.14.93, v4.9.150.
+> 
+> v4.20.2: Failed to apply! Possible dependencies:
+>     Unable to calculate
+> 
+> v4.19.15: Failed to apply! Possible dependencies:
+>     Unable to calculate
+> 
+> v4.14.93: Failed to apply! Possible dependencies:
+>     0d60619e1c0c ("powerpc: Add missing prototype for sys_debug_setcontext()")
+>     67b464a89c21 ("powerpc/32: Mark both tmp variables as unused")
+>     6f5b9f018f4c ("powerpc/tm: Unset MSR[TS] if not recheckpointing")
+>     b53875c4b4f2 ("powerpc: Add missing prototypes for sys_sigreturn() & sys_rt_sigreturn()")
+>     bf7fb32dd5fc ("powerpc: Add missing prototypes for ppc_select() & ppc_fadvise64_64()")
+>     f3675644e172 ("powerpc/syscalls: signal_{32, 64} - switch to SYSCALL_DEFINE")
+> 
+> v4.9.150: Failed to apply! Possible dependencies:
+>     0d60619e1c0c ("powerpc: Add missing prototype for sys_debug_setcontext()")
+>     67b464a89c21 ("powerpc/32: Mark both tmp variables as unused")
+>     6f5b9f018f4c ("powerpc/tm: Unset MSR[TS] if not recheckpointing")
+>     b53875c4b4f2 ("powerpc: Add missing prototypes for sys_sigreturn() & sys_rt_sigreturn()")
+>     bf7fb32dd5fc ("powerpc: Add missing prototypes for ppc_select() & ppc_fadvise64_64()")
+>     f3675644e172 ("powerpc/syscalls: signal_{32, 64} - switch to SYSCALL_DEFINE")
+> 
+> 
+> How should we proceed with this patch?
 
-So change the code to only clear MSR_EE prior to loading TI_FLAGS,
-leaving the clear of MSR_RI until later. We have some latitude in
-where do the clear of MSR_RI. A bit of experimentation has shown that
-this location gives the least slow down.
+I understand that the commit that this patch fixes is not integrated into
+stable tree.
 
-This still causes a noticeable slow down in our null_syscall
-performance. On a Power9 DD2.2:
+I think it does not need to make stable at this moment, thus.
 
-  Before        After         Delta     Delta %
-  955 cycles    999 cycles    -44	-4.6%
-
-On the plus side this does simplify the code somewhat, because we
-don't have to reenable MSR_RI on the restore_math() or
-syscall_exit_work() paths which was necessitated previously by the
-optimisation.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/entry_64.S | 34 ++++++++++++++--------------------
- 1 file changed, 14 insertions(+), 20 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 83bddacd7a17..b1aea6680a9d 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -236,18 +236,14 @@ system_call:			/* label this so stack traces look sane */
- 	/*
- 	 * Disable interrupts so current_thread_info()->flags can't change,
- 	 * and so that we don't get interrupted after loading SRR0/1.
-+	 *
-+	 * Leave MSR_RI enabled for now, because with THREAD_INFO_IN_TASK we
-+	 * could fault on the load of the TI_FLAGS below.
- 	 */
- #ifdef CONFIG_PPC_BOOK3E
- 	wrteei	0
- #else
--	/*
--	 * For performance reasons we clear RI the same time that we
--	 * clear EE. We only need to clear RI just before we restore r13
--	 * below, but batching it with EE saves us one expensive mtmsrd call.
--	 * We have to be careful to restore RI if we branch anywhere from
--	 * here (eg syscall_exit_work).
--	 */
--	li	r11,0
-+	li	r11,MSR_RI
- 	mtmsrd	r11,1
- #endif /* CONFIG_PPC_BOOK3E */
- 
-@@ -263,15 +259,7 @@ system_call:			/* label this so stack traces look sane */
- 	bne	3f
- #endif
- 2:	addi    r3,r1,STACK_FRAME_OVERHEAD
--#ifdef CONFIG_PPC_BOOK3S
--	li	r10,MSR_RI
--	mtmsrd	r10,1		/* Restore RI */
--#endif
- 	bl	restore_math
--#ifdef CONFIG_PPC_BOOK3S
--	li	r11,0
--	mtmsrd	r11,1
--#endif
- 	ld	r8,_MSR(r1)
- 	ld	r3,RESULT(r1)
- 	li	r11,-MAX_ERRNO
-@@ -287,6 +275,16 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	andi.	r6,r8,MSR_PR
- 	ld	r4,_LINK(r1)
- 
-+#ifdef CONFIG_PPC_BOOK3S
-+	/*
-+	 * Clear MSR_RI, MSR_EE is already and remains disabled. We could do
-+	 * this later, but testing shows that doing it here causes less slow
-+	 * down than doing it closer to the rfid.
-+	 */
-+	li	r11,0
-+	mtmsrd	r11,1
-+#endif
-+
- 	beq-	1f
- 	ACCOUNT_CPU_USER_EXIT(r13, r11, r12)
- 
-@@ -363,10 +361,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	b	.Lsyscall_exit
- 	
- .Lsyscall_exit_work:
--#ifdef CONFIG_PPC_BOOK3S
--	li	r10,MSR_RI
--	mtmsrd	r10,1		/* Restore RI */
--#endif
- 	/* If TIF_RESTOREALL is set, don't scribble on either r3 or ccr.
- 	 If TIF_NOERROR is set, just save r3 as it is. */
- 
--- 
-2.20.1
-
+Thanks,
+Breno
