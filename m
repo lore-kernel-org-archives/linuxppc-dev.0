@@ -2,78 +2,113 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77D2CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 12:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2B21C43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 12:49:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9EF820657
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 12:25:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9EF820657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id 0BAFE20851
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 12:49:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="juRPzUpY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0BAFE20851
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gNZW51sSzDqsW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 23:25:23 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gNV22ZfgzDqr5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 23:21:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gP6R0k2TzDq9G
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 23:49:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43gNV14BkNz8tRJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 23:21:29 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43gNV11YbLz9sCh; Thu, 17 Jan 2019 23:21:29 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.193; helo=mail-qk1-f193.google.com;
- envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mail-qk1-f193.google.com (mail-qk1-f193.google.com
- [209.85.222.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.0.73; helo=eur02-am5-obe.outbound.protection.outlook.com;
+ envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="juRPzUpY"; 
+ dkim-atps=neutral
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00073.outbound.protection.outlook.com [40.107.0.73])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43gNV00GP9z9sCX
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2019 23:21:27 +1100 (AEDT)
-Received: by mail-qk1-f193.google.com with SMTP id o125so5863138qkf.3
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2019 04:21:27 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=80agVxjR4CvOXAJM2KNjQt5dr6dUiuAf3JQQOyweS8k=;
- b=M7M26DPYk3lNmHDBrKSZS1PmZK3h0o3KF7XE4/uASw8JNtCRdrXjxJne5S2iEXcGNR
- AMVUWPQoM/wOOVgeYsEveIyGmG1O2dJzeh6hPT6ENNILaKsSIQScer8MoDV95oR/QCMM
- 76R9Uk99csSkLae+ZaZ7LcYigfa6eKic3TSpn2wdIs/DNHibDuDG7iJlBJuHueHu2rqS
- yGuiFQDwaFpwwSKIzHW/0Eq/pMPgYFQM8jY3+eX91s7fT6nzpKhEbTpKyXpelrkAXsq3
- 8KQM47+XYoK5bNzvz70cDem3MtMqxc1zSPvupXyJH8Nh5OpchaQFTgZs1SeEluSEDTvp
- 1BHw==
-X-Gm-Message-State: AJcUukfmWVgH0OPcPZS656FmSIUAZax01Ho+pcI780PK4KiRchiAGa4R
- KuwGVngnImqg6wvYeiJ4ly4QH8Fym9EB7JgJeKo=
-X-Google-Smtp-Source: ALg8bN6lcMEvam2dOChXO67m6IS3sEXQj79ms8czR9WmzGvMD6O+vf5b2elnwkx0gglmmyatp7NibIs9jo8iTDCVvT0=
-X-Received: by 2002:a37:324a:: with SMTP id y71mr10713728qky.291.1547727685844; 
- Thu, 17 Jan 2019 04:21:25 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gP316t9LzDqfN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 23:46:33 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=bPJ+pegwV+edxkAENPAA3yL199YoV/oV3+0k8C6Rc4c=;
+ b=juRPzUpYRHxP3l5F5tKuDKTVPRgtjfrL/1KrfI0tXMxAiZrZ6yInQ5PYgH/ga8Vm0GT7s3ipslWMUwqPI78RIcXCkkUNzKD7CTztbwq5CA3xn0oEvlF8OjX4lMpOwPqiQ8khSTQzpcEyKAASgyRdlkxjjel/ZAIqncOag+lzgIw=
+Received: from DB7PR04MB4699.eurprd04.prod.outlook.com (20.176.233.28) by
+ DB7PR04MB4251.eurprd04.prod.outlook.com (52.135.131.25) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1516.18; Thu, 17 Jan 2019 12:46:27 +0000
+Received: from DB7PR04MB4699.eurprd04.prod.outlook.com
+ ([fe80::f1a0:618e:40fc:a88c]) by DB7PR04MB4699.eurprd04.prod.outlook.com
+ ([fe80::f1a0:618e:40fc:a88c%2]) with mapi id 15.20.1537.018; Thu, 17 Jan 2019
+ 12:46:27 +0000
+From: Viorel Suman <viorel.suman@nxp.com>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob
+ Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jaroslav
+ Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
+ <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
+ <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Viorel Suman
+ <viorel.suman@nxp.com>, "S.j. Wang" <shengjiu.wang@nxp.com>, Daniel Baluta
+ <daniel.baluta@nxp.com>, Cosmin Samoila <cosmin.samoila@nxp.com>
+Subject: [PATCH v3 1/4] ASoC: fsl: Add Audio Mixer CPU DAI driver
+Thread-Topic: [PATCH v3 1/4] ASoC: fsl: Add Audio Mixer CPU DAI driver
+Thread-Index: AQHUrmKpSG14r5m5zUexkaqQu1q4yQ==
+Date: Thu, 17 Jan 2019 12:46:27 +0000
+Message-ID: <1547729177-14317-2-git-send-email-viorel.suman@nxp.com>
+References: <1547729177-14317-1-git-send-email-viorel.suman@nxp.com>
+In-Reply-To: <1547729177-14317-1-git-send-email-viorel.suman@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: AM6PR05CA0036.eurprd05.prod.outlook.com
+ (2603:10a6:20b:2e::49) To DB7PR04MB4699.eurprd04.prod.outlook.com
+ (2603:10a6:10:14::28)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=viorel.suman@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-mailer: git-send-email 2.7.4
+x-originating-ip: [95.76.156.53]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; DB7PR04MB4251;
+ 6:/PqJmbCsrFWXeJBG4UEl0HCCWZ+BFf3mo7DrVDH4GFhqUZRgT7xKiJrPabqZAGFqeSJrwL4qmXE2HXgCT31tyPHq8CGLHwAU0/yMSErHZDX0jZm5LnTjl81kxreQsR5HY2BVLk/+hxh3efcWc/pjdsH+K2wtZynCqxsNAdq75qGZAp68v5gesVycZzsJ2xeGvt9WRgr6+BFn+H8Jw1YMX7PGtW7xioCArgTQfxfRw7JwLwuwfXauwB948iESX8W2sBrzNpNlSpquMHXHypJRVUM+Ujahn9Cw9Lm4ebKat0F8vnDzfVc7lU8Z/EQeuzlH4DnP5WryvUBHGRfU0lA54txFcp66xH8vjUm26jp+N8ktaf+/a53Os3FLvnpe+XLuHNwPtMdDrQWEbDkVbTcYjDcNHX0/qKp9CR1od0rDcBlZQ03J53u3Pp64tq2MfCCOsVXn7K/w5FzJF/d5VgtogQ==;
+ 5:IJBgl35+EzpPuH4+waos1ogH5XNn7tUHOUx26l6M/kiQ/sXauYV7ki9ywxL8uicAUYBKlzuv2H7lerkitffvYHLPHaSU/3zYIFZ+moKC4t+YULl/gKO8XWuqzBM4I0tEQLFl+XzFWFMWEt01EyKSUmmusS0MXHaSThZg9CEY4REorqQw13RNEP2ZcZq1AJ9djIqohOoDx3r3v/69CYPnmg==;
+ 7:dGiD3KHnuTYSJdhpqiPKIjztk/ZcpUSidggcNvphMYezFjchzWjyM+xD+Khir6HeR2cFbmxB+HWM8nNyHS053Gcl8OCluRRs5JzgLDLRyX3k4tL9a5Sx2jVEYDAIAXSeTOo3O24rMj/E/C5PVC69qQ==
+x-ms-office365-filtering-correlation-id: 5c285851-261b-4771-ad90-08d67c79cbd5
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:DB7PR04MB4251; 
+x-ms-traffictypediagnostic: DB7PR04MB4251:
+x-microsoft-antispam-prvs: <DB7PR04MB4251DE96B696CFC296B3B94D92830@DB7PR04MB4251.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0920602B08
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(136003)(39860400002)(376002)(346002)(396003)(366004)(189003)(199004)(305945005)(76176011)(6116002)(3846002)(14454004)(6512007)(6436002)(6486002)(7736002)(71200400001)(53946003)(52116002)(6636002)(6506007)(966005)(6306002)(386003)(86362001)(316002)(478600001)(71190400001)(54906003)(110136005)(106356001)(97736004)(105586002)(446003)(53936002)(66066001)(476003)(2906002)(4326008)(486006)(11346002)(14444005)(256004)(99286004)(81166006)(30864003)(39060400002)(8676002)(2616005)(186003)(102836004)(26005)(44832011)(25786009)(5660300001)(7416002)(81156014)(8936002)(50226002)(68736007)(217873002)(36756003)(921003)(1121003)(579004);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:DB7PR04MB4251;
+ H:DB7PR04MB4699.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: lvAXQYtCjawp9gMN7+oYCOpp6Ibu9oNZ/pwejoasgYbcPDfTBoxm4fikF6PyEc6VVi+po2khYFksGrEIZkGJ8rNolvK5Pb/WB8+r2iH9SC1nMdgjgATF9Sjt+ZOCMTtF/Wn3MxMmIsaDbvaj7E10PACPv836RCDsLu2twCcZhRTurqHApwIlnLnsQAZ3MXiOPv4VLhUlZ8ov2E/xOfVxgZUdayemJjgQpMGb0hvjwFYu8CNPL7Rlx5OPO1OcpsU1mIK3rfyY3lsNtr9SXmt7S3LP1iGy0mzrCf2gH1w+dpMwCspjY74vKU5tnMec1DQ4eMiFTxDjO09yuuoAhR6DvU/xN/21MyahdIofkrO85z8nC+SEgX4lfH7/SWpQAaJm7WOXK1k9kqo1TgdfTglbzf9oCV7LH401fV+Alk76elA=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-References: <20190116132714.20094-1-mpe@ellerman.id.au>
- <20190116132714.20094-5-mpe@ellerman.id.au>
- <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
- <87r2db4lns.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87r2db4lns.fsf@concordia.ellerman.id.au>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 17 Jan 2019 13:21:09 +0100
-Message-ID: <CAK8P3a0tZT3kr-fwAAm-7CzsNJ6m0dUWzLYS3pYPMWfiG3_HEA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 5/5] powerpc/syscalls: Allow none instead of
- sys_ni_syscall
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5c285851-261b-4771-ad90-08d67c79cbd5
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Jan 2019 12:46:25.9669 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB7PR04MB4251
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,181 +120,754 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, Firoz Khan <firoz.khan@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Viorel Suman <viorel.suman@gmail.com>, dl-linux-imx <linux-imx@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 17, 2019 at 11:35 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Hi Arnd,
->
-> Arnd Bergmann <arnd@arndb.de> writes:
-> > On Wed, Jan 16, 2019 at 2:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >>
-> >> sys_ni_syscall is the "not-implemented" syscall syscall, which just
-> >> returns -ENOSYS.
-> >>
-> >> But unless you know that it's not obvious what it does, and even if
-> >> you do know what it means it doesn't stand out that well from other
-> >> real syscalls.
-> >>
-> >> So teach the scripts to treat "none" as a synonym for
-> >> "sys_ni_syscall". This makes the table more readable.
-> >
-> > Hmm, this actually breaks the proposed script to find bugs
-> > in the compat handling, i.e. detecting those that have no
-> > compat handler but only a native one.
->
-> I don't understand how? It just makes none an alias for sys_ni_syscall,
-> so surely the worse case is that script will need to do the reverse
-> transformation?
+This patch implements Audio Mixer CPU DAI driver for NXP iMX8 SOCs.
+The Audio Mixer is a on-chip functional module that allows mixing of
+two audio streams into a single audio stream.
 
-I mean it's broken to have a common script when architectures do it
-differently. It would be fine if you changed all architectures at the same
-time though.
+Audio Mixer datasheet is available here:
+https://www.nxp.com/docs/en/reference-manual/IMX8DQXPRM.pdf
 
-> > For break, i.e. a syscall number without any implementation,
-> > we use a different syntax on x86 (leaving out the sys_* entirely),
-> > and on s390 (using '-', which is visually better than 'none' IMHO).
->
-> Except a blank compat syscall doesn't mean the syscall doesn't exist for
-> compat tasks, it means they get the non-compat entry point. So blank or
-> '-' are not explicit enough IMO because the script might have some
-> default logic which you can't see by looking at the table.
->
-> "none" is pretty explicit I thought. Possibly better is a literal
-> "ENOSYS", which stands out well and should be obvious to new comers.
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+---
+ sound/soc/fsl/Kconfig      |   7 +
+ sound/soc/fsl/Makefile     |   3 +
+ sound/soc/fsl/fsl_audmix.c | 551 +++++++++++++++++++++++++++++++++++++++++=
+++++
+ sound/soc/fsl/fsl_audmix.h | 102 +++++++++
+ 4 files changed, 663 insertions(+)
+ create mode 100644 sound/soc/fsl/fsl_audmix.c
+ create mode 100644 sound/soc/fsl/fsl_audmix.h
 
-ENOSYS is fine with me as well, but most importantly please don't make
-powerpc different from the other ones for a matter of personal preference.
-Whatever you want to change it to, please make the patch change all
-syscall.tbl files at once, and explain in the patch why we should do this
-across all architectures, then see if anyone objects.
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 7b1d997..0af2e056 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -24,6 +24,13 @@ config SND_SOC_FSL_SAI
+ 	  This option is only useful for out-of-tree drivers since
+ 	  in-tree drivers select it automatically.
+=20
++config SND_SOC_FSL_AUDMIX
++	tristate "Audio Mixer (AUDMIX) module support"
++	select REGMAP_MMIO
++	help
++	  Say Y if you want to add Audio Mixer (AUDMIX)
++	  support for the NXP iMX CPUs.
++
+ config SND_SOC_FSL_SSI
+ 	tristate "Synchronous Serial Interface module (SSI) support"
+ 	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC !=3D n
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 3c0ff31..4172d5a 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -12,6 +12,7 @@ snd-soc-p1022-rdk-objs :=3D p1022_rdk.o
+ obj-$(CONFIG_SND_SOC_P1022_RDK) +=3D snd-soc-p1022-rdk.o
+=20
+ # Freescale SSI/DMA/SAI/SPDIF Support
++snd-soc-fsl-audmix-objs :=3D fsl_audmix.o
+ snd-soc-fsl-asoc-card-objs :=3D fsl-asoc-card.o
+ snd-soc-fsl-asrc-objs :=3D fsl_asrc.o fsl_asrc_dma.o
+ snd-soc-fsl-sai-objs :=3D fsl_sai.o
+@@ -22,6 +23,8 @@ snd-soc-fsl-esai-objs :=3D fsl_esai.o
+ snd-soc-fsl-micfil-objs :=3D fsl_micfil.o
+ snd-soc-fsl-utils-objs :=3D fsl_utils.o
+ snd-soc-fsl-dma-objs :=3D fsl_dma.o
++
++obj-$(CONFIG_SND_SOC_FSL_AUDMIX) +=3D snd-soc-fsl-audmix.o
+ obj-$(CONFIG_SND_SOC_FSL_ASOC_CARD) +=3D snd-soc-fsl-asoc-card.o
+ obj-$(CONFIG_SND_SOC_FSL_ASRC) +=3D snd-soc-fsl-asrc.o
+ obj-$(CONFIG_SND_SOC_FSL_SAI) +=3D snd-soc-fsl-sai.o
+diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+new file mode 100644
+index 0000000..f1267e5
+--- /dev/null
++++ b/sound/soc/fsl/fsl_audmix.c
+@@ -0,0 +1,551 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * NXP AUDMIX ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ * Copyright 2017 NXP
++ */
++
++#include <linux/clk.h>
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/pm_runtime.h>
++#include <sound/soc.h>
++#include <sound/pcm_params.h>
++
++#include "fsl_audmix.h"
++
++#define SOC_ENUM_SINGLE_S(xreg, xshift, xtexts) \
++	SOC_ENUM_SINGLE(xreg, xshift, ARRAY_SIZE(xtexts), xtexts)
++
++static const char
++	*tdm_sel[] =3D { "TDM1", "TDM2", },
++	*mode_sel[] =3D { "Disabled", "TDM1", "TDM2", "Mixed", },
++	*width_sel[] =3D { "16b", "18b", "20b", "24b", "32b", },
++	*endis_sel[] =3D { "Disabled", "Enabled", },
++	*updn_sel[] =3D { "Downward", "Upward", },
++	*mask_sel[] =3D { "Unmask", "Mask", };
++
++static const struct soc_enum fsl_audmix_enum[] =3D {
++/* FSL_AUDMIX_CTR enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MIXCLK_SHIFT, tdm_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_OUTSRC_SHIFT, mode_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_OUTWIDTH_SHIFT, width_sel=
+),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MASKRTDF_SHIFT, mask_sel)=
+,
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MASKCKDF_SHIFT, mask_sel)=
+,
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_SYNCMODE_SHIFT, endis_sel=
+),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_SYNCSRC_SHIFT, tdm_sel),
++/* FSL_AUDMIX_ATCR0 enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR0, 0, endis_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR0, 1, updn_sel),
++/* FSL_AUDMIX_ATCR1 enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR1, 0, endis_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR1, 1, updn_sel),
++};
++
++struct fsl_audmix_state {
++	u8 tdms;
++	u8 clk;
++	char msg[64];
++};
++
++static const struct fsl_audmix_state prms[4][4] =3D {{
++	/* DIS->DIS, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* DIS->TDM1*/
++	{ .tdms =3D 1, .clk =3D 1, .msg =3D "DIS->TDM1: TDM1 not started!\n" },
++	/* DIS->TDM2*/
++	{ .tdms =3D 2, .clk =3D 2, .msg =3D "DIS->TDM2: TDM2 not started!\n" },
++	/* DIS->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "DIS->MIX: Please start both TDMs!\n"=
+ }
++}, {	/* TDM1->DIS */
++	{ .tdms =3D 1, .clk =3D 0, .msg =3D "TDM1->DIS: TDM1 not started!\n" },
++	/* TDM1->TDM1, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* TDM1->TDM2 */
++	{ .tdms =3D 3, .clk =3D 2, .msg =3D "TDM1->TDM2: Please start both TDMs!\=
+n" },
++	/* TDM1->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM1->MIX: Please start both TDMs!\n=
+" }
++}, {	/* TDM2->DIS */
++	{ .tdms =3D 2, .clk =3D 0, .msg =3D "TDM2->DIS: TDM2 not started!\n" },
++	/* TDM2->TDM1 */
++	{ .tdms =3D 3, .clk =3D 1, .msg =3D "TDM2->TDM1: Please start both TDMs!\=
+n" },
++	/* TDM2->TDM2, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* TDM2->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM2->MIX: Please start both TDMs!\n=
+" }
++}, {	/* MIX->DIS */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "MIX->DIS: Please start both TDMs!\n"=
+ },
++	/* MIX->TDM1 */
++	{ .tdms =3D 3, .clk =3D 1, .msg =3D "MIX->TDM1: Please start both TDMs!\n=
+" },
++	/* MIX->TDM2 */
++	{ .tdms =3D 3, .clk =3D 2, .msg =3D "MIX->TDM2: Please start both TDMs!\n=
+" },
++	/* MIX->MIX, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" }
++}, };
++
++static int fsl_audmix_state_trans(struct snd_soc_component *comp,
++				  unsigned int *mask, unsigned int *ctr,
++				  const struct fsl_audmix_state prm)
++{
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	/* Enforce all required TDMs are started */
++	if ((priv->tdms & prm.tdms) !=3D prm.tdms) {
++		dev_dbg(comp->dev, prm.msg);
++		return -EINVAL;
++	}
++
++	switch (prm.clk) {
++	case 1:
++	case 2:
++		/* Set mix clock */
++		(*mask) |=3D FSL_AUDMIX_CTR_MIXCLK_MASK;
++		(*ctr)  |=3D FSL_AUDMIX_CTR_MIXCLK(prm.clk - 1);
++		break;
++	default:
++		break;
++	}
++
++	return 0;
++}
++
++static int fsl_audmix_put_mix_clk_src(struct snd_kcontrol *kcontrol,
++				      struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
++	unsigned int *item =3D ucontrol->value.enumerated.item;
++	unsigned int reg_val, val, mix_clk;
++	int ret =3D 0;
++
++	/* Get current state */
++	ret =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR, &reg_val);
++	if (ret)
++		return ret;
++
++	mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
++			>> FSL_AUDMIX_CTR_MIXCLK_SHIFT);
++	val =3D snd_soc_enum_item_to_val(e, item[0]);
++
++	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
++
++	/**
++	 * Ensure the current selected mixer clock is available
++	 * for configuration propagation
++	 */
++	if (!(priv->tdms & BIT(mix_clk))) {
++		dev_err(comp->dev,
++			"Started TDM%d needed for config propagation!\n",
++			mix_clk + 1);
++		return -EINVAL;
++	}
++
++	if (!(priv->tdms & BIT(val))) {
++		dev_err(comp->dev,
++			"The selected clock source has no TDM%d enabled!\n",
++			val + 1);
++		return -EINVAL;
++	}
++
++	return snd_soc_put_enum_double(kcontrol, ucontrol);
++}
++
++static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
++				  struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
++	unsigned int *item =3D ucontrol->value.enumerated.item;
++	u32 out_src, mix_clk;
++	unsigned int reg_val, val, mask =3D 0, ctr =3D 0;
++	int ret =3D 0;
++
++	/* Get current state */
++	ret =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR, &reg_val);
++	if (ret)
++		return ret;
++
++	/* "From" state */
++	out_src =3D ((reg_val & FSL_AUDMIX_CTR_OUTSRC_MASK)
++			>> FSL_AUDMIX_CTR_OUTSRC_SHIFT);
++	mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
++			>> FSL_AUDMIX_CTR_MIXCLK_SHIFT);
++
++	/* "To" state */
++	val =3D snd_soc_enum_item_to_val(e, item[0]);
++
++	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
++
++	/* Check if state is changing ... */
++	if (out_src =3D=3D val)
++		return 0;
++	/**
++	 * Ensure the current selected mixer clock is available
++	 * for configuration propagation
++	 */
++	if (!(priv->tdms & BIT(mix_clk))) {
++		dev_err(comp->dev,
++			"Started TDM%d needed for config propagation!\n",
++			mix_clk + 1);
++		return -EINVAL;
++	}
++
++	/* Check state transition constraints */
++	ret =3D fsl_audmix_state_trans(comp, &mask, &ctr, prms[out_src][val]);
++	if (ret)
++		return ret;
++
++	/* Complete transition to new state */
++	mask |=3D FSL_AUDMIX_CTR_OUTSRC_MASK;
++	ctr  |=3D FSL_AUDMIX_CTR_OUTSRC(val);
++
++	return snd_soc_component_update_bits(comp, FSL_AUDMIX_CTR, mask, ctr);
++}
++
++static const struct snd_kcontrol_new fsl_audmix_snd_controls[] =3D {
++	/* FSL_AUDMIX_CTR controls */
++	SOC_ENUM_EXT("Mixing Clock Source", fsl_audmix_enum[0],
++		     snd_soc_get_enum_double, fsl_audmix_put_mix_clk_src),
++	SOC_ENUM_EXT("Output Source", fsl_audmix_enum[1],
++		     snd_soc_get_enum_double, fsl_audmix_put_out_src),
++	SOC_ENUM("Output Width", fsl_audmix_enum[2]),
++	SOC_ENUM("Frame Rate Diff Error", fsl_audmix_enum[3]),
++	SOC_ENUM("Clock Freq Diff Error", fsl_audmix_enum[4]),
++	SOC_ENUM("Sync Mode Config", fsl_audmix_enum[5]),
++	SOC_ENUM("Sync Mode Clk Source", fsl_audmix_enum[6]),
++	/* TDM1 Attenuation controls */
++	SOC_ENUM("TDM1 Attenuation", fsl_audmix_enum[7]),
++	SOC_ENUM("TDM1 Attenuation Direction", fsl_audmix_enum[8]),
++	SOC_SINGLE("TDM1 Attenuation Step Divider", FSL_AUDMIX_ATCR0,
++		   2, 0x00fff, 0),
++	SOC_SINGLE("TDM1 Attenuation Initial Value", FSL_AUDMIX_ATIVAL0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Up Factor", FSL_AUDMIX_ATSTPUP0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Down Factor", FSL_AUDMIX_ATSTPDN0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Target", FSL_AUDMIX_ATSTPTGT0,
++		   0, 0x3ffff, 0),
++	/* TDM2 Attenuation controls */
++	SOC_ENUM("TDM2 Attenuation", fsl_audmix_enum[9]),
++	SOC_ENUM("TDM2 Attenuation Direction", fsl_audmix_enum[10]),
++	SOC_SINGLE("TDM2 Attenuation Step Divider", FSL_AUDMIX_ATCR1,
++		   2, 0x00fff, 0),
++	SOC_SINGLE("TDM2 Attenuation Initial Value", FSL_AUDMIX_ATIVAL1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Up Factor", FSL_AUDMIX_ATSTPUP1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Down Factor", FSL_AUDMIX_ATSTPDN1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Target", FSL_AUDMIX_ATSTPTGT1,
++		   0, 0x3ffff, 0),
++};
++
++static int fsl_audmix_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fm=
+t)
++{
++	struct snd_soc_component *comp =3D dai->component;
++	u32 mask =3D 0, ctr =3D 0;
++
++	/* AUDMIX is working in DSP_A format only */
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_DSP_A:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* For playback the AUDMIX is slave, and for record is master */
++	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
++	case SND_SOC_DAIFMT_CBM_CFM:
++	case SND_SOC_DAIFMT_CBS_CFS:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++	case SND_SOC_DAIFMT_IB_NF:
++		/* Output data will be written on positive edge of the clock */
++		ctr |=3D FSL_AUDMIX_CTR_OUTCKPOL(0);
++		break;
++	case SND_SOC_DAIFMT_NB_NF:
++		/* Output data will be written on negative edge of the clock */
++		ctr |=3D FSL_AUDMIX_CTR_OUTCKPOL(1);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mask |=3D FSL_AUDMIX_CTR_OUTCKPOL_MASK;
++
++	return snd_soc_component_update_bits(comp, FSL_AUDMIX_CTR, mask, ctr);
++}
++
++static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int=
+ cmd,
++				  struct snd_soc_dai *dai)
++{
++	struct fsl_audmix *priv =3D snd_soc_dai_get_drvdata(dai);
++
++	/* Capture stream shall not be handled */
++	if (substream->stream =3D=3D SNDRV_PCM_STREAM_CAPTURE)
++		return 0;
++
++	switch (cmd) {
++	case SNDRV_PCM_TRIGGER_START:
++	case SNDRV_PCM_TRIGGER_RESUME:
++	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
++		priv->tdms |=3D BIT(dai->driver->id);
++		break;
++	case SNDRV_PCM_TRIGGER_STOP:
++	case SNDRV_PCM_TRIGGER_SUSPEND:
++	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
++		priv->tdms &=3D ~BIT(dai->driver->id);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static const struct snd_soc_dai_ops fsl_audmix_dai_ops =3D {
++	.set_fmt      =3D fsl_audmix_dai_set_fmt,
++	.trigger      =3D fsl_audmix_dai_trigger,
++};
++
++static struct snd_soc_dai_driver fsl_audmix_dai[] =3D {
++	{
++		.id   =3D 0,
++		.name =3D "audmix-0",
++		.playback =3D {
++			.stream_name =3D "AUDMIX-Playback-0",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.capture =3D {
++			.stream_name =3D "AUDMIX-Capture-0",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.ops =3D &fsl_audmix_dai_ops,
++	},
++	{
++		.id   =3D 1,
++		.name =3D "audmix-1",
++		.playback =3D {
++			.stream_name =3D "AUDMIX-Playback-1",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.capture =3D {
++			.stream_name =3D "AUDMIX-Capture-1",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.ops =3D &fsl_audmix_dai_ops,
++	},
++};
++
++static const struct snd_soc_component_driver fsl_audmix_component =3D {
++	.name		  =3D "fsl-audmix-dai",
++	.controls	  =3D fsl_audmix_snd_controls,
++	.num_controls	  =3D ARRAY_SIZE(fsl_audmix_snd_controls),
++};
++
++static bool fsl_audmix_readable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case FSL_AUDMIX_CTR:
++	case FSL_AUDMIX_STR:
++	case FSL_AUDMIX_ATCR0:
++	case FSL_AUDMIX_ATIVAL0:
++	case FSL_AUDMIX_ATSTPUP0:
++	case FSL_AUDMIX_ATSTPDN0:
++	case FSL_AUDMIX_ATSTPTGT0:
++	case FSL_AUDMIX_ATTNVAL0:
++	case FSL_AUDMIX_ATSTP0:
++	case FSL_AUDMIX_ATCR1:
++	case FSL_AUDMIX_ATIVAL1:
++	case FSL_AUDMIX_ATSTPUP1:
++	case FSL_AUDMIX_ATSTPDN1:
++	case FSL_AUDMIX_ATSTPTGT1:
++	case FSL_AUDMIX_ATTNVAL1:
++	case FSL_AUDMIX_ATSTP1:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static bool fsl_audmix_writeable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case FSL_AUDMIX_CTR:
++	case FSL_AUDMIX_ATCR0:
++	case FSL_AUDMIX_ATIVAL0:
++	case FSL_AUDMIX_ATSTPUP0:
++	case FSL_AUDMIX_ATSTPDN0:
++	case FSL_AUDMIX_ATSTPTGT0:
++	case FSL_AUDMIX_ATCR1:
++	case FSL_AUDMIX_ATIVAL1:
++	case FSL_AUDMIX_ATSTPUP1:
++	case FSL_AUDMIX_ATSTPDN1:
++	case FSL_AUDMIX_ATSTPTGT1:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static const struct reg_default fsl_audmix_reg[] =3D {
++	{ FSL_AUDMIX_CTR,       0x00060 },
++	{ FSL_AUDMIX_STR,       0x00003 },
++	{ FSL_AUDMIX_ATCR0,     0x00000 },
++	{ FSL_AUDMIX_ATIVAL0,   0x3FFFF },
++	{ FSL_AUDMIX_ATSTPUP0,  0x2AAAA },
++	{ FSL_AUDMIX_ATSTPDN0,  0x30000 },
++	{ FSL_AUDMIX_ATSTPTGT0, 0x00010 },
++	{ FSL_AUDMIX_ATTNVAL0,  0x00000 },
++	{ FSL_AUDMIX_ATSTP0,    0x00000 },
++	{ FSL_AUDMIX_ATCR1,     0x00000 },
++	{ FSL_AUDMIX_ATIVAL1,   0x3FFFF },
++	{ FSL_AUDMIX_ATSTPUP1,  0x2AAAA },
++	{ FSL_AUDMIX_ATSTPDN1,  0x30000 },
++	{ FSL_AUDMIX_ATSTPTGT1, 0x00010 },
++	{ FSL_AUDMIX_ATTNVAL1,  0x00000 },
++	{ FSL_AUDMIX_ATSTP1,    0x00000 },
++};
++
++static const struct regmap_config fsl_audmix_regmap_config =3D {
++	.reg_bits =3D 32,
++	.reg_stride =3D 4,
++	.val_bits =3D 32,
++	.max_register =3D FSL_AUDMIX_ATSTP1,
++	.reg_defaults =3D fsl_audmix_reg,
++	.num_reg_defaults =3D ARRAY_SIZE(fsl_audmix_reg),
++	.readable_reg =3D fsl_audmix_readable_reg,
++	.writeable_reg =3D fsl_audmix_writeable_reg,
++	.cache_type =3D REGCACHE_FLAT,
++};
++
++static int fsl_audmix_probe(struct platform_device *pdev)
++{
++	struct fsl_audmix *priv;
++	struct resource *res;
++	void __iomem *regs;
++	int ret;
++
++	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->pdev =3D pdev;
++
++	/* Get the addresses */
++	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	regs =3D devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(regs))
++		return PTR_ERR(regs);
++
++	priv->regmap =3D devm_regmap_init_mmio_clk(&pdev->dev, "ipg", regs,
++						 &fsl_audmix_regmap_config);
++	if (IS_ERR(priv->regmap)) {
++		dev_err(&pdev->dev, "failed to init regmap\n");
++		return PTR_ERR(priv->regmap);
++	}
++
++	priv->ipg_clk =3D devm_clk_get(&pdev->dev, "ipg");
++	if (IS_ERR(priv->ipg_clk)) {
++		dev_err(&pdev->dev, "failed to get ipg clock\n");
++		return PTR_ERR(priv->ipg_clk);
++	}
++
++	platform_set_drvdata(pdev, priv);
++	pm_runtime_enable(&pdev->dev);
++
++	ret =3D devm_snd_soc_register_component(&pdev->dev, &fsl_audmix_component=
+,
++					      fsl_audmix_dai,
++					      ARRAY_SIZE(fsl_audmix_dai));
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
++		return ret;
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int fsl_audmix_runtime_resume(struct device *dev)
++{
++	struct fsl_audmix *priv =3D dev_get_drvdata(dev);
++	int ret;
++
++	ret =3D clk_prepare_enable(priv->ipg_clk);
++	if (ret) {
++		dev_err(dev, "Failed to enable IPG clock: %d\n", ret);
++		return ret;
++	}
++
++	regcache_cache_only(priv->regmap, false);
++	regcache_mark_dirty(priv->regmap);
++
++	return regcache_sync(priv->regmap);
++}
++
++static int fsl_audmix_runtime_suspend(struct device *dev)
++{
++	struct fsl_audmix *priv =3D dev_get_drvdata(dev);
++
++	regcache_cache_only(priv->regmap, true);
++
++	clk_disable_unprepare(priv->ipg_clk);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++static const struct dev_pm_ops fsl_audmix_pm =3D {
++	SET_RUNTIME_PM_OPS(fsl_audmix_runtime_suspend,
++			   fsl_audmix_runtime_resume,
++			   NULL)
++	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
++				pm_runtime_force_resume)
++};
++
++static const struct of_device_id fsl_audmix_ids[] =3D {
++	{ .compatible =3D "fsl,imx8qm-audmix", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, fsl_audmix_ids);
++
++static struct platform_driver fsl_audmix_driver =3D {
++	.probe =3D fsl_audmix_probe,
++	.driver =3D {
++		.name =3D "fsl-audmix",
++		.of_match_table =3D fsl_audmix_ids,
++		.pm =3D &fsl_audmix_pm,
++	},
++};
++module_platform_driver(fsl_audmix_driver);
++
++MODULE_DESCRIPTION("NXP AUDMIX ASoC DAI driver");
++MODULE_AUTHOR("Viorel Suman <viorel.suman@nxp.com>");
++MODULE_ALIAS("platform:fsl-audmix");
++MODULE_LICENSE("GPL v2");
+diff --git a/sound/soc/fsl/fsl_audmix.h b/sound/soc/fsl/fsl_audmix.h
+new file mode 100644
+index 0000000..7812ffe
+--- /dev/null
++++ b/sound/soc/fsl/fsl_audmix.h
+@@ -0,0 +1,102 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * NXP AUDMIX ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ * Copyright 2017 NXP
++ */
++
++#ifndef __FSL_AUDMIX_H
++#define __FSL_AUDMIX_H
++
++#define FSL_AUDMIX_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
++			SNDRV_PCM_FMTBIT_S24_LE |\
++			SNDRV_PCM_FMTBIT_S32_LE)
++/* AUDMIX Registers */
++#define FSL_AUDMIX_CTR		0x200 /* Control */
++#define FSL_AUDMIX_STR		0x204 /* Status */
++
++#define FSL_AUDMIX_ATCR0	0x208 /* Attenuation Control */
++#define FSL_AUDMIX_ATIVAL0	0x20c /* Attenuation Initial Value */
++#define FSL_AUDMIX_ATSTPUP0	0x210 /* Attenuation step up factor */
++#define FSL_AUDMIX_ATSTPDN0	0x214 /* Attenuation step down factor */
++#define FSL_AUDMIX_ATSTPTGT0	0x218 /* Attenuation step target */
++#define FSL_AUDMIX_ATTNVAL0	0x21c /* Attenuation Value */
++#define FSL_AUDMIX_ATSTP0	0x220 /* Attenuation step number */
++
++#define FSL_AUDMIX_ATCR1	0x228 /* Attenuation Control */
++#define FSL_AUDMIX_ATIVAL1	0x22c /* Attenuation Initial Value */
++#define FSL_AUDMIX_ATSTPUP1	0x230 /* Attenuation step up factor */
++#define FSL_AUDMIX_ATSTPDN1	0x234 /* Attenuation step down factor */
++#define FSL_AUDMIX_ATSTPTGT1	0x238 /* Attenuation step target */
++#define FSL_AUDMIX_ATTNVAL1	0x23c /* Attenuation Value */
++#define FSL_AUDMIX_ATSTP1	0x240 /* Attenuation step number */
++
++/* AUDMIX Control Register */
++#define FSL_AUDMIX_CTR_MIXCLK_SHIFT	0
++#define FSL_AUDMIX_CTR_MIXCLK_MASK	BIT(FSL_AUDMIX_CTR_MIXCLK_SHIFT)
++#define FSL_AUDMIX_CTR_MIXCLK(i)	((i) << FSL_AUDMIX_CTR_MIXCLK_SHIFT)
++#define FSL_AUDMIX_CTR_OUTSRC_SHIFT	1
++#define FSL_AUDMIX_CTR_OUTSRC_MASK	(0x3 << FSL_AUDMIX_CTR_OUTSRC_SHIFT)
++#define FSL_AUDMIX_CTR_OUTSRC(i)	(((i) << FSL_AUDMIX_CTR_OUTSRC_SHIFT)\
++					      & FSL_AUDMIX_CTR_OUTSRC_MASK)
++#define FSL_AUDMIX_CTR_OUTWIDTH_SHIFT	3
++#define FSL_AUDMIX_CTR_OUTWIDTH_MASK	(0x7 << FSL_AUDMIX_CTR_OUTWIDTH_SHIFT=
+)
++#define FSL_AUDMIX_CTR_OUTWIDTH(i)	(((i) << FSL_AUDMIX_CTR_OUTWIDTH_SHIFT)=
+\
++					      & FSL_AUDMIX_CTR_OUTWIDTH_MASK)
++#define FSL_AUDMIX_CTR_OUTCKPOL_SHIFT	6
++#define FSL_AUDMIX_CTR_OUTCKPOL_MASK	BIT(FSL_AUDMIX_CTR_OUTCKPOL_SHIFT)
++#define FSL_AUDMIX_CTR_OUTCKPOL(i)	((i) << FSL_AUDMIX_CTR_OUTCKPOL_SHIFT)
++#define FSL_AUDMIX_CTR_MASKRTDF_SHIFT	7
++#define FSL_AUDMIX_CTR_MASKRTDF_MASK	BIT(FSL_AUDMIX_CTR_MASKRTDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKRTDF(i)	((i) << FSL_AUDMIX_CTR_MASKRTDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKCKDF_SHIFT	8
++#define FSL_AUDMIX_CTR_MASKCKDF_MASK	BIT(FSL_AUDMIX_CTR_MASKCKDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKCKDF(i)	((i) << FSL_AUDMIX_CTR_MASKCKDF_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCMODE_SHIFT	9
++#define FSL_AUDMIX_CTR_SYNCMODE_MASK	BIT(FSL_AUDMIX_CTR_SYNCMODE_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCMODE(i)	((i) << FSL_AUDMIX_CTR_SYNCMODE_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCSRC_SHIFT	10
++#define FSL_AUDMIX_CTR_SYNCSRC_MASK	BIT(FSL_AUDMIX_CTR_SYNCSRC_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCSRC(i)	((i) << FSL_AUDMIX_CTR_SYNCSRC_SHIFT)
++
++/* AUDMIX Status Register */
++#define FSL_AUDMIX_STR_RATEDIFF		BIT(0)
++#define FSL_AUDMIX_STR_CLKDIFF		BIT(1)
++#define FSL_AUDMIX_STR_MIXSTAT_SHIFT	2
++#define FSL_AUDMIX_STR_MIXSTAT_MASK	(0x3 << FSL_AUDMIX_STR_MIXSTAT_SHIFT)
++#define FSL_AUDMIX_STR_MIXSTAT(i)	(((i) & FSL_AUDMIX_STR_MIXSTAT_MASK) \
++					   >> FSL_AUDMIX_STR_MIXSTAT_SHIFT)
++/* AUDMIX Attenuation Control Register */
++#define FSL_AUDMIX_ATCR_AT_EN		BIT(0)
++#define FSL_AUDMIX_ATCR_AT_UPDN		BIT(1)
++#define FSL_AUDMIX_ATCR_ATSTPDIF_SHIFT	2
++#define FSL_AUDMIX_ATCR_ATSTPDFI_MASK	\
++				(0xfff << FSL_AUDMIX_ATCR_ATSTPDIF_SHIFT)
++
++/* AUDMIX Attenuation Initial Value Register */
++#define FSL_AUDMIX_ATIVAL_ATINVAL_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Up Factor Register */
++#define FSL_AUDMIX_ATSTPUP_ATSTEPUP_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Down Factor Register */
++#define FSL_AUDMIX_ATSTPDN_ATSTEPDN_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Target Register */
++#define FSL_AUDMIX_ATSTPTGT_ATSTPTG_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Value Register */
++#define FSL_AUDMIX_ATTNVAL_ATCURVAL_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Number Register */
++#define FSL_AUDMIX_ATSTP_STPCTR_MASK	0x3FFFF
++
++#define FSL_AUDMIX_MAX_DAIS		2
++struct fsl_audmix {
++	struct platform_device *pdev;
++	struct regmap *regmap;
++	struct clk *ipg_clk;
++	u8 tdms;
++};
++
++#endif /* __FSL_AUDMIX_H */
+--=20
+2.7.4
 
-> > We might also just remove those entirely across all architectures.
-> > Some have already done this, and some have done it partially.
-> > I can only see a couple of syscalls that got removed in the entire
-> > git history (set_zone_reclaim, nfsservctl, vm86, timerfd), any other
-> > ones are now literally pre-historic, and presumably nobody would
-> > miss the macros when building a program that has no chance to
-> > run on any kernel since at least 2.6.12.
->
-> I don't see the benefit, a single missing #define could be a build break
-> for some random pieces of software out there.
-
-It certainly could, the question is whether that is a bad thing or not.
-
-Once again, I think it's most important to be consistent across
-architectures, and either define them everywhere or nowhere so we
-don't end up with applications that are only broken on less common
-architectures but work on fine on others.
-
-Most of these only still exist in a few architectures anyway:
-
-$ git grep sys_ni_syscall arch/{*/,}*/*/syscall*.tbl | grep -v
-'\<\(osf\|available\|reserved\|unused\)' | awk '{ print $3; }' | sort
-| uniq -c
-      7 afs_syscall
-      3 break
-      8 create_module
-      1 dipc
-      1 exec_with_loader
-      1 fadvise64_64
-      3 ftime
-      8 get_kernel_syms
-      1 get_mempolicy
-      7 getpmsg
-      3 getrlimit
-      1 get_thread_area
-      3 gtty
-      3 idle
-      3 ioperm
-      3 iopl
-      1 ipc
-      1 kern_features
-      1 kexec_load
-      3 lock
-      1 mbind
-      1 migrate_pages
-      3 modify_ldt
-      3 mpx
-      1 multiplexer
-     11 nfsservctl
-      1 ni_syscall
-      3 oldfstat
-      3 oldlstat
-      3 oldolduname
-      3 oldstat
-      3 olduname
-      3 prof
-      3 profil
-      7 putpmsg
-      8 query_module
-      3 readdir
-      4 select
-      1 set_mempolicy
-      1 set_thread_area
-      3 sigaction
-      1 sigaltstack
-      1 signal
-      2 sigpending
-      2 sigprocmask
-      3 sigreturn
-      3 sigsuspend
-      1 spill
-      3 stty
-      1 swapcontext
-      2 switch_endian
-      3 sys_debug_setcontext
-      5 timerfd
-      2 tuxcall
-      3 ulimit
-      2 umount
-      1 uselib
-      4 vm86
-      2 vm86old
-      6 vserver
-      1 xtensa
-
-I would guess that there are enough syscall names here that are more likely to
-cause problems if the macro is defined then when it is missing, e.g. a common
-method in glibc is to check for the older symbol first:
-
-int
-__renameat (int oldfd, const char *old, int newfd, const char *new)
-{
-#ifdef __NR_renameat
-  return INLINE_SYSCALL_CALL (renameat, oldfd, old, newfd, new);
-#else
-  return INLINE_SYSCALL_CALL (renameat2, oldfd, old, newfd, new, 0);
-#endif
-}
-
-and this breaks if __NR_renameat is sys_ni_syscall. I could not find
-any such example that is actually broken with glibc today (presumably
-others have checked before me), but other software may do similar
-things.
-
-> > For 32-bit oldstat, I'd argue that this should actually get fixed by adding
-> > the compat syscall logic. I think this was discussed when Firoz
-> > first posted his patches. Something like this:
->
-> I'm not clear why we would do that? If there were programs out there
-> that wanted oldstat in compat mode surely we would have got a bug report
-> by now.
->
-> So this just wires up a syscall that no one will ever use?
-
-compat mode is not always reliable, so it's entirely possible that
-someone tried it and gave up when it didn't work right away.
-
-My point is that we should always try to make compat mode behave
-the exact same way as native mode, if there is a difference between
-them, it's a bug of the emulation.
-
-If you are sure that nothing ever enters those system calls, then
-we should remove them from native 32-bit mode, otherwise we should
-add them in compat mode.
-
-      Arnd
