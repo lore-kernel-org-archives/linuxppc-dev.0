@@ -2,64 +2,51 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EC25C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 10:07:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C55BC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 10:36:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E6BC520657
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 10:07:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="q+WMSljV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6BC520657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 234972054F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 10:36:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 234972054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gKW4621zzDqpL
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 21:07:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.78; helo=conuserg-11.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="q+WMSljV"; 
- dkim-atps=neutral
-Received: from conuserg-11.nifty.com (conuserg-11.nifty.com [210.131.2.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gL9H28H9zDqpg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 21:36:51 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gKT70Wk3zDqng
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 21:05:30 +1100 (AEDT)
-Received: from pug.e01.socionext.com (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-11.nifty.com with ESMTP id x0HA38Gs009525;
- Thu, 17 Jan 2019 19:03:10 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-11.nifty.com x0HA38Gs009525
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1547719391;
- bh=uCbD1NfqujoHfNDZGzPP15V6qMGvWE1LwqUSGy/cdrU=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=q+WMSljVwSbbUNvetGMOyIpBMNZil8tXGaZIghXUAFcOvzAYtt2eObZt9OHQw+EsB
- VT9HrMRyw6g63duXILjG1mKDgq4fpgl7WAT8lo5hXojP6VWw5VEn6h+9a8DgEAWkOr
- dCZxB+yBv+1dYL+BbKusReRxctJzlVQShc8vrLRAX2YzdQcr/wd6wCVGj+Id8wUkJ0
- /hYoPQbh5sDapigvEMpqz9bGv1m04i5vi91v24AX1sDuyhiyopo8i6tAOWzlNXVoea
- vCw6MHmNSVtEr2bEvsgcsWwQuInqKc29A9sIs2RvzIaWtWkMBpnXljjQGVMFBLouVQ
- 8BAb374SJhAnw==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: linux-kbuild@vger.kernel.org
-Subject: [PATCH v2 3/4] kbuild: add real-prereqs shorthand for $(filter-out
- FORCE, $^)
-Date: Thu, 17 Jan 2019 19:02:43 +0900
-Message-Id: <1547719364-18849-3-git-send-email-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1547719364-18849-1-git-send-email-yamada.masahiro@socionext.com>
-References: <1547719364-18849-1-git-send-email-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gL7C6qXNzDqNr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 21:35:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 43gL7C5xFgz9sD4; Thu, 17 Jan 2019 21:35:03 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43gL7C4PGrz9sCX;
+ Thu, 17 Jan 2019 21:35:03 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC PATCH v2 5/5] powerpc/syscalls: Allow none instead of
+ sys_ni_syscall
+In-Reply-To: <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
+References: <20190116132714.20094-1-mpe@ellerman.id.au>
+ <20190116132714.20094-5-mpe@ellerman.id.au>
+ <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
+Date: Thu, 17 Jan 2019 21:35:03 +1100
+Message-ID: <87r2db4lns.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,254 +58,167 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- James Hogan <jhogan@kernel.org>, devicetree@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, Michal Marek <michal.lkml@markovi.net>,
- linux-mips@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Firoz Khan <firoz.khan@linaro.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In Kbuild, if_changed and friends must have FORCE as a prerequisite.
+Hi Arnd,
 
-Hence, $(filter-out FORCE,$^) or $(filter-out $(PHONY),$^) is a common
-pattern to get the names of all the prerequisites except phony targets.
+Arnd Bergmann <arnd@arndb.de> writes:
+> On Wed, Jan 16, 2019 at 2:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> sys_ni_syscall is the "not-implemented" syscall syscall, which just
+>> returns -ENOSYS.
+>>
+>> But unless you know that it's not obvious what it does, and even if
+>> you do know what it means it doesn't stand out that well from other
+>> real syscalls.
+>>
+>> So teach the scripts to treat "none" as a synonym for
+>> "sys_ni_syscall". This makes the table more readable.
+>
+> Hmm, this actually breaks the proposed script to find bugs
+> in the compat handling, i.e. detecting those that have no
+> compat handler but only a native one.
 
-Add real-prereqs as a shorthand.
+I don't understand how? It just makes none an alias for sys_ni_syscall,
+so surely the worse case is that script will need to do the reverse
+transformation?
 
-Note:
-We cannot replace $(filter %.o,$^) in cmd_link_multi-m because $^ may
-include auto-generated dependencies from the .*.cmd file when a single
-object module is changed into a multi object module. Refer to commit
-69ea912fda74 ("kbuild: remove unneeded link_multi_deps"). I added some
-comment to avoid accidental breakage.
+>> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
+>> index c5907a2dbc86..988a7e29245f 100644
+>> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
+>> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+>> @@ -24,28 +24,28 @@
+>>  14     common  mknod                           sys_mknod
+>>  15     common  chmod                           sys_chmod
+>>  16     common  lchown                          sys_lchown
+>> -17     common  break                           sys_ni_syscall
+>> -18     32      oldstat                         sys_stat                        sys_ni_syscall
+>> -18     64      oldstat                         sys_ni_syscall
+>> +17     common  break                           none
+>> +18     32      oldstat                         sys_stat                        none
+>> +18     64      oldstat                         none
+>
+> The '64 oldstat' line can simply get dropped here, it has no value
+> (I failed to notice this earlier).
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+It does add value. It causes the syscall number to be defined in
+unistd.h (now unistd_64.h).
 
-The patch context depends on some other ones.
-Please use 'git am -C1' if you want to test this
-on Linus' tree.
+If you remove it then that syscall number is no longer defined which
+changes the uapi header and could break something.
+
+Sure arguably it shouldn't be defined, and it's old etc. but it was
+previously defined, so removing it seems risky.
 
 
-Changes in v2:
-  - clean up arch/s390/boot/Makefile as well
+> For break, i.e. a syscall number without any implementation,
+> we use a different syntax on x86 (leaving out the sys_* entirely),
+> and on s390 (using '-', which is visually better than 'none' IMHO).
 
- Documentation/devicetree/bindings/Makefile |  2 +-
- arch/mips/boot/Makefile                    |  2 +-
- arch/powerpc/boot/Makefile                 |  2 +-
- arch/s390/boot/Makefile                    |  2 +-
- arch/x86/realmode/rm/Makefile              |  3 +--
- scripts/Kbuild.include                     |  4 ++++
- scripts/Makefile.build                     |  9 ++++++---
- scripts/Makefile.lib                       | 18 +++++++++---------
- scripts/Makefile.modpost                   |  2 +-
- 9 files changed, 25 insertions(+), 19 deletions(-)
+Except a blank compat syscall doesn't mean the syscall doesn't exist for
+compat tasks, it means they get the non-compat entry point. So blank or
+'-' are not explicit enough IMO because the script might have some
+default logic which you can't see by looking at the table.
 
-diff --git a/Documentation/devicetree/bindings/Makefile b/Documentation/devicetree/bindings/Makefile
-index 6e5cef0..e4eb5d1 100644
---- a/Documentation/devicetree/bindings/Makefile
-+++ b/Documentation/devicetree/bindings/Makefile
-@@ -15,7 +15,7 @@ DT_TMP_SCHEMA := processed-schema.yaml
- extra-y += $(DT_TMP_SCHEMA)
- 
- quiet_cmd_mk_schema = SCHEMA  $@
--      cmd_mk_schema = $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $(filter-out FORCE, $^)
-+      cmd_mk_schema = $(DT_MK_SCHEMA) $(DT_MK_SCHEMA_FLAGS) -o $@ $(real-prereqs)
- 
- DT_DOCS = $(shell cd $(srctree)/$(src) && find * -name '*.yaml')
- DT_SCHEMA_FILES ?= $(addprefix $(src)/,$(DT_DOCS))
-diff --git a/arch/mips/boot/Makefile b/arch/mips/boot/Makefile
-index 35704c2..3ce4dd5 100644
---- a/arch/mips/boot/Makefile
-+++ b/arch/mips/boot/Makefile
-@@ -115,7 +115,7 @@ endif
- targets += vmlinux.its.S
- 
- quiet_cmd_its_cat = CAT     $@
--      cmd_its_cat = cat $(filter-out $(PHONY), $^) >$@
-+      cmd_its_cat = cat $(real-prereqs) >$@
- 
- $(obj)/vmlinux.its.S: $(addprefix $(srctree)/arch/mips/$(PLATFORM)/,$(ITS_INPUTS)) FORCE
- 	$(call if_changed,its_cat)
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 0e8dadd..73d1f35 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -218,7 +218,7 @@ quiet_cmd_bootas = BOOTAS  $@
-       cmd_bootas = $(BOOTCC) -Wp,-MD,$(depfile) $(BOOTAFLAGS) -c -o $@ $<
- 
- quiet_cmd_bootar = BOOTAR  $@
--      cmd_bootar = $(BOOTAR) $(BOOTARFLAGS) $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
-+      cmd_bootar = $(BOOTAR) $(BOOTARFLAGS) $@.$$$$ $(real-prereqs); mv $@.$$$$ $@
- 
- $(obj-libfdt): $(obj)/%.o: $(srctree)/scripts/dtc/libfdt/%.c FORCE
- 	$(call if_changed_dep,bootcc)
-diff --git a/arch/s390/boot/Makefile b/arch/s390/boot/Makefile
-index b4d8a42..11ca879 100644
---- a/arch/s390/boot/Makefile
-+++ b/arch/s390/boot/Makefile
-@@ -58,7 +58,7 @@ $(obj)/compressed/vmlinux: $(obj)/startup.a FORCE
- 	$(Q)$(MAKE) $(build)=$(obj)/compressed $@
- 
- quiet_cmd_ar = AR      $@
--      cmd_ar = rm -f $@; $(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(filter $(OBJECTS), $^)
-+      cmd_ar = rm -f $@; $(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(real-prereqs)
- 
- $(obj)/startup.a: $(OBJECTS) FORCE
- 	$(call if_changed,ar)
-diff --git a/arch/x86/realmode/rm/Makefile b/arch/x86/realmode/rm/Makefile
-index 4463fa7..394377c 100644
---- a/arch/x86/realmode/rm/Makefile
-+++ b/arch/x86/realmode/rm/Makefile
-@@ -37,8 +37,7 @@ REALMODE_OBJS = $(addprefix $(obj)/,$(realmode-y))
- sed-pasyms := -n -r -e 's/^([0-9a-fA-F]+) [ABCDGRSTVW] (.+)$$/pa_\2 = \2;/p'
- 
- quiet_cmd_pasyms = PASYMS  $@
--      cmd_pasyms = $(NM) $(filter-out FORCE,$^) | \
--		   sed $(sed-pasyms) | sort | uniq > $@
-+      cmd_pasyms = $(NM) $(real-prereqs) | sed $(sed-pasyms) | sort | uniq > $@
- 
- targets += pasyms.h
- $(obj)/pasyms.h: $(REALMODE_OBJS) FORCE
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index 3081603..d93250b 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -24,6 +24,10 @@ depfile = $(subst $(comma),_,$(dot-target).d)
- basetarget = $(basename $(notdir $@))
- 
- ###
-+# real prerequisites without phony targets
-+real-prereqs = $(filter-out $(PHONY), $^)
-+
-+###
- # Escape single quote for use in echo statements
- escsq = $(subst $(squote),'\$(squote)',$1)
- 
-diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 681ab58..9800178 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -399,8 +399,7 @@ $(sort $(subdir-obj-y)): $(subdir-ym) ;
- ifdef builtin-target
- 
- quiet_cmd_ar_builtin = AR      $@
--      cmd_ar_builtin = rm -f $@; \
--                     $(AR) rcSTP$(KBUILD_ARFLAGS) $@ $(filter $(real-obj-y), $^)
-+      cmd_ar_builtin = rm -f $@; $(AR) rcSTP$(KBUILD_ARFLAGS) $@ $(real-prereqs)
- 
- $(builtin-target): $(real-obj-y) FORCE
- 	$(call if_changed,ar_builtin)
-@@ -428,7 +427,7 @@ ifdef lib-target
- quiet_cmd_link_l_target = AR      $@
- 
- # lib target archives do get a symbol table and index
--cmd_link_l_target = rm -f $@; $(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(lib-y)
-+cmd_link_l_target = rm -f $@; $(AR) rcsTP$(KBUILD_ARFLAGS) $@ $(real-prereqs)
- 
- $(lib-target): $(lib-y) FORCE
- 	$(call if_changed,link_l_target)
-@@ -453,6 +452,10 @@ targets += $(obj)/lib-ksyms.o
- 
- endif
- 
-+# NOTE:
-+# Do not replace $(filter %.o,^) with $(real-prereqs). When a single object
-+# module is turned into a multi object module, $^ will contain header file
-+# dependencies recorded in the .*.cmd file.
- quiet_cmd_link_multi-m = LD [M]  $@
- cmd_link_multi-m = $(LD) $(ld_flags) -r -o $@ $(filter %.o,$^) $(cmd_secanalysis)
- 
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index ebaa348..c6fc295 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -231,7 +231,7 @@ $(obj)/%: $(src)/%_shipped
- # ---------------------------------------------------------------------------
- 
- quiet_cmd_ld = LD      $@
--cmd_ld = $(LD) $(ld_flags) $(filter-out FORCE,$^) -o $@
-+      cmd_ld = $(LD) $(ld_flags) $(real-prereqs) -o $@
- 
- # Objcopy
- # ---------------------------------------------------------------------------
-@@ -243,7 +243,7 @@ cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
- # ---------------------------------------------------------------------------
- 
- quiet_cmd_gzip = GZIP    $@
--      cmd_gzip = cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@
-+      cmd_gzip = cat $(real-prereqs) | gzip -n -f -9 > $@
- 
- # DTC
- # ---------------------------------------------------------------------------
-@@ -321,7 +321,7 @@ dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
- # append the size as a 32-bit littleendian number as gzip does.
- size_append = printf $(shell						\
- dec_size=0;								\
--for F in $(filter-out FORCE,$^); do					\
-+for F in $(real-prereqs); do					\
- 	fsize=$$($(CONFIG_SHELL) $(srctree)/scripts/file-size.sh $$F);	\
- 	dec_size=$$(expr $$dec_size + $$fsize);				\
- done;									\
-@@ -335,19 +335,19 @@ printf "%08x\n" $$dec_size |						\
- )
- 
- quiet_cmd_bzip2 = BZIP2   $@
--      cmd_bzip2 = (cat $(filter-out FORCE,$^) | bzip2 -9 && $(size_append)) > $@
-+      cmd_bzip2 = (cat $(real-prereqs) | bzip2 -9 && $(size_append)) > $@
- 
- # Lzma
- # ---------------------------------------------------------------------------
- 
- quiet_cmd_lzma = LZMA    $@
--      cmd_lzma = (cat $(filter-out FORCE,$^) | lzma -9 && $(size_append)) > $@
-+      cmd_lzma = (cat $(real-prereqs) | lzma -9 && $(size_append)) > $@
- 
- quiet_cmd_lzo = LZO     $@
--      cmd_lzo = (cat $(filter-out FORCE,$^) | lzop -9 && $(size_append)) > $@
-+      cmd_lzo = (cat $(real-prereqs) | lzop -9 && $(size_append)) > $@
- 
- quiet_cmd_lz4 = LZ4     $@
--      cmd_lz4 = (cat $(filter-out FORCE,$^) | lz4c -l -c1 stdin stdout && \
-+      cmd_lz4 = (cat $(real-prereqs) | lz4c -l -c1 stdin stdout && \
-                   $(size_append)) > $@
- 
- # U-Boot mkimage
-@@ -390,11 +390,11 @@ quiet_cmd_uimage = UIMAGE  $@
- # big dictionary would increase the memory usage too much in the multi-call
- # decompression mode. A BCJ filter isn't used either.
- quiet_cmd_xzkern = XZKERN  $@
--cmd_xzkern = (cat $(filter-out FORCE,$^) | \
-+      cmd_xzkern = (cat $(real-prereqs) | \
- 	sh $(srctree)/scripts/xz_wrap.sh && $(size_append)) > $@
- 
- quiet_cmd_xzmisc = XZMISC  $@
--cmd_xzmisc = (cat $(filter-out FORCE,$^) | \
-+      cmd_xzmisc = (cat $(real-prereqs) | \
- 	xz --check=crc32 --lzma2=dict=1MiB) > $@
- 
- # ASM offsets
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 7d4af0d0..c0b7f52 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -122,7 +122,7 @@ quiet_cmd_ld_ko_o = LD [M]  $@
-       cmd_ld_ko_o =                                                     \
- 	$(LD) -r $(KBUILD_LDFLAGS)                                      \
-                  $(KBUILD_LDFLAGS_MODULE) $(LDFLAGS_MODULE)             \
--                 -o $@ $(filter-out FORCE,$^) ;                         \
-+                 -o $@ $(real-prereqs) ;                                \
- 	$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) $@, true)
- 
- $(modules): %.ko :%.o %.mod.o FORCE
--- 
-2.7.4
+"none" is pretty explicit I thought. Possibly better is a literal
+"ENOSYS", which stands out well and should be obvious to new comers.
 
+> We might also just remove those entirely across all architectures.
+> Some have already done this, and some have done it partially.
+> I can only see a couple of syscalls that got removed in the entire
+> git history (set_zone_reclaim, nfsservctl, vm86, timerfd), any other
+> ones are now literally pre-historic, and presumably nobody would
+> miss the macros when building a program that has no chance to
+> run on any kernel since at least 2.6.12.
+
+I don't see the benefit, a single missing #define could be a build break
+for some random pieces of software out there.
+
+
+> For 32-bit oldstat, I'd argue that this should actually get fixed by adding
+> the compat syscall logic. I think this was discussed when Firoz
+> first posted his patches. Something like this:
+
+I'm not clear why we would do that? If there were programs out there
+that wanted oldstat in compat mode surely we would have got a bug report
+by now.
+
+So this just wires up a syscall that no one will ever use?
+
+cheers
+
+> diff --git a/arch/powerpc/include/asm/unistd.h
+> b/arch/powerpc/include/asm/unistd.h
+> index f44dbc65e38e..d954c2fc4e2f 100644
+> --- a/arch/powerpc/include/asm/unistd.h
+> +++ b/arch/powerpc/include/asm/unistd.h
+> @@ -41,9 +41,7 @@
+>  #define __ARCH_WANT_SYS_OLDUMOUNT
+>  #define __ARCH_WANT_SYS_SIGPENDING
+>  #define __ARCH_WANT_SYS_SIGPROCMASK
+> -#ifdef CONFIG_PPC32
+>  #define __ARCH_WANT_OLD_STAT
+> -#endif
+>  #ifdef CONFIG_PPC64
+>  #define __ARCH_WANT_SYS_TIME
+>  #define __ARCH_WANT_SYS_UTIME
+> diff --git a/arch/powerpc/include/uapi/asm/stat.h
+> b/arch/powerpc/include/uapi/asm/stat.h
+> index afd25f2ff4e8..8331b350c12b 100644
+> --- a/arch/powerpc/include/uapi/asm/stat.h
+> +++ b/arch/powerpc/include/uapi/asm/stat.h
+> @@ -11,7 +11,7 @@
+>
+>  #define STAT_HAVE_NSEC 1
+>
+> -#ifndef __powerpc64__
+> +#if defined(__KERNEL__) || !defined(__powerpc64__)
+>  struct __old_kernel_stat {
+>         unsigned short st_dev;
+>         unsigned short st_ino;
+> @@ -25,7 +25,7 @@ struct __old_kernel_stat {
+>         unsigned long  st_mtime;
+>         unsigned long  st_ctime;
+>  };
+> -#endif /* !__powerpc64__ */
+> +#endif /* __KERNEL__ || !__powerpc64__ */
+>
+>  struct stat {
+>         unsigned long   st_dev;
+> diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl
+> b/arch/powerpc/kernel/syscalls/syscall.tbl
+> index 740dc9dbf689..cd85718c7039 100644
+> --- a/arch/powerpc/kernel/syscalls/syscall.tbl
+> +++ b/arch/powerpc/kernel/syscalls/syscall.tbl
+> @@ -27,7 +27,7 @@
+>  15     common  chmod                           sys_chmod
+>  16     common  lchown                          sys_lchown
+>  17     common  break                           sys_ni_syscall
+> -18     32      oldstat                         sys_stat           sys_ni_syscall
+> +18     32      oldstat                         sys_stat
+>  18     64      oldstat                         sys_ni_syscall
+>  18     spu     oldstat                         sys_ni_syscall
+>  19     common  lseek                           sys_lseek
+>          compat_sys_lseek
+> @@ -43,7 +43,7 @@
+>  25     spu     stime                           sys_stime
+>  26     nospu   ptrace                          sys_ptrace
+>          compat_sys_ptrace
+>  27     common  alarm                           sys_alarm
+> -28     32      oldfstat                        sys_fstat           sys_ni_syscall
+> +28     32      oldfstat                        sys_fstat
+>  28     64      oldfstat                        sys_ni_syscall
+>  28     spu     oldfstat                        sys_ni_syscall
+>  29     nospu   pause                           sys_pause
+> @@ -114,7 +114,7 @@
+>  82     64      select                          sys_ni_syscall
+>  82     spu     select                          sys_ni_syscall
+>  83     common  symlink                         sys_symlink
+> -84     32      oldlstat                        sys_lstat           sys_ni_syscall
+> +84     32      oldlstat                        sys_lstat
+>  84     64      oldlstat                        sys_ni_syscall
+>  84     spu     oldlstat                        sys_ni_syscall
+>  85     common  readlink                        sys_readlink
