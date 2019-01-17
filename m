@@ -2,51 +2,77 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA66AC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19B1CC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:45:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 04B1620851
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:23:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04B1620851
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 57B3A20652
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:45:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="odqiWu2X"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57B3A20652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gWBW3twqzDqsd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 04:23:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gWgL1MgKzDqWL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 04:45:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
+ envelope-from=jrdr.linux@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="odqiWu2X"; 
+ dkim-atps=neutral
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
+ [IPv6:2a00:1450:4864:20::141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gW8k6p2yzDqqW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 04:21:56 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 0146668CEB; Thu, 17 Jan 2019 18:21:52 +0100 (CET)
-Date: Thu, 17 Jan 2019 18:21:52 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 3/3] videobuf2: replace a layering violation with
- dma_map_resource
-Message-ID: <20190117172152.GA32292@lst.de>
-References: <20190111181731.11782-1-hch@lst.de>
- <CGME20190111181812epcas2p1eeb68a16701631513eaf297073f7299f@epcas2p1.samsung.com>
- <20190111181731.11782-4-hch@lst.de>
- <6f8892ac-c2aa-10df-c74f-ba032bf75160@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gWdM2gxGzDqs1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 04:43:16 +1100 (AEDT)
+Received: by mail-lf1-x141.google.com with SMTP id u18so8430315lff.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 09:43:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=bPK3vpUMsa41+yGP3TZAcnaVmjICNGsm5A82VYsal8k=;
+ b=odqiWu2XPvyQ1HQzXKrPOVYPd4XAJpD4kqAUDSGhyldYzvfX+00KualOUDg1acdJAG
+ 4A2inNnT9K0Lq+SvozS4Oo1nuoCvMZR2GZv6SgWTFl2hLFujxvvyX9Wkx3RN1cHJpd+v
+ JBKTLAYGc0yDD4/0MrJHgPVTSrim01ax2Q+Co8DtSG1pTBAu5D7YYJmY3aGG2/o5bOEp
+ roi8obZLsYt3JD3PkFft1gkmeaV1/KdLzzw3W9PKAmY39o+vcbCw9qncep8KzNhJsKLD
+ +BSLFGUxADJMIEHIxbPExQEI1by7ypyiiTb0wB4pvfa8AoBxIw0NIQ3KZJ0zIFpCcJ8p
+ peBw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=bPK3vpUMsa41+yGP3TZAcnaVmjICNGsm5A82VYsal8k=;
+ b=jMZjw5RybsGLFpzcRjgsyKcQKXNUBQ78SsGPxqb2VM/NH5GvOo2aApqHi1qAnQDgg0
+ BNHWibqER1WyDXf9hFMukTRKePGqVqnEYYkik4n9sCOIlch9S82cxNvX7frugiSrik3q
+ VpwQRCrKWVjHiqAaQMQHbLwmShIrrPffL+5/5cPd7Ofgb4PTmeSSeZZ0+jfWv1pZgUV0
+ +uSmMV+8aYpEctMtyS+x5tdLLPYJ7RVjWmPH9Sc4jb007tpYhfQV1A4OmF8dcGKPN/jz
+ 3eQNhK5Em4U7DhoDve9C80Dr0HtkXsIZKV391oUVFyXjU60KHSVRTN7aHbHVJH63v4UI
+ 8/Vw==
+X-Gm-Message-State: AJcUukfZ5/TsPPM6RkBzAzxy6PsaSahPjG4UhlBb/UsITPifqnSO8kjH
+ FUJ1O59XTteKyIXj1exttfKjCNdxD5vcDrhCxZ4=
+X-Google-Smtp-Source: ALg8bN4O4+46Yqxa1wZM6HnuSfhAGcKP6UY6DguBT/Qu1QdMPVFO7HFZqo1wwGV9WrGGsa1RzSFVsUiUS2P1nIVI9Io=
+X-Received: by 2002:a19:d90c:: with SMTP id q12mr10430027lfg.24.1547746993042; 
+ Thu, 17 Jan 2019 09:43:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6f8892ac-c2aa-10df-c74f-ba032bf75160@samsung.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <5c40aafc.1c69fb81.a0ba0.67a7@mx.google.com>
+In-Reply-To: <5c40aafc.1c69fb81.a0ba0.67a7@mx.google.com>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Thu, 17 Jan 2019 23:17:09 +0530
+Message-ID: <CAFqt6zZPXcX+Qk_CMNaBhs9=dTJuzv4nQzoj09xWLbMuT6NvDQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/cell: Remove duplicate header
+To: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,59 +84,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Niklas =?iso-8859-1?Q?S=F6derlund?=
- <niklas.soderlund+renesas@ragnatech.se>, Pawel Osciak <pawel@osciak.com>,
- Russell King <linux@armlinux.org.uk>, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Brajeswar Ghosh <brajeswar.linux@gmail.com>,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 14, 2019 at 01:42:26PM +0100, Marek Szyprowski wrote:
-> Hi Christoph,
-> 
-> On 2019-01-11 19:17, Christoph Hellwig wrote:
-> > vb2_dc_get_userptr pokes into arm direct mapping details to get the
-> > resemblance of a dma address for a a physical address that does is
-> > not backed by a page struct.  Not only is this not portable to other
-> > architectures with dma direct mapping offsets, but also not to uses
-> > of IOMMUs of any kind.  Switch to the proper dma_map_resource /
-> > dma_unmap_resource interface instead.
-> >
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> There are checks for IOMMU presence in other places in vb2-dma-contig,
-> so it was used only when no IOMMU is available, but I agree that the
-> hacky code should be replaced by a generic code if possible.
-> 
-> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> 
-> V4L2 pipeline works fine on older Exynos-based boards with CMA and IOMMU
-> disabled.
+On Thu, Jan 17, 2019 at 9:49 PM Sabyasachi Gupta
+<sabyasachi.linux@gmail.com> wrote:
+>
+> Remove linux/syscalls.h which is included more than once
+>
+> Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
 
-Do you know if these rely on the offsets?  E.g. would they still work
-with the patch below applied on top.  That would keep the map_resource
-semantics as-is as solve the issue pointed out by Robin for now.
+Acked-by: Souptick Joarder <jrdr.linux@gmail.com>
 
-If not I can only think of a flag to bypass the offseting for now, but
-that would be pretty ugly.  Or go for the long-term solution of
-discovering the relationship between the two devices, as done by the
-PCIe P2P code..
-
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index 8e0359b04957..25bd19974223 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -359,7 +359,7 @@ EXPORT_SYMBOL(dma_direct_map_sg);
- dma_addr_t dma_direct_map_resource(struct device *dev, phys_addr_t paddr,
- 		size_t size, enum dma_data_direction dir, unsigned long attrs)
- {
--	dma_addr_t dma_addr = phys_to_dma(dev, paddr);
-+	dma_addr_t dma_addr = paddr;
- 
- 	if (unlikely(!dma_direct_possible(dev, dma_addr, size))) {
- 		report_addr(dev, dma_addr, size);
-
+> ---
+>  arch/powerpc/platforms/cell/spu_syscalls.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
+> index 263413a..b95d6af 100644
+> --- a/arch/powerpc/platforms/cell/spu_syscalls.c
+> +++ b/arch/powerpc/platforms/cell/spu_syscalls.c
+> @@ -26,7 +26,6 @@
+>  #include <linux/syscalls.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/binfmts.h>
+> -#include <linux/syscalls.h>
+>
+>  #include <asm/spu.h>
+>
+> --
+> 2.7.4
+>
