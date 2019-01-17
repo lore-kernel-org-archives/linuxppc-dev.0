@@ -2,82 +2,50 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91192C43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 09:23:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6ABCC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 09:31:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C88E820657
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 09:23:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="apYhu8Ru"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C88E820657
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 6B03420851
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 09:31:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B03420851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gJX86DYnzDqmT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 20:23:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gJjL4FMyzDqGc
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 20:31:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5302::1; helo=mo6-p02-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.com
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=pmladek@suse.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="apYhu8Ru"; 
- dkim-atps=neutral
-Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5302::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gJVL0mmszDqhs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 20:21:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1547716885;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=IYaHkj5lFuCS1o0NpM2A895kbFVDdTVOQs5mRSCoyk0=;
- b=apYhu8RuaVGgmdn47ruf9floxchyLFsjJVUewJxWK7aOkA5SoIjO6GgwRQt0/+osp8
- CMZseh2uWncxAhHkWNi3LKJMevYmylumEO56PqCuSidA9kk3itOGqm6NX9+s7O0V66HU
- hYk0SQ0eo+Tst7R7DYpB/ztB+fM23zvOXKuMnAteLMb6YyoiGlTj2eVhA9qYD/WQjkM8
- b4KF7mwq9hSVJUy4iVdAOW3I9YcurUoNAxaewOiVJutACrCgzfs/Dg0Yx3FEhpzDbJW7
- oesx0DvyxzjmwKaBfaZTHHHWdf35tcAisQinKBx7naEazJlVR3PPVEno+SlVi/YcdQLW
- o7yQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkN2lRWMpIV4miMvSq1nazBhLEi"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:2d08:5cb1:24de:823]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0H9LC2Db
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Thu, 17 Jan 2019 10:21:12 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-To: Christoph Hellwig <hch@lst.de>
-References: <71A251A5-FA06-4019-B324-7AED32F7B714@xenosoft.de>
- <1b0c5c21-2761-d3a3-651b-3687bb6ae694@xenosoft.de>
- <3504ee70-02de-049e-6402-2d530bf55a84@xenosoft.de>
- <23284859-bf0a-9cd5-a480-2a7fd7802056@xenosoft.de>
- <075f70e3-7a4a-732f-b501-05a1a8e3c853@xenosoft.de>
- <b04d08ea-61f9-3212-b9a3-ad79e3b8bd05@xenosoft.de>
- <21f72a6a-9095-7034-f169-95e876228b2a@xenosoft.de>
- <27148ac2-2a92-5536-d886-2c0971ab43d9@xenosoft.de>
- <20190115133558.GA29225@lst.de>
- <685f0c06-af1b-0bec-ac03-f9bf1f7a2b35@xenosoft.de>
- <20190115151732.GA2325@lst.de>
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Message-ID: <e9345547-4dc6-747a-29ec-6375dc8bfe83@xenosoft.de>
-Date: Thu, 17 Jan 2019 10:21:11 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gJfw1BjnzDqll
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 20:28:49 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay1.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 66E4FAC7F;
+ Thu, 17 Jan 2019 09:28:45 +0000 (UTC)
+Date: Thu, 17 Jan 2019 10:28:42 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Mike Rapoport <rppt@linux.ibm.com>
+Subject: Re: [PATCH 21/21] memblock: drop memblock_alloc_*_nopanic() variants
+Message-ID: <20190117092842.wnvsc6em5mxga3rn@pathway.suse.cz>
+References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
+ <1547646261-32535-22-git-send-email-rppt@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20190115151732.GA2325@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1547646261-32535-22-git-send-email-rppt@linux.ibm.com>
+User-Agent: NeoMutt/20170421 (1.8.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,46 +57,75 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ Max Filippov <jcmvbkbc@gmail.com>, Guo Ren <guoren@kernel.org>,
+ sparclinux@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+ linux-s390@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
+ Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
+ linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
+ devicetree@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
+ Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
+ Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
+ linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
+ Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ openrisc@lists.librecores.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi All,
+On Wed 2019-01-16 15:44:21, Mike Rapoport wrote:
+> As all the memblock allocation functions return NULL in case of error
+> rather than panic(), the duplicates with _nopanic suffix can be removed.
 
-I compiled the fixed '257002094bc5935dd63207a380d9698ab81f0775' 
-(powerpc/dma: use the dma-direct allocator for coherent platforms) today.
+[...]
 
-git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index c4f0a41..ae65221 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -1147,17 +1147,14 @@ void __init setup_log_buf(int early)
+>  	if (!new_log_buf_len)
+>  		return;
+>  
+> -	if (early) {
+> -		new_log_buf =
+> -			memblock_alloc(new_log_buf_len, LOG_ALIGN);
+> -	} else {
+> -		new_log_buf = memblock_alloc_nopanic(new_log_buf_len,
+> -							  LOG_ALIGN);
+> -	}
+> -
+> +	new_log_buf = memblock_alloc(new_log_buf_len, LOG_ALIGN);
 
-git checkout 257002094bc5935dd63207a380d9698ab81f0775
+The above change is enough.
 
-Link to the Git: 
-http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6 
+>  	if (unlikely(!new_log_buf)) {
+> -		pr_err("log_buf_len: %lu bytes not available\n",
+> -			new_log_buf_len);
+> +		if (early)
+> +			panic("log_buf_len: %lu bytes not available\n",
+> +				new_log_buf_len);
 
+panic() is not needed here. printk() will just continue using
+the (smaller) static buffer.
 
-env LANG=C make CROSS_COMPILE=powerpc-linux-gnu- ARCH=powerpc zImage
+> +		else
+> +			pr_err("log_buf_len: %lu bytes not available\n",
+> +			       new_log_buf_len);
+>  		return;
+>  	}
 
-env LANG=C make CROSS_COMPILE=powerpc-linux-gnu- ARCH=powerpc uImage
-
-The X1000 boots and the PASEMI onboard ethernet works!
-
-Bad news for the X5000 (P5020 board). U-Boot loads the kernel and the 
-dtb file. Then the kernel starts but it doesn't find any hard disks 
-(partitions).
-
-Cheers,
-Christian
-
-
-On 15 January 2019 at 4:17PM, Christoph Hellwig wrote:
-
-So 257002094bc5935dd63207a380d9698ab81f0775 above is the fixed version
-for the commit - this switched the ifdef in dma.c around that I had
-inverted.  Can you try that one instead?  And then move on with the
-commits after it in the updated powerpc-dma.6 branch - they are
-identical to the original branch except for carrying this fix forward.
+Best Regards,
+Petr
