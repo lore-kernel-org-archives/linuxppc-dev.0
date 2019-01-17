@@ -2,77 +2,98 @@ Return-Path: <SRS0=IbMY=PZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19B1CC43387
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0500EC43387
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 20:12:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57B3A20652
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 17:45:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2D2AA20859
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jan 2019 20:12:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="odqiWu2X"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57B3A20652
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="NdZPToB6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D2AA20859
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gWgL1MgKzDqWL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 04:45:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gZwt5N5WzDqt3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 07:11:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
- envelope-from=jrdr.linux@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="odqiWu2X"; 
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="NdZPToB6"; 
  dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gWdM2gxGzDqs1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 04:43:16 +1100 (AEDT)
-Received: by mail-lf1-x141.google.com with SMTP id u18so8430315lff.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 09:43:16 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=bPK3vpUMsa41+yGP3TZAcnaVmjICNGsm5A82VYsal8k=;
- b=odqiWu2XPvyQ1HQzXKrPOVYPd4XAJpD4kqAUDSGhyldYzvfX+00KualOUDg1acdJAG
- 4A2inNnT9K0Lq+SvozS4Oo1nuoCvMZR2GZv6SgWTFl2hLFujxvvyX9Wkx3RN1cHJpd+v
- JBKTLAYGc0yDD4/0MrJHgPVTSrim01ax2Q+Co8DtSG1pTBAu5D7YYJmY3aGG2/o5bOEp
- roi8obZLsYt3JD3PkFft1gkmeaV1/KdLzzw3W9PKAmY39o+vcbCw9qncep8KzNhJsKLD
- +BSLFGUxADJMIEHIxbPExQEI1by7ypyiiTb0wB4pvfa8AoBxIw0NIQ3KZJ0zIFpCcJ8p
- peBw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=bPK3vpUMsa41+yGP3TZAcnaVmjICNGsm5A82VYsal8k=;
- b=jMZjw5RybsGLFpzcRjgsyKcQKXNUBQ78SsGPxqb2VM/NH5GvOo2aApqHi1qAnQDgg0
- BNHWibqER1WyDXf9hFMukTRKePGqVqnEYYkik4n9sCOIlch9S82cxNvX7frugiSrik3q
- VpwQRCrKWVjHiqAaQMQHbLwmShIrrPffL+5/5cPd7Ofgb4PTmeSSeZZ0+jfWv1pZgUV0
- +uSmMV+8aYpEctMtyS+x5tdLLPYJ7RVjWmPH9Sc4jb007tpYhfQV1A4OmF8dcGKPN/jz
- 3eQNhK5Em4U7DhoDve9C80Dr0HtkXsIZKV391oUVFyXjU60KHSVRTN7aHbHVJH63v4UI
- 8/Vw==
-X-Gm-Message-State: AJcUukfZ5/TsPPM6RkBzAzxy6PsaSahPjG4UhlBb/UsITPifqnSO8kjH
- FUJ1O59XTteKyIXj1exttfKjCNdxD5vcDrhCxZ4=
-X-Google-Smtp-Source: ALg8bN4O4+46Yqxa1wZM6HnuSfhAGcKP6UY6DguBT/Qu1QdMPVFO7HFZqo1wwGV9WrGGsa1RzSFVsUiUS2P1nIVI9Io=
-X-Received: by 2002:a19:d90c:: with SMTP id q12mr10430027lfg.24.1547746993042; 
- Thu, 17 Jan 2019 09:43:13 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gZv20K8fzDqrT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 07:10:15 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.22/8.16.0.22) with SMTP id x0HK8xST088262;
+ Thu, 17 Jan 2019 20:09:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2018-07-02;
+ bh=RiKe57zOOVmULfRl8TWdM657giYm26btlicjuDAGmyk=;
+ b=NdZPToB61u86VXfemArtvyTEoRyAI85rdbncXHGSdkbYmbAJmvKC/bpnhHJKhhQbAmXO
+ 3HXXqKxtEEQDWgDJ901PnkE+gI+limbhTxPH18jUTMit7PxoHqDIpyuQPIuVjNKEuMR9
+ gjbTHv2BZ2uL8FgI2b8d0e2cRU8s+FriOoB4d+Q7q/cLLrtwS0cYOeiiY07cfZ4UeDig
+ C3PrdDxoGYl5iSjP2yOlRYdEMi3MX7sNDe4YF7I3Pl7qRLOqv89g3B8a0WEd8EX3Eu/j
+ FrOCnL41ARCtS8fQEOI0KkB+ohuIICEPBiksXXVrhQ51+5cbqhODTn/lB+hTCNn0A6A1 6Q== 
+Received: from aserv0021.oracle.com (aserv0021.oracle.com [141.146.126.233])
+ by userp2130.oracle.com with ESMTP id 2pybkct323-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 17 Jan 2019 20:09:16 +0000
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by aserv0021.oracle.com (8.14.4/8.14.4) with ESMTP id x0HK9Fj7003276
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 17 Jan 2019 20:09:15 GMT
+Received: from abhmp0004.oracle.com (abhmp0004.oracle.com [141.146.116.10])
+ by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x0HK9EEd028131;
+ Thu, 17 Jan 2019 20:09:14 GMT
+Received: from [192.168.1.164] (/50.38.38.67)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Thu, 17 Jan 2019 12:09:13 -0800
+Subject: Re: [PATCH] hugetlb: allow to free gigantic pages regardless of the
+ configuration
+To: Alexandre Ghiti <aghiti@upmem.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+References: <20190117183953.5990-1-aghiti@upmem.com>
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Message-ID: <5e02e9c1-efd5-fc1e-c658-5a11f6291bcd@oracle.com>
+Date: Thu, 17 Jan 2019 12:09:11 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-References: <5c40aafc.1c69fb81.a0ba0.67a7@mx.google.com>
-In-Reply-To: <5c40aafc.1c69fb81.a0ba0.67a7@mx.google.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Thu, 17 Jan 2019 23:17:09 +0530
-Message-ID: <CAFqt6zZPXcX+Qk_CMNaBhs9=dTJuzv4nQzoj09xWLbMuT6NvDQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/cell: Remove duplicate header
-To: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190117183953.5990-1-aghiti@upmem.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9139
+ signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=2
+ malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.0.1-1810050000 definitions=main-1901170140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,37 +105,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, Brajeswar Ghosh <brajeswar.linux@gmail.com>,
- linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: hch@infradead.org, linux-riscv@lists.infradead.org,
+ Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 17, 2019 at 9:49 PM Sabyasachi Gupta
-<sabyasachi.linux@gmail.com> wrote:
->
-> Remove linux/syscalls.h which is included more than once
->
-> Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+On 1/17/19 10:39 AM, Alexandre Ghiti wrote:
+> From: Alexandre Ghiti <alex@ghiti.fr>
+> 
+> On systems without CMA or (MEMORY_ISOLATION && COMPACTION) activated but
+> that support gigantic pages, boottime reserved gigantic pages can not be
+> freed at all. This patchs simply enables the possibility to hand back
+> those pages to memory allocator.
+> 
+> This commit then renames gigantic_page_supported and
+> ARCH_HAS_GIGANTIC_PAGE to make them more accurate. Indeed, those values
+> being false does not mean that the system cannot use gigantic pages: it
+> just means that runtime allocation of gigantic pages is not supported,
+> one can still allocate boottime gigantic pages if the architecture supports
+> it.
+> 
+> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
 
-Acked-by: Souptick Joarder <jrdr.linux@gmail.com>
+Thank you for doing this!
 
-> ---
->  arch/powerpc/platforms/cell/spu_syscalls.c | 1 -
->  1 file changed, 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
-> index 263413a..b95d6af 100644
-> --- a/arch/powerpc/platforms/cell/spu_syscalls.c
-> +++ b/arch/powerpc/platforms/cell/spu_syscalls.c
-> @@ -26,7 +26,6 @@
->  #include <linux/syscalls.h>
->  #include <linux/rcupdate.h>
->  #include <linux/binfmts.h>
-> -#include <linux/syscalls.h>
->
->  #include <asm/spu.h>
->
-> --
-> 2.7.4
->
+Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
+
+> --- a/include/linux/gfp.h
+> +++ b/include/linux/gfp.h
+> @@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
+>  /* The below functions must be run on a range from a single zone. */
+>  extern int alloc_contig_range(unsigned long start, unsigned long end,
+>  			      unsigned migratetype, gfp_t gfp_mask);
+> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
+>  #endif
+> +extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
+
+I think nr_pages should be an unsigned long in cma_release() and here
+as well, but that is beyond the scope of this patch.  Most callers of
+cma_release pass in a truncated unsigned long.  The truncation is unlikely
+to cause any issues, just would be nice if types were consistent.  I have
+a patch to do that as part of a contiguous allocation series that I will
+get back to someday.
+
+> @@ -2350,9 +2355,10 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+>  			break;
+>  	}
+>  out:
+> -	ret = persistent_huge_pages(h);
+> +	h->max_huge_pages = persistent_huge_pages(h);
+>  	spin_unlock(&hugetlb_lock);
+> -	return ret;
+> +
+> +	return 0;
+>  }
+>  
+>  #define HSTATE_ATTR_RO(_name) \
+> @@ -2404,11 +2410,6 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+>  	int err;
+>  	NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | __GFP_NORETRY);
+>  
+> -	if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
+> -		err = -EINVAL;
+> -		goto out;
+> -	}
+> -
+>  	if (nid == NUMA_NO_NODE) {
+>  		/*
+>  		 * global hstate attribute
+> @@ -2428,7 +2429,9 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+>  	} else
+>  		nodes_allowed = &node_states[N_MEMORY];
+>  
+> -	h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
+> +	err = set_max_huge_pages(h, count, nodes_allowed);
+> +	if (err)
+> +		goto out;
+>  
+>  	if (nodes_allowed != &node_states[N_MEMORY])
+>  		NODEMASK_FREE(nodes_allowed);
+
+Yeah!  Those changes causes max_huge_pages to be modified while holding
+hugetlb_lock as it should be.
+-- 
+Mike Kravetz
