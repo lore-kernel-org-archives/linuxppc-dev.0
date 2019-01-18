@@ -2,25 +2,26 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FC69C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:42:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BD66C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:44:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E522F20652
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:42:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id DA96820823
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:44:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NM1ZpJGN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E522F20652
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="JUFdV6ag"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA96820823
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gzYy742FzDr11
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 22:41:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gzcb4WlszDqyY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 22:44:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,38 +31,41 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="NM1ZpJGN"; dkim-atps=neutral
+ header.b="JUFdV6ag"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gzT56csFzDqsm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 22:37:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gzT80nQHzDqtQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 22:37:48 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
- MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
- Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
- Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=OX54bckM/rwEp4H5la6/F38I3bmsjj9BqreNm9vFgKU=; b=NM1ZpJGN9GIEtFPLireLSQM58
- lhPpr/NkFXHPqraZrNpHSvJLMGN3QcWxFpLzHsPoDAuzLVJzJ993PUCF4EPUvJzk4fNQhaBsXonLv
- 6Iwd3IME6U01AO10NdOLMhmeTXKyZlI4J427ly8wY3KJouQfjgzRMfwPXxDRaqBfGpxAIJTfjey0e
- WJO8y+debPaWL6RXafOmM5uyii4G8RQxAp4OuF7sjymQWJB5cRHnTP+qQe4x8YakfdKL4pBaAtKL5
- yKcK6uOyCZ4zj+oFyYGnSwLugNEvfkLXjr4e7r537Y3r2CCn6weEt47SUv084M1Dr1TKFS20smn/O
- gG/XOrKmQ==;
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=onP7tSqCOObp60S51bk8Ez5+ZsHmuF3HzNza6b83R+4=; b=JUFdV6agaFlBexuYPNCElM7UK6
+ WXxyEtr534d3QnhsVx08q+lon+LZEVQMb0n6rbe6tLa0atF64kIigAomBV3MqHJfCzuOyuLzFSmCa
+ A+MiekCAK8Ue5cg/RkhOkq+Q9KmTJh7KZlF7tO58xwSVIQpjJgLwqo/DSwpEuwUQEnr6IIXhv/0JT
+ HY0MBtQD+zjWL1kda54zSFsyDKlfneB04unHhLfEuJz7s6ki78MxTpYupbDqdS8xXBLZiIZj/0Y6t
+ luVZesGpiP4R7w80kQgHjRRoBeeJh4UhvCu88QkzxRUH+lOopcIJtR6IpxTnWxrFKL166SlKn54AA
+ voqJBe4A==;
 Received: from 089144210168.atnat0019.highway.a1.net ([89.144.210.168]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gkSSo-0005OJ-Oj; Fri, 18 Jan 2019 11:37:31 +0000
+ id 1gkSSx-0005Rq-Ba; Fri, 18 Jan 2019 11:37:40 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Pawel Osciak <pawel@osciak.com>,
  Marek Szyprowski <m.szyprowski@samsung.com>,
  Kyungmin Park <kyungmin.park@samsung.com>,
  =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
-Subject: fix a layering violation in videobuf2 and improve dma_map_resource v2
-Date: Fri, 18 Jan 2019 12:37:24 +0100
-Message-Id: <20190118113727.3270-1-hch@lst.de>
+Subject: [PATCH 3/3] videobuf2: replace a layering violation with
+ dma_map_resource
+Date: Fri, 18 Jan 2019 12:37:27 +0100
+Message-Id: <20190118113727.3270-4-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190118113727.3270-1-hch@lst.de>
+References: <20190118113727.3270-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
@@ -78,20 +82,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
- iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+ iommu@lists.linux-foundation.org,
+ Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+vb2_dc_get_userptr pokes into arm direct mapping details to get the
+resemblance of a dma address for a a physical address that does is
+not backed by a page struct.  Not only is this not portable to other
+architectures with dma direct mapping offsets, but also not to uses
+of IOMMUs of any kind.  Switch to the proper dma_map_resource /
+dma_unmap_resource interface instead.
 
-this series fixes a rather gross layering violation in videobuf2, which
-pokes into arm DMA mapping internals to get a DMA address for memory that
-does not have a page structure, and to do so fixes up the dma_map_resource
-implementation to not provide a somewhat dangerous default and improve
-the error handling.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Acked-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+---
+ .../common/videobuf2/videobuf2-dma-contig.c   | 41 ++++---------------
+ 1 file changed, 9 insertions(+), 32 deletions(-)
 
-Changes since v1:
- - don't apply bus offsets in dma_direct_map_resource
+diff --git a/drivers/media/common/videobuf2/videobuf2-dma-contig.c b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+index aff0ab7bf83d..82389aead6ed 100644
+--- a/drivers/media/common/videobuf2/videobuf2-dma-contig.c
++++ b/drivers/media/common/videobuf2/videobuf2-dma-contig.c
+@@ -439,42 +439,14 @@ static void vb2_dc_put_userptr(void *buf_priv)
+ 				set_page_dirty_lock(pages[i]);
+ 		sg_free_table(sgt);
+ 		kfree(sgt);
++	} else {
++		dma_unmap_resource(buf->dev, buf->dma_addr, buf->size,
++				   buf->dma_dir, 0);
+ 	}
+ 	vb2_destroy_framevec(buf->vec);
+ 	kfree(buf);
+ }
+ 
+-/*
+- * For some kind of reserved memory there might be no struct page available,
+- * so all that can be done to support such 'pages' is to try to convert
+- * pfn to dma address or at the last resort just assume that
+- * dma address == physical address (like it has been assumed in earlier version
+- * of videobuf2-dma-contig
+- */
+-
+-#ifdef __arch_pfn_to_dma
+-static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+-{
+-	return (dma_addr_t)__arch_pfn_to_dma(dev, pfn);
+-}
+-#elif defined(__pfn_to_bus)
+-static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+-{
+-	return (dma_addr_t)__pfn_to_bus(pfn);
+-}
+-#elif defined(__pfn_to_phys)
+-static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+-{
+-	return (dma_addr_t)__pfn_to_phys(pfn);
+-}
+-#else
+-static inline dma_addr_t vb2_dc_pfn_to_dma(struct device *dev, unsigned long pfn)
+-{
+-	/* really, we cannot do anything better at this point */
+-	return (dma_addr_t)(pfn) << PAGE_SHIFT;
+-}
+-#endif
+-
+ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+ 	unsigned long size, enum dma_data_direction dma_dir)
+ {
+@@ -528,7 +500,12 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
+ 		for (i = 1; i < n_pages; i++)
+ 			if (nums[i-1] + 1 != nums[i])
+ 				goto fail_pfnvec;
+-		buf->dma_addr = vb2_dc_pfn_to_dma(buf->dev, nums[0]);
++		buf->dma_addr = dma_map_resource(buf->dev,
++				__pfn_to_phys(nums[0]), size, buf->dma_dir, 0);
++		if (dma_mapping_error(buf->dev, buf->dma_addr)) {
++			ret = -ENOMEM;
++			goto fail_pfnvec;
++		}
+ 		goto out;
+ 	}
+ 
+-- 
+2.20.1
+
