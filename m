@@ -3,64 +3,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB5D0C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:51:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1050C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:53:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 559DE2086D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:51:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 559DE2086D
+	by mail.kernel.org (Postfix) with ESMTPS id 32FA920883
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:53:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32FA920883
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43h6R62Db5zDqKh
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:51:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43h6T04y8LzDr7F
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:53:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43h5mF4VpxzDr2d
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 03:21:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43h5mJ5x9dzDr2h
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 03:21:20 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue109 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1M2fDl-1go5tz06Sl-004FYq; Fri, 18 Jan 2019 17:19:40 +0100
+ 1MyK9S-1h9ahD3q4i-00yfq3; Fri, 18 Jan 2019 17:19:32 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH v2 18/29] time: make adjtime compat handling available for 32
- bit
-Date: Fri, 18 Jan 2019 17:18:24 +0100
-Message-Id: <20190118161835.2259170-19-arnd@arndb.de>
+Subject: [PATCH v2 12/29] ipc: rename old-style shmctl/semctl/msgctl syscalls
+Date: Fri, 18 Jan 2019 17:18:18 +0100
+Message-Id: <20190118161835.2259170-13-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20190118161835.2259170-1-arnd@arndb.de>
 References: <20190118161835.2259170-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:L9/OQwPQmqIrcoCAFJvf58bdFmxPCQDrpg5hoXttL62fnnkW6Rl
- i5YUAL/e0iSbG5RQj4MCfEWq9ECA0ytb02l0LesW+xkgXyG6UtlNHi8BSK5B79L4nWXxBGk
- E6Tz/7dTzNP/dUQu0VdlwFV7tn2zbDYz3I7ljfFHIJ2gv99DBWEfD5ODIp71gC6N8jAvgWj
- k1ehZE13GZhF/svJm/dNw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:d/VMRrwHTZA=:V595XJR4efcHtQN0xt0oVZ
- s3P1ZWkjeY3FFYEVxLJeWwTAa4ap8r59QbA+F0nNvQPNyk4EdLwiKX2msvtCxRwshzk0k/P4r
- oulKFF0l5QTvjjQwvOCckwXCEqrPyUkFkvA546ngVQVTKOax0G6hmLna9nc3FZ4A6ZMqiP/cd
- XYtkrd+3bAkG7whOYLHya+qgYU8fbt9X4yvO5ImNtc8lDApVS2AKrZJBOLXbHM4YbpGMT70e+
- dJqI/NJyGLNpvUet7I4PL1dftBgkbZ75NZDcM/sOGiD5VZMo+re7AHdgPyMOiW3/g68ATbn/9
- B+oU+1e35zvFGsT4eVIgWD94FeXuHDjsTFlNRoZojWJYENi5wBdyqBam3853dqKugPe3xjtaL
- FeyvMap1JdkyJFdwiNH6ekqp/sJM/hOs7wXspeYeyJSfv3CGg1oHlWBA+Tjf9U537WdQu28Xd
- Ce/kdTvRea6qX0RhJ4BLk7hZAt7jD60kxhv+bplI4jF++AaNBf3zzKqgB6fcdKgb5jPwhnxFL
- y5FsPbsalvUEfD/Mb5pLMTILJxN3rGDP71h4RQ0/XeU+jC7iMjTTf5ZnR0paAySYkN/T7kMwK
- PU3BETDkPWWH5LzD8DBs0XWWtU2T7G479UoEpUu4aaXQRuLgAlnGSjty4Vc7BqrkIIes5hrKS
- 6H9uvc3AduDzfLElIgN5QgueRnnWXMlBVffc6VlSC2ZETfbx9DbFtwjvNfbNc7HwRgZZac9NS
- YkU4yImdc1RHhW6avDkWdGpIUuQ4qBvJo5eDaA==
+X-Provags-ID: V03:K1:eMivbeGP8umSxqYqVnyElJ+JcTfDwXXaqjqUq6p6Nln5uj1nQf6
+ 59RahDegNmzZx+KVckLapWPvUpd4ZmIpyhXQgObRGwYZZTSb1Tjlrra1eDubQn4Mhm7cion
+ jPK4+5gABDO6F4qZ2X+qWe/fRepqqGarmUOK7nXlYF57df5yIBjI2vnzUthDOSgjDakRnh3
+ BqOovOgAeSIvFSDJQVCsg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:u1sqGKWddkE=:v+ZtSnulQA+nYI84N/2Qvn
+ he9AkuPylm2S/rmUXLG541KYr/IAicl4+xHFECaZL1UpdVbtCrlcxZtEHHnFxrSQCmw8Ijz7d
+ 28NJ23na6jSxxvRca3WT4Z0XwfXL7vCdbc2Vz0UxhvNtos2j8l0alWnVfiiTXO0qIYAf97YpU
+ yTxPAhqIHj9Amim2j/FmrfsGjuyIqekC8xvmIy/5COnsHX3YvZ2k1svib0+e8E5lUpLAUn+EO
+ xV/iZNnQxde7cK0S5Dz+1RPRnDiQ7z/nQSQfdiz3nDfZbQtAlZx8bgPfhjW8DVtN4gj/24Ua/
+ EIg6ZvarZRx9UGTALIftSRXRgJCdnjxFeaxt4xXMgU1hPFVrjpQYP9d/OxjR52EzdUy7R3Y7Q
+ xptt+0vvVV5lYCsU5iEEPbCN1t5pqcEbhQpeEO+hPp7El/y1ky+/VfElftMjaF+O9/4EWPbQR
+ QS8JFEe5v1S3kLL/6e46fFmVSz8W4SEyTHc5lFyLR93x8+UDefbxA6ZC+SVJ9QIViMvnAGF9j
+ YFwXgPVnnXcIMf1yirH2VffQn6Jp9XW5NGbh0K4psS0yHcGGXgwjHn2HVNKkjvwVfCgJVvCNS
+ CSC/tKE3OdT6dLE5uqMomUauFuzjpe6UrAYC7RS1VYEyzkx2ntFoAYiJn51K/sEh1RWummiHH
+ z7JSP8MWUP5k0gZFQTicaExNi1XK+HWXWv6ycNxFTySDb4iR9mJkmqPYlN4gde0U8yWLgIXj8
+ V6GlBGchjlvFegbQblgWDrNGwu+Mo5N/lwcSmg==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,356 +88,673 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We want to reuse the compat_timex handling on 32-bit architectures the
-same way we are using the compat handling for timespec when moving to
-64-bit time_t.
+The behavior of these system calls is slightly different between
+architectures, as determined by the CONFIG_ARCH_WANT_IPC_PARSE_VERSION
+symbol. Most architectures that implement the split IPC syscalls don't set
+that symbol and only get the modern version, but alpha, arm, microblaze,
+mips-n32, mips-n64 and xtensa expect the caller to pass the IPC_64 flag.
 
-Move all definitions related to compat_timex out of the compat code
-into the normal timekeeping code, along with a rename to old_timex32,
-corresponding to the timespec/timeval structures, and make it controlled
-by CONFIG_COMPAT_32BIT_TIME, which 32-bit architectures will then select.
+For the architectures that so far only implement sys_ipc(), i.e. m68k,
+mips-o32, powerpc, s390, sh, sparc, and x86-32, we want the new behavior
+when adding the split syscalls, so we need to distinguish between the
+two groups of architectures.
+
+The method I picked for this distinction is to have a separate system call
+entry point: sys_old_*ctl() now uses ipc_parse_version, while sys_*ctl()
+does not. The system call tables of the five architectures are changed
+accordingly.
+
+As an additional benefit, we no longer need the configuration specific
+definition for ipc_parse_version(), it always does the same thing now,
+but simply won't get called on architectures with the modern interface.
+
+A small downside is that on architectures that do set
+ARCH_WANT_IPC_PARSE_VERSION, we now have an extra set of entry points
+that are never called. They only add a few bytes of bloat, so it seems
+better to keep them compared to adding yet another Kconfig symbol.
+I considered adding new syscall numbers for the IPC_64 variants for
+consistency, but decided against that for now.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/linux/compat.h     | 35 ++-----------------
- include/linux/time32.h     | 32 ++++++++++++++++-
- kernel/compat.c            | 64 ----------------------------------
- kernel/time/posix-timers.c | 14 ++------
- kernel/time/time.c         | 70 +++++++++++++++++++++++++++++++++++---
- 5 files changed, 102 insertions(+), 113 deletions(-)
+ arch/alpha/kernel/syscalls/syscall.tbl      |  6 ++--
+ arch/arm/tools/syscall.tbl                  |  6 ++--
+ arch/arm64/include/asm/unistd32.h           |  6 ++--
+ arch/microblaze/kernel/syscalls/syscall.tbl |  6 ++--
+ arch/mips/kernel/syscalls/syscall_n32.tbl   |  6 ++--
+ arch/mips/kernel/syscalls/syscall_n64.tbl   |  6 ++--
+ arch/xtensa/kernel/syscalls/syscall.tbl     |  6 ++--
+ include/linux/syscalls.h                    |  3 ++
+ ipc/msg.c                                   | 39 ++++++++++++++++----
+ ipc/sem.c                                   | 39 ++++++++++++++++----
+ ipc/shm.c                                   | 40 +++++++++++++++++----
+ ipc/syscall.c                               | 12 +++----
+ ipc/util.h                                  | 21 ++++-------
+ kernel/sys_ni.c                             |  3 ++
+ 14 files changed, 137 insertions(+), 62 deletions(-)
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index 056be0d03722..657ca6abd855 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -132,37 +132,6 @@ struct compat_tms {
- 	compat_clock_t		tms_cstime;
- };
+diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
+index f920b65e8c49..b0e247287908 100644
+--- a/arch/alpha/kernel/syscalls/syscall.tbl
++++ b/arch/alpha/kernel/syscalls/syscall.tbl
+@@ -174,17 +174,17 @@
+ 187	common	osf_alt_sigpending		sys_ni_syscall
+ 188	common	osf_alt_setsid			sys_ni_syscall
+ 199	common	osf_swapon			sys_swapon
+-200	common	msgctl				sys_msgctl
++200	common	msgctl				sys_old_msgctl
+ 201	common	msgget				sys_msgget
+ 202	common	msgrcv				sys_msgrcv
+ 203	common	msgsnd				sys_msgsnd
+-204	common	semctl				sys_semctl
++204	common	semctl				sys_old_semctl
+ 205	common	semget				sys_semget
+ 206	common	semop				sys_semop
+ 207	common	osf_utsname			sys_osf_utsname
+ 208	common	lchown				sys_lchown
+ 209	common	shmat				sys_shmat
+-210	common	shmctl				sys_shmctl
++210	common	shmctl				sys_old_shmctl
+ 211	common	shmdt				sys_shmdt
+ 212	common	shmget				sys_shmget
+ 213	common	osf_mvalid			sys_ni_syscall
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index 20ed7e026723..b54b7f2bc24a 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -314,15 +314,15 @@
+ 297	common	recvmsg			sys_recvmsg
+ 298	common	semop			sys_semop		sys_oabi_semop
+ 299	common	semget			sys_semget
+-300	common	semctl			sys_semctl
++300	common	semctl			sys_old_semctl
+ 301	common	msgsnd			sys_msgsnd
+ 302	common	msgrcv			sys_msgrcv
+ 303	common	msgget			sys_msgget
+-304	common	msgctl			sys_msgctl
++304	common	msgctl			sys_old_msgctl
+ 305	common	shmat			sys_shmat
+ 306	common	shmdt			sys_shmdt
+ 307	common	shmget			sys_shmget
+-308	common	shmctl			sys_shmctl
++308	common	shmctl			sys_old_shmctl
+ 309	common	add_key			sys_add_key
+ 310	common	request_key		sys_request_key
+ 311	common	keyctl			sys_keyctl
+diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
+index 8ca1d4c304f4..d10cce69a4b0 100644
+--- a/arch/arm64/include/asm/unistd32.h
++++ b/arch/arm64/include/asm/unistd32.h
+@@ -622,7 +622,7 @@ __SYSCALL(__NR_semop, sys_semop)
+ #define __NR_semget 299
+ __SYSCALL(__NR_semget, sys_semget)
+ #define __NR_semctl 300
+-__SYSCALL(__NR_semctl, compat_sys_semctl)
++__SYSCALL(__NR_semctl, compat_sys_old_semctl)
+ #define __NR_msgsnd 301
+ __SYSCALL(__NR_msgsnd, compat_sys_msgsnd)
+ #define __NR_msgrcv 302
+@@ -630,7 +630,7 @@ __SYSCALL(__NR_msgrcv, compat_sys_msgrcv)
+ #define __NR_msgget 303
+ __SYSCALL(__NR_msgget, sys_msgget)
+ #define __NR_msgctl 304
+-__SYSCALL(__NR_msgctl, compat_sys_msgctl)
++__SYSCALL(__NR_msgctl, compat_sys_old_msgctl)
+ #define __NR_shmat 305
+ __SYSCALL(__NR_shmat, compat_sys_shmat)
+ #define __NR_shmdt 306
+@@ -638,7 +638,7 @@ __SYSCALL(__NR_shmdt, sys_shmdt)
+ #define __NR_shmget 307
+ __SYSCALL(__NR_shmget, sys_shmget)
+ #define __NR_shmctl 308
+-__SYSCALL(__NR_shmctl, compat_sys_shmctl)
++__SYSCALL(__NR_shmctl, compat_sys_old_shmctl)
+ #define __NR_add_key 309
+ __SYSCALL(__NR_add_key, sys_add_key)
+ #define __NR_request_key 310
+diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
+index a24d09e937dd..7cc0f9554da3 100644
+--- a/arch/microblaze/kernel/syscalls/syscall.tbl
++++ b/arch/microblaze/kernel/syscalls/syscall.tbl
+@@ -335,15 +335,15 @@
+ 325	common	semtimedop			sys_semtimedop
+ 326	common	timerfd_settime			sys_timerfd_settime
+ 327	common	timerfd_gettime			sys_timerfd_gettime
+-328	common	semctl				sys_semctl
++328	common	semctl				sys_old_semctl
+ 329	common	semget				sys_semget
+ 330	common	semop				sys_semop
+-331	common	msgctl				sys_msgctl
++331	common	msgctl				sys_old_msgctl
+ 332	common	msgget				sys_msgget
+ 333	common	msgrcv				sys_msgrcv
+ 334	common	msgsnd				sys_msgsnd
+ 335	common	shmat				sys_shmat
+-336	common	shmctl				sys_shmctl
++336	common	shmctl				sys_old_shmctl
+ 337	common	shmdt				sys_shmdt
+ 338	common	shmget				sys_shmget
+ 339	common	signalfd4			sys_signalfd4
+diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
+index 53d5862649ae..cc134b1211aa 100644
+--- a/arch/mips/kernel/syscalls/syscall_n32.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
+@@ -37,7 +37,7 @@
+ 27	n32	madvise				sys_madvise
+ 28	n32	shmget				sys_shmget
+ 29	n32	shmat				sys_shmat
+-30	n32	shmctl				compat_sys_shmctl
++30	n32	shmctl				compat_sys_old_shmctl
+ 31	n32	dup				sys_dup
+ 32	n32	dup2				sys_dup2
+ 33	n32	pause				sys_pause
+@@ -71,12 +71,12 @@
+ 61	n32	uname				sys_newuname
+ 62	n32	semget				sys_semget
+ 63	n32	semop				sys_semop
+-64	n32	semctl				compat_sys_semctl
++64	n32	semctl				compat_sys_old_semctl
+ 65	n32	shmdt				sys_shmdt
+ 66	n32	msgget				sys_msgget
+ 67	n32	msgsnd				compat_sys_msgsnd
+ 68	n32	msgrcv				compat_sys_msgrcv
+-69	n32	msgctl				compat_sys_msgctl
++69	n32	msgctl				compat_sys_old_msgctl
+ 70	n32	fcntl				compat_sys_fcntl
+ 71	n32	flock				sys_flock
+ 72	n32	fsync				sys_fsync
+diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
+index a8286ccbb66c..af0da757a7b2 100644
+--- a/arch/mips/kernel/syscalls/syscall_n64.tbl
++++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
+@@ -37,7 +37,7 @@
+ 27	n64	madvise				sys_madvise
+ 28	n64	shmget				sys_shmget
+ 29	n64	shmat				sys_shmat
+-30	n64	shmctl				sys_shmctl
++30	n64	shmctl				sys_old_shmctl
+ 31	n64	dup				sys_dup
+ 32	n64	dup2				sys_dup2
+ 33	n64	pause				sys_pause
+@@ -71,12 +71,12 @@
+ 61	n64	uname				sys_newuname
+ 62	n64	semget				sys_semget
+ 63	n64	semop				sys_semop
+-64	n64	semctl				sys_semctl
++64	n64	semctl				sys_old_semctl
+ 65	n64	shmdt				sys_shmdt
+ 66	n64	msgget				sys_msgget
+ 67	n64	msgsnd				sys_msgsnd
+ 68	n64	msgrcv				sys_msgrcv
+-69	n64	msgctl				sys_msgctl
++69	n64	msgctl				sys_old_msgctl
+ 70	n64	fcntl				sys_fcntl
+ 71	n64	flock				sys_flock
+ 72	n64	fsync				sys_fsync
+diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
+index 69cf91b03b26..f8befa11b0c4 100644
+--- a/arch/xtensa/kernel/syscalls/syscall.tbl
++++ b/arch/xtensa/kernel/syscalls/syscall.tbl
+@@ -103,7 +103,7 @@
+ 91	common	madvise				sys_madvise
+ 92	common	shmget				sys_shmget
+ 93	common	shmat				xtensa_shmat
+-94	common	shmctl				sys_shmctl
++94	common	shmctl				sys_old_shmctl
+ 95	common	shmdt				sys_shmdt
+ # Socket Operations
+ 96	common	socket				sys_socket
+@@ -177,12 +177,12 @@
+ 161	common	semtimedop			sys_semtimedop
+ 162	common	semget				sys_semget
+ 163	common	semop				sys_semop
+-164	common	semctl				sys_semctl
++164	common	semctl				sys_old_semctl
+ 165	common	available165			sys_ni_syscall
+ 166	common	msgget				sys_msgget
+ 167	common	msgsnd				sys_msgsnd
+ 168	common	msgrcv				sys_msgrcv
+-169	common	msgctl				sys_msgctl
++169	common	msgctl				sys_old_msgctl
+ 170	common	available170			sys_ni_syscall
+ # File System
+ 171	common	umount2				sys_umount
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index fb63045a0fb6..938d8908b9e0 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -717,6 +717,7 @@ asmlinkage long sys_mq_getsetattr(mqd_t mqdes, const struct mq_attr __user *mqst
  
--struct compat_timex {
--	compat_uint_t modes;
--	compat_long_t offset;
--	compat_long_t freq;
--	compat_long_t maxerror;
--	compat_long_t esterror;
--	compat_int_t status;
--	compat_long_t constant;
--	compat_long_t precision;
--	compat_long_t tolerance;
--	struct old_timeval32 time;
--	compat_long_t tick;
--	compat_long_t ppsfreq;
--	compat_long_t jitter;
--	compat_int_t shift;
--	compat_long_t stabil;
--	compat_long_t jitcnt;
--	compat_long_t calcnt;
--	compat_long_t errcnt;
--	compat_long_t stbcnt;
--	compat_int_t tai;
--
--	compat_int_t:32; compat_int_t:32; compat_int_t:32; compat_int_t:32;
--	compat_int_t:32; compat_int_t:32; compat_int_t:32; compat_int_t:32;
--	compat_int_t:32; compat_int_t:32; compat_int_t:32;
--};
--
--struct timex;
--int compat_get_timex(struct timex *, const struct compat_timex __user *);
--int compat_put_timex(struct compat_timex __user *, const struct timex *);
--
- #define _COMPAT_NSIG_WORDS	(_COMPAT_NSIG / _COMPAT_NSIG_BPW)
+ /* ipc/msg.c */
+ asmlinkage long sys_msgget(key_t key, int msgflg);
++asmlinkage long sys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf);
+ asmlinkage long sys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf);
+ asmlinkage long sys_msgrcv(int msqid, struct msgbuf __user *msgp,
+ 				size_t msgsz, long msgtyp, int msgflg);
+@@ -726,6 +727,7 @@ asmlinkage long sys_msgsnd(int msqid, struct msgbuf __user *msgp,
+ /* ipc/sem.c */
+ asmlinkage long sys_semget(key_t key, int nsems, int semflg);
+ asmlinkage long sys_semctl(int semid, int semnum, int cmd, unsigned long arg);
++asmlinkage long sys_old_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ asmlinkage long sys_semtimedop(int semid, struct sembuf __user *sops,
+ 				unsigned nsops,
+ 				const struct __kernel_timespec __user *timeout);
+@@ -734,6 +736,7 @@ asmlinkage long sys_semop(int semid, struct sembuf __user *sops,
  
- typedef struct {
-@@ -808,7 +777,7 @@ asmlinkage long compat_sys_gettimeofday(struct old_timeval32 __user *tv,
- 		struct timezone __user *tz);
- asmlinkage long compat_sys_settimeofday(struct old_timeval32 __user *tv,
- 		struct timezone __user *tz);
--asmlinkage long compat_sys_adjtimex(struct compat_timex __user *utp);
-+asmlinkage long compat_sys_adjtimex(struct old_timex32 __user *utp);
- 
- /* kernel/timer.c */
- asmlinkage long compat_sys_sysinfo(struct compat_sysinfo __user *info);
-@@ -911,7 +880,7 @@ asmlinkage long compat_sys_open_by_handle_at(int mountdirfd,
- 					     struct file_handle __user *handle,
- 					     int flags);
- asmlinkage long compat_sys_clock_adjtime(clockid_t which_clock,
--					 struct compat_timex __user *tp);
-+					 struct old_timex32 __user *tp);
- asmlinkage long compat_sys_sendmmsg(int fd, struct compat_mmsghdr __user *mmsg,
- 				    unsigned vlen, unsigned int flags);
- asmlinkage ssize_t compat_sys_process_vm_readv(compat_pid_t pid,
-diff --git a/include/linux/time32.h b/include/linux/time32.h
-index 118b9977080c..820a22e2b98b 100644
---- a/include/linux/time32.h
-+++ b/include/linux/time32.h
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/time64.h>
-+#include <linux/timex.h>
- 
- #define TIME_T_MAX	(time_t)((1UL << ((sizeof(time_t) << 3) - 1)) - 1)
- 
-@@ -35,13 +36,42 @@ struct old_utimbuf32 {
- 	old_time32_t	modtime;
- };
- 
-+struct old_timex32 {
-+	u32 modes;
-+	s32 offset;
-+	s32 freq;
-+	s32 maxerror;
-+	s32 esterror;
-+	s32 status;
-+	s32 constant;
-+	s32 precision;
-+	s32 tolerance;
-+	struct old_timeval32 time;
-+	s32 tick;
-+	s32 ppsfreq;
-+	s32 jitter;
-+	s32 shift;
-+	s32 stabil;
-+	s32 jitcnt;
-+	s32 calcnt;
-+	s32 errcnt;
-+	s32 stbcnt;
-+	s32 tai;
-+
-+	s32:32; s32:32; s32:32; s32:32;
-+	s32:32; s32:32; s32:32; s32:32;
-+	s32:32; s32:32; s32:32;
-+};
-+
- extern int get_old_timespec32(struct timespec64 *, const void __user *);
- extern int put_old_timespec32(const struct timespec64 *, void __user *);
- extern int get_old_itimerspec32(struct itimerspec64 *its,
- 			const struct old_itimerspec32 __user *uits);
- extern int put_old_itimerspec32(const struct itimerspec64 *its,
- 			struct old_itimerspec32 __user *uits);
--
-+struct timex;
-+int get_old_timex32(struct timex *, const struct old_timex32 __user *);
-+int put_old_timex32(struct old_timex32 __user *, const struct timex *);
- 
- #if __BITS_PER_LONG == 64
- 
-diff --git a/kernel/compat.c b/kernel/compat.c
-index f01affa17e22..d8a36c6ad7c9 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -20,7 +20,6 @@
- #include <linux/syscalls.h>
- #include <linux/unistd.h>
- #include <linux/security.h>
--#include <linux/timex.h>
- #include <linux/export.h>
- #include <linux/migrate.h>
- #include <linux/posix-timers.h>
-@@ -30,69 +29,6 @@
- 
- #include <linux/uaccess.h>
- 
--int compat_get_timex(struct timex *txc, const struct compat_timex __user *utp)
--{
--	struct compat_timex tx32;
--
--	memset(txc, 0, sizeof(struct timex));
--	if (copy_from_user(&tx32, utp, sizeof(struct compat_timex)))
--		return -EFAULT;
--
--	txc->modes = tx32.modes;
--	txc->offset = tx32.offset;
--	txc->freq = tx32.freq;
--	txc->maxerror = tx32.maxerror;
--	txc->esterror = tx32.esterror;
--	txc->status = tx32.status;
--	txc->constant = tx32.constant;
--	txc->precision = tx32.precision;
--	txc->tolerance = tx32.tolerance;
--	txc->time.tv_sec = tx32.time.tv_sec;
--	txc->time.tv_usec = tx32.time.tv_usec;
--	txc->tick = tx32.tick;
--	txc->ppsfreq = tx32.ppsfreq;
--	txc->jitter = tx32.jitter;
--	txc->shift = tx32.shift;
--	txc->stabil = tx32.stabil;
--	txc->jitcnt = tx32.jitcnt;
--	txc->calcnt = tx32.calcnt;
--	txc->errcnt = tx32.errcnt;
--	txc->stbcnt = tx32.stbcnt;
--
--	return 0;
--}
--
--int compat_put_timex(struct compat_timex __user *utp, const struct timex *txc)
--{
--	struct compat_timex tx32;
--
--	memset(&tx32, 0, sizeof(struct compat_timex));
--	tx32.modes = txc->modes;
--	tx32.offset = txc->offset;
--	tx32.freq = txc->freq;
--	tx32.maxerror = txc->maxerror;
--	tx32.esterror = txc->esterror;
--	tx32.status = txc->status;
--	tx32.constant = txc->constant;
--	tx32.precision = txc->precision;
--	tx32.tolerance = txc->tolerance;
--	tx32.time.tv_sec = txc->time.tv_sec;
--	tx32.time.tv_usec = txc->time.tv_usec;
--	tx32.tick = txc->tick;
--	tx32.ppsfreq = txc->ppsfreq;
--	tx32.jitter = txc->jitter;
--	tx32.shift = txc->shift;
--	tx32.stabil = txc->stabil;
--	tx32.jitcnt = txc->jitcnt;
--	tx32.calcnt = txc->calcnt;
--	tx32.errcnt = txc->errcnt;
--	tx32.stbcnt = txc->stbcnt;
--	tx32.tai = txc->tai;
--	if (copy_to_user(utp, &tx32, sizeof(struct compat_timex)))
--		return -EFAULT;
--	return 0;
--}
--
- static int __compat_get_timeval(struct timeval *tv, const struct old_timeval32 __user *ctv)
- {
- 	return (!access_ok(ctv, sizeof(*ctv)) ||
-diff --git a/kernel/time/posix-timers.c b/kernel/time/posix-timers.c
-index 0e84bb72a3da..8955f32f2a36 100644
---- a/kernel/time/posix-timers.c
-+++ b/kernel/time/posix-timers.c
-@@ -1123,12 +1123,8 @@ COMPAT_SYSCALL_DEFINE2(clock_gettime, clockid_t, which_clock,
+ /* ipc/shm.c */
+ asmlinkage long sys_shmget(key_t key, size_t size, int flag);
++asmlinkage long sys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
+ asmlinkage long sys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
+ asmlinkage long sys_shmat(int shmid, char __user *shmaddr, int shmflg);
+ asmlinkage long sys_shmdt(char __user *shmaddr);
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 0833c6405915..8dec945fa030 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -567,9 +567,8 @@ static int msgctl_stat(struct ipc_namespace *ns, int msqid,
  	return err;
  }
  
--#endif
--
--#ifdef CONFIG_COMPAT
--
- COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
--		       struct compat_timex __user *, utp)
-+		       struct old_timex32 __user *, utp)
+-long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
++static long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf, int version)
  {
- 	const struct k_clock *kc = clockid_to_kclock(which_clock);
- 	struct timex ktx;
-@@ -1139,22 +1135,18 @@ COMPAT_SYSCALL_DEFINE2(clock_adjtime, clockid_t, which_clock,
- 	if (!kc->clock_adj)
- 		return -EOPNOTSUPP;
+-	int version;
+ 	struct ipc_namespace *ns;
+ 	struct msqid64_ds msqid64;
+ 	int err;
+@@ -577,7 +576,6 @@ long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
+ 	if (msqid < 0 || cmd < 0)
+ 		return -EINVAL;
  
--	err = compat_get_timex(&ktx, utp);
-+	err = get_old_timex32(&ktx, utp);
- 	if (err)
- 		return err;
+-	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
  
- 	err = kc->clock_adj(which_clock, &ktx);
+ 	switch (cmd) {
+@@ -613,9 +611,23 @@ long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
  
- 	if (err >= 0)
--		err = compat_put_timex(utp, &ktx);
-+		err = put_old_timex32(utp, &ktx);
+ SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
+ {
+-	return ksys_msgctl(msqid, cmd, buf);
++	return ksys_msgctl(msqid, cmd, buf, IPC_64);
+ }
  
++#ifdef CONFIG_ARCH_WANT_IPC_PARSE_VERSION
++long ksys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf)
++{
++	int version = ipc_parse_version(&cmd);
++
++	return ksys_msgctl(msqid, cmd, buf, version);
++}
++
++SYSCALL_DEFINE3(old_msgctl, int, msqid, int, cmd, struct msqid_ds __user *, buf)
++{
++	return ksys_old_msgctl(msqid, cmd, buf);
++}
++#endif
++
+ #ifdef CONFIG_COMPAT
+ 
+ struct compat_msqid_ds {
+@@ -689,12 +701,11 @@ static int copy_compat_msqid_to_user(void __user *buf, struct msqid64_ds *in,
+ 	}
+ }
+ 
+-long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr)
++static long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr, int version)
+ {
+ 	struct ipc_namespace *ns;
+ 	int err;
+ 	struct msqid64_ds msqid64;
+-	int version = compat_ipc_parse_version(&cmd);
+ 
+ 	ns = current->nsproxy->ipc_ns;
+ 
+@@ -734,8 +745,22 @@ long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr)
+ 
+ COMPAT_SYSCALL_DEFINE3(msgctl, int, msqid, int, cmd, void __user *, uptr)
+ {
+-	return compat_ksys_msgctl(msqid, cmd, uptr);
++	return compat_ksys_msgctl(msqid, cmd, uptr, IPC_64);
+ }
++
++#ifdef CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION
++long compat_ksys_old_msgctl(int msqid, int cmd, void __user *uptr)
++{
++	int version = compat_ipc_parse_version(&cmd);
++
++	return compat_ksys_msgctl(msqid, cmd, uptr, version);
++}
++
++COMPAT_SYSCALL_DEFINE3(old_msgctl, int, msqid, int, cmd, void __user *, uptr)
++{
++	return compat_ksys_old_msgctl(msqid, cmd, uptr);
++}
++#endif
+ #endif
+ 
+ static int testmsg(struct msg_msg *msg, long type, int mode)
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 745dc6187e84..d1efff3a81bb 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -1634,9 +1634,8 @@ static int semctl_down(struct ipc_namespace *ns, int semid,
  	return err;
  }
  
--#endif
--
--#ifdef CONFIG_COMPAT_32BIT_TIME
--
- COMPAT_SYSCALL_DEFINE2(clock_getres, clockid_t, which_clock,
- 		       struct old_timespec32 __user *, tp)
+-long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg)
++static long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg, int version)
  {
-diff --git a/kernel/time/time.c b/kernel/time/time.c
-index 2edb5088a70b..2d013bc2b271 100644
---- a/kernel/time/time.c
-+++ b/kernel/time/time.c
-@@ -278,20 +278,82 @@ SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
- 	return copy_to_user(txc_p, &txc, sizeof(struct timex)) ? -EFAULT : ret;
+-	int version;
+ 	struct ipc_namespace *ns;
+ 	void __user *p = (void __user *)arg;
+ 	struct semid64_ds semid64;
+@@ -1645,7 +1644,6 @@ long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg)
+ 	if (semid < 0)
+ 		return -EINVAL;
+ 
+-	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
+ 
+ 	switch (cmd) {
+@@ -1691,9 +1689,23 @@ long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg)
+ 
+ SYSCALL_DEFINE4(semctl, int, semid, int, semnum, int, cmd, unsigned long, arg)
+ {
+-	return ksys_semctl(semid, semnum, cmd, arg);
++	return ksys_semctl(semid, semnum, cmd, arg, IPC_64);
  }
  
--#ifdef CONFIG_COMPAT
-+#ifdef CONFIG_COMPAT_32BIT_TIME
-+int get_old_timex32(struct timex *txc, const struct old_timex32 __user *utp)
++#ifdef CONFIG_ARCH_WANT_IPC_PARSE_VERSION
++long ksys_old_semctl(int semid, int semnum, int cmd, unsigned long arg)
 +{
-+	struct old_timex32 tx32;
++	int version = ipc_parse_version(&cmd);
 +
-+	memset(txc, 0, sizeof(struct timex));
-+	if (copy_from_user(&tx32, utp, sizeof(struct old_timex32)))
-+		return -EFAULT;
-+
-+	txc->modes = tx32.modes;
-+	txc->offset = tx32.offset;
-+	txc->freq = tx32.freq;
-+	txc->maxerror = tx32.maxerror;
-+	txc->esterror = tx32.esterror;
-+	txc->status = tx32.status;
-+	txc->constant = tx32.constant;
-+	txc->precision = tx32.precision;
-+	txc->tolerance = tx32.tolerance;
-+	txc->time.tv_sec = tx32.time.tv_sec;
-+	txc->time.tv_usec = tx32.time.tv_usec;
-+	txc->tick = tx32.tick;
-+	txc->ppsfreq = tx32.ppsfreq;
-+	txc->jitter = tx32.jitter;
-+	txc->shift = tx32.shift;
-+	txc->stabil = tx32.stabil;
-+	txc->jitcnt = tx32.jitcnt;
-+	txc->calcnt = tx32.calcnt;
-+	txc->errcnt = tx32.errcnt;
-+	txc->stbcnt = tx32.stbcnt;
-+
-+	return 0;
++	return ksys_semctl(semid, semnum, cmd, arg, version);
 +}
 +
-+int put_old_timex32(struct old_timex32 __user *utp, const struct timex *txc)
++SYSCALL_DEFINE4(old_semctl, int, semid, int, semnum, int, cmd, unsigned long, arg)
 +{
-+	struct old_timex32 tx32;
-+
-+	memset(&tx32, 0, sizeof(struct old_timex32));
-+	tx32.modes = txc->modes;
-+	tx32.offset = txc->offset;
-+	tx32.freq = txc->freq;
-+	tx32.maxerror = txc->maxerror;
-+	tx32.esterror = txc->esterror;
-+	tx32.status = txc->status;
-+	tx32.constant = txc->constant;
-+	tx32.precision = txc->precision;
-+	tx32.tolerance = txc->tolerance;
-+	tx32.time.tv_sec = txc->time.tv_sec;
-+	tx32.time.tv_usec = txc->time.tv_usec;
-+	tx32.tick = txc->tick;
-+	tx32.ppsfreq = txc->ppsfreq;
-+	tx32.jitter = txc->jitter;
-+	tx32.shift = txc->shift;
-+	tx32.stabil = txc->stabil;
-+	tx32.jitcnt = txc->jitcnt;
-+	tx32.calcnt = txc->calcnt;
-+	tx32.errcnt = txc->errcnt;
-+	tx32.stbcnt = txc->stbcnt;
-+	tx32.tai = txc->tai;
-+	if (copy_to_user(utp, &tx32, sizeof(struct old_timex32)))
-+		return -EFAULT;
-+	return 0;
++	return ksys_old_semctl(semid, semnum, cmd, arg);
 +}
++#endif
++
+ #ifdef CONFIG_COMPAT
  
--COMPAT_SYSCALL_DEFINE1(adjtimex, struct compat_timex __user *, utp)
-+COMPAT_SYSCALL_DEFINE1(adjtimex, struct old_timex32 __user *, utp)
+ struct compat_semid_ds {
+@@ -1744,12 +1756,11 @@ static int copy_compat_semid_to_user(void __user *buf, struct semid64_ds *in,
+ 	}
+ }
+ 
+-long compat_ksys_semctl(int semid, int semnum, int cmd, int arg)
++static long compat_ksys_semctl(int semid, int semnum, int cmd, int arg, int version)
  {
- 	struct timex txc;
- 	int err, ret;
+ 	void __user *p = compat_ptr(arg);
+ 	struct ipc_namespace *ns;
+ 	struct semid64_ds semid64;
+-	int version = compat_ipc_parse_version(&cmd);
+ 	int err;
  
--	err = compat_get_timex(&txc, utp);
-+	err = get_old_timex32(&txc, utp);
- 	if (err)
- 		return err;
+ 	ns = current->nsproxy->ipc_ns;
+@@ -1792,8 +1803,22 @@ long compat_ksys_semctl(int semid, int semnum, int cmd, int arg)
  
- 	ret = do_adjtimex(&txc);
+ COMPAT_SYSCALL_DEFINE4(semctl, int, semid, int, semnum, int, cmd, int, arg)
+ {
+-	return compat_ksys_semctl(semid, semnum, cmd, arg);
++	return compat_ksys_semctl(semid, semnum, cmd, arg, IPC_64);
+ }
++
++#ifdef CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION
++long compat_ksys_old_semctl(int semid, int semnum, int cmd, int arg)
++{
++	int version = compat_ipc_parse_version(&cmd);
++
++	return compat_ksys_semctl(semid, semnum, cmd, arg, version);
++}
++
++COMPAT_SYSCALL_DEFINE4(old_semctl, int, semid, int, semnum, int, cmd, int, arg)
++{
++	return compat_ksys_old_semctl(semid, semnum, cmd, arg);
++}
++#endif
+ #endif
  
--	err = compat_put_timex(utp, &txc);
-+	err = put_old_timex32(utp, &txc);
- 	if (err)
- 		return err;
+ /* If the task doesn't already have a undo_list, then allocate one
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 0842411cb0e9..ce1ca9f7c6e9 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -1137,16 +1137,15 @@ static int shmctl_do_lock(struct ipc_namespace *ns, int shmid, int cmd)
+ 	return err;
+ }
  
+-long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
++static long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf, int version)
+ {
+-	int err, version;
++	int err;
+ 	struct ipc_namespace *ns;
+ 	struct shmid64_ds sem64;
+ 
+ 	if (cmd < 0 || shmid < 0)
+ 		return -EINVAL;
+ 
+-	version = ipc_parse_version(&cmd);
+ 	ns = current->nsproxy->ipc_ns;
+ 
+ 	switch (cmd) {
+@@ -1194,8 +1193,22 @@ long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
+ 
+ SYSCALL_DEFINE3(shmctl, int, shmid, int, cmd, struct shmid_ds __user *, buf)
+ {
+-	return ksys_shmctl(shmid, cmd, buf);
++	return ksys_shmctl(shmid, cmd, buf, IPC_64);
++}
++
++#ifdef CONFIG_ARCH_WANT_IPC_PARSE_VERSION
++long ksys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf)
++{
++	int version = ipc_parse_version(&cmd);
++
++	return ksys_shmctl(shmid, cmd, buf, version);
++}
++
++SYSCALL_DEFINE3(old_shmctl, int, shmid, int, cmd, struct shmid_ds __user *, buf)
++{
++	return ksys_old_shmctl(shmid, cmd, buf);
+ }
++#endif
+ 
+ #ifdef CONFIG_COMPAT
+ 
+@@ -1319,11 +1332,10 @@ static int copy_compat_shmid_from_user(struct shmid64_ds *out, void __user *buf,
+ 	}
+ }
+ 
+-long compat_ksys_shmctl(int shmid, int cmd, void __user *uptr)
++long compat_ksys_shmctl(int shmid, int cmd, void __user *uptr, int version)
+ {
+ 	struct ipc_namespace *ns;
+ 	struct shmid64_ds sem64;
+-	int version = compat_ipc_parse_version(&cmd);
+ 	int err;
+ 
+ 	ns = current->nsproxy->ipc_ns;
+@@ -1378,8 +1390,22 @@ long compat_ksys_shmctl(int shmid, int cmd, void __user *uptr)
+ 
+ COMPAT_SYSCALL_DEFINE3(shmctl, int, shmid, int, cmd, void __user *, uptr)
+ {
+-	return compat_ksys_shmctl(shmid, cmd, uptr);
++	return compat_ksys_shmctl(shmid, cmd, uptr, IPC_64);
+ }
++
++#ifdef CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION
++long compat_ksys_old_shmctl(int shmid, int cmd, void __user *uptr)
++{
++	int version = compat_ipc_parse_version(&cmd);
++
++	return compat_ksys_shmctl(shmid, cmd, uptr, version);
++}
++
++COMPAT_SYSCALL_DEFINE3(old_shmctl, int, shmid, int, cmd, void __user *, uptr)
++{
++	return compat_ksys_old_shmctl(shmid, cmd, uptr);
++}
++#endif
+ #endif
+ 
+ /*
+diff --git a/ipc/syscall.c b/ipc/syscall.c
+index 3cf8ad703a4d..581bdff4e7c5 100644
+--- a/ipc/syscall.c
++++ b/ipc/syscall.c
+@@ -47,7 +47,7 @@ int ksys_ipc(unsigned int call, int first, unsigned long second,
+ 			return -EINVAL;
+ 		if (get_user(arg, (unsigned long __user *) ptr))
+ 			return -EFAULT;
+-		return ksys_semctl(first, second, third, arg);
++		return ksys_old_semctl(first, second, third, arg);
+ 	}
+ 
+ 	case MSGSND:
+@@ -75,7 +75,7 @@ int ksys_ipc(unsigned int call, int first, unsigned long second,
+ 	case MSGGET:
+ 		return ksys_msgget((key_t) first, second);
+ 	case MSGCTL:
+-		return ksys_msgctl(first, second,
++		return ksys_old_msgctl(first, second,
+ 				   (struct msqid_ds __user *)ptr);
+ 
+ 	case SHMAT:
+@@ -100,7 +100,7 @@ int ksys_ipc(unsigned int call, int first, unsigned long second,
+ 	case SHMGET:
+ 		return ksys_shmget(first, second, third);
+ 	case SHMCTL:
+-		return ksys_shmctl(first, second,
++		return ksys_old_shmctl(first, second,
+ 				   (struct shmid_ds __user *) ptr);
+ 	default:
+ 		return -ENOSYS;
+@@ -152,7 +152,7 @@ int compat_ksys_ipc(u32 call, int first, int second,
+ 			return -EINVAL;
+ 		if (get_user(pad, (u32 __user *) compat_ptr(ptr)))
+ 			return -EFAULT;
+-		return compat_ksys_semctl(first, second, third, pad);
++		return compat_ksys_old_semctl(first, second, third, pad);
+ 
+ 	case MSGSND:
+ 		return compat_ksys_msgsnd(first, ptr, second, third);
+@@ -177,7 +177,7 @@ int compat_ksys_ipc(u32 call, int first, int second,
+ 	case MSGGET:
+ 		return ksys_msgget(first, second);
+ 	case MSGCTL:
+-		return compat_ksys_msgctl(first, second, compat_ptr(ptr));
++		return compat_ksys_old_msgctl(first, second, compat_ptr(ptr));
+ 
+ 	case SHMAT: {
+ 		int err;
+@@ -196,7 +196,7 @@ int compat_ksys_ipc(u32 call, int first, int second,
+ 	case SHMGET:
+ 		return ksys_shmget(first, (unsigned int)second, third);
+ 	case SHMCTL:
+-		return compat_ksys_shmctl(first, second, compat_ptr(ptr));
++		return compat_ksys_old_shmctl(first, second, compat_ptr(ptr));
+ 	}
+ 
+ 	return -ENOSYS;
+diff --git a/ipc/util.h b/ipc/util.h
+index d768fdbed515..e272be622ae7 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -160,10 +160,7 @@ static inline void ipc_update_pid(struct pid **pos, struct pid *pid)
+ 	}
+ }
+ 
+-#ifndef CONFIG_ARCH_WANT_IPC_PARSE_VERSION
+-/* On IA-64, we always use the "64-bit version" of the IPC structures.  */
+-# define ipc_parse_version(cmd)	IPC_64
+-#else
++#ifdef CONFIG_ARCH_WANT_IPC_PARSE_VERSION
+ int ipc_parse_version(int *cmd);
+ #endif
+ 
+@@ -246,13 +243,9 @@ int get_compat_ipc64_perm(struct ipc64_perm *,
+ 
+ static inline int compat_ipc_parse_version(int *cmd)
+ {
+-#ifdef	CONFIG_ARCH_WANT_COMPAT_IPC_PARSE_VERSION
+ 	int version = *cmd & IPC_64;
+ 	*cmd &= ~IPC_64;
+ 	return version;
+-#else
+-	return IPC_64;
+-#endif
+ }
+ #endif
+ 
+@@ -261,29 +254,29 @@ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+ 		     unsigned int nsops,
+ 		     const struct __kernel_timespec __user *timeout);
+ long ksys_semget(key_t key, int nsems, int semflg);
+-long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg);
++long ksys_old_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ long ksys_msgget(key_t key, int msgflg);
+-long ksys_msgctl(int msqid, int cmd, struct msqid_ds __user *buf);
++long ksys_old_msgctl(int msqid, int cmd, struct msqid_ds __user *buf);
+ long ksys_msgrcv(int msqid, struct msgbuf __user *msgp, size_t msgsz,
+ 		 long msgtyp, int msgflg);
+ long ksys_msgsnd(int msqid, struct msgbuf __user *msgp, size_t msgsz,
+ 		 int msgflg);
+ long ksys_shmget(key_t key, size_t size, int shmflg);
+ long ksys_shmdt(char __user *shmaddr);
+-long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
++long ksys_old_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
+ 
+ /* for CONFIG_ARCH_WANT_OLD_COMPAT_IPC */
+ long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
+ 			    unsigned int nsops,
+ 			    const struct old_timespec32 __user *timeout);
+ #ifdef CONFIG_COMPAT
+-long compat_ksys_semctl(int semid, int semnum, int cmd, int arg);
+-long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr);
++long compat_ksys_old_semctl(int semid, int semnum, int cmd, int arg);
++long compat_ksys_old_msgctl(int msqid, int cmd, void __user *uptr);
+ long compat_ksys_msgrcv(int msqid, compat_uptr_t msgp, compat_ssize_t msgsz,
+ 			compat_long_t msgtyp, int msgflg);
+ long compat_ksys_msgsnd(int msqid, compat_uptr_t msgp,
+ 		       compat_ssize_t msgsz, int msgflg);
+-long compat_ksys_shmctl(int shmid, int cmd, void __user *uptr);
++long compat_ksys_old_shmctl(int shmid, int cmd, void __user *uptr);
+ #endif /* CONFIG_COMPAT */
+ 
+ #endif
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index bc934f31ab10..ce04431a40d1 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -197,6 +197,7 @@ COND_SYSCALL_COMPAT(mq_getsetattr);
+ 
+ /* ipc/msg.c */
+ COND_SYSCALL(msgget);
++COND_SYSCALL(old_msgctl);
+ COND_SYSCALL(msgctl);
+ COND_SYSCALL_COMPAT(msgctl);
+ COND_SYSCALL(msgrcv);
+@@ -206,6 +207,7 @@ COND_SYSCALL_COMPAT(msgsnd);
+ 
+ /* ipc/sem.c */
+ COND_SYSCALL(semget);
++COND_SYSCALL(old_semctl);
+ COND_SYSCALL(semctl);
+ COND_SYSCALL_COMPAT(semctl);
+ COND_SYSCALL(semtimedop);
+@@ -214,6 +216,7 @@ COND_SYSCALL(semop);
+ 
+ /* ipc/shm.c */
+ COND_SYSCALL(shmget);
++COND_SYSCALL(old_shmctl);
+ COND_SYSCALL(shmctl);
+ COND_SYSCALL_COMPAT(shmctl);
+ COND_SYSCALL(shmat);
 -- 
 2.20.0
 
