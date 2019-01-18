@@ -2,65 +2,82 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 987A0C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:47:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 011B5C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:12:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C686420855
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:47:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C686420855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 2E11B2086D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 11:12:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="o1WNtQ8q"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E11B2086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gyLX4sFBzDqyZ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 21:47:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gyw66JxwzDr0T
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 22:12:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.65; helo=mail-vs1-f65.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-vs1-f65.google.com (mail-vs1-f65.google.com
- [209.85.217.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::10; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="o1WNtQ8q"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gyJq1xsPzDqx1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 21:45:30 +1100 (AEDT)
-Received: by mail-vs1-f65.google.com with SMTP id h78so8136430vsi.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 02:45:30 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=3HSG1QvBH8swTMrQFUGLxYHSbTKD74aRNkUnjPheiP4=;
- b=CtCRc4ma/OPW+O/zj+n0fhbL5EhaO6UoXJpwP3EFt0LTWqC3ZfpBCtMToCHw7aprm6
- COn/t6xu81zgGWY/ZD2vJuYwO5NA53W8My5zQHRFENygzio6JK/szQxbSh1IrkpYrqW/
- 3te/GNkOM86P+E6OUABXJggIIuFLcV7K1HW44MZOA/xw6J2zhCSUjPLTmZLN9tJ77JZf
- xmRegbJi3POVjGXnuQOi0Up6ff+Vg1O5iEMR8b4/Zl9a3hyb8EPY3DoK0b8TRTv9yx2s
- t94p9m0vSFEPnrmpHCXkh2m8MuF5BWjXcYlAQV7xV5wutIRZC/REXLOmsASQTW+4fley
- DEWg==
-X-Gm-Message-State: AJcUukcPA0IMWk7+vIkeYlpEsSlZqvuUoNoAJzStXdMmp2O3fdPst9NG
- zeKKxjq4Km36NtfQfEEKyLKUbujdhI2cFje5M6E=
-X-Google-Smtp-Source: ALg8bN6hL4SzkHb5BGXRCV37soMLeXV6KhiU+8hzbyqh+L0MOJI1dI19+XuGMR4M+dVrbwfE28alYaufT76Ee/VB8oc=
-X-Received: by 2002:a67:b60d:: with SMTP id d13mr7666621vsm.152.1547808328333; 
- Fri, 18 Jan 2019 02:45:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gysw5W3FzDqxb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 22:10:43 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1547809838;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:From:References:Cc:To:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=2S9cFsNirSbZDsyyIXpZo/RajCTM5g0kbSLyMuTyGW8=;
+ b=o1WNtQ8qj08s5Jb9+YWtvt2ell/APn+SzEDE7AhVmesriPYH8XYg3qn6ssRccnszHQ
+ oMqVKbkNCCNOim0KnkR/je8XLesyAwpRxUGVaP6sDY7S/piumF3Jxw5eRd3rrRfQ8kX9
+ r2j3GwVqVQbC6RWxrMeBpv3CzYljwC5Ftaxhl04cmy5KaWavk+hLoV7mmMoC2mY0K1pI
+ UazJ8eAg9lcetMRJbb/+KmWwdq03SdoWPWf3NVaQm9zlT6wlobJgWwZ6iJYIWINoQeNz
+ MxwhuFDXy3kJajyi8I1GCcAbtcofq7LiR2tlJVZ+W/4FmqmTkcWM/FEAcnGqayq1Qegb
+ B3LQ==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkO3W1t7/x3Ry2nhljiBv4wW5sxWQ=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:1cca:8712:d929:bc6d]
+ by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0IBAQ92B
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Fri, 18 Jan 2019 12:10:26 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+To: Christoph Hellwig <hch@lst.de>
+References: <3504ee70-02de-049e-6402-2d530bf55a84@xenosoft.de>
+ <23284859-bf0a-9cd5-a480-2a7fd7802056@xenosoft.de>
+ <075f70e3-7a4a-732f-b501-05a1a8e3c853@xenosoft.de>
+ <b04d08ea-61f9-3212-b9a3-ad79e3b8bd05@xenosoft.de>
+ <21f72a6a-9095-7034-f169-95e876228b2a@xenosoft.de>
+ <27148ac2-2a92-5536-d886-2c0971ab43d9@xenosoft.de>
+ <20190115133558.GA29225@lst.de>
+ <685f0c06-af1b-0bec-ac03-f9bf1f7a2b35@xenosoft.de>
+ <20190115151732.GA2325@lst.de>
+ <e9345547-4dc6-747a-29ec-6375dc8bfe83@xenosoft.de>
+ <20190118083539.GA30479@lst.de>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <871403f2-fa7d-de15-89eb-070432e15c69@xenosoft.de>
+Date: Fri, 18 Jan 2019 12:10:26 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-References: <1528451328-21316-1-git-send-email-geert@linux-m68k.org>
- <5948eb0d-410d-5bc6-a0f3-ffcaa4b3f975@xs4all.nl>
- <d30d5bcd-8719-ac59-adf5-08c9576be759@xs4all.nl>
-In-Reply-To: <d30d5bcd-8719-ac59-adf5-08c9576be759@xs4all.nl>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 18 Jan 2019 11:45:16 +0100
-Message-ID: <CAMuHMdUKePx7WWAAB3LCFWd29yis1zC2oCPrgmdH2n8fOhKyMQ@mail.gmail.com>
-Subject: Re: [PATCH] media: fsl-viu: Use proper check for presence of {out,
- in}_be32()
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190118083539.GA30479@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,125 +89,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Media Mailing List <linux-media@vger.kernel.org>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Hans,
+For which commit?
 
-On Fri, Jan 18, 2019 at 11:08 AM Hans Verkuil <hverkuil@xs4all.nl> wrote:
-> This patch is still in my patchwork todo list, and I wonder who will pick this up,
-> especially the change to arch/powerpc/include/asm/io.h.
+-- Christian
 
-I think the powerpc tree makes most sense.
-
-> Wouldn't it be easier to just fix this in fsl-viu.c only by doing this:
+On 18 January 2019 at 09:35AM, Christoph Hellwig wrote:
+> Hi Christian,
 >
-> #ifndef CONFIG_PPC
-> #ifndef out_be32
-> #define out_be32(v, a)  iowrite32be(a, (void __iomem *)v)
-> #endif
-> #ifndef in_be32
-> #define in_be32(a)      ioread32be((void __iomem *)a)
-> #endif
-> #endif
+> can you check if the debug printks in this patch trigger?
 >
-> Basically just your patch, but without removing #ifndef CONFIG_PPC.
+> diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+> index 355d16acee6d..e46c9b64ec0d 100644
+> --- a/kernel/dma/direct.c
+> +++ b/kernel/dma/direct.c
+> @@ -118,8 +118,11 @@ struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
+>   			page = NULL;
+>   		}
+>   	}
+> -	if (!page)
+> +	if (!page) {
+>   		page = alloc_pages_node(dev_to_node(dev), gfp, page_order);
+> +		if (!page)
+> +			pr_warn("failed to allocate memory with gfp 0x%x\n", gfp);
+> +	}
+>   
+>   	if (page && !dma_coherent_ok(dev, page_to_phys(page), size)) {
+>   		__free_pages(page, page_order);
+> @@ -139,6 +142,10 @@ struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
+>   		}
+>   	}
+>   
+> +	if (!page) {
+> +		pr_warn("failed to allocate DMA memory!\n");
+> +		dump_stack();
+> +	}
+>   	return page;
+>   }
+>   
 >
-> That way there is no need to touch arch/powerpc/include/asm/io.h.
 
-While I agree that avoids touching the powerpc tree, it doesn't solve
-the problem
-in the long run.
-All drivers using e.g. out_be32() would need an extra check for CONFIG_PPC
-to enable compile-testing.  The same is true when handling this in asm-generic.
-
-> On 6/15/18 10:10 AM, Hans Verkuil wrote:
-> > On 08/06/18 11:48, Geert Uytterhoeven wrote:
-> >> When compile-testing on m68k or microblaze:
-> >>
-> >>     drivers/media/platform/fsl-viu.c:41:1: warning: "out_be32" redefined
-> >>     drivers/media/platform/fsl-viu.c:42:1: warning: "in_be32" redefined
-> >>
-> >> Fix this by replacing the check for PowerPC by checks for the presence
-> >> of {out,in}_be32().
-> >>
-> >> As PowerPC implements the be32 accessors using inline functions instead
-> >> of macros, identity definions are added for all accessors to make the
-> >> above checks work.
-> >>
-> >> Fixes: 29d750686331a1a9 ("media: fsl-viu: allow building it with COMPILE_TEST")
-> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> >
-> > Reviewed-by: Hans Verkuil <hans.verkuil@cisco.com>
-> >
-> > Should this go through the media tree or powerpc tree? Either way works for me.
-> >
-> > Regards,
-> >
-> >       Hans
-> >
-> >> ---
-> >> Compile-tested on m68k, microblaze, and powerpc.
-> >> Assembler output before/after compared for powerpc.
-> >> ---
-> >>  arch/powerpc/include/asm/io.h    | 14 ++++++++++++++
-> >>  drivers/media/platform/fsl-viu.c |  4 +++-
-> >>  2 files changed, 17 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-> >> index e0331e7545685c5f..3741183ae09349f1 100644
-> >> --- a/arch/powerpc/include/asm/io.h
-> >> +++ b/arch/powerpc/include/asm/io.h
-> >> @@ -222,6 +222,20 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
-> >>  #endif
-> >>  #endif /* __powerpc64__ */
-> >>
-> >> +#define in_be16 in_be16
-> >> +#define in_be32 in_be32
-> >> +#define in_be64 in_be64
-> >> +#define in_le16 in_le16
-> >> +#define in_le32 in_le32
-> >> +#define in_le64 in_le64
-> >> +
-> >> +#define out_be16 out_be16
-> >> +#define out_be32 out_be32
-> >> +#define out_be64 out_be64
-> >> +#define out_le16 out_le16
-> >> +#define out_le32 out_le32
-> >> +#define out_le64 out_le64
-> >> +
-> >>  /*
-> >>   * Low level IO stream instructions are defined out of line for now
-> >>   */
-> >> diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
-> >> index e41510ce69a40815..5d5e030c9c980647 100644
-> >> --- a/drivers/media/platform/fsl-viu.c
-> >> +++ b/drivers/media/platform/fsl-viu.c
-> >> @@ -37,8 +37,10 @@
-> >>  #define VIU_VERSION         "0.5.1"
-> >>
-> >>  /* Allow building this driver with COMPILE_TEST */
-> >> -#ifndef CONFIG_PPC
-> >> +#ifndef out_be32
-> >>  #define out_be32(v, a)      iowrite32be(a, (void __iomem *)v)
-> >> +#endif
-> >> +#ifndef in_be32
-> >>  #define in_be32(a)  ioread32be((void __iomem *)a)
-> >>  #endif
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
