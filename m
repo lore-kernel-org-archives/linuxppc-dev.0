@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C34DDC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:26:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C3CEC43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:28:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4B1B620850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:26:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B1B620850
+	by mail.kernel.org (Postfix) with ESMTPS id 9C09020850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:28:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C09020850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43h5tW2MVHzDr4r
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:26:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43h5wY19yqzDr2w
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:28:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
  (client-ip=217.72.192.75; helo=mout.kundenserver.de;
@@ -28,38 +28,38 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43h5ld1gg4zDr1j
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43h5ld3GhlzDr1q
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 03:20:44 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue109 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1MxmBc-1hA8vX10n8-00zDnp; Fri, 18 Jan 2019 17:19:29 +0100
+ 1MKKd7-1gWQWS33t9-00LmRg; Fri, 18 Jan 2019 17:19:23 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH v2 10/29] sh: add statx system call
-Date: Fri, 18 Jan 2019 17:18:16 +0100
-Message-Id: <20190118161835.2259170-11-arnd@arndb.de>
+Subject: [PATCH v2 06/29] ARM: add migrate_pages() system call
+Date: Fri, 18 Jan 2019 17:18:12 +0100
+Message-Id: <20190118161835.2259170-7-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20190118161835.2259170-1-arnd@arndb.de>
 References: <20190118161835.2259170-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:t6R82Z8zvFPH8uWQ6By1AD6aeG6e8KS2PY2/czpxmB8Es3E26cv
- 3dhBYAef9afhAuL29iHi03NhT3UhsVoPZnZgPwDSWRTBENn7w6vYQa04n0JEgelAV4AcQV4
- niYmWNSNREOQA7PmgEZSP8TTUvUovupTfoOkrCAgtXj1/eWPuXUVXUAbdG11E5Dzakhmw3B
- pcwXh5016l/gnps966ABw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:K/830N4fOkA=:yN6pOj/X6AddYs3f+eMAIX
- KZAXszxGKZpxuZdFdqWqDpVCdiq7BDlsKw5Zlv3n5jTwNsq1pS7SY/hlDdh1ADT1cb5xsCgET
- Gb4r4HL1nl/9ZSl1wjr94ugJZp+q6Em6x9V1hItbA3T9OZ3/zX78SQoF69CITLB4KKWknfok0
- TJOMxaojmcDtEdRmxh0tBzQXNxtPyV45u4zhDAK4/qJk4Fo9usCEZjT1W0mkVwVHYTfKwLSIf
- HbIj8UKQPvMwOGeLhsnrXZA4dgFFmrDJ4/9M8+UG+tzMakmVh+YLibDaUM19QCE81rxIlw9T7
- p/zg75cru2OhVCX8iZ6bq3O+jwVsqqyIA/U5RJjjIJzr1EuN4IQLAd77WCJG6v/uc64+wnBWM
- 7FLDGmYFLengqH3ZTPAKfuApbWgGoFtgkZZ6Pg4UtmLFbpOI2JTTPlSe9plOwagBizOzFsSEX
- ZAhC3O9XT2DutmKSKdV5rQTGRQKzBk/FlzWUP5/P5IKoHgKjXjXcLOjjPmQxEawiUNDcZg0kZ
- bZQMQZdNRpio44pggQSPFl6vkB/UQDTJ7EyCzjn+qHq09wFoF+HjbB1SSUO8j9Cuv9Gi2pI53
- 10zJ/kIT6LsnKordXwiWo06lPR7ZnvRSnvaWbI14kQwXtODJiJyjPiinoFMZxqSJJXq5Qp/YP
- M7X0SSEku5AAmTelT8L5LGrCy9KOXPvV0ux6a9PVGXvk/IA7FOUywhhMyLCYnJwc3Dw/KEybT
- VbS5ECidR7DDExAyvQNUJmwmbhphorFSJQSrhQ==
+X-Provags-ID: V03:K1:o3bTb4elB3z+286rn9+b5BP7tK9ifOmWUW+jka5ZcLRoBINPDJf
+ u8PIZcP2oUy73YnUflDiwxkNfXIDgII5Pyhk+V14swnaTnFx5ocmSc3GvbMfPHBlAdH2hOO
+ HnGoII6EJed1+C6r0RoTYwRkjRvEbyOrLcmhc5DagzjWZlLv5X7xA8BSuap5Ej3vVq2kBkR
+ J33viKVBFQ1JhizF8SI/A==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:3TL+IMUlpzQ=:W4KhIatfhW7FMFXhanW/DA
+ GRXuaIVZT5yLKobF9hxOAr0++qzuCRc1CvEdJhCRmyjg3tVnuVTea/UC1uvUl5+b8WbMQGZ2y
+ IhAzxeBsFmWL53O9WpTTqoDT/nboxRQDmswH0/f/GTKPMN2z3vZwVUlRhzoSirbpF+lnxfjOZ
+ sN/4WLTGYuHpbqrOxsstykpo2y8LRe1POgk4jbusH6bQF90n6M4iRhVrGRIOrVw2bdttMMlAA
+ uT0OtEXxzSfFi0CYobAlGKnZqnyNhrd53D0fMCInpqHILWFd1DtjVcSRRThpH/sAtDi0bB10+
+ Ugb1IEqZY/t6Vwsm27UEtY2WdRDnob3jplYpxp7LEYnA9+MmRRxsSQGX4rwbfAh61hF01Z6w6
+ c1gGmtntitfEHrg2cn23IhBqYw4oKw2FRJOxB9tDFAw7RHOCw9DS4DZeuAH/963xwTtIZQzNY
+ 1aXUG6Znslmrc13+enLNNpHHdqS95uRqE0RLgCHtmqVJSvSINH3VB0iFWhAu52D9FeScou6Jt
+ DMCljPSLrh3jHaukqC84MTlYT6tYVfPoAwYvF7QgVEd2kgvyMgY2cHJMjfNpvBVodJDtgelWN
+ WyT2nqJHgERRpJagCPwbdtU6mcbVNfRzxffHnacQ4vUxt4V/sJi/kqkoPRbuRzxPSp7atXUfB
+ 1YBkP5nZaJQ1KkngOFAwcAZDCXzHTa7u9SVJNuPiXS2Wwsi0eYe4gZnZnIKeg8MQ2APOz+PXy
+ XOmiTdMMxuVgn48bnD8Kw1Cy5XKVXUIjyQPYnQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,23 +88,75 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-statx is available on almost all other architectures but
-got missed on sh, so add it now.
+The migrate_pages system call has an assigned number on all architectures
+except ARM. When it got added initially in commit d80ade7b3231 ("ARM:
+Fix warning: #warning syscall migrate_pages not implemented"), it was
+intentionally left out based on the observation that there are no 32-bit
+ARM NUMA systems.
+
+However, there are now arm64 NUMA machines that can in theory run 32-bit
+kernels (actually enabling NUMA there would require additional work)
+as well as 32-bit user space on 64-bit kernels, so that argument is no
+longer very strong.
+
+Assigning the number lets us use the system call on 64-bit kernels as well
+as providing a more consistent set of syscalls across architectures.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/sh/kernel/syscalls/syscall.tbl | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/include/asm/unistd.h     | 1 -
+ arch/arm/tools/syscall.tbl        | 1 +
+ arch/arm64/include/asm/unistd.h   | 2 +-
+ arch/arm64/include/asm/unistd32.h | 2 ++
+ 4 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index 21ec75288562..a70db013dbc7 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -390,3 +390,4 @@
- 380	common	copy_file_range			sys_copy_file_range
- 381	common	preadv2				sys_preadv2
- 382	common	pwritev2			sys_pwritev2
-+383	common	statx				sys_statx
+diff --git a/arch/arm/include/asm/unistd.h b/arch/arm/include/asm/unistd.h
+index 88ef2ce1f69a..d713587dfcf4 100644
+--- a/arch/arm/include/asm/unistd.h
++++ b/arch/arm/include/asm/unistd.h
+@@ -45,7 +45,6 @@
+  * Unimplemented (or alternatively implemented) syscalls
+  */
+ #define __IGNORE_fadvise64_64
+-#define __IGNORE_migrate_pages
+ 
+ #ifdef __ARM_EABI__
+ /*
+diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
+index 8edf93b4490f..86de9eb34296 100644
+--- a/arch/arm/tools/syscall.tbl
++++ b/arch/arm/tools/syscall.tbl
+@@ -414,3 +414,4 @@
+ 397	common	statx			sys_statx
+ 398	common	rseq			sys_rseq
+ 399	common	io_pgetevents		sys_io_pgetevents
++400	common	migrate_pages		sys_migrate_pages
+diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
+index a7b1fc58ffdf..261216c3336e 100644
+--- a/arch/arm64/include/asm/unistd.h
++++ b/arch/arm64/include/asm/unistd.h
+@@ -44,7 +44,7 @@
+ #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
+ #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
+ 
+-#define __NR_compat_syscalls		400
++#define __NR_compat_syscalls		401
+ #endif
+ 
+ #define __ARCH_WANT_SYS_CLONE
+diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
+index 04ee190b90fe..f15bcbacb8f6 100644
+--- a/arch/arm64/include/asm/unistd32.h
++++ b/arch/arm64/include/asm/unistd32.h
+@@ -821,6 +821,8 @@ __SYSCALL(__NR_statx, sys_statx)
+ __SYSCALL(__NR_rseq, sys_rseq)
+ #define __NR_io_pgetevents 399
+ __SYSCALL(__NR_io_pgetevents, compat_sys_io_pgetevents)
++#define __NR_migrate_pages 400
++__SYSCALL(__NR_migrate_pages, compat_sys_migrate_pages)
+ 
+ /*
+  * Please add new compat syscalls above this comment and update
 -- 
 2.20.0
 
