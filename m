@@ -2,77 +2,77 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7165FC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:07:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CC43C43444
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:11:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 966A020855
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:07:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A9KOX/kp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 966A020855
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B7E3F20855
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 10:11:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7E3F20855
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gxSr2qCkzDqyH
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 21:07:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::244; helo=mail-lj1-x244.google.com;
- envelope-from=jrdr.linux@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="A9KOX/kp"; 
- dkim-atps=neutral
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
- [IPv6:2a00:1450:4864:20::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gxYn55rDzDqxs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 21:11:41 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gxQ60lSBzDqsK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 21:05:01 +1100 (AEDT)
-Received: by mail-lj1-x244.google.com with SMTP id k15-v6so11119306ljc.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 02:05:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=kJ205dDi2ixFxpwP81y40GqDgkPxHnuU8GfUzsPelD8=;
- b=A9KOX/kpqZbpPIy0I6Di6wJ5o+OX4oKK7d0Vv9Sc2FtnKpKWKdia/iphS6MQ+N15Ht
- PisSwgt/8rbBNw7EXqtoWWFEfRHjGVjHiQE3F1ff1g1IB8jUp7C2GXFOhX0xnEYfk4lG
- OSWOHdZREl+zBkxAyUR+8Wcy7du0FvXsmAfx3a0ExjaKu3TI4T0cXoleykd2jZXQnyTC
- EUfjn1MG6rebWXnqfqozD80vjQLNqR5XMYR+SHqRtbRHRrZvilcmZKv6aCBYN6BYi/0h
- jUwKQMX2aPPimsgX5pan9ga9+88ffj+KeTz9jja9dC7X/vYF6BQc1mgdOxtjFE3olvNC
- M9cw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gxWz3qwszDqsK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 21:10:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43gxWz2b9rz8xKT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 21:10:07 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43gxWz2D06z9sBn; Fri, 18 Jan 2019 21:10:07 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
+ [209.85.167.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43gxWy75Hzz9sBZ
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2019 21:10:06 +1100 (AEDT)
+Received: by mail-oi1-f196.google.com with SMTP id a77so8547407oii.5
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2019 02:10:06 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=kJ205dDi2ixFxpwP81y40GqDgkPxHnuU8GfUzsPelD8=;
- b=WoQgCB4nrcZGZ5RNRFjiGmSVZCzZ5PU0hTEfeekz5yMYHbpvfs0/wSYd1bajOHaYDd
- SpUQXuxiMEtlURJv2PmqPH9QwFgXj2/OWNd93Jhje6x3wnjBmbq1v+lTknspWwUiihks
- 03rkr0TpbQT6XmOODy1o6MJmn61ns/AR2s6GbOVWGbL9hm2NljS7gjidAdgCUilEXgNV
- OzY1//WFKd8OHQk8DK05gckc/+7Pi3aYCSEiKedxoTjeApo9HcuAXKz7OrkpO+Ps4YNs
- PHyFSUOm3HTeDfeSVO7tor63L9BqVWz1tkhn64Eol9Z1wxPJUlkJ1KkjSZKwbBs3tRMz
- dKvw==
-X-Gm-Message-State: AJcUukdwIkPb6EfZMhwzSLbw6PUySEAICOSjLSNHeNP+dGvDXEFcgzja
- R/WiXx4B7FZfvDwCu7EzokShzQ1QjoTa4C04OjA=
-X-Google-Smtp-Source: ALg8bN44e0Tjf3vXDjWe2aMD8Rf88ITASC4bEdArFLMOYmy9qUKgA33sXrtBVKA0hIRH8WNf9S58QEquyYgPgD8HaMI=
-X-Received: by 2002:a2e:3012:: with SMTP id
- w18-v6mr11289731ljw.75.1547805898424; 
- Fri, 18 Jan 2019 02:04:58 -0800 (PST)
+ bh=jyo2oggzQ4O6LlrQQxoon7En8MnI9wJz+stelw/9DNQ=;
+ b=VNB357P1J4t4fD77sCllS9z33wvUPzpbGGILNQMIuBDJwb9hFxVuz0+LNgeug1jTxU
+ 5fymZZ567fqodE2jdwI/bgMDtjqn3KP51K8OP1WE7mS9cdKOyUtvIch35aWtUP4Sf5ky
+ X96FWzxUR2HCszPw/J8llhIU2SwQgy7jr2lyJQt7rEKRZiXM+P6y5fCF08CQMeRGRw3k
+ OC54KAnzz5hdRAFBJzE34Z+ceTqAJSLLWLyCGK2V8UUbfOQ3QkY23MS5GoTJLQKkc4Cj
+ eBPohNoq3ZelCkMZSGL0hToc+X213Z65ZqeeAuDzQL7tV+qWJOkTVhnd0dNBh/96yKKD
+ lcVg==
+X-Gm-Message-State: AJcUukeGa3wiWfaD9e0TaCQzx2aRg28SN7xAV9GaP7f30tEVbRPC+VGy
+ PLXAxffo6i2ayB3FawZOJXfVFtMtWM7htzPsZkQ=
+X-Google-Smtp-Source: ALg8bN6s6tOTx77tXkO9rmn8IK4zpDkOBowxGdgRaQLNHCxxvsh+xWVKw5dWqcqWcrlMZU9mtZqW7fB0mxGS/r+M3us=
+X-Received: by 2002:aca:b05:: with SMTP id 5mr324916oil.258.1547806204506;
+ Fri, 18 Jan 2019 02:10:04 -0800 (PST)
 MIME-Version: 1.0
-References: <5c40a8fd.1c69fb81.e4b1b.8f85@mx.google.com>
-In-Reply-To: <5c40a8fd.1c69fb81.e4b1b.8f85@mx.google.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Fri, 18 Jan 2019 15:34:45 +0530
-Message-ID: <CAFqt6zbyZnk3vAnRHV0JsXpVF=HxoC-WA9x434R+k36b0vtKzA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: Remove duplicate header
-To: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+References: <20190115224945.fvyrjjf3mjywq7u6@atom2.tmux.org>
+ <8f112153558ae8ffdefba905d83329c8e896d3a9.camel@kernel.crashing.org>
+ <20190117094214.26t72sdqknfzxvlx@atom2.tmux.org>
+ <ae9672a789b29a546c12149650f0a7f6ab6b762d.camel@kernel.crashing.org>
+ <20190118005124.oktx5nebsyy47zbg@atom2.tmux.org>
+In-Reply-To: <20190118005124.oktx5nebsyy47zbg@atom2.tmux.org>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 18 Jan 2019 11:09:52 +0100
+Message-ID: <CA+7wUsyj0EsaUOPWzjhUWty_bV7eqZtJwYLpdVs8AWSJ6mG56g@mail.gmail.com>
+Subject: Re: G5 Quad hangs early on 4.20.2 / 5.0-rc2+
+To: Tobias Ulmer <tobiasu@tmux.org>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -85,38 +85,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Brajeswar Ghosh <brajeswar.linux@gmail.com>, linux-kernel@vger.kernel.org,
- npiggin@gmail.com, paulus@samba.org, oohall@gmail.com, msuchanek@suse.de,
- linuxppc-dev@lists.ozlabs.org, haren@linux.vnet.ibm.com
+Cc: Rob Herring <robh@kernel.org>, linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 17, 2019 at 9:40 PM Sabyasachi Gupta
-<sabyasachi.linux@gmail.com> wrote:
+On Fri, Jan 18, 2019 at 1:53 AM Tobias Ulmer <tobiasu@tmux.org> wrote:
 >
-> Remove linux/printk.h which is included more than once.
+> On Fri, Jan 18, 2019 at 09:32:07AM +1100, Benjamin Herrenschmidt wrote:
+> > On Thu, 2019-01-17 at 10:42 +0100, Tobias Ulmer wrote:
+> > > On Wed, Jan 16, 2019 at 12:15:14PM +1100, Benjamin Herrenschmidt wrote:
+> > > > On Tue, 2019-01-15 at 23:49 +0100, Tobias Ulmer wrote:
+> > > > > Hi,
+> > > > >
+> > > > > both the latest stable 4.20.2 and 5.0 rc2+ hang early on the G5 Quad.
+> > > > >
+> > > > > Surely I'm not the first to run into this, but I couldn't find any
+> > > > > discussion or bug report. Sorry if you're already aware.
+> > > > >
+> > > > > You can see it hang here (5.0 rc2+, 4.20.2 is nearly identical) until
+> > > > > the watchdog triggers a reboot:
+> > > > >
+> > > > > https://i.imgur.com/UiCVRuG.jpg
+> > > > >
+> ...
+> > I'll be back on monday or tuesday, let me know where you got up to then
+> > and I'll take it from there. Also email me your .config please.
 >
-> Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+>
+> Hi,
+>
+> this was caused by 5c63e407aaabb0464236cfc6279a2d79aede7073
+> (fbdev: Convert to using %pOFn instead of device_node.name)
 
-Acked-by: Souptick Joarder <jrdr.linux@gmail.com>
+See:
 
-> ---
->  arch/powerpc/platforms/powernv/opal.c | 1 -
->  1 file changed, 1 deletion(-)
+https://patchwork.kernel.org/patch/10750931/
+
+
+
+> name can't be NULL into offb_init_fb, there's a printk and the call to
+> offb_init_palette_hacks where name is matched against OF device names.
 >
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index beed86f..802de0d 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -26,7 +26,6 @@
->  #include <linux/memblock.h>
->  #include <linux/kthread.h>
->  #include <linux/freezer.h>
-> -#include <linux/printk.h>
->  #include <linux/kmsg_dump.h>
->  #include <linux/console.h>
->  #include <linux/sched/debug.h>
-> --
-> 2.7.4
+> With the partial revert below, both 5.0-rc2+ and 4.20 are happy.
 >
+> diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+> index 31f769d67195..77c0a2f45b3b 100644
+> --- a/drivers/video/fbdev/offb.c
+> +++ b/drivers/video/fbdev/offb.c
+> @@ -419,13 +419,9 @@ static void __init offb_init_fb(const char *name,
+>         var = &info->var;
+>         info->par = par;
+>
+> -       if (name) {
+> -               strcpy(fix->id, "OFfb ");
+> -               strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
+> -               fix->id[sizeof(fix->id) - 1] = '\0';
+> -       } else
+> -               snprintf(fix->id, sizeof(fix->id), "OFfb %pOFn", dp);
+> -
+> +       strcpy(fix->id, "OFfb ");
+> +       strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
+> +       fix->id[sizeof(fix->id) - 1] = '\0';
+>
+>         var->xres = var->xres_virtual = width;
+>         var->yres = var->yres_virtual = height;
+> @@ -648,7 +644,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+>                 /* kludge for valkyrie */
+>                 if (strcmp(dp->name, "valkyrie") == 0)
+>                         address += 0x1000;
+> -               offb_init_fb(no_real_node ? "bootx" : NULL,
+> +               offb_init_fb(no_real_node ? "bootx" : dp->name,
+>                              width, height, depth, pitch, address,
+>                              foreign_endian, no_real_node ? NULL : dp);
+>         }
