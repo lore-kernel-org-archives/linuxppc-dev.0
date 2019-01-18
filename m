@@ -1,71 +1,70 @@
-Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47C51C5AE5E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 23:14:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB7D4C5AE5E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 00:10:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69DC32054F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 23:14:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69DC32054F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id A1E5A2086D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 00:10:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A1E5A2086D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=blastwave.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43hGx120hlzDrBc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 10:14:29 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43hJ9H1LhHzDrL1
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 11:10:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=blastwave.org
+ (client-ip=209.17.115.119; helo=atl4mhfb03.myregisteredsite.com;
+ envelope-from=dclarke@blastwave.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=blastwave.org
+X-Greylist: delayed 379 seconds by postgrey-1.36 at bilbo;
+ Sat, 19 Jan 2019 04:03:52 AEDT
+Received: from atl4mhfb03.myregisteredsite.com
+ (atl4mhfb03.myregisteredsite.com [209.17.115.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43hGvM39VJzDr0N
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 10:13:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43hGvM1ZX9z8sxv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 10:13:03 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43hGvM0xxMz9sDT; Sat, 19 Jan 2019 10:13:03 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43hGvK6nDWz9sDP
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2019 10:13:01 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x0INCkQM002275;
- Fri, 18 Jan 2019 17:12:46 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x0INCiql002273;
- Fri, 18 Jan 2019 17:12:44 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 18 Jan 2019 17:12:43 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/4] powerpc/64s: Add slb_full_bitmap rather than
- hard-coding U32_MAX
-Message-ID: <20190118231243.GV14180@gate.crashing.org>
-References: <20190117121328.13395-1-mpe@ellerman.id.au>
- <20190117121328.13395-2-mpe@ellerman.id.au>
- <20190117163017.GS14180@gate.crashing.org>
- <87ef9a40bb.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ef9a40bb.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43h6jN1mcPzDr6t
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 04:03:51 +1100 (AEDT)
+Received: from atl4mhob22.registeredsite.com (atl4mhob22.registeredsite.com
+ [209.17.115.116])
+ by atl4mhfb03.myregisteredsite.com (8.14.4/8.14.4) with ESMTP id
+ x0IGvbab012154
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 11:57:37 -0500
+Received: from mailpod.hostingplatform.com
+ (atl4qobmail01pod2.registeredsite.com [10.30.77.35])
+ by atl4mhob22.registeredsite.com (8.14.4/8.14.4) with ESMTP id x0IGvRa9136394
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 11:57:27 -0500
+Received: (qmail 46093 invoked by uid 0); 18 Jan 2019 16:57:27 -0000
+X-TCPREMOTEIP: 174.118.245.214
+X-Authenticated-UID: dclarke@blastwave.org
+Received: from unknown (HELO ?172.16.35.3?)
+ (dclarke@blastwave.org@174.118.245.214)
+ by 0 with ESMTPA; 18 Jan 2019 16:57:26 -0000
+Subject: Re: [PATCH v2 00/29] y2038: add time64 syscalls
+To: Arnd Bergmann <arnd@arndb.de>, y2038@lists.linaro.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arch@vger.kernel.org
+References: <20190118161835.2259170-1-arnd@arndb.de>
+From: Dennis Clarke <dclarke@blastwave.org>
+Message-ID: <be3863ae-d903-8e9e-5e6c-e4a58fac189d@blastwave.org>
+Date: Fri, 18 Jan 2019 11:57:24 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:65.0) Gecko/20100101
+ Thunderbird/65.0
+MIME-Version: 1.0
+In-Reply-To: <20190118161835.2259170-1-arnd@arndb.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Sat, 19 Jan 2019 11:08:47 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,35 +76,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, npiggin@gmail.com
+Cc: linux-m68k@vger.kernel.org, dalias@libc.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, catalin.marinas@arm.com, heiko.carstens@de.ibm.com,
+ jcmvbkbc@gmail.com, deepa.kernel@gmail.com, hpa@zytor.com,
+ sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, deller@gmx.de,
+ x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, geert@linux-m68k.org,
+ firoz.khan@linaro.org, mattst88@gmail.com, fenghua.yu@intel.com,
+ will.deacon@arm.com, linux-fsdevel@vger.kernel.org, luto@kernel.org,
+ tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, monstr@monstr.eu,
+ tony.luck@intel.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
+ linux-mips@vger.kernel.org, paul.burton@mips.com, ebiederm@xmission.com,
+ linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 11:28:24PM +1100, Michael Ellerman wrote:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
+On 1/18/19 11:18 AM, Arnd Bergmann wrote:
+> This is a minor update of the patches I posted last week, I
+> would like to add this into linux-next now, but would still do
+> changes if there are concerns about the contents. The first
+> version did not see a lot of replies, which could mean that
+> either everyone is happy with it, or that it was largely ignored.
 > 
-> > On Thu, Jan 17, 2019 at 11:13:26PM +1100, Michael Ellerman wrote:
-> >> The recent rewrite of the SLB code into C included the assumption that
-> >> all CPUs we run on have at least 32 SLB entries. This is currently
-> >> true but a bit fragile as the SLB size is actually defined by the
-> >> device tree and so could theoretically change at any time.
-> >
-> > It also is guaranteed by the architecture, since at least 2.02, FWIW.
-> 
-> True. Actually 2.00 says at least 32.
-> 
-> Unfortunately we don't live in a world where "the architecture
-> guarantees it" has any bearing on reality :)
+> See also the article at https://lwn.net/Articles/776435/.
 
-It's a pretty strong hint.  I don't remember any hardware where it is not
-true, either.  (That might be selective memory ;-) )
+I would be happy to read "Approaching the kernel year-2038 end game"
+however it is behind a pay wall.  Perhaps it may be best to just
+host interesting articles about open source idea elsewhere.
 
-> But given it *should* always be at least 32 maybe I should optimise for
-> that case. We could use a static key to skip the U32_MAX comparison and
-> go down the else path.
+Dennis Clarke
 
-Ah that sounds like a good idea :-)
-
-
-Segher
