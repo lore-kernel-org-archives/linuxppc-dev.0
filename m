@@ -2,82 +2,91 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8D8BC43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 04:16:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6532C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 06:25:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B8A820855
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 04:16:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D7A682086D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 06:25:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qwOywCX7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B8A820855
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=pass (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="iTTgilt0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D7A682086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43gngW5fDtzDqvL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 15:16:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="qwOywCX7"; 
- dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43grXs2Jq1zDqpg
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 17:25:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43gndY5v4TzDqtQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 15:14:25 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id 101so5741442pld.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2019 20:14:25 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=QvatLJrzlgOvaGkj3zRF3vT9ge5UNz5ivCppBZRnLFY=;
- b=qwOywCX7m7l+Uqpp56fSpH4aBzHfa6HCIteKp8zQcXpnIGtPllEmZEQfdTR1xOGsbo
- WfemIiabUMQZxuY2PKCwW7axrbmR1Jfq5iKZpEDfvuHJMCbzRoPn5Fs04hbZAkh/J2Wy
- CB0M6h+Bl2eRX1PQzCTmubxCMZZwhppL6FjVbnWrpB2mqgrMmlKGQHjQGn3vVWMobut/
- 3S0fZIjzbBsdwY4syHgW2jTJxfYvFsGjbpUR8WmyLtKpA2oYKOjc06wrDeNqG82vxQ0H
- pkbUX5/nAgvEtDWu27aen5xeiUXVnCJ/jhxctkO0VvG0uP9X2Yd1QdNxC5g/N4ENKZ5t
- j3Yw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43grW033tvzDqtr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 17:23:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="iTTgilt0"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43grW01NCQz8tRR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 17:23:56 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43grW00wrbz9sLt; Fri, 18 Jan 2019 17:23:56 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linaro.org
+ (client-ip=2607:f8b0:4864:20::144; helo=mail-it1-x144.google.com;
+ envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linaro.org header.i=@linaro.org header.b="iTTgilt0"; 
+ dkim-atps=neutral
+Received: from mail-it1-x144.google.com (mail-it1-x144.google.com
+ [IPv6:2607:f8b0:4864:20::144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43grVz2cWKz9sCs
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2019 17:23:54 +1100 (AEDT)
+Received: by mail-it1-x144.google.com with SMTP id z7so5314228iti.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2019 22:23:54 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=34uuksI/HtmF2DW5XyYEIXNVAgR2F7OA8LU5+zqtoF4=;
+ b=iTTgilt0L+WctrLZWbnv8MVO/TPBBVy29wDJbo6/FAWuw3U9Il9Xoo/1i9NZkZUske
+ S74uYjMl3+mkUG3DOZCXx7IgfRfm2slodj/+SGFp+O6/nLjMJcSzNWldr4Sdx/IGFh5M
+ GE3dZYwJfQiBRgptFkVhGDGD17tcraWTe79Mw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=QvatLJrzlgOvaGkj3zRF3vT9ge5UNz5ivCppBZRnLFY=;
- b=jKV/clunzvmh46FWXu0KCNxj26HzKIcyasI6q9kBlQx7nshW+cn7cNmqrt+tzlvmHB
- xXoXxY77T3YQdYwI0K9SKKH/0tPu++FIjSUFrghE23M3JYivAsQKLIOcsEOb7GK5F9HE
- QXKQ7KQSUmwP33tHilOlhoxYZGpE8uBkWG1MHQs1I8qTzGfK6bwqWrxFoloqZYwY85kp
- B6hNTWLlIi8+n+2bm+flBqnc+dGYZRpTOUzxkW81xHwWi5i+K4gNHEFn30ipgt27u91M
- vRL8k7PCmbbsG0ePY2418LG4Tcd5hA/ArvuQg3SeLb1xZaWgR/418wYZunNZ5P5HoQHG
- aC4A==
-X-Gm-Message-State: AJcUukfzqXQzDU7THwhv9X8UiLkcMzBq8ja/2IHTpuLosAa94wrNJluF
- 6xLWpqFaM+UmhtAL6KSr8QMAhSh0
-X-Google-Smtp-Source: ALg8bN5Lxyg44HwP/47hvaZeOIZ9glZ95Cx0CJqpaEtf8X0rxg2xZZ+fr8WddCyg49PTlYVYvRbe7w==
-X-Received: by 2002:a17:902:5a5:: with SMTP id
- f34mr17719846plf.161.1547784862944; 
- Thu, 17 Jan 2019 20:14:22 -0800 (PST)
-Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id c13sm6029554pfe.93.2019.01.17.20.14.20
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 17 Jan 2019 20:14:22 -0800 (PST)
-From: Oliver O'Halloran <oohall@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: Force an freset if IODA reset fails
-Date: Fri, 18 Jan 2019 15:14:07 +1100
-Message-Id: <20190118041407.25792-1-oohall@gmail.com>
-X-Mailer: git-send-email 2.20.1
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=34uuksI/HtmF2DW5XyYEIXNVAgR2F7OA8LU5+zqtoF4=;
+ b=CcJW5dhUNoUgvJKLI8DNHozN+W+aDYmbYaUYsy/WnhlAi282wrAK9Tc15NF1XLSX9V
+ P/ut/M7TvwZBugc6RmQRZfbASpDQdqhamIu12aQGpoAEeD+vrYngRTn5NJV3Gc07uP7q
+ TZNuOmRtwTXhrgBOQ+2gQJ8ZJlgnSVBV17Da830sBYgFTTvkF8DCJWirq80qBIFpLGT4
+ 0Y6m/+sIzUi5F0FlDoG3zimCKrFabVb8MvRJzGCFjjTQ38dd/kGi8b0J7D3kGqyt9Bag
+ l3BRObyINrssrDFyxCGH3RZaGiIF302za8BLG/gIpUpeckdVSNvvHo65yOcmDU4b4FGR
+ LslQ==
+X-Gm-Message-State: AJcUukcgV/O9Hp5pwCqO0UsmF3Wwt6adj7voY0Sw8ytVey33LflQwi/9
+ FqJmQBaBoqMLavB0goLet2njzLzD/vaQhjEFAHBVKTmH
+X-Google-Smtp-Source: ALg8bN5RFy5XzXcbtZ7ILWxeUROxrtzEIRqkt7wRn/ETSJSkwY3+WnePZBclSy5FnR7Ebmekl2jzNA6awCtS4o5Ozeg=
+X-Received: by 2002:a02:4d99:: with SMTP id t25mr10318919jad.58.1547792632823; 
+ Thu, 17 Jan 2019 22:23:52 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190114113620.17558-1-mpe@ellerman.id.au>
+ <20190114113620.17558-4-mpe@ellerman.id.au>
+In-Reply-To: <20190114113620.17558-4-mpe@ellerman.id.au>
+From: Firoz Khan <firoz.khan@linaro.org>
+Date: Fri, 18 Jan 2019 11:53:41 +0530
+Message-ID: <CALxhOni=Dgax7ujuJW5_xw4fV4ooPjzOO5r6oHZ63wSKgLAjkA@mail.gmail.com>
+Subject: Re: [RFC PATCH 4/5] powerpc/syscalls: Allow none instead of
+ sys_ni_syscall
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,41 +98,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The IODA reset can fail in cases where the PHB has encounted a fatal error
-during early boot. Typically this is due a malfunctioning device directly below
-the root complex, but can occur for other reasons. This patch fixes the problem
-by forcing a reset of the PHB if we get an error back from firmware when doing
-the IODA reset.
+Hi Michael,
 
-Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+On Mon, 14 Jan 2019 at 17:06, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> sys_ni_syscall is the "not-implemented" syscall syscall, which just
+> returns -ENOSYS.
+>
+> But unless you know that it's not obvious what it does, and even if
+> you do know what it means it doesn't stand out that well from other
+> real syscalls.
+>
+> So teach the scripts to treat "none" as a synonym for
+> "sys_ni_syscall". This makes the table more readable.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 1d6406a..53982f8 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3943,9 +3943,12 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	 * shutdown PCI devices correctly. We already got IODA table
- 	 * cleaned out. So we have to issue PHB reset to stop all PCI
- 	 * transactions from previous kernel. The ppc_pci_reset_phbs
--	 * kernel parameter will force this reset too.
-+	 * kernel parameter will force this reset too. Additionally,
-+	 * if the IODA reset above failed then use a bigger hammer.
-+	 * This can happen if we get a PHB fatal error in very early
-+	 * boot.
- 	 */
--	if (is_kdump_kernel() || pci_reset_phbs) {
-+	if (is_kdump_kernel() || pci_reset_phbs || rc) {
- 		pr_info("  Issue PHB reset ...\n");
- 		pnv_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
- 		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
--- 
-2.9.4
+The idea of the first patch series for system call table generation support
+is to replace uapi and syscall table as it is. That's why u can find places
+where sys_ni_syscalls present. I have a plan for cleanup in the uapi header
+and syscall table files. By that time all sys_ni_syscall removed from the
+table (Hopefully).
 
+I can post the cleanup patch asap.
+
+> +       if [ "$t_entry" = "none" ]; then
+> +               t_entry="sys_ni_syscall"
+> +       fi
+> +
+
+In that case I don't this above change is required.
+
+Thanks
+Firoz
