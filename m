@@ -6,60 +6,60 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C7CC2C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:43:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CA68C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:45:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5141020823
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:43:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5141020823
+	by mail.kernel.org (Postfix) with ESMTPS id 10A1E20823
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 16:45:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10A1E20823
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43h6Fr3C1YzDr61
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:43:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43h6Hj3XzpzDqjG
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:45:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=217.72.192.73; helo=mout.kundenserver.de;
+ (client-ip=212.227.17.13; helo=mout.kundenserver.de;
  envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43h5m407cxzDr1g
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 03:21:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43h5m664TBzDr1q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 03:21:10 +1100 (AEDT)
 Received: from wuerfel.lan ([109.192.41.194]) by mrelayeu.kundenserver.de
  (mreue109 [212.227.15.145]) with ESMTPA (Nemesis) id
- 1M4s8v-1glu2i4Ab9-0023hU; Fri, 18 Jan 2019 17:19:36 +0100
+ 1MZTyi-1gheoB1V02-00WSdJ; Fri, 18 Jan 2019 17:19:37 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org, linux-api@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH v2 15/29] alpha: add standard statfs64/fstatfs64 syscalls
-Date: Fri, 18 Jan 2019 17:18:21 +0100
-Message-Id: <20190118161835.2259170-16-arnd@arndb.de>
+Subject: [PATCH v2 16/29] alpha: add generic get{eg,eu,g,p,u,pp}id() syscalls
+Date: Fri, 18 Jan 2019 17:18:22 +0100
+Message-Id: <20190118161835.2259170-17-arnd@arndb.de>
 X-Mailer: git-send-email 2.20.0
 In-Reply-To: <20190118161835.2259170-1-arnd@arndb.de>
 References: <20190118161835.2259170-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:rSakGMBaEBbAtQUcV3qv3NM7i+OWluASRZee787Xpo3/o23caVn
- QWs5OY5vh9opxy1/zCZ9LY9N9pIJScThNKTMUOE8nA6un262wDIq2Fjhg5yIiWEmn82x0g9
- 8p3VeDjI0Rm19xjqPj0Z3FbT5slvuvHZtcUqZPj+gSCMB48TPbdYEEw4VLMKLx07SalqB3b
- h3OVH5LxVZJKnyB7bc21Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:lg2Zcst79FI=:RjM/7u0hFuGHZ2BRfjTPMD
- 8fbJ1Oqm5cIPC9GeaHvhUwxiy6Kjrm/A90avnT4gPYEGG3drhLEmcVMffAdNdtsLTT2kOQu/9
- 9U1iqxCzfMtamHuo+Lvykvje1o1aTsd2rp+F0IR9Sf+vhzfs3Ry1952VDFu0nPS2jVP/yso/5
- /zohi1guOX5+PufGw5W40eWBbQtN7cydGZxEf3WMCnZ1zcVlXCx6sY9+1Rjbyvf1+k0f18R8K
- T2QJYu7012AdY16U6LfPR/21li2ADSjVByZ8E43b8tHba6P1U7dW1+DOogZ+wfBjkG0FW+22+
- hK/j1NbUyVDgs/0sAib43CUyRFQovnEdIJiz9ogsL8XY5ptvCVdCiXlgq8U4xBKgcba8zQ2zK
- zP7aq+pVaAWVNpRw9ucrV0CNZqVVkj6exO56AwQ7TSrWLv2er5omNVTKolhgh+K3vCud/MP3k
- QFUAdqHPpxJFDVWW0QclTKKiM+AqrHzrkW5L2rYyv0TKN+BltH3vLxKleH3bq4UKU3V9M54VY
- 149cHyT5F0DL6qHinYu9NHirim1imOhLAhDnmiVl43A3WqSlfS3sTrd2jeYunrJrgAn5huc69
- rDrSDi5snBC3J6gkHsCqMxkqovxLuN0yASzWROjAAglW0rMvI5oSBu5kz+U6ziG7P0chho9G4
- NVjYAQ/GPHW1EJskkpatgeukn2lCfJ97qsSET1mX9q1QVgyHAWcBLswP9TPLd0jQA+/DMuOon
- r0AZp67Be14b8gSfAB9zm3btQOHXBPlWLDZnkQ==
+X-Provags-ID: V03:K1:jsOw7NqQKS2zQ2Kn3Rl+vMqYljPTdUEHSKVnWEW+0Z+etDrnxOY
+ fHRBu4AJ2H9ITzOOnIQmu/LvPg6oaokuIwQkItp+qBdIdD7bxckPyZ8Sxs4NOwtEHCSAnUH
+ PATcQhNN+ieYB856u8/+6Y9ZbSsp4EBrFe61HTPJVqvuCuDQ4awBecyCY2Y/F+xR0K6VrtS
+ S0fFIjG7g4/x+H+4JviEg==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:JL+1HsoFxsM=:cBJFwJBy7OBl33SJgynGOf
+ EmNur2v4677HGSFzkbfaknFA95n0HTqqKB3lK8G36N+kfz/YYAgyNSQ0vsAdfHv8lhYMjGt9p
+ M8WUKHlEr7hakd0YFqTMmYqzuRvf5OQhCO6VJWob6XAwR6tpdkRzOCkrG6G8sfDz0d6VY/hNz
+ upEFggyCa4tZuOyNQJx/K1uvR42DpkBjNILmF7YFo+UwNzmRIGTttYrsBYHTpe1PkzRgVit+r
+ j7SLw9Mb4BkxItIIOg0Qt2c5Oq54DLbA/d+tWgz6QwpjgSfDyguWB8kYlWaqTPuPH9rvSikR/
+ z5iJ6+Y+g9zoUxtfCYnatVYC9tJKDuimc9MbGNzttROXmBklb/ksFc6NTsXvlop93uHH8kFZW
+ EH8Uk0MtSGHSMNTx7TfNxVjZQD2p41Af7cdpQ0q7LLJMZ12Wiz3jRYV1s++sEe5YekYRPxPzI
+ 0UeWAqx5PBKwf0P5EIiRcD7zYJVp12kr6tChz9H4IAiwv9yHUyveQLYhjbD63KLNdQmOWwgxQ
+ FDoUySY8h2BSH/6fWX31CKmRwF+KPHvEnrGvFcULjAx96+rWzASZopKWtsi/Oj9ONCxHrFK77
+ zfvU9jlkJIiLbhOXwmibd0u52gtfrTcK5qxrB/RMFagbDTt5V/H0K7p98rbF0qtMgChfmWlw6
+ 9js9moRUD3b7UoD0g2g2uzOd41lIuDs6xFGHIXcYshauq1Q8Mf7vrPy5HgZEfkX3yFqd1V5g5
+ 9v/xHx798WmtLAP2+pB9Fa8UydU7D6olbZ12sQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,34 +88,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As Joseph Myers points out, alpha has never had a standard statfs64
-interface and instead returns only 32-bit numbers here.
+Alpha has traditionally followed the OSF1 calling conventions
+here, with its getxpid, getxuid, getxgid system calls returning
+two different values in separate registers.
 
-While there is an old osf_statfs64 system call that returns additional
-data, this has some other quirks and does not get used in glibc.
-
-I considered making the stat64 structure layout compatible with
-with the one used by the kernel on most other 64 bit architecture that
-implement it (ia64, parisc, powerpc, and sparc), but in the end
-decided to stay with the one that was traditionally defined in
-the alpha headers but not used, since this is also what glibc
-exposes to user space.
+Following what glibc has done here, we can define getpid,
+getuid and getgid to be aliases for getxpid, getxuid and getxgid
+respectively, and add new system call numbers for getppid, geteuid
+and getegid.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/alpha/kernel/syscalls/syscall.tbl | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/alpha/include/asm/unistd.h        | 11 -----------
+ arch/alpha/include/uapi/asm/unistd.h   |  5 +++++
+ arch/alpha/kernel/syscalls/syscall.tbl |  3 +++
+ 3 files changed, 8 insertions(+), 11 deletions(-)
 
+diff --git a/arch/alpha/include/asm/unistd.h b/arch/alpha/include/asm/unistd.h
+index 31ad350b58a0..986f5da9b7d8 100644
+--- a/arch/alpha/include/asm/unistd.h
++++ b/arch/alpha/include/asm/unistd.h
+@@ -19,15 +19,4 @@
+ #define __ARCH_WANT_SYS_VFORK
+ #define __ARCH_WANT_SYS_CLONE
+ 
+-/*
+- * Ignore legacy syscalls that we don't use.
+- */
+-#define __IGNORE_getegid
+-#define __IGNORE_geteuid
+-#define __IGNORE_getgid
+-#define __IGNORE_getpid
+-#define __IGNORE_getppid
+-#define __IGNORE_getuid
+-
+-
+ #endif /* _ALPHA_UNISTD_H */
+diff --git a/arch/alpha/include/uapi/asm/unistd.h b/arch/alpha/include/uapi/asm/unistd.h
+index 4507071f995f..71fd5db06866 100644
+--- a/arch/alpha/include/uapi/asm/unistd.h
++++ b/arch/alpha/include/uapi/asm/unistd.h
+@@ -7,6 +7,11 @@
+ #define __NR_umount	__NR_umount2
+ #define __NR_osf_shmat	__NR_shmat
+ 
++/* These return an extra value but can be used as aliases */
++#define __NR_getpid	__NR_getxpid
++#define __NR_getuid	__NR_getxuid
++#define __NR_getgid	__NR_getxgid
++
+ #include <asm/unistd_32.h>
+ 
+ #endif /* _UAPI_ALPHA_UNISTD_H */
 diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index 25b4a7e76943..0ebd59fdcb8b 100644
+index 0ebd59fdcb8b..337b8108771a 100644
 --- a/arch/alpha/kernel/syscalls/syscall.tbl
 +++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -456,3 +456,5 @@
- 525	common	pkey_free			sys_pkey_free
- 526	common	pkey_mprotect			sys_pkey_mprotect
+@@ -458,3 +458,6 @@
  527	common	rseq				sys_rseq
-+528	common	statfs64			sys_statfs64
-+529	common	fstatfs64			sys_fstatfs64
+ 528	common	statfs64			sys_statfs64
+ 529	common	fstatfs64			sys_fstatfs64
++530	common	getegid				sys_getegid
++531	common	geteuid				sys_geteuid
++532	common	getppid				sys_getppid
 -- 
 2.20.0
 
