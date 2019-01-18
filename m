@@ -2,73 +2,73 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B49AC07EBF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 17:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9DC7C07EBF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 18:03:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 209E920850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 17:55:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 326D020850
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 18:03:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="oEIVoFNO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 209E920850
+	dkim=pass (1024-bit key) header.d=wavesemi.onmicrosoft.com header.i=@wavesemi.onmicrosoft.com header.b="JvNQZwf6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 326D020850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43h7sM0W3gzDr6b
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 04:55:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43h82X0crczDrBJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 05:03:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (mailfrom) smtp.mailfrom=wavecomp.com
- (client-ip=40.107.71.138; helo=nam05-by2-obe.outbound.protection.outlook.com;
+ (client-ip=40.107.81.92; helo=nam01-by2-obe.outbound.protection.outlook.com;
  envelope-from=pburton@wavecomp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=mips.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=wavesemi.onmicrosoft.com
- header.i=@wavesemi.onmicrosoft.com header.b="oEIVoFNO"; 
+ header.i=@wavesemi.onmicrosoft.com header.b="JvNQZwf6"; 
  dkim-atps=neutral
-Received: from NAM05-BY2-obe.outbound.protection.outlook.com
- (mail-eopbgr710138.outbound.protection.outlook.com [40.107.71.138])
+Received: from NAM01-BY2-obe.outbound.protection.outlook.com
+ (mail-eopbgr810092.outbound.protection.outlook.com [40.107.81.92])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43h7pv0Bd4zDr6x
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 04:53:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43h80d6NB9zDqsd
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 05:02:09 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=wavesemi.onmicrosoft.com; s=selector1-wavecomp-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=YMOM8O196eAFagU4Ul/4cB40eaDuvSu+yFz6aQcvq2g=;
- b=oEIVoFNOUSYW53tuMbQclAnHJB9YaEYV5vpwumGQNifk5gmo8THc6Pw8wFXn5YlGF3s68xqjT2OFAYeZ6hsIxsynLEK8f7HBTdZd/M4FalYNobCb57oFtPIrVHL2hqbaen204MTl+KtLt5JArP4KM8Aiw1aEFT4FHzI6BNoh8QE=
+ bh=M5NWazDTmeGYAYdRDVqWTFJDL8Hi++4oaTpYIJrLhak=;
+ b=JvNQZwf6URSu8rSIpz4mfhxqinA373rumfuPVzkqDKb28e2NPsQhKrDMuZR+CudTS3so8H9dmDxaWHv8otgLgpbSLa/qLXHGqlPsw/4DucTnHdVfc6YQhAzlKe66lfOTwaQ6/ILUincSBi0BCEBm0mw8n/8NIvswildvha7dStI=
 Received: from MWHPR2201MB1277.namprd22.prod.outlook.com (10.174.162.17) by
- MWHPR2201MB1231.namprd22.prod.outlook.com (10.174.162.7) with Microsoft SMTP
+ MWHPR2201MB1039.namprd22.prod.outlook.com (10.174.167.28) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1537.26; Fri, 18 Jan 2019 17:53:36 +0000
+ 15.20.1537.27; Fri, 18 Jan 2019 18:02:03 +0000
 Received: from MWHPR2201MB1277.namprd22.prod.outlook.com
  ([fe80::595e:ffcc:435b:9110]) by MWHPR2201MB1277.namprd22.prod.outlook.com
  ([fe80::595e:ffcc:435b:9110%4]) with mapi id 15.20.1537.018; Fri, 18 Jan 2019
- 17:53:36 +0000
+ 18:02:03 +0000
 From: Paul Burton <paul.burton@mips.com>
 To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH 12/21] arch: use memblock_alloc() instead of
- memblock_alloc_from(size, align, 0)
-Thread-Topic: [PATCH 12/21] arch: use memblock_alloc() instead of
- memblock_alloc_from(size, align, 0)
-Thread-Index: AQHUraHHZvb7YTdQl0W4aFhrq8SopqW1UjIA
-Date: Fri, 18 Jan 2019 17:53:36 +0000
-Message-ID: <20190118175334.mj2mahbf4onhujgz@pburton-laptop>
+Subject: Re: [PATCH 19/21] treewide: add checks for the return value of
+ memblock_alloc*()
+Thread-Topic: [PATCH 19/21] treewide: add checks for the return value of
+ memblock_alloc*()
+Thread-Index: AQHUraHd8jRLB7x3YEeU6EKybqgDLKW1VI6A
+Date: Fri, 18 Jan 2019 18:02:03 +0000
+Message-ID: <20190118180201.uva5nhf2g23uamkn@pburton-laptop>
 References: <1547646261-32535-1-git-send-email-rppt@linux.ibm.com>
- <1547646261-32535-13-git-send-email-rppt@linux.ibm.com>
-In-Reply-To: <1547646261-32535-13-git-send-email-rppt@linux.ibm.com>
+ <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
+In-Reply-To: <1547646261-32535-20-git-send-email-rppt@linux.ibm.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-x-clientproxiedby: BYAPR05CA0020.namprd05.prod.outlook.com
- (2603:10b6:a03:c0::33) To MWHPR2201MB1277.namprd22.prod.outlook.com
+x-clientproxiedby: MWHPR17CA0069.namprd17.prod.outlook.com
+ (2603:10b6:300:93::31) To MWHPR2201MB1277.namprd22.prod.outlook.com
  (2603:10b6:301:24::17)
 user-agent: NeoMutt/20180716
 authentication-results: spf=none (sender IP is )
@@ -76,38 +76,38 @@ authentication-results: spf=none (sender IP is )
 x-ms-exchange-messagesentrepresentingtype: 1
 x-originating-ip: [67.207.99.198]
 x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1231;
- 6:NBGsuzCLbpnGBREiCv95ZgVrJU5j8ZQ9vCKPHnZknrPfEGffTUSMoBXjYsOWlhWawru5fUfulHtzXt55vPdRctZVDcfxMlEUU4CuwFEoWh3TdFvp1EKFOlAtY6v7V3l0A/vdU0GmtbIh6sSvfYDopgGNkSN3HlUPvS7bm0ZZF2wptRWPfqnK2GbIq5BA3WC4/lS9YyLgtzyFOvEwdLmJA+coyMqGXjFTSWAyx00d1tvp3F7xW+2uteqeGGGYHO5L79lTU+fKC7pMgIYQQXLKhXXBZibd3fdMehslc2ZhpPRz7xNR8ymQMdHEfPis4aI0+kP2GByDd8JDN0/iNiBBy9KwVvueJVTDtzfpSC1YreT8IsqT7CCychNyRfGqyJahZcOhr6HA9JIxo+MXzwriYMaHFLQHCcANiBGxhP7JjNPK9eWooJP7v7Lo7t5Ow+QlVUN3AnqbJRbgOT92jgP03w==;
- 5:Y311Ud4YaSAauPgF33PFLaGepapHkekvgpT7SrbnfAETIcUUe96moTmIrnF06nfAxT4oYXRDltcEcHK87xIiFI+Xdxp4YadnS+t3Xn250np6u1q4UYnQ1as0FKHvy1+v+RwMXcC3cdUdgUi3qHy+yd5Vp5dy+i9y2MeTl6Y67+XtT3N87Q+2ZPpiacepLngyyh2nHIvTYPu1R2hOUDTJNA==;
- 7:pvyiJb2aUGlD4fByuour+k6vAnC/BnqGCG/alnrpmwlYqBhAkhozGIbbJipjRLbnjEeLB6B0zTx9cTTtiK122ftBZWmCqSsWso17L2sHIgBUzTo8w+NYU/Q10qxWRwEpKyen7GwmKxqto2IzAEtehA==
-x-ms-office365-filtering-correlation-id: 389a8a4b-e155-413f-1b2b-08d67d6dde5e
+x-microsoft-exchange-diagnostics: 1; MWHPR2201MB1039;
+ 6:eg8jrLQMI9BOqMPMBOvVQtsnp7IiFlJhkWuQkSM4lOXplOC6jGV0iw0ey+aOodRQK+FaoMV61ipPC3ZuUloRY+aWk9apMzvf/IlCGsaM3SrUhIYk1lRxFC5YGT2j6MLQvfxcdlatSTHM3fflmSxOOSoXzeWODZhi5c65cnCmOFRiV+DYeVulQqHLirdvWhL7WUk//L5vRTsDuENvDjZAZL4ytfVMbTlvcAvD2wNNZZHaiYr4r0iqxzgD6BiDYMiXSary8ZklIhydZaDqdNOEhmzjZ6PKT0gYTDjLYjq85FHDoO8DSqo1aLBUXb6S70vTR2BQLVmqdXKYSFw0arHgYcJi4ErN6dqZvavfr/yQI+6TjVWfvVSTEaxbE0w3oPh+9opM5GpEQdGrYnav2RRtEs66eGHohRMJs//QJF3VZdNUMOgwlcEGZnaUYiP+7p4kpxMCeutK6QDA4cM01HLERA==;
+ 5:V4uHkcsFXpdbjZ8TpiP4mG8ngHygafY+qapdBlYEX1jQ2PuNXYWuq1zVSTnxv8IXfTtu68aebzZglc1I2i1j08cR2IwzWql5jSF2VzkqZF/ZZioWwdUK+h/irxKQS19UKX9vaSKzki9iS5FJdYDj7V5SOuqtsV2R9D9i6XxQUA3T2ZNsWnJ0IqCrSewQLhpVDf7pSCU4NWt465FHC8Z3aQ==;
+ 7:9zSUn2KF4Lz9GDZ4fXiDBrkc2+BlNu5pVDiM8UtW8Oac51/eCbXL+kdsIvOeoUGytRe/ADQb9QDErl9DPxpmJH6jJRJRVCyCIGV9sX4looGK3W8fJWnsKa0QCKv5bUx7vPCD3xJidJ7QW7pX13WRsA==
+x-ms-office365-filtering-correlation-id: 096921e6-6149-4482-5a4f-08d67d6f0cb9
 x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(5600109)(711020)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(2017052603328)(7153060)(7193020);
- SRVR:MWHPR2201MB1231; 
-x-ms-traffictypediagnostic: MWHPR2201MB1231:
-x-microsoft-antispam-prvs: <MWHPR2201MB12315AB7DF0C62E827467DD6C19C0@MWHPR2201MB1231.namprd22.prod.outlook.com>
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(2017052603328)(7153060)(7193020);
+ SRVR:MWHPR2201MB1039; 
+x-ms-traffictypediagnostic: MWHPR2201MB1039:
+x-microsoft-antispam-prvs: <MWHPR2201MB10394CAEBE094B6FA9F41410C19C0@MWHPR2201MB1039.namprd22.prod.outlook.com>
 x-forefront-prvs: 0921D55E4F
 x-forefront-antispam-report: SFV:NSPM;
- SFS:(10019020)(7916004)(376002)(396003)(366004)(39850400004)(346002)(136003)(199004)(189003)(14454004)(8936002)(39060400002)(81166006)(106356001)(81156014)(8676002)(105586002)(7736002)(478600001)(305945005)(229853002)(97736004)(44832011)(68736007)(66066001)(6512007)(53936002)(111086002)(9686003)(4744005)(6916009)(3846002)(6116002)(71200400001)(7416002)(7406005)(102836004)(71190400001)(5660300001)(33716001)(11346002)(2906002)(58126008)(6246003)(99286004)(386003)(6506007)(4326008)(476003)(76176011)(54906003)(33896004)(486006)(42882007)(1076003)(186003)(316002)(26005)(6436002)(14444005)(256004)(25786009)(446003)(6486002)(52116002);
- DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1231;
+ SFS:(10019020)(7916004)(39840400004)(396003)(376002)(136003)(346002)(366004)(189003)(199004)(3846002)(66066001)(478600001)(52116002)(71200400001)(71190400001)(76176011)(7736002)(305945005)(1076003)(102836004)(186003)(26005)(256004)(42882007)(111086002)(81166006)(25786009)(11346002)(446003)(6916009)(8676002)(81156014)(476003)(8936002)(6486002)(6436002)(105586002)(6246003)(6512007)(33716001)(106356001)(7406005)(7416002)(54906003)(58126008)(229853002)(486006)(44832011)(6506007)(99286004)(5660300001)(33896004)(316002)(2906002)(97736004)(53936002)(14454004)(386003)(68736007)(39060400002)(4326008)(6116002)(9686003);
+ DIR:OUT; SFP:1102; SCL:1; SRVR:MWHPR2201MB1039;
  H:MWHPR2201MB1277.namprd22.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
+ PTR:InfoNoRecords; MX:1; A:1; 
 received-spf: None (protection.outlook.com: wavecomp.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: NY1b0/PAR1jaYy+VdOqE5Zd+AWe18eiUot7zGf9rnxubu+jl7MfET07t2IH3lPL15xtQ9Bg+uVDrZPnmtZ8fLFb7BMXthSWiNqlSoJYOH4fkzxc7TEa/n5ZkJEO+JFpwIKOJAxPi5qEZeDraBO9zLXoNQrl1QUY7tfzq+WueItwcBwwQT9zvHmeFJ8UkwCpVyTFB0kNrmULUIOM1CKOlRRz/1w+LYapkLftXUKJrWoDYTScs02StJPDa8FbDjT39Rv06khzaMrIjqW4OuQR7Bb6Z6xS+3ye2JMorL1VYKq7PuJ1une2uOqrBJKxelUHe5bF1wscI8YZCADV3cw/G7jjK0e5UuwMztJ08nPGPCf9RuBupBn+BdKY2yaPlSDzje16YSIDdAByTQAHGasb9Nk/Wx9lfX/BxzWDVEgiYo8A=
+x-microsoft-antispam-message-info: uw3MyYOEWlVwYdAqkG3cRBimsfyCI9GHacSbNASN7RklAm2TDFzqUZpxBz/lDepbY4Z1DDMInYrofktkmPhY5svckQhV/fqfEg1zbLbaqIeZUOKKkbzw1QPdpiX3kI281LhhTgTcOZmD8+XOOJHix13XfFbIHtZoI2gtZ/XKEOxICcZZnajhWZSTr6m1FySawt8j8pjlu4QaHaV8cf+kUjc+LNAGYHgSVsZ0awnYgiEkfP6SiODy1TVnuJzdut7Sq7UXRahsqYQWpsjUBcCJeO4J0mKrXT1XvR9SxYUpppKD95LLHaI7r+AQ96JQAYui16Hp50Q648XWFOIirOPboVejYiv4/U4azmNVbEAYbL/d71jS42Y7zTPZQ6EQ5gk9lPrHDzBr9DYCl+15YEkp84bisGlEdNHsixF8mIIBieQ=
 spamdiagnosticoutput: 1:99
 spamdiagnosticmetadata: NSPM
 Content-Type: text/plain; charset="us-ascii"
-Content-ID: <27E0FF00A643614DAB51ABA4F92A557E@namprd22.prod.outlook.com>
+Content-ID: <8AB5FF9934BD5A4E822E85B3C315428B@namprd22.prod.outlook.com>
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: mips.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 389a8a4b-e155-413f-1b2b-08d67d6dde5e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Jan 2019 17:53:35.3869 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 096921e6-6149-4482-5a4f-08d67d6f0cb9
+X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Jan 2019 18:02:02.6648 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-id: 463607d3-1db3-40a0-8a29-970c56230104
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1231
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: MWHPR2201MB1039
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -163,14 +163,48 @@ Sender: "Linuxppc-dev"
 
 Hi Mike,
 
-On Wed, Jan 16, 2019 at 03:44:12PM +0200, Mike Rapoport wrote:
-> The last parameter of memblock_alloc_from() is the lower limit for the
-> memory allocation. When it is 0, the call is equivalent to
-> memblock_alloc().
+On Wed, Jan 16, 2019 at 03:44:19PM +0200, Mike Rapoport wrote:
+> Add check for the return value of memblock_alloc*() functions and call
+> panic() in case of error.
+> The panic message repeats the one used by panicing memblock allocators wi=
+th
+> adjustment of parameters to include only relevant ones.
+>=20
+> The replacement was mostly automated with semantic patches like the one
+> below with manual massaging of format strings.
+>=20
+> @@
+> expression ptr, size, align;
+> @@
+> ptr =3D memblock_alloc(size, align);
+> + if (!ptr)
+> + 	panic("%s: Failed to allocate %lu bytes align=3D0x%lx\n", __func__,
+> size, align);
 >=20
 > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> ---
+>%
+> diff --git a/arch/mips/cavium-octeon/dma-octeon.c b/arch/mips/cavium-octe=
+on/dma-octeon.c
+> index e8eb60e..db1deb2 100644
+> --- a/arch/mips/cavium-octeon/dma-octeon.c
+> +++ b/arch/mips/cavium-octeon/dma-octeon.c
+> @@ -245,6 +245,9 @@ void __init plat_swiotlb_setup(void)
+>  	swiotlbsize =3D swiotlb_nslabs << IO_TLB_SHIFT;
+> =20
+>  	octeon_swiotlb =3D memblock_alloc_low(swiotlbsize, PAGE_SIZE);
+> +	if (!octeon_swiotlb)
+> +		panic("%s: Failed to allocate %lu bytes align=3D%lx\n",
+> +		      __func__, swiotlbsize, PAGE_SIZE);
+> =20
+>  	if (swiotlb_init_with_tbl(octeon_swiotlb, swiotlb_nslabs, 1) =3D=3D -EN=
+OMEM)
+>  		panic("Cannot allocate SWIOTLB buffer");
 
-Acked-by: Paul Burton <paul.burton@mips.com> # MIPS part
+That one should be %zu rather than %lu. The rest looks good, so with
+that one tweak:
+
+    Acked-by: Paul Burton <paul.burton@mips.com> # MIPS parts
 
 Thanks,
     Paul
