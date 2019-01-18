@@ -2,91 +2,59 @@ Return-Path: <SRS0=AYvg=P2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA55C43387
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 06:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0ED05C43387
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 08:29:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0EBE420652
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 06:42:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linaro.org header.i=@linaro.org header.b="a2dm8hcx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0EBE420652
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linaro.org
+	by mail.kernel.org (Postfix) with ESMTPS id 5B85720823
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 08:29:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B85720823
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43grwD0jnbzDqsK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 17:42:20 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43grtc591WzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 17:40:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43gvHV192WzDqvh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 18 Jan 2019 19:29:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="a2dm8hcx"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43grtc4Hxrz8sX5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 17:40:56 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43grtc3mh2z9sML; Fri, 18 Jan 2019 17:40:56 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linaro.org
- (client-ip=2607:f8b0:4864:20::d42; helo=mail-io1-xd42.google.com;
- envelope-from=firoz.khan@linaro.org; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linaro.org header.i=@linaro.org header.b="a2dm8hcx"; 
- dkim-atps=neutral
-Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com
- [IPv6:2607:f8b0:4864:20::d42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.210.54; helo=mail-ot1-f54.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=debian.org
+Received: from mail-ot1-f54.google.com (mail-ot1-f54.google.com
+ [209.85.210.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43grtb4Y0sz9sLt
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2019 17:40:54 +1100 (AEDT)
-Received: by mail-io1-xd42.google.com with SMTP id b23so9871476ios.10
- for <linuxppc-dev@ozlabs.org>; Thu, 17 Jan 2019 22:40:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linaro.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=DivQhHVEK17txxqL8dBhADceyH1FHxo8gm6BaEKlYpg=;
- b=a2dm8hcxEUTIlZYOq5qkP+BCsKZiYHrT3Cvs/OCDOT2bTj++FJnJ44tQs/a7S5mB/t
- ezvhe1rY79vzUGB3DRZ7dBmRLYshO/6pevDBxOMhaWk/Owz57XSmVEY5/2GKUs6jM1zm
- /duiAgIohkuXjCGDnozBHbAHPV0GeLJjqC+FU=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43gvFW0KL6zDqrM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 19:27:26 +1100 (AEDT)
+Received: by mail-ot1-f54.google.com with SMTP id v23so13661680otk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2019 00:27:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=DivQhHVEK17txxqL8dBhADceyH1FHxo8gm6BaEKlYpg=;
- b=L8Ro4kb4A+hlj6QdZ0XGg4l3sCIegB58HYRdPzM5mw+63PXuoA8/JCq0n4lhY2hDXF
- D24EQ0zhR+wm2NJl5nolGpx5oG6EngsI4FtSH1A4Y81zgO1eoL84JEsHVyTbRd21kslq
- 75q6YBw9v+oeLwVeoD7OJGeKyBT9tOipja4K5f6E2YrlsK6YTRUO9RWYAP9B20YOWfcB
- WVyKJG6SoTJAyTPyhkhpzH2w3B+uycTaD5a//CdFijTeuIPuNVAI0LQBpGY70u0v3Xz2
- OgTeUgmclX3bTq8OXjoUUxOUoeuhZRpWGQh9wvciuSOMCvya1ALluuYJ6ortk1GwSEQE
- cfXQ==
-X-Gm-Message-State: AJcUukeXy9WFGvPMJFbWxsfxJdbnuFahd+eyYVatt0cVYtBSA7ZPH/ou
- zd+6epCZsQjbk4LBomdTlE0M4fmjj682eJ3rREL9Gg==
-X-Google-Smtp-Source: ALg8bN6oVd/C2b+ihS782voX8q9CS85GOxQdLSAd+a3Ni/gsypF/libUzlFm8l9pY3GOxmyTAbG9mYGdyfpHZ9qEU10=
-X-Received: by 2002:a6b:4106:: with SMTP id n6mr9549458ioa.171.1547793652874; 
- Thu, 17 Jan 2019 22:40:52 -0800 (PST)
+ h=x-gm-message-state:mime-version:from:date:message-id:subject:to;
+ bh=MtQ/VdaFajP08UEagSHbe13lpSuaQTRJiTyrcAa5DlA=;
+ b=p/WpxnUSopfW5X84tVYQurZkj+wSiFDzcIlpmQztvTO9viQPWIWOKIPNUo5hp42xFc
+ DcMZox57oSFz2beKuHSOVA3OOdp7wkBzP/imZoBwqkd7xuA6ZNI6wCGmvnbL7oR0qpju
+ FJolN/HxsArTZTIRavyW50RfKxAdARfzIGZa6y8OA8odZTOpsiZPVJxnEetQ9yDMrp3N
+ kAlri16DcL+KjH14ksCqjkOSDWILHCHEkBThVqSfg12jwc5SE2ZZxSbqC0c0SsMRy235
+ bz70fGJX1J5wlBiYCgCeeQodquC+ceXHz9Q2Ogtv4x0oqM/yIPtcB5dxBl1gVLiEtjhr
+ AlkA==
+X-Gm-Message-State: AJcUukea1D5aj7veBLVW+LGn5g6lN6SssN7U4wIgHFZ44DjUxuecZ23l
+ a63YRBLlIX/L8HT/6qHJ06eARhyNrmWGd4ZOQyDJxT8Y
+X-Google-Smtp-Source: ALg8bN531XOQBBm1tsyGP5wAC+ugFGzOcb1BPK3V0LMO/lm8mcEquNkYQ81ihThs16gh3nPQ/xA+xgJI90R5RLQwj+0=
+X-Received: by 2002:a9d:628:: with SMTP id 37mr11481357otn.58.1547800043947;
+ Fri, 18 Jan 2019 00:27:23 -0800 (PST)
 MIME-Version: 1.0
-References: <20190116132714.20094-1-mpe@ellerman.id.au>
- <20190116132714.20094-5-mpe@ellerman.id.au>
- <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
-In-Reply-To: <CAK8P3a2EmiT+hEmj40i1ihZM1ecK2Q42zknWNLRbgYeuOyJgrg@mail.gmail.com>
-From: Firoz Khan <firoz.khan@linaro.org>
-Date: Fri, 18 Jan 2019 12:10:41 +0530
-Message-ID: <CALxhOniuaifL+y03AcTsOKkgUe_45JZXbTiMipOOXEM5yqV8dA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 5/5] powerpc/syscalls: Allow none instead of
- sys_ni_syscall
-To: Arnd Bergmann <arnd@arndb.de>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 18 Jan 2019 09:27:13 +0100
+Message-ID: <CA+7wUszR08xgO0e6xU7-kW1SdpxsHpy3dOvg8_HT9JoQ=1UuNg@mail.gmail.com>
+Subject: Re: ptrace compile failure with gcc-8.2 on 32-bit powerpc
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Meelis Roos <mroos@linux.ee>,
+ Michael Ellerman <mpe@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -99,39 +67,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Arnd,
+> Yeah I noticed this just yesterday.
 
-On Wed, 16 Jan 2019 at 19:23, Arnd Bergmann <arnd@arndb.de> wrote:
->
-> On Wed, Jan 16, 2019 at 2:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > @@ -24,28 +24,28 @@
-> >  14     common  mknod                           sys_mknod
-> >  15     common  chmod                           sys_chmod
-> >  16     common  lchown                          sys_lchown
-> > -17     common  break                           sys_ni_syscall
-> > -18     32      oldstat                         sys_stat                        sys_ni_syscall
-> > -18     64      oldstat                         sys_ni_syscall
-> > +17     common  break                           none
-> > +18     32      oldstat                         sys_stat                        none
-> > +18     64      oldstat                         none
->
-> The '64 oldstat' line can simply get dropped here, it has no value
-> (I failed to notice this earlier).
+Just FYI this has been accepted as regression in gcc, and fixed is
+provided for GCC 9.0:
 
-The initial requirement is to replace uapi and syscalltbl file with
-the script as it is.
-If I'm right, for oldstat has uapi header and syscalltbl entry is
-sys_ni_syscall. So
-the above change will replace uapi and syscalltbl as it is.
-
-We'll do a cleanup for all 10 architectures, so that time we can
-remove this (and similer)
-entries.
-
-Thanks
-Firoz
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88273
