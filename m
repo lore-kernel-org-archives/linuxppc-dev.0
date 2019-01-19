@@ -2,76 +2,82 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C9BC61CE4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 14:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AF58C61CE4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 16:01:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08BDE2086D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 14:31:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5B491205C9
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 16:01:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.b="NR2Et1dr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08BDE2086D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=armlinux.org.uk
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="T50w2nOp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B491205C9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43hgHS1KNJzDr19
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Jan 2019 01:31:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43hjHB52zZzDr1R
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Jan 2019 03:01:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=armlinux.org.uk
- (client-ip=2001:4d48:ad52:3201:214:fdff:fe10:1be6;
- helo=pandora.armlinux.org.uk;
- envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none)
- header.from=armlinux.org.uk
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=armlinux.org.uk header.i=@armlinux.org.uk
- header.b="NR2Et1dr"; dkim-atps=neutral
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=roeck-us.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="T50w2nOp"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43hgFj0KMqzDql0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jan 2019 01:30:16 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=armlinux.org.uk; s=pandora-2014; h=Sender:In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=d63QEDmnrldHslsD9mf7nQ3yGthqTGS5pzxH/xWmhF0=; b=NR2Et1druix8/4pNwnuT+RILu
- 9d1Rxv6XWz1TN+9FqQ/p/P7acLs7c7trws/Jg8fG3MPHsJWvYLs9TlllAhF873aPPG/2SMtV0ge2K
- NorzWF9puUKyS/b5Aid7zX6nzfqByLov3FnZBmN2/p8vSFlBK8+rFnheOM8d1SGvO/EXM=;
-Received: from e5254000004ec.dyn.armlinux.org.uk
- ([2002:4e20:1eda:1:5054:ff:fe00:4ec]:35354 helo=shell.armlinux.org.uk)
- by pandora.armlinux.org.uk with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256) (Exim 4.90_1)
- (envelope-from <linux@armlinux.org.uk>)
- id 1gkrcD-0006gO-Mk; Sat, 19 Jan 2019 14:28:53 +0000
-Received: from linux by shell.armlinux.org.uk with local (Exim 4.89)
- (envelope-from <linux@shell.armlinux.org.uk>)
- id 1gkrcC-0002s2-N7; Sat, 19 Jan 2019 14:28:52 +0000
-Date: Sat, 19 Jan 2019 14:28:52 +0000
-From: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-To: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH v2 29/29] y2038: add 64-bit time_t syscalls to all 32-bit
- architectures
-Message-ID: <20190119142852.cntdihah4mpa3lgx@e5254000004ec.dyn.armlinux.org.uk>
-References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-30-arnd@arndb.de>
- <CALCETrXqM5mhvwreN5y-9K99h1j9rs9MAVK-cNLC54s1fdHA6w@mail.gmail.com>
- <CAK8P3a0V+xboaGAF2nqrYtpjXXA7y0LcvCKi4ngLTus1D_XZBA@mail.gmail.com>
- <CALCETrWPj6dHEyo=AELoVjXGsiwuSpRp17x3CEWBHvp7i3cy+Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43hjFP33x5zDqx1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jan 2019 03:00:08 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id p8so7728854plo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 08:00:08 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:mime-version:status:lines
+ :content-transfer-encoding;
+ bh=DMNTSdjq7FbZTDZ9c+AvK8qmgt4eJ0hzXjL7rDvdBV0=;
+ b=T50w2nOpNYrMvTGEry5nHW9qdZeSwcRR1L9KBxdonuR+IoGxDybQXDI371F50kF6/D
+ X3bqG0D14kI6ezBEaA+VLTOKeFz55KnHMdeM4m8sRz7gSnUn3kDn3xeyRiC5NURyhoqf
+ LzwbXCFlmG0T4Qja0lnEX8+v+vrIGygg6KCZQBXqJoUPIwychcoybkEeQj4HZvPldJcg
+ Pf+g7jeiY5yelo7TwNjEKXZ0+IxuoK2oRaq4Fkd7MmbSx4NK3kG1+V6jZkZp0SjyByrj
+ oZXwWChQXGUOX+SwoTB4gTTdz1iqNttcWKPegEdnZPVqG04oqOH2uh9uYUwwXRI9onB4
+ tL7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :mime-version:status:lines:content-transfer-encoding;
+ bh=DMNTSdjq7FbZTDZ9c+AvK8qmgt4eJ0hzXjL7rDvdBV0=;
+ b=tfsltVRbjn2jeJUuttJAUdzkuzhmML3KTGNGjJ5JYCJV3Z/8J1uG+wSPz0ny49Sjfi
+ JJyjQcD09zymoqS9nyFsa9iXz65vmhC2T6Rtt5gK/GwUBGUh2JXpiOb0MB2W7QkmKDyC
+ XI5OlmDofU8fh9Y/CAncqjOFAvaSLXZVlQ9+0wKCubZ47oEkgzxc8qXo2v5xEF2PoAA9
+ Bo45oORsxXpNJhxvAtPyfltQnjA6E1NJ+BxarBtje3x2jdJvNz9k0xeguWizotKsy1GI
+ OiBzSos1mUev703t7trrNWMPEqsVRUfz7QvWBP9x6jspSgmyLzUmNxEFdkjfKqf9qi0M
+ c3JA==
+X-Gm-Message-State: AJcUukd89HLjo8usoGNKh410TGnpoUdMX8F3aWJTNIkPw1ifsSX7oZ0a
+ b5r50eyUNsrogkBI8qOC4OE=
+X-Google-Smtp-Source: ALg8bN6s2HkcSmBzgSlyWHGf1yhK2wH1aHXHs7kMuDB8GkzkGbpsGMo0WqEbrsfsWw+uCgJdXH8cUA==
+X-Received: by 2002:a17:902:6b87:: with SMTP id
+ p7mr23708705plk.282.1547913606687; 
+ Sat, 19 Jan 2019 08:00:06 -0800 (PST)
+Received: from localhost ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+ by smtp.gmail.com with ESMTPSA id w185sm11238567pfb.135.2019.01.19.08.00.05
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sat, 19 Jan 2019 08:00:05 -0800 (PST)
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: chrp: Use device_type helpers to access the node type
+Date: Sat, 19 Jan 2019 07:59:58 -0800
+Message-Id: <1547913598-5471-1-git-send-email-linux@roeck-us.net>
+X-Mailer: git-send-email 2.7.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CALCETrWPj6dHEyo=AELoVjXGsiwuSpRp17x3CEWBHvp7i3cy+Q@mail.gmail.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,86 +89,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- Linux-sh list <linux-sh@vger.kernel.org>, Will Deacon <will.deacon@arm.com>,
- linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
- Network Development <netdev@vger.kernel.org>,
- Deepa Dinamani <deepa.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>, Helge Deller <deller@gmx.de>,
- X86 ML <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Firoz Khan <firoz.khan@linaro.org>,
- Matt Turner <mattst88@gmail.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- alpha <linux-alpha@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+Cc: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 11:53:25AM -0800, Andy Lutomirski wrote:
-> On Fri, Jan 18, 2019 at 11:33 AM Arnd Bergmann <arnd@arndb.de> wrote:
-> >
-> > On Fri, Jan 18, 2019 at 7:50 PM Andy Lutomirski <luto@kernel.org> wrote:
-> > > On Fri, Jan 18, 2019 at 8:25 AM Arnd Bergmann <arnd@arndb.de> wrote:
-> > > > - Once we get to 512, we clash with the x32 numbers (unless
-> > > >   we remove x32 support first), and probably have to skip
-> > > >   a few more. I also considered using the 512..547 space
-> > > >   for 32-bit-only calls (which never clash with x32), but
-> > > >   that also seems to add a bit of complexity.
-> > >
-> > > I have a patch that I'll send soon to make x32 use its own table.  As
-> > > far as I'm concerned, 547 is *it*.  548 is just a normal number and is
-> > > not special.  But let's please not reuse 512..547 for other purposes
-> > > on x86 variants -- that way lies even more confusion, IMO.
-> >
-> > Fair enough, the space for those numbers is cheap enough here.
-> > I take it you mean we also should not reuse that number space if
-> > we were to decide to remove x32 soon, but you are not worried
-> > about clashing with arch/alpha when everything else uses consistent
-> > numbers?
-> >
-> 
-> I think we have two issues if we reuse those numbers for new syscalls.
-> First, I'd really like to see new syscalls be numbered consistently
-> everywhere, or at least on all x86 variants, and we can't on x32
-> because they mean something else.  Perhaps more importantly, due to
-> what is arguably a rather severe bug, issuing a native x86_64 syscall
-> (x32 bit clear) with nr in the range 512..547 does *not* return
-> -ENOSYS on a kernel with x32 enabled.  Instead it does something that
-> is somewhat arbitrary.  With my patch applied, it will return -ENOSYS,
-> but old kernels will still exist, and this will break syscall probing.
-> 
-> Can we perhaps just start the consistent numbers above 547 or maybe
-> block out 512..547 in the new regime?
+The node type can no longer be accessed directly, resulting in the
+following build error. Use accessor function instead.
 
-I don't think you gain much with that kind of scheme - it won't take
-very long before an architecture misses having a syscall added, and
-then someone else adds their own.  Been there with ARM - I was keeping
-the syscall table in the same order as x86 for new syscalls, but now
-that others have been adding syscalls to the table since I converted
-ARM to the tabular form, that's now gone out the window.
+arch/powerpc/platforms/chrp/setup.c: In function ‘chrp_init_IRQ’:
+arch/powerpc/platforms/chrp/setup.c:541:33: error:
+	‘struct device_node’ has no member named ‘type’
 
-So, I think it's completely pointless to do what you're suggesting.
-We'll just end up with a big hole in the middle of the syscall table
-and then revert back to random numbering of syscalls thereafter again.
+Fixes: 8ce5f8415753 ("of: Remove struct device_node.type pointer")
+Cc: Rob Herring <robh@kernel.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ arch/powerpc/platforms/chrp/setup.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index e66644e0fb40..c79f626502bf 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -538,8 +538,7 @@ static void __init chrp_init_IRQ(void)
+ 	/* see if there is a keyboard in the device tree
+ 	   with a parent of type "adb" */
+ 	for_each_node_by_name(kbd, "keyboard")
+-		if (kbd->parent && kbd->parent->type
+-		    && strcmp(kbd->parent->type, "adb") == 0)
++		if (kbd->parent && of_node_is_type(kbd->parent, "adb"))
+ 			break;
+ 	of_node_put(kbd);
+ 	if (kbd)
 -- 
-RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 12.1Mbps down 622kbps up
-According to speedtest.net: 11.9Mbps down 500kbps up
+2.7.4
+
