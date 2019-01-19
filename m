@@ -2,84 +2,66 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4991C61CE8
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 11:55:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 492B5C61CE4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 13:02:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F4242084C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 11:55:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 65CAE2086D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 13:02:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="SBUX9syG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F4242084C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="x2mZvkm7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 65CAE2086D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43hbpZ4QgMzDqpL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 22:55:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43hdHz16g0zDr10
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 20 Jan 2019 00:02:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::7; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=vkoul@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="SBUX9syG"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="x2mZvkm7"; 
  dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::7])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43hdFy06QvzDqnF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Jan 2019 00:00:21 +1100 (AEDT)
+Received: from localhost (unknown [122.178.235.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43hbmP20ntzDr3G
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 22:53:08 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1547898783;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=vARq1cGS//INRMMLH9lnSOofzwKkiFX8otQWVQoOaRU=;
- b=SBUX9syG+omtDc8Tjqehl8mMdMnkFXROh5SUfHNVl3V9Ui94XEzuIYJ1cWy0Bs/6kH
- 4OVDmsMNvJN8xSjAjuT2NEHGd8lD/vz+8ZIytpGqZsQWkGo2rmABVh9SZZqyC3a8Ctz6
- 6v30pk+tLF9Qe8vASzMmP/wllzODkzO5PZj59FiAgtANcvv/83VvNloSUknVokNsRf7C
- czZ4A4HSPERIbLt05RdrYWmbJmR5rrz851OSw5xR7KWSu4HjNaB0lzr2vIgE5oZkdSPr
- IytvrELAVBwMpVomvkzR1HwIHDYOHbhaSZ5EaJzc/hNN5DJjcdT00MC/PDazcrDyN+5h
- VaBQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkL2i4gEPjvTsV+g6fCctWoeoah8A=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:4dec:9113:8f36:c6c8]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0JBqrDGy
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Sat, 19 Jan 2019 12:52:53 +0100 (CET)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: Christoph Hellwig <hch@lst.de>
-References: <20190115133558.GA29225@lst.de>
- <685f0c06-af1b-0bec-ac03-f9bf1f7a2b35@xenosoft.de>
- <20190115151732.GA2325@lst.de>
- <e9345547-4dc6-747a-29ec-6375dc8bfe83@xenosoft.de>
- <20190118083539.GA30479@lst.de>
- <871403f2-fa7d-de15-89eb-070432e15c69@xenosoft.de>
- <20190118112842.GA9115@lst.de>
- <a2ca0118-5915-8b1c-7cfa-71cb4b43eaa6@xenosoft.de>
- <20190118121810.GA13327@lst.de>
- <eceebeda-0e18-00f6-06e7-def2eb0aa961@xenosoft.de>
- <20190118125500.GA15657@lst.de>
- <e11e61b1-6468-122e-fc2b-3b3f857186bb@xenosoft.de>
- <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
-Message-ID: <b9e5e081-a3cc-2625-4e08-2d55c2ba224b@xenosoft.de>
-Date: Sat, 19 Jan 2019 12:52:52 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by mail.kernel.org (Postfix) with ESMTPSA id 9D79C20821;
+ Sat, 19 Jan 2019 13:00:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1547902818;
+ bh=3CCAL02seb2V7PNjw/dmp1yigpVZKTd9thzpm4sfrfQ=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=x2mZvkm7bZeOyCG0Im/zoLp+mDwvJL1WekPA6kvY2n05RMTXJSUlp07STm5odfL83
+ klzNGujXNAXQ0O4Vj+RuCIDBj1uAlpKBLnPDHjknYCsgcasxY2AuhvrsL4P8zyclTY
+ zJV3lCW2K2brEFnkjoExCf8CalxdfhOu44HcM6wo=
+Date: Sat, 19 Jan 2019 18:28:41 +0530
+From: Vinod Koul <vkoul@kernel.org>
+To: Peng Ma <peng.ma@nxp.com>
+Subject: Re: [PATCH] dmaengine: fsldma: Add 64-bit I/O accessors for powerpc64
+Message-ID: <20190119125841.GE4635@vkoul-mobl>
+References: <20181222043445.GA29462@home.buserror.net>
+ <VI1PR04MB443154AEE42853B62234075EEDBB0@VI1PR04MB4431.eurprd04.prod.outlook.com>
+ <193b66f8bcc52c4900144b4cd742cacd001c9830.camel@buserror.net>
+ <VI1PR04MB4431C33B5155312CF7035584EDBB0@VI1PR04MB4431.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+In-Reply-To: <VI1PR04MB4431C33B5155312CF7035584EDBB0@VI1PR04MB4431.eurprd04.prod.outlook.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,63 +73,123 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Wen He <wen.he_1@nxp.com>, Leo Li <leoyang.li@nxp.com>,
+ Scott Wood <oss@buserror.net>, Zhang Wei <zw@zh-kernel.org>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christoph,
+On 24-12-18, 05:29, Peng Ma wrote:
+> Hi Scott,
+> 
+> Oh, I did not see the in_XX64/out_XX64 supported only __powerpc64__ just now.
+> Thanks for your reminder.
 
-I have found a small workaround. If I add 'mem=3500M' to the boot 
-arguments then it detects the SATA hard disk and boots without any problems.
+Can you send the formal patch for this...
 
-X5000> setenv bootargs root=/dev/sda2 console=ttyS0,115200 mem=3500M
+FWIW, fsl patches were not merged last cycle because of reported
+regression...
 
-Cheers,
-Christian
+> 
+> #ifdef __powerpc64__
+> 
+> #ifdef __BIG_ENDIAN__
+> DEF_MMIO_OUT_D(out_be64, 64, std);
+> DEF_MMIO_IN_D(in_be64, 64, ld);
+> 
+> /* There is no asm instructions for 64 bits reverse loads and stores */
+> static inline u64 in_le64(const volatile u64 __iomem *addr)
+> {
+>         return swab64(in_be64(addr));
+> }
+> 
+> static inline void out_le64(volatile u64 __iomem *addr, u64 val)
+> {
+>         out_be64(addr, swab64(val));
+> }
+> #else
+> DEF_MMIO_OUT_D(out_le64, 64, std);
+> DEF_MMIO_IN_D(in_le64, 64, ld);
+> 
+> /* There is no asm instructions for 64 bits reverse loads and stores */
+> static inline u64 in_be64(const volatile u64 __iomem *addr)
+> {
+>         return swab64(in_le64(addr));
+> }
+> 
+> static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+> {
+>         out_le64(addr, swab64(val));
+> }
+> 
+> #endif
+> #endif /* __powerpc64__ */
+> 
+> Best Regards,
+> Peng
+> >-----Original Message-----
+> >From: Scott Wood <oss@buserror.net>
+> >Sent: 2018å¹´12æœˆ24æ—¥ 12:46
+> >To: Peng Ma <peng.ma@nxp.com>; Leo Li <leoyang.li@nxp.com>; Zhang Wei
+> ><zw@zh-kernel.org>
+> >Cc: linuxppc-dev@lists.ozlabs.org; dmaengine@vger.kernel.org; Wen He
+> ><wen.he_1@nxp.com>
+> >Subject: Re: [PATCH] dmaengine: fsldma: Add 64-bit I/O accessors for
+> >powerpc64
+> >
+> >On Mon, 2018-12-24 at 03:42 +0000, Peng Ma wrote:
+> >> Hi Scott,
+> >>
+> >> You are right, we should support powerpc64, so could I changed it as
+> >> fallows:
+> >>
+> >> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h index
+> >> 88db939..057babf 100644
+> >> --- a/drivers/dma/fsldma.h
+> >> +++ b/drivers/dma/fsldma.h
+> >> @@ -202,35 +202,10 @@ struct fsldma_chan {
+> >>  #define fsl_iowrite32(v, p)    out_le32(p, v)
+> >>  #define fsl_iowrite32be(v, p)  out_be32(p, v)
+> >>
+> >> -#ifndef __powerpc64__
+> >> -static u64 fsl_ioread64(const u64 __iomem *addr) -{
+> >> -       u32 fsl_addr = lower_32_bits(addr);
+> >> -       u64 fsl_addr_hi = (u64)in_le32((u32 *)(fsl_addr + 1)) << 32;
+> >> -
+> >> -       return fsl_addr_hi | in_le32((u32 *)fsl_addr);
+> >> -}
+> >> -
+> >> -static void fsl_iowrite64(u64 val, u64 __iomem *addr) -{
+> >> -       out_le32((u32 __iomem *)addr + 1, val >> 32);
+> >> -       out_le32((u32 __iomem *)addr, (u32)val);
+> >> -}
+> >> -
+> >> -static u64 fsl_ioread64be(const u64 __iomem *addr) -{
+> >> -       u32 fsl_addr = lower_32_bits(addr);
+> >> -       u64 fsl_addr_hi = (u64)in_be32((u32 *)fsl_addr) << 32;
+> >> -
+> >> -       return fsl_addr_hi | in_be32((u32 *)(fsl_addr + 1));
+> >> -}
+> >> -
+> >> -static void fsl_iowrite64be(u64 val, u64 __iomem *addr) -{
+> >> -       out_be32((u32 __iomem *)addr, val >> 32);
+> >> -       out_be32((u32 __iomem *)addr + 1, (u32)val);
+> >> -}
+> >> -#endif
+> >> +#define fsl_ioread64(p)                in_le64(p)
+> >> +#define fsl_ioread64be(p)      in_be64(p)
+> >> +#define fsl_iowrite64(v, p)    out_le64(p, v)
+> >> +#define fsl_iowrite64be(v, p)  out_be64(p, v)
+> >>  #endif
+> >
+> >Then you'll break 32-bit, assuming those fake-it-with-two-32-bit-accesses
+> >were actually needed.
+> >
+> >-Scott
+> >
+> 
 
-
-On 19 January 2019 at 12:40PM, Christian Zigotzky wrote:
-> Hi Christoph,
->
-> I bought a USB null modem RS-232 serial cable today so I was able to 
-> get some SATA error messages.
->
-> Error messages:
->
-> [   13.468538] fsl-sata ffe220000.sata: Sata FSL Platform/CSB Driver init
-> [   13.475106] fsl-sata ffe220000.sata: failed to start port 0 
-> (errno=-12)
-> [   13.481736] fsl-sata ffe221000.sata: Sata FSL Platform/CSB Driver init
-> [   13.488267] fsl-sata ffe221000.sata: failed to start port 0 
-> (errno=-12)
->
-> ---
->
-> errno=-12 = Out of memory
->
-> Please find attached the complete serial log.
->
-> Cheers,
-> Christian
->
->
-> On 18 January 2019 at 4:06PM, Christian Zigotzky wrote:
->> Hello Christoph,
->>
->> I was able to compile 257002094bc5935dd63207a380d9698ab81f0775 from 
->> your Git powerpc-dma.6-debug today.
->>
->> Unfortunately I don't see any error messages (kernel ring buffer) and 
->> I don't have a RS232 serial null modem cable to get them.
->>
->> Cheers,
->> Christian
->>
->>
->
-
+-- 
+~Vinod
