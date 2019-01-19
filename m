@@ -2,62 +2,49 @@ Return-Path: <SRS0=aKpC=P3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADF45C5AE5E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:16:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 952DDC61CE8
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 10:25:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE4E520850
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 03:16:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE4E520850
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
+	by mail.kernel.org (Postfix) with ESMTPS id B193E2084C
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 10:25:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B193E2084C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43hNJk1hlRzDrF0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 14:16:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=iram.es
- (client-ip=130.206.19.138; helo=mx01.puc.rediris.es;
- envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=iram.es
-Received: from mx01.puc.rediris.es (outbound1mad.lav.puc.rediris.es
- [130.206.19.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43hYqG5QbvzDqBx
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 19 Jan 2019 21:25:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43hNGt1HR0zDrB3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 14:15:17 +1100 (AEDT)
-Received: from sim.rediris.es (mta-out04.sim.rediris.es [130.206.24.46])
- (user=smtp-out_iram mech=LOGIN bits=0)
- by mx01.puc.rediris.es  with ESMTP id x0IHIvZD032248-x0IHIvZF032248
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Fri, 18 Jan 2019 18:18:57 +0100
-Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
- by sim.rediris.es (Postfix) with ESMTPS id 2AC0A3957F;
- Fri, 18 Jan 2019 18:18:50 +0100 (CET)
-Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
- by sim.rediris.es (Postfix) with ESMTPS id 0AF0F39581;
- Fri, 18 Jan 2019 18:18:46 +0100 (CET)
-Received: from lt-gp.iram.es (46.246.223.87.dynamic.jazztel.es [87.223.246.46])
- by sim.rediris.es (Postfix) with ESMTPA id 7728C3957F;
- Fri, 18 Jan 2019 18:18:37 +0100 (CET)
-Date: Fri, 18 Jan 2019 18:18:30 +0100
-From: Gabriel Paubert <paubert@iram.es>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 13/29] arch: add split IPC system calls where needed
-Message-ID: <20190118171830.quvvwdgbuhq2nqrh@lt-gp.iram.es>
-References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-14-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43hYnJ02Y8zDqSm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Jan 2019 21:23:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43hYnH30Dqz9sBQ;
+ Sat, 19 Jan 2019 21:23:47 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Mike Rapoport <rppt@linux.ibm.com>
+Subject: Re: [PATCH v13 00/10] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
+In-Reply-To: <cover.1547195976.git.christophe.leroy@c-s.fr>
+References: <cover.1547195976.git.christophe.leroy@c-s.fr>
+Date: Sat, 19 Jan 2019 21:23:46 +1100
+Message-ID: <87zhrx2bf1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190118161835.2259170-14-arnd@arndb.de>
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-FEAS-AUTH-USER: smtp-out_iram
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,48 +56,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- catalin.marinas@arm.com, will.deacon@arm.com, linux-mips@vger.kernel.org,
- jcmvbkbc@gmail.com, deepa.kernel@gmail.com, hpa@zytor.com,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, y2038@lists.linaro.org, deller@gmx.de,
- x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, geert@linux-m68k.org,
- firoz.khan@linaro.org, mattst88@gmail.com, fenghua.yu@intel.com,
- heiko.carstens@de.ibm.com, linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com,
- linux-m68k@lists.linux-m68k.org, luto@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, monstr@monstr.eu, tony.luck@intel.com,
- linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
- linux-kernel@vger.kernel.org, paul.burton@mips.com, ebiederm@xmission.com,
- netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 05:18:19PM +0100, Arnd Bergmann wrote:
-> The IPC system call handling is highly inconsistent across architectures,
-> some use sys_ipc, some use separate calls, and some use both.  We also
-> have some architectures that require passing IPC_64 in the flags, and
-> others that set it implicitly.
-> 
-> For the additon of a y2083 safe semtimedop() system call, I chose to only
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-It's not critical, but there are two typos in that line: 
-additon -> addition
-2083 -> 2038
+> The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
+> moves the thread_info into task_struct.
+>
+> Moving thread_info into task_struct has the following advantages:
+> - It protects thread_info from corruption in the case of stack
+> overflows.
+> - Its address is harder to determine if stack addresses are
+> leaked, making a number of attacks more difficult.
+>
+> Changes since v12:
+>  - Patch 1: Taken comment from Mike (re-introduced the 'panic' in case memblock allocation fails in setup_64.c
+>  - Patch 1: Added alloc_stack() function in setup_32.c to also panic in case of allocation failure.
 
-	Gabriel
+Hi Christophe,
 
-> support the separate entry points, but that requires first supporting
-> the regular ones with their own syscall numbers.
-> 
-> The IPC_64 is now implied by the new semctl/shmctl/msgctl system
-> calls even on the architectures that require passing it with the ipc()
-> multiplexer.
-> 
-> I'm not adding the new semtimedop() or semop() on 32-bit architectures,
-> those will get implemented using the new semtimedop_time64() version
-> that gets added along with the other time64 calls.
-> Three 64-bit architectures (powerpc, s390 and sparc) get semtimedop().
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+I can't get this series to boot on qemu mac99. I'm getting eg:
+
+[    0.981514] NFS: Registering the id_resolver key type
+[    0.981752] Key type id_resolver registered
+[    0.981868] Key type id_legacy registered
+[    0.995711] Unrecoverable exception 0 at 0 (msr=0)
+[    0.996091] Oops: Unrecoverable exception, sig: 6 [#1]
+[    0.996314] BE PAGE_SIZE=4K MMU=Hash PowerMac
+[    0.996617] Modules linked in:
+[    0.996869] CPU: 0 PID: 416 Comm: modprobe Not tainted 5.0.0-rc2-gcc-7.3.0-00043-g53f2de798792 #342
+[    0.997138] NIP:  00000000 LR: 00000000 CTR: 00000000
+[    0.997309] REGS: ef237f50 TRAP: 0000   Not tainted  (5.0.0-rc2-gcc-7.3.0-00043-g53f2de798792)
+[    0.997508] MSR:  00000000 <>  CR: 00000000  XER: 00000000
+[    0.997712] 
+[    0.997712] GPR00: 00000000 ef238000 00000000 00000000 00000000 00000000 00000000 00000000 
+[    0.997712] GPR08: 00000000 00000000 00000000 00000000 00000000 00000000 c006477c ef13d8c0 
+[    0.997712] GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+[    0.997712] GPR24: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 
+[    0.998671] NIP [00000000]   (null)
+[    0.998774] LR [00000000]   (null)
+[    0.998895] Call Trace:
+[    0.999030] Instruction dump:
+[    0.999320] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+[    0.999546] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 60000000 XXXXXXXX XXXXXXXX XXXXXXXX 
+[    1.000023] ---[ end trace 925ea3419844fe68 ]---
+
+I haven't had time to dig any further.
+
+cheers
