@@ -6,57 +6,58 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88ADBC282DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:59:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53E24C282DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:01:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F3F6E2084A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:59:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3F6E2084A
+	by mail.kernel.org (Postfix) with ESMTPS id D1F1C2084A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:01:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1F1C2084A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jlq10wLRzDqWd
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 19:59:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jlrz6k8xzDqLW
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:01:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.67; helo=mail-vs1-f67.google.com;
+ (client-ip=209.85.222.66; helo=mail-ua1-f66.google.com;
  envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-vs1-f67.google.com (mail-vs1-f67.google.com
- [209.85.217.67])
+Received: from mail-ua1-f66.google.com (mail-ua1-f66.google.com
+ [209.85.222.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jlky1wYYzDqWp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:55:54 +1100 (AEDT)
-Received: by mail-vs1-f67.google.com with SMTP id x1so12140759vsc.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:55:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jll70grrzDqWy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:56:02 +1100 (AEDT)
+Received: by mail-ua1-f66.google.com with SMTP id e16so6647462uam.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:56:02 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=kVAtAGarxS4wypP/3eT2eCQTmORwhs++L36a9mWKR3U=;
- b=TBgQi0Sgj8HGtaBBbwAEYwJ4ZLiV+JvOR8eaLFZuT6jGhqdOln7fS1mBP72B5EhsVa
- CWIGRmnDnWz7mO8GIcMxmp80kv6pnWWyzyDH1W9AJVGHuiWAaZjCIz2jeoMm0ddkwr6/
- XL3d0HM3kc+iI7THicjz2tvKDMUCy+Juw30nccngZo6g8/YcgNU5DZI9rDcN6QCIcwdX
- UWXSSLs5wmSlRPKl0qpzFUB91z0cmY2bW7WFmxV3oDcGa3G2V5op03Mb9C5SS2oFbVdd
- AgnTnh/V84JdkbSF+Yb7PMaLbbrmEURuEvYe2Rq1lML8UnFzFqQOgvSRQQqzMHgSkFfb
- ezHw==
-X-Gm-Message-State: AJcUukejyp8As8gdu1CAmVjvknqY3UeM8oYeW1aJAX6IILLzfQXSM8y1
- ep3TV/vteBPtotWgVWFIMBF9Q2+l86CocfJFrMQ=
-X-Google-Smtp-Source: ALg8bN5Be0knSu5403sgnyKm3buMMWtoe1G93e4U+oAPSmiCzzcvAtemg3VTW+OqtwtQMKyCtP28wB0QbzIKsvryMUI=
-X-Received: by 2002:a67:b60d:: with SMTP id d13mr12198772vsm.152.1548060951904; 
- Mon, 21 Jan 2019 00:55:51 -0800 (PST)
+ bh=OJScdj9p18oAEvTl9TNP9AzhiR3NeXZIyKQOy3xgTy8=;
+ b=bJ6COyScclWEYr6oA3F12oY3AsJT0IprU5QDMQAl/uAcqBMgQrBg4be5Mdkcd4i+Mu
+ 9rZ8wbfxbWdEc/T0n65afQTXQU215OZuUovtH24ABP5LtsJ1pwTSoMwrqYvB2PDf6ev6
+ zzUUfQr2lbNlrT7BlDlhahBKxMxvwB7tOLejRJF7e3Z739RKvQsQtTt/Phs6/XoaXYQP
+ pOGDsDA43ZNiwc6ydR2nez3tI2Y5FvOA8DgUAQ/DTcUtQ7DIv16+5thRN9W7nxXs3nKN
+ +AFFo2+Hc/GZ9XYO7EYxVmCVEZrQFL8adIhcU9xJmoggt5uYWegeUpKSj0YGpe7RI3Cc
+ M9+g==
+X-Gm-Message-State: AJcUukeNkI2skGeI4rCV9gYQt47My45KZ46i3f/dXWxt0rFhBS47qWSB
+ uymr5TUxlvJRfx5vPtmIH+ah7gyOiToKrjevjBE=
+X-Google-Smtp-Source: ALg8bN4uFN3zWGMaGcasO6usU7NqldPno3Vg0buANjUHshxvHAfNTtSuQ7VautHVX5df0UK1s1iotaDgJP2GFGxetwA=
+X-Received: by 2002:ab0:7251:: with SMTP id d17mr11840905uap.0.1548060960356; 
+ Mon, 21 Jan 2019 00:56:00 -0800 (PST)
 MIME-Version: 1.0
 References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-9-arnd@arndb.de>
-In-Reply-To: <20190118161835.2259170-9-arnd@arndb.de>
+ <20190118161835.2259170-15-arnd@arndb.de>
+In-Reply-To: <20190118161835.2259170-15-arnd@arndb.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 21 Jan 2019 09:55:38 +0100
-Message-ID: <CAMuHMdUH+vJ89O6-Qm1p9r6h30z2ZRred1aQd6=h0sk6xXULMQ@mail.gmail.com>
-Subject: Re: [PATCH v2 08/29] m68k: assign syscall number for seccomp
+Date: Mon, 21 Jan 2019 09:55:48 +0100
+Message-ID: <CAMuHMdWaJyNqUeq4qu3AgU0fYrQdZ_zbo0DFFiM97Y5HESYYnA@mail.gmail.com>
+Subject: Re: [PATCH v2 14/29] arch: add pkey and rseq syscall numbers
+ everywhere
 To: Arnd Bergmann <arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -105,16 +106,38 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On Fri, Jan 18, 2019 at 5:20 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> Most architectures have assigned a numbers for the seccomp syscall
-> even when they do not implement it.
+> Most architectures define system call numbers for the rseq and pkey system
+> calls, even when they don't support the features, and perhaps never will.
 >
-> m68k is an exception here, so for consistency lets add the number.
-> Unless CONFIG_SECCOMP is implemented, the system call just
-> returns -ENOSYS.
+> Only a few architectures are missing these, so just define them anyway
+> for consistency. If we decide to add them later to one of these, the
+> system call numbers won't get out of sync then.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
+>  arch/m68k/kernel/syscalls/syscall.tbl   | 4 ++++
+
+> --- a/arch/m68k/kernel/syscalls/syscall.tbl
+> +++ b/arch/m68k/kernel/syscalls/syscall.tbl
+> @@ -388,6 +388,10 @@
+>  378    common  pwritev2                        sys_pwritev2
+>  379    common  statx                           sys_statx
+>  380    common  seccomp                         sys_seccomp
+> +381    common  pkey_alloc                      sys_pkey_alloc
+> +382    common  pkey_free                       sys_pkey_free
+> +383    common  pkey_mprotect                   sys_pkey_mprotect
+> +384    common  rseq                            sys_rseq
+
+Note that all architectures that already define pkey syscalls, list
+pkey_mprotect
+first.
+
+Regardless, for m68k:
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+>  # room for arch specific calls
+>  393    common  semget                          sys_semget
+>  394    common  semctl                          sys_semctl
 
 Gr{oetje,eeting}s,
 
