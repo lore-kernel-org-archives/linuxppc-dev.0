@@ -3,60 +3,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81996C282F6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:05:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80B8CC282DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:07:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00F75214DA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:05:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00F75214DA
+	by mail.kernel.org (Postfix) with ESMTPS id 06C7B2085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:07:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06C7B2085A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jlyM3QS5zDqYV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:05:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jm011lS9zDqJV
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:07:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.67; helo=mail-vs1-f67.google.com;
+ (client-ip=209.85.217.65; helo=mail-vs1-f65.google.com;
  envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-vs1-f67.google.com (mail-vs1-f67.google.com
- [209.85.217.67])
+Received: from mail-vs1-f65.google.com (mail-vs1-f65.google.com
+ [209.85.217.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jllT1WrlzDqX0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:56:21 +1100 (AEDT)
-Received: by mail-vs1-f67.google.com with SMTP id e7so12171851vsc.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:56:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jllb0Vm1zDqFY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:56:26 +1100 (AEDT)
+Received: by mail-vs1-f65.google.com with SMTP id e7so12171979vsc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:56:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=Uun2AU3eJW+aX9fhOUjPPIC4XfawfY9i9oS9NgvU6Z4=;
- b=VjnAXF2FCXPOlhhOx/k7mCIwWDFF1hjf68bfUm6lvhYe+mEK7Zzlyx8ePskgjdKUTw
- m12EUGOeX3KctrZWQavPMkCMbaO0fWZBkIXy3AJqMg32AbUJumi9GQTe8iSsctiVy63H
- hZXaq2HF5MrIIrEMU8Mw4gcomPUB5/p/Mek8njocfNj84oB6AdMefkNH9dpaiTrpkm+T
- kbWvKVBNMFJvNz7AcQA3vnkclzwvu495BGD8UbFdqhipvUgXrl9WbSsGsny4RaIYlJ04
- b4XJm+cAie4NjZRdF5tlGQGMkNYK1gK9gnfWT9mEnxcor3NUS9L4CFm7sm54TyJpHfb1
- 1cFA==
-X-Gm-Message-State: AJcUukc6xrTfMI2BQ3ermNojNR3+jC1Q3BlvJONz1sFdQcv8D+yNUSuu
- r+SKNDJtnsUzx8Q9B8DzRCCbqGpgye+W3XdQTrE=
-X-Google-Smtp-Source: ALg8bN5Zv5T9HgEze01gQpDUuzyqM6YeldP0GcLXE8vieJqOlkOh/z7Dnz2dgUAbu8nwMIPAviPimX4i+NMBPPzq9wY=
-X-Received: by 2002:a67:f43:: with SMTP id 64mr11966034vsp.166.1548060979206; 
- Mon, 21 Jan 2019 00:56:19 -0800 (PST)
+ bh=gZ5xKfwCuPvjsbs8ypviK2wVON115JbrXd6QLz3o9YM=;
+ b=p7DST2AwkVpd4dZlh5g0hOEdM0YtLu31GkCuU7nYybNuRG6ye+ra3K0KbDUsf1GTmF
+ 2sSEagL384mKEYNk0u1kevhy/chWMiJSKl6lM3ht+1MaGus7XXNAyKNgJjF86Gj85LZT
+ upvDVSS7KWLru7OQdCcUUOked+7oh3TYQdMRmm9Ebw096FqixXu+GrZXWP8/N5BHslv0
+ tyr/D3W8XXJX24HgGYgu7xAUtgHIH8ibURqmwlVPlQNQLIT1C7CG7KXnbkVGfOQTOmrB
+ vbUTmpTgzlbHA8Tp+rd18kzzCmg/6jktXid2TDs6O4aI93ntSojhGmc7a/185EJsiEaB
+ abAQ==
+X-Gm-Message-State: AJcUukeYSskQB8pouKAtHlCwGOAI3f8Xf1nyt+AHOUmToC59Lk3CQlMJ
+ 1phg5CODP3g87yZokoi/b/Mz89IZ0ZUpxDB2q7k=
+X-Google-Smtp-Source: ALg8bN6oQTjQTvMkhu0RSRQU3eG9DnGNZiAO15hurqtwS01M6srTDPs1MhTBku760Abay4RjwT0+IVQlARbp3cdEMM8=
+X-Received: by 2002:a67:c202:: with SMTP id i2mr11527790vsj.11.1548060984197; 
+ Mon, 21 Jan 2019 00:56:24 -0800 (PST)
 MIME-Version: 1.0
 References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-29-arnd@arndb.de>
-In-Reply-To: <20190118161835.2259170-29-arnd@arndb.de>
+ <20190118161835.2259170-30-arnd@arndb.de>
+In-Reply-To: <20190118161835.2259170-30-arnd@arndb.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 21 Jan 2019 09:56:06 +0100
-Message-ID: <CAMuHMdVxSVpP0KcBpCSVh0iKBCh3WtGqExtZGPH86hn2TOpTXg@mail.gmail.com>
-Subject: Re: [PATCH v2 28/29] y2038: rename old time and utime syscalls
+Date: Mon, 21 Jan 2019 09:56:11 +0100
+Message-ID: <CAMuHMdV2z_nacfpuqatsy6cer_7xy+7-i0MhJNbNdcz7Aw-fSw@mail.gmail.com>
+Subject: Re: [PATCH v2 29/29] y2038: add 64-bit time_t syscalls to all 32-bit
+ architectures
 To: Arnd Bergmann <arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -104,38 +105,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 5:21 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> The time, stime, utime, utimes, and futimesat system calls are only
-> used on older architectures, and we do not provide y2038 safe variants
-> of them, as they are replaced by clock_gettime64, clock_settime64,
-> and utimensat_time64.
+On Fri, Jan 18, 2019 at 5:25 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> This adds 21 new system calls on each ABI that has 32-bit time_t
+> today. All of these have the exact same semantics as their existing
+> counterparts, and the new ones all have macro names that end in 'time64'
+> for clarification.
 >
-> However, for consistency it seems better to have the 32-bit architectures
-> that still use them call the "time32" entry points (leaving the
-> traditional handlers for the 64-bit architectures), like we do for system
-> calls that now require two versions.
+> This gets us to the point of being able to safely use a C library
+> that has 64-bit time_t in user space. There are still a couple of
+> loose ends to tie up in various areas of the code, but this is the
+> big one, and should be entirely uncontroversial at this point.
 >
-> Note: We used to always define __ARCH_WANT_SYS_TIME and
-> __ARCH_WANT_SYS_UTIME and only set __ARCH_WANT_COMPAT_SYS_TIME and
-> __ARCH_WANT_SYS_UTIME32 for compat mode on 64-bit kernels. Now this is
-> reversed: only 64-bit architectures set __ARCH_WANT_SYS_TIME/UTIME, while
-> we need __ARCH_WANT_SYS_TIME32/UTIME32 for 32-bit architectures and compat
-> mode. The resulting asm/unistd.h changes look a bit counterintuitive.
->
-> This is only a cleanup patch and it should not change any behavior.
+> In particular, there are four system calls (getitimer, setitimer,
+> waitid, and getrusage) that don't have a 64-bit counterpart yet,
+> but these can all be safely implemented in the C library by wrapping
+> around the existing system calls because the 32-bit time_t they
+> pass only counts elapsed time, not time since the epoch. They
+> will be dealt with later.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
->  arch/m68k/include/asm/unistd.h              |  4 ++--
->  arch/m68k/kernel/syscalls/syscall.tbl       | 10 +++++-----
+>  arch/m68k/kernel/syscalls/syscall.tbl       | 20 +++++++++
 
 For m68k:
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
+
 Gr{oetje,eeting}s,
 
                         Geert
-
 
 --
 Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
