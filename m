@@ -2,84 +2,88 @@ Return-Path: <SRS0=gbiG=P5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31E36C282DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:26:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD670C282DB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:32:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 647FA20989
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:26:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3A3F3214DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:32:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="FspUHSpg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 647FA20989
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="hIytj5Bo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A3F3214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jmPd1m6JzDqXK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:25:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jmYH20vjzDqXT
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:32:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::d43; helo=mail-io1-xd43.google.com;
- envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="FspUHSpg"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="hIytj5Bo"; 
  dkim-atps=neutral
-Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com
- [IPv6:2607:f8b0:4864:20::d43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jmMf6wvzzDqTC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 20:24:14 +1100 (AEDT)
-Received: by mail-io1-xd43.google.com with SMTP id s8so3541056iob.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 01:24:14 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=OL2n5Xw7y8Ptr0DjBBqoBVn5ATX7sgHlxy4qXLn+gjs=;
- b=FspUHSpgPEzwu1muclAAi7XviMZms13m3cDHuKxYXJ1txn+rRvpIutGfSdYUg7uztB
- xf0plqq0jVHk+Pma9VT7cern26/a8LJVbBatAa3FYL3i5PBIOHtm56/rU9RGR2aoG+aS
- qBasWBA/Rf93rMpK4ZyhYU2beT1DCU5/OgeFih4+RDeMdtTAkWX5eF2E5Fg9/bp2jwy5
- l02kCcVUVVtUEnM85o34JZc0TVb8sMXotrDgNecM1ButMpxJXVUpMt8ZVp2txQ+dq65o
- X6EDHO4CRm8RBQwadx4ejWA7kEK1d/UA6v3wT6M+YKVf2K1mmZn6ypDjll8rRH1v6BaZ
- DqYQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=OL2n5Xw7y8Ptr0DjBBqoBVn5ATX7sgHlxy4qXLn+gjs=;
- b=jPEIkmsHXNM+qYiMIswY0ya8eB2XicLgnr/eSYjLDV5iPthaLLZLg1Tl3r32rsyRX3
- /mXIYAVPLUqBbnJa0lPi09bHl9tuK+yQfsY/PN117sUTo8LwSzGycjeAnBW+/LXzJxOZ
- 7xRWM/0fO3TJpDRtEmxk7mVfO0OddPniiJUrOsU9L+VWFr6rg2fKaROFKPKqEaXjAU8B
- Kk+6Kfckd61n2g5+QjdEvou4ClSQ/q7TA9ZPZr6rN7DOfl5ctV2O8t+1izgBUcyEky/h
- 8G5Hh5ss7kYmeh3JOx1kZj7LqqYwave7/6ooSu2MpS8U3klxgnAU4WxdLmmUGEYsH9w+
- oMQA==
-X-Gm-Message-State: AJcUukeZzUadGPivQy/gHKq9uI4Yo4w5JJON7+915PTLnUWDLJE4b1hA
- MsGotmAoGpzcP4APOWrur5TIjsnqCSiQ+nnjk80KRw==
-X-Google-Smtp-Source: ALg8bN6493yX5n0Sowdnesa/q/XbYafkPUw9euh9B+RBhmtez05eHYlS1J4VDNJ67eWt65/+x40iKxqMYkrOW49HbY0=
-X-Received: by 2002:a5d:8491:: with SMTP id t17mr16118491iom.11.1548062652245; 
- Mon, 21 Jan 2019 01:24:12 -0800 (PST)
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jmWS5WxCzDqTX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 20:31:00 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43jmWF1zRMz9v3wl;
+ Mon, 21 Jan 2019 10:30:49 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=hIytj5Bo; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id leApUuGXDrxc; Mon, 21 Jan 2019 10:30:49 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43jmWF0jPhz9v3wk;
+ Mon, 21 Jan 2019 10:30:49 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1548063049; bh=UbgCdASS/NfnsXEzoq8G1ErQtI53lUSLqab2fWj7UAo=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=hIytj5BoDVU2x1+2codn6GYRz8mWvvdsfj9OtfwoKjwojmb5OC+ECg1zDeuXUihGs
+ LLK8zAaCAA/+fCTVZDXLyZjXOIiZgtDOw8iI90/+JyXeTj2YFGzxIwMPDYuSVQWy6W
+ EqFMQfTEe3h/05prhaU8pvsT5Kz2BReX37G5cyU4=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 74C098B79C;
+ Mon, 21 Jan 2019 10:30:55 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Gh0IDk4Yupl9; Mon, 21 Jan 2019 10:30:55 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 322708B799;
+ Mon, 21 Jan 2019 10:30:55 +0100 (CET)
+Subject: Re: [PATCH v3 3/3] powerpc/32: Add KASAN support
+To: Dmitry Vyukov <dvyukov@google.com>
 References: <cover.1547289808.git.christophe.leroy@c-s.fr>
  <935f9f83393affb5d55323b126468ecb90373b88.1547289808.git.christophe.leroy@c-s.fr>
  <e4b343fa-702b-294f-7741-bb85ed877cdf@virtuozzo.com>
  <8d433501-a5a7-8e3b-03f7-ccdd0f8622e1@c-s.fr>
  <CACT4Y+Z+UbN1rjHr3T5rgHpCJUknupPvEPw0SHs1-qjWBDhm3Q@mail.gmail.com>
  <d2f85bee-c551-ec9d-1a13-6d3364788cc1@c-s.fr>
-In-Reply-To: <d2f85bee-c551-ec9d-1a13-6d3364788cc1@c-s.fr>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Mon, 21 Jan 2019 10:24:01 +0100
-Message-ID: <CACT4Y+Y9H8LhpODFk6TE00kZWCU_V2QK1CStWxBt4EnWpLuCcQ@mail.gmail.com>
-Subject: Re: [PATCH v3 3/3] powerpc/32: Add KASAN support
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ <CACT4Y+Y9H8LhpODFk6TE00kZWCU_V2QK1CStWxBt4EnWpLuCcQ@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <b05f9674-daee-bbc6-0ee0-58d056a4f321@c-s.fr>
+Date: Mon, 21 Jan 2019 10:30:55 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <CACT4Y+Y9H8LhpODFk6TE00kZWCU_V2QK1CStWxBt4EnWpLuCcQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,143 +105,142 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 21, 2019 at 9:37 AM Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
->
->
->
-> Le 21/01/2019 =C3=A0 09:30, Dmitry Vyukov a =C3=A9crit :
-> > On Mon, Jan 21, 2019 at 8:17 AM Christophe Leroy
-> > <christophe.leroy@c-s.fr> wrote:
-> >>
-> >>
-> >>
-> >> Le 15/01/2019 =C3=A0 18:23, Andrey Ryabinin a =C3=A9crit :
-> >>>
-> >>>
-> >>> On 1/12/19 2:16 PM, Christophe Leroy wrote:
-> >>>
-> >>>> +KASAN_SANITIZE_early_32.o :=3D n
-> >>>> +KASAN_SANITIZE_cputable.o :=3D n
-> >>>> +KASAN_SANITIZE_prom_init.o :=3D n
-> >>>> +
-> >>>
-> >>> Usually it's also good idea to disable branch profiling - define DISA=
-BLE_BRANCH_PROFILING
-> >>> either in top of these files or via Makefile. Branch profiling redefi=
-nes if() statement and calls
-> >>> instrumented ftrace_likely_update in every if().
-> >>>
-> >>>
-> >>>
-> >>>> diff --git a/arch/powerpc/mm/kasan_init.c b/arch/powerpc/mm/kasan_in=
-it.c
-> >>>> new file mode 100644
-> >>>> index 000000000000..3edc9c2d2f3e
-> >>>
-> >>>> +void __init kasan_init(void)
-> >>>> +{
-> >>>> +    struct memblock_region *reg;
-> >>>> +
-> >>>> +    for_each_memblock(memory, reg)
-> >>>> +            kasan_init_region(reg);
-> >>>> +
-> >>>> +    pr_info("KASAN init done\n");
-> >>>
-> >>> Without "init_task.kasan_depth =3D 0;" kasan will not repot bugs.
-> >>>
-> >>> There is test_kasan module. Make sure that it produce reports.
-> >>>
-> >>
-> >> Thanks for the review.
-> >>
-> >> Now I get the following very early in boot, what does that mean ?
-> >
-> > This looks like an instrumented memset call before kasan shadow is
-> > mapped, or kasan shadow is not zeros. Does this happen before or after
-> > mapping of kasan_early_shadow_page?
->
-> This is after the mapping of kasan_early_shadow_page.
->
-> > This version seems to miss what x86 code has to clear the early shadow:
-> >
-> > /*
-> > * kasan_early_shadow_page has been used as early shadow memory, thus
-> > * it may contain some garbage. Now we can clear and write protect it,
-> > * since after the TLB flush no one should write to it.
-> > */
-> > memset(kasan_early_shadow_page, 0, PAGE_SIZE);
->
-> In the early part, kasan_early_shadow_page is mapped read-only so I
-> assumed this reset of its content was unneccessary.
->
-> I'll try with it.
->
-> Christophe
-
-As far as I understand machine memory contains garbage after boot, and
-that page needs to be all 0's so we need to explicitly memset it.
 
 
-> >> [    0.000000] KASAN init done
-> >> [    0.000000]
-> >> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >> [    0.000000] BUG: KASAN: unknown-crash in memblock_alloc_try_nid+0xd=
-8/0xf0
-> >> [    0.000000] Write of size 68 at addr c7ff5a90 by task swapper/0
-> >> [    0.000000]
-> >> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted
-> >> 5.0.0-rc2-s3k-dev-00559-g88aa407c4bce #772
-> >> [    0.000000] Call Trace:
-> >> [    0.000000] [c094ded0] [c016c7e4]
-> >> print_address_description+0x1a0/0x2b8 (unreliable)
-> >> [    0.000000] [c094df00] [c016caa0] kasan_report+0xe4/0x168
-> >> [    0.000000] [c094df40] [c016b464] memset+0x2c/0x4c
-> >> [    0.000000] [c094df60] [c08731f0] memblock_alloc_try_nid+0xd8/0xf0
-> >> [    0.000000] [c094df90] [c0861f20] mmu_context_init+0x58/0xa0
-> >> [    0.000000] [c094dfb0] [c085ca70] start_kernel+0x54/0x400
-> >> [    0.000000] [c094dff0] [c0002258] start_here+0x44/0x9c
-> >> [    0.000000]
-> >> [    0.000000]
-> >> [    0.000000] Memory state around the buggy address:
-> >> [    0.000000]  c7ff5980: e2 a1 87 81 bd d4 a5 b5 f8 8d 89 e7 72 bc 20=
- 24
-> >> [    0.000000]  c7ff5a00: e7 b9 c1 c7 17 e9 b4 bd a4 d0 e7 a0 11 15 a5=
- b5
-> >> [    0.000000] >c7ff5a80: b5 e1 83 a5 2d 65 31 3f f3 e5 a7 ef 34 b5 69=
- b5
-> >> [    0.000000]                  ^
-> >> [    0.000000]  c7ff5b00: 21 a5 c1 c1 b4 bf 2d e5 e5 c3 f5 91 e3 b8 a1=
- 34
-> >> [    0.000000]  c7ff5b80: ad ef 23 87 3d a6 ad b5 c3 c3 80 b7 ac b1 1f=
- 37
-> >> [    0.000000]
-> >> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >> [    0.000000] Disabling lock debugging due to kernel taint
-> >> [    0.000000] MMU: Allocated 76 bytes of context maps for 16 contexts
-> >> [    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: =
-8176
-> >> [    0.000000] Kernel command line: console=3DttyCPM0,115200N8
-> >> ip=3D192.168.2.7:192.168.2.2::255.0.0.0:vgoip:eth0:off kgdboc=3DttyCPM=
-0
-> >> [    0.000000] Dentry cache hash table entries: 16384 (order: 2, 65536
-> >> bytes)
-> >> [    0.000000] Inode-cache hash table entries: 8192 (order: 1, 32768 b=
-ytes)
-> >> [    0.000000] Memory: 99904K/131072K available (7376K kernel code, 52=
-8K
-> >> rwdata, 1168K rodata, 576K init, 4623K bss, 31168K reserved, 0K
-> >> cma-reserved)
-> >> [    0.000000] Kernel virtual memory layout:
-> >> [    0.000000]   * 0xffefc000..0xffffc000  : fixmap
-> >> [    0.000000]   * 0xf7c00000..0xffc00000  : kasan shadow mem
-> >> [    0.000000]   * 0xf7a00000..0xf7c00000  : consistent mem
-> >> [    0.000000]   * 0xf7a00000..0xf7a00000  : early ioremap
-> >> [    0.000000]   * 0xc9000000..0xf7a00000  : vmalloc & ioremap
-> >>
-> >>
-> >> Christophe
+Le 21/01/2019 à 10:24, Dmitry Vyukov a écrit :
+> On Mon, Jan 21, 2019 at 9:37 AM Christophe Leroy
+> <christophe.leroy@c-s.fr> wrote:
+>>
+>>
+>>
+>> Le 21/01/2019 à 09:30, Dmitry Vyukov a écrit :
+>>> On Mon, Jan 21, 2019 at 8:17 AM Christophe Leroy
+>>> <christophe.leroy@c-s.fr> wrote:
+>>>>
+>>>>
+>>>>
+>>>> Le 15/01/2019 à 18:23, Andrey Ryabinin a écrit :
+>>>>>
+>>>>>
+>>>>> On 1/12/19 2:16 PM, Christophe Leroy wrote:
+>>>>>
+>>>>>> +KASAN_SANITIZE_early_32.o := n
+>>>>>> +KASAN_SANITIZE_cputable.o := n
+>>>>>> +KASAN_SANITIZE_prom_init.o := n
+>>>>>> +
+>>>>>
+>>>>> Usually it's also good idea to disable branch profiling - define DISABLE_BRANCH_PROFILING
+>>>>> either in top of these files or via Makefile. Branch profiling redefines if() statement and calls
+>>>>> instrumented ftrace_likely_update in every if().
+>>>>>
+>>>>>
+>>>>>
+>>>>>> diff --git a/arch/powerpc/mm/kasan_init.c b/arch/powerpc/mm/kasan_init.c
+>>>>>> new file mode 100644
+>>>>>> index 000000000000..3edc9c2d2f3e
+>>>>>
+>>>>>> +void __init kasan_init(void)
+>>>>>> +{
+>>>>>> +    struct memblock_region *reg;
+>>>>>> +
+>>>>>> +    for_each_memblock(memory, reg)
+>>>>>> +            kasan_init_region(reg);
+>>>>>> +
+>>>>>> +    pr_info("KASAN init done\n");
+>>>>>
+>>>>> Without "init_task.kasan_depth = 0;" kasan will not repot bugs.
+>>>>>
+>>>>> There is test_kasan module. Make sure that it produce reports.
+>>>>>
+>>>>
+>>>> Thanks for the review.
+>>>>
+>>>> Now I get the following very early in boot, what does that mean ?
+>>>
+>>> This looks like an instrumented memset call before kasan shadow is
+>>> mapped, or kasan shadow is not zeros. Does this happen before or after
+>>> mapping of kasan_early_shadow_page?
+>>
+>> This is after the mapping of kasan_early_shadow_page.
+>>
+>>> This version seems to miss what x86 code has to clear the early shadow:
+>>>
+>>> /*
+>>> * kasan_early_shadow_page has been used as early shadow memory, thus
+>>> * it may contain some garbage. Now we can clear and write protect it,
+>>> * since after the TLB flush no one should write to it.
+>>> */
+>>> memset(kasan_early_shadow_page, 0, PAGE_SIZE);
+>>
+>> In the early part, kasan_early_shadow_page is mapped read-only so I
+>> assumed this reset of its content was unneccessary.
+>>
+>> I'll try with it.
+>>
+>> Christophe
+> 
+> As far as I understand machine memory contains garbage after boot, and
+> that page needs to be all 0's so we need to explicitly memset it.
+
+That page is in BSS so it is zeroed before kasan_early_init().
+
+Though as expected, that memset() doesn't fix the issue.
+
+Indeed the problem is in kasan_init() : memblock_phys_alloc() doesn't 
+zeroize the allocated memory. I changed it to memblock_alloc() and now 
+it works.
+
+Thanks for your help,
+Christophe
+
+
+> 
+> 
+>>>> [    0.000000] KASAN init done
+>>>> [    0.000000]
+>>>> ==================================================================
+>>>> [    0.000000] BUG: KASAN: unknown-crash in memblock_alloc_try_nid+0xd8/0xf0
+>>>> [    0.000000] Write of size 68 at addr c7ff5a90 by task swapper/0
+>>>> [    0.000000]
+>>>> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted
+>>>> 5.0.0-rc2-s3k-dev-00559-g88aa407c4bce #772
+>>>> [    0.000000] Call Trace:
+>>>> [    0.000000] [c094ded0] [c016c7e4]
+>>>> print_address_description+0x1a0/0x2b8 (unreliable)
+>>>> [    0.000000] [c094df00] [c016caa0] kasan_report+0xe4/0x168
+>>>> [    0.000000] [c094df40] [c016b464] memset+0x2c/0x4c
+>>>> [    0.000000] [c094df60] [c08731f0] memblock_alloc_try_nid+0xd8/0xf0
+>>>> [    0.000000] [c094df90] [c0861f20] mmu_context_init+0x58/0xa0
+>>>> [    0.000000] [c094dfb0] [c085ca70] start_kernel+0x54/0x400
+>>>> [    0.000000] [c094dff0] [c0002258] start_here+0x44/0x9c
+>>>> [    0.000000]
+>>>> [    0.000000]
+>>>> [    0.000000] Memory state around the buggy address:
+>>>> [    0.000000]  c7ff5980: e2 a1 87 81 bd d4 a5 b5 f8 8d 89 e7 72 bc 20 24
+>>>> [    0.000000]  c7ff5a00: e7 b9 c1 c7 17 e9 b4 bd a4 d0 e7 a0 11 15 a5 b5
+>>>> [    0.000000] >c7ff5a80: b5 e1 83 a5 2d 65 31 3f f3 e5 a7 ef 34 b5 69 b5
+>>>> [    0.000000]                  ^
+>>>> [    0.000000]  c7ff5b00: 21 a5 c1 c1 b4 bf 2d e5 e5 c3 f5 91 e3 b8 a1 34
+>>>> [    0.000000]  c7ff5b80: ad ef 23 87 3d a6 ad b5 c3 c3 80 b7 ac b1 1f 37
+>>>> [    0.000000]
+>>>> ==================================================================
+>>>> [    0.000000] Disabling lock debugging due to kernel taint
+>>>> [    0.000000] MMU: Allocated 76 bytes of context maps for 16 contexts
+>>>> [    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 8176
+>>>> [    0.000000] Kernel command line: console=ttyCPM0,115200N8
+>>>> ip=192.168.2.7:192.168.2.2::255.0.0.0:vgoip:eth0:off kgdboc=ttyCPM0
+>>>> [    0.000000] Dentry cache hash table entries: 16384 (order: 2, 65536
+>>>> bytes)
+>>>> [    0.000000] Inode-cache hash table entries: 8192 (order: 1, 32768 bytes)
+>>>> [    0.000000] Memory: 99904K/131072K available (7376K kernel code, 528K
+>>>> rwdata, 1168K rodata, 576K init, 4623K bss, 31168K reserved, 0K
+>>>> cma-reserved)
+>>>> [    0.000000] Kernel virtual memory layout:
+>>>> [    0.000000]   * 0xffefc000..0xffffc000  : fixmap
+>>>> [    0.000000]   * 0xf7c00000..0xffc00000  : kasan shadow mem
+>>>> [    0.000000]   * 0xf7a00000..0xf7c00000  : consistent mem
+>>>> [    0.000000]   * 0xf7a00000..0xf7a00000  : early ioremap
+>>>> [    0.000000]   * 0xc9000000..0xf7a00000  : vmalloc & ioremap
+>>>>
+>>>>
+>>>> Christophe
