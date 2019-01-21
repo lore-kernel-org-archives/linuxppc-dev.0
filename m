@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9B01C282E9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6B6C282E9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:15:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2E6F720855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:14:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E6F720855
+	by mail.kernel.org (Postfix) with ESMTPS id E98772085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:15:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E98772085A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jkph1gm7zDqTw
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 19:14:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jkrZ6K24zDqTw
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 19:15:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,63 +29,63 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jkc31WGTzDqTK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:04:51 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jkcG66JLzDqT8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:05:02 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0L83ri7038782
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:04:49 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q58e74knb-1
+ x0L84DRj125632
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:01 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q58rjum6g-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:04:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:00 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Mon, 21 Jan 2019 08:04:45 -0000
+ Mon, 21 Jan 2019 08:04:56 -0000
 Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 21 Jan 2019 08:04:34 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
+ Mon, 21 Jan 2019 08:04:45 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0L84X6I5505388
+ x0L84iB01638722
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 21 Jan 2019 08:04:33 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E269DA4059;
- Mon, 21 Jan 2019 08:04:32 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 00732A4040;
- Mon, 21 Jan 2019 08:04:28 +0000 (GMT)
+ Mon, 21 Jan 2019 08:04:44 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9E77911C05C;
+ Mon, 21 Jan 2019 08:04:44 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ADE4611C04C;
+ Mon, 21 Jan 2019 08:04:39 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.207.125])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 21 Jan 2019 08:04:27 +0000 (GMT)
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 21 Jan 2019 08:04:39 +0000 (GMT)
 Received: by rapoport-lnx (sSMTP sendmail emulation);
- Mon, 21 Jan 2019 10:04:27 +0200
+ Mon, 21 Jan 2019 10:04:38 +0200
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v2 03/21] memblock: replace memblock_alloc_base(ANYWHERE) with
- memblock_phys_alloc
-Date: Mon, 21 Jan 2019 10:03:50 +0200
+Subject: [PATCH v2 05/21] memblock: emphasize that memblock_alloc_range()
+ returns a physical address
+Date: Mon, 21 Jan 2019 10:03:52 +0200
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
 References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19012108-0020-0000-0000-000003092E96
+x-cbid: 19012108-0028-0000-0000-0000033BE16F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012108-0021-0000-0000-0000215A5BDF
-Message-Id: <1548057848-15136-4-git-send-email-rppt@linux.ibm.com>
+x-cbparentid: 19012108-0029-0000-0000-000023F9157E
+Message-Id: <1548057848-15136-6-git-send-email-rppt@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-21_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=722 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1901210066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -126,134 +126,89 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The calls to memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ANYWHERE) and
-memblock_phys_alloc(size, align) are equivalent as both try to allocate
-'size' bytes with 'align' alignment anywhere in the memory and panic if hte
-allocation fails.
-
-The conversion is done using the following semantic patch:
-
-@@
-expression size, align;
-@@
-- memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ANYWHERE)
-+ memblock_phys_alloc(size, align)
+Rename memblock_alloc_range() to memblock_phys_alloc_range() to emphasize
+that it returns a physical address.
+While on it, remove the 'enum memblock_flags' parameter from this function
+as its only user anyway sets it to MEMBLOCK_NONE, which is the default for
+the most of memblock allocations.
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- arch/arm/mm/init.c                   | 2 +-
- arch/sh/boards/mach-ap325rxa/setup.c | 2 +-
- arch/sh/boards/mach-ecovec24/setup.c | 4 ++--
- arch/sh/boards/mach-kfr2r09/setup.c  | 2 +-
- arch/sh/boards/mach-migor/setup.c    | 2 +-
- arch/sh/boards/mach-se/7724/setup.c  | 4 ++--
- arch/xtensa/mm/kasan_init.c          | 3 +--
- 7 files changed, 9 insertions(+), 10 deletions(-)
+ include/linux/memblock.h |  5 ++---
+ mm/cma.c                 | 10 ++++------
+ mm/memblock.c            |  9 +++++----
+ 3 files changed, 11 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-index 478ea8b..b76b90e 100644
---- a/arch/arm/mm/init.c
-+++ b/arch/arm/mm/init.c
-@@ -205,7 +205,7 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
+diff --git a/include/linux/memblock.h b/include/linux/memblock.h
+index f7ef313..66dfdb3 100644
+--- a/include/linux/memblock.h
++++ b/include/linux/memblock.h
+@@ -369,6 +369,8 @@ static inline int memblock_get_region_node(const struct memblock_region *r)
+ #define ARCH_LOW_ADDRESS_LIMIT  0xffffffffUL
+ #endif
  
- 	BUG_ON(!arm_memblock_steal_permitted);
++phys_addr_t memblock_phys_alloc_range(phys_addr_t size, phys_addr_t align,
++				      phys_addr_t start, phys_addr_t end);
+ phys_addr_t memblock_phys_alloc_nid(phys_addr_t size, phys_addr_t align, int nid);
+ phys_addr_t memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid);
  
--	phys = memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, align);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
+@@ -487,9 +489,6 @@ static inline bool memblock_bottom_up(void)
+ 	return memblock.bottom_up;
+ }
  
-diff --git a/arch/sh/boards/mach-ap325rxa/setup.c b/arch/sh/boards/mach-ap325rxa/setup.c
-index 8f234d04..d7ceab6 100644
---- a/arch/sh/boards/mach-ap325rxa/setup.c
-+++ b/arch/sh/boards/mach-ap325rxa/setup.c
-@@ -557,7 +557,7 @@ static void __init ap325rxa_mv_mem_reserve(void)
- 	phys_addr_t phys;
- 	phys_addr_t size = CEU_BUFFER_MEMORY_SIZE;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 22b4106..a3901806 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -1480,12 +1480,12 @@ static void __init ecovec_mv_mem_reserve(void)
- 	phys_addr_t phys;
- 	phys_addr_t size = CEU_BUFFER_MEMORY_SIZE;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 	ceu0_dma_membase = phys;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 	ceu1_dma_membase = phys;
-diff --git a/arch/sh/boards/mach-kfr2r09/setup.c b/arch/sh/boards/mach-kfr2r09/setup.c
-index 203d249..55bdf4a 100644
---- a/arch/sh/boards/mach-kfr2r09/setup.c
-+++ b/arch/sh/boards/mach-kfr2r09/setup.c
-@@ -631,7 +631,7 @@ static void __init kfr2r09_mv_mem_reserve(void)
- 	phys_addr_t phys;
- 	phys_addr_t size = CEU_BUFFER_MEMORY_SIZE;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 
-diff --git a/arch/sh/boards/mach-migor/setup.c b/arch/sh/boards/mach-migor/setup.c
-index f4ad33c..ba7eee6 100644
---- a/arch/sh/boards/mach-migor/setup.c
-+++ b/arch/sh/boards/mach-migor/setup.c
-@@ -630,7 +630,7 @@ static void __init migor_mv_mem_reserve(void)
- 	phys_addr_t phys;
- 	phys_addr_t size = CEU_BUFFER_MEMORY_SIZE;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 
-diff --git a/arch/sh/boards/mach-se/7724/setup.c b/arch/sh/boards/mach-se/7724/setup.c
-index fdbec22a..4696e10 100644
---- a/arch/sh/boards/mach-se/7724/setup.c
-+++ b/arch/sh/boards/mach-se/7724/setup.c
-@@ -965,12 +965,12 @@ static void __init ms7724se_mv_mem_reserve(void)
- 	phys_addr_t phys;
- 	phys_addr_t size = CEU_BUFFER_MEMORY_SIZE;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 	ceu0_dma_membase = phys;
- 
--	phys = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_ALLOC_ANYWHERE);
-+	phys = memblock_phys_alloc(size, PAGE_SIZE);
- 	memblock_free(phys, size);
- 	memblock_remove(phys, size);
- 	ceu1_dma_membase = phys;
-diff --git a/arch/xtensa/mm/kasan_init.c b/arch/xtensa/mm/kasan_init.c
-index 1734cda..48dbb03 100644
---- a/arch/xtensa/mm/kasan_init.c
-+++ b/arch/xtensa/mm/kasan_init.c
-@@ -52,8 +52,7 @@ static void __init populate(void *start, void *end)
- 
- 		for (k = 0; k < PTRS_PER_PTE; ++k, ++j) {
- 			phys_addr_t phys =
--				memblock_alloc_base(PAGE_SIZE, PAGE_SIZE,
--						    MEMBLOCK_ALLOC_ANYWHERE);
-+				memblock_phys_alloc(PAGE_SIZE, PAGE_SIZE);
- 
- 			set_pte(pte + j, pfn_pte(PHYS_PFN(phys), PAGE_KERNEL));
+-phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
+-					phys_addr_t start, phys_addr_t end,
+-					enum memblock_flags flags);
+ phys_addr_t memblock_alloc_base(phys_addr_t size, phys_addr_t align,
+ 				phys_addr_t max_addr);
+ phys_addr_t __memblock_alloc_base(phys_addr_t size, phys_addr_t align,
+diff --git a/mm/cma.c b/mm/cma.c
+index c7b39dd..e4530ae 100644
+--- a/mm/cma.c
++++ b/mm/cma.c
+@@ -327,16 +327,14 @@ int __init cma_declare_contiguous(phys_addr_t base,
+ 		 * memory in case of failure.
+ 		 */
+ 		if (base < highmem_start && limit > highmem_start) {
+-			addr = memblock_alloc_range(size, alignment,
+-						    highmem_start, limit,
+-						    MEMBLOCK_NONE);
++			addr = memblock_phys_alloc_range(size, alignment,
++							 highmem_start, limit);
+ 			limit = highmem_start;
  		}
+ 
+ 		if (!addr) {
+-			addr = memblock_alloc_range(size, alignment, base,
+-						    limit,
+-						    MEMBLOCK_NONE);
++			addr = memblock_phys_alloc_range(size, alignment, base,
++							 limit);
+ 			if (!addr) {
+ 				ret = -ENOMEM;
+ 				goto err;
+diff --git a/mm/memblock.c b/mm/memblock.c
+index c80029e..f019aee 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -1338,12 +1338,13 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
+ 	return 0;
+ }
+ 
+-phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
+-					phys_addr_t start, phys_addr_t end,
+-					enum memblock_flags flags)
++phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
++					     phys_addr_t align,
++					     phys_addr_t start,
++					     phys_addr_t end)
+ {
+ 	return memblock_alloc_range_nid(size, align, start, end, NUMA_NO_NODE,
+-					flags);
++					MEMBLOCK_NONE);
+ }
+ 
+ phys_addr_t __init memblock_phys_alloc_nid(phys_addr_t size, phys_addr_t align, int nid)
 -- 
 2.7.4
 
