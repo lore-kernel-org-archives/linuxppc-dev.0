@@ -6,85 +6,82 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CEFAC282DB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:17:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6762EC282F4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:19:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D556620855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:17:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D556620855
+	by mail.kernel.org (Postfix) with ESMTPS id DF82620855
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 08:19:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF82620855
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jktd70xlzDqHV
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 19:17:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jkwb6GYdzDqVF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 19:19:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jkcP6hRkzDqSm
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:05:09 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0L850ZO131766
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:06 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2q590xu2d8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jkcQ5hZ7zDqTF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:05:10 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0L83nID132230
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:08 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q59werxbf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:04 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 03:05:08 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Mon, 21 Jan 2019 08:04:51 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Mon, 21 Jan 2019 08:05:04 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 21 Jan 2019 08:04:39 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0L84cJ71114462
+ Mon, 21 Jan 2019 08:04:52 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0L84pFF61079554
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 21 Jan 2019 08:04:39 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D32BE4C046;
- Mon, 21 Jan 2019 08:04:38 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BBE7E4C052;
- Mon, 21 Jan 2019 08:04:33 +0000 (GMT)
+ Mon, 21 Jan 2019 08:04:51 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4655B5205A;
+ Mon, 21 Jan 2019 08:04:51 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.207.125])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Mon, 21 Jan 2019 08:04:33 +0000 (GMT)
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 6DB6952051;
+ Mon, 21 Jan 2019 08:04:46 +0000 (GMT)
 Received: by rapoport-lnx (sSMTP sendmail emulation);
- Mon, 21 Jan 2019 10:04:33 +0200
+ Mon, 21 Jan 2019 10:04:44 +0200
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v2 04/21] memblock: drop memblock_alloc_base_nid()
-Date: Mon, 21 Jan 2019 10:03:51 +0200
+Subject: [PATCH v2 06/21] memblock: memblock_phys_alloc_try_nid(): don't panic
+Date: Mon, 21 Jan 2019 10:03:53 +0200
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
 References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19012108-4275-0000-0000-00000301E9EB
+x-cbid: 19012108-0028-0000-0000-0000033BE171
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012108-4276-0000-0000-0000381015C0
-Message-Id: <1548057848-15136-5-git-send-email-rppt@linux.ibm.com>
+x-cbparentid: 19012108-0029-0000-0000-000023F91583
+Message-Id: <1548057848-15136-7-git-send-email-rppt@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-21_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=838 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=935 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1901210066
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -125,69 +122,67 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The memblock_alloc_base_nid() is a oneliner wrapper for
-memblock_alloc_range_nid() without any side effect.
-Replace it's usage by the direct calls to memblock_alloc_range_nid().
+The memblock_phys_alloc_try_nid() function tries to allocate memory from
+the requested node and then falls back to allocation from any node in the
+system. The memblock_alloc_base() fallback used by this function panics if
+the allocation fails.
+
+Replace the memblock_alloc_base() fallback with the direct call to
+memblock_alloc_range_nid() and update the memblock_phys_alloc_try_nid()
+callers to check the returned value and panic in case of error.
 
 Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
 ---
- include/linux/memblock.h |  3 ---
- mm/memblock.c            | 15 ++++-----------
- 2 files changed, 4 insertions(+), 14 deletions(-)
+ arch/arm64/mm/numa.c   | 4 ++++
+ arch/powerpc/mm/numa.c | 4 ++++
+ mm/memblock.c          | 4 +++-
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/memblock.h b/include/linux/memblock.h
-index 60e100f..f7ef313 100644
---- a/include/linux/memblock.h
-+++ b/include/linux/memblock.h
-@@ -490,9 +490,6 @@ static inline bool memblock_bottom_up(void)
- phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
- 					phys_addr_t start, phys_addr_t end,
- 					enum memblock_flags flags);
--phys_addr_t memblock_alloc_base_nid(phys_addr_t size,
--					phys_addr_t align, phys_addr_t max_addr,
--					int nid, enum memblock_flags flags);
- phys_addr_t memblock_alloc_base(phys_addr_t size, phys_addr_t align,
- 				phys_addr_t max_addr);
- phys_addr_t __memblock_alloc_base(phys_addr_t size, phys_addr_t align,
+diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
+index ae34e3a..2c61ea4 100644
+--- a/arch/arm64/mm/numa.c
++++ b/arch/arm64/mm/numa.c
+@@ -237,6 +237,10 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ 		pr_info("Initmem setup node %d [<memory-less node>]\n", nid);
+ 
+ 	nd_pa = memblock_phys_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
++	if (!nd_pa)
++		panic("Cannot allocate %zu bytes for node %d data\n",
++		      nd_size, nid);
++
+ 	nd = __va(nd_pa);
+ 
+ 	/* report and initialize */
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 270cefb..8f2bbe1 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -788,6 +788,10 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
+ 	int tnid;
+ 
+ 	nd_pa = memblock_phys_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
++	if (!nd_pa)
++		panic("Cannot allocate %zu bytes for node %d data\n",
++		      nd_size, nid);
++
+ 	nd = __va(nd_pa);
+ 
+ 	/* report and initialize */
 diff --git a/mm/memblock.c b/mm/memblock.c
-index a32db30..c80029e 100644
+index f019aee..8aabb1b 100644
 --- a/mm/memblock.c
 +++ b/mm/memblock.c
-@@ -1346,21 +1346,14 @@ phys_addr_t __init memblock_alloc_range(phys_addr_t size, phys_addr_t align,
- 					flags);
+@@ -1393,7 +1393,9 @@ phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t ali
+ 
+ 	if (res)
+ 		return res;
+-	return memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ACCESSIBLE);
++	return memblock_alloc_range_nid(size, align, 0,
++					MEMBLOCK_ALLOC_ACCESSIBLE,
++					NUMA_NO_NODE, MEMBLOCK_NONE);
  }
  
--phys_addr_t __init memblock_alloc_base_nid(phys_addr_t size,
--					phys_addr_t align, phys_addr_t max_addr,
--					int nid, enum memblock_flags flags)
--{
--	return memblock_alloc_range_nid(size, align, 0, max_addr, nid, flags);
--}
--
- phys_addr_t __init memblock_phys_alloc_nid(phys_addr_t size, phys_addr_t align, int nid)
- {
- 	enum memblock_flags flags = choose_memblock_flags();
- 	phys_addr_t ret;
- 
- again:
--	ret = memblock_alloc_base_nid(size, align, MEMBLOCK_ALLOC_ACCESSIBLE,
--				      nid, flags);
-+	ret = memblock_alloc_range_nid(size, align, 0,
-+				       MEMBLOCK_ALLOC_ACCESSIBLE, nid, flags);
- 
- 	if (!ret && (flags & MEMBLOCK_MIRROR)) {
- 		flags &= ~MEMBLOCK_MIRROR;
-@@ -1371,8 +1364,8 @@ phys_addr_t __init memblock_phys_alloc_nid(phys_addr_t size, phys_addr_t align,
- 
- phys_addr_t __init __memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys_addr_t max_addr)
- {
--	return memblock_alloc_base_nid(size, align, max_addr, NUMA_NO_NODE,
--				       MEMBLOCK_NONE);
-+	return memblock_alloc_range_nid(size, align, 0, max_addr, NUMA_NO_NODE,
-+					MEMBLOCK_NONE);
- }
- 
- phys_addr_t __init memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys_addr_t max_addr)
+ /**
 -- 
 2.7.4
 
