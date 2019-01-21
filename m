@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EB9FC282F6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:02:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C094C282F6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:04:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA2AA2084A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:02:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA2AA2084A
+	by mail.kernel.org (Postfix) with ESMTPS id F26CA2084A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 09:04:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F26CA2084A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jltx6tzHzDqYX
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:02:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jlwk0qWrzDqYq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 20:04:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.221.195; helo=mail-vk1-f195.google.com;
+ (client-ip=209.85.217.68; helo=mail-vs1-f68.google.com;
  envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-vk1-f195.google.com (mail-vk1-f195.google.com
- [209.85.221.195])
+Received: from mail-vs1-f68.google.com (mail-vs1-f68.google.com
+ [209.85.217.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jllD6KZlzDqWp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:56:08 +1100 (AEDT)
-Received: by mail-vk1-f195.google.com with SMTP id 185so4415411vkc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:56:08 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jllQ5vRqzDqVV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 19:56:18 +1100 (AEDT)
+Received: by mail-vs1-f68.google.com with SMTP id u11so12137370vsp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 00:56:18 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=gLrYKlt9uEOKQ1cE1SYqGP7NKGJFXbmsibHGAlXJ1DU=;
- b=Jhu+q0LkFIVQj/6ka0ctCXlanNA5itJ3neCuBtn6ccBy/xMU/RxcC/Sl5qLgEuV6OM
- Ko6nazrA3R100bMolVv7xNV7yQPTGtrAPPCbm1dBzuy4XwJkp/T1z8rSaQt8YFXvnPEq
- A7C3ufAxa5JRIqDC2ZvVAp6HXLcWImbpgH/o4TSQuQKDBzR7FtIUcZAybINlqkm4vhsz
- EQ+z0ykuDWmTfWg9Z1fTfZXlqYn2XiHHBz4/LgvwfO1n8Kqbwp+ePfbLX+I1mCziF+v6
- 4ms3PbDl1QQqBG8mmwxSxcZV/1zWz6GzXnZIQEHVyP0NhS/KgLkoBlFkF6Qj48gnZHcl
- iq0A==
-X-Gm-Message-State: AJcUukfAIrwbCjb/M6ppA61qmO1HKf1bDec/IBRGFqrjIDCigbB0zDwy
- 26h1wTItV79EhZAlf9dDQkkvXRsA51qkTLfVAM0=
-X-Google-Smtp-Source: ALg8bN5R6CEumLcKYOaOWStjx70fqdpomEnfD9DlaS7FowZKUavKdibSfH3EtWzzo/dYGOX0R4ge8qzEaMO9bSioAb0=
-X-Received: by 2002:a1f:91cb:: with SMTP id t194mr11136395vkd.74.1548060966184; 
- Mon, 21 Jan 2019 00:56:06 -0800 (PST)
+ bh=E/6v0ZVPaXQi5FWJ19dLuHcLgd/E9ZECv5IjLmf6PoI=;
+ b=Rw8nNvIDenjKLZWCa9d+N/AYm/sxYoRYbD+6Hf4UVR9p9UMx0ezLcTrYXjxXIPh6Uz
+ WARjQ4r89Tiwo8/USFPqNuxyES/Y486GEElyKn7anijEBUXeFxGIBqodHT2Bbxg7syey
+ pGk5EGKRJnttQUZut/mOwgT1uHAqBN2Wt3jTxbDVqN/KRalbOGeLNoVSMoTwIMpHdqiD
+ 5pQonVtW89vDWFsgKfnOCDFoWq+Dmd8xHYSgbjOEtwGyz9+fQOPhEk4T5r45Y0zmT8A0
+ Fei1pUdlMBlyH2t0N5GiGLdxeQdVMQc2rcJInx8BB9FTkem1QY0wD6P0ZwlMb06Vusdq
+ f9qg==
+X-Gm-Message-State: AJcUukeGbme/4lpgpWwBYlvgt8RGurnYTfKD3+mRjSCUYP3HlMiAaARS
+ 4n6rFHgaq665mVHV6QrDOByT82I2SK5O8zWwMkM=
+X-Google-Smtp-Source: ALg8bN6mqPPGjY0mRgSzvQIVAiUYVEkzmmA1fTVJs4P5AJXGDwVjqnqovDI8HCxNMByb80ziNpDqZXxAv1iGgV8yZxk=
+X-Received: by 2002:a67:3885:: with SMTP id n5mr10358537vsi.96.1548060976721; 
+ Mon, 21 Jan 2019 00:56:16 -0800 (PST)
 MIME-Version: 1.0
 References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-14-arnd@arndb.de>
-In-Reply-To: <20190118161835.2259170-14-arnd@arndb.de>
+ <20190118161835.2259170-27-arnd@arndb.de>
+In-Reply-To: <20190118161835.2259170-27-arnd@arndb.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 21 Jan 2019 09:55:53 +0100
-Message-ID: <CAMuHMdVyz_PgGEHWnnALwT1fQyY1EWOTT=T6Ax=PVTWzG8=R_g@mail.gmail.com>
-Subject: Re: [PATCH v2 13/29] arch: add split IPC system calls where needed
+Date: Mon, 21 Jan 2019 09:56:02 +0100
+Message-ID: <CAMuHMdWiHTjDT9-tnjgJy9qCWRr+qUgsJa6LjpRDJQzhoJqnzw@mail.gmail.com>
+Subject: Re: [PATCH v2 26/29] y2038: use time32 syscall names on 32-bit
 To: Arnd Bergmann <arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -104,36 +104,30 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 5:20 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> The IPC system call handling is highly inconsistent across architectures,
-> some use sys_ipc, some use separate calls, and some use both.  We also
-> have some architectures that require passing IPC_64 in the flags, and
-> others that set it implicitly.
+On Fri, Jan 18, 2019 at 5:21 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> This is the big flip, where all 32-bit architectures set COMPAT_32BIT_TIME
+> abd use the _time32 system calls from the former compat layer instead
+> of the system calls that take __kernel_timespec and similar arguments.
 >
-> For the additon of a y2083 safe semtimedop() system call, I chose to only
-> support the separate entry points, but that requires first supporting
-> the regular ones with their own syscall numbers.
+> The temporary redirects for __kernel_timespec, __kernel_itimerspec
+> and __kernel_timex can get removed with this.
 >
-> The IPC_64 is now implied by the new semctl/shmctl/msgctl system
-> calls even on the architectures that require passing it with the ipc()
-> multiplexer.
->
-> I'm not adding the new semtimedop() or semop() on 32-bit architectures,
-> those will get implemented using the new semtimedop_time64() version
-> that gets added along with the other time64 calls.
-> Three 64-bit architectures (powerpc, s390 and sparc) get semtimedop().
+> It would be easy to split this commit by architecture, but with the new
+> generated system call tables, it's easy enough to do it all at once,
+> which makes it a little easier to check that the changes are the same
+> in each table.
 >
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
->  arch/m68k/kernel/syscalls/syscall.tbl     | 11 +++++++++++
+>  arch/m68k/kernel/syscalls/syscall.tbl       | 42 +++++------
 
 For m68k:
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
+
 Gr{oetje,eeting}s,
 
                         Geert
-
 
 --
 Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
