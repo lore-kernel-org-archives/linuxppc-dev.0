@@ -2,103 +2,92 @@ Return-Path: <SRS0=gbiG=P5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F169C7113B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 11:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06DFEC7112F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 11:59:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D938A2085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 11:42:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D938A2085A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4FCFD20861
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 11:59:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FCFD20861
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=de.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43jqR76YJhzDqM1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 22:42:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43jqpd20YbzDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Jan 2019 22:59:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=david@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=de.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=heiko.carstens@de.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=de.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43jqJr2SbCzDqYJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 22:36:59 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 3EEEA4D4DD;
- Mon, 21 Jan 2019 11:36:56 +0000 (UTC)
-Received: from [10.36.116.223] (ovpn-116-223.ams2.redhat.com [10.36.116.223])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 7C2A01001F58;
- Mon, 21 Jan 2019 11:36:36 +0000 (UTC)
-Subject: Re: [PATCH v2 0/9] mm: PG_reserved cleanups and documentation
-To: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20190114125903.24845-1-david@redhat.com>
-From: David Hildenbrand <david@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=david@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- SE+xAvmumFBY
-Organization: Red Hat GmbH
-Message-ID: <6abb9ad2-f103-12a2-e1dc-eec81b801338@redhat.com>
-Date: Mon, 21 Jan 2019 12:36:35 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.3.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43jqmf23pKzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 22:57:38 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0LBv8Ho018005
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 06:57:35 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q5ctdad25-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 06:57:34 -0500
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Mon, 21 Jan 2019 11:57:20 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 21 Jan 2019 11:57:09 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0LBv8le12386320
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 21 Jan 2019 11:57:08 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28A14A4054;
+ Mon, 21 Jan 2019 11:57:08 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 29171A4062;
+ Mon, 21 Jan 2019 11:57:07 +0000 (GMT)
+Received: from osiris (unknown [9.152.212.95])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Mon, 21 Jan 2019 11:57:07 +0000 (GMT)
+Date: Mon, 21 Jan 2019 12:57:05 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2 13/29] arch: add split IPC system calls where needed
+References: <20190118161835.2259170-1-arnd@arndb.de>
+ <20190118161835.2259170-14-arnd@arndb.de>
 MIME-Version: 1.0
-In-Reply-To: <20190114125903.24845-1-david@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.39]); Mon, 21 Jan 2019 11:36:57 +0000 (UTC)
+In-Reply-To: <20190118161835.2259170-14-arnd@arndb.de>
+X-TM-AS-GCONF: 00
+x-cbid: 19012111-0008-0000-0000-000002B3D9A0
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19012111-0009-0000-0000-0000222000C3
+Message-Id: <20190121115705.GB4020@osiris>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-21_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=439 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901210095
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,56 +99,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Michal Hocko <mhocko@suse.com>,
- CHANDAN VN <chandan.vn@samsung.com>, David Airlie <airlied@linux.ie>,
- Bhupesh Sharma <bhsharma@redhat.com>, Palmer Dabbelt <palmer@sifive.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Tony Luck <tony.luck@intel.com>,
- Stefan Agner <stefan@agner.ch>, Michal Hocko <mhocko@kernel.org>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linux-riscv@lists.infradead.org,
- Alexander Duyck <alexander.h.duyck@linux.intel.com>,
- linux-s390@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>,
- Vasily Gorbik <gor@linux.ibm.com>, Logan Gunthorpe <logang@deltatee.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>,
- Matthew Wilcox <willy@infradead.org>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Anthony Yznaga <anthony.yznaga@oracle.com>,
- Tobias Klauser <tklauser@distanz.ch>, Laura Abbott <labbott@redhat.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Marc Zyngier <marc.zyngier@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Kristina Martsenko <kristina.martsenko@arm.com>,
- linux-m68k@lists.linux-m68k.org, Dave Kleikamp <dave.kleikamp@oracle.com>,
- linux-mediatek@lists.infradead.org, Oleg Nesterov <oleg@redhat.com>,
- Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org,
- Matthias Brugger <mbrugger@suse.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- Miles Chen <miles.chen@mediatek.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- James Morse <james.morse@arm.com>, Souptick Joarder <jrdr.linux@gmail.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Greg Hackmann <ghackmann@android.com>
+Cc: dalias@libc.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ will.deacon@arm.com, linux-mips@vger.kernel.org, jcmvbkbc@gmail.com,
+ netdev@vger.kernel.org, deepa.kernel@gmail.com, hpa@zytor.com,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, y2038@lists.linaro.org, deller@gmx.de,
+ x86@kernel.org, linux@armlinux.org.uk, mingo@redhat.com, geert@linux-m68k.org,
+ catalin.marinas@arm.com, firoz.khan@linaro.org, mattst88@gmail.com,
+ fenghua.yu@intel.com, linux-fsdevel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, luto@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, monstr@monstr.eu, tony.luck@intel.com,
+ linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org, paul.burton@mips.com, ebiederm@xmission.com,
+ linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 14.01.19 13:58, David Hildenbrand wrote:
-> Nothing major changed since the last version. I would be happy about
-> additional ACKs. If there are no further comments, can this go via the
-> mm-tree in one chunk?
+On Fri, Jan 18, 2019 at 05:18:19PM +0100, Arnd Bergmann wrote:
+> The IPC system call handling is highly inconsistent across architectures,
+> some use sys_ipc, some use separate calls, and some use both.  We also
+> have some architectures that require passing IPC_64 in the flags, and
+> others that set it implicitly.
+> 
+> For the additon of a y2083 safe semtimedop() system call, I chose to only
+> support the separate entry points, but that requires first supporting
+> the regular ones with their own syscall numbers.
+> 
+> The IPC_64 is now implied by the new semctl/shmctl/msgctl system
+> calls even on the architectures that require passing it with the ipc()
+> multiplexer.
+> 
+> I'm not adding the new semtimedop() or semop() on 32-bit architectures,
+> those will get implemented using the new semtimedop_time64() version
+> that gets added along with the other time64 calls.
+> Three 64-bit architectures (powerpc, s390 and sparc) get semtimedop().
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> One aspect here that might be a bit controversial is the use of
+> the same system call numbers across all architectures, synchronizing
+> all of them with the x86-32 numbers. With the new syscall.tbl
+> files, I hope we can just keep doing that in the future, and no
+> longer require the architecture maintainers to assign a number.
+> 
+> This is mainly useful for implementers of the C libraries: if
+> we can add future system calls everywhere at the same time, using
+> a particular version of the kernel headers also guarantees that
+> the system call number macro is visible.
+> ---
+>  arch/m68k/kernel/syscalls/syscall.tbl     | 11 +++++++++++
+>  arch/mips/kernel/syscalls/syscall_o32.tbl | 11 +++++++++++
+>  arch/powerpc/kernel/syscalls/syscall.tbl  | 13 +++++++++++++
+>  arch/s390/kernel/syscalls/syscall.tbl     | 12 ++++++++++++
+>  arch/sh/kernel/syscalls/syscall.tbl       | 11 +++++++++++
+>  arch/sparc/kernel/syscalls/syscall.tbl    | 12 ++++++++++++
+>  arch/x86/entry/syscalls/syscall_32.tbl    | 11 +++++++++++
+>  7 files changed, 81 insertions(+)
 
-For the time being, I will not add further patches to this series (as
-discussed in response to one question, we have to be careful dropping
-PG_reserved at some places). Only ACKs were added during review so far.
+For the s390 bits:
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-@Andrew, how to proceed with this?
-
--- 
-
-Thanks,
-
-David / dhildenb
