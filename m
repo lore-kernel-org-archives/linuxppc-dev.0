@@ -2,60 +2,113 @@ Return-Path: <SRS0=/GF9=P6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2BAC3C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 10:33:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFB9C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 11:16:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7226B2084A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 10:33:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7226B2084A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 484352084A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 11:16:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="DIpf9zcG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 484352084A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kPrg2sghzDqNW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 21:33:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kQq010xqzDqNw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 22:16:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.136; helo=mga12.intel.com; envelope-from=lkp@intel.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.1.89; helo=eur02-he1-obe.outbound.protection.outlook.com;
+ envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="DIpf9zcG"; 
+ dkim-atps=neutral
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10089.outbound.protection.outlook.com [40.107.1.89])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kPpj5CCfzDqN1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 21:31:18 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 22 Jan 2019 02:31:14 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.56,505,1539673200"; 
- d="gz'50?scan'50,208,50";a="108793381"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by orsmga007.jf.intel.com with ESMTP; 22 Jan 2019 02:31:14 -0800
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
- (envelope-from <lkp@intel.com>)
- id 1gltKr-000HoS-F1; Tue, 22 Jan 2019 18:31:13 +0800
-Date: Tue, 22 Jan 2019 18:30:23 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 4/4] powerpc/64s: Fix data interrupts vs d-side MCE
- reentrancy
-Message-ID: <201901221828.2PKhvLEj%fengguang.wu@intel.com>
-References: <20190122064618.1510-5-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43kQmX4fTqzDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 22:14:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=2uxLLsC4JUJsZwcnXs7QX06E9xjjOiF3+rK/C627NyI=;
+ b=DIpf9zcGErHTWh+1xbmqG3zV0arLj/0QdrSBXNvPc6cbs9eD8N6lc9D4hMfUO/1bF/szkGXRA2Wl1aD7YF9PfxGHU1G61U9dXWc7EVq5CMISLzJen9WQYGB1Th/4pG6IBychSjOeQ81NqP4nN8Ajsq5qHhYQ8qX8rUEzVOGUtSE=
+Received: from VI1PR04MB4704.eurprd04.prod.outlook.com (20.177.48.157) by
+ VI1PR04MB5789.eurprd04.prod.outlook.com (20.178.127.223) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1537.31; Tue, 22 Jan 2019 11:14:26 +0000
+Received: from VI1PR04MB4704.eurprd04.prod.outlook.com
+ ([fe80::e58a:8812:d380:2080]) by VI1PR04MB4704.eurprd04.prod.outlook.com
+ ([fe80::e58a:8812:d380:2080%2]) with mapi id 15.20.1537.031; Tue, 22 Jan 2019
+ 11:14:26 +0000
+From: Viorel Suman <viorel.suman@nxp.com>
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob
+ Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jaroslav
+ Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Timur Tabi
+ <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li
+ <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Viorel Suman
+ <viorel.suman@nxp.com>, "S.j. Wang" <shengjiu.wang@nxp.com>, Daniel Baluta
+ <daniel.baluta@nxp.com>, Cosmin Samoila <cosmin.samoila@nxp.com>
+Subject: [PATCH v4 1/3] ASoC: fsl: Add Audio Mixer CPU DAI driver
+Thread-Topic: [PATCH v4 1/3] ASoC: fsl: Add Audio Mixer CPU DAI driver
+Thread-Index: AQHUskOiHD2XXSbHnUG3S37pjZoPmQ==
+Date: Tue, 22 Jan 2019 11:14:26 +0000
+Message-ID: <1548155654-12985-2-git-send-email-viorel.suman@nxp.com>
+References: <1548155654-12985-1-git-send-email-viorel.suman@nxp.com>
+In-Reply-To: <1548155654-12985-1-git-send-email-viorel.suman@nxp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: AM6PR05CA0019.eurprd05.prod.outlook.com
+ (2603:10a6:20b:2e::32) To VI1PR04MB4704.eurprd04.prod.outlook.com
+ (2603:10a6:803:52::29)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=viorel.suman@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-mailer: git-send-email 2.7.4
+x-originating-ip: [95.76.156.53]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; VI1PR04MB5789;
+ 6:Yc1v+mQ07EuLc+OtOU+hgwQkS/PrktUA9zqdlWyNP01KXzY1OnjGYPgmhAzkznMCfwgYTigx7lzfN7ppkI6htWBAEnU+lbJL2NK5eSVK4NOXE8v8hirjjc9M2O0L5ZGrwq4lbZAbi+krvB7scMr8kfrvX2fARZSrYvhs0/fZSAvSnmduJfseyKm8hfy/Fgi/PxjGuvUTRi3kJGrR8Q4Rkh+l3KjY6axPBdfZG8YJWJOA7Us0eO+2ZoBMDOaOnQ2nVhTz0/q8dQ9yoGpNqxhim/hIep3OJcqc+QeKa0EuwMOTg3kXVhyl0CYqwvmjdvgr2t7fuTkxB7BuiLPcNu10xcNaJ6cYayyuhGaYqcdWiS9Cw669B6oSlo+FEhy1YeVpjIHCOv8GZX0TCiH818XtPNgYebFrO/StEH+Q/KAvnqtF0uvrOMIrd7fb01vy7OlmSrsKdZ3E2++lL5IQYv8QWg==;
+ 5:JeEIv9V/JFuFbuFJL8uJkOy33NfTFe4Tb+ovU5e0fKvH4ZRM7O1uiuh+CDBeuS7EsfSqJAqKg5UE0L4uftKqpIdIX0nNmyTx1y5MrfmvPAGR2nGquCmrUTpFIy//MQOXeqPWxcvqL0CwAXKqFO8qDDH1rIyp+crgq0t4FtBpekXd+dDHd109/oZ1/6sVbi3kUcPw2KhOCJRpr5gqPec50g==;
+ 7:lE904CiPvOk2C78RH6k2UTqKjNCdF4lagvqrHCOtfu5ybFLr9hXeiXUqv1GCVpJrpNo+T7LGnLfAFzwNwuLMkKI22amZqmrw/LqN6fDCxAl2oUkuskmkdzKEMR6CyGzePQPaAsrkPfQlkIVltC9cgQ==
+x-ms-office365-filtering-correlation-id: f29fda52-f83a-44fe-790c-08d6805ac4f0
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600109)(711020)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR04MB5789; 
+x-ms-traffictypediagnostic: VI1PR04MB5789:
+x-microsoft-antispam-prvs: <VI1PR04MB57895A63B3E1EDB51975C5C092980@VI1PR04MB5789.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0925081676
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(39860400002)(376002)(396003)(346002)(136003)(366004)(189003)(199004)(76176011)(102836004)(30864003)(11346002)(386003)(6506007)(2616005)(966005)(486006)(52116002)(66066001)(476003)(8936002)(86362001)(71190400001)(305945005)(26005)(446003)(7736002)(14454004)(478600001)(71200400001)(25786009)(68736007)(186003)(2906002)(97736004)(53936002)(3846002)(6116002)(4326008)(6636002)(106356001)(14444005)(6486002)(8676002)(39060400002)(81156014)(54906003)(110136005)(316002)(81166006)(53946003)(7416002)(99286004)(6436002)(6512007)(6306002)(44832011)(50226002)(105586002)(36756003)(256004)(217873002)(921003)(1121003)(579004);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5789;
+ H:VI1PR04MB4704.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 5feoVJjRM9ghCC5RZmaz+pNIWCzQkCtpE9AVToNQ0DOdNCpu8Kl+KBoJconNusEluiLaAUxXbYmh9LsrQ6RjjqEpH39xuqgKLicQH0t6A6UrWeiM/2jZnxG/pz0di18LgARVKyty4jirBwYN2VtS02wZdDVhpDwUQc7hxHMRCUdBrCGvU4Yp2Asu8wx1tnTF/qE4BQ21og6QP+UfooM46j08/4o9ESP8vUDGkrhQMj+IkQEpbzxHSGQ54vNkphRlXGf87lRr0UUiA6CcGYqDZ6o13ORvUflln+zEBdyNvtnedp6QMLR3DxEsLnirt2fh0VC1QU5cEf6UN1g+hRkLUA3vW9it0OnuIx1szfbr1YtufN/ccveUAQ2vTkyD4euBnj7u2MTnKWt6TkYCIPI14YM0oZjjhnpPfuUuAeJQ7lI=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="h31gzZEtNLTqOjlF"
-Content-Disposition: inline
-In-Reply-To: <20190122064618.1510-5-npiggin@gmail.com>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f29fda52-f83a-44fe-790c-08d6805ac4f0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 22 Jan 2019 11:14:24.5871 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5789
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,515 +120,779 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kbuild-all@01.org,
- Nicholas Piggin <npiggin@gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Viorel Suman <viorel.suman@gmail.com>, dl-linux-imx <linux-imx@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+This patch implements Audio Mixer CPU DAI driver for NXP iMX8 SOCs.
+The Audio Mixer is a on-chip functional module that allows mixing of
+two audio streams into a single audio stream.
 
---h31gzZEtNLTqOjlF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Audio Mixer datasheet is available here:
+https://www.nxp.com/docs/en/reference-manual/IMX8DQXPRM.pdf
 
-Hi Nicholas,
-
-I love your patch! Yet something to improve:
-
-[auto build test ERROR on powerpc/next]
-[also build test ERROR on v5.0-rc2 next-20190116]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/Fixes-for-3-separate-NMI-reentrancy-bugs/20190122-154328
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-defconfig (attached as .config)
-compiler: powerpc64-linux-gnu-gcc (Debian 8.2.0-11) 8.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        GCC_VERSION=8.2.0 make.cross ARCH=powerpc 
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
->> arch/powerpc/kernel/exceptions-64s.S:625: Error: Fixed entry overflow
-   arch/powerpc/kernel/exceptions-64s.S:625: Fatal error: .abort detected.  Abandoning ship.
-
-vim +625 arch/powerpc/kernel/exceptions-64s.S
-
-80795e6cb Nicholas Piggin        2016-09-21  616  
-0ebc4cdaa Benjamin Herrenschmidt 2009-06-02  617  
-1a6822d19 Nicholas Piggin        2016-12-06  618  EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
-7cfab0bae Nicholas Piggin        2019-01-22  619  SET_SCRATCH0(r13)		/* save r13 */
-7cfab0bae Nicholas Piggin        2019-01-22  620  EXCEPTION_PROLOG_0(PACA_EXSLB)
-7cfab0bae Nicholas Piggin        2019-01-22  621  EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
-00038b16f Nicholas Piggin        2019-01-22  622  	mfspr	r10,SPRN_DAR
-00038b16f Nicholas Piggin        2019-01-22  623  	std	r10,PACA_EXGEN+EX_DAR(r13)
-7cfab0bae Nicholas Piggin        2019-01-22  624  EXCEPTION_PROLOG_2(data_access_slb_common, EXC_STD)
-1a6822d19 Nicholas Piggin        2016-12-06 @625  EXC_REAL_END(data_access_slb, 0x380, 0x80)
-0ebc4cdaa Benjamin Herrenschmidt 2009-06-02  626  
-
-:::::: The code at line 625 was first introduced by commit
-:::::: 1a6822d194c3f627eeb6aaca6688a5d0a444663e powerpc/64s: Use (start, size) rather than (start, end) for exception handlers
-
-:::::: TO: Nicholas Piggin <npiggin@gmail.com>
-:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
-
+Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ sound/soc/fsl/Kconfig      |   7 +
+ sound/soc/fsl/Makefile     |   3 +
+ sound/soc/fsl/fsl_audmix.c | 576 +++++++++++++++++++++++++++++++++++++++++=
+++++
+ sound/soc/fsl/fsl_audmix.h | 102 ++++++++
+ 4 files changed, 688 insertions(+)
+ create mode 100644 sound/soc/fsl/fsl_audmix.c
+ create mode 100644 sound/soc/fsl/fsl_audmix.h
 
---h31gzZEtNLTqOjlF
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 7b1d997..0af2e056 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -24,6 +24,13 @@ config SND_SOC_FSL_SAI
+ 	  This option is only useful for out-of-tree drivers since
+ 	  in-tree drivers select it automatically.
+=20
++config SND_SOC_FSL_AUDMIX
++	tristate "Audio Mixer (AUDMIX) module support"
++	select REGMAP_MMIO
++	help
++	  Say Y if you want to add Audio Mixer (AUDMIX)
++	  support for the NXP iMX CPUs.
++
+ config SND_SOC_FSL_SSI
+ 	tristate "Synchronous Serial Interface module (SSI) support"
+ 	select SND_SOC_IMX_PCM_DMA if SND_IMX_SOC !=3D n
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index 3c0ff31..4172d5a 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -12,6 +12,7 @@ snd-soc-p1022-rdk-objs :=3D p1022_rdk.o
+ obj-$(CONFIG_SND_SOC_P1022_RDK) +=3D snd-soc-p1022-rdk.o
+=20
+ # Freescale SSI/DMA/SAI/SPDIF Support
++snd-soc-fsl-audmix-objs :=3D fsl_audmix.o
+ snd-soc-fsl-asoc-card-objs :=3D fsl-asoc-card.o
+ snd-soc-fsl-asrc-objs :=3D fsl_asrc.o fsl_asrc_dma.o
+ snd-soc-fsl-sai-objs :=3D fsl_sai.o
+@@ -22,6 +23,8 @@ snd-soc-fsl-esai-objs :=3D fsl_esai.o
+ snd-soc-fsl-micfil-objs :=3D fsl_micfil.o
+ snd-soc-fsl-utils-objs :=3D fsl_utils.o
+ snd-soc-fsl-dma-objs :=3D fsl_dma.o
++
++obj-$(CONFIG_SND_SOC_FSL_AUDMIX) +=3D snd-soc-fsl-audmix.o
+ obj-$(CONFIG_SND_SOC_FSL_ASOC_CARD) +=3D snd-soc-fsl-asoc-card.o
+ obj-$(CONFIG_SND_SOC_FSL_ASRC) +=3D snd-soc-fsl-asrc.o
+ obj-$(CONFIG_SND_SOC_FSL_SAI) +=3D snd-soc-fsl-sai.o
+diff --git a/sound/soc/fsl/fsl_audmix.c b/sound/soc/fsl/fsl_audmix.c
+new file mode 100644
+index 0000000..3356cb6
+--- /dev/null
++++ b/sound/soc/fsl/fsl_audmix.c
+@@ -0,0 +1,576 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * NXP AUDMIX ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ * Copyright 2017 NXP
++ */
++
++#include <linux/clk.h>
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/pm_runtime.h>
++#include <sound/soc.h>
++#include <sound/pcm_params.h>
++
++#include "fsl_audmix.h"
++
++#define SOC_ENUM_SINGLE_S(xreg, xshift, xtexts) \
++	SOC_ENUM_SINGLE(xreg, xshift, ARRAY_SIZE(xtexts), xtexts)
++
++static const char
++	*tdm_sel[] =3D { "TDM1", "TDM2", },
++	*mode_sel[] =3D { "Disabled", "TDM1", "TDM2", "Mixed", },
++	*width_sel[] =3D { "16b", "18b", "20b", "24b", "32b", },
++	*endis_sel[] =3D { "Disabled", "Enabled", },
++	*updn_sel[] =3D { "Downward", "Upward", },
++	*mask_sel[] =3D { "Unmask", "Mask", };
++
++static const struct soc_enum fsl_audmix_enum[] =3D {
++/* FSL_AUDMIX_CTR enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MIXCLK_SHIFT, tdm_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_OUTSRC_SHIFT, mode_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_OUTWIDTH_SHIFT, width_sel=
+),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MASKRTDF_SHIFT, mask_sel)=
+,
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_MASKCKDF_SHIFT, mask_sel)=
+,
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_SYNCMODE_SHIFT, endis_sel=
+),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_CTR, FSL_AUDMIX_CTR_SYNCSRC_SHIFT, tdm_sel),
++/* FSL_AUDMIX_ATCR0 enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR0, 0, endis_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR0, 1, updn_sel),
++/* FSL_AUDMIX_ATCR1 enums */
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR1, 0, endis_sel),
++SOC_ENUM_SINGLE_S(FSL_AUDMIX_ATCR1, 1, updn_sel),
++};
++
++struct fsl_audmix_state {
++	u8 tdms;
++	u8 clk;
++	char msg[64];
++};
++
++static const struct fsl_audmix_state prms[4][4] =3D {{
++	/* DIS->DIS, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* DIS->TDM1*/
++	{ .tdms =3D 1, .clk =3D 1, .msg =3D "DIS->TDM1: TDM1 not started!\n" },
++	/* DIS->TDM2*/
++	{ .tdms =3D 2, .clk =3D 2, .msg =3D "DIS->TDM2: TDM2 not started!\n" },
++	/* DIS->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "DIS->MIX: Please start both TDMs!\n"=
+ }
++}, {	/* TDM1->DIS */
++	{ .tdms =3D 1, .clk =3D 0, .msg =3D "TDM1->DIS: TDM1 not started!\n" },
++	/* TDM1->TDM1, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* TDM1->TDM2 */
++	{ .tdms =3D 3, .clk =3D 2, .msg =3D "TDM1->TDM2: Please start both TDMs!\=
+n" },
++	/* TDM1->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM1->MIX: Please start both TDMs!\n=
+" }
++}, {	/* TDM2->DIS */
++	{ .tdms =3D 2, .clk =3D 0, .msg =3D "TDM2->DIS: TDM2 not started!\n" },
++	/* TDM2->TDM1 */
++	{ .tdms =3D 3, .clk =3D 1, .msg =3D "TDM2->TDM1: Please start both TDMs!\=
+n" },
++	/* TDM2->TDM2, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" },
++	/* TDM2->MIX */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "TDM2->MIX: Please start both TDMs!\n=
+" }
++}, {	/* MIX->DIS */
++	{ .tdms =3D 3, .clk =3D 0, .msg =3D "MIX->DIS: Please start both TDMs!\n"=
+ },
++	/* MIX->TDM1 */
++	{ .tdms =3D 3, .clk =3D 1, .msg =3D "MIX->TDM1: Please start both TDMs!\n=
+" },
++	/* MIX->TDM2 */
++	{ .tdms =3D 3, .clk =3D 2, .msg =3D "MIX->TDM2: Please start both TDMs!\n=
+" },
++	/* MIX->MIX, do nothing */
++	{ .tdms =3D 0, .clk =3D 0, .msg =3D "" }
++}, };
++
++static int fsl_audmix_state_trans(struct snd_soc_component *comp,
++				  unsigned int *mask, unsigned int *ctr,
++				  const struct fsl_audmix_state prm)
++{
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	/* Enforce all required TDMs are started */
++	if ((priv->tdms & prm.tdms) !=3D prm.tdms) {
++		dev_dbg(comp->dev, prm.msg);
++		return -EINVAL;
++	}
++
++	switch (prm.clk) {
++	case 1:
++	case 2:
++		/* Set mix clock */
++		(*mask) |=3D FSL_AUDMIX_CTR_MIXCLK_MASK;
++		(*ctr)  |=3D FSL_AUDMIX_CTR_MIXCLK(prm.clk - 1);
++		break;
++	default:
++		break;
++	}
++
++	return 0;
++}
++
++static int fsl_audmix_put_mix_clk_src(struct snd_kcontrol *kcontrol,
++				      struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
++	unsigned int *item =3D ucontrol->value.enumerated.item;
++	unsigned int reg_val, val, mix_clk;
++	int ret =3D 0;
++
++	/* Get current state */
++	ret =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR, &reg_val);
++	if (ret)
++		return ret;
++
++	mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
++			>> FSL_AUDMIX_CTR_MIXCLK_SHIFT);
++	val =3D snd_soc_enum_item_to_val(e, item[0]);
++
++	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
++
++	/**
++	 * Ensure the current selected mixer clock is available
++	 * for configuration propagation
++	 */
++	if (!(priv->tdms & BIT(mix_clk))) {
++		dev_err(comp->dev,
++			"Started TDM%d needed for config propagation!\n",
++			mix_clk + 1);
++		return -EINVAL;
++	}
++
++	if (!(priv->tdms & BIT(val))) {
++		dev_err(comp->dev,
++			"The selected clock source has no TDM%d enabled!\n",
++			val + 1);
++		return -EINVAL;
++	}
++
++	return snd_soc_put_enum_double(kcontrol, ucontrol);
++}
++
++static int fsl_audmix_put_out_src(struct snd_kcontrol *kcontrol,
++				  struct snd_ctl_elem_value *ucontrol)
++{
++	struct snd_soc_component *comp =3D snd_kcontrol_chip(kcontrol);
++	struct fsl_audmix *priv =3D snd_soc_component_get_drvdata(comp);
++	struct soc_enum *e =3D (struct soc_enum *)kcontrol->private_value;
++	unsigned int *item =3D ucontrol->value.enumerated.item;
++	u32 out_src, mix_clk;
++	unsigned int reg_val, val, mask =3D 0, ctr =3D 0;
++	int ret =3D 0;
++
++	/* Get current state */
++	ret =3D snd_soc_component_read(comp, FSL_AUDMIX_CTR, &reg_val);
++	if (ret)
++		return ret;
++
++	/* "From" state */
++	out_src =3D ((reg_val & FSL_AUDMIX_CTR_OUTSRC_MASK)
++			>> FSL_AUDMIX_CTR_OUTSRC_SHIFT);
++	mix_clk =3D ((reg_val & FSL_AUDMIX_CTR_MIXCLK_MASK)
++			>> FSL_AUDMIX_CTR_MIXCLK_SHIFT);
++
++	/* "To" state */
++	val =3D snd_soc_enum_item_to_val(e, item[0]);
++
++	dev_dbg(comp->dev, "TDMs=3Dx%08x, val=3Dx%08x\n", priv->tdms, val);
++
++	/* Check if state is changing ... */
++	if (out_src =3D=3D val)
++		return 0;
++	/**
++	 * Ensure the current selected mixer clock is available
++	 * for configuration propagation
++	 */
++	if (!(priv->tdms & BIT(mix_clk))) {
++		dev_err(comp->dev,
++			"Started TDM%d needed for config propagation!\n",
++			mix_clk + 1);
++		return -EINVAL;
++	}
++
++	/* Check state transition constraints */
++	ret =3D fsl_audmix_state_trans(comp, &mask, &ctr, prms[out_src][val]);
++	if (ret)
++		return ret;
++
++	/* Complete transition to new state */
++	mask |=3D FSL_AUDMIX_CTR_OUTSRC_MASK;
++	ctr  |=3D FSL_AUDMIX_CTR_OUTSRC(val);
++
++	return snd_soc_component_update_bits(comp, FSL_AUDMIX_CTR, mask, ctr);
++}
++
++static const struct snd_kcontrol_new fsl_audmix_snd_controls[] =3D {
++	/* FSL_AUDMIX_CTR controls */
++	SOC_ENUM_EXT("Mixing Clock Source", fsl_audmix_enum[0],
++		     snd_soc_get_enum_double, fsl_audmix_put_mix_clk_src),
++	SOC_ENUM_EXT("Output Source", fsl_audmix_enum[1],
++		     snd_soc_get_enum_double, fsl_audmix_put_out_src),
++	SOC_ENUM("Output Width", fsl_audmix_enum[2]),
++	SOC_ENUM("Frame Rate Diff Error", fsl_audmix_enum[3]),
++	SOC_ENUM("Clock Freq Diff Error", fsl_audmix_enum[4]),
++	SOC_ENUM("Sync Mode Config", fsl_audmix_enum[5]),
++	SOC_ENUM("Sync Mode Clk Source", fsl_audmix_enum[6]),
++	/* TDM1 Attenuation controls */
++	SOC_ENUM("TDM1 Attenuation", fsl_audmix_enum[7]),
++	SOC_ENUM("TDM1 Attenuation Direction", fsl_audmix_enum[8]),
++	SOC_SINGLE("TDM1 Attenuation Step Divider", FSL_AUDMIX_ATCR0,
++		   2, 0x00fff, 0),
++	SOC_SINGLE("TDM1 Attenuation Initial Value", FSL_AUDMIX_ATIVAL0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Up Factor", FSL_AUDMIX_ATSTPUP0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Down Factor", FSL_AUDMIX_ATSTPDN0,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM1 Attenuation Step Target", FSL_AUDMIX_ATSTPTGT0,
++		   0, 0x3ffff, 0),
++	/* TDM2 Attenuation controls */
++	SOC_ENUM("TDM2 Attenuation", fsl_audmix_enum[9]),
++	SOC_ENUM("TDM2 Attenuation Direction", fsl_audmix_enum[10]),
++	SOC_SINGLE("TDM2 Attenuation Step Divider", FSL_AUDMIX_ATCR1,
++		   2, 0x00fff, 0),
++	SOC_SINGLE("TDM2 Attenuation Initial Value", FSL_AUDMIX_ATIVAL1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Up Factor", FSL_AUDMIX_ATSTPUP1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Down Factor", FSL_AUDMIX_ATSTPDN1,
++		   0, 0x3ffff, 0),
++	SOC_SINGLE("TDM2 Attenuation Step Target", FSL_AUDMIX_ATSTPTGT1,
++		   0, 0x3ffff, 0),
++};
++
++static int fsl_audmix_dai_set_fmt(struct snd_soc_dai *dai, unsigned int fm=
+t)
++{
++	struct snd_soc_component *comp =3D dai->component;
++	u32 mask =3D 0, ctr =3D 0;
++
++	/* AUDMIX is working in DSP_A format only */
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_DSP_A:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* For playback the AUDMIX is slave, and for record is master */
++	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
++	case SND_SOC_DAIFMT_CBM_CFM:
++	case SND_SOC_DAIFMT_CBS_CFS:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++	case SND_SOC_DAIFMT_IB_NF:
++		/* Output data will be written on positive edge of the clock */
++		ctr |=3D FSL_AUDMIX_CTR_OUTCKPOL(0);
++		break;
++	case SND_SOC_DAIFMT_NB_NF:
++		/* Output data will be written on negative edge of the clock */
++		ctr |=3D FSL_AUDMIX_CTR_OUTCKPOL(1);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mask |=3D FSL_AUDMIX_CTR_OUTCKPOL_MASK;
++
++	return snd_soc_component_update_bits(comp, FSL_AUDMIX_CTR, mask, ctr);
++}
++
++static int fsl_audmix_dai_trigger(struct snd_pcm_substream *substream, int=
+ cmd,
++				  struct snd_soc_dai *dai)
++{
++	struct fsl_audmix *priv =3D snd_soc_dai_get_drvdata(dai);
++
++	/* Capture stream shall not be handled */
++	if (substream->stream =3D=3D SNDRV_PCM_STREAM_CAPTURE)
++		return 0;
++
++	switch (cmd) {
++	case SNDRV_PCM_TRIGGER_START:
++	case SNDRV_PCM_TRIGGER_RESUME:
++	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
++		priv->tdms |=3D BIT(dai->driver->id);
++		break;
++	case SNDRV_PCM_TRIGGER_STOP:
++	case SNDRV_PCM_TRIGGER_SUSPEND:
++	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
++		priv->tdms &=3D ~BIT(dai->driver->id);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static const struct snd_soc_dai_ops fsl_audmix_dai_ops =3D {
++	.set_fmt      =3D fsl_audmix_dai_set_fmt,
++	.trigger      =3D fsl_audmix_dai_trigger,
++};
++
++static struct snd_soc_dai_driver fsl_audmix_dai[] =3D {
++	{
++		.id   =3D 0,
++		.name =3D "audmix-0",
++		.playback =3D {
++			.stream_name =3D "AUDMIX-Playback-0",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.capture =3D {
++			.stream_name =3D "AUDMIX-Capture-0",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.ops =3D &fsl_audmix_dai_ops,
++	},
++	{
++		.id   =3D 1,
++		.name =3D "audmix-1",
++		.playback =3D {
++			.stream_name =3D "AUDMIX-Playback-1",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.capture =3D {
++			.stream_name =3D "AUDMIX-Capture-1",
++			.channels_min =3D 8,
++			.channels_max =3D 8,
++			.rate_min =3D 8000,
++			.rate_max =3D 96000,
++			.rates =3D SNDRV_PCM_RATE_8000_96000,
++			.formats =3D FSL_AUDMIX_FORMATS,
++		},
++		.ops =3D &fsl_audmix_dai_ops,
++	},
++};
++
++static const struct snd_soc_component_driver fsl_audmix_component =3D {
++	.name		  =3D "fsl-audmix-dai",
++	.controls	  =3D fsl_audmix_snd_controls,
++	.num_controls	  =3D ARRAY_SIZE(fsl_audmix_snd_controls),
++};
++
++static bool fsl_audmix_readable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case FSL_AUDMIX_CTR:
++	case FSL_AUDMIX_STR:
++	case FSL_AUDMIX_ATCR0:
++	case FSL_AUDMIX_ATIVAL0:
++	case FSL_AUDMIX_ATSTPUP0:
++	case FSL_AUDMIX_ATSTPDN0:
++	case FSL_AUDMIX_ATSTPTGT0:
++	case FSL_AUDMIX_ATTNVAL0:
++	case FSL_AUDMIX_ATSTP0:
++	case FSL_AUDMIX_ATCR1:
++	case FSL_AUDMIX_ATIVAL1:
++	case FSL_AUDMIX_ATSTPUP1:
++	case FSL_AUDMIX_ATSTPDN1:
++	case FSL_AUDMIX_ATSTPTGT1:
++	case FSL_AUDMIX_ATTNVAL1:
++	case FSL_AUDMIX_ATSTP1:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static bool fsl_audmix_writeable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case FSL_AUDMIX_CTR:
++	case FSL_AUDMIX_ATCR0:
++	case FSL_AUDMIX_ATIVAL0:
++	case FSL_AUDMIX_ATSTPUP0:
++	case FSL_AUDMIX_ATSTPDN0:
++	case FSL_AUDMIX_ATSTPTGT0:
++	case FSL_AUDMIX_ATCR1:
++	case FSL_AUDMIX_ATIVAL1:
++	case FSL_AUDMIX_ATSTPUP1:
++	case FSL_AUDMIX_ATSTPDN1:
++	case FSL_AUDMIX_ATSTPTGT1:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static const struct reg_default fsl_audmix_reg[] =3D {
++	{ FSL_AUDMIX_CTR,       0x00060 },
++	{ FSL_AUDMIX_STR,       0x00003 },
++	{ FSL_AUDMIX_ATCR0,     0x00000 },
++	{ FSL_AUDMIX_ATIVAL0,   0x3FFFF },
++	{ FSL_AUDMIX_ATSTPUP0,  0x2AAAA },
++	{ FSL_AUDMIX_ATSTPDN0,  0x30000 },
++	{ FSL_AUDMIX_ATSTPTGT0, 0x00010 },
++	{ FSL_AUDMIX_ATTNVAL0,  0x00000 },
++	{ FSL_AUDMIX_ATSTP0,    0x00000 },
++	{ FSL_AUDMIX_ATCR1,     0x00000 },
++	{ FSL_AUDMIX_ATIVAL1,   0x3FFFF },
++	{ FSL_AUDMIX_ATSTPUP1,  0x2AAAA },
++	{ FSL_AUDMIX_ATSTPDN1,  0x30000 },
++	{ FSL_AUDMIX_ATSTPTGT1, 0x00010 },
++	{ FSL_AUDMIX_ATTNVAL1,  0x00000 },
++	{ FSL_AUDMIX_ATSTP1,    0x00000 },
++};
++
++static const struct regmap_config fsl_audmix_regmap_config =3D {
++	.reg_bits =3D 32,
++	.reg_stride =3D 4,
++	.val_bits =3D 32,
++	.max_register =3D FSL_AUDMIX_ATSTP1,
++	.reg_defaults =3D fsl_audmix_reg,
++	.num_reg_defaults =3D ARRAY_SIZE(fsl_audmix_reg),
++	.readable_reg =3D fsl_audmix_readable_reg,
++	.writeable_reg =3D fsl_audmix_writeable_reg,
++	.cache_type =3D REGCACHE_FLAT,
++};
++
++static int fsl_audmix_probe(struct platform_device *pdev)
++{
++	struct fsl_audmix *priv;
++	struct resource *res;
++	void __iomem *regs;
++	int ret;
++	const char *sprop;
++
++	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	/* Get the addresses */
++	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	regs =3D devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(regs))
++		return PTR_ERR(regs);
++
++	priv->regmap =3D devm_regmap_init_mmio_clk(&pdev->dev, "ipg", regs,
++						 &fsl_audmix_regmap_config);
++	if (IS_ERR(priv->regmap)) {
++		dev_err(&pdev->dev, "failed to init regmap\n");
++		return PTR_ERR(priv->regmap);
++	}
++
++	priv->ipg_clk =3D devm_clk_get(&pdev->dev, "ipg");
++	if (IS_ERR(priv->ipg_clk)) {
++		dev_err(&pdev->dev, "failed to get ipg clock\n");
++		return PTR_ERR(priv->ipg_clk);
++	}
++
++	platform_set_drvdata(pdev, priv);
++	pm_runtime_enable(&pdev->dev);
++
++	ret =3D devm_snd_soc_register_component(&pdev->dev, &fsl_audmix_component=
+,
++					      fsl_audmix_dai,
++					      ARRAY_SIZE(fsl_audmix_dai));
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register ASoC DAI\n");
++		return ret;
++	}
++
++	sprop =3D of_get_property(pdev->dev.of_node, "model", NULL);
++	if (sprop) {
++		priv->pdev =3D platform_device_register_data(&pdev->dev, sprop, 0,
++							   NULL, 0);
++		if (IS_ERR(priv->pdev)) {
++			ret =3D PTR_ERR(priv->pdev);
++			dev_err(&pdev->dev,
++				"failed to register platform %s: %d\n", sprop,
++				 ret);
++		}
++	} else {
++		dev_err(&pdev->dev, "[model] attribute missing.\n");
++		ret =3D -EINVAL;
++	}
++
++	return ret;
++}
++
++static int fsl_audmix_remove(struct platform_device *pdev)
++{
++	struct fsl_audmix *priv =3D dev_get_drvdata(&pdev->dev);
++
++	if (priv->pdev)
++		platform_device_unregister(priv->pdev);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int fsl_audmix_runtime_resume(struct device *dev)
++{
++	struct fsl_audmix *priv =3D dev_get_drvdata(dev);
++	int ret;
++
++	ret =3D clk_prepare_enable(priv->ipg_clk);
++	if (ret) {
++		dev_err(dev, "Failed to enable IPG clock: %d\n", ret);
++		return ret;
++	}
++
++	regcache_cache_only(priv->regmap, false);
++	regcache_mark_dirty(priv->regmap);
++
++	return regcache_sync(priv->regmap);
++}
++
++static int fsl_audmix_runtime_suspend(struct device *dev)
++{
++	struct fsl_audmix *priv =3D dev_get_drvdata(dev);
++
++	regcache_cache_only(priv->regmap, true);
++
++	clk_disable_unprepare(priv->ipg_clk);
++
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++static const struct dev_pm_ops fsl_audmix_pm =3D {
++	SET_RUNTIME_PM_OPS(fsl_audmix_runtime_suspend,
++			   fsl_audmix_runtime_resume,
++			   NULL)
++	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
++				pm_runtime_force_resume)
++};
++
++static const struct of_device_id fsl_audmix_ids[] =3D {
++	{ .compatible =3D "fsl,imx8qm-audmix", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, fsl_audmix_ids);
++
++static struct platform_driver fsl_audmix_driver =3D {
++	.probe =3D fsl_audmix_probe,
++	.remove =3D fsl_audmix_remove,
++	.driver =3D {
++		.name =3D "fsl-audmix",
++		.of_match_table =3D fsl_audmix_ids,
++		.pm =3D &fsl_audmix_pm,
++	},
++};
++module_platform_driver(fsl_audmix_driver);
++
++MODULE_DESCRIPTION("NXP AUDMIX ASoC DAI driver");
++MODULE_AUTHOR("Viorel Suman <viorel.suman@nxp.com>");
++MODULE_ALIAS("platform:fsl-audmix");
++MODULE_LICENSE("GPL v2");
+diff --git a/sound/soc/fsl/fsl_audmix.h b/sound/soc/fsl/fsl_audmix.h
+new file mode 100644
+index 0000000..7812ffe
+--- /dev/null
++++ b/sound/soc/fsl/fsl_audmix.h
+@@ -0,0 +1,102 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * NXP AUDMIX ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ * Copyright 2017 NXP
++ */
++
++#ifndef __FSL_AUDMIX_H
++#define __FSL_AUDMIX_H
++
++#define FSL_AUDMIX_FORMATS (SNDRV_PCM_FMTBIT_S16_LE |\
++			SNDRV_PCM_FMTBIT_S24_LE |\
++			SNDRV_PCM_FMTBIT_S32_LE)
++/* AUDMIX Registers */
++#define FSL_AUDMIX_CTR		0x200 /* Control */
++#define FSL_AUDMIX_STR		0x204 /* Status */
++
++#define FSL_AUDMIX_ATCR0	0x208 /* Attenuation Control */
++#define FSL_AUDMIX_ATIVAL0	0x20c /* Attenuation Initial Value */
++#define FSL_AUDMIX_ATSTPUP0	0x210 /* Attenuation step up factor */
++#define FSL_AUDMIX_ATSTPDN0	0x214 /* Attenuation step down factor */
++#define FSL_AUDMIX_ATSTPTGT0	0x218 /* Attenuation step target */
++#define FSL_AUDMIX_ATTNVAL0	0x21c /* Attenuation Value */
++#define FSL_AUDMIX_ATSTP0	0x220 /* Attenuation step number */
++
++#define FSL_AUDMIX_ATCR1	0x228 /* Attenuation Control */
++#define FSL_AUDMIX_ATIVAL1	0x22c /* Attenuation Initial Value */
++#define FSL_AUDMIX_ATSTPUP1	0x230 /* Attenuation step up factor */
++#define FSL_AUDMIX_ATSTPDN1	0x234 /* Attenuation step down factor */
++#define FSL_AUDMIX_ATSTPTGT1	0x238 /* Attenuation step target */
++#define FSL_AUDMIX_ATTNVAL1	0x23c /* Attenuation Value */
++#define FSL_AUDMIX_ATSTP1	0x240 /* Attenuation step number */
++
++/* AUDMIX Control Register */
++#define FSL_AUDMIX_CTR_MIXCLK_SHIFT	0
++#define FSL_AUDMIX_CTR_MIXCLK_MASK	BIT(FSL_AUDMIX_CTR_MIXCLK_SHIFT)
++#define FSL_AUDMIX_CTR_MIXCLK(i)	((i) << FSL_AUDMIX_CTR_MIXCLK_SHIFT)
++#define FSL_AUDMIX_CTR_OUTSRC_SHIFT	1
++#define FSL_AUDMIX_CTR_OUTSRC_MASK	(0x3 << FSL_AUDMIX_CTR_OUTSRC_SHIFT)
++#define FSL_AUDMIX_CTR_OUTSRC(i)	(((i) << FSL_AUDMIX_CTR_OUTSRC_SHIFT)\
++					      & FSL_AUDMIX_CTR_OUTSRC_MASK)
++#define FSL_AUDMIX_CTR_OUTWIDTH_SHIFT	3
++#define FSL_AUDMIX_CTR_OUTWIDTH_MASK	(0x7 << FSL_AUDMIX_CTR_OUTWIDTH_SHIFT=
+)
++#define FSL_AUDMIX_CTR_OUTWIDTH(i)	(((i) << FSL_AUDMIX_CTR_OUTWIDTH_SHIFT)=
+\
++					      & FSL_AUDMIX_CTR_OUTWIDTH_MASK)
++#define FSL_AUDMIX_CTR_OUTCKPOL_SHIFT	6
++#define FSL_AUDMIX_CTR_OUTCKPOL_MASK	BIT(FSL_AUDMIX_CTR_OUTCKPOL_SHIFT)
++#define FSL_AUDMIX_CTR_OUTCKPOL(i)	((i) << FSL_AUDMIX_CTR_OUTCKPOL_SHIFT)
++#define FSL_AUDMIX_CTR_MASKRTDF_SHIFT	7
++#define FSL_AUDMIX_CTR_MASKRTDF_MASK	BIT(FSL_AUDMIX_CTR_MASKRTDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKRTDF(i)	((i) << FSL_AUDMIX_CTR_MASKRTDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKCKDF_SHIFT	8
++#define FSL_AUDMIX_CTR_MASKCKDF_MASK	BIT(FSL_AUDMIX_CTR_MASKCKDF_SHIFT)
++#define FSL_AUDMIX_CTR_MASKCKDF(i)	((i) << FSL_AUDMIX_CTR_MASKCKDF_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCMODE_SHIFT	9
++#define FSL_AUDMIX_CTR_SYNCMODE_MASK	BIT(FSL_AUDMIX_CTR_SYNCMODE_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCMODE(i)	((i) << FSL_AUDMIX_CTR_SYNCMODE_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCSRC_SHIFT	10
++#define FSL_AUDMIX_CTR_SYNCSRC_MASK	BIT(FSL_AUDMIX_CTR_SYNCSRC_SHIFT)
++#define FSL_AUDMIX_CTR_SYNCSRC(i)	((i) << FSL_AUDMIX_CTR_SYNCSRC_SHIFT)
++
++/* AUDMIX Status Register */
++#define FSL_AUDMIX_STR_RATEDIFF		BIT(0)
++#define FSL_AUDMIX_STR_CLKDIFF		BIT(1)
++#define FSL_AUDMIX_STR_MIXSTAT_SHIFT	2
++#define FSL_AUDMIX_STR_MIXSTAT_MASK	(0x3 << FSL_AUDMIX_STR_MIXSTAT_SHIFT)
++#define FSL_AUDMIX_STR_MIXSTAT(i)	(((i) & FSL_AUDMIX_STR_MIXSTAT_MASK) \
++					   >> FSL_AUDMIX_STR_MIXSTAT_SHIFT)
++/* AUDMIX Attenuation Control Register */
++#define FSL_AUDMIX_ATCR_AT_EN		BIT(0)
++#define FSL_AUDMIX_ATCR_AT_UPDN		BIT(1)
++#define FSL_AUDMIX_ATCR_ATSTPDIF_SHIFT	2
++#define FSL_AUDMIX_ATCR_ATSTPDFI_MASK	\
++				(0xfff << FSL_AUDMIX_ATCR_ATSTPDIF_SHIFT)
++
++/* AUDMIX Attenuation Initial Value Register */
++#define FSL_AUDMIX_ATIVAL_ATINVAL_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Up Factor Register */
++#define FSL_AUDMIX_ATSTPUP_ATSTEPUP_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Down Factor Register */
++#define FSL_AUDMIX_ATSTPDN_ATSTEPDN_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Target Register */
++#define FSL_AUDMIX_ATSTPTGT_ATSTPTG_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Value Register */
++#define FSL_AUDMIX_ATTNVAL_ATCURVAL_MASK	0x3FFFF
++
++/* AUDMIX Attenuation Step Number Register */
++#define FSL_AUDMIX_ATSTP_STPCTR_MASK	0x3FFFF
++
++#define FSL_AUDMIX_MAX_DAIS		2
++struct fsl_audmix {
++	struct platform_device *pdev;
++	struct regmap *regmap;
++	struct clk *ipg_clk;
++	u8 tdms;
++};
++
++#endif /* __FSL_AUDMIX_H */
+--=20
+2.7.4
 
-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
-jtHIr8uR66Z8+n+K+apxXIQBAA==
-
---h31gzZEtNLTqOjlF--
