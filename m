@@ -2,60 +2,77 @@ Return-Path: <SRS0=/GF9=P6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C176C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CDEDC282C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:48:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCA5B20861
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:45:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCA5B20861
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id AF69E20861
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:48:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SIlwpiaQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF69E20861
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kJp871l8zDqNx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 17:45:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kJs55VPMzDqP3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 17:48:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=xiaowei.bao@nxp.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="SIlwpiaQ"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kJfw5HVlzDqMb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 17:39:20 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A673F200211;
- Tue, 22 Jan 2019 07:39:17 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com
- [165.114.16.14])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id AE1D42001F2;
- Tue, 22 Jan 2019 07:39:07 +0100 (CET)
-Received: from titan.ap.freescale.net (TITAN.ap.freescale.net [10.192.208.233])
- by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 34A84402B5;
- Tue, 22 Jan 2019 14:38:54 +0800 (SGT)
-From: Xiaowei Bao <xiaowei.bao@nxp.com>
-To: bhelgaas@google.com, robh+dt@kernel.org, mark.rutland@arm.com,
- shawnguo@kernel.org, leoyang.li@nxp.com, kishon@ti.com,
- lorenzo.pieralisi@arm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
- minghuan.Lian@nxp.com, mingkai.hu@nxp.com, roy.zang@nxp.com,
- kstewart@linuxfoundation.org, cyrille.pitchen@free-electrons.com,
- pombredanne@nexb.com, shawn.lin@rock-chips.com, linux-pci@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCHv6 3/4] pci: layerscape: Add the EP mode support.
-Date: Tue, 22 Jan 2019 14:33:27 +0800
-Message-Id: <20190122063328.25228-3-xiaowei.bao@nxp.com>
-X-Mailer: git-send-email 2.14.1
-In-Reply-To: <20190122063328.25228-1-xiaowei.bao@nxp.com>
-References: <20190122063328.25228-1-xiaowei.bao@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43kJqB04FCzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 17:46:29 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id z11so10604373pgu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 22:46:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=6Z5ywhMm9kQiGXwWZtHoMVg4XNY8zuMKP5eWkub81BM=;
+ b=SIlwpiaQWl5iUtjnhS9/pdyAF3GqYQXjUX1lk9WDqjP2Kfz2onZVn1ibUZJiedilmU
+ MArbEEg7j7B4HgKu4cdi8RCku1XFd6qpeJU4DkMLI935C8lRIwKl4RA2oS9ZLtFzKuXu
+ ULiV8J+hSvi409ipaYIZuvMY8pjUrfVhD+cF6Deqd25F2F6Myoosjllc9gO5sG9JtO/1
+ pdZWDWMO3WNZKzJsGv+iETP4ZHNAJBVVspZFEQwc/6UlkujLiUtsgLVLOqeqv0gsyLjQ
+ wFIcv3ntQP5m089eTUC5mOv2wcKKQER2Rz2igXGFol6guaKgLct8ayxGL+XV2tIyeJfI
+ OPLA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=6Z5ywhMm9kQiGXwWZtHoMVg4XNY8zuMKP5eWkub81BM=;
+ b=FG/7Iquj0oIVOwkVvD9/E8eW9Ups6lzM51Z/ATLLvH0FXLkmDj7zBMdUrrkcxsdadX
+ QuPx/WxlPF+ycvyZ/uV3yXkfA9rQkibTRc21TeVkMRMyIxYIsFCiIllRze23CvUXx0m5
+ aCZL9nfEnY9irpVpO/2vNdtO8cboDtJZZoiTKDFSoMouoFcVP1OxUzJM0Ze5mhZxfy2F
+ 6VJMwDDEVJGng+T7NE7EkgSho7LhcdN5F/XXotzF2htQ46hbn1iZhknxWvTYqxhxs0Vh
+ t5/PD27FuXuJz9a5lngD0LPbI7cWRUTPEL2s75i9Fq63db7OQIa9p7Rhs6GXbf16bFEb
+ /fIQ==
+X-Gm-Message-State: AJcUukfZPTzf1ttpo6kTDTRscuBO7t+hAQl3rAapRwfMHxwswGUM8oZw
+ Zt+DbyP8COCVvIOu1Y74pgdGxYdD
+X-Google-Smtp-Source: ALg8bN40rHy2cH2DflfFKxw0yKWXKwfDJ15Z91v4Y9qHNKiU9/2h2GRRtaWB7+eZBxCS+7hrs0dRSg==
+X-Received: by 2002:a63:d604:: with SMTP id q4mr30522443pgg.175.1548139587855; 
+ Mon, 21 Jan 2019 22:46:27 -0800 (PST)
+Received: from roar.local0.net (193-116-118-220.tpgi.com.au. [193.116.118.220])
+ by smtp.gmail.com with ESMTPSA id v15sm18341830pfn.94.2019.01.21.22.46.25
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 21 Jan 2019 22:46:27 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/4] Fixes for 3 separate NMI reentrancy bugs
+Date: Tue, 22 Jan 2019 16:46:14 +1000
+Message-Id: <20190122064618.1510-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.18.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,212 +84,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Xiaowei Bao <xiaowei.bao@nxp.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the PCIe EP mode support for layerscape platform.
+This series fixes several similar but unrelated bugs with NMIs
+clobbering live registers and getting away with it because
+MSR[RI] is set. Pretty rare bugs, but serious silent corruption
+consequences.
 
-Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-Reviewed-by: Minghuan Lian <minghuan.lian@nxp.com>
-Reviewed-by: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-Reviewed-by: Kishon Vijay Abraham I <kishon@ti.com>
----
-depends on: https://patchwork.kernel.org/project/linux-pci/list/?series=66177
+For the most part these can be observed and tested quite easily
+with the mambo simulator except that it does not seem to follow
+the architecture wrt leaving MSR[RI] unchanged for HV interrupts.
+Manually fixing that up in the sim environment can trigger that
+case.
 
-v2:
- - remove the EP mode check function.
-v3:
- - modif the return value when enter default case.
-v4:
- - no change.
-v5:
- - no change.
-v6:
- - modify the code base on the submit patch of the EP framework.
+Thanks,
+Nick
 
- drivers/pci/controller/dwc/Makefile            |    2 +-
- drivers/pci/controller/dwc/pci-layerscape-ep.c |  157 ++++++++++++++++++++++++
- 2 files changed, 158 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
+Nicholas Piggin (4):
+  powerpc/64s: Fix HV NMI vs HV interrupt recoverability test
+  powerpc/64s: system reset interrupt preserve HSRRs
+  powerpc/64s: Prepare to handle data interrupts vs d-side MCE
+    reentrancy
+  powerpc/64s: Fix data interrupts vs d-side MCE reentrancy
 
-diff --git a/drivers/pci/controller/dwc/Makefile b/drivers/pci/controller/dwc/Makefile
-index 7bcdcdf..b5f3b83 100644
---- a/drivers/pci/controller/dwc/Makefile
-+++ b/drivers/pci/controller/dwc/Makefile
-@@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
- obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
- obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
- obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone.o
--obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
-+obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
- obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
- obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
- obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o
-diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-new file mode 100644
-index 0000000..ddc2dbb
---- /dev/null
-+++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-@@ -0,0 +1,157 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * PCIe controller EP driver for Freescale Layerscape SoCs
-+ *
-+ * Copyright (C) 2018 NXP Semiconductor.
-+ *
-+ * Author: Xiaowei Bao <xiaowei.bao@nxp.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/of_pci.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/resource.h>
-+
-+#include "pcie-designware.h"
-+
-+#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
-+
-+struct ls_pcie_ep {
-+	struct dw_pcie		*pci;
-+};
-+
-+#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
-+
-+static int ls_pcie_establish_link(struct dw_pcie *pci)
-+{
-+	return 0;
-+}
-+
-+static const struct dw_pcie_ops ls_pcie_ep_ops = {
-+	.start_link = ls_pcie_establish_link,
-+};
-+
-+static const struct of_device_id ls_pcie_ep_of_match[] = {
-+	{ .compatible = "fsl,ls-pcie-ep",},
-+	{ },
-+};
-+
-+static const struct pci_epc_features ls_pcie_epc_features = {
-+	.linkup_notifier = false,
-+	.msi_capable = true,
-+	.msix_capable = false,
-+};
-+
-+static const struct pci_epc_features*
-+ls_pcie_ep_get_features(struct dw_pcie_ep *ep)
-+{
-+	return &ls_pcie_epc_features;
-+}
-+
-+static void ls_pcie_ep_init(struct dw_pcie_ep *ep)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+	struct pci_epc *epc = ep->epc;
-+	enum pci_barno bar;
-+
-+	for (bar = BAR_0; bar <= BAR_5; bar++)
-+		dw_pcie_ep_reset_bar(pci, bar);
-+}
-+
-+static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
-+				  enum pci_epc_irq_type type, u16 interrupt_num)
-+{
-+	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-+
-+	switch (type) {
-+	case PCI_EPC_IRQ_LEGACY:
-+		return dw_pcie_ep_raise_legacy_irq(ep, func_no);
-+	case PCI_EPC_IRQ_MSI:
-+		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
-+	case PCI_EPC_IRQ_MSIX:
-+		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
-+	default:
-+		dev_err(pci->dev, "UNKNOWN IRQ type\n");
-+		return -EINVAL;
-+	}
-+}
-+
-+static struct dw_pcie_ep_ops pcie_ep_ops = {
-+	.ep_init = ls_pcie_ep_init,
-+	.raise_irq = ls_pcie_ep_raise_irq,
-+	.get_features = ls_pcie_ep_get_features,
-+};
-+
-+static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
-+					struct platform_device *pdev)
-+{
-+	struct dw_pcie *pci = pcie->pci;
-+	struct device *dev = pci->dev;
-+	struct dw_pcie_ep *ep;
-+	struct resource *res;
-+	int ret;
-+
-+	ep = &pci->ep;
-+	ep->ops = &pcie_ep_ops;
-+
-+	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
-+	if (!res)
-+		return -EINVAL;
-+
-+	ep->phys_base = res->start;
-+	ep->addr_size = resource_size(res);
-+
-+	ret = dw_pcie_ep_init(ep);
-+	if (ret) {
-+		dev_err(dev, "failed to initialize endpoint\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init ls_pcie_ep_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct dw_pcie *pci;
-+	struct ls_pcie_ep *pcie;
-+	struct resource *dbi_base;
-+	int ret;
-+
-+	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
-+	if (!pcie)
-+		return -ENOMEM;
-+
-+	pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-+	if (!pci)
-+		return -ENOMEM;
-+
-+	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-+	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
-+	if (IS_ERR(pci->dbi_base))
-+		return PTR_ERR(pci->dbi_base);
-+
-+	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
-+	pci->dev = dev;
-+	pci->ops = &ls_pcie_ep_ops;
-+	pcie->pci = pci;
-+
-+	platform_set_drvdata(pdev, pcie);
-+
-+	ret = ls_add_pcie_ep(pcie, pdev);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver ls_pcie_ep_driver = {
-+	.driver = {
-+		.name = "layerscape-pcie-ep",
-+		.of_match_table = ls_pcie_ep_of_match,
-+		.suppress_bind_attrs = true,
-+	},
-+};
-+builtin_platform_driver_probe(ls_pcie_ep_driver, ls_pcie_ep_probe);
+ arch/powerpc/include/asm/nmi.h       |  2 +
+ arch/powerpc/kernel/exceptions-64s.S | 76 +++++++++++++++++++-----
+ arch/powerpc/kernel/mce.c            |  3 +
+ arch/powerpc/kernel/traps.c          | 87 +++++++++++++++++++++++++++-
+ 4 files changed, 151 insertions(+), 17 deletions(-)
+
 -- 
-1.7.1
+2.18.0
 
