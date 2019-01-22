@@ -7,73 +7,73 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD96FC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:51:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 058F4C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:52:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB7D120861
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:51:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7383220861
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 06:52:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="p0y+FGWJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB7D120861
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KSOrIepQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7383220861
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kJwq6889zDqP3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 17:51:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kJyX3XzYzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 17:52:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="p0y+FGWJ"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="KSOrIepQ"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kJqG2DcszDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 17:46:34 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id z23so10987483plo.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 22:46:34 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43kJqJ3pvVzDqMh
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2019 17:46:36 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id g189so10584796pgc.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2019 22:46:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=uuNoHBB/bUnSTzuLgqobc3jXhax4M4TyzcfngUSdiRA=;
- b=p0y+FGWJbT6kDDI0uvZQ945NHyW8Re9OPif26mFchgvw05hmsjdAAB8YaldnAOsE5D
- gddbbhV3n7HX56XnKFQm/8g7rng9gN2PhscbHmLPtT0F0qYMnTTlWFE6agYl5ZpVN8cB
- w8dpyhHNZaxoomJ0sq3ql2dXn6zmfQa8IbM0KR4msRq0hXhjlH5qGUliLB3tzg5S6PcQ
- n0rZs12BphbC9BiLc3oLd9QPOqMIvNFH70+M5ezXdtsHI66iMkzHhtsN1BwEXQdMVHDK
- YJsQzf1VTmu5Vq3CpDyEs7TK60/tqGwfJBhCQsXO7cUQtcG1VJ78ZRdFvo+zh33XyvEp
- sK2A==
+ bh=t5lBJ0rsrj4CyNHrj3kCOGblwu74q9YnudIM+f87H9A=;
+ b=KSOrIepQqfk48ohUmhPO4YYGHuj0vOiLCNYm3QMQWrT5THImiwr6pNHkARYyuuD9+J
+ y1ZIGnknhviC2H5yUVSwt3jfyWLma050MZCk8uAkDVeTHEoEHrn04r/StdUzEw4zqq+6
+ jMXlg0Ax+bCD7SyWgtOVuGsXyZtdCaFWFUAVIBGkGTHAh2kyG5t3B4R0usnSRpZA+My0
+ tfsg9pHiBM7PTsLwhwnh5Ky5pVtNCWwiVxfVyPvprqoAa91eWpcIqzppCxz6sEHG5wqJ
+ VeYq3GHR0Kp0GFnY4IccPqJilJWpYAcroCxHa21dLIBZfZENDXPaI5vXg80DC0GskAla
+ azIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=uuNoHBB/bUnSTzuLgqobc3jXhax4M4TyzcfngUSdiRA=;
- b=TAiAkpKwMGi0c/vO7ACx3CTwstXpkYPzn3Tme638tSJm/yIB0PzV3TSJbYhfycNEPp
- MM4IvY4cFIyuPHByE39EFrRJzmEfW3ob8+TFibZNVLZFhc/npc1z+D4khBhckIkL31Oh
- jdDLHR9FMrOh5j6XYu/6+axR0Ymgs+Lv3GIU4Z+5MP4P5mo8q63EWwiRrak8RTDK1UEc
- SKCT4zdNWJJs+TrSvCQv0N3kMw+fpwKzNMN5LQPP43mqLQmX4kxc7zj1eu63vT83ttNe
- DM9VwilM5qr23BQ2dKjNkzVdeRYFD81uc9glfVZJd66SdKJUR0FV3x+IxI10wlmqonpj
- 2H1A==
-X-Gm-Message-State: AJcUukdqbMiRUAk6H0DRc8tJHTktLcqgPR1fb6thMuvOXIrGw96YA7FL
- edCO8YAkkrIwTE4ovz4XUP/hfaPB
-X-Google-Smtp-Source: ALg8bN4/5eYe6qw7FyxV4LG5IRAhGsCnO+G41ZjoKxhmWKksfCSDR5FQV/1R++O094v9+rBwaGIuqw==
-X-Received: by 2002:a17:902:5588:: with SMTP id
- g8mr33221148pli.22.1548139592450; 
- Mon, 21 Jan 2019 22:46:32 -0800 (PST)
+ bh=t5lBJ0rsrj4CyNHrj3kCOGblwu74q9YnudIM+f87H9A=;
+ b=koyaklOWftSr1Lp53D5Xd+Rzig+LCa44UwiQMr6T8V/fW8f3YxYMYTxvip8dkzIL1U
+ 73rW90o/TvY6NNngScFLGqSzBH82osnYxxUOk8cK6La0rGXiveBPCBtk7G1ThbGMm3G+
+ vdoyXgEzfNZ1PsOBzRXdI7RLS9peFdag+RMu2N9Ey9+q3XbLsJ6Tw4mKBbo4f4Eiwxfp
+ fQVdykNXJlWX/7FPRfXJfhZg3aA/O7hhujfIw59eBBVoJ4riaVSfAk8X4ynl2844tOdU
+ UAMH8SRfoiA/i8+w7gz3unMYfTonnPH0UZJcan8zJNwUKp3JKVvkc4reTeoNqgpBY6qT
+ /PLg==
+X-Gm-Message-State: AJcUukc+Lfx+d/rm20tc0B0LzYTF7w0X6dPtCg6TIuSRd0Tiq/Jjkmui
+ aavYKLDGbVnXuPDvmaSLlfM0L/yB
+X-Google-Smtp-Source: ALg8bN5bsqvr3p3gBJyuR528b/h7beXIyAoIz6cciepNHANdCzOQJuWN49vv/ts4JS8TFhNSN94N1g==
+X-Received: by 2002:a63:5a08:: with SMTP id o8mr30570005pgb.185.1548139594737; 
+ Mon, 21 Jan 2019 22:46:34 -0800 (PST)
 Received: from roar.local0.net (193-116-118-220.tpgi.com.au. [193.116.118.220])
- by smtp.gmail.com with ESMTPSA id v15sm18341830pfn.94.2019.01.21.22.46.30
+ by smtp.gmail.com with ESMTPSA id v15sm18341830pfn.94.2019.01.21.22.46.32
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 21 Jan 2019 22:46:32 -0800 (PST)
+ Mon, 21 Jan 2019 22:46:34 -0800 (PST)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4] powerpc/64s: system reset interrupt preserve HSRRs
-Date: Tue, 22 Jan 2019 16:46:16 +1000
-Message-Id: <20190122064618.1510-3-npiggin@gmail.com>
+Subject: [PATCH 3/4] powerpc/64s: Prepare to handle data interrupts vs d-side
+ MCE reentrancy
+Date: Tue, 22 Jan 2019 16:46:17 +1000
+Message-Id: <20190122064618.1510-4-npiggin@gmail.com>
 X-Mailer: git-send-email 2.18.0
 In-Reply-To: <20190122064618.1510-1-npiggin@gmail.com>
 References: <20190122064618.1510-1-npiggin@gmail.com>
@@ -93,68 +93,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The system reset interrupt may use HSRR registers (e.g., to call in to
-OPAL), but code that uses HSRR registers is not required to clear
-MSR[RI] by convention.
+The subsequent patch needs to change data interrupts (those that set
+DAR / DSISR) in order to cope with a recoverability bug with MCE
+interrupts.
 
-Rather than introduce that requirement, have system reset interrupt
-save HSRRs before they might be used.
+This patch prepares for the fix by removing a couple of layers of
+macro indirection from the interrupt handlers, and also makes the
+0x300 interrupt out of line (as required by the next patch).
+
+Functionality should be unchanged, and code unchanged except for the
+OOL change.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/traps.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/exceptions-64s.S | 45 ++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index b429b2264a1f..d54459152a2b 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -438,14 +438,32 @@ void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 9e253ce27e08..0d91d1c8aad1 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -566,8 +566,23 @@ EXC_COMMON_BEGIN(mce_return)
+ 	RFI_TO_KERNEL
+ 	b	.
  
- void system_reset_exception(struct pt_regs *regs)
- {
-+	unsigned long hsrr0, hsrr1;
-+	bool hsrrs_saved = false;
-+	bool nested = in_nmi();
+-EXC_REAL(data_access, 0x300, 0x80)
+-EXC_VIRT(data_access, 0x4300, 0x80, 0x300)
++EXC_REAL_BEGIN(data_access, 0x300, 0x80)
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXGEN)
++	b	tramp_real_data_access
++EXC_REAL_END(data_access, 0x300, 0x80)
 +
- 	/*
- 	 * Avoid crashes in case of nested NMI exceptions. Recoverability
- 	 * is determined by RI and in_nmi
- 	 */
--	bool nested = in_nmi();
- 	if (!nested)
- 		nmi_enter();
- 
-+	/*
-+	 * System reset can interrupt a region where HSRRs are live and
-+	 * MSR[RI]=1, and it may clobber HSRRs itself (e.g., to call OPAL),
-+	 * so save them before doing anything.
-+	 *
-+	 * Machine checks should be okay to avoid this, as the real mode
-+	 * handler is careful to avoid HSRRs, and the virt code is not
-+	 * delivered as an NMI.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+		hsrrs_saved = true;
-+		hsrr0 = mfspr(SPRN_HSRR0);
-+		hsrr1 = mfspr(SPRN_HSRR1);
-+	}
++TRAMP_REAL_BEGIN(tramp_real_data_access)
++EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x300)
++EXCEPTION_PROLOG_2(data_access_common, EXC_STD)
 +
- 	hv_nmi_check_nonrecoverable(regs);
- 
- 	__this_cpu_inc(irq_stat.sreset_irqs);
-@@ -495,6 +513,11 @@ void system_reset_exception(struct pt_regs *regs)
- 	if (!(regs->msr & MSR_RI))
- 		nmi_panic(regs, "Unrecoverable System Reset");
- 
-+	if (hsrrs_saved) {
-+		mtspr(SPRN_HSRR0, hsrr0);
-+		mtspr(SPRN_HSRR1, hsrr1);
-+	}
++EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXGEN)
++EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x300)
++EXCEPTION_PROLOG_2_RELON(data_access_common, EXC_STD)
++EXC_VIRT_END(data_access, 0x4300, 0x80)
 +
- 	if (!nested)
- 		nmi_exit();
+ TRAMP_KVM_SKIP(PACA_EXGEN, 0x300)
  
+ EXC_COMMON_BEGIN(data_access_common)
+@@ -596,11 +611,17 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_TYPE_RADIX)
+ 
+ 
+ EXC_REAL_BEGIN(data_access_slb, 0x380, 0x80)
+-EXCEPTION_PROLOG(PACA_EXSLB, data_access_slb_common, EXC_STD, KVMTEST_PR, 0x380);
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXSLB)
++EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
++EXCEPTION_PROLOG_2(data_access_slb_common, EXC_STD)
+ EXC_REAL_END(data_access_slb, 0x380, 0x80)
+ 
+ EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
+-EXCEPTION_RELON_PROLOG(PACA_EXSLB, data_access_slb_common, EXC_STD, NOTEST, 0x380);
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXSLB)
++EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
++EXCEPTION_PROLOG_2_RELON(data_access_slb_common, EXC_STD)
+ EXC_VIRT_END(data_access_slb, 0x4380, 0x80)
+ 
+ TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
+@@ -703,8 +724,20 @@ TRAMP_KVM_HV(PACA_EXGEN, 0x500)
+ EXC_COMMON_ASYNC(hardware_interrupt_common, 0x500, do_IRQ)
+ 
+ 
+-EXC_REAL(alignment, 0x600, 0x100)
+-EXC_VIRT(alignment, 0x4600, 0x100, 0x600)
++EXC_REAL_BEGIN(alignment, 0x600, 0x100)
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXGEN)
++EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x600)
++EXCEPTION_PROLOG_2(alignment_common, EXC_STD)
++EXC_REAL_END(alignment, 0x600, 0x100)
++
++EXC_VIRT_BEGIN(alignment, 0x4600, 0x100)
++SET_SCRATCH0(r13)		/* save r13 */
++EXCEPTION_PROLOG_0(PACA_EXGEN)
++EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x600)
++EXCEPTION_PROLOG_2_RELON(alignment_common, EXC_STD)
++EXC_VIRT_END(alignment, 0x4600, 0x100)
++
+ TRAMP_KVM(PACA_EXGEN, 0x600)
+ EXC_COMMON_BEGIN(alignment_common)
+ 	mfspr	r10,SPRN_DAR
 -- 
 2.18.0
 
