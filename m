@@ -2,86 +2,64 @@ Return-Path: <SRS0=/GF9=P6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8D88C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 19:43:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B239C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 20:00:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F020621726
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 19:43:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 93AA721726
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 20:00:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="bQ0juL1A"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F020621726
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fJGAUhIC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 93AA721726
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kf442HWyzDqQT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 06:43:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kfRF4S6GzDqLk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 07:00:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="bQ0juL1A"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="fJGAUhIC"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kf2L2QXBzDqLh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 06:42:18 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43kf2F3MF7z9tyKh;
- Tue, 22 Jan 2019 20:42:13 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=bQ0juL1A; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id kA5-yYeOW7_Q; Tue, 22 Jan 2019 20:42:13 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43kf2F23kjz9tyKg;
- Tue, 22 Jan 2019 20:42:13 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1548186133; bh=+KekxATCYu05Vh7xen1ZqSBOL2BEkK7k9PxuT3Lg7pQ=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=bQ0juL1ALuH/dViqR66+sK0gKsvTQED9WolB6g3oq/cxF66zc38Jpld6XcjLBd2z4
- V+WqfgviZH4E/kuVuHiIVZL3SOhAFpzuOf9RMc2YDT8h2K4NaStu+hMyDtxjyMb94x
- FSx3GGYoYHrBA6yas6B6zbUo6n5qF4LgrZPvuj5U=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 588818B7F1;
- Tue, 22 Jan 2019 20:42:13 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 2Hi5xSpod367; Tue, 22 Jan 2019 20:42:13 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9BE5C8B7CE;
- Tue, 22 Jan 2019 20:42:12 +0100 (CET)
-Subject: Re: [PATCH v13 00/10] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- Mike Rapoport <rppt@linux.ibm.com>
-References: <cover.1547195976.git.christophe.leroy@c-s.fr>
- <87zhrx2bf1.fsf@concordia.ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <07e60b5a-611c-9863-f300-68a4f9ad2efd@c-s.fr>
-Date: Tue, 22 Jan 2019 20:42:12 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43kfPF3sGmzDqBj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 06:58:41 +1100 (AEDT)
+Received: from localhost (unknown [69.71.4.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 448702084A;
+ Tue, 22 Jan 2019 19:58:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1548187119;
+ bh=iKLci5owJws7gdXV9W4d6/9BY5O+zPZghR0unYeE1ns=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=fJGAUhICA3LG48wG7UZilznlhHOQ3JJ0RAIceG4RBsdAmDwq7OidhqMv3otZSnnud
+ IH4mhMwoPCiTei7qZFCjd6HqXTl6gmKUsUk1JENli90BOJ2etWZv2MrcAYPgD47qvA
+ mOe3eAk7dA3PxVt1AowOsvSBDHtp6qgRFUddjI5I=
+Date: Tue, 22 Jan 2019 13:58:38 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: Re: [RFC 5/6] powerpc/pci/hotplug: Use common drcinfo parsing
+Message-ID: <20190122195838.GC14636@google.com>
+References: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <20181214205120.16435.46952.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <20190115002857.GG33971@google.com>
 MIME-Version: 1.0
-In-Reply-To: <87zhrx2bf1.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190115002857.GG33971@google.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,190 +71,318 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Juliet Kim <minkim@us.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 19/01/2019 à 11:23, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Mon, Jan 14, 2019 at 06:28:57PM -0600, Bjorn Helgaas wrote:
+> On Fri, Dec 14, 2018 at 02:51:31PM -0600, Michael Bringmann wrote:
+> > The implementation of the pseries-specific drc info properties
+> > is currently implemented in pseries-specific and non-pseries-specific
+> > files.  This patch set uses a new implementation of the device-tree
+> > parsing code for the properties.
+> > 
+> > This patch refactors parsing of the pseries-specific drc-info properties
+> > out of rpaphp_core.c to use the common parser.  In the case where an
+> > architecture does not use these properties, an __weak copy of the
+> > function is provided with dummy return values.  Changes include creating
+> > appropriate callback functions and passing callback-specific data
+> > blocks into arch_find_drc_match.  All functions that were used just
+> > to support the previous parsing implementation have been moved.
+> > 
+> > Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 > 
->> The purpose of this serie is to activate CONFIG_THREAD_INFO_IN_TASK which
->> moves the thread_info into task_struct.
->>
->> Moving thread_info into task_struct has the following advantages:
->> - It protects thread_info from corruption in the case of stack
->> overflows.
->> - Its address is harder to determine if stack addresses are
->> leaked, making a number of attacks more difficult.
->>
->> Changes since v12:
->>   - Patch 1: Taken comment from Mike (re-introduced the 'panic' in case memblock allocation fails in setup_64.c
->>   - Patch 1: Added alloc_stack() function in setup_32.c to also panic in case of allocation failure.
+> This is fine with me.  Any rpaphp_core.c maintainers want to comment?
+> Tyrel?
 > 
-> Hi Christophe,
-> 
-> I can't get this series to boot on qemu mac99. I'm getting eg:
-> 
-> [    0.981514] NFS: Registering the id_resolver key type
-> [    0.981752] Key type id_resolver registered
-> [    0.981868] Key type id_legacy registered
-> [    0.995711] Unrecoverable exception 0 at 0 (msr=0)
-> [    0.996091] Oops: Unrecoverable exception, sig: 6 [#1]
-> [    0.996314] BE PAGE_SIZE=4K MMU=Hash PowerMac
-> [    0.996617] Modules linked in:
-> [    0.996869] CPU: 0 PID: 416 Comm: modprobe Not tainted 5.0.0-rc2-gcc-7.3.0-00043-g53f2de798792 #342
-> [    0.997138] NIP:  00000000 LR: 00000000 CTR: 00000000
-> [    0.997309] REGS: ef237f50 TRAP: 0000   Not tainted  (5.0.0-rc2-gcc-7.3.0-00043-g53f2de798792)
-> [    0.997508] MSR:  00000000 <>  CR: 00000000  XER: 00000000
-> [    0.997712]
-> [    0.997712] GPR00: 00000000 ef238000 00000000 00000000 00000000 00000000 00000000 00000000
-> [    0.997712] GPR08: 00000000 00000000 00000000 00000000 00000000 00000000 c006477c ef13d8c0
-> [    0.997712] GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> [    0.997712] GPR24: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-> [    0.998671] NIP [00000000]   (null)
-> [    0.998774] LR [00000000]   (null)
-> [    0.998895] Call Trace:
-> [    0.999030] Instruction dump:
-> [    0.999320] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-> [    0.999546] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 60000000 XXXXXXXX XXXXXXXX XXXXXXXX
-> [    1.000023] ---[ end trace 925ea3419844fe68 ]---
+> $ ./scripts/get_maintainer.pl -f drivers/pci/hotplug/rpaphp_core.c
+> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> (supporter:IBM Power PCI Hotplug Driver for RPA-compliant...)
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR POWERPC (32-BIT AND 64-BIT))
+> Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC (32-BIT AND 64-BIT))
+> Michael Ellerman <mpe@ellerman.id.au> (supporter:LINUX FOR POWERPC (32-BIT AND 64-BIT))
 
-No such issue on my side. Do you have a ramdisk with anythink special or 
-a special config ? I see your kernel is modprobing something, know what 
-it is ?
+This looks like part of a larger series, but I only got this patch.  So I
+assume you'll route this elsewhere along with the rest of the series.
+Here's my ack if it's useful:
 
-Especially, what is the amount of memory in your config ? On my side 
-there is 128M:
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Memory: 120292K/131072K available (6116K kernel code, 572K rwdata, 2036K 
-rodata,
-  340K init, 191K bss, 10780K reserved, 0K cma-reserved, 0K highmem)
-Kernel virtual memory layout:
-   * 0xfffcf000..0xfffff000  : fixmap
-   * 0xff800000..0xffc00000  : highmem PTEs
-   * 0xfef36000..0xff800000  : early ioremap
-   * 0xc9000000..0xfef36000  : vmalloc & ioremap
-
-This means the addresses in which your kernel faults are in vmalloc 
-area. It's not normal I believe, is it ?
-
-On my side it gives the following on qemu mac99 (I have no disk).
-
-[...]
-Initialise system trusted keyrings
-workingset: timestamp_bits=30 max_order=15 bucket_order=0
-NFS: Registering the id_resolver key type
-Key type id_resolver registered
-Key type id_legacy registered
-Key type asymmetric registered
-Asymmetric key parser 'x509' registered
-Block layer SCSI generic (bsg) driver version 0.4 loaded (major 253)
-io scheduler mq-deadline registered
-io scheduler kyber registered
-Using unsupported 800x600 (null) at 81000000, depth=32, pitch=3200
-Console: switching to colour frame buffer device 100x37
-fb0: Open Firmware frame buffer device on /pci@f2000000/QEMU,VGA@e
-Generic non-volatile memory driver v1.1
-brd: module loaded
-loop: module loaded
-MacIO PCI driver attached to Keylargo chipset
-Macintosh Cuda and Egret driver.
-mesh: configured for synchronous 5 MB/s
-st: Version 20160209, fixed bufsize 32768, s/g segs 256
-Detected ADB keyboard, type ANSI.
-input: ADB keyboard as /devices/virtual/input/input0
-random: fast init done
-input: ADB mouse as /devices/virtual/input/input1
-pata-macio 0.00020000:ata-3: Activating pata-macio chipset KeyLargo 
-ATA-3, Apple
-  bus ID 0
-scsi host0: pata_macio
-ata1: PATA max MWDMA2 irq 16
-pata-macio 0.00021000:ata-3: Activating pata-macio chipset KeyLargo 
-ATA-3, Apple
-  bus ID 1
-scsi host1: pata_macio
-ata2: PATA max MWDMA2 irq 18
-pcnet32: pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
-PPP generic driver version 2.4.2
-PPP Deflate Compression module registered
-ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-ohci-pci: OHCI PCI platform driver
-ohci-pci 0000:00:0d.0: OHCI PCI host controller
-ohci-pci 0000:00:0d.0: new USB bus registered, assigned bus number 1
-ohci-pci 0000:00:0d.0: irq 28, io mem 0x80080000
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 3 ports detected
-usbcore: registered new interface driver appletouch
-rtc-generic rtc-generic: registered as rtc0
-APM Battery Driver
-usbcore: registered new interface driver usbhid
-usbhid: USB HID core driver
-oprofile: using timer interrupt.
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
-NET: Registered protocol family 15
-Key type dns_resolver registered
-drmem: No dynamic reconfiguration memory found
-Loading compiled-in X.509 certificates
-rtc-generic rtc-generic: setting system clock to 2019-01-22T19:35:11 UTC 
-(154818
-5711)
-Warning: unable to open an initial console.
-ata2.00: ATAPI: QEMU DVD-ROM, 2.5+, max UDMA/100
-scsi 1:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     2.5+ PQ: 0 ANSI: 5
-sr 1:0:0:0: [sr0] scsi3-mmc drive: 4x/4x cd/rw xa/form2 tray
-cdrom: Uniform CD-ROM driver Revision: 3.20
-sr 1:0:0:0: Attached scsi generic sg0 type 5
-VFS: Cannot open root device "(null)" or unknown-block(8,1): error -6
-Please append a correct "root=" boot option; here are the available 
-partitions:
-0100            4096 ram0
-  (driver?)
-0101            4096 ram1
-  (driver?)
-0102            4096 ram2
-  (driver?)
-0103            4096 ram3
-  (driver?)
-0104            4096 ram4
-  (driver?)
-0105            4096 ram5
-  (driver?)
-0106            4096 ram6
-  (driver?)
-0107            4096 ram7
-  (driver?)
-0108            4096 ram8
-  (driver?)
-0109            4096 ram9
-  (driver?)
-010a            4096 ram10
-  (driver?)
-010b            4096 ram11
-  (driver?)
-010c            4096 ram12
-  (driver?)
-010d            4096 ram13
-  (driver?)
-010e            4096 ram14
-  (driver?)
-010f            4096 ram15
-  (driver?)
-0b00         1048575 sr0
-  driver: sr
-Kernel panic - not syncing: VFS: Unable to mount root fs on 
-unknown-block(8,1)
-CPU: 0 PID: 1 Comm: swapper Not tainted 5.0.0-rc3+ #790
-Call Trace:
-[c7837e60] [c003dcf0] panic+0x12c/0x2e8 (unreliable)
-[c7837ec0] [c07fc824] mount_block_root+0x1fc/0x2c0
-[c7837f10] [c07fcc54] prepare_namespace+0x198/0x1d4
-[c7837f30] [c000539c] kernel_init+0x18/0x10c
-[c7837f40] [c00131d8] ret_from_kernel_thread+0x14/0x1c
-Rebooting in 180 seconds..
-
-Christophe
+> > ---
+> >  drivers/pci/hotplug/rpaphp_core.c |  232 ++++---------------------------------
+> >  1 file changed, 28 insertions(+), 204 deletions(-)
+> > 
+> > diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+> > index bcd5d35..9ad7384 100644
+> > --- a/drivers/pci/hotplug/rpaphp_core.c
+> > +++ b/drivers/pci/hotplug/rpaphp_core.c
+> > @@ -154,182 +154,18 @@ static enum pci_bus_speed get_max_bus_speed(struct slot *slot)
+> >  	return speed;
+> >  }
+> >  
+> > -static int get_children_props(struct device_node *dn, const int **drc_indexes,
+> > -		const int **drc_names, const int **drc_types,
+> > -		const int **drc_power_domains)
+> > -{
+> > -	const int *indexes, *names, *types, *domains;
+> > -
+> > -	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+> > -	names = of_get_property(dn, "ibm,drc-names", NULL);
+> > -	types = of_get_property(dn, "ibm,drc-types", NULL);
+> > -	domains = of_get_property(dn, "ibm,drc-power-domains", NULL);
+> > -
+> > -	if (!indexes || !names || !types || !domains) {
+> > -		/* Slot does not have dynamically-removable children */
+> > -		return -EINVAL;
+> > -	}
+> > -	if (drc_indexes)
+> > -		*drc_indexes = indexes;
+> > -	if (drc_names)
+> > -		/* &drc_names[1] contains NULL terminated slot names */
+> > -		*drc_names = names;
+> > -	if (drc_types)
+> > -		/* &drc_types[1] contains NULL terminated slot types */
+> > -		*drc_types = types;
+> > -	if (drc_power_domains)
+> > -		*drc_power_domains = domains;
+> > -
+> > -	return 0;
+> > -}
+> > -
+> > -
+> >  /* Verify the existence of 'drc_name' and/or 'drc_type' within the
+> > - * current node.  First obtain it's my-drc-index property.  Next,
+> > - * obtain the DRC info from it's parent.  Use the my-drc-index for
+> > - * correlation, and obtain/validate the requested properties.
+> > + * current node.
+> >   */
+> >  
+> > -static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
+> > -				char *drc_type, unsigned int my_index)
+> > -{
+> > -	char *name_tmp, *type_tmp;
+> > -	const int *indexes, *names;
+> > -	const int *types, *domains;
+> > -	int i, rc;
+> > -
+> > -	rc = get_children_props(dn->parent, &indexes, &names, &types, &domains);
+> > -	if (rc < 0) {
+> > -		return -EINVAL;
+> > -	}
+> > -
+> > -	name_tmp = (char *) &names[1];
+> > -	type_tmp = (char *) &types[1];
+> > -
+> > -	/* Iterate through parent properties, looking for my-drc-index */
+> > -	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+> > -		if ((unsigned int) indexes[i + 1] == my_index)
+> > -			break;
+> > -
+> > -		name_tmp += (strlen(name_tmp) + 1);
+> > -		type_tmp += (strlen(type_tmp) + 1);
+> > -	}
+> > -
+> > -	if (((drc_name == NULL) || (drc_name && !strcmp(drc_name, name_tmp))) &&
+> > -	    ((drc_type == NULL) || (drc_type && !strcmp(drc_type, type_tmp))))
+> > -		return 0;
+> > -
+> > -	return -EINVAL;
+> > -}
+> > -
+> > -static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
+> > -				char *drc_type, unsigned int my_index)
+> > -{
+> > -	struct property *info;
+> > -	unsigned int entries;
+> > -	struct of_drc_info drc;
+> > -	const __be32 *value;
+> > -	char cell_drc_name[MAX_DRC_NAME_LEN];
+> > -	int j, fndit;
+> > -
+> > -	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
+> > -	if (info == NULL)
+> > -		return -EINVAL;
+> > -
+> > -	value = of_prop_next_u32(info, NULL, &entries);
+> > -	if (!value)
+> > -		return -EINVAL;
+> > -
+> > -	for (j = 0; j < entries; j++) {
+> > -		of_read_drc_info_cell(&info, &value, &drc);
+> > -
+> > -		/* Should now know end of current entry */
+> > -
+> > -		if (my_index > drc.last_drc_index)
+> > -			continue;
+> > -
+> > -		fndit = 1;
+> > -		break;
+> > -	}
+> > -	/* Found it */
+> > -
+> > -	if (fndit)
+> > -		sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix, 
+> > -			my_index);
+> > -
+> > -	if (((drc_name == NULL) ||
+> > -	     (drc_name && !strcmp(drc_name, cell_drc_name))) &&
+> > -	    ((drc_type == NULL) ||
+> > -	     (drc_type && !strcmp(drc_type, drc.drc_type))))
+> > -		return 0;
+> > -
+> > -	return -EINVAL;
+> > -}
+> > -
+> >  int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
+> >  			char *drc_type)
+> >  {
+> > -	const unsigned int *my_index;
+> > -
+> > -	my_index = of_get_property(dn, "ibm,my-drc-index", NULL);
+> > -	if (!my_index) {
+> > -		/* Node isn't DLPAR/hotplug capable */
+> > -		return -EINVAL;
+> > -	}
+> > -
+> > -	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
+> > -		return rpaphp_check_drc_props_v2(dn, drc_name, drc_type,
+> > -						*my_index);
+> > -	else
+> > -		return rpaphp_check_drc_props_v1(dn, drc_name, drc_type,
+> > -						*my_index);
+> > +	return arch_find_drc_match(dn, NULL, drc_type, drc_name,
+> > +				true, false, NULL);
+> >  }
+> >  EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
+> >  
+> > -
+> > -static int is_php_type(char *drc_type)
+> > -{
+> > -	unsigned long value;
+> > -	char *endptr;
+> > -
+> > -	/* PCI Hotplug nodes have an integer for drc_type */
+> > -	value = simple_strtoul(drc_type, &endptr, 10);
+> > -	if (endptr == drc_type)
+> > -		return 0;
+> > -
+> > -	return 1;
+> > -}
+> > -
+> > -/**
+> > - * is_php_dn() - return 1 if this is a hotpluggable pci slot, else 0
+> > - * @dn: target &device_node
+> > - * @indexes: passed to get_children_props()
+> > - * @names: passed to get_children_props()
+> > - * @types: returned from get_children_props()
+> > - * @power_domains:
+> > - *
+> > - * This routine will return true only if the device node is
+> > - * a hotpluggable slot. This routine will return false
+> > - * for built-in pci slots (even when the built-in slots are
+> > - * dlparable.)
+> > - */
+> > -static int is_php_dn(struct device_node *dn, const int **indexes,
+> > -		const int **names, const int **types, const int **power_domains)
+> > -{
+> > -	const int *drc_types;
+> > -	int rc;
+> > -
+> > -	rc = get_children_props(dn, indexes, names, &drc_types, power_domains);
+> > -	if (rc < 0)
+> > -		return 0;
+> > -
+> > -	if (!is_php_type((char *) &drc_types[1]))
+> > -		return 0;
+> > -
+> > -	*types = drc_types;
+> > -	return 1;
+> > -}
+> > -
+> >  /**
+> >   * rpaphp_add_slot -- declare a hotplug slot to the hotplug subsystem.
+> >   * @dn: device node of slot
+> > @@ -346,54 +182,42 @@ static int is_php_dn(struct device_node *dn, const int **indexes,
+> >   *
+> >   * To remove a slot, it suffices to call rpaphp_deregister_slot().
+> >   */
+> > -int rpaphp_add_slot(struct device_node *dn)
+> > +
+> > +static int rpaphp_add_slot_cb(struct device_node *dn,
+> > +			u32 drc_index, char *drc_name, char *drc_type,
+> > +			u32 drc_power_domain, void *data)
+> >  {
+> >  	struct slot *slot;
+> >  	int retval = 0;
+> > -	int i;
+> > -	const int *indexes, *names, *types, *power_domains;
+> > -	char *name, *type;
+> > -
+> > -	if (!dn->name || strcmp(dn->name, "pci"))
+> > -		return 0;
+> > -
+> > -	/* If this is not a hotplug slot, return without doing anything. */
+> > -	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
+> > -		return 0;
+> > -
+> > -	dbg("Entry %s: dn=%pOF\n", __func__, dn);
+> >  
+> > -	/* register PCI devices */
+> > -	name = (char *) &names[1];
+> > -	type = (char *) &types[1];
+> > -	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+> > -		int index;
+> > +	slot = alloc_slot_struct(dn, drc_index, drc_name, drc_power_domain);
+> > +	if (!slot)
+> > +		return -ENOMEM;
+> >  
+> > -		index = be32_to_cpu(indexes[i + 1]);
+> > -		slot = alloc_slot_struct(dn, index, name,
+> > -					 be32_to_cpu(power_domains[i + 1]));
+> > -		if (!slot)
+> > -			return -ENOMEM;
+> > +	slot->type = simple_strtoul(drc_type, NULL, 10);
+> > +	if (retval)
+> > +		return -EINVAL;
+> >  
+> > -		slot->type = simple_strtoul(type, NULL, 10);
+> > +	dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
+> > +		drc_index, drc_name, drc_type);
+> >  
+> > -		dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
+> > -				index, name, type);
+> > +	retval = rpaphp_enable_slot(slot);
+> > +	if (!retval)
+> > +		retval = rpaphp_register_slot(slot);
+> >  
+> > -		retval = rpaphp_enable_slot(slot);
+> > -		if (!retval)
+> > -			retval = rpaphp_register_slot(slot);
+> > +	if (retval)
+> > +		dealloc_slot_struct(slot);
+> >  
+> > -		if (retval)
+> > -			dealloc_slot_struct(slot);
+> > +	return retval;
+> > +}
+> >  
+> > -		name += strlen(name) + 1;
+> > -		type += strlen(type) + 1;
+> > -	}
+> > -	dbg("%s - Exit: rc[%d]\n", __func__, retval);
+> > +int rpaphp_add_slot(struct device_node *dn)
+> > +{
+> > +	if (!dn->name || strcmp(dn->name, "pci"))
+> > +		return 0;
+> >  
+> > -	/* XXX FIXME: reports a failure only if last entry in loop failed */
+> > -	return retval;
+> > +	return arch_find_drc_match(dn, rpaphp_add_slot_cb,
+> > +			NULL, NULL, false, true, NULL);
+> >  }
+> >  EXPORT_SYMBOL_GPL(rpaphp_add_slot);
+> >  
+> > 
