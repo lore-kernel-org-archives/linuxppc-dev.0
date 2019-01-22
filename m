@@ -2,62 +2,46 @@ Return-Path: <SRS0=/GF9=P6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 585ADC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 20:22:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45AC0C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 22:07:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9867C217D6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 20:22:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="RbWc/jj4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9867C217D6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id C207520870
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 22:07:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C207520870
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kfwf4rX4zDqMs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 07:22:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kjFl55dxzDqMV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 09:07:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="RbWc/jj4"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kftb2JSHzDqJT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 07:20:39 +1100 (AEDT)
-Received: from localhost (unknown [69.71.4.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 4AB4520866;
- Tue, 22 Jan 2019 20:20:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548188437;
- bh=5ziCHOV8ZUAvvDOzEMcRPrlvW0YUizC8EC/qZLv3Z1o=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=RbWc/jj4LDnrdATEqBjHPy0xSDU0Z7f5e1MG8pT1xwR05wmTmH0KMSWi++rjmKHV+
- CyECWzQGJ7R0+J/f+eDLq8BC/u2ndKBh/GHaMuQdD3hxxf7czt4ZwgBSDKxzK0LQwe
- cNrcaE/DiCps2pnZGTgDa/RMBGH8mt6AizM34u4A=
-Date: Tue, 22 Jan 2019 14:20:35 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] PCI: Use of_node_name_eq for node name comparisons
-Message-ID: <20190122202035.GD14636@google.com>
-References: <20181205195050.4759-18-robh@kernel.org>
+ spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
+ (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
+ envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=telegraphics.com.au
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43kjCn3ZTrzDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 09:05:41 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by kvm5.telegraphics.com.au (Postfix) with ESMTP id 085AC29B17;
+ Tue, 22 Jan 2019 17:05:35 -0500 (EST)
+Date: Wed, 23 Jan 2019 09:06:30 +1100 (AEDT)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v9 00/22] Re-use nvram module
+In-Reply-To: <20190122092234.GA15813@kroah.com>
+Message-ID: <alpine.LNX.2.21.1901230858170.90@nippy.intranet>
+References: <cover.1547525936.git.fthain@telegraphics.com.au>
+ <20190122092234.GA15813@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20181205195050.4759-18-robh@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,68 +53,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Schmitz <schmitzmic@gmail.com>, linux-fbdev@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Joshua Thompson <funaho@jurai.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-[+cc Michael B]
+On Tue, 22 Jan 2019, Greg Kroah-Hartman wrote:
 
-On Wed, Dec 05, 2018 at 01:50:34PM -0600, Rob Herring wrote:
-> Convert string compares of DT node names to use of_node_name_eq helper
-> instead. This removes direct access to the node name pointer.
+> On Tue, Jan 15, 2019 at 03:18:56PM +1100, Finn Thain wrote:
+> > The "generic" NVRAM module, drivers/char/generic_nvram.c, implements a
+> > /dev/nvram misc device. This module is used only by 32-bit PowerPC
+> > platforms.
+> > 
+> > The RTC "CMOS" NVRAM module, drivers/char/nvram.c, also implements a
+> > /dev/nvram misc device. This module is now used only by x86 and m68k
+> > thanks to commit 3ba9faedc180 ("char: nvram: disable on ARM").
+> > 
+> > The "generic" module cannot be used by x86 or m68k platforms because it
+> > cannot co-exist with the "CMOS" module. One reason for that is the
+> > CONFIG_GENERIC_NVRAM kludge in drivers/char/Makefile. Another reason is
+> > that automatically loading the appropriate module would be impossible
+> > because only one module can provide the char-major-10-144 alias.
+> > 
+> > A multi-platform kernel binary needs a single, generic module. With this
+> > patch series, drivers/char/nvram.c becomes more generic and some of the
+> > arch-specific code gets moved under arch/. The nvram module is then
+> > usable by all m68k, powerpc and x86 platforms.
+> > 
+> > This allows for removal of drivers/char/generic_nvram.c as well as a
+> > duplicate in arch/powerpc/kernel/nvram_64.c. By reducing the number of
+> > /dev/nvram char misc device implementations, the number of bugs and
+> > inconsistencies is also reduced.
+> > 
+> > This approach reduces inconsistencies between PPC32 and PPC64 and also
+> > between PPC_PMAC and MAC. A uniform API has benefits for userspace.
+> > 
+> > For example, some error codes for some ioctl calls become consistent
+> > across PowerPC platforms. The uniform API can potentially benefit any
+> > bootloader that works across the various platforms having XPRAM
+> > (e.g. Emile).
+> > 
+> > This patch series was tested on Atari, Mac, PowerMac (both 32-bit and
+> > 64-bit) and ThinkPad hardware. AFAIK, it has not yet been tested on
+> > pSeries or CHRP.
+> > 
+> > I think there are two possible merge strategies for this patch series.
+> > The char misc maintainer could take the entire series. Alternatively,
+> > the m68k maintainer could take patches 1 thru 16 (though some of these
+> > have nothing to do with m68k) and after those patches reach mainline
+> > the powerpc maintainer could take 17 thru 22.
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-pci@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-
-I applied the pci/of.c change to pci/misc for v5.1, thanks!
-
-I dropped the rpaphp_core.c part because there's another patch
-in-flight [1] that touches the same code, and it would be easier if
-Michael picked up this change and added it to his series.
-
-Bjorn
-
-[1] https://lore.kernel.org/lkml/20181214205120.16435.46952.stgit@powerkvm6.aus.stglabs.ibm.com/
-
-> ---
->  drivers/pci/hotplug/rpaphp_core.c | 2 +-
->  drivers/pci/of.c                  | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> I just took the whole series, thanks for doing this, looks good.
 > 
-> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-> index bcd5d357ca23..7697d9c92b98 100644
-> --- a/drivers/pci/hotplug/rpaphp_core.c
-> +++ b/drivers/pci/hotplug/rpaphp_core.c
-> @@ -354,7 +354,7 @@ int rpaphp_add_slot(struct device_node *dn)
->  	const int *indexes, *names, *types, *power_domains;
->  	char *name, *type;
->  
-> -	if (!dn->name || strcmp(dn->name, "pci"))
-> +	if (!of_node_name_eq(dn, "pci"))
->  		return 0;
->  
->  	/* If this is not a hotplug slot, return without doing anything. */
-> diff --git a/drivers/pci/of.c b/drivers/pci/of.c
-> index 4c4217d0c3f1..3d32da15c215 100644
-> --- a/drivers/pci/of.c
-> +++ b/drivers/pci/of.c
-> @@ -113,7 +113,7 @@ struct device_node *of_pci_find_child_device(struct device_node *parent,
->  		 * a fake root for all functions of a multi-function
->  		 * device we go down them as well.
->  		 */
-> -		if (!strcmp(node->name, "multifunc-device")) {
-> +		if (of_node_name_eq(node, "multifunc-device")) {
->  			for_each_child_of_node(node, node2) {
->  				if (__of_pci_pci_compare(node2, devfn)) {
->  					of_node_put(node);
-> -- 
-> 2.19.1
+
+Thanks, Greg.
+
+I haven't seen any acks from powerpc maintainers yet...
+
+-- 
+
+> greg k-h
 > 
