@@ -1,47 +1,42 @@
-Return-Path: <SRS0=/GF9=P6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=6cb3=P7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45AC0C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 22:07:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7575FC282C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 04:08:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C207520870
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Jan 2019 22:07:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C207520870
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=telegraphics.com.au
+	by mail.kernel.org (Postfix) with ESMTPS id A2D3521019
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 04:08:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2D3521019
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kjFl55dxzDqMV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 09:07:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ksGk367zzDqCM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 15:08:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=telegraphics.com.au
- (client-ip=98.124.60.144; helo=kvm5.telegraphics.com.au;
- envelope-from=fthain@telegraphics.com.au; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=telegraphics.com.au
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 43kjCn3ZTrzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 09:05:41 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by kvm5.telegraphics.com.au (Postfix) with ESMTP id 085AC29B17;
- Tue, 22 Jan 2019 17:05:35 -0500 (EST)
-Date: Wed, 23 Jan 2019 09:06:30 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v9 00/22] Re-use nvram module
-In-Reply-To: <20190122092234.GA15813@kroah.com>
-Message-ID: <alpine.LNX.2.21.1901230858170.90@nippy.intranet>
-References: <cover.1547525936.git.fthain@telegraphics.com.au>
- <20190122092234.GA15813@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43ksF06mxVzDqLb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 15:07:16 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id 4B1A2AE80037;
+ Tue, 22 Jan 2019 23:07:12 -0500 (EST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel] vfio-pci/nvlink2: Fix ancient gcc warnings
+Date: Wed, 23 Jan 2019 15:07:11 +1100
+Message-Id: <20190123040711.21759-1-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,72 +48,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Schmitz <schmitzmic@gmail.com>, linux-fbdev@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- "James E.J. Bottomley" <jejb@linux.ibm.com>, linux-kernel@vger.kernel.org,
- dri-devel@lists.freedesktop.org, linux-scsi@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Joshua Thompson <funaho@jurai.org>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 22 Jan 2019, Greg Kroah-Hartman wrote:
+Using the {0} construct as a generic initializer is perfectly fine in C,
+however due to a bug in old gcc there is a warning:
 
-> On Tue, Jan 15, 2019 at 03:18:56PM +1100, Finn Thain wrote:
-> > The "generic" NVRAM module, drivers/char/generic_nvram.c, implements a
-> > /dev/nvram misc device. This module is used only by 32-bit PowerPC
-> > platforms.
-> > 
-> > The RTC "CMOS" NVRAM module, drivers/char/nvram.c, also implements a
-> > /dev/nvram misc device. This module is now used only by x86 and m68k
-> > thanks to commit 3ba9faedc180 ("char: nvram: disable on ARM").
-> > 
-> > The "generic" module cannot be used by x86 or m68k platforms because it
-> > cannot co-exist with the "CMOS" module. One reason for that is the
-> > CONFIG_GENERIC_NVRAM kludge in drivers/char/Makefile. Another reason is
-> > that automatically loading the appropriate module would be impossible
-> > because only one module can provide the char-major-10-144 alias.
-> > 
-> > A multi-platform kernel binary needs a single, generic module. With this
-> > patch series, drivers/char/nvram.c becomes more generic and some of the
-> > arch-specific code gets moved under arch/. The nvram module is then
-> > usable by all m68k, powerpc and x86 platforms.
-> > 
-> > This allows for removal of drivers/char/generic_nvram.c as well as a
-> > duplicate in arch/powerpc/kernel/nvram_64.c. By reducing the number of
-> > /dev/nvram char misc device implementations, the number of bugs and
-> > inconsistencies is also reduced.
-> > 
-> > This approach reduces inconsistencies between PPC32 and PPC64 and also
-> > between PPC_PMAC and MAC. A uniform API has benefits for userspace.
-> > 
-> > For example, some error codes for some ioctl calls become consistent
-> > across PowerPC platforms. The uniform API can potentially benefit any
-> > bootloader that works across the various platforms having XPRAM
-> > (e.g. Emile).
-> > 
-> > This patch series was tested on Atari, Mac, PowerMac (both 32-bit and
-> > 64-bit) and ThinkPad hardware. AFAIK, it has not yet been tested on
-> > pSeries or CHRP.
-> > 
-> > I think there are two possible merge strategies for this patch series.
-> > The char misc maintainer could take the entire series. Alternatively,
-> > the m68k maintainer could take patches 1 thru 16 (though some of these
-> > have nothing to do with m68k) and after those patches reach mainline
-> > the powerpc maintainer could take 17 thru 22.
-> 
-> I just took the whole series, thanks for doing this, looks good.
-> 
+  + /kisskb/src/drivers/vfio/pci/vfio_pci_nvlink2.c: warning: (near
+initialization for 'cap.header') [-Wmissing-braces]:  => 181:9
 
-Thanks, Greg.
+Since for whatever reason we still want to compile the modern kernel
+with such an old gcc without warnings, this changes the capabilities
+initialization.
 
-I haven't seen any acks from powerpc maintainers yet...
+The gcc bugzilla: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
 
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/vfio/pci/vfio_pci_nvlink2.c | 30 ++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
+index 054a2cf..91d945b 100644
+--- a/drivers/vfio/pci/vfio_pci_nvlink2.c
++++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
+@@ -178,11 +178,11 @@ static int vfio_pci_nvgpu_add_capability(struct vfio_pci_device *vdev,
+ 		struct vfio_pci_region *region, struct vfio_info_cap *caps)
+ {
+ 	struct vfio_pci_nvgpu_data *data = region->data;
+-	struct vfio_region_info_cap_nvlink2_ssatgt cap = { 0 };
+-
+-	cap.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT;
+-	cap.header.version = 1;
+-	cap.tgt = data->gpu_tgt;
++	struct vfio_region_info_cap_nvlink2_ssatgt cap = {
++		.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT,
++		.header.version = 1,
++		.tgt = data->gpu_tgt
++	};
+ 
+ 	return vfio_info_add_capability(caps, &cap.header, sizeof(cap));
+ }
+@@ -365,18 +365,18 @@ static int vfio_pci_npu2_add_capability(struct vfio_pci_device *vdev,
+ 		struct vfio_pci_region *region, struct vfio_info_cap *caps)
+ {
+ 	struct vfio_pci_npu2_data *data = region->data;
+-	struct vfio_region_info_cap_nvlink2_ssatgt captgt = { 0 };
+-	struct vfio_region_info_cap_nvlink2_lnkspd capspd = { 0 };
++	struct vfio_region_info_cap_nvlink2_ssatgt captgt = {
++		.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT,
++		.header.version = 1,
++		.tgt = data->gpu_tgt
++	};
++	struct vfio_region_info_cap_nvlink2_lnkspd capspd = {
++		.header.id = VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD,
++		.header.version = 1,
++		.link_speed = data->link_speed
++	};
+ 	int ret;
+ 
+-	captgt.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT;
+-	captgt.header.version = 1;
+-	captgt.tgt = data->gpu_tgt;
+-
+-	capspd.header.id = VFIO_REGION_INFO_CAP_NVLINK2_LNKSPD;
+-	capspd.header.version = 1;
+-	capspd.link_speed = data->link_speed;
+-
+ 	ret = vfio_info_add_capability(caps, &captgt.header, sizeof(captgt));
+ 	if (ret)
+ 		return ret;
 -- 
+2.17.1
 
-> greg k-h
-> 
