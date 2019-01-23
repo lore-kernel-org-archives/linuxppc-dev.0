@@ -2,63 +2,100 @@ Return-Path: <SRS0=6cb3=P7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65CEDC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 08:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB9F7C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 08:32:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF4EA21726
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 08:20:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF4EA21726
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 16D1220870
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 08:32:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H4ZuomQL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16D1220870
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43kyrl5HmqzDqLT
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 19:20:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.68; helo=mail-ua1-f68.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ua1-f68.google.com (mail-ua1-f68.google.com
- [209.85.222.68])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43kz7Y1psyzDqQL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 19:32:57 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43kypw45wjzDq8F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 19:18:32 +1100 (AEDT)
-Received: by mail-ua1-f68.google.com with SMTP id z24so425028ual.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 00:18:32 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43kz5j4GqszDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 19:31:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="H4ZuomQL"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43kz5j3RKSz8tP4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 19:31:21 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43kz5j3FJ0z9s9h; Wed, 23 Jan 2019 19:31:21 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="H4ZuomQL"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43kz5h6qHXz9s3q
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2019 19:31:20 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id t13so724372pgr.11
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2019 00:31:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=kKTn4tyCZB4T73oukdtK47IP8YeKEokyHeZJLtA2Rgc=;
+ b=H4ZuomQLhJSfXv80lIArYg1zQXupEiMGUm8DHvBejMCyfJcB0Xb+GiPy8+QEzQv1s9
+ GfdMhLWEoQHE6aIGGe7sZNC+6KfOuoJ0eYCBuYj0XgjRfD1CztNgLr7OEQKGbVbyhkW3
+ K7NrrxE4wwgLSSMwZoPyoMiQAP0vxHAa3N8Cq1E5bwW0k6NIGrs3AxHkL63SMcQCI1vJ
+ cF7VL488F98aekja+7FZFeKOrQze+sfvwPdArJO60aQzyueW5xN3Bk0K67E8s8RQsSm8
+ jDC+JdsImusHXAv9U5q7A2hbQhejS/Ub52A9n3B8ZlvhI9B7k4WLvIzQ2ZuzUgt6QTOG
+ HheA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=12zh+zoF9ZsRypXrhwkpdt/twwtVt55D4zgmcRizveg=;
- b=DbdxF0ZwHhnON+ClTQxCFMOmR1adKIfKNTa+idpsyDVz+tLUz8UszETKNvPyQmZZEt
- CP9lJilGz+xiNuj04M4QYljcloKUMNswx0OQ9F7Fu+IOjv/PHMcxA8Qywty9y2fsfwn+
- xe8nHuzXLEaPcNm8f1DNDot+iSG5rB3x6C1S66WdpwiZhD29nbyTJFKSyFOx1y8Z9erz
- VQVa8Od6cTviTV15Na8qt3S0eodAL3IGhmhwRB7FaVL90ltrIEYewBLlD1ozaYgHB9ao
- ClDwCjBKuktXuIc4FqvfzUulSQiZ9qPwrmiki1QPhHQNHd/5BTXPUWnyohpwmuEMEOXd
- SFOg==
-X-Gm-Message-State: AJcUukdHuJO6fbGZqQJN7R64DTbgsy+pp03CJJF2CU4Zi+33LEjMy3dh
- uUfd3uhg7aM/kYdITFJdRy1+0yIjeplG32Sm9r8=
-X-Google-Smtp-Source: ALg8bN6u51b15onggJ4GccuIPcCgsq/sWpMK72DspcgJbIClKAFf3SlGK8SjuViZ2fZ6aUkQ4yKhd8pKpd4T4QMK25Y=
-X-Received: by 2002:ab0:1393:: with SMTP id m19mr456885uae.75.1548231510047;
- Wed, 23 Jan 2019 00:18:30 -0800 (PST)
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=kKTn4tyCZB4T73oukdtK47IP8YeKEokyHeZJLtA2Rgc=;
+ b=n3reRbrbpdal5mnnLRKGO3DvMtNGpcLZybdMifd+feUjDi8FC0skhBGHiH3WsBkVhi
+ S3LyAybrw8HMK91MrKhOyHUG3tCkA2P8cVay91dJ3IVgov05HEYNy5s9JsmFQQv2PbSY
+ NVDIe7FVO6aKMN+McdCBYpercVQeHeUsreUYtItjGrW6ua2OV9Yox3YKUtSDXIJLe1I/
+ CqdXmMvdkbBbBBX8EnTLdiQqp3iMuAuELZXQRVipHZJ8thUX+Xk/nxq12aRINzynJZq5
+ 8DiP12D4FJudSJ9FyDXfBNrgJFZSJfQzfOlMv095TSdtS9O8VGAHm3pc132YsM1I+mn3
+ oHqA==
+X-Gm-Message-State: AJcUukdpk1mK8jAhKkZvWfqMSQk/CQsicmoUPRPVO1BKo7JE9z2MdG5C
+ Kz9uZ5fapZ+666XSU0LGg04AwEevbbA=
+X-Google-Smtp-Source: ALg8bN4jVbrrx232Hw/bt+qnAcwcGG3mSgPoe2L4I6T6c6jaNl8gfq0GXSo/UBRcGUHd8w6EkbgcKg==
+X-Received: by 2002:a62:7042:: with SMTP id l63mr1298827pfc.89.1548232279183; 
+ Wed, 23 Jan 2019 00:31:19 -0800 (PST)
+Received: from localhost (193-116-78-72.tpgi.com.au. [193.116.78.72])
+ by smtp.gmail.com with ESMTPSA id l5sm29034078pgu.86.2019.01.23.00.31.16
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 23 Jan 2019 00:31:18 -0800 (PST)
+Date: Wed, 23 Jan 2019 18:31:05 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s: Remove MSR_RI optimisation in
+ system_call_exit()
+To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <20190117113510.4265-1-mpe@ellerman.id.au>
+In-Reply-To: <20190117113510.4265-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-References: <20190123040711.21759-1-aik@ozlabs.ru>
- <20190122213043.051d7739@x1.home>
-In-Reply-To: <20190122213043.051d7739@x1.home>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 23 Jan 2019 09:18:18 +0100
-Message-ID: <CAMuHMdUuTPpYsLcJ2fnZpYQu36_uOELPBLaOQpmRqLaiHLLXEQ@mail.gmail.com>
-Subject: Re: [PATCH kernel] vfio-pci/nvlink2: Fix ancient gcc warnings
-To: Alex Williamson <alex.williamson@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1548232157.y0q1xpn4sp.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,90 +107,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>, KVM list <kvm@vger.kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Alex,
+Michael Ellerman's on January 17, 2019 9:35 pm:
+> Currently in system_call_exit() we have an optimisation where we
+> disable MSR_RI (recoverable interrupt) and MSR_EE (external interrupt
+> enable) in a single mtmsrd instruction.
+>=20
+> Unfortunately this will no longer work with THREAD_INFO_IN_TASK,
+> because then the load of TI_FLAGS might fault and faulting with MSR_RI
+> clear is treated as an unrecoverable exception which leads to a
+> panic().
+>=20
+> So change the code to only clear MSR_EE prior to loading TI_FLAGS,
+> leaving the clear of MSR_RI until later. We have some latitude in
+> where do the clear of MSR_RI. A bit of experimentation has shown that
+> this location gives the least slow down.
+>=20
+> This still causes a noticeable slow down in our null_syscall
+> performance. On a Power9 DD2.2:
+>=20
+>   Before        After         Delta     Delta %
+>   955 cycles    999 cycles    -44	-4.6%
+>=20
+> On the plus side this does simplify the code somewhat, because we
+> don't have to reenable MSR_RI on the restore_math() or
+> syscall_exit_work() paths which was necessitated previously by the
+> optimisation.
+>=20
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-On Wed, Jan 23, 2019 at 5:30 AM Alex Williamson
-<alex.williamson@redhat.com> wrote:
-> The below patch comes about from the build regressions and improvements
-> list you've sent out, but something doesn't add up that we'd be testing
-> with an old compiler where initialization with { 0 } generates a
-> "missing braces around initialization" warning.  Is this really the
-> case or are we missing something here?  There's no harm that I can see
-> with Alexey's fix, but are these really just false positives from a
-> compiler bug that we should selectively ignore if the "fix" is less
-> clean?  Thanks,
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Yes, they are false positives, AFAIK.
+But only because spectre and meltdown broke my spirit.
 
-> On Wed, 23 Jan 2019 15:07:11 +1100
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->
-> > Using the {0} construct as a generic initializer is perfectly fine in C,
-> > however due to a bug in old gcc there is a warning:
-> >
-> >   + /kisskb/src/drivers/vfio/pci/vfio_pci_nvlink2.c: warning: (near
-> > initialization for 'cap.header') [-Wmissing-braces]:  => 181:9
-
-These all seem to come from an old gcc 4.6, which is the oldest still
-supported version for compiling Linux
-http://kisskb.ellerman.id.au/kisskb/buildresult/13663641/
-
-Note that kisskb is also using gcc 4.6.3 for s390x and mips, which are the only
-other builds showing missing braces warnings.
-
-> > Since for whatever reason we still want to compile the modern kernel
-> > with such an old gcc without warnings, this changes the capabilities
-> > initialization.
-> >
-> > The gcc bugzilla: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119
-> >
-> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > ---
-> >  drivers/vfio/pci/vfio_pci_nvlink2.c | 30 ++++++++++++++---------------
-> >  1 file changed, 15 insertions(+), 15 deletions(-)
-> >
-> > diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
-> > index 054a2cf..91d945b 100644
-> > --- a/drivers/vfio/pci/vfio_pci_nvlink2.c
-> > +++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
-> > @@ -178,11 +178,11 @@ static int vfio_pci_nvgpu_add_capability(struct vfio_pci_device *vdev,
-> >               struct vfio_pci_region *region, struct vfio_info_cap *caps)
-> >  {
-> >       struct vfio_pci_nvgpu_data *data = region->data;
-> > -     struct vfio_region_info_cap_nvlink2_ssatgt cap = { 0 };
-> > -
-> > -     cap.header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT;
-> > -     cap.header.version = 1;
-> > -     cap.tgt = data->gpu_tgt;
-> > +     struct vfio_region_info_cap_nvlink2_ssatgt cap = {
-> > +             .header.id = VFIO_REGION_INFO_CAP_NVLINK2_SSATGT,
-> > +             .header.version = 1,
-> > +             .tgt = data->gpu_tgt
-> > +     };
-
-I think the simpler change
-
--       struct vfio_region_info_cap_nvlink2_ssatgt cap = { 0 };
-+       struct vfio_region_info_cap_nvlink2_ssatgt cap = { { 0 } };
-
-should also work (tested with gcc 4.1).
-That's how most of these were fixed in the past.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+=
