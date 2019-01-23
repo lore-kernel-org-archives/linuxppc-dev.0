@@ -2,62 +2,60 @@ Return-Path: <SRS0=6cb3=P7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33F0AC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 15:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7845EC282C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 16:26:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 711902184C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 15:34:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 711902184C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9CE0621726
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 16:26:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CE0621726
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43l8VM5dnRzDqMC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 02:34:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43l9dX04PYzDqJf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:26:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.67; helo=mail-ua1-f67.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ua1-f67.google.com (mail-ua1-f67.google.com
- [209.85.222.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.33.251.173; helo=1.mo69.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 1.mo69.mail-out.ovh.net (1.mo69.mail-out.ovh.net
+ [178.33.251.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43l8Sh6nLyzDqDm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 02:33:24 +1100 (AEDT)
-Received: by mail-ua1-f67.google.com with SMTP id z11so835561uaa.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 07:33:24 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=ZSHkQMfLLdepeDCVQenJz5d2pdB1BZBSB6tWTabXfX0=;
- b=ViuDSinTFuvSbFq9+P0ZkxdoTl/GUSMAuF0pbINljUz3oVUnm2HkO+oeOIDcL99U/7
- B0+3ipJd6WL8gYA1yNkjWWoT9EHuIxFK8IV8UXrtCHT/j9wHfPTp9P7c7a/Fmfxy+JY9
- nTy5LPjniJ6InG9aJqU2c8vlkO2yad2Amn5jSqXI8HjyduQm9w5c0MfV6WJKclj4DGUf
- b2fFcrcKKHuuSyfsdm4SjedKDABRLzomQUYHtPcH0ShloUwJJdGZ9dw1sct8j0Yfj351
- YHs6gDhI6TuF4vXRsYeVjJd1ZOCmrBQCsl7A+QopRORLxcNsxmkndKsRL/4yAhM9kczy
- ztRQ==
-X-Gm-Message-State: AJcUukf7+ZZRPWvVoa+g9Uwi+HWCgR0CULARH6y9N7KokXya22xsMSqw
- lsEwB81LBtJt55iVgDFcloNUE+yonKuERZkolbY=
-X-Google-Smtp-Source: ALg8bN411XN+/POecIOHkbERwk16PlKxGOoUzZRR+A06ByaQtAch2faN4J7KsCjNSKQqXO/AlB0D4mENUIQ4ibIYn7I=
-X-Received: by 2002:ab0:1393:: with SMTP id m19mr976671uae.75.1548257602011;
- Wed, 23 Jan 2019 07:33:22 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43l9bd6XvNzDqJf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 03:24:27 +1100 (AEDT)
+Received: from player786.ha.ovh.net (unknown [10.109.160.76])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id DA28B38C74
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 17:24:23 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player786.ha.ovh.net (Postfix) with ESMTPSA id E974720F6E5E;
+ Wed, 23 Jan 2019 16:24:13 +0000 (UTC)
+Subject: Re: [PATCH 03/19] KVM: PPC: Book3S HV: check the IRQ controller type
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-4-clg@kaod.org> <20190122045642.GB15124@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
+Date: Wed, 23 Jan 2019 17:24:13 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-References: <20181211202406.27721-1-robh@kernel.org>
-In-Reply-To: <20181211202406.27721-1-robh@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 23 Jan 2019 16:33:10 +0100
-Message-ID: <CAMuHMdUZHi87Dv=m4USocfQ60s6_uHmny5DvCVm+hZ98+ROvdA@mail.gmail.com>
-Subject: Re: [PATCH v4] kbuild: Add support for DT binding schema checks
-To: Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190122045642.GB15124@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 10752062637088213895
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledriedtgdekkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,62 +67,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Kumar Gala <kumar.gala@linaro.org>,
- arm-soc <arm@kernel.org>, Sean Hudson <darknighte@darknighte.com>,
- Jonathan Corbet <corbet@lwn.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Grant Likely <grant.likely@arm.com>, Michal Marek <michal.lkml@markovi.net>,
- Frank Rowand <frowand.list@gmail.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Rob,
+On 1/22/19 5:56 AM, Paul Mackerras wrote:
+> On Mon, Jan 07, 2019 at 07:43:15PM +0100, Cédric Le Goater wrote:
+>> We will have different KVM devices for interrupts, one for the
+>> XICS-over-XIVE mode and one for the XIVE native exploitation
+>> mode. Let's add some checks to make sure we are not mixing the
+>> interfaces in KVM.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/kvm/book3s_xive.c | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>> index f78d002f0fe0..8a4fa45f07f8 100644
+>> --- a/arch/powerpc/kvm/book3s_xive.c
+>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>> @@ -819,6 +819,9 @@ u64 kvmppc_xive_get_icp(struct kvm_vcpu *vcpu)
+>>  {
+>>  	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>>  
+>> +	if (!kvmppc_xics_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>>  	if (!xc)
+>>  		return 0;
+>>  
+>> @@ -835,6 +838,9 @@ int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64 icpval)
+>>  	u8 cppr, mfrr;
+>>  	u32 xisr;
+>>  
+>> +	if (!kvmppc_xics_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>>  	if (!xc || !xive)
+>>  		return -ENOENT;
+> 
+> I can't see how these new checks could ever trigger in the code as it
+> stands.  Is there a way at present? 
 
-On Tue, Dec 11, 2018 at 9:24 PM Rob Herring <robh@kernel.org> wrote:
-> This adds the build infrastructure for checking DT binding schema
-> documents and validating dts files using the binding schema.
->
-> Check DT binding schema documents:
-> make dt_binding_check
->
-> Build dts files and check using DT binding schema:
-> make dtbs_check
->
-> Optionally, DT_SCHEMA_FILES can be passed in with a schema file(s) to
-> use for validation. This makes it easier to find and fix errors
-> generated by a specific schema.
->
-> Currently, the validation targets are separate from a normal build to
-> avoid a hard dependency on the external DT schema project and because
-> there are lots of warnings generated.
+It would require some custom QEMU doing silly things : create the XICS 
+KVM device, and then call kvm_get_one_reg(KVM_REG_PPC_ICP_STATE) or 
+kvm_set_one_reg(icp->cs, KVM_REG_PPC_ICP_STATE) without connecting the
+vCPU to its presenter. 
 
-Thanks, I'm giving this a try, and get errors like:
+Today, you get a ENOENT.
 
-      DTC     arch/arm/boot/dts/emev2-kzm9d.dt.yaml
-    FATAL ERROR: No markers present in property 'cpu0' value
+> Do following patches ever add a path where the new checks could trigger, 
+> or is this just an excess of caution? 
 
-and
+With the following patches, QEMU could to do something even more silly,
+which is to mix the interrupt mode interfaces : create a KVM XICS device    
+and call KVM CPU ioctls of the KVM XIVE device, or the opposite.  
 
-      DTC     arch/arm64/boot/dts/renesas/r8a7795-salvator-x.dt.yaml
-    FATAL ERROR: No markers present in property 'audio_clk_a' value
+> (Your patch description should ideally have answered these questions > for me.)
 
-Do you have a clue?
-Thanks!
+Yes. I also think that I introduced this patch to early in the series.
+It make more sense when the XICS and the XIVE KVM devices are available.  
 
-Gr{oetje,eeting}s,
+Thanks,
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+C.
