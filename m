@@ -2,63 +2,82 @@ Return-Path: <SRS0=6cb3=P7=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B01FC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 11:28:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95280C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 14:37:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1191C20861
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 11:28:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1191C20861
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4D2CB2085A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 14:37:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="jUegAZRd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4D2CB2085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43l32b29pfzDqM2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 22:28:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43l7Cp1YvMzDqLM
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 01:37:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.175; helo=3.mo179.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::4; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 3.mo179.mail-out.ovh.net (3.mo179.mail-out.ovh.net
- [178.33.251.175])
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="jUegAZRd"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43l30t1HgJzDqKT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 22:27:25 +1100 (AEDT)
-Received: from player711.ha.ovh.net (unknown [10.109.143.24])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id A792010ED47
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 12:07:30 +0100 (CET)
-Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
- (Authenticated sender: clg@kaod.org)
- by player711.ha.ovh.net (Postfix) with ESMTPSA id 041791E0B3DF;
- Wed, 23 Jan 2019 11:07:19 +0000 (UTC)
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-To: Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107191006.10648-1-clg@kaod.org> <20190107191006.10648-2-clg@kaod.org>
- <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
- <20190123103009.GB29826@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
-Date: Wed, 23 Jan 2019 12:07:19 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43l79j26bVzDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 01:35:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1548254113;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=yJnRdupOAZFXzlPR7YQoD+/EPzdEL/IZ9rZjQvP1r+M=;
+ b=jUegAZRdy35Gh5XQY/if0Z9XcM/vGeZjCOGLy3W9ovH9xgOpCJN/ADFnFJu4kAKOGd
+ S3zHNFLl8piVgLSxAavh2BwRjJ63onU4k0vwhcHoNwwbzNHWYhviCVUOSrZ5Wf+2MQC7
+ hiEgk72Nnca9TUl7lSI81qlFkItUw0TkX+6vqdpl7Gra3Bfy5ZLx2Mlh23AEPRNdK+uD
+ 9Cv6D+YprpC0oIt9rLCkmSiT8SEwU47e654pyak1PRGNFzkIyjtYotX03v/V4cUJ3zJi
+ Un+D8tblobZvj/cjcKvFr3k1EHULGeUZ78gWvrskFyoS1vJvY5rdazyJ/Lw0j0GJLwjg
+ wcbA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkOivtz9BbcU3oIy/088u8A0IQPCQ=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:14eb:4db9:5107:55c4]
+ by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0NEYubJ4
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Wed, 23 Jan 2019 15:34:56 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <871403f2-fa7d-de15-89eb-070432e15c69@xenosoft.de>
+ <20190118112842.GA9115@lst.de>
+ <a2ca0118-5915-8b1c-7cfa-71cb4b43eaa6@xenosoft.de>
+ <20190118121810.GA13327@lst.de>
+ <eceebeda-0e18-00f6-06e7-def2eb0aa961@xenosoft.de>
+ <20190118125500.GA15657@lst.de>
+ <e11e61b1-6468-122e-fc2b-3b3f857186bb@xenosoft.de>
+ <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
+ <b9e5e081-a3cc-2625-4e08-2d55c2ba224b@xenosoft.de>
+ <20190119130222.GA24346@lst.de> <20190119140452.GA25198@lst.de>
+ <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
+Message-ID: <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
+Date: Wed, 23 Jan 2019 15:34:55 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190123103009.GB29826@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 5400378905615633287
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledriedtgddvhecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,49 +89,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/23/19 11:30 AM, Paul Mackerras wrote:
-> On Wed, Jan 23, 2019 at 05:45:24PM +1100, Benjamin Herrenschmidt wrote:
->> On Tue, 2019-01-22 at 16:26 +1100, Paul Mackerras wrote:
->>> On Mon, Jan 07, 2019 at 08:10:05PM +0100, Cédric Le Goater wrote:
->>>> Clear the ESB pages from the VMA of the IRQ being pass through to the
->>>> guest and let the fault handler repopulate the VMA when the ESB pages
->>>> are accessed for an EOI or for a trigger.
->>>
->>> Why do we want to do this?
->>>
->>> I don't see any possible advantage to removing the PTEs from the
->>> userspace mapping.  You'll need to explain further.
->>
->> Afaik bcs we change the mapping to point to the real HW irq ESB page
->> instead of the "IPI" that was there at VM init time.
+Hi Christoph,
 
-yes exactly. You need to clean up the pages each time.
- 
-> So that makes it sound like there is a whole lot going on that hasn't
-> even been hinted at in the patch descriptions...  It sounds like we
-> need a good description of how all this works and fits together
-> somewhere under Documentation/.
+I also compiled a kernel (zImage) for the X1000  from your Git 
+'powerpc-dma.6-debug' (both patches) today.
 
-OK. I have started doing so for the models merged in QEMU but not yet 
-for KVM. I will work on it.
+It boots and the P.A. Semi Ethernet works!
 
-> In any case we need much more informative patch descriptions.  I
-> realize that it's all currently in Cedric's head, but I bet that in
-> two or three years' time when we come to try to debug something, it
-> won't be in anyone's head...
-
-I agree. 
-
-
-So, storing the ESB VMA under the KVM device is not shocking anyone ?  
+I will test just the first patch tomorrow.
 
 Thanks,
+Christian
 
-C.
+
+On 21 January 2019 at 3:38PM, Christian Zigotzky wrote:
+> Hello Christoph,
+>
+> Thanks for your reply. I successfully compiled a kernel (uImage) for 
+> the X5000 from your Git 'powerpc-dma.6-debug' (both patches) today.
+>
+> It detects the SATA hard disk drive and boots without any problems.
+>
 
