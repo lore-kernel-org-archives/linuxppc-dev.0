@@ -6,58 +6,59 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 107B5C282C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 10:32:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05D14C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 10:33:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4702620861
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 10:32:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 75D8C20861
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 10:33:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="CmYqR/UJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4702620861
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="My8Ib7ND"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75D8C20861
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43l1my1pFjzDqNH
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 21:32:02 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43l1pk43b6zDqLr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Jan 2019 21:33:34 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43l1kv4ZQKzDqKH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43l1kv3HVczDqJt
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2019 21:30:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="CmYqR/UJ"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="My8Ib7ND"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 43l1kv0w4Wz9s4s; Wed, 23 Jan 2019 21:30:14 +1100 (AEDT)
+ id 43l1kt5hZqz9s9h; Wed, 23 Jan 2019 21:30:14 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1548239415; bh=E9jhbke0ONEa9KRFA8tMqQVtg1nCTkEdmyAamgWd8wM=;
+ t=1548239414; bh=adIa6hXcHC3mrI5YqMsudP1dpdMw6Rv9xn2IZjDYs9M=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=CmYqR/UJdoUIGevbgzvxg0kD6/8sBBn32/WNATH3c6fCIXpGZ0Y8I7EYgDnh+9W7+
- fDkyvnz7VhEwiZbvT52Sws2Y/KVCFY0ZuzV9lWYoGfSYTV2610BZOdt0Zp4Fgn0FZd
- 7FO4yrJZOWO37tIlyeU+gFvlOsOJD4aWHEu5YPKG+Jo5l875LWZVF1Qk8CxLjlje8E
- VE6ZuSh8qjWm6CLNkOUxXeq/p/ejYcTI3ICpFu8zA2vYI2Gmua3mAShHF07J/4W+pi
- sZ8S3u52rbMaLK/xzLfswKvVhltZn9IiIqBywcMuqCDlf8N3C8CV/5b8FdFx/PPx9a
- UChxA2vFCohaA==
-Date: Wed, 23 Jan 2019 21:30:09 +1100
+ b=My8Ib7ND5JYsbzlYjd09shw47hmubhQtH6R02iqcC/ciCEhh931Pvm7UCF+kMllf+
+ hk253fsF1d1KNp9sduRmUVc65B8uzECSVCtLViY9NYIE/0/L2eXjexshOCVycCFn6F
+ DIQdpmLjJDYHh9iSvLHgouyh106dBORZexm9/VLisPerN6bEkVWp+BUrYTMQ9sU8E+
+ fpaXrHTJuKsR5Ey0+77UmNxcccpeEyNMLEskZlopZGbhReSSJ1nUF5j1CT0Mo3xpJJ
+ NSgxdBVxQqNCi+sjkDfvGRKtrWcKak6cehujCtAPJZerwv4T8k/PA/i72WnwytRrRa
+ ozlXDrUMSRQLw==
+Date: Wed, 23 Jan 2019 21:26:03 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-Message-ID: <20190123103009.GB29826@blackberry>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 11/19] KVM: PPC: Book3S HV: add support for the XIVE
+ native exploitation mode hcalls
+Message-ID: <20190123102603.GA29826@blackberry>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107191006.10648-1-clg@kaod.org>
- <20190107191006.10648-2-clg@kaod.org>
- <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
+ <20190107184331.8429-12-clg@kaod.org>
+ <20190122052346.GF15124@blackberry>
+ <de777e750665d92509b1487a90acb79d70854cf3.camel@kernel.crashing.org>
+ <3ada7c25-c671-32d2-4c91-dd7e84c29e48@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
+In-Reply-To: <3ada7c25-c671-32d2-4c91-dd7e84c29e48@kaod.org>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -70,36 +71,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 23, 2019 at 05:45:24PM +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2019-01-22 at 16:26 +1100, Paul Mackerras wrote:
-> > On Mon, Jan 07, 2019 at 08:10:05PM +0100, Cédric Le Goater wrote:
-> > > Clear the ESB pages from the VMA of the IRQ being pass through to the
-> > > guest and let the fault handler repopulate the VMA when the ESB pages
-> > > are accessed for an EOI or for a trigger.
+On Wed, Jan 23, 2019 at 09:48:31AM +0100, Cédric Le Goater wrote:
+> On 1/23/19 7:44 AM, Benjamin Herrenschmidt wrote:
+> > On Tue, 2019-01-22 at 16:23 +1100, Paul Mackerras wrote:
+> >> Why do we need to provide real-mode versions of these hypercall
+> >> handlers?  I thought these hypercalls would only get called
+> >> infrequently, and in any case certainly much less frequently than once
+> >> per interrupt delivered.  If they are infrequent, then let's leave out
+> >> the real-mode version and just handle them in book3s_hv.c.
 > > 
-> > Why do we want to do this?
-> > 
-> > I don't see any possible advantage to removing the PTEs from the
-> > userspace mapping.  You'll need to explain further.
+> > Agreed with the exception maybe of H_INT_ESB
 > 
-> Afaik bcs we change the mapping to point to the real HW irq ESB page
-> instead of the "IPI" that was there at VM init time.
+> ok. 
+> 
+> Some of these hcalls are really simple and only getting local info from 
+> the host (h_int_get_*). I thought handling the hcall ASAP was a preferred 
+> practice, even if the hcall is not called frequently. Isn't it ?
 
-So that makes it sound like there is a whole lot going on that hasn't
-even been hinted at in the patch descriptions...  It sounds like we
-need a good description of how all this works and fits together
-somewhere under Documentation/.
+If we are going to handle a given hcall in the kernel at all, then we
+have to have a virtual mode handler.  If we have a real-mode handler
+as well then we in general incur a certain amount of code duplication
+with consequent maintenance costs and possibility of bugs.  So we
+generally only have real-mode handlers for the hcalls where it is
+critical to minimize the latency.  From what Ben is saying that would
+only be H_INT_ESB, and maybe not even that.
 
-In any case we need much more informative patch descriptions.  I
-realize that it's all currently in Cedric's head, but I bet that in
-two or three years' time when we come to try to debug something, it
-won't be in anyone's head...
+If H_INT_ESB is only used for LSIs, then is a guest going to be using
+it at all?  My understanding was that with XIVE, only a small number
+of interrupts that are to do with system management functions are
+LSIs; all of the interrupts relating to PCI-e devices are MSIs.  So do
+we actually have a real high-frequency use case for LSIs in a guest?
+
+For now I would prefer that you remove all the real-mode hcall
+handlers.  We can add them later if we get performance data showing
+that they are needed.
+
+Regarding whether or not to have a given hcall handler in the kernel
+at all - if there is for example an hcall which is just called once
+on guest startup, and its function is just to provide information to
+the guest, and QEMU has that information, then why not have that hcall
+implemented by QEMU?  Are any of the hcalls like that?
+
+For example, if H_INT_GET_SOURCE_INFO was implemented in QEMU, could
+we then remove the VC_BASE thing from the xive device?
 
 Paul.
