@@ -3,43 +3,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9BCEC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:47:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55F74C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:49:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9CDFE207E0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:47:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CDFE207E0
+	by mail.kernel.org (Postfix) with ESMTPS id 09E5020844
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:49:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09E5020844
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lSln4YnxzDqG0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:47:33 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lSnf132XzDqD2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:49:10 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbM6TcNzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbQ344rzDqG0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43lSbM51Wnz9sMr; Thu, 24 Jan 2019 14:40:15 +1100 (AEDT)
+ id 43lSbP32bBz9sDK; Thu, 24 Jan 2019 14:40:16 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 607ea5090b3fb61fea1d0bc5278e6c1d40ab5bd6
+X-powerpc-patch-commit: acef5e0165912c459a9ae98a25f0f87908ced0f9
 X-Patchwork-Hint: ignore
-In-Reply-To: <dc0760e25a38ce64dd6cfde78b717c8e4a601a1e.1546947335.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1546951970-29079-1-git-send-email-clabbe@baylibre.com>
+To: Corentin Labbe <clabbe@baylibre.com>, benh@kernel.crashing.org,
+ mark.rutland@arm.com, paulus@samba.org, robh+dt@kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/irq: drop arch_early_irq_init()
-Message-Id: <43lSbM51Wnz9sMr@ozlabs.org>
-Date: Thu, 24 Jan 2019 14:40:15 +1100 (AEDT)
+Subject: Re: powerpc: build virtex dtb
+Message-Id: <43lSbP32bBz9sDK@ozlabs.org>
+Date: Thu, 24 Jan 2019 14:40:16 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,22 +50,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Corentin Labbe <clabbe@baylibre.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-01-08 at 11:37:19 UTC, Christophe Leroy wrote:
-> arch_early_irq_init() does nothing different than
-> the weak arch_early_irq_init() in kernel/softirq.c
+On Tue, 2019-01-08 at 12:52:50 UTC, Corentin Labbe wrote:
+> I wanted to test the virtex440-ml507 qemu machine and found that the dtb
+> for it was not builded.
+> All powerpc DTB are only built when CONFIG_OF_ALL_DTBS is set which depend on
+> COMPILE_TEST.
 > 
-> Fixes: 089fb442f301 ("powerpc: Use ARCH_IRQ_INIT_FLAGS")
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> This patchs adds build of virtex dtbs depending on
+> CONFIG_XILINX_VIRTEX440_GENERIC_BOARD option.
+> 
+> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/607ea5090b3fb61fea1d0bc5278e6c1d
+https://git.kernel.org/powerpc/c/acef5e0165912c459a9ae98a25f0f879
 
 cheers
