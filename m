@@ -4,41 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08E30C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:59:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70AC4C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 04:00:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A5152184C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:59:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A5152184C
+	by mail.kernel.org (Postfix) with ESMTPS id 27E66218A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 04:00:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27E66218A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lT1D6LlVzDqBm
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:59:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lT3812SlzDq6c
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 15:00:52 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbY1sfZzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbZ4PkJzDqHF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43lSbX4lX3z9sBn; Thu, 24 Jan 2019 14:40:24 +1100 (AEDT)
+ id 43lSbZ3LGNz9sDK; Thu, 24 Jan 2019 14:40:25 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c142e9741e61577c45f2441214c999f25857bdd1
+X-powerpc-patch-commit: a652758ac1475f69d28d11b3528c4f489416c877
 X-Patchwork-Hint: ignore
-In-Reply-To: <1547176954-17739-2-git-send-email-yamada.masahiro@socionext.com>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20190111235056.27435-1-joel@jms.id.au>
+To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] KVM: powerpc: remove -I. header search paths
-Message-Id: <43lSbX4lX3z9sBn@ozlabs.org>
-Date: Thu, 24 Jan 2019 14:40:24 +1100 (AEDT)
+Subject: Re: powerpc: Use ALIGN instead of BLOCK
+Message-Id: <43lSbZ3LGNz9sDK@ozlabs.org>
+Date: Thu, 24 Jan 2019 14:40:25 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,24 +49,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Nick Desaulniers <ndesaulniers@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-01-11 at 03:22:31 UTC, Masahiro Yamada wrote:
-> The header search path -I. in kernel Makefiles is very suspicious;
-> it allows the compiler to search for headers in the top of $(srctree),
-> where obviously no header file exists.
+On Fri, 2019-01-11 at 23:50:56 UTC, Joel Stanley wrote:
+> In the ld documentation under Builtin Functions:
 > 
-> Commit 46f43c6ee022 ("KVM: powerpc: convert marker probes to event
-> trace") first added these options, but they are completely useless.
+>   BLOCK(exp)
 > 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+>     This is a synonym for ALIGN, for compatibility with older linker scripts.
+> 
+> Clang's linker (lld) doesn't know about BLOCK so remove this use of it.
+> 
+> Link: https://github.com/ClangBuiltLinux/linux/issues/253
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c142e9741e61577c45f2441214c999f2
+https://git.kernel.org/powerpc/c/a652758ac1475f69d28d11b3528c4f48
 
 cheers
