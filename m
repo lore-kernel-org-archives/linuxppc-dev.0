@@ -6,39 +6,40 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55F74C282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:49:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF65DC282C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:50:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 09E5020844
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:49:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 09E5020844
+	by mail.kernel.org (Postfix) with ESMTPS id 9F53020844
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:50:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F53020844
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lSnf132XzDqD2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:49:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lSqV44Q2zDqGq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:50:46 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbQ344rzDqG0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbQ5p4yzDqGk
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43lSbP32bBz9sDK; Thu, 24 Jan 2019 14:40:16 +1100 (AEDT)
+ id 43lSbQ2mcFz9sN6; Thu, 24 Jan 2019 14:40:17 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: acef5e0165912c459a9ae98a25f0f87908ced0f9
+X-powerpc-patch-commit: 8acb88682cc00a41a677c2455a7c992d78e43035
 X-Patchwork-Hint: ignore
-In-Reply-To: <1546951970-29079-1-git-send-email-clabbe@baylibre.com>
-To: Corentin Labbe <clabbe@baylibre.com>, benh@kernel.crashing.org,
- mark.rutland@arm.com, paulus@samba.org, robh+dt@kernel.org
+In-Reply-To: <fc763a05d2b9dbe2cb6124d97ab9a0fe9e3e5350.1546960038.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc: build virtex dtb
-Message-Id: <43lSbP32bBz9sDK@ozlabs.org>
-Date: Thu, 24 Jan 2019 14:40:16 +1100 (AEDT)
+Subject: Re: powerpc/ipic: drop unused functions
+Message-Id: <43lSbQ2mcFz9sN6@ozlabs.org>
+Date: Thu, 24 Jan 2019 14:40:17 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,25 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Corentin Labbe <clabbe@baylibre.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-01-08 at 12:52:50 UTC, Corentin Labbe wrote:
-> I wanted to test the virtex440-ml507 qemu machine and found that the dtb
-> for it was not builded.
-> All powerpc DTB are only built when CONFIG_OF_ALL_DTBS is set which depend on
-> COMPILE_TEST.
+On Tue, 2019-01-08 at 15:08:00 UTC, Christophe Leroy wrote:
+> ipic_set_highest_priority(), ipic_enable_mcp() and ipic_disable_mcp()
+> are unused. This patch drops them.
 > 
-> This patchs adds build of virtex dtbs depending on
-> CONFIG_XILINX_VIRTEX440_GENERIC_BOARD option.
-> 
-> Signed-off-by: Corentin Labbe <clabbe@baylibre.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/acef5e0165912c459a9ae98a25f0f879
+https://git.kernel.org/powerpc/c/8acb88682cc00a41a677c2455a7c992d
 
 cheers
