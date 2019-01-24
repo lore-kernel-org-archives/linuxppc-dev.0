@@ -2,80 +2,92 @@ Return-Path: <SRS0=rclJ=QA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4703CC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:50:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EF62C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:53:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8FBC9218A6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:50:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FBC9218A6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9BBAA218C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:53:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BBAA218C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lqSm4N6zzDqHj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 04:50:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lqWw5zxWzDqJl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 04:53:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
- (client-ip=192.185.145.3; helo=gateway30.websitewelcome.com;
- envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=embeddedor.com
-X-Greylist: delayed 1427 seconds by postgrey-1.36 at bilbo;
- Fri, 25 Jan 2019 04:49:20 AEDT
-Received: from gateway30.websitewelcome.com (gateway30.websitewelcome.com
- [192.185.145.3])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lqR41dtCzDqHg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 04:49:20 +1100 (AEDT)
-Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
- by gateway30.websitewelcome.com (Postfix) with ESMTP id A400A3AE8A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 11:25:28 -0600 (CST)
-Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
- id mikqgbb5m90onmikqg2hhB; Thu, 24 Jan 2019 11:25:28 -0600
-X-Authority-Reason: nr=8
-Received: from [189.250.130.205] (port=41838 helo=[192.168.1.76])
- by gator4166.hostgator.com with esmtpsa
- (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
- (envelope-from <gustavo@embeddedor.com>)
- id 1gmikq-000089-4h; Thu, 24 Jan 2019 11:25:28 -0600
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-References: <1548338509-628-1-git-send-email-leitao@debian.org>
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Openpgp: preference=signencrypt
-Subject: Re: [PATCH] powerpc/ptrace: Mitigate potential Spectre v1
-Message-ID: <43b1ccd5-ec7f-32de-4f30-d67dbea02d9e@embeddedor.com>
-Date: Thu, 24 Jan 2019 11:25:27 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lqV44CsBzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 04:51:56 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0OHolYa028241
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 12:51:54 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2q7j0tgc24-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 12:51:54 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Thu, 24 Jan 2019 17:51:51 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 24 Jan 2019 17:51:48 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0OHplXj66125944
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 24 Jan 2019 17:51:47 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3BA84A404D;
+ Thu, 24 Jan 2019 17:51:47 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 50777A4040;
+ Thu, 24 Jan 2019 17:51:46 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.8.102])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu, 24 Jan 2019 17:51:46 +0000 (GMT)
+Date: Thu, 24 Jan 2019 19:51:44 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [RFC PATCH] x86, numa: always initialize all possible nodes
+References: <20190114082416.30939-1-mhocko@kernel.org>
+ <20190124141727.GN4087@dhcp22.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <1548338509-628-1-git-send-email-leitao@debian.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse,
- please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - lists.ozlabs.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 189.250.130.205
-X-Source-L: No
-X-Exim-ID: 1gmikq-000089-4h
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: ([192.168.1.76]) [189.250.130.205]:41838
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 2
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190124141727.GN4087@dhcp22.suse.cz>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 19012417-4275-0000-0000-00000303B0FC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19012417-4276-0000-0000-00003811EA16
+Message-Id: <20190124175144.GF13790@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-24_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901240124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,87 +99,259 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Dave Hansen <dave.hansen@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Pingfan Liu <kernelfans@gmail.com>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Jan 24, 2019 at 03:17:27PM +0100, Michal Hocko wrote:
+> a friendly ping for this. Does anybody see any problem with this
+> approach?
 
+FWIW, it looks fine to me.
 
-On 1/24/19 8:01 AM, Breno Leitao wrote:
-> 'regno' is directly controlled by user space, hence leading to a potential
-> exploitation of the Spectre variant 1 vulnerability.
+It'd just be nice to have a few more words in the changelog about *how* the
+x86 init was reworked ;-)
+ 
+> On Mon 14-01-19 09:24:16, Michal Hocko wrote:
+> > From: Michal Hocko <mhocko@suse.com>
+> > 
+> > Pingfan Liu has reported the following splat
+> > [    5.772742] BUG: unable to handle kernel paging request at 0000000000002088
+> > [    5.773618] PGD 0 P4D 0
+> > [    5.773618] Oops: 0000 [#1] SMP NOPTI
+> > [    5.773618] CPU: 2 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc1+ #3
+> > [    5.773618] Hardware name: Dell Inc. PowerEdge R7425/02MJ3T, BIOS 1.4.3 06/29/2018
+> > [    5.773618] RIP: 0010:__alloc_pages_nodemask+0xe2/0x2a0
+> > [    5.773618] Code: 00 00 44 89 ea 80 ca 80 41 83 f8 01 44 0f 44 ea 89 da c1 ea 08 83 e2 01 88 54 24 20 48 8b 54 24 08 48 85 d2 0f 85 46 01 00 00 <3b> 77 08 0f 82 3d 01 00 00 48 89 f8 44 89 ea 48 89
+> > e1 44 89 e6 89
+> > [    5.773618] RSP: 0018:ffffaa600005fb20 EFLAGS: 00010246
+> > [    5.773618] RAX: 0000000000000000 RBX: 00000000006012c0 RCX: 0000000000000000
+> > [    5.773618] RDX: 0000000000000000 RSI: 0000000000000002 RDI: 0000000000002080
+> > [    5.773618] RBP: 00000000006012c0 R08: 0000000000000000 R09: 0000000000000002
+> > [    5.773618] R10: 00000000006080c0 R11: 0000000000000002 R12: 0000000000000000
+> > [    5.773618] R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000002
+> > [    5.773618] FS:  0000000000000000(0000) GS:ffff8c69afe00000(0000) knlGS:0000000000000000
+> > [    5.773618] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > [    5.773618] CR2: 0000000000002088 CR3: 000000087e00a000 CR4: 00000000003406e0
+> > [    5.773618] Call Trace:
+> > [    5.773618]  new_slab+0xa9/0x570
+> > [    5.773618]  ___slab_alloc+0x375/0x540
+> > [    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
+> > [    5.773618]  __slab_alloc+0x1c/0x38
+> > [    5.773618]  __kmalloc_node_track_caller+0xc8/0x270
+> > [    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
+> > [    5.773618]  devm_kmalloc+0x28/0x60
+> > [    5.773618]  pinctrl_bind_pins+0x2b/0x2a0
+> > [    5.773618]  really_probe+0x73/0x420
+> > [    5.773618]  driver_probe_device+0x115/0x130
+> > [    5.773618]  __driver_attach+0x103/0x110
+> > [    5.773618]  ? driver_probe_device+0x130/0x130
+> > [    5.773618]  bus_for_each_dev+0x67/0xc0
+> > [    5.773618]  ? klist_add_tail+0x3b/0x70
+> > [    5.773618]  bus_add_driver+0x41/0x260
+> > [    5.773618]  ? pcie_port_setup+0x4d/0x4d
+> > [    5.773618]  driver_register+0x5b/0xe0
+> > [    5.773618]  ? pcie_port_setup+0x4d/0x4d
+> > [    5.773618]  do_one_initcall+0x4e/0x1d4
+> > [    5.773618]  ? init_setup+0x25/0x28
+> > [    5.773618]  kernel_init_freeable+0x1c1/0x26e
+> > [    5.773618]  ? loglevel+0x5b/0x5b
+> > [    5.773618]  ? rest_init+0xb0/0xb0
+> > [    5.773618]  kernel_init+0xa/0x110
+> > [    5.773618]  ret_from_fork+0x22/0x40
+> > [    5.773618] Modules linked in:
+> > [    5.773618] CR2: 0000000000002088
+> > [    5.773618] ---[ end trace 1030c9120a03d081 ]---
+> > 
+> > with his AMD machine with the following topology
+> >   NUMA node0 CPU(s):     0,8,16,24
+> >   NUMA node1 CPU(s):     2,10,18,26
+> >   NUMA node2 CPU(s):     4,12,20,28
+> >   NUMA node3 CPU(s):     6,14,22,30
+> >   NUMA node4 CPU(s):     1,9,17,25
+> >   NUMA node5 CPU(s):     3,11,19,27
+> >   NUMA node6 CPU(s):     5,13,21,29
+> >   NUMA node7 CPU(s):     7,15,23,31
+> > 
+> > [    0.007418] Early memory node ranges
+> > [    0.007419]   node   1: [mem 0x0000000000001000-0x000000000008efff]
+> > [    0.007420]   node   1: [mem 0x0000000000090000-0x000000000009ffff]
+> > [    0.007422]   node   1: [mem 0x0000000000100000-0x000000005c3d6fff]
+> > [    0.007422]   node   1: [mem 0x00000000643df000-0x0000000068ff7fff]
+> > [    0.007423]   node   1: [mem 0x000000006c528000-0x000000006fffffff]
+> > [    0.007424]   node   1: [mem 0x0000000100000000-0x000000047fffffff]
+> > [    0.007425]   node   5: [mem 0x0000000480000000-0x000000087effffff]
+> > 
+> > and nr_cpus set to 4. The underlying reason is tha the device is bound
+> > to node 2 which doesn't have any memory and init_cpu_to_node only
+> > initializes memory-less nodes for possible cpus which nr_cpus restrics.
+> > This in turn means that proper zonelists are not allocated and the page
+> > allocator blows up.
+> > 
+> > Fix the issue by reworking how x86 initializes the memory less nodes.
+> > The current implementation is hacked into the workflow and it doesn't
+> > allow any flexibility. There is init_memory_less_node called for each
+> > offline node that has a CPU as already mentioned above. This will make
+> > sure that we will have a new online node without any memory. Much later
+> > on we build a zone list for this node and things seem to work, except
+> > they do not (e.g. due to nr_cpus). Not to mention that it doesn't really
+> > make much sense to consider an empty node as online because we just
+> > consider this node whenever we want to iterate nodes to use and empty
+> > node is obviously not the best candidate. This is all just too fragile.
+> > 
+> > Reported-by: Pingfan Liu <kernelfans@gmail.com>
+> > Tested-by: Pingfan Liu <kernelfans@gmail.com>
+> > Signed-off-by: Michal Hocko <mhocko@suse.com>
+> > ---
+> > 
+> > Hi,
+> > I am sending this as an RFC because I am not sure this is the proper way
+> > to go myself. I am especially not sure about other architectures
+> > supporting memoryless nodes (ppc and ia64 AFAICS or are there more?).
+> > 
+> > I would appreciate a help with those architectures because I couldn't
+> > really grasp how the memoryless nodes are really initialized there. E.g.
+> > ppc only seem to call setup_node_data for online nodes but I couldn't
+> > find any special treatment for nodes without any memory.
+> > 
+> > Any further help, comments are appreaciated!
+> > 
+> >  arch/x86/mm/numa.c | 27 +++------------------------
+> >  mm/page_alloc.c    | 15 +++++++++------
+> >  2 files changed, 12 insertions(+), 30 deletions(-)
+> > 
+> > diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
+> > index 1308f5408bf7..b3621ee4dfe8 100644
+> > --- a/arch/x86/mm/numa.c
+> > +++ b/arch/x86/mm/numa.c
+> > @@ -216,8 +216,6 @@ static void __init alloc_node_data(int nid)
+> >  
+> >  	node_data[nid] = nd;
+> >  	memset(NODE_DATA(nid), 0, sizeof(pg_data_t));
+> > -
+> > -	node_set_online(nid);
+> >  }
+> >  
+> >  /**
+> > @@ -570,7 +568,7 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+> >  		return -EINVAL;
+> >  
+> >  	/* Finally register nodes. */
+> > -	for_each_node_mask(nid, node_possible_map) {
+> > +	for_each_node_mask(nid, numa_nodes_parsed) {
+> >  		u64 start = PFN_PHYS(max_pfn);
+> >  		u64 end = 0;
+> >  
+> > @@ -581,9 +579,6 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+> >  			end = max(mi->blk[i].end, end);
+> >  		}
+> >  
+> > -		if (start >= end)
+> > -			continue;
+> > -
+> >  		/*
+> >  		 * Don't confuse VM with a node that doesn't have the
+> >  		 * minimum amount of memory:
+> > @@ -592,6 +587,8 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+> >  			continue;
+> >  
+> >  		alloc_node_data(nid);
+> > +		if (end)
+> > +			node_set_online(nid);
+> >  	}
+> >  
+> >  	/* Dump memblock with node info and return. */
+> > @@ -721,21 +718,6 @@ void __init x86_numa_init(void)
+> >  	numa_init(dummy_numa_init);
+> >  }
+> >  
+> > -static void __init init_memory_less_node(int nid)
+> > -{
+> > -	unsigned long zones_size[MAX_NR_ZONES] = {0};
+> > -	unsigned long zholes_size[MAX_NR_ZONES] = {0};
+> > -
+> > -	/* Allocate and initialize node data. Memory-less node is now online.*/
+> > -	alloc_node_data(nid);
+> > -	free_area_init_node(nid, zones_size, 0, zholes_size);
+> > -
+> > -	/*
+> > -	 * All zonelists will be built later in start_kernel() after per cpu
+> > -	 * areas are initialized.
+> > -	 */
+> > -}
+> > -
+> >  /*
+> >   * Setup early cpu_to_node.
+> >   *
+> > @@ -763,9 +745,6 @@ void __init init_cpu_to_node(void)
+> >  		if (node == NUMA_NO_NODE)
+> >  			continue;
+> >  
+> > -		if (!node_online(node))
+> > -			init_memory_less_node(node);
+> > -
+> >  		numa_set_node(cpu, node);
+> >  	}
+> >  }
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 2ec9cc407216..2e097f336126 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -5361,10 +5361,11 @@ static void __build_all_zonelists(void *data)
+> >  	if (self && !node_online(self->node_id)) {
+> >  		build_zonelists(self);
+> >  	} else {
+> > -		for_each_online_node(nid) {
+> > +		for_each_node(nid) {
+> >  			pg_data_t *pgdat = NODE_DATA(nid);
+> >  
+> > -			build_zonelists(pgdat);
+> > +			if (pgdat)
+> > +				build_zonelists(pgdat);
+> >  		}
+> >  
+> >  #ifdef CONFIG_HAVE_MEMORYLESS_NODES
+> > @@ -6644,10 +6645,8 @@ static unsigned long __init find_min_pfn_for_node(int nid)
+> >  	for_each_mem_pfn_range(i, nid, &start_pfn, NULL, NULL)
+> >  		min_pfn = min(min_pfn, start_pfn);
+> >  
+> > -	if (min_pfn == ULONG_MAX) {
+> > -		pr_warn("Could not find start_pfn for node %d\n", nid);
+> > +	if (min_pfn == ULONG_MAX)
+> >  		return 0;
+> > -	}
+> >  
+> >  	return min_pfn;
+> >  }
+> > @@ -6991,8 +6990,12 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+> >  	mminit_verify_pageflags_layout();
+> >  	setup_nr_node_ids();
+> >  	zero_resv_unavail();
+> > -	for_each_online_node(nid) {
+> > +	for_each_node(nid) {
+> >  		pg_data_t *pgdat = NODE_DATA(nid);
+> > +
+> > +		if (!pgdat)
+> > +			continue;
+> > +
+> >  		free_area_init_node(nid, NULL,
+> >  				find_min_pfn_for_node(nid), NULL);
+> >  
+> > -- 
+> > 2.20.1
+> > 
 > 
-> On PTRACE_SETREGS and PTRACE_GETREGS requests, user space passes the
-> register number that would be read or written. This register number is
-> called 'regno' which is part of the 'addr' syscall parameter.
-> 
-> This 'regno' value is checked against the maximum pt_regs structure size,
-> and then used to dereference it, which matches the initial part of a
-> Spectre v1 (and Spectre v1.1) attack. The dereferenced value, then,
-> is returned to userspace in the GETREGS case.
+> -- 
+> Michal Hocko
+> SUSE Labs
 > 
 
-Was this reported by any tool?
+-- 
+Sincerely yours,
+Mike.
 
-If so, it might be worth mentioning it.
-
-> This patch sanitizes 'regno' before using it to dereference pt_reg.
-> 
-> Notice that given that speculation windows are large, the policy is
-> to kill the speculation on the first load and not worry if it can be
-> completed with a dependent load/store [1].
-> 
-> [1] https://marc.info/?l=linux-kernel&m=152449131114778&w=2
-> 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
->  arch/powerpc/kernel/ptrace.c | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index cdd5d1d3ae41..3eac38a29863 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -33,6 +33,7 @@
->  #include <linux/hw_breakpoint.h>
->  #include <linux/perf_event.h>
->  #include <linux/context_tracking.h>
-> +#include <linux/nospec.h>
->  
->  #include <linux/uaccess.h>
->  #include <linux/pkeys.h>
-> @@ -298,6 +299,9 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
->  #endif
->  
->  	if (regno < (sizeof(struct user_pt_regs) / sizeof(unsigned long))) {
-
-I would use a variable to store sizeof(struct user_pt_regs) / sizeof(unsigned long).
-
-> +		regno = array_index_nospec(regno,
-> +				(sizeof(struct user_pt_regs) /
-> +				 sizeof(unsigned long)));
-
-See the rest of my comments below.
-
->  		*data = ((unsigned long *)task->thread.regs)[regno];
->  		return 0;
->  	}
-> @@ -321,6 +325,7 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
->  		return set_user_dscr(task, data);
->  
->  	if (regno <= PT_MAX_PUT_REG) {
-> +		regno = array_index_nospec(regno, PT_MAX_PUT_REG);
-
-This is wrong.  array_index_nospec() will return PT_MAX_PUT_REG - 1 in case regno is equal to
-PT_MAX_PUT_REG, and this is not what you want.
-
-Similar reasoning applies to the case above.
-
->  		((unsigned long *)task->thread.regs)[regno] = data;
->  		return 0;
->  	}
-> 
-
-Thanks
---
-Gustavo
