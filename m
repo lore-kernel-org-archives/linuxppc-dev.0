@@ -2,54 +2,80 @@ Return-Path: <SRS0=rclJ=QA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 841ACC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:30:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4703CC282C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:50:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 075E521872
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:30:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 075E521872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8FBC9218A6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 17:50:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FBC9218A6
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lq1B0BH9zDqLP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 04:30:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lqSm4N6zzDqHj
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 04:50:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=mark.rutland@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43lpzL1zNzzDq63
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 04:28:45 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1F2751596;
- Thu, 24 Jan 2019 09:28:44 -0800 (PST)
-Received: from lakrids.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 994253F6A8;
- Thu, 24 Jan 2019 09:28:42 -0800 (PST)
-Date: Thu, 24 Jan 2019 17:28:40 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v14 02/12] powerpc/irq: use memblock functions returning
- virtual address
-Message-ID: <20190124172839.GB11163@lakrids.cambridge.arm.com>
-References: <cover.1548346225.git.christophe.leroy@c-s.fr>
- <1c8e658c094022a15e4b9f5ef5c191caab3c0dff.1548346225.git.christophe.leroy@c-s.fr>
- <20190124165153.GB5531@lakrids.cambridge.arm.com>
- <20190124172553.GE13790@rapoport-lnx>
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.145.3; helo=gateway30.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+X-Greylist: delayed 1427 seconds by postgrey-1.36 at bilbo;
+ Fri, 25 Jan 2019 04:49:20 AEDT
+Received: from gateway30.websitewelcome.com (gateway30.websitewelcome.com
+ [192.185.145.3])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lqR41dtCzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 04:49:20 +1100 (AEDT)
+Received: from cm17.websitewelcome.com (cm17.websitewelcome.com [100.42.49.20])
+ by gateway30.websitewelcome.com (Postfix) with ESMTP id A400A3AE8A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 11:25:28 -0600 (CST)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id mikqgbb5m90onmikqg2hhB; Thu, 24 Jan 2019 11:25:28 -0600
+X-Authority-Reason: nr=8
+Received: from [189.250.130.205] (port=41838 helo=[192.168.1.76])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1gmikq-000089-4h; Thu, 24 Jan 2019 11:25:28 -0600
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+References: <1548338509-628-1-git-send-email-leitao@debian.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Subject: Re: [PATCH] powerpc/ptrace: Mitigate potential Spectre v1
+Message-ID: <43b1ccd5-ec7f-32de-4f30-d67dbea02d9e@embeddedor.com>
+Date: Thu, 24 Jan 2019 11:25:27 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190124172553.GE13790@rapoport-lnx>
-User-Agent: Mutt/1.11.1+11 (2f07cb52) (2018-12-01)
+In-Reply-To: <1548338509-628-1-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.130.205
+X-Source-L: No
+X-Exim-ID: 1gmikq-000089-4h
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.1.76]) [189.250.130.205]:41838
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 2
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,60 +87,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 24, 2019 at 07:25:53PM +0200, Mike Rapoport wrote:
-> On Thu, Jan 24, 2019 at 04:51:53PM +0000, Mark Rutland wrote:
-> > On Thu, Jan 24, 2019 at 04:19:33PM +0000, Christophe Leroy wrote:
-> > > Since only the virtual address of allocated blocks is used,
-> > > lets use functions returning directly virtual address.
-> > > 
-> > > Those functions have the advantage of also zeroing the block.
-> > > 
-> > > Suggested-by: Mike Rapoport <rppt@linux.ibm.com>
-> > > Acked-by: Mike Rapoport <rppt@linux.ibm.com>
-> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > 
-> > [...]
-> > 
-> > > +static void *__init alloc_stack(void)
-> > > +{
-> > > +	void *ptr = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
-> > > +
-> > > +	if (!ptr)
-> > > +		panic("cannot allocate stacks");
-> > > +
-> > > +	return ptr;
-> > > +}
-> > 
-> > I believe memblock_alloc() will panic() if it cannot allocate memory,
-> > since that goes:
-> > 
-> >  memblock_alloc()
-> >  -> memblock_alloc_try_nid()
-> >     -> panic()
-> > 
-> > So you can get rid of the panic() here, or if you want a custom panic
-> > message, you can use memblock_alloc_nopanic().
+
+
+On 1/24/19 8:01 AM, Breno Leitao wrote:
+> 'regno' is directly controlled by user space, hence leading to a potential
+> exploitation of the Spectre variant 1 vulnerability.
 > 
-> As we've already discussed it in [1], I'm working on removing the
-> _nopanic() versions and dropping the panic() calls from memblock_alloc()
-> and friends.
+> On PTRACE_SETREGS and PTRACE_GETREGS requests, user space passes the
+> register number that would be read or written. This register number is
+> called 'regno' which is part of the 'addr' syscall parameter.
 > 
-> I've posted v2 of the patches earlier this week [2].
+> This 'regno' value is checked against the maximum pt_regs structure size,
+> and then used to dereference it, which matches the initial part of a
+> Spectre v1 (and Spectre v1.1) attack. The dereferenced value, then,
+> is returned to userspace in the GETREGS case.
+> 
+
+Was this reported by any tool?
+
+If so, it might be worth mentioning it.
+
+> This patch sanitizes 'regno' before using it to dereference pt_reg.
+> 
+> Notice that given that speculation windows are large, the policy is
+> to kill the speculation on the first load and not worry if it can be
+> completed with a dependent load/store [1].
+> 
+> [1] https://marc.info/?l=linux-kernel&m=152449131114778&w=2
+> 
+> Signed-off-by: Breno Leitao <leitao@debian.org>
+> ---
+>  arch/powerpc/kernel/ptrace.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index cdd5d1d3ae41..3eac38a29863 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/hw_breakpoint.h>
+>  #include <linux/perf_event.h>
+>  #include <linux/context_tracking.h>
+> +#include <linux/nospec.h>
 >  
-> > [...]
+>  #include <linux/uaccess.h>
+>  #include <linux/pkeys.h>
+> @@ -298,6 +299,9 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
+>  #endif
+>  
+>  	if (regno < (sizeof(struct user_pt_regs) / sizeof(unsigned long))) {
+
+I would use a variable to store sizeof(struct user_pt_regs) / sizeof(unsigned long).
+
+> +		regno = array_index_nospec(regno,
+> +				(sizeof(struct user_pt_regs) /
+> +				 sizeof(unsigned long)));
+
+See the rest of my comments below.
+
+>  		*data = ((unsigned long *)task->thread.regs)[regno];
+>  		return 0;
+>  	}
+> @@ -321,6 +325,7 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+>  		return set_user_dscr(task, data);
+>  
+>  	if (regno <= PT_MAX_PUT_REG) {
+> +		regno = array_index_nospec(regno, PT_MAX_PUT_REG);
+
+This is wrong.  array_index_nospec() will return PT_MAX_PUT_REG - 1 in case regno is equal to
+PT_MAX_PUT_REG, and this is not what you want.
+
+Similar reasoning applies to the case above.
+
+>  		((unsigned long *)task->thread.regs)[regno] = data;
+>  		return 0;
+>  	}
 > 
-> [1] https://lore.kernel.org/lkml/20190108143428.GB14063@rapoport-lnx/ 
-> [2] https://lore.kernel.org/lkml/1548057848-15136-1-git-send-email-rppt@linux.ibm.com/
 
-Fair enough.
-
-Feel free to take the ack regardless, then!
-
-Thanks,
-Mark.
+Thanks
+--
+Gustavo
