@@ -6,40 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF65DC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:50:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7467EC282C3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:52:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F53020844
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:50:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F53020844
+	by mail.kernel.org (Postfix) with ESMTPS id 2322B20844
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 03:52:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2322B20844
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lSqV44Q2zDqGq
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:50:46 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lSsy1hQDzDqHK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 14:52:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbQ5p4yzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lSbS2F8kzDqGn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 14:40:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43lSbQ2mcFz9sN6; Thu, 24 Jan 2019 14:40:17 +1100 (AEDT)
+ id 43lSbR6CTJz9s55; Thu, 24 Jan 2019 14:40:19 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8acb88682cc00a41a677c2455a7c992d78e43035
+X-powerpc-patch-commit: 00def7130af8b3fad1bdef98429c94a67dbbd896
 X-Patchwork-Hint: ignore
-In-Reply-To: <fc763a05d2b9dbe2cb6124d97ab9a0fe9e3e5350.1546960038.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
+In-Reply-To: <20190108183720.GA14238@embeddedor>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Jeremy Kerr <jk@ozlabs.org>,
+ Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/ipic: drop unused functions
-Message-Id: <43lSbQ2mcFz9sN6@ozlabs.org>
-Date: Thu, 24 Jan 2019 14:40:17 +1100 (AEDT)
+Subject: Re: powerpc/spufs: use struct_size() in kmalloc()
+Message-Id: <43lSbR6CTJz9s55@ozlabs.org>
+Date: Thu, 24 Jan 2019 14:40:19 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,19 +52,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-01-08 at 15:08:00 UTC, Christophe Leroy wrote:
-> ipic_set_highest_priority(), ipic_enable_mcp() and ipic_disable_mcp()
-> are unused. This patch drops them.
+On Tue, 2019-01-08 at 18:37:20 UTC, "Gustavo A. R. Silva" wrote:
+> One of the more common cases of allocation size calculations is finding
+> the size of a structure that has a zero-sized array at the end, along
+> with memory for some number of elements for that array. For example:
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> struct foo {
+>     int stuff;
+>     void *entry[];
+> };
+> 
+> instance = kmalloc(sizeof(struct foo) + sizeof(void *) * count, GFP_KERNEL);
+> 
+> Instead of leaving these open-coded and prone to type mistakes, we can
+> now use the new struct_size() helper:
+> 
+> instance = kmalloc(struct_size(instance, entry, count), GFP_KERNEL);
+> 
+> This code was detected with the help of Coccinelle.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8acb88682cc00a41a677c2455a7c992d
+https://git.kernel.org/powerpc/c/00def7130af8b3fad1bdef98429c94a6
 
 cheers
