@@ -2,95 +2,87 @@ Return-Path: <SRS0=E5N6=QB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.5 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9DB1C282C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:35:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DEB3BC282C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:44:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 600E8218A6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:35:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 600E8218A6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 210D1218B0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:44:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l7bpzApd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 210D1218B0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mTkp3MNZzDqPM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 06:35:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mTxz1VsQzDqQn
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 06:44:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="l7bpzApd"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43mThY4CNqzDqDN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 06:33:17 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0PJNeWV088403
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 14:33:15 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q86buedvg-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 14:33:15 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Fri, 25 Jan 2019 19:33:11 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 25 Jan 2019 19:33:00 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0PJWxsk39321658
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 25 Jan 2019 19:32:59 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A4230A405F;
- Fri, 25 Jan 2019 19:32:59 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A9233A405C;
- Fri, 25 Jan 2019 19:32:54 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.204.72])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Fri, 25 Jan 2019 19:32:54 +0000 (GMT)
-Date: Fri, 25 Jan 2019 21:32:52 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [PATCH v2 06/21] memblock: memblock_phys_alloc_try_nid(): don't
- panic
-References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
- <1548057848-15136-7-git-send-email-rppt@linux.ibm.com>
- <20190125174502.GL25901@arrakis.emea.arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43mTwD4ZqPzDqFs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 06:43:24 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id v28so4604729pgk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 11:43:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=bQO1PTT0Ok9BIQryVdeo//V3RAzC/JEpl5AvgvqLqys=;
+ b=l7bpzApdN9NPb6OoWIHMYZiqAx2uDx1DAYOPd0ahUNey1d36c3CtEDQTzjnYX16mui
+ jWbKPEpXUmA4wn/blIvUMnZq6MZSFRe0af3uGfdNAlNl8MX27ux4mNeOw7PhVOY4qRK6
+ g/vzafBRorEE/udMhWBxLesngZSjE8WKMu0fJvHrdwmX54DCQ6Ycgoc3IDotqNHAiXhy
+ TXyQnAtgTSLWpLTnEyRIRymh1w6AWYrzZc3uPZQzHiaEZm5bx/qSVHNo8g+0JgtJSWf6
+ wvxyjVxT3oS8n9P9x2l/Nl0+MRK7bxBMij3yy6bQIurRSy8o/Pwr7CN1A64hpeGh6bRG
+ qjdA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=bQO1PTT0Ok9BIQryVdeo//V3RAzC/JEpl5AvgvqLqys=;
+ b=irSDxZN5haVQzzH8kefe9zAkjP1D3EPsq3GDEh+hDSAGC5b0Gj1rcnKMsBFoHr1Zia
+ P9xWtrT4/x/adOrJWNSQDt/2tchYsPOapksePtdcwLhYwEXcYBrHsht6vZaUBpgeuJNd
+ Y5ahX2FqJtkaLDzKrnlaY7Uy7aNz+nurqPKWHJ1gZqchLCmKR7rBVcxQBCGZGxNtmKuN
+ 8IlfsOg7Ma8TS6UolYyGLxfRdSEhukS5HLg6TumGS2SsM9DlUYi1+pFeOL3UYu0veq6x
+ 0JFlX3ZoZUssryh5tNCpQKRCUb3lyhIV8M2FbnYSrkzXmnsmW8GdkWE9NexJp+bTybmd
+ RvWQ==
+X-Gm-Message-State: AJcUukfR4Oig6z08SmzWfUKk+Ng3IYWSmYZ6vjz3TEX7cPAE+DoY6UVq
+ fZvf9wLLIJl2ub+qADv2lvo=
+X-Google-Smtp-Source: ALg8bN4O2ycBQh2rVYGKCrxCoq6doUgi0JJE+oV5NaaDWpueqTo5VDWdFgr4OBP2puzxLxQdWX12qg==
+X-Received: by 2002:a63:7512:: with SMTP id q18mr10242712pgc.231.1548445401729; 
+ Fri, 25 Jan 2019 11:43:21 -0800 (PST)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id n78sm51193550pfk.19.2019.01.25.11.43.20
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 25 Jan 2019 11:43:21 -0800 (PST)
+Date: Fri, 25 Jan 2019 11:43:16 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Viorel Suman <viorel.suman@nxp.com>
+Subject: Re: [PATCH v4 2/3] ASoC: add fsl_audmix DT binding documentation
+Message-ID: <20190125194315.GA21222@Asurada-Nvidia.nvidia.com>
+References: <1548155654-12985-1-git-send-email-viorel.suman@nxp.com>
+ <1548155654-12985-3-git-send-email-viorel.suman@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190125174502.GL25901@arrakis.emea.arm.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 19012519-0020-0000-0000-0000030B808E
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012519-0021-0000-0000-0000215CC7C3
-Message-Id: <20190125193252.GH31519@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-25_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=889 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901250151
+In-Reply-To: <1548155654-12985-3-git-send-email-viorel.suman@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,65 +94,103 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- devicetree@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- x86@kernel.org, linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
- Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, linux-sh@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
- linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
- Petr Mladek <pmladek@suse.com>, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
- Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
- Vineet Gupta <vgupta@synopsys.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- openrisc@lists.librecores.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "S.j. Wang" <shengjiu.wang@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Takashi Iwai <tiwai@suse.com>, Rob Herring <robh+dt@kernel.org>,
+ Liam Girdwood <lgirdwood@gmail.com>, Viorel Suman <viorel.suman@gmail.com>,
+ Cosmin Samoila <cosmin.samoila@nxp.com>, Mark Brown <broonie@kernel.org>,
+ dl-linux-imx <linux-imx@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ Jaroslav Kysela <perex@perex.cz>, Daniel Baluta <daniel.baluta@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 25, 2019 at 05:45:02PM +0000, Catalin Marinas wrote:
-> On Mon, Jan 21, 2019 at 10:03:53AM +0200, Mike Rapoport wrote:
-> > diff --git a/arch/arm64/mm/numa.c b/arch/arm64/mm/numa.c
-> > index ae34e3a..2c61ea4 100644
-> > --- a/arch/arm64/mm/numa.c
-> > +++ b/arch/arm64/mm/numa.c
-> > @@ -237,6 +237,10 @@ static void __init setup_node_data(int nid, u64 start_pfn, u64 end_pfn)
-> >  		pr_info("Initmem setup node %d [<memory-less node>]\n", nid);
-> >  
-> >  	nd_pa = memblock_phys_alloc_try_nid(nd_size, SMP_CACHE_BYTES, nid);
-> > +	if (!nd_pa)
-> > +		panic("Cannot allocate %zu bytes for node %d data\n",
-> > +		      nd_size, nid);
-> > +
-> >  	nd = __va(nd_pa);
-> >  
-> >  	/* report and initialize */
+On Tue, Jan 22, 2019 at 11:14:27AM +0000, Viorel Suman wrote:
+> Add the DT binding documentation for NXP Audio Mixer
+> CPU DAI driver.
 > 
-> Does it mean that memblock_phys_alloc_try_nid() never returns valid
-> physical memory starting at 0?
+> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+> ---
+>  .../devicetree/bindings/sound/fsl,audmix.txt       | 54 ++++++++++++++++++++++
+>  1 file changed, 54 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/sound/fsl,audmix.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/sound/fsl,audmix.txt b/Documentation/devicetree/bindings/sound/fsl,audmix.txt
+> new file mode 100644
+> index 0000000..45f807e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/sound/fsl,audmix.txt
+> @@ -0,0 +1,54 @@
+> +NXP Audio Mixer (AUDMIX).
+> +
+> +The Audio Mixer is a on-chip functional module that allows mixing of two
+> +audio streams into a single audio stream. Audio Mixer has two input serial
+> +audio interfaces. These are driven by two Synchronous Audio interface
+> +modules (SAI). Each input serial interface carries 8 audio channels in its
+> +frame in TDM manner. Mixer mixes audio samples of corresponding channels
+> +from two interfaces into a single sample. Before mixing, audio samples of
+> +two inputs can be attenuated based on configuration. The output of the
+> +Audio Mixer is also a serial audio interface. Like input interfaces it has
+> +the same TDM frame format. This output is used to drive the serial DAC TDM
+> +interface of audio codec and also sent to the external pins along with the
+> +receive path of normal audio SAI module for readback by the CPU.
+> +
+> +The output of Audio Mixer can be selected from any of the three streams
+> + - serial audio input 1
+> + - serial audio input 2
+> + - mixed audio
+> +
+> +Mixing operation is independent of audio sample rate but the two audio
+> +input streams must have same audio sample rate with same number of channels
+> +in TDM frame to be eligible for mixing.
+> +
+> +Device driver required properties:
+> +=================================
+> +  - compatible		: Compatible list, contains "fsl,imx8qm-audmix"
+> +
+> +  - reg			: Offset and length of the register set for the device.
+> +
+> +  - clocks		: Must contain an entry for each entry in clock-names.
+> +
+> +  - clock-names		: Must include the "ipg" for register access.
+> +
+> +  - power-domains	: Must contain the phandle to AUDMIX power domain node
+> +
+> +  - dais		: Must contain a list of phandles to AUDMIX connected
+> +			  DAIs. The current implementation requires two phandles
+> +			  to SAI interfaces to be provided, the first SAI in the
+> +			  list being used to route the AUDMIX output.
+> +
+> +  - model		: Must contain machine driver name which will configure
+> +			  and instantiate the appropriate audio card.
 
-Yes, it does.
-memblock_find_in_range_node() that is used by all allocation methods
-skips the first page [1].
- 
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/memblock.c#n257
+I don't feel this is necessary for DT node. The driver should be
+able to figure out a proper name for the machine driver: it could
+use the compatible string to get "imx8qm-audmix" as the name like
+fsl_ssi; Or it could have built-in "imx-audmix" of_device_id data
+corresponding to "fsl,imx8qm-audmix" compatible string -- for any
+non-imx compatible in the future, use something else.
 
+Thanks
+Nic
+
+> +
+> +Device driver configuration example:
+> +======================================
+> +  audmix: audmix@59840000 {
+> +    compatible = "fsl,imx8qm-audmix";
+> +    reg = <0x0 0x59840000 0x0 0x10000>;
+> +    clocks = <&clk IMX8QXP_AUD_AUDMIX_IPG>;
+> +    clock-names = "ipg";
+> +    power-domains = <&pd_audmix>;
+> +    dais = <&sai4>, <&sai5>;
+> +    model = "imx-audmix";
+> +  };
 > -- 
-> Catalin
+> 2.7.4
 > 
-
--- 
-Sincerely yours,
-Mike.
-
