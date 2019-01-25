@@ -2,84 +2,67 @@ Return-Path: <SRS0=E5N6=QB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F95EC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 06:47:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D958C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 07:02:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8205B218D0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 06:47:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pANwzdrY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8205B218D0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 67E8E2184B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 07:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 67E8E2184B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=iram.es
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43m8hR2Kw7zDqNN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 17:47:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43m9281qrVzDqN9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 18:02:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=iram.es
+ (client-ip=130.206.19.173; helo=mx02.puc.rediris.es;
+ envelope-from=paubert@iram.es; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pANwzdrY"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=iram.es
+Received: from mx02.puc.rediris.es (outbound3sev.lav.puc.rediris.es
+ [130.206.19.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43m8fV4PwVzDqLj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 17:45:21 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43m8fL0z5kz9v0C4;
- Fri, 25 Jan 2019 07:45:14 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=pANwzdrY; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id fAGV6CkHRvMl; Fri, 25 Jan 2019 07:45:14 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43m8fK6qXqz9v0C3;
- Fri, 25 Jan 2019 07:45:13 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1548398713; bh=3Z3jUqBSR31ZK0KzQd7+upRcXSUeFBwDiU9R6hghjwg=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=pANwzdrY6dozs55BhTFSNxINJzg45/DV4zYA/u0cdE3qu4OeaqGkepu6/qz4N5BAN
- KdDwM9dl15PACamUCWUgXyPqEgLyjIlKb3QG2OgdwHT0NA8fQal71BAg54J3UIfDWc
- PlQqzDpwqy35IPGlb6ptfdJtQSU1d0zWvK6mu0CU=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C6C278B850;
- Fri, 25 Jan 2019 07:45:14 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 6IEEizCLUlNp; Fri, 25 Jan 2019 07:45:14 +0100 (CET)
-Received: from PO15451 (unknown [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 98EE38B761;
- Fri, 25 Jan 2019 07:45:14 +0100 (CET)
-Subject: Re: BUG: memcmp(): Accessing invalid memory location
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chandan Rajendra <chandan@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <17042269.pB4heZKTbK@localhost.localdomain>
- <3517bf7d54e9a2c6cdd054cefd75b5e073823042.camel@kernel.crashing.org>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <c6395c70-cac3-649e-c96b-4b109069265b@c-s.fr>
-Date: Fri, 25 Jan 2019 07:45:14 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43m9083l6MzDqLk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 18:00:40 +1100 (AEDT)
+Received: from sim.rediris.es (mta-out04.sim.rediris.es [130.206.24.46])
+ (user=smtp-out_iram mech=LOGIN bits=0)
+ by mx02.puc.rediris.es  with ESMTP id x0P70JWe026096-x0P70JWg026096
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Fri, 25 Jan 2019 08:00:19 +0100
+Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by sim.rediris.es (Postfix) with ESMTPS id 8A7A339566;
+ Fri, 25 Jan 2019 08:00:18 +0100 (CET)
+Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
+ by sim.rediris.es (Postfix) with ESMTPS id 00F4B3957D;
+ Fri, 25 Jan 2019 08:00:17 +0100 (CET)
+Received: from lt-gp.iram.es (gra-fw.iram.es [150.214.244.1])
+ by sim.rediris.es (Postfix) with ESMTPA id BC5BF39566;
+ Fri, 25 Jan 2019 08:00:16 +0100 (CET)
+Date: Fri, 25 Jan 2019 08:00:16 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v13 00/10] powerpc: Switch to CONFIG_THREAD_INFO_IN_TASK
+Message-ID: <20190125070016.j2lmcz7aidcbhznp@lt-gp.iram.es>
+References: <cover.1547195976.git.christophe.leroy@c-s.fr>
+ <2e700e1c-5bd9-652e-b535-68a89dd703a1@c-s.fr>
+ <87y37ax3ru.fsf@concordia.ellerman.id.au>
+ <9b4dab64-6a6b-a599-4676-bf891473ada7@c-s.fr>
+ <c5b86b5b-1f38-39bf-0458-3c6572b3b35c@c-s.fr>
+ <89049465-643f-b383-82e2-360dc9660d09@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <3517bf7d54e9a2c6cdd054cefd75b5e073823042.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <89049465-643f-b383-82e2-360dc9660d09@c-s.fr>
+User-Agent: NeoMutt/20170113 (1.7.2)
+X-FEAS-AUTH-USER: smtp-out_iram
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,33 +74,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anton Blanchard <anton@au1.ibm.com>, Nick Piggin <npiggin@au1.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Mike Rapoport <rppt@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 25/01/2019 Ã  01:55, Benjamin Herrenschmidt a Ã©critÂ :
-> On Thu, 2019-01-24 at 19:48 +0530, Chandan Rajendra wrote:
->> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
->>    value and hence ends up accessing the "next" double word. The "next" double
->>    word happens to occur after the last page mapped into the kernel's address
->>    space and hence this leads to the previously listed oops.
->>    
+On Thu, Jan 24, 2019 at 04:58:41PM +0100, Christophe Leroy wrote:
 > 
-> This is interesting ... should we mark the last page of any piece of
-> mapped linear mapping as reserved to avoid that sort of issue ?
-
-Or revert to a normal comparison once remaining length is < 8 and r4 in 
-unaligned ?
-
-Christophe
-
 > 
-> Nick ? Aneesh ?
+> Le 24/01/2019 à 16:01, Christophe Leroy a écrit :
+> > 
+> > 
+> > Le 24/01/2019 à 10:43, Christophe Leroy a écrit :
+> > > 
+> > > 
+> > > On 01/24/2019 01:06 AM, Michael Ellerman wrote:
+> > > > Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> > > > > Le 12/01/2019 à 10:55, Christophe Leroy a écrit :
+> > > > > > The purpose of this serie is to activate
+> > > > > > CONFIG_THREAD_INFO_IN_TASK which
+> > > > > > moves the thread_info into task_struct.
+> > > > > > 
+> > > > > > Moving thread_info into task_struct has the following advantages:
+> > > > > > - It protects thread_info from corruption in the case of stack
+> > > > > > overflows.
+> > > > > > - Its address is harder to determine if stack addresses are
+> > > > > > leaked, making a number of attacks more difficult.
+> > > > > 
+> > > > > I ran null_syscall and context_switch benchmark selftests
+> > > > > and the result
+> > > > > is surprising. There is slight degradation in context_switch and a
+> > > > > significant one on null_syscall:
+> > > > > 
+> > > > > Without the serie:
+> > > > > 
+> > > > > ~# chrt -f 98 ./context_switch --no-altivec --no-vector --no-fp
+> > > > > 55542
+> > > > > 55562
+> > > > > 55564
+> > > > > 55562
+> > > > > 55568
+> > > > > ...
+> > > > > 
+> > > > > ~# ./null_syscall
+> > > > >      2546.71 ns     336.17 cycles
+> > > > > 
+> > > > > 
+> > > > > With the serie:
+> > > > > 
+> > > > > ~# chrt -f 98 ./context_switch --no-altivec --no-vector --no-fp
+> > > > > 55138
+> > > > > 55142
+> > > > > 55152
+> > > > > 55144
+> > > > > 55142
+> > > > > 
+> > > > > ~# ./null_syscall
+> > > > >      3479.54 ns     459.30 cycles
+> > > > > 
+> > > > > So 0,8% less context switches per second and 37% more time
+> > > > > for one syscall ?
+> > > > > 
+> > > > > Any idea ?
+> > > > 
+> > > > What platform is that on?
+> > > 
+> > > It is on the 8xx
 > 
-> Cheers,
-> Ben.
+> On the 83xx, I have a slight improvment:
 > 
+> Without the serie:
+> 
+> root@vgoippro:~# ./null_syscall
+>     921.44 ns     307.15 cycles
+> 
+> With the serie:
+> 
+> root@vgoippro:~# ./null_syscall
+>     918.78 ns     306.26 cycles
+> 
+
+The 8xx has very low cache associativity, something like 2, right?
+
+In this case it may be access patterns which change the number of
+cache line transfers when you move things around. 
+
+Try to move things around in main(), for example allocate a variable of
+~1kB on the stack in the function that performs the null_syscalls (use 
+the variable before and after the loop, to avoid clever compiler
+optimizations).
+
+	Gabriel
+
+
+> Christophe
+> 
+> > > 
+> > > > 
+> > > > On 64-bit we have to turn one mtmsrd into two and that's obviously a
+> > > > slow down. But I don't see that you've done anything similar in 32-bit
+> > > > code.
+> > > > 
+> > > > I assume it's patch 8 that causes the slow down?
+> > > 
+> > > I have not digged into it yet, but why patch 8 ?
+> > > 
+> > 
+> > The increase of null_syscall duration happens with patch 5 when we
+> > activate CONFIG_THREAD_INFO_IN_TASK.
+> > 
