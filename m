@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEDE1C282C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 15:49:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 397C6C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 15:57:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DB4F218B0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 15:49:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DB4F218B0
+	by mail.kernel.org (Postfix) with ESMTPS id B5E7A218D0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 15:57:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B5E7A218D0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mNk2015tzDqQM
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 02:49:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mNvh6KFZzDqQR
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 02:57:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,25 +26,26 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43mNh90j4kzDqNw
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 02:47:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 43mNsk3MFQzDqD4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 02:55:53 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9BA87A78;
- Fri, 25 Jan 2019 07:47:34 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C2BC2A78;
+ Fri, 25 Jan 2019 07:55:52 -0800 (PST)
 Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.113])
  by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 313463F5AF; Fri, 25 Jan 2019 07:47:28 -0800 (PST)
-Date: Fri, 25 Jan 2019 15:47:25 +0000
+ 5A0403F5AF; Fri, 25 Jan 2019 07:55:46 -0800 (PST)
+Date: Fri, 25 Jan 2019 15:55:43 +0000
 From: Catalin Marinas <catalin.marinas@arm.com>
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 25/29] y2038: syscalls: rename y2038 compat syscalls
-Message-ID: <20190125154724.GH25901@arrakis.emea.arm.com>
+Subject: Re: [PATCH v2 29/29] y2038: add 64-bit time_t syscalls to all 32-bit
+ architectures
+Message-ID: <20190125155542.GI25901@arrakis.emea.arm.com>
 References: <20190118161835.2259170-1-arnd@arndb.de>
- <20190118161835.2259170-26-arnd@arndb.de>
+ <20190118161835.2259170-30-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190118161835.2259170-26-arnd@arndb.de>
+In-Reply-To: <20190118161835.2259170-30-arnd@arndb.de>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,26 +76,26 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Jan 18, 2019 at 05:18:31PM +0100, Arnd Bergmann wrote:
-> A lot of system calls that pass a time_t somewhere have an implementation
-> using a COMPAT_SYSCALL_DEFINEx() on 64-bit architectures, and have
-> been reworked so that this implementation can now be used on 32-bit
-> architectures as well.
+On Fri, Jan 18, 2019 at 05:18:35PM +0100, Arnd Bergmann wrote:
+> This adds 21 new system calls on each ABI that has 32-bit time_t
+> today. All of these have the exact same semantics as their existing
+> counterparts, and the new ones all have macro names that end in 'time64'
+> for clarification.
 > 
-> The missing step is to redefine them using the regular SYSCALL_DEFINEx()
-> to get them out of the compat namespace and make it possible to build them
-> on 32-bit architectures.
+> This gets us to the point of being able to safely use a C library
+> that has 64-bit time_t in user space. There are still a couple of
+> loose ends to tie up in various areas of the code, but this is the
+> big one, and should be entirely uncontroversial at this point.
 > 
-> Any system call that ends in 'time' gets a '32' suffix on its name for
-> that version, while the others get a '_time32' suffix, to distinguish
-> them from the normal version, which takes a 64-bit time argument in the
-> future.
-> 
-> In this step, only 64-bit architectures are changed, doing this rename
-> first lets us avoid touching the 32-bit architectures twice.
+> In particular, there are four system calls (getitimer, setitimer,
+> waitid, and getrusage) that don't have a 64-bit counterpart yet,
+> but these can all be safely implemented in the C library by wrapping
+> around the existing system calls because the 32-bit time_t they
+> pass only counts elapsed time, not time since the epoch. They
+> will be dealt with later.
 > 
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-For arm64:
-
 Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+
+(as long as compat follows the arm32 syscall numbers)
