@@ -6,94 +6,95 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49F4EC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:07:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C67C3C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:12:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C2DA8218A6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:07:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C2DA8218A6
+	by mail.kernel.org (Postfix) with ESMTPS id 50E91218D2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:12:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50E91218D2
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lzqM2P3LzDqLl
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 11:07:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lzwh4QsfzDqKP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 11:12:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lzmG6HcfzDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 11:04:46 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0P04CNw041897
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 19:04:44 -0500
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q7qft0b16-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lzts6hPwzDqKP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 11:10:29 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0P04Drn113358
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 19:10:27 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2q7pm8tjmd-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 19:04:44 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 19:10:27 -0500
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Fri, 25 Jan 2019 00:04:43 -0000
+ Fri, 25 Jan 2019 00:10:26 -0000
 Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 25 Jan 2019 00:04:40 -0000
+ Fri, 25 Jan 2019 00:10:23 -0000
 Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
  [9.57.199.110])
  by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0P04dNF12255412
+ x0P0AMAc13828324
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 25 Jan 2019 00:04:39 GMT
+ Fri, 25 Jan 2019 00:10:22 GMT
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 120BCAE05F;
- Fri, 25 Jan 2019 00:04:39 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 495F6AE060;
+ Fri, 25 Jan 2019 00:10:22 +0000 (GMT)
 Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 19A35AE064;
- Fri, 25 Jan 2019 00:04:38 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 468FBAE063;
+ Fri, 25 Jan 2019 00:10:21 +0000 (GMT)
 Received: from oc6857751186.ibm.com (unknown [9.85.148.194])
  by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 25 Jan 2019 00:04:37 +0000 (GMT)
-Subject: Re: [RFC 3/6] pseries/drcinfo: Pseries impl of arch_find_drc_info
+ Fri, 25 Jan 2019 00:10:21 +0000 (GMT)
+Subject: Re: [RFC 1/6] powerpc:/drc Define interface to acquire arch-specific
+ drc info
 To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
  linux-kernel@vger.kernel.org
 References: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
- <20181214205047.16435.19045.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <20181214204957.16435.29255.stgit@powerkvm6.aus.stglabs.ibm.com>
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Thu, 24 Jan 2019 16:04:37 -0800
+Date: Thu, 24 Jan 2019 16:10:20 -0800
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20181214205047.16435.19045.stgit@powerkvm6.aus.stglabs.ibm.com>
+In-Reply-To: <20181214204957.16435.29255.stgit@powerkvm6.aus.stglabs.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19012500-0060-0000-0000-000002FFE809
+x-cbid: 19012500-2213-0000-0000-000003444F7A
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010471; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01151307; UDB=6.00600054; IPR=6.00931647; 
- MB=3.00025277; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-25 00:04:41
+ PH=3.00000004; SC=3.00000277; SDB=6.01151309; UDB=6.00600056; IPR=6.00931649; 
+ MB=3.00025277; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-25 00:10:24
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012500-0061-0000-0000-0000480CBBC8
-Message-Id: <1ae1ff5e-d95d-3437-fc84-169f6f7d44a7@linux.vnet.ibm.com>
+x-cbparentid: 19012500-2214-0000-0000-00005D1A86A4
+Message-Id: <05aba638-f683-e7d5-ac69-053f24e3c49d@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-24_15:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=896 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1901250000
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -112,388 +113,42 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/14/2018 12:51 PM, Michael Bringmann wrote:
-> This patch provides a common interface to parse ibm,drc-indexes,
-> ibm,drc-names, ibm,drc-types, ibm,drc-power-domains, or ibm,drc-info.
-> The generic interface arch_find_drc_match is provided which accepts
-> callback functions that may be applied to examine the data for each
-> entry.
+On 12/14/2018 12:50 PM, Michael Bringmann wrote:
+> Define interface to acquire arch-specific drc info to match against
+> hotpluggable devices.  The current implementation exposes several
+> pseries-specific dynamic memory properties in generic kernel code.
+> This patch set provides an interface to pull that code out of the
+> generic kernel.
 > 
-
-The title of your patch is "pseries/drcinfo: Pseries impl of arch_find_drc_info"
-but the name of the function you are ultimately implementing is
-arch_find_drc_match if I'm not mistaken.
-
 > Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/prom.h             |    3 
->  arch/powerpc/platforms/pseries/of_helpers.c |  299 +++++++++++++++++++++++++++
->  include/linux/topology.h                    |    2 
->  3 files changed, 298 insertions(+), 6 deletions(-)
+>  include/linux/topology.h |    9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-> index b04c5ce..910d1dc 100644
-> --- a/arch/powerpc/include/asm/prom.h
-> +++ b/arch/powerpc/include/asm/prom.h
-> @@ -91,9 +91,6 @@ struct of_drc_info {
->  	u32 last_drc_index;
->  };
+> diff --git a/include/linux/topology.h b/include/linux/topology.h
+> index cb0775e..df97f5f 100644
+> --- a/include/linux/topology.h
+> +++ b/include/linux/topology.h
+> @@ -44,6 +44,15 @@
 >  
-> -extern int of_read_drc_info_cell(struct property **prop,
-> -			const __be32 **curval, struct of_drc_info *data);
-> -
->  
->  /*
->   * There are two methods for telling firmware what our capabilities are.
-> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-> index 0185e50..11c90cd 100644
-> --- a/arch/powerpc/platforms/pseries/of_helpers.c
-> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
-> @@ -1,5 +1,7 @@
->  // SPDX-License-Identifier: GPL-2.0
->  
-> +#define pr_fmt(fmt) "drc: " fmt
-> +
->  #include <linux/string.h>
->  #include <linux/err.h>
->  #include <linux/slab.h>
-> @@ -11,6 +13,12 @@
->  
->  #define	MAX_DRC_NAME_LEN 64
->  
-> +static int drc_debug;
-> +#define dbg(args...) if (drc_debug) { printk(KERN_DEBUG args); }
-> +#define err(arg...) printk(KERN_ERR args);
-> +#define info(arg...) printk(KERN_INFO args);
-> +#define warn(arg...) printk(KERN_WARNING args);
+>  int arch_update_cpu_topology(void);
 
-Its pretty standard these days to use the pr_debug, pr_err, pr_info, pr_warn
-variations over printk(LEVEL args).
+On another note a kern doc comment for this function would also be nice.
 
-> +
->  /**
->   * pseries_of_derive_parent - basically like dirname(1)
->   * @path:  the full_name of a node to be added to the tree
-> @@ -46,7 +54,8 @@ struct device_node *pseries_of_derive_parent(const char *path)
+-Tyrel
+
 >  
->  /* Helper Routines to convert between drc_index to cpu numbers */
->  
-> -int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
-> +static int of_read_drc_info_cell(struct property **prop,
-> +			const __be32 **curval,
->  			struct of_drc_info *data)
->  {
->  	const char *p;
-> @@ -90,4 +99,290 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
->  
->  	return 0;
->  }
-> -EXPORT_SYMBOL(of_read_drc_info_cell);
-> +
-> +static int walk_drc_info(struct device_node *dn,
-> +		bool (*usercb)(struct of_drc_info *drc,
-> +				void *data,
-> +				int *ret_code),
-> +		char *opt_drc_type,
-> +		void *data)
-> +{
-> +	struct property *info;
-> +	unsigned int entries;
-> +	struct of_drc_info drc;
-> +	const __be32 *value;
-> +	int j, ret_code = -EINVAL;
-> +	bool done = false;
-> +
-> +	info = of_find_property(dn, "ibm,drc-info", NULL);
-> +	if (info == NULL)
-> +		return -EINVAL;
-> +
-> +	value = info->value;
-> +	entries = of_read_number(value++, 1);
-> +
-> +	for (j = 0, done = 0; (j < entries) && (!done); j++) {
-> +		of_read_drc_info_cell(&info, &value, &drc);
-> +
-> +		if (opt_drc_type && strcmp(opt_drc_type, drc.drc_type))
-> +			continue;
-> +
-> +		done = usercb(&drc, data, &ret_code);
-> +	}
-> +
-> +	return ret_code;
-> +}
-> +
-> +static int get_children_props(struct device_node *dn, const int **drc_indexes,
-> +		const int **drc_names, const int **drc_types,
-> +		const int **drc_power_domains)
-> +{
-> +	const int *indexes, *names, *types, *domains;
-> +
-> +	indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
-> +	names = of_get_property(dn, "ibm,drc-names", NULL);
-> +	types = of_get_property(dn, "ibm,drc-types", NULL);
-> +	domains = of_get_property(dn, "ibm,drc-power-domains", NULL);
-> +
-> +	if (!indexes || !names || !types || !domains) {
-> +		/* Slot does not have dynamically-removable children */
-> +		return -EINVAL;
-> +	}
-> +	if (drc_indexes)
-> +		*drc_indexes = indexes;
-> +	if (drc_names)
-> +		/* &drc_names[1] contains NULL terminated slot names */
-> +		*drc_names = names;
-> +	if (drc_types)
-> +		/* &drc_types[1] contains NULL terminated slot types */
-> +		*drc_types = types;
-> +	if (drc_power_domains)
-> +		*drc_power_domains = domains;
-> +
-> +	return 0;
-> +}
-> +
-> +static int is_php_type(char *drc_type)
-> +{
-> +	unsigned long value;
-> +	char *endptr;
-> +
-> +	/* PCI Hotplug nodes have an integer for drc_type */
-> +	value = simple_strtoul(drc_type, &endptr, 10);
-> +	if (endptr == drc_type)
-> +		return 0;
-> +
-> +	return 1;
-> +}
-> +
-> +/**
-> + * is_php_dn() - return 1 if this is a hotpluggable pci slot, else 0
-> + * @dn: target &device_node
-> + * @indexes: passed to get_children_props()
-> + * @names: passed to get_children_props()
-> + * @types: returned from get_children_props()
-> + * @power_domains:
-> + *
-> + * This routine will return true only if the device node is
-> + * a hotpluggable slot. This routine will return false
-> + * for built-in pci slots (even when the built-in slots are
-> + * dlparable.)
-> + */
-> +static int is_php_dn(struct device_node *dn, const int **indexes,
-> +		const int **names, const int **types,
-> +		const int **power_domains)
-> +{
-> +	const int *drc_types;
-> +	int rc;
-> +
-> +	rc = get_children_props(dn, indexes, names, &drc_types,
-> +				power_domains);
-> +	if (rc < 0)
-> +		return 0;
-> +
-> +	if (!is_php_type((char *) &drc_types[1]))
-> +		return 0;
-> +
-> +	*types = drc_types;
-> +	return 1;
-> +}
-> +
-> +struct find_drc_match_cb_struct {
-> +	struct device_node *dn;
-> +	bool (*usercb)(struct device_node *dn,
-> +			u32 drc_index, char *drc_name,
-> +			char *drc_type, u32 drc_power_domain,
-> +			void *data);
-> +	char *drc_type;
-> +	char *drc_name;
-> +	u32 drc_index;
-> +	bool match_drc_index;
-> +	bool add_slot;
-> +	void *data;
-> +};
-> +
-> +static int find_drc_match_v1(struct device_node *dn, void *data)
-> +{
-> +	struct find_drc_match_cb_struct *cdata = data;
-> +	int i, retval = 0;
-> +	const int *indexes, *names, *types, *domains;
-> +	char *name, *type;
-> +	struct device_node *root = dn;
-> +
-> +	if (cdata->match_drc_index)
-> +		root = dn->parent;
-> +
-> +	if (cdata->add_slot) {
-> +		/* If this is not a hotplug slot, return without doing
-> +		 * anything.
-> +		 */
-> +		if (!is_php_dn(root, &indexes, &names, &types, &domains))
-> +			return 0;
-> +	} else {
-> +		if (get_children_props(root, &indexes, &names, &types,
-> +			&domains) < 0)
-> +			return 0;
-> +	}
-> +
-> +	dbg("Entry %s: dn=%pOF\n", __func__, dn);
-> +
-> +	name = (char *) &names[1];
-> +	type = (char *) &types[1];
-> +	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
-> +
-> +		if (cdata->match_drc_index &&
-> +			((unsigned int) indexes[i + 1] != cdata->drc_index)) {
-> +			name += strlen(name) + 1;
-> +			type += strlen(type) + 1;
-> +			continue;
-> +		}
-> +
-> +		if (((cdata->drc_name == NULL) ||
-> +		     (cdata->drc_name && !strcmp(cdata->drc_name, name))) &&
-> +		    ((cdata->drc_type == NULL) ||
-> +		     (cdata->drc_type && !strcmp(cdata->drc_type, type)))) {
-> +
-> +			if (cdata->usercb) {
-> +				retval = cdata->usercb(dn,
-> +					be32_to_cpu(indexes[i + 1]),
-> +					name, type,
-> +					be32_to_cpu(domains[i + 1]),
-> +					cdata->data);
-> +				if (!retval)
-> +					return retval;
-> +			} else {
-> +				return 0;
-> +			}
-> +		}
-> +
-> +		name += strlen(name) + 1;
-> +		type += strlen(type) + 1;
-> +	}
-> +
-> +	dbg("%s - Exit: rc[%d]\n", __func__, retval);
-> +
-> +	/* XXX FIXME: reports a failure only if last entry in loop failed */
-> +	return retval;
-> +}
-> +
-> +static bool find_drc_match_v2_cb(struct of_drc_info *drc, void *data,
-> +				int *ret_code)
-> +{
-> +	struct find_drc_match_cb_struct *cdata = data;
-> +	u32 drc_index;
-> +	char drc_name[MAX_DRC_NAME_LEN];
-> +	int i, retval;
-> +
-> +	(*ret_code) = -EINVAL;
-> +
-> +	/* This set not a PHP type? */
-> +	if (cdata->add_slot) {
-> +		if (!is_php_type((char *) drc->drc_type)) {
-> +			return false;
-> +		}
-> +	}
-> +
-> +	/* Anything to use from this set? */
-> +	if (cdata->match_drc_index && (cdata->drc_index > drc->last_drc_index))
-> +		return false;
-> +	if ((cdata->drc_type && strcmp(cdata->drc_type, drc->drc_type))
-> +		return false;
-> +
-> +	/* Check the drc-index entries of this set */
-> +	for (i = 0, drc_index = drc->drc_index_start;
-> +		i < drc->num_sequential_elems; i++, drc_index++) {
-> +
-> +		if (cdata->match_drc_index && (cdata->drc_index != drc_index))
-> +			continue;
-> +
-> +		sprintf(drc_name, "%s%d", drc->drc_name_prefix,
-> +			drc_index - drc->drc_index_start +
-> +			drc->drc_name_suffix_start);
-> +
-> +		if ((cdata->drc_name == NULL) ||
-> +		    (cdata->drc_name && !strcmp(cdata->drc_name, drc_name))) {
-> +
-> +			if (cdata->usercb) {
-> +				retval = cdata->usercb(cdata->dn,
-> +						drc_index, drc_name,
-> +						drc->drc_type,
-> +						drc->drc_power_domain,
-> +						cdata->data);
-> +				if (!retval) {
-> +					(*ret_code) = retval;
-> +					return true;
-> +				}
-> +			} else {
-> +				(*ret_code) = 0;
-> +				return true;
-> +			}
-> +		}
-> +	}
-> +
-> +	(*ret_code) = retval;
-> +	return false;
-> +}
-> +
-> +static int find_drc_match_v2(struct device_node *dn, void *data)
-> +{
-> +	struct find_drc_match_cb_struct *cdata = data;
-> +	struct device_node *root = cdata->dn;
-> +
-> +	if (!cdata->add_slot) {
-> +		if (!cdata->drc_type ||
-> +			(cdata->drc_type && strcmp(cdata->drc_type, "SLOT")))
-> +			root = dn->parent;
-> +	}
-> +
-> +	return walk_drc_info(root, find_drc_match_v2_cb, NULL, data);
-> +}
-> +
 > +int arch_find_drc_match(struct device_node *dn,
 > +			bool (*usercb)(struct device_node *dn,
 > +				u32 drc_index, char *drc_name,
 > +				char *drc_type, u32 drc_power_domain,
 > +				void *data),
 > +			char *opt_drc_type, char *opt_drc_name,
-> +			bool match_drc_index, bool add_slot,
-> +			void *data)
-> +{
-> +	struct find_drc_match_cb_struct cdata = { dn, usercb,
-> +			opt_drc_type, opt_drc_name, 0,
-> +			match_drc_index, add_slot, data };
+> +			bool match_drc_index, bool ck_php_type,
+> +			void *data);
 > +
-> +	if (match_drc_index) {
-> +		const int *my_index =
-> +			of_get_property(dn, "ibm,my-drc-index", NULL);
-> +		if (!my_index) {
-> +			/* Node isn't DLPAR/hotplug capable */
-> +			return -EINVAL;
-> +		}
-> +		cdata.drc_index = *my_index;
-> +	}
-> +
-> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
-> +		return find_drc_match_v2(dn, &cdata);
-> +	else
-> +		return find_drc_match_v1(dn, &cdata);
-> +}
-> +EXPORT_SYMBOL(arch_find_drc_match);
-> diff --git a/include/linux/topology.h b/include/linux/topology.h
-> index df97f5f..c3dfa53 100644
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -50,7 +50,7 @@ int arch_find_drc_match(struct device_node *dn,
->  				char *drc_type, u32 drc_power_domain,
->  				void *data),
->  			char *opt_drc_type, char *opt_drc_name,
-> -			bool match_drc_index, bool ck_php_type,
-> +			bool match_drc_index, bool add_slot,
->  			void *data);
-
-Why are you making a change to the prototype here? You should just define it in
-your first patch instead of touching it again here.
-
--Tyrel
-
->  
 >  /* Conform to ACPI 2.0 SLIT distance definitions */
+>  #define LOCAL_DISTANCE		10
+>  #define REMOTE_DISTANCE		20
 > 
 
