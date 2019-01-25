@@ -1,90 +1,92 @@
-Return-Path: <SRS0=rclJ=QA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=E5N6=QB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D02EC282C3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 20:39:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2E38C282C3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:06:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8FA4218D2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 24 Jan 2019 20:39:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8FA4218D2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D2160218A6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 00:06:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TnzBcq7B"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2160218A6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43lvCG2TSczDqN9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 07:39:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43lznh3m5YzDqLw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 11:06:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=chandan@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::741; helo=mail-qk1-x741.google.com;
+ envelope-from=turtle.in.the.kernel@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="TnzBcq7B"; 
+ dkim-atps=neutral
+Received: from mail-qk1-x741.google.com (mail-qk1-x741.google.com
+ [IPv6:2607:f8b0:4864:20::741])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43lkl50X6CzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 01:17:49 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0OE5Qv2103555
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 09:17:47 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2q7cm283p6-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 09:17:47 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.ibm.com>;
- Thu, 24 Jan 2019 14:17:45 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 24 Jan 2019 14:17:42 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0OEHfGf4587916
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 24 Jan 2019 14:17:41 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E7B134C058;
- Thu, 24 Jan 2019 14:17:40 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5E1B04C052;
- Thu, 24 Jan 2019 14:17:40 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.85.75.64])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 24 Jan 2019 14:17:40 +0000 (GMT)
-From: Chandan Rajendra <chandan@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: BUG: memcmp(): Accessing invalid memory location
-Date: Thu, 24 Jan 2019 19:48:11 +0530
-Organization: IBM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43lzlm4bDnzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 11:04:17 +1100 (AEDT)
+Received: by mail-qk1-x741.google.com with SMTP id d15so4489395qkj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2019 16:04:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=irrrj1aIRm1Xathl7FhqoMhu6j8f0JSUgmySPpo0TJk=;
+ b=TnzBcq7B9dj4hDWYhAdrx715udUh48w0TME8rdoDnyJg7e/O66OZ/uqb+2A1+FYq+7
+ AAxxvrbaNhm6p9N7PDL8sH+IQDZDjqCIrZzbR0JxSjMAtPqp1VnDGsp+BEMFstBcm553
+ KuLyNdGijyGwGxTzRiibJk8FbJzllRZXNOltaoQFIb7wAPL91TjdZPlb4yrrJ+wR9e+o
+ PVDjB1d7mKVlHY+zu38jUJlTX1uAT2uM3N5ySWTYv8FT7SrrGbti1MET9ytPZKR4sEDM
+ c3DofTr+n2IJUQpDyBUYvF/I7Ach8Kb/S5FFaXJXxGWX1aRCfmNHjNQvorNFvPg32ByO
+ soKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=irrrj1aIRm1Xathl7FhqoMhu6j8f0JSUgmySPpo0TJk=;
+ b=STCEHX/zRZZY9fUUbpyQ0uEEjU2foGzQrYb7mT/eYAKA9sCL4HFcNJplr6Mc5+RyKk
+ xRt1hmJsfxYjEVIWyGiNjbdOPD2Da0/OqOoU4CNKci4ioUFPauw8+p8KJ3zwUCS873Vc
+ jMlfvceoSB88lYwhRsO3VFNF+8EA6lZC518pmsTmSR/kKc9bTF6G3LjYuFA/mXu6qp2C
+ aiT/aAOLs/URvtBkEze2UWofFxoY9JQB22X7wzHeydAlAZ+H3BziUTsAPQ+kvYMBzueA
+ Cy4zS3JVhgwfVhbFEm7DLiIGi5TQXbfdB1eaZQTwqL0RD1+S5uf+zBDk0c01He5wLswe
+ 1g8Q==
+X-Gm-Message-State: AJcUukdVqb+osU7/xwYpTG2oZt8hk4QeTkGFy2TXw8mCubo0EHX0UT26
+ 78YE3tDbLgdqZBtCpOSEwMQ=
+X-Google-Smtp-Source: ALg8bN7F1X0jZrlK49XHVFQiN5j5GBjQLRNlGbXa8EFtP6jrRoxRo77yWgZNrRz1pJlMMTLHd5suuw==
+X-Received: by 2002:a05:620a:9:: with SMTP id j9mr7795813qki.144.1548374654125; 
+ Thu, 24 Jan 2019 16:04:14 -0800 (PST)
+Received: from oc6857751186.ibm.com (c-24-20-82-131.hsd1.or.comcast.net.
+ [24.20.82.131])
+ by smtp.gmail.com with ESMTPSA id g25sm51998796qki.29.2019.01.24.16.04.12
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 24 Jan 2019 16:04:13 -0800 (PST)
+Subject: Re: [RFC 1/6] powerpc:/drc Define interface to acquire arch-specific
+ drc info
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
+ <20181214204957.16435.29255.stgit@powerkvm6.aus.stglabs.ibm.com>
+From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+Message-ID: <e7030879-59e4-88fd-3785-fdd98b7f0a3b@gmail.com>
+Date: Thu, 24 Jan 2019 16:04:10 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
-X-TM-AS-GCONF: 00
-x-cbid: 19012414-4275-0000-0000-000003039825
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012414-4276-0000-0000-00003811D051
-Message-Id: <17042269.pB4heZKTbK@localhost.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-24_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=779 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901240102
-X-Mailman-Approved-At: Fri, 25 Jan 2019 07:37:59 +1100
+In-Reply-To: <20181214204957.16435.29255.stgit@powerkvm6.aus.stglabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,78 +98,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Anton Blanchard <anton@au1.ibm.com>
+Cc: Juliet Kim <minkim@us.ibm.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When executing fstests' generic/026 test, I hit the following call trace,
+On 12/14/2018 12:50 PM, Michael Bringmann wrote:
+> Define interface to acquire arch-specific drc info to match against
+> hotpluggable devices.  The current implementation exposes several
+> pseries-specific dynamic memory properties in generic kernel code.
+> This patch set provides an interface to pull that code out of the
+> generic kernel.
+> 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+>  include/linux/topology.h |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/include/linux/topology.h b/include/linux/topology.h
+> index cb0775e..df97f5f 100644
+> --- a/include/linux/topology.h
+> +++ b/include/linux/topology.h
+> @@ -44,6 +44,15 @@
 
-[  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
-[  417.062172] Faulting instruction address: 0xc000000000092240
-[  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
-[  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
-[  417.062366] Modules linked in:
-[  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
-[  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
-[  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
-[  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
-[  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
-               GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
-               GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
-               GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
-               GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
-               GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-               GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
-               GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
-               GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
-[  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
-[  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
-[  417.063709] Call Trace:
-[  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
-[  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
-[  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
-[  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
-[  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
-[  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
-[  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
-[  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
-[  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
-[  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
-[  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
-[  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
-[  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
-[  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
-[  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
-[  417.064930] Instruction dump:
-[  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
-[  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
-[  417.065150] ---[ end trace 0d060411b5e3741b ]---
+As far as I know pseries is the only platform that uses DR connectors, and I
+highly doubt that any other powerpc platform or arch ever will. So, I'm not sure
+that this is really generic enough to belong in topology.h. If anything I would
+suggest putting this in an include in arch/powerpc/include/ named something like
+drcinfo.h or pseries-drc.h. That will make it visible to modules like rpaphp
+that want/need to use this functionality.
 
+-Tyrel
 
-Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
-argument of memcmp() was set to 12. s1 argument of memcmp() had the value
-0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
-
-The following is the code path within memcmp() that gets executed for the
-above mentioned values,
-
-- Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
-- We then prefetch the contents of r3 & r4 and branch to
-  .Ldiffoffset_8bytes_make_align_start.
-- Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
-  "SGI" part of the string. r3's value is then aligned. r4's value is
-  incremented by 3. For comparing the remaining 9 bytes, we jump to
-  .Lcmp_lt32bytes.
-- Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
-  .Lcmp_rest_lt8bytes.
-- Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
-  value and hence ends up accessing the "next" double word. The "next" double
-  word happens to occur after the last page mapped into the kernel's address
-  space and hence this leads to the previously listed oops.
-  
--- 
-chandan
-
-
+>  
+>  int arch_update_cpu_topology(void);
+>  
+> +int arch_find_drc_match(struct device_node *dn,
+> +			bool (*usercb)(struct device_node *dn,
+> +				u32 drc_index, char *drc_name,
+> +				char *drc_type, u32 drc_power_domain,
+> +				void *data),
+> +			char *opt_drc_type, char *opt_drc_name,
+> +			bool match_drc_index, bool ck_php_type,
+> +			void *data);
+> +
+>  /* Conform to ACPI 2.0 SLIT distance definitions */
+>  #define LOCAL_DISTANCE		10
+>  #define REMOTE_DISTANCE		20
+> 
 
