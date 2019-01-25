@@ -2,87 +2,94 @@ Return-Path: <SRS0=E5N6=QB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEB3BC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17004C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 21:12:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 210D1218B0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 19:44:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l7bpzApd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 210D1218B0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3AAA32184C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 21:12:51 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AAA32184C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mTxz1VsQzDqQn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 06:44:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mWvN5v6RzDqQy
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 08:12:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="l7bpzApd"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43mTwD4ZqPzDqFs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 06:43:24 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id v28so4604729pgk.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 11:43:24 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=bQO1PTT0Ok9BIQryVdeo//V3RAzC/JEpl5AvgvqLqys=;
- b=l7bpzApdN9NPb6OoWIHMYZiqAx2uDx1DAYOPd0ahUNey1d36c3CtEDQTzjnYX16mui
- jWbKPEpXUmA4wn/blIvUMnZq6MZSFRe0af3uGfdNAlNl8MX27ux4mNeOw7PhVOY4qRK6
- g/vzafBRorEE/udMhWBxLesngZSjE8WKMu0fJvHrdwmX54DCQ6Ycgoc3IDotqNHAiXhy
- TXyQnAtgTSLWpLTnEyRIRymh1w6AWYrzZc3uPZQzHiaEZm5bx/qSVHNo8g+0JgtJSWf6
- wvxyjVxT3oS8n9P9x2l/Nl0+MRK7bxBMij3yy6bQIurRSy8o/Pwr7CN1A64hpeGh6bRG
- qjdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=bQO1PTT0Ok9BIQryVdeo//V3RAzC/JEpl5AvgvqLqys=;
- b=irSDxZN5haVQzzH8kefe9zAkjP1D3EPsq3GDEh+hDSAGC5b0Gj1rcnKMsBFoHr1Zia
- P9xWtrT4/x/adOrJWNSQDt/2tchYsPOapksePtdcwLhYwEXcYBrHsht6vZaUBpgeuJNd
- Y5ahX2FqJtkaLDzKrnlaY7Uy7aNz+nurqPKWHJ1gZqchLCmKR7rBVcxQBCGZGxNtmKuN
- 8IlfsOg7Ma8TS6UolYyGLxfRdSEhukS5HLg6TumGS2SsM9DlUYi1+pFeOL3UYu0veq6x
- 0JFlX3ZoZUssryh5tNCpQKRCUb3lyhIV8M2FbnYSrkzXmnsmW8GdkWE9NexJp+bTybmd
- RvWQ==
-X-Gm-Message-State: AJcUukfR4Oig6z08SmzWfUKk+Ng3IYWSmYZ6vjz3TEX7cPAE+DoY6UVq
- fZvf9wLLIJl2ub+qADv2lvo=
-X-Google-Smtp-Source: ALg8bN4O2ycBQh2rVYGKCrxCoq6doUgi0JJE+oV5NaaDWpueqTo5VDWdFgr4OBP2puzxLxQdWX12qg==
-X-Received: by 2002:a63:7512:: with SMTP id q18mr10242712pgc.231.1548445401729; 
- Fri, 25 Jan 2019 11:43:21 -0800 (PST)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id n78sm51193550pfk.19.2019.01.25.11.43.20
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 25 Jan 2019 11:43:21 -0800 (PST)
-Date: Fri, 25 Jan 2019 11:43:16 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH v4 2/3] ASoC: add fsl_audmix DT binding documentation
-Message-ID: <20190125194315.GA21222@Asurada-Nvidia.nvidia.com>
-References: <1548155654-12985-1-git-send-email-viorel.suman@nxp.com>
- <1548155654-12985-3-git-send-email-viorel.suman@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43mWsj3RJLzDqQG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 08:11:21 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0PKrXup175733
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 16:11:19 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2q86v485xr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 16:11:18 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Fri, 25 Jan 2019 21:11:17 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 25 Jan 2019 21:11:16 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0PLBEUF4850158
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 25 Jan 2019 21:11:14 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 340A6A4059;
+ Fri, 25 Jan 2019 21:11:14 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C5B29A4053;
+ Fri, 25 Jan 2019 21:11:12 +0000 (GMT)
+Received: from [9.85.169.234] (unknown [9.85.169.234])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 25 Jan 2019 21:11:12 +0000 (GMT)
+Subject: Re: [PATCH] cxl: Wrap iterations over afu slices inside
+ 'afu_list_lock'
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20190125044052.32059-1-vaibhav@linux.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Fri, 25 Jan 2019 15:11:11 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1548155654-12985-3-git-send-email-viorel.suman@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20190125044052.32059-1-vaibhav@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19012521-0020-0000-0000-0000030B86C5
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19012521-0021-0000-0000-0000215CCE2D
+Message-Id: <4a90ada0-99dc-df32-7331-ffb3191ebf40@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-25_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901250161
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,103 +101,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "S.j. Wang" <shengjiu.wang@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Takashi Iwai <tiwai@suse.com>, Rob Herring <robh+dt@kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Viorel Suman <viorel.suman@gmail.com>,
- Cosmin Samoila <cosmin.samoila@nxp.com>, Mark Brown <broonie@kernel.org>,
- dl-linux-imx <linux-imx@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Jaroslav Kysela <perex@perex.cz>, Daniel Baluta <daniel.baluta@nxp.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Alastair D'Silva <alastair@linux.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 22, 2019 at 11:14:27AM +0000, Viorel Suman wrote:
-> Add the DT binding documentation for NXP Audio Mixer
-> CPU DAI driver.
-> 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-> ---
->  .../devicetree/bindings/sound/fsl,audmix.txt       | 54 ++++++++++++++++++++++
->  1 file changed, 54 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/sound/fsl,audmix.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/sound/fsl,audmix.txt b/Documentation/devicetree/bindings/sound/fsl,audmix.txt
-> new file mode 100644
-> index 0000000..45f807e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/sound/fsl,audmix.txt
-> @@ -0,0 +1,54 @@
-> +NXP Audio Mixer (AUDMIX).
-> +
-> +The Audio Mixer is a on-chip functional module that allows mixing of two
-> +audio streams into a single audio stream. Audio Mixer has two input serial
-> +audio interfaces. These are driven by two Synchronous Audio interface
-> +modules (SAI). Each input serial interface carries 8 audio channels in its
-> +frame in TDM manner. Mixer mixes audio samples of corresponding channels
-> +from two interfaces into a single sample. Before mixing, audio samples of
-> +two inputs can be attenuated based on configuration. The output of the
-> +Audio Mixer is also a serial audio interface. Like input interfaces it has
-> +the same TDM frame format. This output is used to drive the serial DAC TDM
-> +interface of audio codec and also sent to the external pins along with the
-> +receive path of normal audio SAI module for readback by the CPU.
-> +
-> +The output of Audio Mixer can be selected from any of the three streams
-> + - serial audio input 1
-> + - serial audio input 2
-> + - mixed audio
-> +
-> +Mixing operation is independent of audio sample rate but the two audio
-> +input streams must have same audio sample rate with same number of channels
-> +in TDM frame to be eligible for mixing.
-> +
-> +Device driver required properties:
-> +=================================
-> +  - compatible		: Compatible list, contains "fsl,imx8qm-audmix"
-> +
-> +  - reg			: Offset and length of the register set for the device.
-> +
-> +  - clocks		: Must contain an entry for each entry in clock-names.
-> +
-> +  - clock-names		: Must include the "ipg" for register access.
-> +
-> +  - power-domains	: Must contain the phandle to AUDMIX power domain node
-> +
-> +  - dais		: Must contain a list of phandles to AUDMIX connected
-> +			  DAIs. The current implementation requires two phandles
-> +			  to SAI interfaces to be provided, the first SAI in the
-> +			  list being used to route the AUDMIX output.
-> +
-> +  - model		: Must contain machine driver name which will configure
-> +			  and instantiate the appropriate audio card.
 
-I don't feel this is necessary for DT node. The driver should be
-able to figure out a proper name for the machine driver: it could
-use the compatible string to get "imx8qm-audmix" as the name like
-fsl_ssi; Or it could have built-in "imx-audmix" of_device_id data
-corresponding to "fsl,imx8qm-audmix" compatible string -- for any
-non-imx compatible in the future, use something else.
 
-Thanks
-Nic
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index c79ba1c699ad..28c28bceb063 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
 
+> @@ -1932,14 +1935,20 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   	 *     * In slot_reset, free the old resources and allocate new ones.
+>   	 *     * In resume, clear the flag to allow things to start.
+>   	 */
 > +
-> +Device driver configuration example:
-> +======================================
-> +  audmix: audmix@59840000 {
-> +    compatible = "fsl,imx8qm-audmix";
-> +    reg = <0x0 0x59840000 0x0 0x10000>;
-> +    clocks = <&clk IMX8QXP_AUD_AUDMIX_IPG>;
-> +    clock-names = "ipg";
-> +    power-domains = <&pd_audmix>;
-> +    dais = <&sai4>, <&sai5>;
-> +    model = "imx-audmix";
-> +  };
-> -- 
-> 2.7.4
-> 
+> +	/* Make sure no one else changes the afu list */
+> +	spin_lock(&adapter->afu_list_lock);
+> +
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+>   
+>   		afu_result = cxl_vphb_error_detected(afu, state);
+>   
+> -		cxl_context_detach_all(afu);
+> -		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+> -		pci_deconfigure_afu(afu);
+> +		if (afu != NULL) {
+> +			cxl_context_detach_all(afu);
+> +			cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+> +			pci_deconfigure_afu(afu);
+> +		}
+
+I can see you're also checking if cxl_vphb_error_detected() is called 
+with a NULL afu from within the function, but why not move the call to 
+cxl_vphb_error_detected() within that "if (afu != NULL)...  " statement? 
+Otherwise, it looks suspicious when reading the code.
+
+
+> @@ -2051,10 +2067,11 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   	 * This is not the place to be checking if everything came back up
+>   	 * properly, because there's no return value: do that in slot_reset.
+>   	 */
+> +	spin_lock(&adapter->afu_list_lock);
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+>   
+> -		if (afu->phb == NULL)
+> +		if (afu || afu->phb == NULL)
+>   			continue;
+
+
+if (afu == NULL ...
+
+   Fred
+
