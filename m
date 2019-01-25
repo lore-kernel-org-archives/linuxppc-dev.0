@@ -2,79 +2,83 @@ Return-Path: <SRS0=E5N6=QB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84D36C282C6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 12:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3233EC282C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 12:10:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA77F218D9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 12:06:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="i3nR3GBV"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA77F218D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8917220844
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 12:10:08 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8917220844
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mHmq4NY6zDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 23:06:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mHsB2LM7zDqGY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Jan 2019 23:10:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
+ (client-ip=82.165.15.123; helo=s16892447.onlinehome-server.info;
+ envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="i3nR3GBV"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=ilande.co.uk
+X-Greylist: delayed 1498 seconds by postgrey-1.36 at bilbo;
+ Fri, 25 Jan 2019 23:07:39 AEDT
+Received: from s16892447.onlinehome-server.info (chuckie.co.uk [82.165.15.123])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43mHk80zk3zDqMX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 23:04:00 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43mHk30Zlpz9tyRJ;
- Fri, 25 Jan 2019 13:03:55 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=i3nR3GBV; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id T-S7tndRbSlp; Fri, 25 Jan 2019 13:03:55 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43mHk26WMCz9tyRH;
- Fri, 25 Jan 2019 13:03:54 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1548417834; bh=ivmH+AoutJHc7vJDgG4UgyzcqbN5JHmAR0vsyyq01ro=;
- h=From:Subject:To:Cc:Date:From;
- b=i3nR3GBV5YF1cyvGtooAIH/DZvQoNnFNfHfJFpuXHEVe1/DSzFkigWZejO3HudDqO
- DqfVmxoc/rz9op5BZwT8NmMkDA7SdnlDmG+CBXCGp2GABstho3oEIXeokPjOSZD0lT
- abRlZwMkwR2ft5TBQiC4h5Pa36l5Uef3Kcweq71Y=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2C0FF8B876;
- Fri, 25 Jan 2019 13:03:56 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id uBLdh_CtQi6Z; Fri, 25 Jan 2019 13:03:56 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 11E4D8B761;
- Fri, 25 Jan 2019 13:03:56 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E29BF72DA7; Fri, 25 Jan 2019 12:03:55 +0000 (UTC)
-Message-Id: <5a09a970ce5f7998719f0b4cd8af22cc7dd09ef0.1548371001.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/83xx: Also save/restore SPRG4-7 during suspend
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Date: Fri, 25 Jan 2019 12:03:55 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43mHpM6yDKzDqMX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 23:07:38 +1100 (AEDT)
+Received: from host86-147-134-102.range86-147.btcentralplus.com
+ ([86.147.134.102] helo=[192.168.1.65])
+ by s16892447.onlinehome-server.info with esmtpsa
+ (TLS1.0:RSA_AES_128_CBC_SHA1:16) (Exim 4.76)
+ (envelope-from <mark.cave-ayland@ilande.co.uk>)
+ id 1gmzsb-0006iq-8W; Fri, 25 Jan 2019 11:42:40 +0000
+From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+Openpgp: preference=signencrypt
+Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
+ mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
+ 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
+ E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
+ PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
+ PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
+ AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
+ OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
+ NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
+ mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
+ z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
+ T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
+ DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
+ y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
+ 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
+ 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
+ YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
+ Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
+ BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
+ opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
+ NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
+ Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
+ KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
+ imgcU9TTGC5qd9g=
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <9a0d1b68-47fb-70bc-7fb4-521d0179da03@ilande.co.uk>
+Date: Fri, 25 Jan 2019 11:42:11 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 86.147.134.102
+X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
+Subject: MSR_FE mask change broke KVM PR MacOS guest
+X-SA-Exim-Version: 4.2.1 (built Sun, 08 Jan 2012 02:45:44 +0000)
+X-SA-Exim-Scanned: Yes (on s16892447.onlinehome-server.info)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,80 +90,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, cyrilbur@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The 83xx has 8 SPRG registers and uses at least SPRG4
-for DTLB handling LRU.
+Hi all,
 
-Fixes: 2319f1239592 ("powerpc/mm: e300c2/c3/c4 TLB errata workaround")
-Cc: stable@vger.kernel.org
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/platforms/83xx/suspend-asm.S | 34 ++++++++++++++++++++++++-------
- 1 file changed, 27 insertions(+), 7 deletions(-)
+Referencing my bug report over on the kvm-ppc list at
+https://www.spinics.net/lists/kvm-ppc/msg14971.html, I've been experiencing a hard
+lockup and panic on a G4 Mac Mini when trying run MacOS X under KVM PR which I've
+bisected down to the following commit:
 
-diff --git a/arch/powerpc/platforms/83xx/suspend-asm.S b/arch/powerpc/platforms/83xx/suspend-asm.S
-index 3d1ecd211776..8137f77abad5 100644
---- a/arch/powerpc/platforms/83xx/suspend-asm.S
-+++ b/arch/powerpc/platforms/83xx/suspend-asm.S
-@@ -26,13 +26,13 @@
- #define SS_MSR		0x74
- #define SS_SDR1		0x78
- #define SS_LR		0x7c
--#define SS_SPRG		0x80 /* 4 SPRGs */
--#define SS_DBAT		0x90 /* 8 DBATs */
--#define SS_IBAT		0xd0 /* 8 IBATs */
--#define SS_TB		0x110
--#define SS_CR		0x118
--#define SS_GPREG	0x11c /* r12-r31 */
--#define STATE_SAVE_SIZE 0x16c
-+#define SS_SPRG		0x80 /* 8 SPRGs */
-+#define SS_DBAT		0xa0 /* 8 DBATs */
-+#define SS_IBAT		0xe0 /* 8 IBATs */
-+#define SS_TB		0x120
-+#define SS_CR		0x128
-+#define SS_GPREG	0x12c /* r12-r31 */
-+#define STATE_SAVE_SIZE 0x17c
- 
- 	.section .data
- 	.align	5
-@@ -103,6 +103,16 @@ _GLOBAL(mpc83xx_enter_deep_sleep)
- 	stw	r7, SS_SPRG+12(r3)
- 	stw	r8, SS_SDR1(r3)
- 
-+	mfspr	r4, SPRN_SPRG4
-+	mfspr	r5, SPRN_SPRG5
-+	mfspr	r6, SPRN_SPRG6
-+	mfspr	r7, SPRN_SPRG7
-+
-+	stw	r4, SS_SPRG+16(r3)
-+	stw	r5, SS_SPRG+20(r3)
-+	stw	r6, SS_SPRG+24(r3)
-+	stw	r7, SS_SPRG+28(r3)
-+
- 	mfspr	r4, SPRN_DBAT0U
- 	mfspr	r5, SPRN_DBAT0L
- 	mfspr	r6, SPRN_DBAT1U
-@@ -493,6 +503,16 @@ mpc83xx_deep_resume:
- 	mtspr	SPRN_IBAT7U, r6
- 	mtspr	SPRN_IBAT7L, r7
- 
-+	lwz	r4, SS_SPRG+16(r3)
-+	lwz	r5, SS_SPRG+20(r3)
-+	lwz	r6, SS_SPRG+24(r3)
-+	lwz	r7, SS_SPRG+28(r3)
-+
-+	mtspr	SPRN_SPRG4, r4
-+	mtspr	SPRN_SPRG5, r5
-+	mtspr	SPRN_SPRG6, r6
-+	mtspr	SPRN_SPRG7, r7
-+
- 	lwz	r4, SS_SPRG+0(r3)
- 	lwz	r5, SS_SPRG+4(r3)
- 	lwz	r6, SS_SPRG+8(r3)
--- 
-2.13.3
 
+$ git bisect bad
+8792468da5e12e77e76e1edf081acf0392abb331 is the first bad commit
+commit 8792468da5e12e77e76e1edf081acf0392abb331
+Author: Cyril Bur <cyrilbur@gmail.com>
+Date:   Mon Feb 29 17:53:49 2016 +1100
+
+    powerpc: Add the ability to save FPU without giving it up
+
+    This patch adds the ability to be able to save the FPU registers to the
+    thread struct without giving up (disabling the facility) next time the
+    process returns to userspace.
+
+    This patch optimises the thread copy path (as a result of a fork() or
+    clone()) so that the parent thread can return to userspace with hot
+    registers avoiding a possibly pointless reload of FPU register state.
+
+    Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+Working through the changes which can be found at
+https://github.com/torvalds/linux/commit/8792468da5e12e77e76e1edf081acf0392abb331,
+I've discovered that the lockup is being caused by the removal of the the MSR_FE0 and
+MSR_FE1 masks from the previous task during giveup_fpu().
+
+Before this patch:
+
+
+_GLOBAL(giveup_fpu)
+        mfmsr   r5
+        ori     r5,r5,MSR_FP
+#ifdef CONFIG_VSX
+BEGIN_FTR_SECTION
+        oris    r5,r5,MSR_VSX@h
+END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+#endif
+        SYNC_601
+        ISYNC_601
+        MTMSRD(r5)                      /* enable use of fpu now */
+        SYNC_601
+        isync
+        PPC_LCMPI       0,r3,0
+        beqlr-                          /* if no previous owner, done */
+        addi    r3,r3,THREAD            /* want THREAD of task */
+        PPC_LL  r6,THREAD_FPSAVEAREA(r3)
+        PPC_LL  r5,PT_REGS(r3)
+        PPC_LCMPI       0,r6,0
+        bne     2f
+        addi    r6,r3,THREAD_FPSTATE
+2:      PPC_LCMPI       0,r5,0
+        SAVE_32FPVSRS(0, R4, R6)
+        mffs    fr0
+        stfd    fr0,FPSTATE_FPSCR(r6)
+        beq     1f
+        PPC_LL  r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+        li      r3,MSR_FP|MSR_FE0|MSR_FE1
+
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+#ifdef CONFIG_VSX
+BEGIN_FTR_SECTION
+        oris    r3,r3,MSR_VSX@h
+END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+#endif
+        andc    r4,r4,r3                /* disable FP for previous task */
+
+
+and after the patch:
+
+void __giveup_fpu(struct task_struct *tsk)
+{
+	save_fpu(tsk);
+	tsk->thread.regs->msr &= ~MSR_FP;
+                                 ^^^^^^^
+
+#ifdef CONFIG_VSX
+	if (cpu_has_feature(CPU_FTR_VSX))
+		tsk->thread.regs->msr &= ~MSR_VSX;
+#endif
+}
+
+
+Reinstating the MSR_FE0 and MSR_FE1 bitmasks fixes the issue allowing MacOS X to boot
+without incident again:
+
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 14c09d25de98..f9ac44621dda 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -136,7 +136,7 @@ EXPORT_SYMBOL(__msr_check_and_clear);
+ void __giveup_fpu(struct task_struct *tsk)
+ {
+        save_fpu(tsk);
+-       tsk->thread.regs->msr &= ~MSR_FP;
++       tsk->thread.regs->msr &= ~(MSR_FP|MSR_FE0|MSR_FE1);
+ #ifdef CONFIG_VSX
+        if (cpu_has_feature(CPU_FTR_VSX))
+                tsk->thread.regs->msr &= ~MSR_VSX;
+
+
+Would the above be accepted as a patch? The commit message for the patch above fails
+to mention why the MSR_FE* constants were removed from the MSR bitmask, so I'm not
+sure whether this was deliberate? Certainly running with the above patch applied, I
+haven't noticed anything obviously broken. And could this patch cause any ill-effects
+on 64-bit PPC CPUs?
+
+
+ATB,
+
+Mark.
