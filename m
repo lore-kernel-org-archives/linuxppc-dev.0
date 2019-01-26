@@ -2,50 +2,86 @@ Return-Path: <SRS0=UfQ7=QC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA4C3C282C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 00:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68E10C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 01:51:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13822218A6
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 00:13:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13822218A6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1A48E21855
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 01:51:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mrXg/1Wk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1A48E21855
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mbwH4khLzDqQv
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 11:13:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mf4k2T2lzDqR2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 12:51:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="mrXg/1Wk"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43mbtb3bn8zDqPb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 11:12:23 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x0N6iFAL025684;
- Wed, 23 Jan 2019 00:44:17 -0600
-Message-ID: <de777e750665d92509b1487a90acb79d70854cf3.camel@kernel.crashing.org>
-Subject: Re: [PATCH 11/19] KVM: PPC: Book3S HV: add support for the XIVE
- native exploitation mode hcalls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@ozlabs.org>, =?ISO-8859-1?Q?C=E9dric?= Le Goater
- <clg@kaod.org>
-Date: Wed, 23 Jan 2019 17:44:15 +1100
-In-Reply-To: <20190122052346.GF15124@blackberry>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-12-clg@kaod.org> <20190122052346.GF15124@blackberry>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.4 (3.30.4-1.fc29) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43mf2b6DPwzDqNw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 12:49:27 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id z11so4933256pgu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 17:49:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=z31oC3yzCXeE8gwNzZb7c+UyH2VYUHaOsK2yTfHBL38=;
+ b=mrXg/1Wk6jQhvCIai+RxDFsBL9W9egTtNMpDrQt5qcqmpvPILdn7IRcwwd2iAT/kKV
+ 46XrJIleLhD13kWeYOsrX36zdkZLpl1F+QYul9OpGMfCuFUyDQz96yuqR08m96BzcOCC
+ 2wAkIibqR8+Rh7s1Oo8LCOuiB+DNS8jcLAll5CuLmMM2gdS5OrKmM+yzL+dBak8JfvAA
+ sEX8PFDmp9vXMIqIEpeiUgukkaeJxrxeIYOuaGqhoorbU/CPkFGvGo3RFyxhJ67qnz2A
+ oL/n2yLk2+RqItbiY3vlXIjPONMtDn8yIkjM3NS1nUewE2r8PDmLHFUvCAsmVPVhozZN
+ eDkA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=z31oC3yzCXeE8gwNzZb7c+UyH2VYUHaOsK2yTfHBL38=;
+ b=mlHzQw2IYQ+EBSdmtjWBLjaaLXmsikeBwG7M+SlJm+9RPv7MNLaLO5QD7a+1eM6I8r
+ /8bGzCb2zhP7v40V1JP+ykb/dyHnQiUawF7PuBfBK6YFCdVo3qwJ284aj3Bc6PBkK51c
+ 95+QcHcxnpkxRUfVz8X/JzyHNs0YDy/UvvOktvlW6qUsqZR4+x4ykJ1XI7A9Y7hKqkX8
+ usiDZiVSLve/u5IWEsrnfGe7wzF7kYXo5Gg8CrXbmAXif2GvGF+eieOZKdaZxWzKE9MP
+ kY/VnDZkb4rcGZXVpfSN0UrkMBX94DqUqqbpI3nYqKfkWdWVXZxlyWzGyEjLaNmFiGTM
+ Co6g==
+X-Gm-Message-State: AJcUukcXJp2XAkjJs4tTcSjdp2mftrQNyTv5dqymg9Ww1uRMmxRSs4rC
+ YRUtt0o0EQs5nC3gCZ9d7+8=
+X-Google-Smtp-Source: ALg8bN6LNwjIcCOtzPL86VZMRi8QaLPut6xIKH1PZUt4RMpqs+MBj9+pyxUIqu3HuBajUJFlLuUWQg==
+X-Received: by 2002:a63:4d:: with SMTP id 74mr12263296pga.248.1548467365246;
+ Fri, 25 Jan 2019 17:49:25 -0800 (PST)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id o66sm42745234pgo.75.2019.01.25.17.49.23
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 25 Jan 2019 17:49:24 -0800 (PST)
+Date: Fri, 25 Jan 2019 17:49:19 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Viorel Suman <viorel.suman@nxp.com>, Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v3 2/4] ASoC: add fsl_audmix DT binding documentation
+Message-ID: <20190126014918.GA2617@Asurada-Nvidia.nvidia.com>
+References: <1547729177-14317-1-git-send-email-viorel.suman@nxp.com>
+ <1547729177-14317-3-git-send-email-viorel.suman@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1547729177-14317-3-git-send-email-viorel.suman@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,61 +93,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "S.j. Wang" <shengjiu.wang@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Viorel Suman <viorel.suman@gmail.com>, Cosmin Samoila <cosmin.samoila@nxp.com>,
+ Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, Jaroslav Kysela <perex@perex.cz>,
+ Daniel Baluta <daniel.baluta@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-01-22 at 16:23 +1100, Paul Mackerras wrote:
-> 
-> Which ones of these could be implemented in QEMU?  Are there any that
-> can't possibly be implemented in QEMU because they need to do things
-> that require calling internal interfaces that userspace doesn't have
-> access to?
+On Thu, Jan 17, 2019 at 12:46:29PM +0000, Viorel Suman wrote:
 
-Implementing them in qemu doesn't make a lot of sense. Qemu doesn't
-have access to most of the XIVE HW state. There's a XIVE model for full
-emulation but when using the real thing, almost none of it is visible.
-A lot of those hcalls effectively turn into OPAL calls.
+> +  - dais		: Must contain a list of phandles to AUDMIX connected
+> +			  DAIs. The current implementation requires two phandles
+> +			  to SAI interfaces to be provided, the first SAI in the
+> +			  list being used to route the AUDMIX output.
 
-> How often do we expect each of these hypercalls to be called?
+Another small thing, that I just noticed, is this list. It forces
+the first input source to be the output source without giving any
+chance. I feel that we could have some flexibility here: one node
+for two input sources, and one node for the output source.
 
-It depends, I can't tell for AIX. For Linux, not often with one
-exception: H_INT_ESB which will be used whenever you EOI an emulated
-LSI.
+Well, there is no critical problem with the current binding since
+it follows the SoC design. Yet I doubt if this routing logic will
+never break.
 
- .../...
-
-> Why do we need to provide real-mode versions of these hypercall
-> handlers?  I thought these hypercalls would only get called
-> infrequently, and in any case certainly much less frequently than once
-> per interrupt delivered.  If they are infrequent, then let's leave out
-> the real-mode version and just handle them in book3s_hv.c.
-
-Agreed with the exception maybe of H_INT_ESB
-
-> > @@ -5153,6 +5169,19 @@ static unsigned int default_hcall_list[] = {
-> >        H_IPOLL,
-> >        H_XIRR,
-> >        H_XIRR_X,
-> > +#endif
-> > +#ifdef CONFIG_KVM_XIVE
-> > +     H_INT_GET_SOURCE_INFO,
-> > +     H_INT_SET_SOURCE_CONFIG,
-> > +     H_INT_GET_SOURCE_CONFIG,
-> > +     H_INT_GET_QUEUE_INFO,
-> > +     H_INT_SET_QUEUE_CONFIG,
-> > +     H_INT_GET_QUEUE_CONFIG,
-> > +     H_INT_SET_OS_REPORTING_LINE,
-> > +     H_INT_GET_OS_REPORTING_LINE,
-> > +     H_INT_ESB,
-> > +     H_INT_SYNC,
-> > +     H_INT_RESET,
-> >   #endif
-> 
-> The policy is not to add new hcalls to default_hcall_list[].  Is there
-> a strong reason for adding them here?
-> 
-> Paul.
-
+Any suggestion, Rob?
