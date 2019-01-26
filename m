@@ -2,79 +2,64 @@ Return-Path: <SRS0=UfQ7=QC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C24EDC282C0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 02:42:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93527C282C7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 10:53:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 74DF6218B0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 02:42:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dBNl9KS/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 74DF6218B0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id D15E0218A2
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 10:53:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D15E0218A2
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43mgCK6pwlzDqRx
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 13:42:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43mt6Z1gHyzDqNt
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 26 Jan 2019 21:53:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.32.116.78; helo=8.mo5.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="dBNl9KS/"; 
- dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43mg9g5TlNzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 13:40:39 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id a14so5364905plm.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2019 18:40:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=LnZepex7+WZtAmCDkHPUIdBUn50XycCcdk0ns6Xum+k=;
- b=dBNl9KS/wBrWipN3lb/gyVuc6FRUcpe3dynjvL6iTe6NwCTh5f5Mg8B+V7E+W4paqt
- M/X3ZHpjv1ZYAe2FnTR4Nu1ITlhWG5h0KOUcSNizJwtH/VNQku0Dx8w92QBMaj5upRn5
- +eJp5gPS54bIe8Cygj3P35AloZrfNRw8i/uyQo0PAKwcVMBaHz0ibuao7RTzVPogvdAe
- 1DO9ZEn8bIZEGj7FMnGLnfiFfOvGG+4lshdQw/z2taDszG4XLj/02CttJk2pAw9FLrv9
- AAzDh4zOdOfPPtdJIEunVdvjhOmib/hlCXuPS7+uHV1pGRx7bQ7MetziVF9TfWSB/1SM
- thcA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=LnZepex7+WZtAmCDkHPUIdBUn50XycCcdk0ns6Xum+k=;
- b=Zbcs6QLhqdpaNpOyJr/sJs8NH0Uz26khRwqL/WZWbPy/JI5qkiSBBMV/czSiO4EJjp
- WvtApU4a8Jya2TF3pqgBedIjNQKCJ5vm54iNddYOs3ece6+GDFxd/6nboKTThFkMUkRJ
- e+oj4Jbxy/mcRe0GpGAswFsw1b9O+3BNhG1YvkOeUI5f5TGd1B+OB28cubqsftoY17kj
- NNSIDaHOSb533/UDooj6cWVymfYWX4+Ji85XvfHzJkXsX5rFg4Ca7rEsypnJUGUVy/pJ
- P1weGiV/N0AjKZPnPblZ/ekwkLpTm1nolnG5PTXGYFm7qiazqeX/gRr6ResNTWmJ7nm2
- /96g==
-X-Gm-Message-State: AJcUukeLqpovR2A41z2lMCvxSZ6kOsTzAC4cfxJA6JB1LAF8iONsgFuo
- BPUAtECyHKuL5M3QG+KR/cL9eQsr
-X-Google-Smtp-Source: ALg8bN6d7cvMcqbG0h3VVciuczLnylNNT/4wB1K5AUdyS2WM+8hrq1gdE3KPjXsuFZfpshHxpzjo7Q==
-X-Received: by 2002:a17:902:830a:: with SMTP id
- bd10mr13574613plb.321.1548470437453; 
- Fri, 25 Jan 2019 18:40:37 -0800 (PST)
-Received: from roar.local0.net (115-64-241-162.tpgi.com.au. [115.64.241.162])
- by smtp.gmail.com with ESMTPSA id
- e16sm32905025pfn.46.2019.01.25.18.40.34
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 25 Jan 2019 18:40:36 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH] powerpc/64s: interrupt handler remove bad stack branch
-Date: Sat, 26 Jan 2019 12:40:28 +1000
-Message-Id: <20190126024028.11664-1-npiggin@gmail.com>
-X-Mailer: git-send-email 2.18.0
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 7803 seconds by postgrey-1.36 at bilbo;
+ Sat, 26 Jan 2019 21:52:18 AEDT
+Received: from 8.mo5.mail-out.ovh.net (8.mo5.mail-out.ovh.net [178.32.116.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43mt4y1XyGzDqLl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 21:52:15 +1100 (AEDT)
+Received: from player735.ha.ovh.net (unknown [10.109.160.244])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 75ADD212016
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 09:25:16 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player735.ha.ovh.net (Postfix) with ESMTPSA id 3230A213CF25;
+ Sat, 26 Jan 2019 08:25:05 +0000 (UTC)
+Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190122044654.GA15124@blackberry>
+ <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
+ <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <06b7c4d2-72ba-ca4f-aded-789280798136@kaod.org>
+Date: Sat, 26 Jan 2019 09:25:04 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 1831557675011115911
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrieehgdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,197 +71,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The bad stack test in interrupt handlers is annoying because it is an
-always taken branch, which is a fetch bubble and a waste of i-cache.
-It also requires yet another stack frame setup routine.
+Was there a crashing.org shutdown ? 
 
-Remove the test/branch and replace it with a trap. Teach the program
-check handler to use the emergency stack for this case.
+  Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by in5.mail.ovh.net (Postfix) with ESMTPS id 43mYnj0nrlz1N7KC
+	for <clg@kaod.org>; Fri, 25 Jan 2019 22:38:00 +0000 (UTC)
+  Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x0NLZf4K021092;
+	Wed, 23 Jan 2019 15:35:43 -0600
 
-This does not reconstruct the stack message quite so nicely as
-previously, but the SRR0 and SRR1 of the crashed interrupt can be seen
-in r11 and r12, as is the original r1, adjusted by INT_FRAME_SIZE,
-which are the most important parts. The original r9-12 and cr0 is
-lost, which is the main downside.
 
-kernel BUG at linux/arch/powerpc/kernel/exceptions-64s.S:847!
-Oops: Exception in kernel mode, sig: 5 [#1]
-BE SMP NR_CPUS=2048 NUMA PowerNV
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted
-NIP:  c000000000009108 LR: c000000000cadbcc CTR: c0000000000090f0
-REGS: c0000000fffcbd70 TRAP: 0700   Not tainted
-MSR:  9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 28222448  XER: 20040000
-CFAR: c000000000009100 IRQMASK: 0
-GPR00: 000000000000003d fffffffffffffd00 c0000000018cfb00 c0000000f02b3166
-GPR04: fffffffffffffffd 0000000000000007 fffffffffffffffb 0000000000000030
-GPR08: 0000000000000037 0000000028222448 0000000000000000 c000000000ca8de0
-GPR12: 9000000002009032 c000000001ae0000 c000000000010a00 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: c0000000f00322c0 c000000000f85200 0000000000000004 ffffffffffffffff
-GPR24: fffffffffffffffe 0000000000000000 0000000000000000 000000000000000a
-GPR28: 0000000000000000 0000000000000000 c0000000f02b391c c0000000f02b3167
-NIP [c000000000009108] decrementer_common+0x18/0x160
-LR [c000000000cadbcc] .vsnprintf+0x3ec/0x4f0
-Call Trace:
-Instruction dump:
-996d098a 994d098b 38610070 480246ed 48005518 60000000 38200000 718a4000
-7c2a0b78 3821fd00 41c20008 e82d0970 <0981fd00> f92101a0 f9610170 f9810178
+On 1/23/19 10:35 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2019-01-23 at 20:07 +0100, Cédric Le Goater wrote:
+>>  Event Assignment Structure, a.k.a IVE (Interrupt Virtualization Entry)
+>>
+>> All the names changed somewhere between XIVE v1 and XIVE v2. OPAL and
+>> Linux should be adjusted ...
+> 
+> All the names changed between the HW design and the "architecture"
+> document. The HW guys use the old names, the architecture the new
+> names, and Linux & OPAL mostly use the old ones because frankly the new
+> names suck big time.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/exception-64s.h | 17 +----
- arch/powerpc/kernel/exceptions-64s.S     | 85 ++++--------------------
- 2 files changed, 16 insertions(+), 86 deletions(-)
+Well, It does not make XIVE any clearer ... I did prefer the v1 names
+but there was some naming overlap in the concepts. 
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 3b4767ed3ec5..6168021bf530 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -60,13 +60,6 @@
-  */
- #define MAX_MCE_DEPTH	4
- 
--/*
-- * EX_R3 is only used by the bad_stack handler. bad_stack reloads and
-- * saves DAR from SPRN_DAR, and EX_DAR is not used. So EX_R3 can overlap
-- * with EX_DAR.
-- */
--#define EX_R3		EX_DAR
--
- #define STF_ENTRY_BARRIER_SLOT						\
- 	STF_ENTRY_BARRIER_FIXUP_SECTION;				\
- 	nop;								\
-@@ -488,14 +481,8 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- 	subi	r1,r1,INT_FRAME_SIZE;	/* alloc frame on kernel stack	*/ \
- 	beq-	1f;							   \
- 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
--1:	cmpdi	cr1,r1,-INT_FRAME_SIZE;	/* check if r1 is in userspace	*/ \
--	blt+	cr1,3f;			/* abort if it is		*/ \
--	li	r1,(n);			/* will be reloaded later	*/ \
--	sth	r1,PACA_TRAP_SAVE(r13);					   \
--	std	r3,area+EX_R3(r13);					   \
--	addi	r3,r13,area;		/* r3 -> where regs are saved*/	   \
--	RESTORE_CTR(r1, area);						   \
--	b	bad_stack;						   \
-+1:	tdgei	r1,-INT_FRAME_SIZE;	/* trap if r1 is in userspace	*/ \
-+	EMIT_BUG_ENTRY 1b,__FILE__,__LINE__,0;				   \
- 3:	EXCEPTION_PROLOG_COMMON_1();					   \
- 	beq	4f;			/* if from kernel mode		*/ \
- 	ACCOUNT_CPU_USER_ENTRY(r13, r9, r10);				   \
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 9e253ce27e08..b1ffc92cc4f9 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -735,21 +735,25 @@ EXC_COMMON_BEGIN(program_check_common)
- 	 * we switch to the emergency stack if we're taking a TM Bad Thing from
- 	 * the kernel.
- 	 */
--	li	r10,MSR_PR		/* Build a mask of MSR_PR ..	*/
--	oris	r10,r10,0x200000@h	/* .. and SRR1_PROGTM		*/
--	and	r10,r10,r12		/* Mask SRR1 with that.		*/
--	srdi	r10,r10,8		/* Shift it so we can compare	*/
--	cmpldi	r10,(0x200000 >> 8)	/* .. with an immediate.	*/
--	bne 1f				/* If != go to normal path.	*/
--
--	/* SRR1 had PR=0 and SRR1_PROGTM=1, so use the emergency stack	*/
--	andi.	r10,r12,MSR_PR;		/* Set CR0 correctly for label	*/
-+
-+	andi.	r10,r12,MSR_PR
-+	bne	2f			/* If userspace, go normal path */
-+
-+	andis.	r10,r12,(SRR1_PROGTM)@h
-+	bne	1f			/* If TM, emergency		*/
-+
-+	cmpdi	r1,-INT_FRAME_SIZE	/* check if r1 is in userspace	*/
-+	blt	2f			/* normal path if not		*/
-+
-+	/* Use the emergency stack					*/
-+1:	andi.	r10,r12,MSR_PR		/* Set CR0 correctly for label	*/
- 					/* 3 in EXCEPTION_PROLOG_COMMON	*/
- 	mr	r10,r1			/* Save r1			*/
- 	ld	r1,PACAEMERGSP(r13)	/* Use emergency stack		*/
- 	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
- 	b 3f				/* Jump into the macro !!	*/
--1:	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
-+2:
-+	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
- 	bl	save_nvgprs
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
-@@ -1710,67 +1714,6 @@ handle_dabr_fault:
- 	bl	bad_page_fault
- 	b	ret_from_except
- 
--/*
-- * Here we have detected that the kernel stack pointer is bad.
-- * R9 contains the saved CR, r13 points to the paca,
-- * r10 contains the (bad) kernel stack pointer,
-- * r11 and r12 contain the saved SRR0 and SRR1.
-- * We switch to using an emergency stack, save the registers there,
-- * and call kernel_bad_stack(), which panics.
-- */
--bad_stack:
--	ld	r1,PACAEMERGSP(r13)
--	subi	r1,r1,64+INT_FRAME_SIZE
--	std	r9,_CCR(r1)
--	std	r10,GPR1(r1)
--	std	r11,_NIP(r1)
--	std	r12,_MSR(r1)
--	mfspr	r11,SPRN_DAR
--	mfspr	r12,SPRN_DSISR
--	std	r11,_DAR(r1)
--	std	r12,_DSISR(r1)
--	mflr	r10
--	mfctr	r11
--	mfxer	r12
--	std	r10,_LINK(r1)
--	std	r11,_CTR(r1)
--	std	r12,_XER(r1)
--	SAVE_GPR(0,r1)
--	SAVE_GPR(2,r1)
--	ld	r10,EX_R3(r3)
--	std	r10,GPR3(r1)
--	SAVE_GPR(4,r1)
--	SAVE_4GPRS(5,r1)
--	ld	r9,EX_R9(r3)
--	ld	r10,EX_R10(r3)
--	SAVE_2GPRS(9,r1)
--	ld	r9,EX_R11(r3)
--	ld	r10,EX_R12(r3)
--	ld	r11,EX_R13(r3)
--	std	r9,GPR11(r1)
--	std	r10,GPR12(r1)
--	std	r11,GPR13(r1)
--BEGIN_FTR_SECTION
--	ld	r10,EX_CFAR(r3)
--	std	r10,ORIG_GPR3(r1)
--END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
--	SAVE_8GPRS(14,r1)
--	SAVE_10GPRS(22,r1)
--	lhz	r12,PACA_TRAP_SAVE(r13)
--	std	r12,_TRAP(r1)
--	addi	r11,r1,INT_FRAME_SIZE
--	std	r11,0(r1)
--	li	r12,0
--	std	r12,0(r11)
--	ld	r2,PACATOC(r13)
--	ld	r11,exception_marker@toc(r2)
--	std	r12,RESULT(r1)
--	std	r11,STACK_FRAME_OVERHEAD-16(r1)
--1:	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	kernel_bad_stack
--	b	1b
--_ASM_NOKPROBE_SYMBOL(bad_stack);
--
- /*
-  * When doorbell is triggered from system reset wakeup, the message is
-  * not cleared, so it would fire again when EE is enabled.
--- 
-2.18.0
+>> It would be good to talk a little about the nested support (offline 
+>> may be) to make sure that we are not missing some major interface that 
+>> would require a lot of change. If we need to prepare ground, I think
+>> the timing is good.
+>>
+>> The size of the IRQ number space might be a problem. It seems we 
+>> would need to increase it considerably to support multiple nested 
+>> guests. That said I haven't look much how nested is designed.  
+> 
+> The size of the VP space is a bigger concern. Even today. We really
+> need qemu to tell the max #cpu to KVM so we can allocate less of them.
+
+ah yes. we would also need to reduce the number of available priorities 
+per CPU to have more EQ descriptors available if I recall well. 
+
+> As for nesting, I suggest for the foreseeable future we stick to XICS
+> emulation in nested guests.
+
+ok. so no kernel_irqchip at all. hmm.  
+
+I was wondering how possible it was to have L2 initialize the underlying 
+OPAL structures in the L0 hypervisor. May be with a sort of proxy hcall 
+which would perform the initialization in QEMU L1 on behalf of L2.
+
+Cheers,
+C.
 
