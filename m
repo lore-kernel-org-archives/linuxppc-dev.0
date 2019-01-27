@@ -2,88 +2,97 @@ Return-Path: <SRS0=qk5f=QD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE823C282C7
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 03:08:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4076C282C0
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 04:33:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4AB2021909
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 03:08:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DQJUgaYy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4AB2021909
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id CAB9321473
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 04:33:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAB9321473
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43nHlf0llfzDqNN
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 14:08:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43nKdK0kzmzDqLJ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 15:33:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
- envelope-from=shorne@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="DQJUgaYy"; 
- dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43nHjx0NGGzDqKb
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2019 14:07:13 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id e5so6247547plb.5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 19:07:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=5gqtElyGAjgWA1IcD3f1+6EYOKOhZl25WPW+/clLjQw=;
- b=DQJUgaYyc2s9cDIgDXTbhgKcePEzBol2WZvwvI6xmrwG+LJZGqMLESHYlxBSvlyyQ+
- oUI2SaaDg/nIxSIVyyBEipyPmK2fYHmtCyy+DuhILnqyKmu6E9VS52zUYIar2ouPKRdT
- spF0yBPuFHYuwM3tKB7m/bM+hdtYY8xeINYQ75T8D69QJml4TyVnU8zheDFZ5xRv/+d0
- fZacP6AYd7yMLzeYEBYuBCZR0ps5yO4SEfRDf0avcrWF/WhVzAvlgh4beOcKHCs3Rmim
- bGR8TFht5XxX3GHKhLXiZmgiwFe5kndg4WxAiv/zrboSXN3mxjy6wEx8Agq+Buk9nU7Q
- w6cw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=5gqtElyGAjgWA1IcD3f1+6EYOKOhZl25WPW+/clLjQw=;
- b=g4ZXAJ3KXrDCZY/3efO/Ur/8ortNzMvGCROiZE/RzxgfT3pBSrJPh78sFBmwaffkN4
- 5UcNE8PekTS8dal6eJviqETtRdlKY9iKcxs526I5oUjFQH8kkWtoMZU2io4tT79nG8Dl
- r6pXOClWuvFXvrjjRpQwmElqepLOmLqmXxdYD9Nw7V8hRudXz2f254Nc6m/Ynn2D2+9X
- Z6dPRwJS6ZhGgCKbx/NtO3mmwK5vG9rbrE5kv5RZAv6bkbnvW0Oboqyam8Mvo3PfK7lF
- bJen7U4F2AZjOfgkY+Tr9wRLibH/N9LwNnnxB7+SqHOgdeJ/1wGHXQ1ec9nrIsERJW1k
- fGDA==
-X-Gm-Message-State: AJcUukfPao+zilibdzpc8LREov2vTtbM2ILZlt2A31s65MIIg2ScbmHO
- ax2Qhhr2MjAG8oOuRU1Iunc=
-X-Google-Smtp-Source: ALg8bN5eshCohDgRr4aNT4DHZbbxXbPGsl6tcfcU1p2ZW+JtAH0/P63w9fWMtbQ4B+tA+eLKxDtTiQ==
-X-Received: by 2002:a17:902:584:: with SMTP id
- f4mr17453617plf.28.1548558431604; 
- Sat, 26 Jan 2019 19:07:11 -0800 (PST)
-Received: from localhost (g206.124-44-15.ppp.wakwak.ne.jp. [124.44.15.206])
- by smtp.gmail.com with ESMTPSA id t24sm53501159pfm.127.2019.01.26.19.07.10
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Sat, 26 Jan 2019 19:07:10 -0800 (PST)
-Date: Sun, 27 Jan 2019 12:07:08 +0900
-From: Stafford Horne <shorne@gmail.com>
-To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v2 01/21] openrisc: prefer memblock APIs returning
- virtual address
-Message-ID: <20190127030708.GU3235@lianli.shorne-pla.net>
-References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
- <1548057848-15136-2-git-send-email-rppt@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43nKbK1nqGzDqKy
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2019 15:31:40 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0R4TEtm156531
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 23:31:37 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2q959arjyk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2019 23:31:37 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Sun, 27 Jan 2019 04:31:35 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 27 Jan 2019 04:31:32 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0R4VVsC58982558
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Sun, 27 Jan 2019 04:31:31 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BFE414C040;
+ Sun, 27 Jan 2019 04:31:31 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 24FD34C044;
+ Sun, 27 Jan 2019 04:31:31 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 27 Jan 2019 04:31:31 +0000 (GMT)
+Received: from [9.81.215.119] (unknown [9.81.215.119])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 57A8CA0190;
+ Sun, 27 Jan 2019 15:31:29 +1100 (AEDT)
+Subject: Re: [PATCH v2 1/5] drivers/accel: Introduce subsystem
+To: Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org
+References: <20190125211335.65783-1-olof@lixom.net>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Sun, 27 Jan 2019 15:31:28 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1548057848-15136-2-git-send-email-rppt@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190125211335.65783-1-olof@lixom.net>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 19012704-0028-0000-0000-0000033EA29C
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19012704-0029-0000-0000-000023FBEB38
+Message-Id: <e3fc7e58-4d7e-f8aa-b96c-e515deb0494e@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-27_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901270036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,62 +104,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- devicetree@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
- Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, linux-sh@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
- linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
- Petr Mladek <pmladek@suse.com>, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
- Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
- Guan Xuetao <gxt@pku.edu.cn>, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- linux-mm@kvack.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Vineet Gupta <vgupta@synopsys.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, openrisc@lists.librecores.org
+Cc: ogabbay@habana.ai, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ jglisse@redhat.com, Frederic Barrat <fbarrat@linux.ibm.com>,
+ airlied@redhat.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-accelerators@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 21, 2019 at 10:03:48AM +0200, Mike Rapoport wrote:
-> The allocation of the page tables memory in openrics uses
-> memblock_phys_alloc() and then converts the returned physical address to
-> virtual one. Use memblock_alloc_raw() and add a panic() if the allocation
-> fails.
-> 
-> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> ---
->  arch/openrisc/mm/init.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/openrisc/mm/init.c b/arch/openrisc/mm/init.c
-> index d157310..caeb418 100644
-> --- a/arch/openrisc/mm/init.c
-> +++ b/arch/openrisc/mm/init.c
-> @@ -105,7 +105,10 @@ static void __init map_ram(void)
->  			}
->  
->  			/* Alloc one page for holding PTE's... */
-> -			pte = (pte_t *) __va(memblock_phys_alloc(PAGE_SIZE, PAGE_SIZE));
-> +			pte = memblock_alloc_raw(PAGE_SIZE, PAGE_SIZE);
-> +			if (!pte)
-> +				panic("%s: Failed to allocate page for PTEs\n",
-> +				      __func__);
->  			set_pmd(pme, __pmd(_KERNPG_TABLE + __pa(pte)));
->  
->  			/* Fill the newly allocated page with PTE'S */
+[+ linuxppc-dev, because cxl/ocxl are handled through powerpc - please 
+cc on future versions of this series]
 
-This seems reasonable to me.
+On 26/1/19 8:13 am, Olof Johansson wrote:
+> We're starting to see more of these kind of devices, the current
+> upcoming wave will likely be around machine learning and inference
+> engines. A few drivers have been added to drivers/misc for this, but
+> it's timely to make it into a separate group of drivers/subsystem, to
+> make it easier to find them, and to encourage collaboration between
+> contributors.
+> 
+> Over time, we expect to build shared frameworks that the drivers will
+> make use of, but how that framework needs to look like to fill the needs
+> is still unclear, and the best way to gain that knowledge is to give the
+> disparate implementations a shared location.
+> 
+> There has been some controversy around expectations for userspace
+> stacks being open. The clear preference is to see that happen, and any
+> driver and platform stack that is delivered like that will be given
+> preferential treatment, and at some point in the future it might
+> become the requirement. Until then, the bare minimum we need is an
+> open low-level userspace such that the driver and HW interfaces can be
+> exercised if someone is modifying the driver, even if the full details
+> of the workload are not always available.
+> 
+> Bootstrapping this with myself and Greg as maintainers (since the current
+> drivers will be moving out of drivers/misc). Looking forward to expanding
+> that group over time.
+> 
 
-Acked-by: Stafford Horne <shorne@gmail.com>
+[snip]
+
+> +
+> +Hardware offload accelerator subsystem
+> +======================================
+> +
+> +This is a brief overview of the subsystem (grouping) of hardware
+> +accelerators kept under drivers/accel
+> +
+> +Types of hardware supported
+> +---------------------------
+> +
+> +  The general types of hardware supported are hardware devices that has
+> +  general interactions of sending commands and buffers to the hardware,
+> +  returning completions and possible filled buffers back, together
+> +  with the usual driver pieces around hardware control, setup, error
+> +  handling, etc.
+> +
+> +  Drivers that fit into other subsystems are expected to be merged
+> +  there, and use the appropriate userspace interfaces of said functional
+> +  areas. We don't expect to see drivers for network, storage, graphics
+> +  and similar hardware implemented by drivers here.
+> +
+> +Expectations for contributions
+> +------------------------------
+> +
+> + - Platforms and hardware that has fully open stacks, from Firmware to
+> +   Userspace, are always going to be given preferential treatment. These
+> +   platforms give the best insight for behavior and interaction of all
+> +   layers, including ability to improve implementation across the stack
+> +   over time.
+> +
+> + - If a platform is partially proprietary, it is still expected that the
+> +   portions that interact the driver can be shared in a form that allows
+> +   for exercising the hardware/driver and evolution of the interface over
+> +   time. This could be separated into a shared library and test/sample
+> +   programs, for example.
+> +
+> + - Over time, there is an expectation to converge drivers over to shared
+> +   frameworks and interfaces. Until then, the general rule is that no
+> +   more than one driver per vendor will be acceptable. For vendors that
+> +   aren't participating in the work towards shared frameworks over time,
+> +   we reserve the right to phase out support for the hardware.
+How exactly do generic drivers for interconnect protocols, such as 
+cxl/ocxl, fit in here?
+
+cxl and ocxl are not drivers for a specific device, they are generic 
+drivers which can be used with any device implementing the CAPI or 
+OpenCAPI protocol respectively - many of which will be FPGA boards 
+flashed with customer-designed accelerator cores for specific workloads, 
+some will be accelerators using ASICs or using FPGA images supplied by 
+vendors, some will be driven from userspace, others using the cxl/ocxl 
+kernel API, etc.
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
