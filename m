@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35AD6C282CA
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 18:58:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F144C282CA
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 19:27:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00E872146E
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 18:58:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 845CE20881
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Jan 2019 19:27:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="PfpV/zqX"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00E872146E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="A6rAaEng"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 845CE20881
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43nhqZ4H4czDqJS
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 05:58:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43njTM3SPPzDqGZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 06:27:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,50 +28,50 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="PfpV/zqX"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="A6rAaEng"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43nhnt5g2nzDqGW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 05:57:05 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43njRf4tJMzDqCh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 06:26:22 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43nhnf5kK3z9v0p0;
- Sun, 27 Jan 2019 19:56:54 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43njRT648jz9v0pM;
+ Sun, 27 Jan 2019 20:26:13 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=PfpV/zqX; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=A6rAaEng; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bHibtgDDiByr; Sun, 27 Jan 2019 19:56:54 +0100 (CET)
+ with ESMTP id KFb-QSvQXx6D; Sun, 27 Jan 2019 20:26:13 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43nhnf4WSQz9v0ny;
- Sun, 27 Jan 2019 19:56:54 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43njRT4sbzz9v0pL;
+ Sun, 27 Jan 2019 20:26:13 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1548615414; bh=XMVMN9GHyBFnNDb/XNgn0UgYTPxZC+7qkXjpJgP/IAE=;
+ t=1548617173; bh=iXM2K+jm8M0w2VMFtJOELOntLhfZL8yjvIuTS4z16HQ=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=PfpV/zqXNmMzkwVNxNqsj6pos9a+CcF4tT4tXXJQY3XyaeH9rHQv4zM3rn46BB5eO
- jAxdxL7OiE54+sT3Uc93N0snl8L3AEiMjw4Oz/EUeDn8fTrOe56yZD3jIk021GSt6b
- 5fACOBaskhTDy0c4Cn+c4kN02Gt+PnHl7Fdlj17k=
+ b=A6rAaEngVWvlOF9VCE4acjBnUgIlYgRalshbWauvgZiNeGO7/SNsoYONDRSPLadkc
+ MmQA8x6MNxT6kA/UcBOKFZQ7xsp8VATpvAEI9rrce0Txv0j4bPQqMiqgSKBYXdu6U7
+ uSPkWscFOYV292d4n4RqLFP5qPxtye6QcpDsyjjw=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DFDB48B77B;
- Sun, 27 Jan 2019 19:56:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A5398B77B;
+ Sun, 27 Jan 2019 20:26:19 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id QvDGSG5TQhg4; Sun, 27 Jan 2019 19:56:59 +0100 (CET)
+ with ESMTP id rF22pGbA44A1; Sun, 27 Jan 2019 20:26:18 +0100 (CET)
 Received: from [192.168.232.53] (unknown [192.168.232.53])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 370488B74B;
- Sun, 27 Jan 2019 19:56:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 627108B74B;
+ Sun, 27 Jan 2019 20:26:18 +0100 (CET)
 Subject: Re: [RFC/WIP] powerpc: Fix 32-bit handling of MSR_EE on exceptions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 References: <fe3a79e078c644d9c1379ef5f8c431d787b6d0c8.camel@kernel.crashing.org>
 From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <fcd00596-8dde-61fa-0a07-692f0f210911@c-s.fr>
-Date: Sun, 27 Jan 2019 19:56:54 +0100
+Message-ID: <d28b5fca-b191-6155-a413-e93f820be02e@c-s.fr>
+Date: Sun, 27 Jan 2019 20:26:13 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
@@ -132,6 +132,13 @@ Le 20/12/2018 à 06:40, Benjamin Herrenschmidt a écrit :
 > 
 > Currently, the patch only changes BookE (440 and E5xx tested in qemu),
 > the same recipe needs to be applied to 6xx, 8xx and 40x.
+
+In the scope of the implementation of vmapped stacks, I'm preparing 
+serie to refactor the EXCEPTION_PROLOG on the 40x/8xx/6xx. I plan to 
+send it out this week.
+
+Christophe
+
 > 
 > Also I'm not sure whether we need to create a stack frame around some
 > of the calls to trace_hardirqs_* in asm. ppc64 does it, due to problems
@@ -171,9 +178,6 @@ Le 20/12/2018 à 06:40, Benjamin Herrenschmidt a écrit :
 > +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
 > +	mtspr	SPRN_NRI, r0
 > +#endif
-
-Was already there before your patch.
-
 > +
 >   #ifdef CONFIG_TRACE_IRQFLAGS
 > +	/*
@@ -205,9 +209,6 @@ Was already there before your patch.
 >   	ori	r12,r12,reenable_mmu@l
 > +	lis	r0,MSR_KERNEL@h
 > +	ori	r0,r0,MSR_KERNEL@l
-
-You should use LOAD_MSR_KERNEL(), not all targets need an upper part.
-
 >   	mtspr	SPRN_SRR0,r12
 > -	mtspr	SPRN_SRR1,r10
 > +	mtspr	SPRN_SRR1,r0
@@ -234,12 +235,6 @@ You should use LOAD_MSR_KERNEL(), not all targets need an upper part.
 > +	/* Are we enabling or disabling interrupts ? */
 > +	andi.	r0,r10,MSR_EE
 > +	beq	1f
-
-This branch is likely, could we avoid it ?
-
-For instance by moving the below part after the bctr and branching to it 
-with a bne- ?
-
 > +
 > +	/* If we are enabling interrupt, this is a syscall. They shouldn't
 > +	 * happen while interrupts are disabled, so let's do a warning here.
@@ -288,10 +283,6 @@ with a bne- ?
 >   	mfmsr	r11
 >   	andi.	r12,r11,MSR_EE
 >   	bne+	1f
-
-Same here, can we avoid the branch on the general case ? For instance by 
-moving the below part after the blrl and doing a beq- to it ?
-
 > -	/* We came in with interrupts disabled, we enable them now */
 > -	bl	trace_hardirqs_on
 > -	mfmsr	r11
@@ -352,13 +343,6 @@ moving the below part after the blrl and doing a beq- to it ?
 >   	ori	r10,r10,MSR_EE
 >   	SYNC
 >   	MTMSRD(r10)		/* hard-enable interrupts */
-
-On the 8xx, the above can be done by writing any value to SPRN_EID in a 
-single mtspr instead of the sequence mfmsr/ori/mtmsr. Should we use a 
-macro for that ?
-
-Christophe
-
 > diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
 > index 37e4a7c..891a048 100644
 > --- a/arch/powerpc/kernel/head_44x.S
