@@ -2,92 +2,60 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F40FC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A80C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:55:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1641120881
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:54:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1641120881
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3A92420881
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:55:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A92420881
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pHLj2PCbzDqPG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:54:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pHNK0GngzDqP4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:55:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=arbab@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.61.149; helo=7.mo177.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 7.mo177.mail-out.ovh.net (7.mo177.mail-out.ovh.net
+ [46.105.61.149])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pGs40ZSnzDqMv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 04:31:51 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0SHOLoq074007
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 12:31:49 -0500
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qa4pbw52a-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 12:31:48 -0500
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.ibm.com>;
- Mon, 28 Jan 2019 17:31:47 -0000
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 28 Jan 2019 17:31:45 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0SHViRI23003220
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 28 Jan 2019 17:31:44 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4BEC56E050;
- Mon, 28 Jan 2019 17:31:44 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 31E166E04E;
- Mon, 28 Jan 2019 17:31:44 +0000 (GMT)
-Received: from arbab-laptop.localdomain (unknown [9.53.179.210])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 28 Jan 2019 17:31:44 +0000 (GMT)
-Received: by arbab-laptop.localdomain (Postfix, from userid 152845)
- id 9811E4605FF; Mon, 28 Jan 2019 11:31:42 -0600 (CST)
-From: Reza Arbab <arbab@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/mm: Add _PAGE_SAO to _PAGE_CACHE_CTL mask
-Date: Mon, 28 Jan 2019 11:31:42 -0600
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-x-cbid: 19012817-0036-0000-0000-00000A823591
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010494; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01153071; UDB=6.00601127; IPR=6.00933433; 
- MB=3.00025326; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-28 17:31:46
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012817-0037-0000-0000-00004A838CB7
-Message-Id: <1548696702-20686-1-git-send-email-arbab@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-28_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=853 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901280131
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pGxg6lktzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 04:35:48 +1100 (AEDT)
+Received: from player746.ha.ovh.net (unknown [10.109.160.253])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id 62E13DCC28
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 18:35:44 +0100 (CET)
+Received: from kaod.org (deibp9eh1--blueice1n0.emea.ibm.com [195.212.29.162])
+ (Authenticated sender: clg@kaod.org)
+ by player746.ha.ovh.net (Postfix) with ESMTPSA id B3EE1235086B;
+ Mon, 28 Jan 2019 17:35:34 +0000 (UTC)
+Subject: Re: [PATCH 05/19] KVM: PPC: Book3S HV: add a new KVM device for the
+ XIVE native exploitation mode
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-6-clg@kaod.org> <20190122050520.GC15124@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <d21664e5-1d9c-5a55-5b83-bf5e6247917a@kaod.org>
+Date: Mon, 28 Jan 2019 18:35:34 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190122050520.GC15124@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 4427038436812229511
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedtgddutdekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,50 +67,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Charles Johns <crjohns@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In htab_convert_pte_flags(), _PAGE_CACHE_CTL is used to check for the
-_PAGE_SAO flag:
+On 1/22/19 6:05 AM, Paul Mackerras wrote:
+> On Mon, Jan 07, 2019 at 07:43:17PM +0100, Cédric Le Goater wrote:
+>> This is the basic framework for the new KVM device supporting the XIVE
+>> native exploitation mode. The user interface exposes a new capability
+>> and a new KVM device to be used by QEMU.
+> 
+> [snip]
+>> @@ -1039,7 +1039,10 @@ static int kvmppc_book3s_init(void)
+>>  #ifdef CONFIG_KVM_XIVE
+>>  	if (xive_enabled()) {
+>>  		kvmppc_xive_init_module();
+>> +		kvmppc_xive_native_init_module();
+>>  		kvm_register_device_ops(&kvm_xive_ops, KVM_DEV_TYPE_XICS);
+>> +		kvm_register_device_ops(&kvm_xive_native_ops,
+>> +					KVM_DEV_TYPE_XIVE);
+> 
+> I think we want tighter conditions on initializing the xive_native
+> stuff and creating the xive device class.  We could have
+> xive_enabled() returning true in a guest, and this code will get
+> called both by PR KVM and HV KVM (and HV KVM no longer implies that we
+> are running bare metal).
 
-  else if ((pteflags & _PAGE_CACHE_CTL) == _PAGE_SAO)
-          rflags |= (HPTE_R_W | HPTE_R_I | HPTE_R_M);
+So yes, I gave nested a try with kernel_irqchip=on and the nested hypervisor 
+(L1) obviously crashes trying to call OPAL. I have tighten the test with : 
 
-But, it isn't defined to include that flag:
+	if (xive_enabled() && !kvmhv_on_pseries()) {
 
-  #define _PAGE_CACHE_CTL (_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
+for now.
 
-This happens to work, but only because of the flag values:
+As this is a problem today in 5.0.x, I will send a patch for it if you think
+it is correct. I don't think we should bother taking care of the PR case
+on P9. Should we ? 
 
-  #define _PAGE_SAO               0x00010 /* Strong access order */
-  #define _PAGE_NON_IDEMPOTENT    0x00020 /* non idempotent memory */
-  #define _PAGE_TOLERANT          0x00030 /* tolerant memory, cache inhibited */
+Thanks,
 
-To prevent any issues if these particulars ever change, add _PAGE_SAO to
-the mask.
-
-Suggested-by: Charles Johns <crjohns@us.ibm.com>
-Signed-off-by: Reza Arbab <arbab@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 2e6ada2..1d97a28 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -811,7 +811,7 @@ static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
- 	return hash__set_pte_at(mm, addr, ptep, pte, percpu);
- }
+C.
  
--#define _PAGE_CACHE_CTL	(_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
-+#define _PAGE_CACHE_CTL	(_PAGE_SAO | _PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
- 
- #define pgprot_noncached pgprot_noncached
- static inline pgprot_t pgprot_noncached(pgprot_t prot)
--- 
-1.8.3.1
+>> @@ -1050,8 +1053,10 @@ static int kvmppc_book3s_init(void)
+>>  static void kvmppc_book3s_exit(void)
+>>  {
+>>  #ifdef CONFIG_KVM_XICS
+>> -	if (xive_enabled())
+>> +	if (xive_enabled()) {
+>>  		kvmppc_xive_exit_module();
+>> +		kvmppc_xive_native_exit_module();
+> 
+> Same comment here.
+> 
+> Paul.
+> 
 
