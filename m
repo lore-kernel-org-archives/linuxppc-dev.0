@@ -2,55 +2,65 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62E23C282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:27:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05427C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:30:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12D2920857
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:27:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12D2920857
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3EFC82147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:30:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="11ydRsvM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EFC82147A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pGm63MW0zDqBM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:27:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pGqg0lR5zDq7W
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:30:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="11ydRsvM"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pFKg0t0LzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:22:59 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id B1D5A68DCF; Mon, 28 Jan 2019 17:22:56 +0100 (CET)
-Date: Mon, 28 Jan 2019 17:22:56 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20190128162256.GA11737@lst.de>
-References: <e11e61b1-6468-122e-fc2b-3b3f857186bb@xenosoft.de>
- <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
- <b9e5e081-a3cc-2625-4e08-2d55c2ba224b@xenosoft.de>
- <20190119130222.GA24346@lst.de> <20190119140452.GA25198@lst.de>
- <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
- <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
- <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
- <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
- <20190128070422.GA2772@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pFLX5KbPzDqLY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:23:48 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id CC8C12084A;
+ Mon, 28 Jan 2019 16:23:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1548692626;
+ bh=yKsmlZx/Z4GFK26nt0bFCgk8J8ErEy32WhXyNwX7F30=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=11ydRsvMZh0/MfXYsBPgIsYz6VcZnM+45s1jtqjyW7aVSiZ/XnAfE6VNeG7gU7TDD
+ jjdVCDs9H8SxoAPDCYFYcDyK73FkdLnmDk2JTneFfNX5ATesDiaGpKKPL0yvysim5t
+ B3emZA7jAVc4ecMajLGDYsNfQF37S4hGrrb1AcAs=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.9 100/107] block/swim3: Fix -EBUSY error when
+ re-opening device after unmount
+Date: Mon, 28 Jan 2019 11:19:40 -0500
+Message-Id: <20190128161947.57405-100-sashal@kernel.org>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
+References: <20190128161947.57405-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190128070422.GA2772@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,28 +72,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: Jens Axboe <axboe@kernel.dk>, Sasha Levin <sashal@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
+ Finn Thain <fthain@telegraphics.com.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Jan 28, 2019 at 08:04:22AM +0100, Christoph Hellwig wrote:
-> On Sun, Jan 27, 2019 at 02:13:09PM +0100, Christian Zigotzky wrote:
-> > Christoph,
-> >
-> > What shall I do next?
-> 
-> I'll need to figure out what went wrong with the new zone selection
-> on powerpc and give you another branch to test.
+From: Finn Thain <fthain@telegraphics.com.au>
 
-Can you try the new powerpc-dma.6-debug.2 branch:
+[ Upstream commit 296dcc40f2f2e402facf7cd26cf3f2c8f4b17d47 ]
 
-    git://git.infradead.org/users/hch/misc.git powerpc-dma.6-debug.2
+When the block device is opened with FMODE_EXCL, ref_count is set to -1.
+This value doesn't get reset when the device is closed which means the
+device cannot be opened again. Fix this by checking for refcount <= 0
+in the release method.
 
-Gitweb:
+Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/block/swim3.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6-debug.2
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index c264f2d284a7..2e0a9e2531cb 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -1027,7 +1027,11 @@ static void floppy_release(struct gendisk *disk, fmode_t mode)
+ 	struct swim3 __iomem *sw = fs->swim3;
+ 
+ 	mutex_lock(&swim3_mutex);
+-	if (fs->ref_count > 0 && --fs->ref_count == 0) {
++	if (fs->ref_count > 0)
++		--fs->ref_count;
++	else if (fs->ref_count == -1)
++		fs->ref_count = 0;
++	if (fs->ref_count == 0) {
+ 		swim3_action(fs, MOTOR_OFF);
+ 		out_8(&sw->control_bic, 0xff);
+ 		swim3_select(fs, RELAX);
+-- 
+2.19.1
+
