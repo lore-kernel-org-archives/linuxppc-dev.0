@@ -2,60 +2,100 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A80C282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:55:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96522C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 18:22:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A92420881
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:55:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A92420881
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9D40C2147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 18:22:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="F3bwTtYY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D40C2147A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pHNK0GngzDqP4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:55:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pHzP3p9bzDqPP
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 05:22:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pHxX5Z09zDqMv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 05:20:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.61.149; helo=7.mo177.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 7.mo177.mail-out.ovh.net (7.mo177.mail-out.ovh.net
- [46.105.61.149])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="F3bwTtYY"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43pHxX4HzYz8tGX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 05:20:48 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43pHxX3wDnz9sDK; Tue, 29 Jan 2019 05:20:48 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="F3bwTtYY"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pGxg6lktzDqCc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 04:35:48 +1100 (AEDT)
-Received: from player746.ha.ovh.net (unknown [10.109.160.253])
- by mo177.mail-out.ovh.net (Postfix) with ESMTP id 62E13DCC28
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 18:35:44 +0100 (CET)
-Received: from kaod.org (deibp9eh1--blueice1n0.emea.ibm.com [195.212.29.162])
- (Authenticated sender: clg@kaod.org)
- by player746.ha.ovh.net (Postfix) with ESMTPSA id B3EE1235086B;
- Mon, 28 Jan 2019 17:35:34 +0000 (UTC)
-Subject: Re: [PATCH 05/19] KVM: PPC: Book3S HV: add a new KVM device for the
- XIVE native exploitation mode
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-6-clg@kaod.org> <20190122050520.GC15124@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <d21664e5-1d9c-5a55-5b83-bf5e6247917a@kaod.org>
-Date: Mon, 28 Jan 2019 18:35:34 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ by ozlabs.org (Postfix) with ESMTPS id 43pHxW4ZsWz9sDB
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2019 05:20:47 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43pHxK0BZBz9v08f;
+ Mon, 28 Jan 2019 19:20:37 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=F3bwTtYY; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id z7rxSiVg6mL0; Mon, 28 Jan 2019 19:20:36 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43pHxJ66M1z9v08d;
+ Mon, 28 Jan 2019 19:20:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1548699636; bh=eg4e633KBoa4IpncohVr1clxGmHjegkqLcF67YtOSrE=;
+ h=To:From:Subject:Date:From;
+ b=F3bwTtYYnO+RMfEcx2/3q1pnD8/Fbvxq89NmUhLMVExITPJqj+vSrverRcxGLoC/O
+ X6sazYhzLXETSnp/tYcE44uX0eRIAQiPbrHsBaaoM10HPJBxaUU4QqUFM0CHGKxF7l
+ Tujg6IVM/nOxCyEwi3zxUJROuCZYaBSsU5fbNino=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CB11E8B7B8;
+ Mon, 28 Jan 2019 19:20:43 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 0z89j7OCOm2A; Mon, 28 Jan 2019 19:20:43 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 63E5E8B7B0;
+ Mon, 28 Jan 2019 19:20:43 +0100 (CET)
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: What is CONFIG_RTAS ? Which CPUs are concerned
+Message-ID: <e8b0ddb9-cfe9-af20-03b1-4036a843cdc7@c-s.fr>
+Date: Mon, 28 Jan 2019 19:20:43 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190122050520.GC15124@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 4427038436812229511
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedtgddutdekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: fr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,60 +107,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/22/19 6:05 AM, Paul Mackerras wrote:
-> On Mon, Jan 07, 2019 at 07:43:17PM +0100, Cédric Le Goater wrote:
->> This is the basic framework for the new KVM device supporting the XIVE
->> native exploitation mode. The user interface exposes a new capability
->> and a new KVM device to be used by QEMU.
-> 
-> [snip]
->> @@ -1039,7 +1039,10 @@ static int kvmppc_book3s_init(void)
->>  #ifdef CONFIG_KVM_XIVE
->>  	if (xive_enabled()) {
->>  		kvmppc_xive_init_module();
->> +		kvmppc_xive_native_init_module();
->>  		kvm_register_device_ops(&kvm_xive_ops, KVM_DEV_TYPE_XICS);
->> +		kvm_register_device_ops(&kvm_xive_native_ops,
->> +					KVM_DEV_TYPE_XIVE);
-> 
-> I think we want tighter conditions on initializing the xive_native
-> stuff and creating the xive device class.  We could have
-> xive_enabled() returning true in a guest, and this code will get
-> called both by PR KVM and HV KVM (and HV KVM no longer implies that we
-> are running bare metal).
+Hello All,
 
-So yes, I gave nested a try with kernel_irqchip=on and the nested hypervisor 
-(L1) obviously crashes trying to call OPAL. I have tighten the test with : 
+I'm wondering what CONFIG_RTAS is. It makes use of one of the SPRN_SPRG, 
+ie SPRN_SPRG2.
 
-	if (xive_enabled() && !kvmhv_on_pseries()) {
+What are the CPUs concerned by RTAS ? Is there any of the old CPUs which 
+have only 4 SPRGs (eg the 601), or could we use one in SPRG4-7 for it 
+and reuse SPRG2 for something else ?
 
-for now.
+The idea behind this question is to store physical address of PGDIR in 
+SPRG2 and then put virtual address of thread_struct instead of its 
+physical address in SPRG3, especially for when CONFIG_VMAP_STACK is set.
 
-As this is a problem today in 5.0.x, I will send a patch for it if you think
-it is correct. I don't think we should bother taking care of the PR case
-on P9. Should we ? 
-
-Thanks,
-
-C.
- 
->> @@ -1050,8 +1053,10 @@ static int kvmppc_book3s_init(void)
->>  static void kvmppc_book3s_exit(void)
->>  {
->>  #ifdef CONFIG_KVM_XICS
->> -	if (xive_enabled())
->> +	if (xive_enabled()) {
->>  		kvmppc_xive_exit_module();
->> +		kvmppc_xive_native_exit_module();
-> 
-> Same comment here.
-> 
-> Paul.
-> 
-
+Thanks
+Christophe
