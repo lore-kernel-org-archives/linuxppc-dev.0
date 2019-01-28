@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5585BC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15BCAC282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:20:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C34A62147A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:16:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8B94821738
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:20:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="qAJh9kW9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C34A62147A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="vzj9/MHY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B94821738
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pFB65Wx7zDqDY
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:16:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pFGN3xShzDqLT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:20:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="qAJh9kW9"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="vzj9/MHY"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pDlB2RRNzDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:56:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pDn52DRDzDqKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:58:17 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 727EC21783;
- Mon, 28 Jan 2019 15:56:34 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 6752221841;
+ Mon, 28 Jan 2019 15:58:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548690996;
- bh=1tF+EICYBofaxWSv3C6nEmz7n0hsEbXu8vdWXTSbngI=;
+ s=default; t=1548691095;
+ bh=2mW1vd2/1Os6WFhXa9FqELgLKyMLNTSdhi+uvOlElU4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=qAJh9kW9KrXbPNarI7X38AEXYjS4BjclC6y2xo3iQm4JthdegXFBEa/KYmfhqV9r/
- rsiSAqI8dpn5PhmUDm1YMb2rKWJ1OafUDCr17i3RcfhqBioy18koaQO+T0A2WnKspz
- dV9usgMED+JFKkQgSE0iKZyrKl/05LCZCnvcgXOE=
+ b=vzj9/MHYiUBGwv0qy1QIAxY/2//YQtjCEGlYbwgGd4fJa6u3AKP5YfFcALazTMjB3
+ UvFel/Q6ieNIFQg0KyMZuFkpKo4b/xiwX1hnRiY641qdp1N8aU1Sqw3WaNSR6fdNe8
+ /bBv8bhwKlNcfj29lKHvhpNuQgSnTwTHwiQS7q2U=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.20 258/304] powerpc/fadump: Do not allow hot-remove
- memory from fadump reserved area.
-Date: Mon, 28 Jan 2019 10:42:55 -0500
-Message-Id: <20190128154341.47195-258-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 286/304] block/swim3: Fix -EBUSY error when
+ re-opening device after unmount
+Date: Mon, 28 Jan 2019 10:43:23 -0500
+Message-Id: <20190128154341.47195-286-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
 References: <20190128154341.47195-1-sashal@kernel.org>
@@ -72,94 +72,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>, Sasha Levin <sashal@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org,
+ Finn Thain <fthain@telegraphics.com.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+From: Finn Thain <fthain@telegraphics.com.au>
 
-[ Upstream commit 0db6896ff6332ba694f1e61b93ae3b2640317633 ]
+[ Upstream commit 296dcc40f2f2e402facf7cd26cf3f2c8f4b17d47 ]
 
-For fadump to work successfully there should not be any holes in reserved
-memory ranges where kernel has asked firmware to move the content of old
-kernel memory in event of crash. Now that fadump uses CMA for reserved
-area, this memory area is now not protected from hot-remove operations
-unless it is cma allocated. Hence, fadump service can fail to re-register
-after the hot-remove operation, if hot-removed memory belongs to fadump
-reserved region. To avoid this make sure that memory from fadump reserved
-area is not hot-removable if fadump is registered.
+When the block device is opened with FMODE_EXCL, ref_count is set to -1.
+This value doesn't get reset when the device is closed which means the
+device cannot be opened again. Fix this by checking for refcount <= 0
+in the release method.
 
-However, if user still wants to remove that memory, he can do so by
-manually stopping fadump service before hot-remove operation.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/include/asm/fadump.h               |  2 +-
- arch/powerpc/kernel/fadump.c                    | 10 ++++++++--
- arch/powerpc/platforms/pseries/hotplug-memory.c |  7 +++++--
- 3 files changed, 14 insertions(+), 5 deletions(-)
+ drivers/block/swim3.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index 1e7a33592e29..15bc07a31c46 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -200,7 +200,7 @@ struct fad_crash_memory_ranges {
- 	unsigned long long	size;
- };
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index c1c676a33e4a..3f6df3f1f5d9 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -995,7 +995,11 @@ static void floppy_release(struct gendisk *disk, fmode_t mode)
+ 	struct swim3 __iomem *sw = fs->swim3;
  
--extern int is_fadump_boot_memory_area(u64 addr, ulong size);
-+extern int is_fadump_memory_area(u64 addr, ulong size);
- extern int early_init_dt_scan_fw_dump(unsigned long node,
- 		const char *uname, int depth, void *data);
- extern int fadump_reserve_mem(void);
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 761b28b1427d..7fd9b3e1fa39 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -118,13 +118,19 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 
- /*
-  * If fadump is registered, check if the memory provided
-- * falls within boot memory area.
-+ * falls within boot memory area and reserved memory area.
-  */
--int is_fadump_boot_memory_area(u64 addr, ulong size)
-+int is_fadump_memory_area(u64 addr, ulong size)
- {
-+	u64 d_start = fw_dump.reserve_dump_area_start;
-+	u64 d_end = d_start + fw_dump.reserve_dump_area_size;
-+
- 	if (!fw_dump.dump_registered)
- 		return 0;
- 
-+	if (((addr + size) > d_start) && (addr <= d_end))
-+		return 1;
-+
- 	return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 2a983b5a52e1..2318ab29d5dd 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -355,8 +355,11 @@ static bool lmb_is_removable(struct drmem_lmb *lmb)
- 	phys_addr = lmb->base_addr;
- 
- #ifdef CONFIG_FA_DUMP
--	/* Don't hot-remove memory that falls in fadump boot memory area */
--	if (is_fadump_boot_memory_area(phys_addr, block_sz))
-+	/*
-+	 * Don't hot-remove memory that falls in fadump boot memory area
-+	 * and memory that is reserved for capturing old kernel memory.
-+	 */
-+	if (is_fadump_memory_area(phys_addr, block_sz))
- 		return false;
- #endif
- 
+ 	mutex_lock(&swim3_mutex);
+-	if (fs->ref_count > 0 && --fs->ref_count == 0) {
++	if (fs->ref_count > 0)
++		--fs->ref_count;
++	else if (fs->ref_count == -1)
++		fs->ref_count = 0;
++	if (fs->ref_count == 0) {
+ 		swim3_action(fs, MOTOR_OFF);
+ 		out_8(&sw->control_bic, 0xff);
+ 		swim3_select(fs, RELAX);
 -- 
 2.19.1
 
