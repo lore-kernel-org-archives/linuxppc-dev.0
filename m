@@ -6,83 +6,82 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B756C282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 13:38:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFFD8C282CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 13:39:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5BCA2148E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 13:38:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5BCA2148E
+	by mail.kernel.org (Postfix) with ESMTPS id 35890214DA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 13:39:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35890214DA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43p9gV07WSzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 00:38:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43p9jT146ZzDqHm
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 00:39:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43p9bd1GNFzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 00:34:53 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0SDTnxG019002
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 08:34:51 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qa219j3c4-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43p9bv57TVzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 00:35:07 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0SDTOe0042239
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 08:35:04 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qa0f8e3gq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 08:34:50 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 08:35:02 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 28 Jan 2019 13:34:48 -0000
+ Mon, 28 Jan 2019 13:34:59 -0000
 Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 28 Jan 2019 13:34:47 -0000
+ Mon, 28 Jan 2019 13:34:58 -0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0SDYk6R60817652
+ x0SDYu9M45351038
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 28 Jan 2019 13:34:46 GMT
+ Mon, 28 Jan 2019 13:34:56 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 110EA11C04A;
- Mon, 28 Jan 2019 13:34:46 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 3D03611C054;
+ Mon, 28 Jan 2019 13:34:56 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B1B8411C050;
- Mon, 28 Jan 2019 13:34:45 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id DECB211C050;
+ Mon, 28 Jan 2019 13:34:55 +0000 (GMT)
 Received: from [9.145.43.137] (unknown [9.145.43.137])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 28 Jan 2019 13:34:45 +0000 (GMT)
-Subject: Re: [RFC PATCH 1/2] powerpc/powernv: Add support for CXL mode switch
- that need PHB reset
+ Mon, 28 Jan 2019 13:34:55 +0000 (GMT)
+Subject: Re: [RFC PATCH 2/2] cxl: Force a CAPP reset when unloading CXL module
 To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <20190125051131.29351-1-vaibhav@linux.ibm.com>
- <20190125051131.29351-2-vaibhav@linux.ibm.com>
+ <20190125051131.29351-3-vaibhav@linux.ibm.com>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 28 Jan 2019 14:34:45 +0100
+Date: Mon, 28 Jan 2019 14:34:55 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190125051131.29351-2-vaibhav@linux.ibm.com>
+In-Reply-To: <20190125051131.29351-3-vaibhav@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19012813-4275-0000-0000-00000305E31D
+x-cbid: 19012813-0016-0000-0000-0000024BE184
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012813-4276-0000-0000-00003813E6B9
-Message-Id: <823c21d9-b408-6663-868a-fd87609647fe@linux.ibm.com>
+x-cbparentid: 19012813-0017-0000-0000-000032A5E87A
+Message-Id: <536488a4-3ba1-6188-dfd1-f1edc5ffcf6a@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-28_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -113,131 +112,96 @@ Sender: "Linuxppc-dev"
 
 
 Le 25/01/2019 à 06:11, Vaibhav Jain a écrit :
-> Recent updates to OPAL [1] have provided support for new CXL modes on
-> PHB that need to force a cold reset on the bridge (CRESET). However
-> PHB CRESET is a multi step process and cannot be completed
-> synchronously as expected by current kernel implementation that issues
-> opal call opal_pci_set_phb_cxl_mode().
-> 
-> Hence this patch updates pnv_phb_to_cxl_mode() to implement a polling
-> loop that handles specific error codes (OPAL_BUSY) returned from
-> opal_pci_set_phb_cxl_mode() and drive the OPAL pci-state machine, if the
-> requested CXL mode needs a CRESET.
-> 
-> The patch also updates pnv_phb_to_cxl_mode() to convert and return
-> OPAL error codes into kernel error codes. This removes a previous
-> issue where callers to this function would have to include
-> 'opal-api.h' to check for specific OPAL error codes.
-> 
-> References:
-> [1]: https://lists.ozlabs.org/pipermail/skiboot/2019-January/013063.html
+> This patch forces shutdown of CAPP when CXL module is unloaded. This
+> is accomplished via a call to pnv_phb_to_cxl_mode() with mode ==
+> OPAL_PHB_CAPI_MODE_PCIE.
 > 
 > Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 > ---
->   arch/powerpc/platforms/powernv/pci-cxl.c | 71 +++++++++++++++++++++---
->   1 file changed, 63 insertions(+), 8 deletions(-)
+>   drivers/misc/cxl/cxl.h  |  1 +
+>   drivers/misc/cxl/main.c |  3 +++
+>   drivers/misc/cxl/pci.c  | 25 ++++++++++++++++++++++++-
+>   3 files changed, 28 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
-> index 1b18111453d7..d33d662c6212 100644
-> --- a/arch/powerpc/platforms/powernv/pci-cxl.c
-> +++ b/arch/powerpc/platforms/powernv/pci-cxl.c
-> @@ -10,6 +10,7 @@
->   #include <linux/module.h>
->   #include <asm/pnv-pci.h>
->   #include <asm/opal.h>
-> +#include <linux/delay.h>
+> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> index d1d927ccb589..e545c2b81faf 100644
+> --- a/drivers/misc/cxl/cxl.h
+> +++ b/drivers/misc/cxl/cxl.h
+> @@ -1136,4 +1136,5 @@ void cxl_context_mm_count_get(struct cxl_context *ctx);
+>   /* Decrements the reference count to "struct mm_struct" */
+>   void cxl_context_mm_count_put(struct cxl_context *ctx);
 >   
->   #include "pci.h"
+> +void cxl_pci_shutdown_capp(void);
+>   #endif
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index f35406be465a..f14ff0dcf231 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -372,6 +372,9 @@ static void exit_cxl(void)
+>   	if (cxl_is_power8())
+>   		unregister_cxl_calls(&cxl_calls);
+>   	idr_destroy(&cxl_adapter_idr);
+> +
+> +	if (cpu_has_feature(CPU_FTR_HVMODE))
+> +		cxl_pci_shutdown_capp();
+>   }
 >   
-> @@ -18,21 +19,75 @@ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode)
->   	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->   	struct pnv_phb *phb = hose->private_data;
->   	struct pnv_ioda_pe *pe;
-> +	unsigned long starttime, endtime;
->   	int rc;
+>   module_init(init_cxl);
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index c79ba1c699ad..01be2e2d1069 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -25,7 +25,7 @@
 >   
->   	pe = pnv_ioda_get_pe(dev);
->   	if (!pe)
-> -		return -ENODEV;
-> +		return -ENOENT;
+>   #include "cxl.h"
+>   #include <misc/cxl.h>
+> -
+> +#include <misc/cxllib.h>
+>   
+>   #define CXL_PCI_VSEC_ID	0x1280
+>   #define CXL_VSEC_MIN_SIZE 0x80
+> @@ -2065,6 +2065,29 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   	}
+>   }
+>   
+> +void cxl_pci_shutdown_capp(void)
+> +{
+> +	struct pci_dev *pdev;
+> +	struct pci_bus *root_bus;
+> +	int rc;
 > +
-> +	pe_info(pe, "Switching PHB to CXL mode=%d\n", mode);
+> +	/* Iterate over all CAPP supported PHB's and force them to PCI mode */
+> +	list_for_each_entry(root_bus, &pci_root_buses, node) {
+> +		for_each_pci_bridge(pdev, root_bus) {
 > +
-> +	/*
-> +	 * Use a 15 second timeout for mode switch. Value arrived after
-> +	 * limited testing and may need more tweaking.
-> +	 */
-> +	starttime = jiffies;
-> +	endtime = starttime + HZ * 15;
+> +			if (!cxllib_slot_is_supported(pdev, 0))
+> +				continue;
 > +
-> +	do {
-> +		rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode,
-> +					       pe->pe_number);
-> +
-> +		/* Wait until mode transistion done */
-> +		if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
-> +			break;
-> +
-> +		/* Check if we timedout */
-> +		if (time_after(jiffies, endtime)) {
-> +			rc = OPAL_TIMEOUT;
-> +			break;
+> +			rc = pnv_phb_to_cxl_mode(pdev,
+> +						 OPAL_PHB_CAPI_MODE_PCIE);
+> +			if (rc)
+> +				dev_err(&pdev->dev,
+> +					"cxl: Error resetting CAPP. Err=%d\n",
+> +					rc);
 > +		}
->   
-> -	pe_info(pe, "Switching PHB to CXL\n");
-> +		/* Opal Busy with mode switch. Run pci state-machine */
-> +		rc = opal_pci_poll(phb->opal_id);
-> +		if (rc >= 0) {
-> +			/* wait for some time */
-> +			if (rc > 0)
-> +				msleep(rc);
-> +			opal_poll_events(NULL);
 
-Why is a call to opal_poll_events() needed?
+
+That's the part I don't like. We're iterating over quite a few PCI 
+devices, we basically don't know the ones we need to reset.
+If we have a per-adapter property on /sys to activate the 
+reset-on-unload, then we could move the call to 
+pnv_phb_to_cxl_mode(OPAL_PHB_CAPI_MODE_PCIE) on the cxl_remove() 
+callback, and only do it for the adapters we've been asked.
 
    Fred
 
 
-> +			rc = OPAL_BUSY;
-> +			/* Continue with the mode switch */
-> +		}
-> +	} while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT);
+
+> +	}
+> +}
 > +
-> +	pe_level_printk(pe, KERN_DEBUG, "CXL mode switch finished in %u-msecs.",
-> +			jiffies_to_msecs(jiffies - starttime));
->   
-> -	rc = opal_pci_set_phb_cxl_mode(phb->opal_id, mode, pe->pe_number);
-> -	if (rc == OPAL_UNSUPPORTED)
-> -		dev_err(&dev->dev, "Required cxl mode not supported by firmware - update skiboot\n");
-> -	else if (rc)
-> -		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode failed: %i\n", rc);
-> +	/* Check OPAL errors and convert them to kernel error codes */
-> +	switch (rc) {
-> +	case OPAL_SUCCESS:
-> +		return 0;
->   
-> -	return rc;
-> +	case OPAL_PARAMETER:
-> +		dev_err(&dev->dev, "CXL not supported on this PHB\n");
-> +		return -ENOENT;
-> +
-> +	case OPAL_UNSUPPORTED:
-> +		dev_err(&dev->dev,
-> +			"Required cxl mode not supported by firmware"
-> +			" - update skiboot\n");
-> +		return -ENODEV;
-> +
-> +	case OPAL_TIMEOUT:
-> +		dev_err(&dev->dev, "opal_pci_set_phb_cxl_mode Timedout\n");
-> +		return -ETIME;
-> +
-> +	default:
-> +		dev_err(&dev->dev,
-> +			"opal_pci_set_phb_cxl_mode failed: %i\n", rc);
-> +		return -EIO;
-> +	};
->   }
->   EXPORT_SYMBOL(pnv_phb_to_cxl_mode);
->   
+>   static const struct pci_error_handlers cxl_err_handler = {
+>   	.error_detected = cxl_pci_error_detected,
+>   	.slot_reset = cxl_pci_slot_reset,
 > 
 
