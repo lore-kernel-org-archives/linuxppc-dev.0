@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6BD8C282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A410C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:48:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4633A2084C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:45:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ED92F2084C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:48:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="APs4goYU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4633A2084C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="XFCbOYfi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED92F2084C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pFqG0kPrzDq7W
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:45:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pFtt6m38zDq7X
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:48:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="APs4goYU"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="XFCbOYfi"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pF194822zDqDf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:08:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pF282p7QzDq8g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:09:36 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id A51E720989;
- Mon, 28 Jan 2019 16:08:42 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7260D2147A;
+ Mon, 28 Jan 2019 16:09:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548691723;
- bh=JDDUV0KKYNt7q1gDb0bK78KXVMEp4pemqksnRIQr3OE=;
+ s=default; t=1548691774;
+ bh=RMi0e0CDUAuFkaSbf4p/powFKhaSq2krp0wsTVJA5CM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=APs4goYU60Atqh5WP+p1GnqCxiFhOmSptjbLjJhEdpOa2XVow/aqWZgPD9/mzPLHb
- 3uF928RQsAjccBbeV5AHnTB8EYGGfi8nhEuFWjto+sXgve62OpeBC/RIT8Rz3xHCZY
- a3kDS9Ntn+uq9+8Ny00eJYqC4K5eG1E1tDMfounk=
+ b=XFCbOYfivsc6y4sDL0kG3a/ry7G/sRYI4IwaWW6TaZr4Rp6a5v7i2Mhsy/Dh8JDZh
+ tVa796StSzowOsveawP9BDfzostsguVoNZGzeL1tsXyj3+qUk/ze2r9e+oAhuWVTUZ
+ YvtQEuLBdwAstWVZhhxCuThq/PbRh3j4QQZM+L24=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 197/258] powerpc/powernv/ioda: Allocate indirect
- TCE levels of cached userspace addresses on demand
-Date: Mon, 28 Jan 2019 10:58:23 -0500
-Message-Id: <20190128155924.51521-197-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 212/258] powerpc/mm: Fix reporting of kernel
+ execute faults on the 8xx
+Date: Mon, 28 Jan 2019 10:58:38 -0500
+Message-Id: <20190128155924.51521-212-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
 References: <20190128155924.51521-1-sashal@kernel.org>
@@ -72,49 +72,44 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Sasha Levin <sashal@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit bdbf649efe21173cae63b4b71db84176420f9039 ]
+[ Upstream commit ffca395b11c4a5a6df6d6345f794b0e3d578e2d0 ]
 
-The powernv platform maintains 2 TCE tables for VFIO - a hardware TCE
-table and a table with userspace addresses; the latter is used for
-marking pages dirty when corresponging TCEs are unmapped from
-the hardware table.
+On the 8xx, no-execute is set via PPP bits in the PTE. Therefore
+a no-exec fault generates DSISR_PROTFAULT error bits,
+not DSISR_NOEXEC_OR_G.
 
-a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels
-on demand") enabled on-demand allocation of the hardware table,
-however it missed the other table so it has still been fully allocated
-at the boot time. This fixes the issue by allocating a single level,
-just like we do for the hardware table.
+This patch adds DSISR_PROTFAULT in the test mask.
 
-Fixes: a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels on demand")
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Fixes: d3ca587404b3 ("powerpc/mm: Fix reporting of kernel execute faults")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/fault.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index fe9691040f54..7639b2168755 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -299,7 +299,7 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 	if (alloc_userspace_copy) {
- 		offset = 0;
- 		uas = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
--				levels, tce_table_size, &offset,
-+				tmplevels, tce_table_size, &offset,
- 				&total_allocated_uas);
- 		if (!uas)
- 			goto free_tces_exit;
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index d51cf5f4e45e..365526ee29b8 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -221,7 +221,9 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr,
+ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+ 			     unsigned long address)
+ {
+-	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT))) {
++	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on others */
++	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
++				      DSISR_PROTFAULT))) {
+ 		printk_ratelimited(KERN_CRIT "kernel tried to execute"
+ 				   " exec-protected page (%lx) -"
+ 				   "exploit attempt? (uid: %d)\n",
 -- 
 2.19.1
 
