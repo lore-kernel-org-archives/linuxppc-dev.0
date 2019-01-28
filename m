@@ -2,64 +2,65 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC5DC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55E2AC282CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:49:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DCF3F21741
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:47:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCF3F21741
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id BF5952147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:49:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Mkte9F0G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF5952147A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pDX362XnzDqKv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 02:46:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pDbN65xZzDqK9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 02:49:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.66; helo=mail-vs1-f66.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-vs1-f66.google.com (mail-vs1-f66.google.com
- [209.85.217.66])
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Mkte9F0G"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pDTG4FK0zDqJc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:44:34 +1100 (AEDT)
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
+ [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pDSf5YhzzDq9n
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:44:02 +1100 (AEDT)
-Received: by mail-vs1-f66.google.com with SMTP id h78so9986489vsi.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 07:44:02 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=x2wa+K5YNPI9+zY5xomP72xSduPXvimTTHXp1XsjO7E=;
- b=joTn14hVgW+1HUQs7l8Tz2gPtwqcbNbU21htie0UUmIvRhD1d4qGwEhPjRAbuvfL3O
- b3axS7ZEcTXGV8T8DMj0DF3WzWiZ/lTC+GvolCMKTB30aPY31bT4GId6i8Kiz/odzOfB
- b6eOtC+lxm9uwuRgMYvXUCUVQnxEfdt7Tiii64xypBl9VAtXdGorpgc7WcqCqYovyKoH
- Ifhq/AMWmK4ZAMO/4dbatV+4SGJXfuQLjcLXHxIKVXhKyEqDWJH6spJJ7da887GcKJlt
- a1DPTFA6YD87lktPA7UA4pkvBzz2TSKAXVbSyFQPuUMyRVGmGfhZ/mZyg9bPoqC1XBHV
- 76bA==
-X-Gm-Message-State: AHQUAuZRGLzwa6Js9yf+9u9VZssdfOTE3CX7Xrv2bAAKjxVC57zUaVlQ
- ppbrJnaVezUXGzKcsaQSES/xc+eqGH0voIPYc3E=
-X-Google-Smtp-Source: AHgI3IaCNqFqxYF5jcFRcCRr3F8u3p45e8vOxEGJ+OqOd1kuIKX0RovOS/tgzMJSBqB2qpmVtJ11sRlLqYSVlIaIAgE=
-X-Received: by 2002:a67:c202:: with SMTP id i2mr148070vsj.11.1548690240249;
- Mon, 28 Jan 2019 07:44:00 -0800 (PST)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9094B20880;
+ Mon, 28 Jan 2019 15:44:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1548690272;
+ bh=1/5fbAtAGBmG0AWamaYXIOonK+rdenla5iSBLI21XBg=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=Mkte9F0GrLutrtHfyU5Sng6248gy0Nqa8e1XWUtvKUzSQ7QZVAYmhBWHvXY5aidkK
+ qds26HuB89BkJUX07tUFyE78MT8p8ODewNgmT7/GEGxd+RkFPq4Nn59QiBJV51Enob
+ kMry0vLEUAY6wzFKlIN0cjZoIfUvuaPi//zFvqcM=
+From: Sasha Levin <sashal@kernel.org>
+To: linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.20 027/304] powerpc/pseries: add of_node_put() in
+ dlpar_detach_node()
+Date: Mon, 28 Jan 2019 10:39:04 -0500
+Message-Id: <20190128154341.47195-27-sashal@kernel.org>
+X-Mailer: git-send-email 2.19.1
+In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
+References: <20190128154341.47195-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <20181211202406.27721-1-robh@kernel.org>
- <CAMuHMdUdGvBUX7EsOrwJM4_LzR_Pe2exJ1Pfo48Vt5_scrdy0w@mail.gmail.com>
- <CAL_JsqKG8d+yONY2ikeiCaORYBfWhLe_rAsir11R8zRAD84MmA@mail.gmail.com>
-In-Reply-To: <CAL_JsqKG8d+yONY2ikeiCaORYBfWhLe_rAsir11R8zRAD84MmA@mail.gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 28 Jan 2019 16:43:47 +0100
-Message-ID: <CAMuHMdWy2D-keyOuKtgCLe0_76qR74Jk7Aa=_FzxvEG7rfKpCA@mail.gmail.com>
-Subject: Re: [PATCH v4] kbuild: Add support for DT binding schema checks
-To: Rob Herring <robh@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,70 +72,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
- <devicetree@vger.kernel.org>, Kumar Gala <kumar.gala@linaro.org>,
- arm-soc <arm@kernel.org>, Sean Hudson <darknighte@darknighte.com>,
- Jonathan Corbet <corbet@lwn.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Grant Likely <grant.likely@arm.com>, Michal Marek <michal.lkml@markovi.net>,
- Frank Rowand <frowand.list@gmail.com>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Frank Rowand <frank.rowand@sony.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Rob,
+From: Frank Rowand <frank.rowand@sony.com>
 
-On Mon, Jan 28, 2019 at 4:35 PM Rob Herring <robh@kernel.org> wrote:
-> On Mon, Jan 28, 2019 at 3:43 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Tue, Dec 11, 2018 at 9:24 PM Rob Herring <robh@kernel.org> wrote:
-> > > This adds the build infrastructure for checking DT binding schema
-> > > documents and validating dts files using the binding schema.
-> > >
-> > > Check DT binding schema documents:
-> > > make dt_binding_check
-> > >
-> > > Build dts files and check using DT binding schema:
-> > > make dtbs_check
-> > >
-> > > Optionally, DT_SCHEMA_FILES can be passed in with a schema file(s) to
-> > > use for validation. This makes it easier to find and fix errors
-> > > generated by a specific schema.
-> > >
-> > > Currently, the validation targets are separate from a normal build to
-> > > avoid a hard dependency on the external DT schema project and because
-> > > there are lots of warnings generated.
+[ Upstream commit 5b3f5c408d8cc59b87e47f1ab9803dbd006e4a91 ]
 
-> > BTW, what are the CONFIG dependencies for this to work?
-> > E.g. defconfig on x86_64 fails, even after enabling CONFIG_OF:
->
-> I generally use allmodconfig which enables building all DTs.
->
-> Yes, there's a dependency on CONFIG_DTC which isn't always enabled
-> with CONFIG_OF. Maybe it should be. The only other solutions I've
+The previous commit, "of: overlay: add missing of_node_get() in
+__of_attach_node_sysfs" added a missing of_node_get() to
+__of_attach_node_sysfs().  This results in a refcount imbalance
+for nodes attached with dlpar_attach_node().  The calling sequence
+from dlpar_attach_node() to __of_attach_node_sysfs() is:
 
-Oh, didn't think of CONFIG_DTC.
+   dlpar_attach_node()
+      of_attach_node()
+         __of_attach_node_sysfs()
 
-> thought of are either always build dtc or make the targets conditional
-> on CONFIG_DTC. The latter would only change the error message.
+For more detailed description of the node refcount, see
+commit 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow
+during DLPAR remove").
 
-Making the target conditional may make it more obvious to the user
-what's going on. Cfr. "make modules_install" giving a nice explanation
-when CONFIG_MODULES=n.
+Tested-by: Alan Tull <atull@kernel.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 7625546caefd..17958043e7f7 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -270,6 +270,8 @@ int dlpar_detach_node(struct device_node *dn)
+ 	if (rc)
+ 		return rc;
+ 
++	of_node_put(dn);
++
+ 	return 0;
+ }
+ 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.19.1
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
