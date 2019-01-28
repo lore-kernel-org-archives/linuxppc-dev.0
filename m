@@ -2,124 +2,64 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10C6EC282CF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:43:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC5DC282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:47:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8A17D20880
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:43:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8A17D20880
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DCF3F21741
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 15:47:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCF3F21741
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pDS950PszDqKJ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 02:43:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pDX362XnzDqKv
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 02:46:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.217.66; helo=mail-vs1-f66.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=linux-m68k.org
+Received: from mail-vs1-f66.google.com (mail-vs1-f66.google.com
+ [209.85.217.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pDQJ4GfCzDqJ3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:42:00 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0SFadhG081078
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 10:41:57 -0500
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qa39gvm1p-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 10:41:57 -0500
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 28 Jan 2019 15:41:57 -0000
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e14.ny.us.ibm.com (146.89.104.201) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 28 Jan 2019 15:41:54 -0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0SFfr2e12189764
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 28 Jan 2019 15:41:53 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3C2B9124052;
- Mon, 28 Jan 2019 15:41:53 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E3074124053;
- Mon, 28 Jan 2019 15:41:52 +0000 (GMT)
-Received: from oc8380061452.ibm.com (unknown [9.53.179.224])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 28 Jan 2019 15:41:52 +0000 (GMT)
-Subject: Re: [PATCH] powerpc/pseries: Perform full re-add of CPU for topology
- update post-migration
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <154083861636.18916.18172276232185726281.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Mon, 28 Jan 2019 09:41:52 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pDSf5YhzzDq9n
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:44:02 +1100 (AEDT)
+Received: by mail-vs1-f66.google.com with SMTP id h78so9986489vsi.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 07:44:02 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=x2wa+K5YNPI9+zY5xomP72xSduPXvimTTHXp1XsjO7E=;
+ b=joTn14hVgW+1HUQs7l8Tz2gPtwqcbNbU21htie0UUmIvRhD1d4qGwEhPjRAbuvfL3O
+ b3axS7ZEcTXGV8T8DMj0DF3WzWiZ/lTC+GvolCMKTB30aPY31bT4GId6i8Kiz/odzOfB
+ b6eOtC+lxm9uwuRgMYvXUCUVQnxEfdt7Tiii64xypBl9VAtXdGorpgc7WcqCqYovyKoH
+ Ifhq/AMWmK4ZAMO/4dbatV+4SGJXfuQLjcLXHxIKVXhKyEqDWJH6spJJ7da887GcKJlt
+ a1DPTFA6YD87lktPA7UA4pkvBzz2TSKAXVbSyFQPuUMyRVGmGfhZ/mZyg9bPoqC1XBHV
+ 76bA==
+X-Gm-Message-State: AHQUAuZRGLzwa6Js9yf+9u9VZssdfOTE3CX7Xrv2bAAKjxVC57zUaVlQ
+ ppbrJnaVezUXGzKcsaQSES/xc+eqGH0voIPYc3E=
+X-Google-Smtp-Source: AHgI3IaCNqFqxYF5jcFRcCRr3F8u3p45e8vOxEGJ+OqOd1kuIKX0RovOS/tgzMJSBqB2qpmVtJ11sRlLqYSVlIaIAgE=
+X-Received: by 2002:a67:c202:: with SMTP id i2mr148070vsj.11.1548690240249;
+ Mon, 28 Jan 2019 07:44:00 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <154083861636.18916.18172276232185726281.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19012815-0052-0000-0000-0000037F6B8A
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010493; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01153034; UDB=6.00601105; IPR=6.00933396; 
- MB=3.00025323; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-28 15:41:55
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012815-0053-0000-0000-00005FA1D132
-Message-Id: <810d1cee-98ce-6e8f-f87b-f9acb8ba35f2@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-28_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901280119
+References: <20181211202406.27721-1-robh@kernel.org>
+ <CAMuHMdUdGvBUX7EsOrwJM4_LzR_Pe2exJ1Pfo48Vt5_scrdy0w@mail.gmail.com>
+ <CAL_JsqKG8d+yONY2ikeiCaORYBfWhLe_rAsir11R8zRAD84MmA@mail.gmail.com>
+In-Reply-To: <CAL_JsqKG8d+yONY2ikeiCaORYBfWhLe_rAsir11R8zRAD84MmA@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 28 Jan 2019 16:43:47 +0100
+Message-ID: <CAMuHMdWy2D-keyOuKtgCLe0_76qR74Jk7Aa=_FzxvEG7rfKpCA@mail.gmail.com>
+Subject: Re: [PATCH v4] kbuild: Add support for DT binding schema checks
+To: Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -131,118 +71,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ldufour@linux.vnet.ibm.com
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
+ <devicetree@vger.kernel.org>, Kumar Gala <kumar.gala@linaro.org>,
+ arm-soc <arm@kernel.org>, Sean Hudson <darknighte@darknighte.com>,
+ Jonathan Corbet <corbet@lwn.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Grant Likely <grant.likely@arm.com>, Michal Marek <michal.lkml@markovi.net>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 10/29/18 1:43 PM, Nathan Fontenot wrote:
-> On pseries systems, performing a partition migration can result in
-> altering the nodes a CPU is assigned to on the destination system. For
-> exampl, pre-migration on the source system CPUs are in node 1 and 3,
-> post-migration on the destination system CPUs are in nodes 2 and 3.
-> 
-> Handling the node change for a CPU can cause corruption in the slab
-> cache if we hit a timing where a CPUs node is changed while cache_reap()
-> is invoked. The corruption occurs because the slab cache code appears
-> to rely on the CPU and slab cache pages being on the same node.
-> 
-> The current dynamic updating of a CPUs node done in arch/powerpc/mm/numa.c
-> does not prevent us from hitting this scenario.
-> 
-> Changing the device tree property update notification handler that
-> recognizes an affinity change for a CPU to do a full DLPAR remove and
-> add of the CPU instead of dynamically changing its node resolves this
-> issue.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com
-Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
+Hi Rob,
 
-> ---
->  arch/powerpc/include/asm/topology.h          |    2 ++
->  arch/powerpc/mm/numa.c                       |    9 +--------
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |   19 +++++++++++++++++++
->  3 files changed, 22 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index a4a718dbfec6..f85e2b01c3df 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -132,6 +132,8 @@ static inline void shared_proc_topology_init(void) {}
->  #define topology_sibling_cpumask(cpu)	(per_cpu(cpu_sibling_map, cpu))
->  #define topology_core_cpumask(cpu)	(per_cpu(cpu_core_map, cpu))
->  #define topology_core_id(cpu)		(cpu_to_core_id(cpu))
-> +
-> +int dlpar_cpu_readd(int cpu);
->  #endif
->  #endif
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 693ae1c1acba..bb6a7b56bef7 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1461,13 +1461,6 @@ static void reset_topology_timer(void)
-> 
->  #ifdef CONFIG_SMP
-> 
-> -static void stage_topology_update(int core_id)
-> -{
-> -	cpumask_or(&cpu_associativity_changes_mask,
-> -		&cpu_associativity_changes_mask, cpu_sibling_mask(core_id));
-> -	reset_topology_timer();
-> -}
-> -
->  static int dt_update_callback(struct notifier_block *nb,
->  				unsigned long action, void *data)
->  {
-> @@ -1480,7 +1473,7 @@ static int dt_update_callback(struct notifier_block *nb,
->  		    !of_prop_cmp(update->prop->name, "ibm,associativity")) {
->  			u32 core_id;
->  			of_property_read_u32(update->dn, "reg", &core_id);
-> -			stage_topology_update(core_id);
-> +			rc = dlpar_cpu_readd(core_id);
->  			rc = NOTIFY_OK;
->  		}
->  		break;
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 2f8e62163602..97feb6e79f1a 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -802,6 +802,25 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
->  	return rc;
->  }
-> 
-> +int dlpar_cpu_readd(int cpu)
-> +{
-> +	struct device_node *dn;
-> +	struct device *dev;
-> +	u32 drc_index;
-> +	int rc;
-> +
-> +	dev = get_cpu_device(cpu);
-> +	dn = dev->of_node;
-> +
-> +	rc = of_property_read_u32(dn, "ibm,my-drc-index", &drc_index);
-> +
-> +	rc = dlpar_cpu_remove_by_index(drc_index);
-> +	if (!rc)
-> +		rc = dlpar_cpu_add(drc_index);
-> +
-> +	return rc;
-> +}
-> +
->  int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->  {
->  	u32 count, drc_index;
-> 
-> 
+On Mon, Jan 28, 2019 at 4:35 PM Rob Herring <robh@kernel.org> wrote:
+> On Mon, Jan 28, 2019 at 3:43 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Tue, Dec 11, 2018 at 9:24 PM Rob Herring <robh@kernel.org> wrote:
+> > > This adds the build infrastructure for checking DT binding schema
+> > > documents and validating dts files using the binding schema.
+> > >
+> > > Check DT binding schema documents:
+> > > make dt_binding_check
+> > >
+> > > Build dts files and check using DT binding schema:
+> > > make dtbs_check
+> > >
+> > > Optionally, DT_SCHEMA_FILES can be passed in with a schema file(s) to
+> > > use for validation. This makes it easier to find and fix errors
+> > > generated by a specific schema.
+> > >
+> > > Currently, the validation targets are separate from a normal build to
+> > > avoid a hard dependency on the external DT schema project and because
+> > > there are lots of warnings generated.
+
+> > BTW, what are the CONFIG dependencies for this to work?
+> > E.g. defconfig on x86_64 fails, even after enabling CONFIG_OF:
+>
+> I generally use allmodconfig which enables building all DTs.
+>
+> Yes, there's a dependency on CONFIG_DTC which isn't always enabled
+> with CONFIG_OF. Maybe it should be. The only other solutions I've
+
+Oh, didn't think of CONFIG_DTC.
+
+> thought of are either always build dtc or make the targets conditional
+> on CONFIG_DTC. The latter would only change the error message.
+
+Making the target conditional may make it more obvious to the user
+what's going on. Cfr. "make modules_install" giving a nice explanation
+when CONFIG_MODULES=n.
+
+Thanks.
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
