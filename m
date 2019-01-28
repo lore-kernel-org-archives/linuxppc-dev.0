@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83F2CC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:01:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3631CC282CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:04:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00EF321741
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:01:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AA3B821741
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:04:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="gV5Sf8cH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00EF321741
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="EhKrRQKo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA3B821741
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pG9x6nN6zDqMt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:01:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pGFx2w0gzDqCG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:04:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="gV5Sf8cH"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="EhKrRQKo"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pF9r1r56zDqDq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:16:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pFBc5nz7zDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:16:56 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id AE55920879;
- Mon, 28 Jan 2019 16:16:12 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id A54662086C;
+ Mon, 28 Jan 2019 16:16:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548692174;
- bh=pGAjK0RcMWjl1z04je7yA45W5ky3e6+MUNBieQFlWQM=;
+ s=default; t=1548692215;
+ bh=DH3JmvVvCn8mv/sOuFbgLikjtUeDipSEb00RPDGudyU=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=gV5Sf8cHFr0lTDqlzoacZPKuyMw3F1RlLFOlZFflDyUY/6INEO2sfOwX5k5+P7WSK
- UU3VZBOI5NPjV1DBYZ5/jNoDFa+GUIZII+zImnp3JOsPAvHp5HifONY9O6+qcir5Pk
- RyYt5AtLOb1tNMM2EtjzL+Ox20g7l2l5Z9GJlc38=
+ b=EhKrRQKomzPoF9KcAot0BLxaGlKWqIPWyYP1pveB1OTrH11r6/1WzelGV1DFaArdF
+ wE51XEXz7LmcRGQnt9M+qutT6hgNWb551RDlhUT1pIFjxReP678luJb2HyZ+0K0YcW
+ VDGd3S7M2bMDa0YSazz4VwTyNROT7WucWxoCvzt8=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 098/170] KVM: PPC: Book3S: Only report
- KVM_CAP_SPAPR_TCE_VFIO on powernv machines
-Date: Mon, 28 Jan 2019 11:10:48 -0500
-Message-Id: <20190128161200.55107-98-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 113/170] powerpc/uaccess: fix warning/error with
+ access_ok()
+Date: Mon, 28 Jan 2019 11:11:03 -0500
+Message-Id: <20190128161200.55107-113-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 References: <20190128161200.55107-1-sashal@kernel.org>
@@ -72,50 +72,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit 693ac10a88a2219bde553b2e8460dbec97e594e6 ]
+[ Upstream commit 05a4ab823983d9136a460b7b5e0d49ee709a6f86 ]
 
-The kvm capability KVM_CAP_SPAPR_TCE_VFIO is used to indicate the
-availability of in kernel tce acceleration for vfio. However it is
-currently the case that this is only available on a powernv machine,
-not for a pseries machine.
+With the following piece of code, the following compilation warning
+is encountered:
 
-Thus make this capability dependent on having the cpu feature
-CPU_FTR_HVMODE.
+	if (_IOC_DIR(ioc) != _IOC_NONE) {
+		int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
 
-[paulus@ozlabs.org - fixed compilation for Book E.]
+		if (!access_ok(verify, ioarg, _IOC_SIZE(ioc))) {
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+drivers/platform/test/dev.c: In function 'my_ioctl':
+drivers/platform/test/dev.c:219:7: warning: unused variable 'verify' [-Wunused-variable]
+   int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
+
+This patch fixes it by referencing 'type' in the macro allthough
+doing nothing with it.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/kvm/powerpc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/uaccess.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index ecb45361095b..a35995a6b34a 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -540,8 +540,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- #ifdef CONFIG_PPC_BOOK3S_64
- 	case KVM_CAP_SPAPR_TCE:
- 	case KVM_CAP_SPAPR_TCE_64:
--		/* fallthrough */
-+		r = 1;
-+		break;
- 	case KVM_CAP_SPAPR_TCE_VFIO:
-+		r = !!cpu_has_feature(CPU_FTR_HVMODE);
-+		break;
- 	case KVM_CAP_PPC_RTAS:
- 	case KVM_CAP_PPC_FIXUP_HCALL:
- 	case KVM_CAP_PPC_ENABLE_HCALL:
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 565cead12be2..cf26e62b268d 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -54,7 +54,7 @@
+ #endif
+ 
+ #define access_ok(type, addr, size)		\
+-	(__chk_user_ptr(addr),			\
++	(__chk_user_ptr(addr), (void)(type),		\
+ 	 __access_ok((__force unsigned long)(addr), (size), get_fs()))
+ 
+ /*
 -- 
 2.19.1
 
