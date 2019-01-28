@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DDF5CC282CF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:07:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AD10C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:10:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 560D72177E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:07:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 959B32171F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:10:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="R8l7CT3m"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 560D72177E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Xt7T8OCt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 959B32171F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pF0221BtzDqKW
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:07:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pF3H39KSzDqFB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:10:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="R8l7CT3m"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="Xt7T8OCt"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pDjZ4pp0zDqKL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:55:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pDjn5VtVzDqKw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 02:55:25 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 8B20920989;
- Mon, 28 Jan 2019 15:55:11 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 744B820855;
+ Mon, 28 Jan 2019 15:55:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548690913;
- bh=bsxIhv6WSxRd8h1ynzWvtplwQb6L1ku+lHK8qpuyVE8=;
+ s=default; t=1548690924;
+ bh=JDDUV0KKYNt7q1gDb0bK78KXVMEp4pemqksnRIQr3OE=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=R8l7CT3m4U/tH5jf1GTPxxScceK8KEYnT0O0xm7d7ElCDxjkGjJ9VchXUyIYSONHd
- JorKWm4/P5K+ByfZnNihQlNTB/tQwtUC0aAL3jetsHW6jU0GZbB4fhBFJYRVdwL3fi
- 6caKeF6in/WjLUmOtTnHpy8jQAtDiOax8KXaaHcE=
+ b=Xt7T8OCtNL8so9xliaTaxtCtfVrPWpAnjLQCJxImfFx1Kujk4lohOAN3RWog+oPyT
+ CDlxLVF0l/5QxCyNCj1j/gPrPEdhgdzfajAFsAkuxpkmSm9izG1xISRvFQA1Jsxvvu
+ mQ1Ldn8jsXRT7rH5Ky/UBxqJn77ZVIUf0Qnhc/z0=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.20 233/304] powerpc/perf: Fix thresholding counter
- data for unknown type
-Date: Mon, 28 Jan 2019 10:42:30 -0500
-Message-Id: <20190128154341.47195-233-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.20 235/304] powerpc/powernv/ioda: Allocate indirect
+ TCE levels of cached userspace addresses on demand
+Date: Mon, 28 Jan 2019 10:42:32 -0500
+Message-Id: <20190128154341.47195-235-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
 References: <20190128154341.47195-1-sashal@kernel.org>
@@ -72,50 +72,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-[ Upstream commit 17cfccc91545682513541924245abb876d296063 ]
+[ Upstream commit bdbf649efe21173cae63b4b71db84176420f9039 ]
 
-MMCRA[34:36] and MMCRA[38:44] expose the thresholding counter value.
-Thresholding counter can be used to count latency cycles such as
-load miss to reload. But threshold counter value is not relevant
-when the sampled instruction type is unknown or reserved. Patch to
-fix the thresholding counter value to zero when sampled instruction
-type is unknown or reserved.
+The powernv platform maintains 2 TCE tables for VFIO - a hardware TCE
+table and a table with userspace addresses; the latter is used for
+marking pages dirty when corresponging TCEs are unmapped from
+the hardware table.
 
-Fixes: 170a315f41c6('powerpc/perf: Support to export MMCRA[TEC*] field to userspace')
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels
+on demand") enabled on-demand allocation of the hardware table,
+however it missed the other table so it has still been fully allocated
+at the boot time. This fixes the issue by allocating a single level,
+just like we do for the hardware table.
+
+Fixes: a68bd1267b72 ("powerpc/powernv/ioda: Allocate indirect TCE levels on demand")
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/perf/isa207-common.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 177de814286f..6a2f65d3d088 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -226,8 +226,13 @@ void isa207_get_mem_weight(u64 *weight)
- 	u64 mmcra = mfspr(SPRN_MMCRA);
- 	u64 exp = MMCRA_THR_CTR_EXP(mmcra);
- 	u64 mantissa = MMCRA_THR_CTR_MANT(mmcra);
-+	u64 sier = mfspr(SPRN_SIER);
-+	u64 val = (sier & ISA207_SIER_TYPE_MASK) >> ISA207_SIER_TYPE_SHIFT;
- 
--	*weight = mantissa << (2 * exp);
-+	if (val == 0 || val == 7)
-+		*weight = 0;
-+	else
-+		*weight = mantissa << (2 * exp);
- }
- 
- int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+index fe9691040f54..7639b2168755 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+@@ -299,7 +299,7 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 	if (alloc_userspace_copy) {
+ 		offset = 0;
+ 		uas = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
+-				levels, tce_table_size, &offset,
++				tmplevels, tce_table_size, &offset,
+ 				&total_allocated_uas);
+ 		if (!uas)
+ 			goto free_tces_exit;
 -- 
 2.19.1
 
