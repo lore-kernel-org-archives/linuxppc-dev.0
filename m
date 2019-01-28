@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 416D2C282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:26:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBDA5C282CF
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:29:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 687AB2171F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:26:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4C4E220663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:29:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cZ/941Jl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 687AB2171F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="UF8UKb3f"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C4E220663
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pFPQ2BXmzDq8x
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:26:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pFTF2HXXzDqKV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:29:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="cZ/941Jl"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="UF8UKb3f"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pDqg0zMNzDqH2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:00:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pDt22LRYzDqLR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:02:34 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 22D222175B;
- Mon, 28 Jan 2019 16:00:27 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 646172175B;
+ Mon, 28 Jan 2019 16:02:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548691229;
- bh=FiUeQ9WN+QmxxHZXyoaHNstdzpqLULB+glHW3Mnej4g=;
+ s=default; t=1548691352;
+ bh=NV9YqKHG/dhtUcjgFT1Az3syI48Ld/NntZKhT0dyb3g=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=cZ/941Jlui3bvo+dqBNZff9N9dPXB/w4URcLIi7ovyhMX9KPOeKrXB/hBRpFSzbBE
- /bMtbpY7daZtpQkSk6FSDr8Da/WRWEbzbYgm/NZ6vGB2aNIs/ZWd6u9uxr5wFzjgsg
- /QUcdoZmrOZ8CzenmGMKAyutnY+knOhVWRzyVVkQ=
+ b=UF8UKb3f8ZdwG3SZsOQXj3qSNwQYkn032Rv93o6a7cXMidCKTcDmTK5HxYTAVg7H9
+ 0E6klOumkBpk6bIe38IqiRpv9nx0AdlID8HUu2cXGOjnCYELtUe8iWKfL47qDmtFUV
+ VnZRo690OJDXV2E277qn23beLvZveZ/UEhi93jc0=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 023/258] powerpc/pseries: add of_node_put() in
- dlpar_detach_node()
-Date: Mon, 28 Jan 2019 10:55:29 -0500
-Message-Id: <20190128155924.51521-23-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 065/258] powerpc/32: Add
+ .data..Lubsan_data*/.data..Lubsan_type* sections explicitly
+Date: Mon, 28 Jan 2019 10:56:11 -0500
+Message-Id: <20190128155924.51521-65-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
 References: <20190128155924.51521-1-sashal@kernel.org>
@@ -72,51 +72,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Frank Rowand <frank.rowand@sony.com>
+Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev@lists.ozlabs.org,
+ Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+From: Mathieu Malaterre <malat@debian.org>
 
-[ Upstream commit 5b3f5c408d8cc59b87e47f1ab9803dbd006e4a91 ]
+[ Upstream commit beba24ac59133cb36ecd03f9af9ccb11971ee20e ]
 
-The previous commit, "of: overlay: add missing of_node_get() in
-__of_attach_node_sysfs" added a missing of_node_get() to
-__of_attach_node_sysfs().  This results in a refcount imbalance
-for nodes attached with dlpar_attach_node().  The calling sequence
-from dlpar_attach_node() to __of_attach_node_sysfs() is:
+When both `CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y` and `CONFIG_UBSAN=y`
+are set, link step typically produce numberous warnings about orphan
+section:
 
-   dlpar_attach_node()
-      of_attach_node()
-         __of_attach_node_sysfs()
+  + powerpc-linux-gnu-ld -EB -m elf32ppc -Bstatic --orphan-handling=warn --build-id --gc-sections -X -o .tmp_vmlinux1 -T ./arch/powerpc/kernel/vmlinux.lds --who
+  le-archive built-in.a --no-whole-archive --start-group lib/lib.a --end-group
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data393' from `init/main.o' being placed in section `.data..Lubsan_data393'.
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data394' from `init/main.o' being placed in section `.data..Lubsan_data394'.
+  ...
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type11' from `init/main.o' being placed in section `.data..Lubsan_type11'.
+  powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_type12' from `init/main.o' being placed in section `.data..Lubsan_type12'.
+  ...
 
-For more detailed description of the node refcount, see
-commit 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow
-during DLPAR remove").
+This commit remove those warnings produced at W=1.
 
-Tested-by: Alan Tull <atull@kernel.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Link: https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg135407.html
+Suggested-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/dlpar.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/vmlinux.lds.S | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a0b20c03f078..e3010b14aea5 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -272,6 +272,8 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
- 
-+	of_node_put(dn);
-+
- 	return 0;
- }
- 
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 07ae018e550e..53016c753f3c 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -296,6 +296,10 @@ SECTIONS
+ #ifdef CONFIG_PPC32
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
++#ifdef CONFIG_UBSAN
++		*(.data..Lubsan_data*)
++		*(.data..Lubsan_type*)
++#endif
+ 		*(.data.rel*)
+ 		*(SDATA_MAIN)
+ 		*(.sdata2)
 -- 
 2.19.1
 
