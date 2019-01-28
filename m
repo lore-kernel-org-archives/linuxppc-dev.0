@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7511DC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:57:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83F2CC282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:01:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C64E20844
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 16:57:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 00EF321741
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:01:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Z91As21G"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C64E20844
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="gV5Sf8cH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00EF321741
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pG5n6wtqzDq7X
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 03:57:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pG9x6nN6zDqMt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:01:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Z91As21G"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="gV5Sf8cH"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pF5j2vg4zDqLS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:12:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pF9r1r56zDqDq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:16:16 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5ED8C2147A;
- Mon, 28 Jan 2019 16:12:38 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id AE55920879;
+ Mon, 28 Jan 2019 16:16:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548691959;
- bh=/FHtEjsR0hHKDTdStjx3VnX67J3nSlEfKZLBhjVefvE=;
+ s=default; t=1548692174;
+ bh=pGAjK0RcMWjl1z04je7yA45W5ky3e6+MUNBieQFlWQM=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=Z91As21GL+Ms1kjqpmm1E1qOaZBbcxXBKMZa8qH8CeGGaFGlg98lyxBFEqwhzQAWs
- bjP14iJILvNPooElwceX3yzIReguxkO/Pl1z/AXKP+m5YKCs7aAsl6TH/qF0pyFwGS
- K3etgKXdGnmTw3xVKrWmVmrP7R88SmcwIAHsK5kA=
+ b=gV5Sf8cHFr0lTDqlzoacZPKuyMw3F1RlLFOlZFflDyUY/6INEO2sfOwX5k5+P7WSK
+ UU3VZBOI5NPjV1DBYZ5/jNoDFa+GUIZII+zImnp3JOsPAvHp5HifONY9O6+qcir5Pk
+ RyYt5AtLOb1tNMM2EtjzL+Ox20g7l2l5Z9GJlc38=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 016/170] powerpc/pseries: add of_node_put() in
- dlpar_detach_node()
-Date: Mon, 28 Jan 2019 11:09:26 -0500
-Message-Id: <20190128161200.55107-16-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 098/170] KVM: PPC: Book3S: Only report
+ KVM_CAP_SPAPR_TCE_VFIO on powernv machines
+Date: Mon, 28 Jan 2019 11:10:48 -0500
+Message-Id: <20190128161200.55107-98-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 References: <20190128161200.55107-1-sashal@kernel.org>
@@ -73,50 +73,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Frank Rowand <frank.rowand@sony.com>
+ kvm-ppc@vger.kernel.org, Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Frank Rowand <frank.rowand@sony.com>
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
 
-[ Upstream commit 5b3f5c408d8cc59b87e47f1ab9803dbd006e4a91 ]
+[ Upstream commit 693ac10a88a2219bde553b2e8460dbec97e594e6 ]
 
-The previous commit, "of: overlay: add missing of_node_get() in
-__of_attach_node_sysfs" added a missing of_node_get() to
-__of_attach_node_sysfs().  This results in a refcount imbalance
-for nodes attached with dlpar_attach_node().  The calling sequence
-from dlpar_attach_node() to __of_attach_node_sysfs() is:
+The kvm capability KVM_CAP_SPAPR_TCE_VFIO is used to indicate the
+availability of in kernel tce acceleration for vfio. However it is
+currently the case that this is only available on a powernv machine,
+not for a pseries machine.
 
-   dlpar_attach_node()
-      of_attach_node()
-         __of_attach_node_sysfs()
+Thus make this capability dependent on having the cpu feature
+CPU_FTR_HVMODE.
 
-For more detailed description of the node refcount, see
-commit 68baf692c435 ("powerpc/pseries: Fix of_node_put() underflow
-during DLPAR remove").
+[paulus@ozlabs.org - fixed compilation for Book E.]
 
-Tested-by: Alan Tull <atull@kernel.org>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/dlpar.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kvm/powerpc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index e9149d05d30b..f4e6565dd7a9 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -284,6 +284,8 @@ int dlpar_detach_node(struct device_node *dn)
- 	if (rc)
- 		return rc;
- 
-+	of_node_put(dn);
-+
- 	return 0;
- }
- 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index ecb45361095b..a35995a6b34a 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -540,8 +540,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	case KVM_CAP_SPAPR_TCE:
+ 	case KVM_CAP_SPAPR_TCE_64:
+-		/* fallthrough */
++		r = 1;
++		break;
+ 	case KVM_CAP_SPAPR_TCE_VFIO:
++		r = !!cpu_has_feature(CPU_FTR_HVMODE);
++		break;
+ 	case KVM_CAP_PPC_RTAS:
+ 	case KVM_CAP_PPC_FIXUP_HCALL:
+ 	case KVM_CAP_PPC_ENABLE_HCALL:
 -- 
 2.19.1
 
