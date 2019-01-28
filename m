@@ -3,94 +3,63 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CF58C282CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 19:38:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5024C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 19:45:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B1632171F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 19:38:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B1632171F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4174E20855
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 19:45:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4174E20855
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pKgQ6mcFzDq7Z
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 06:38:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pKqR0JphzDqPW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 06:45:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.58.91; helo=7.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 7.mo178.mail-out.ovh.net (7.mo178.mail-out.ovh.net
+ [46.105.58.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pKdJ5bKMzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 06:36:52 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0SJZFda052058
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 14:36:50 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qa6f3ctt8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 14:36:49 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 28 Jan 2019 19:36:47 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 28 Jan 2019 19:36:43 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0SJagMu44761166
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 28 Jan 2019 19:36:42 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EDA7F11C052;
- Mon, 28 Jan 2019 19:36:41 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7CBBB11C04C;
- Mon, 28 Jan 2019 19:36:41 +0000 (GMT)
-Received: from [9.145.43.137] (unknown [9.145.43.137])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 28 Jan 2019 19:36:41 +0000 (GMT)
-Subject: Re: [PATCH v2 1/5] drivers/accel: Introduce subsystem
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org
-References: <20190125211335.65783-1-olof@lixom.net>
- <e3fc7e58-4d7e-f8aa-b96c-e515deb0494e@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 28 Jan 2019 20:36:41 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pKng17V6zDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 06:44:05 +1100 (AEDT)
+Received: from player796.ha.ovh.net (unknown [10.109.159.140])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 9ACDB49F46
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2019 19:26:13 +0100 (CET)
+Received: from kaod.org (deibp9eh1--blueice1n0.emea.ibm.com [195.212.29.162])
+ (Authenticated sender: clg@kaod.org)
+ by player796.ha.ovh.net (Postfix) with ESMTPSA id 2A1A02049141;
+ Mon, 28 Jan 2019 18:26:01 +0000 (UTC)
+Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107191006.10648-1-clg@kaod.org> <20190107191006.10648-2-clg@kaod.org>
+ <20190122052657.GG15124@blackberry>
+ <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
+ <20190123103009.GB29826@blackberry>
+ <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
+ <20190128061353.GD3237@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
+Date: Mon, 28 Jan 2019 19:26:00 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <e3fc7e58-4d7e-f8aa-b96c-e515deb0494e@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20190128061353.GD3237@blackberry>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19012819-0008-0000-0000-000002B71E17
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012819-0009-0000-0000-000022235DF7
-Message-Id: <c997299a-1f10-2465-d0c3-7b9c8fffa0f1@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-28_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901280145
+X-Ovh-Tracer-Id: 5279626140287929223
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedtgdduudekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,109 +71,94 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ogabbay@habana.ai, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- jglisse@redhat.com, airlied@redhat.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-accelerators@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 27/01/2019 à 05:31, Andrew Donnellan a écrit :
-> [+ linuxppc-dev, because cxl/ocxl are handled through powerpc - please 
-> cc on future versions of this series]
-> 
-> On 26/1/19 8:13 am, Olof Johansson wrote:
->> We're starting to see more of these kind of devices, the current
->> upcoming wave will likely be around machine learning and inference
->> engines. A few drivers have been added to drivers/misc for this, but
->> it's timely to make it into a separate group of drivers/subsystem, to
->> make it easier to find them, and to encourage collaboration between
->> contributors.
+On 1/28/19 7:13 AM, Paul Mackerras wrote:
+> On Wed, Jan 23, 2019 at 12:07:19PM +0100, Cédric Le Goater wrote:
+>> On 1/23/19 11:30 AM, Paul Mackerras wrote:
+>>> On Wed, Jan 23, 2019 at 05:45:24PM +1100, Benjamin Herrenschmidt wrote:
+>>>> On Tue, 2019-01-22 at 16:26 +1100, Paul Mackerras wrote:
+>>>>> On Mon, Jan 07, 2019 at 08:10:05PM +0100, Cédric Le Goater wrote:
+>>>>>> Clear the ESB pages from the VMA of the IRQ being pass through to the
+>>>>>> guest and let the fault handler repopulate the VMA when the ESB pages
+>>>>>> are accessed for an EOI or for a trigger.
+>>>>>
+>>>>> Why do we want to do this?
+>>>>>
+>>>>> I don't see any possible advantage to removing the PTEs from the
+>>>>> userspace mapping.  You'll need to explain further.
+>>>>
+>>>> Afaik bcs we change the mapping to point to the real HW irq ESB page
+>>>> instead of the "IPI" that was there at VM init time.
 >>
->> Over time, we expect to build shared frameworks that the drivers will
->> make use of, but how that framework needs to look like to fill the needs
->> is still unclear, and the best way to gain that knowledge is to give the
->> disparate implementations a shared location.
+>> yes exactly. You need to clean up the pages each time.
+>>  
+>>> So that makes it sound like there is a whole lot going on that hasn't
+>>> even been hinted at in the patch descriptions...  It sounds like we
+>>> need a good description of how all this works and fits together
+>>> somewhere under Documentation/.
 >>
->> There has been some controversy around expectations for userspace
->> stacks being open. The clear preference is to see that happen, and any
->> driver and platform stack that is delivered like that will be given
->> preferential treatment, and at some point in the future it might
->> become the requirement. Until then, the bare minimum we need is an
->> open low-level userspace such that the driver and HW interfaces can be
->> exercised if someone is modifying the driver, even if the full details
->> of the workload are not always available.
+>> OK. I have started doing so for the models merged in QEMU but not yet 
+>> for KVM. I will work on it.
 >>
->> Bootstrapping this with myself and Greg as maintainers (since the current
->> drivers will be moving out of drivers/misc). Looking forward to expanding
->> that group over time.
+>>> In any case we need much more informative patch descriptions.  I
+>>> realize that it's all currently in Cedric's head, but I bet that in
+>>> two or three years' time when we come to try to debug something, it
+>>> won't be in anyone's head...
 >>
+>> I agree. 
+>>
+>>
+>> So, storing the ESB VMA under the KVM device is not shocking anyone ?  
 > 
-> [snip]
-> 
->> +
->> +Hardware offload accelerator subsystem
->> +======================================
->> +
->> +This is a brief overview of the subsystem (grouping) of hardware
->> +accelerators kept under drivers/accel
->> +
->> +Types of hardware supported
->> +---------------------------
->> +
->> +  The general types of hardware supported are hardware devices that has
->> +  general interactions of sending commands and buffers to the hardware,
->> +  returning completions and possible filled buffers back, together
->> +  with the usual driver pieces around hardware control, setup, error
->> +  handling, etc.
->> +
->> +  Drivers that fit into other subsystems are expected to be merged
->> +  there, and use the appropriate userspace interfaces of said functional
->> +  areas. We don't expect to see drivers for network, storage, graphics
->> +  and similar hardware implemented by drivers here.
->> +
->> +Expectations for contributions
->> +------------------------------
->> +
->> + - Platforms and hardware that has fully open stacks, from Firmware to
->> +   Userspace, are always going to be given preferential treatment. These
->> +   platforms give the best insight for behavior and interaction of all
->> +   layers, including ability to improve implementation across the stack
->> +   over time.
->> +
->> + - If a platform is partially proprietary, it is still expected that the
->> +   portions that interact the driver can be shared in a form that allows
->> +   for exercising the hardware/driver and evolution of the interface 
->> over
->> +   time. This could be separated into a shared library and test/sample
->> +   programs, for example.
->> +
->> + - Over time, there is an expectation to converge drivers over to shared
->> +   frameworks and interfaces. Until then, the general rule is that no
->> +   more than one driver per vendor will be acceptable. For vendors that
->> +   aren't participating in the work towards shared frameworks over time,
->> +   we reserve the right to phase out support for the hardware.
-> How exactly do generic drivers for interconnect protocols, such as 
-> cxl/ocxl, fit in here?
-> 
-> cxl and ocxl are not drivers for a specific device, they are generic 
-> drivers which can be used with any device implementing the CAPI or 
-> OpenCAPI protocol respectively - many of which will be FPGA boards 
-> flashed with customer-designed accelerator cores for specific workloads, 
-> some will be accelerators using ASICs or using FPGA images supplied by 
-> vendors, some will be driven from userspace, others using the cxl/ocxl 
-> kernel API, etc.
+> Actually, now that I think of it, why can't userspace (QEMU) manage
+> this using mmap()?  Based on what Ben has said, I assume there would
+> be a pair of pages for each interrupt that a PCI pass-through device
+> has. 
 
+Yes. there is a pair of ESB pages per IRQ number.
 
-I have the same reservation as Andrew. While my first reaction was to 
-think that cxl and ocxl should be part of the accel subsystem, they 
-hardly seem to fit the stated goals.
-Furthermore, there are implications there, as all the distros currently 
-shipping cxl and ocxl as modules on powerpc would need to have their 
-config modified to enable CONFIG_ACCEL.
+> Would we end up with too many VMAs if we just used mmap() to
+> change the mappings from the software-generated pages to the
+> hardware-generated interrupt pages?  
+The sPAPR IRQ number space is 0x8000 wide now. The first 4K are 
+dedicated to CPU IPIs and the remaining 4K are for devices. We can 
+extend the last range if needed as these are for MSIs. Dynamic 
+extensions under KVM should work also.
 
-   Fred
+This to say that we have with 8K x 2 (trigger+EOI) pages. This is a
+lot of mmap(), too much. Also the KVM model needs to be compatible
+with the QEMU emulated one and it was simpler to have one overall
+memory region for the IPI ESBs, one for the END ESBs (if we support
+that one day) and one for the TIMA.
+
+> Are the necessary pages for a PCI
+> passthrough device contiguous in both host real space 
+
+They should as they are the PHB4 ESBs.
+
+> and guest real space ? 
+
+also. That's how we organized the mapping. 
+
+> If so we'd only need one mmap() for all the device's interrupt
+> pages.
+
+Ah. So we would want to make a special case for the passthrough 
+device and have a mmap() and a memory region for its ESBs. Hmm.
+
+Wouldn't that require to hot plug a memory region under the guest ? 
+which means that we need to provision an address space/container 
+region for theses regions. What are the benefits ? 
+
+Is clearing the PTEs and repopulating the VMA unsafe ? 
+
+Thanks,     
+
+C.
+
 
