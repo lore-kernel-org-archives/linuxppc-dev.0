@@ -2,65 +2,55 @@ Return-Path: <SRS0=7Eaw=QE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5664CC282C8
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:24:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 62E23C282C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:27:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C507320855
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:24:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PMker0GQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C507320855
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 12D2920857
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Jan 2019 17:27:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12D2920857
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pGhD3b9wzDqMv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:24:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pGm63MW0zDqBM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 04:27:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="PMker0GQ"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pFKH2bZkzDqLR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:22:43 +1100 (AEDT)
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
- [73.47.72.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C23F62084A;
- Mon, 28 Jan 2019 16:22:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548692561;
- bh=Z051twEqX6IRlFTohqRGgD2tlRYqH/uIIo/vKZGIle4=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=PMker0GQLrrbn55E+PQ6kLfcQzNC5PlNPcXc91tYbZOuE8JEJ6vmz03N5Obw/ilau
- e4sZ5T0jcAwfx1SQbvwJywqgTTFuqTV+uXleN9kYEZOreN+rBxqgCy8SkdXZ2l/00x
- jnzR6lwcJwBHU83kPLgsSM7jysn3XNJj4gYY2GMQ=
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 064/107] powerpc/uaccess: fix warning/error with
- access_ok()
-Date: Mon, 28 Jan 2019 11:19:04 -0500
-Message-Id: <20190128161947.57405-64-sashal@kernel.org>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
-References: <20190128161947.57405-1-sashal@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pFKg0t0LzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:22:59 +1100 (AEDT)
+Received: by newverein.lst.de (Postfix, from userid 2407)
+ id B1D5A68DCF; Mon, 28 Jan 2019 17:22:56 +0100 (CET)
+Date: Mon, 28 Jan 2019 17:22:56 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: use generic DMA mapping code in powerpc V4
+Message-ID: <20190128162256.GA11737@lst.de>
+References: <e11e61b1-6468-122e-fc2b-3b3f857186bb@xenosoft.de>
+ <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
+ <b9e5e081-a3cc-2625-4e08-2d55c2ba224b@xenosoft.de>
+ <20190119130222.GA24346@lst.de> <20190119140452.GA25198@lst.de>
+ <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
+ <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
+ <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
+ <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
+ <20190128070422.GA2772@lst.de>
 MIME-Version: 1.0
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190128070422.GA2772@lst.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,50 +62,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Sasha Levin <sashal@kernel.org>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+On Mon, Jan 28, 2019 at 08:04:22AM +0100, Christoph Hellwig wrote:
+> On Sun, Jan 27, 2019 at 02:13:09PM +0100, Christian Zigotzky wrote:
+> > Christoph,
+> >
+> > What shall I do next?
+> 
+> I'll need to figure out what went wrong with the new zone selection
+> on powerpc and give you another branch to test.
 
-[ Upstream commit 05a4ab823983d9136a460b7b5e0d49ee709a6f86 ]
+Can you try the new powerpc-dma.6-debug.2 branch:
 
-With the following piece of code, the following compilation warning
-is encountered:
+    git://git.infradead.org/users/hch/misc.git powerpc-dma.6-debug.2
 
-	if (_IOC_DIR(ioc) != _IOC_NONE) {
-		int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
+Gitweb:
 
-		if (!access_ok(verify, ioarg, _IOC_SIZE(ioc))) {
-
-drivers/platform/test/dev.c: In function 'my_ioctl':
-drivers/platform/test/dev.c:219:7: warning: unused variable 'verify' [-Wunused-variable]
-   int verify = _IOC_DIR(ioc) & _IOC_READ ? VERIFY_WRITE : VERIFY_READ;
-
-This patch fixes it by referencing 'type' in the macro allthough
-doing nothing with it.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/powerpc/include/asm/uaccess.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index c266227fdd5b..31913b3ac7ab 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -59,7 +59,7 @@
- #endif
- 
- #define access_ok(type, addr, size)		\
--	(__chk_user_ptr(addr),			\
-+	(__chk_user_ptr(addr), (void)(type),		\
- 	 __access_ok((__force unsigned long)(addr), (size), get_fs()))
- 
- /*
--- 
-2.19.1
-
+    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6-debug.2
