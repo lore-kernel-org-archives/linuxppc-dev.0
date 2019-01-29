@@ -2,67 +2,63 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46AF3C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:19:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BEEFC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:29:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F3AD20870
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:19:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="dPR3dHFh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F3AD20870
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8EF8B20989
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:29:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EF8B20989
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ppXN0zprzDqJm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 01:19:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ppmc1LVWzDqHJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 01:29:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=acme@kernel.org;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.56.136; helo=1.mo6.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="dPR3dHFh"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ppVS0bLhzDqGq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 01:17:36 +1100 (AEDT)
-Received: from quaco.ghostprotocols.net (ovpn-brq.redhat.com [213.175.37.11])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 2465 seconds by postgrey-1.36 at bilbo;
+ Wed, 30 Jan 2019 01:28:22 AEDT
+Received: from 1.mo6.mail-out.ovh.net (1.mo6.mail-out.ovh.net [46.105.56.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
  bits)) (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 2B6C42082F;
- Tue, 29 Jan 2019 14:17:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548771454;
- bh=SCJkvK4CRi1w2djXvgwSDL6jcxRRR3cWKMEiex39eZk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=dPR3dHFhp2UZ4RT2BUv6GQnBK6YAIRLxVh/MUqejmMrFoKJiL+ZnnWAvwXbhZpSt6
- znd7vP3bl5AEWmsy6NTSsbDI1EscBQ+IZHYYmP8AA6YIzcf33Sqs+Uir4DPu8WYEek
- UqkMYXUjUpc1HV9Aahp3RXkwgQnW92LmLiHkn+1g=
-Received: by quaco.ghostprotocols.net (Postfix, from userid 1000)
- id 6D6354034F; Tue, 29 Jan 2019 15:17:32 +0100 (CET)
-Date: Tue, 29 Jan 2019 15:17:32 +0100
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH v2] perf mem/c2c: Fix perf_mem_events to support powerpc
-Message-ID: <20190129141732.GN4344@kernel.org>
-References: <dd6d04f3-c8aa-1d57-c466-c6b3c333db51@linux.ibm.com>
- <20190129132412.771-1-ravi.bangoria@linux.ibm.com>
- <20190129134236.GB30190@krava>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ppkt2pM1zDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 01:28:21 +1100 (AEDT)
+Received: from player687.ha.ovh.net (unknown [10.109.146.137])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 573A31A6C33
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 14:51:14 +0100 (CET)
+Received: from kaod.org (gbibp9ph1--yellowicen11.emea.ibm.com [195.212.29.58])
+ (Authenticated sender: clg@kaod.org)
+ by player687.ha.ovh.net (Postfix) with ESMTPSA id DDC7821D42AE;
+ Tue, 29 Jan 2019 13:51:05 +0000 (UTC)
+Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190122044654.GA15124@blackberry>
+ <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
+ <20190128055108.GC3237@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <f2e9a801-d0a9-bf29-7b3e-29269021ecb4@kaod.org>
+Date: Tue, 29 Jan 2019 14:51:05 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190129134236.GB30190@krava>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190128055108.GC3237@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 6508264413267528583
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedvgdehjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,148 +70,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dzickus@redhat.com, Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
- maddy@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, fowles@inreach.com,
- jmario@redhat.com, namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Em Tue, Jan 29, 2019 at 02:42:36PM +0100, Jiri Olsa escreveu:
-> On Tue, Jan 29, 2019 at 06:54:12PM +0530, Ravi Bangoria wrote:
-> > Powerpc hw does not have inbuilt latency filter (--ldlat) for mem-load
-> > event and, perf_mem_events by default includes ldlat=30 which is
-> > causing failure on powerpc. Refactor code to support perf mem/c2c on
-> > powerpc.
-> > 
-> > This patch depends on kernel side changes done my Madhavan:
-> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-December/182596.html
-> > 
-> > Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-> > ---
+>>> Another general comment is that you seem to have written all this
+>>> code assuming we are using HV KVM in a host running bare-metal.
+>>
+>> Yes. I didn't look at the other configurations. I thought that we could
+>> use the kernel_irqchip=off option to begin with. A couple of checks
+>> are indeed missing.
 > 
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
+> Using kernel_irqchip=off would mean that we would not be able to use
+> the in-kernel XICS emulation, which would have a performance impact.
 
-Applied to perf/urgent, as soon as the kernel bits are there tooling
-will be ready.
+yes. But it is not supported today. Correct ? 
 
-- Arnaldo
- 
-> thanks,
-> jirka
+> We need an explicit capability for XIVE exploitation that can be
+> enabled or disabled on the qemu command line, so that we can enforce a
+> uniform set of capabilities across all the hosts in a migration
+> domain.  And it's no good to say we have the capability when all
+> attempts to use it will fail.  Therefore the kernel needs to say that
+> it doesn't have the capability in a PR KVM guest or in a nested HV
+> guest.
+
+OK. I will work on adding a KVM_CAP_PPC_NESTED_IRQ_HV capability 
+for future use.
+
+>>> However, we could be using PR KVM (either in a bare-metal host or in a
+>>> guest), or we could be doing nested HV KVM where we are using the
+>>> kvm_hv module inside a KVM guest and using special hypercalls for
+>>> controlling our guests.
+>>
+>> Yes. 
+>>
+>> It would be good to talk a little about the nested support (offline 
+>> may be) to make sure that we are not missing some major interface that 
+>> would require a lot of change. If we need to prepare ground, I think
+>> the timing is good.
+>>
+>> The size of the IRQ number space might be a problem. It seems we 
+>> would need to increase it considerably to support multiple nested 
+>> guests. That said I haven't look much how nested is designed.  
 > 
-> >  tools/perf/Documentation/perf-c2c.txt     | 16 ++++++++++++----
-> >  tools/perf/Documentation/perf-mem.txt     |  2 +-
-> >  tools/perf/arch/powerpc/util/Build        |  1 +
-> >  tools/perf/arch/powerpc/util/mem-events.c | 11 +++++++++++
-> >  tools/perf/util/mem-events.c              |  2 +-
-> >  5 files changed, 26 insertions(+), 6 deletions(-)
-> >  create mode 100644 tools/perf/arch/powerpc/util/mem-events.c
-> > 
-> > diff --git a/tools/perf/Documentation/perf-c2c.txt b/tools/perf/Documentation/perf-c2c.txt
-> > index 095aebd..e6150f2 100644
-> > --- a/tools/perf/Documentation/perf-c2c.txt
-> > +++ b/tools/perf/Documentation/perf-c2c.txt
-> > @@ -19,8 +19,11 @@ C2C stands for Cache To Cache.
-> >  The perf c2c tool provides means for Shared Data C2C/HITM analysis. It allows
-> >  you to track down the cacheline contentions.
-> >  
-> > -The tool is based on x86's load latency and precise store facility events
-> > -provided by Intel CPUs. These events provide:
-> > +On x86, the tool is based on load latency and precise store facility events
-> > +provided by Intel CPUs. On PowerPC, the tool uses random instruction sampling
-> > +with thresholding feature.
-> > +
-> > +These events provide:
-> >    - memory address of the access
-> >    - type of the access (load and store details)
-> >    - latency (in cycles) of the load access
-> > @@ -46,7 +49,7 @@ RECORD OPTIONS
-> >  
-> >  -l::
-> >  --ldlat::
-> > -	Configure mem-loads latency.
-> > +	Configure mem-loads latency. (x86 only)
-> >  
-> >  -k::
-> >  --all-kernel::
-> > @@ -119,11 +122,16 @@ Following perf record options are configured by default:
-> >    -W,-d,--phys-data,--sample-cpu
-> >  
-> >  Unless specified otherwise with '-e' option, following events are monitored by
-> > -default:
-> > +default on x86:
-> >  
-> >    cpu/mem-loads,ldlat=30/P
-> >    cpu/mem-stores/P
-> >  
-> > +and following on PowerPC:
-> > +
-> > +  cpu/mem-loads/
-> > +  cpu/mem-stores/
-> > +
-> >  User can pass any 'perf record' option behind '--' mark, like (to enable
-> >  callchains and system wide monitoring):
-> >  
-> > diff --git a/tools/perf/Documentation/perf-mem.txt b/tools/perf/Documentation/perf-mem.txt
-> > index f8d2167..199ea0f 100644
-> > --- a/tools/perf/Documentation/perf-mem.txt
-> > +++ b/tools/perf/Documentation/perf-mem.txt
-> > @@ -82,7 +82,7 @@ RECORD OPTIONS
-> >  	Be more verbose (show counter open errors, etc)
-> >  
-> >  --ldlat <n>::
-> > -	Specify desired latency for loads event.
-> > +	Specify desired latency for loads event. (x86 only)
-> >  
-> >  In addition, for report all perf report options are valid, and for record
-> >  all perf record options.
-> > diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
-> > index 2e659531..ba98bd0 100644
-> > --- a/tools/perf/arch/powerpc/util/Build
-> > +++ b/tools/perf/arch/powerpc/util/Build
-> > @@ -2,6 +2,7 @@ libperf-y += header.o
-> >  libperf-y += sym-handling.o
-> >  libperf-y += kvm-stat.o
-> >  libperf-y += perf_regs.o
-> > +libperf-y += mem-events.o
-> >  
-> >  libperf-$(CONFIG_DWARF) += dwarf-regs.o
-> >  libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
-> > diff --git a/tools/perf/arch/powerpc/util/mem-events.c b/tools/perf/arch/powerpc/util/mem-events.c
-> > new file mode 100644
-> > index 0000000..f1194fc
-> > --- /dev/null
-> > +++ b/tools/perf/arch/powerpc/util/mem-events.c
-> > @@ -0,0 +1,11 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +#include "mem-events.h"
-> > +
-> > +/* PowerPC does not support 'ldlat' parameter. */
-> > +char *perf_mem_events__name(int i)
-> > +{
-> > +	if (i == PERF_MEM_EVENTS__LOAD)
-> > +		return (char *) "cpu/mem-loads/";
-> > +
-> > +	return (char *) "cpu/mem-stores/";
-> > +}
-> > diff --git a/tools/perf/util/mem-events.c b/tools/perf/util/mem-events.c
-> > index 93f74d8..42c3e5a 100644
-> > --- a/tools/perf/util/mem-events.c
-> > +++ b/tools/perf/util/mem-events.c
-> > @@ -28,7 +28,7 @@ struct perf_mem_event perf_mem_events[PERF_MEM_EVENTS__MAX] = {
-> >  static char mem_loads_name[100];
-> >  static bool mem_loads_name__init;
-> >  
-> > -char *perf_mem_events__name(int i)
-> > +char * __weak perf_mem_events__name(int i)
-> >  {
-> >  	if (i == PERF_MEM_EVENTS__LOAD) {
-> >  		if (!mem_loads_name__init) {
-> > -- 
-> > 1.8.3.1
-> > 
+> The current design of nested HV is that the entire non-volatile state
+> of all the nested guests is encapsulated within the state and
+> resources of the L1 hypervisor.  That means that if the L1 hypervisor
+> gets migrated, all of its guests go across inside it and there is no
+> extra state that L0 needs to be aware of.  That would imply that the
+> VP number space for the nested guests would need to come from within
+> the VP number space for L1; but the amount of VP space we allocate to
+> each guest doesn't seem to be large enough for that to be practical.
 
--- 
+If the KVM XIVE device had some information on the max number of CPUs 
+provisioned for the guest, we could optimize the VP allocation.
 
-- Arnaldo
+That might be a larger KVM topic though. There are some static limits 
+on the number of CPUs in QEMU and in KVM, which have no relation AFAICT. 
+
+Thanks,
+
+C.
