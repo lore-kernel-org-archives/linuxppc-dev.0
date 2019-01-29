@@ -2,63 +2,81 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BEEFC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:29:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C97AEC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 15:06:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EF8B20989
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 14:29:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EF8B20989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 951222175B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 15:06:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="Vt1Np9Vt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 951222175B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ppmc1LVWzDqHJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 01:29:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pqb95JnPzDqQV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 02:06:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.56.136; helo=1.mo6.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p02-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5302::12; helo=mo6-p02-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 2465 seconds by postgrey-1.36 at bilbo;
- Wed, 30 Jan 2019 01:28:22 AEDT
-Received: from 1.mo6.mail-out.ovh.net (1.mo6.mail-out.ovh.net [46.105.56.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ppkt2pM1zDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 01:28:21 +1100 (AEDT)
-Received: from player687.ha.ovh.net (unknown [10.109.146.137])
- by mo6.mail-out.ovh.net (Postfix) with ESMTP id 573A31A6C33
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 14:51:14 +0100 (CET)
-Received: from kaod.org (gbibp9ph1--yellowicen11.emea.ibm.com [195.212.29.58])
- (Authenticated sender: clg@kaod.org)
- by player687.ha.ovh.net (Postfix) with ESMTPSA id DDC7821D42AE;
- Tue, 29 Jan 2019 13:51:05 +0000 (UTC)
-Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
- mode
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190122044654.GA15124@blackberry>
- <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
- <20190128055108.GC3237@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <f2e9a801-d0a9-bf29-7b3e-29269021ecb4@kaod.org>
-Date: Tue, 29 Jan 2019 14:51:05 +0100
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="Vt1Np9Vt"; 
+ dkim-atps=neutral
+Received: from mo6-p02-ob.smtp.rzone.de (mo6-p02-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5302::12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pqWy2xZZzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 02:03:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1548774232;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=54BYA5R8WWU/JT6uen3I6PSN41rOBysT9ibhJ3C66mE=;
+ b=Vt1Np9VtM5wxkjy7yZ2uypJGwc9M2twe4XSlbqj241uuGAqJwpJIJ2jVa5za5Uwl5m
+ K02z/W1atUrGi6t+rZNQBBXJ0BuW+kQGfesSxeuynBHjAIz/GaXiF3+Bguo8EE/2YQXM
+ yJWnJaVlQnpXGcNIIEOjo4NfNBYk9WvWe68bs6nAUuFcrJrqWnS28pIQqMtBnDw8HdyO
+ Z5XjcdIFtmvofgmH5Pn6dj+VsOFwf9FSXSe72KPI0YpVi4HFvKqeWg7mk6z20RCLF61Z
+ bnWCcEiyhQrFK81cFZ6YpO0b/9YznqjQln8B++WcHBNxbzhHpjsT7Si7Ar3TW50eLhFz
+ 5Aiw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkMj7d8MwbIAsOkSwoB8cVrNHNchA=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:31f7:8c35:dc40:528c]
+ by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0TF3XAMu
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Tue, 29 Jan 2019 16:03:33 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <e11e61b1-6468-122e-fc2b-3b3f857186bb@xenosoft.de>
+ <f39d4fc6-7e4e-9132-c03f-59f1b52260e0@xenosoft.de>
+ <b9e5e081-a3cc-2625-4e08-2d55c2ba224b@xenosoft.de>
+ <20190119130222.GA24346@lst.de> <20190119140452.GA25198@lst.de>
+ <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
+ <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
+ <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
+ <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
+ <20190128070422.GA2772@lst.de> <20190128162256.GA11737@lst.de>
+ <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
+Message-ID: <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
+Date: Tue, 29 Jan 2019 16:03:32 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190128055108.GC3237@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 6508264413267528583
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedvgdehjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+In-Reply-To: <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,66 +88,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
->>> Another general comment is that you seem to have written all this
->>> code assuming we are using HV KVM in a host running bare-metal.
+Hi Christoph,
+
+I compiled kernels for the X5000 and X1000 from your new branch 
+'powerpc-dma.6-debug.2' today. The kernels boot and the P.A. Semi 
+Ethernet works!
+
+Cheers,
+Christian
+
+
+On 28 January 2019 at 5:52PM, Christian Zigotzky wrote:
+> Thanks a lot! I will test it tomorrow.
+>
+> — Christian
+>
+> Sent from my iPhone
+>
+>> On 28. Jan 2019, at 17:22, Christoph Hellwig <hch@lst.de> wrote:
 >>
->> Yes. I didn't look at the other configurations. I thought that we could
->> use the kernel_irqchip=off option to begin with. A couple of checks
->> are indeed missing.
-> 
-> Using kernel_irqchip=off would mean that we would not be able to use
-> the in-kernel XICS emulation, which would have a performance impact.
-
-yes. But it is not supported today. Correct ? 
-
-> We need an explicit capability for XIVE exploitation that can be
-> enabled or disabled on the qemu command line, so that we can enforce a
-> uniform set of capabilities across all the hosts in a migration
-> domain.  And it's no good to say we have the capability when all
-> attempts to use it will fail.  Therefore the kernel needs to say that
-> it doesn't have the capability in a PR KVM guest or in a nested HV
-> guest.
-
-OK. I will work on adding a KVM_CAP_PPC_NESTED_IRQ_HV capability 
-for future use.
-
->>> However, we could be using PR KVM (either in a bare-metal host or in a
->>> guest), or we could be doing nested HV KVM where we are using the
->>> kvm_hv module inside a KVM guest and using special hypercalls for
->>> controlling our guests.
+>>> On Mon, Jan 28, 2019 at 08:04:22AM +0100, Christoph Hellwig wrote:
+>>>> On Sun, Jan 27, 2019 at 02:13:09PM +0100, Christian Zigotzky wrote:
+>>>> Christoph,
+>>>>
+>>>> What shall I do next?
+>>> I'll need to figure out what went wrong with the new zone selection
+>>> on powerpc and give you another branch to test.
+>> Can you try the new powerpc-dma.6-debug.2 branch:
 >>
->> Yes. 
+>>     git://git.infradead.org/users/hch/misc.git powerpc-dma.6-debug.2
 >>
->> It would be good to talk a little about the nested support (offline 
->> may be) to make sure that we are not missing some major interface that 
->> would require a lot of change. If we need to prepare ground, I think
->> the timing is good.
+>> Gitweb:
 >>
->> The size of the IRQ number space might be a problem. It seems we 
->> would need to increase it considerably to support multiple nested 
->> guests. That said I haven't look much how nested is designed.  
-> 
-> The current design of nested HV is that the entire non-volatile state
-> of all the nested guests is encapsulated within the state and
-> resources of the L1 hypervisor.  That means that if the L1 hypervisor
-> gets migrated, all of its guests go across inside it and there is no
-> extra state that L0 needs to be aware of.  That would imply that the
-> VP number space for the nested guests would need to come from within
-> the VP number space for L1; but the amount of VP space we allocate to
-> each guest doesn't seem to be large enough for that to be practical.
+>>     http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6-debug.2
+>
 
-If the KVM XIVE device had some information on the max number of CPUs 
-provisioned for the guest, we could optimize the VP allocation.
-
-That might be a larger KVM topic though. There are some static limits 
-on the number of CPUs in QEMU and in KVM, which have no relation AFAICT. 
-
-Thanks,
-
-C.
