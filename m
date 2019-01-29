@@ -2,49 +2,47 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A784C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 09:33:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81022C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 09:40:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D62E1214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 09:33:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D62E1214DA
+	by mail.kernel.org (Postfix) with ESMTPS id 33F962082E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 09:40:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33F962082E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43phC60fLSzDq5Y
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 20:33:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43phLS1CpVzDqNb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 20:40:16 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ph8k753TzDqGp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 20:31:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43phHq05TdzDq5Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 20:37:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43ph8k4Qm4z9sDB;
- Tue, 29 Jan 2019 20:31:50 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43phHp5K7yz9sDB;
+ Tue, 29 Jan 2019 20:37:58 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [RFC 1/6] powerpc:/drc Define interface to acquire arch-specific
- drc info
-In-Reply-To: <e7030879-59e4-88fd-3785-fdd98b7f0a3b@gmail.com>
-References: <20181214204914.16435.59083.stgit@powerkvm6.aus.stglabs.ibm.com>
- <20181214204957.16435.29255.stgit@powerkvm6.aus.stglabs.ibm.com>
- <e7030879-59e4-88fd-3785-fdd98b7f0a3b@gmail.com>
-Date: Tue, 29 Jan 2019 20:31:49 +1100
-Message-ID: <87a7jjstbu.fsf@concordia.ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: Perform full re-add of CPU for topology
+ update post-migration
+In-Reply-To: <810d1cee-98ce-6e8f-f87b-f9acb8ba35f2@linux.vnet.ibm.com>
+References: <154083861636.18916.18172276232185726281.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+ <810d1cee-98ce-6e8f-f87b-f9acb8ba35f2@linux.vnet.ibm.com>
+Date: Tue, 29 Jan 2019 20:37:58 +1100
+Message-ID: <877eenst1l.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -58,65 +56,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Juliet Kim <minkim@us.ibm.com>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: ldufour@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Tyrel Datwyler <turtle.in.the.kernel@gmail.com> writes:
-> On 12/14/2018 12:50 PM, Michael Bringmann wrote:
->> Define interface to acquire arch-specific drc info to match against
->> hotpluggable devices.  The current implementation exposes several
->> pseries-specific dynamic memory properties in generic kernel code.
->> This patch set provides an interface to pull that code out of the
->> generic kernel.
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+
+> On 10/29/18 1:43 PM, Nathan Fontenot wrote:
+>> On pseries systems, performing a partition migration can result in
+>> altering the nodes a CPU is assigned to on the destination system. For
+>> exampl, pre-migration on the source system CPUs are in node 1 and 3,
+>> post-migration on the destination system CPUs are in nodes 2 and 3.
 >> 
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->>  include/linux/topology.h |    9 +++++++++
->>  1 file changed, 9 insertions(+)
+>> Handling the node change for a CPU can cause corruption in the slab
+>> cache if we hit a timing where a CPUs node is changed while cache_reap()
+>> is invoked. The corruption occurs because the slab cache code appears
+>> to rely on the CPU and slab cache pages being on the same node.
 >> 
->> diff --git a/include/linux/topology.h b/include/linux/topology.h
->> index cb0775e..df97f5f 100644
->> --- a/include/linux/topology.h
->> +++ b/include/linux/topology.h
->> @@ -44,6 +44,15 @@
->
-> As far as I know pseries is the only platform that uses DR connectors, and I
-> highly doubt that any other powerpc platform or arch ever will. So, I'm not sure
-> that this is really generic enough to belong in topology.h.
+>> The current dynamic updating of a CPUs node done in arch/powerpc/mm/numa.c
+>> does not prevent us from hitting this scenario.
+>> 
+>> Changing the device tree property update notification handler that
+>> recognizes an affinity change for a CPU to do a full DLPAR remove and
+>> add of the CPU instead of dynamically changing its node resolves this
+>> issue.
+>> 
+>> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com
+> Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
 
-Right. This does not belong in include/linux.
+Are you sure that's what you meant? ie. you wrote some of the patch?
 
-> If anything I would
-> suggest putting this in an include in arch/powerpc/include/ named something like
-> drcinfo.h or pseries-drc.h. That will make it visible to modules like rpaphp
-> that want/need to use this functionality.
-
-Yeah that would make more sense.
-
-Using "arch" in the name is wrong, it's pseries specific so
-pseries_find_drc_match() would be more appropriate.
-
->> +int arch_find_drc_match(struct device_node *dn,
->> +			bool (*usercb)(struct device_node *dn,
->> +				u32 drc_index, char *drc_name,
->> +				char *drc_type, u32 drc_power_domain,
->> +				void *data),
->> +			char *opt_drc_type, char *opt_drc_name,
->> +			bool match_drc_index, bool ck_php_type,
->> +			void *data);
-
-This function signature is kind of insane.
-
-You end with calls like:
-
-+	return arch_find_drc_match(dn, rpaphp_add_slot_cb,
-+			NULL, NULL, false, true, NULL);
-
-Which is impossible to parse.
-
-I feel like maybe this isn't the right level of abstraction.
+What I'd like is to get a Tested-by from you.
 
 cheers
