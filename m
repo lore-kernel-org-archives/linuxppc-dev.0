@@ -5,62 +5,45 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EBC62C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 18:23:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2DB1C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 18:31:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21FDD20857
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 18:23:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21FDD20857
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 9CC072080F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 18:31:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CC072080F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pvyF5CkRzDqS3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 05:23:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pw7l4dYyzDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 05:31:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.40.29; helo=14.mo4.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 14.mo4.mail-out.ovh.net (14.mo4.mail-out.ovh.net [46.105.40.29])
+ spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
+ (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
+ envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pvwX3RJtzDqJj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 05:22:01 +1100 (AEDT)
-Received: from player795.ha.ovh.net (unknown [10.109.159.132])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 004B31CDBAB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 18:44:59 +0100 (CET)
-Received: from kaod.org (deibp9eh1--blueice1n0.emea.ibm.com [195.212.29.162])
- (Authenticated sender: clg@kaod.org)
- by player795.ha.ovh.net (Postfix) with ESMTPSA id AE136219C110;
- Tue, 29 Jan 2019 17:44:50 +0000 (UTC)
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107191006.10648-1-clg@kaod.org> <20190107191006.10648-2-clg@kaod.org>
- <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
- <20190123103009.GB29826@blackberry>
- <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
- <20190128061353.GD3237@blackberry>
- <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
- <20190129041241.GA17660@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <2fd9b526-347d-a1d5-925b-bc633231de64@kaod.org>
-Date: Tue, 29 Jan 2019 18:44:50 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <20190129041241.GA17660@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 10455950963846122375
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjedvgddutdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pw5k3XTSzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 05:30:01 +1100 (AEDT)
+Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id 8AA6A2DD5;
+ Tue, 29 Jan 2019 18:29:59 +0000 (UTC)
+Date: Tue, 29 Jan 2019 10:29:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH V5 0/5] NestMMU pte upgrade workaround for mprotect
+Message-Id: <20190129102958.844e1168972384e26b77238f@linux-foundation.org>
+In-Reply-To: <20190116085035.29729-1-aneesh.kumar@linux.ibm.com>
+References: <20190116085035.29729-1-aneesh.kumar@linux.ibm.com>
+X-Mailer: Sylpheed 3.6.0 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,28 +55,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: x86@kernel.org, npiggin@gmail.com, linux-mm@kvack.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/29/19 5:12 AM, Paul Mackerras wrote:
-> On Mon, Jan 28, 2019 at 07:26:00PM +0100, Cédric Le Goater wrote:
->>
->> Is clearing the PTEs and repopulating the VMA unsafe ? 
-> 
-> Actually, now that I come to think of it, there could be any number of
-> VMAs (well, up to almost 64k of them), since once you have a file
-> descriptor you can call mmap on it multiple times.
-> 
-> The more I think about it, the more I think that getting userspace to
-> manage the mappings with mmap() and munmap() is the right idea if it
-> can be made to work.
+On Wed, 16 Jan 2019 14:20:30 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
 
-We might be able to mmap() and munmap() regions of ESB pages in the RTAS 
-call "ibm,change-msi".  I think that's the right spot for it. 
+> We can upgrade pte access (R -> RW transition) via mprotect. We need
+> to make sure we follow the recommended pte update sequence as outlined in
+> commit bd5050e38aec ("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
+> for such updates. This patch series do that.
 
-Thanks,
+This series is at v5 and has no recorded review activity.  Perhaps you
+cold hunt down some people to help out here?
 
-C.
