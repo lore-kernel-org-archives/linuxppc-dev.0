@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83271C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:55:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20752C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:58:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4B3120882
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:55:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4B3120882
+	by mail.kernel.org (Postfix) with ESMTPS id C185620882
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:58:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C185620882
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43q2006BZbzDqJj
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 09:55:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43q23J5YyyzDqRd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 09:58:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
  (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
@@ -29,19 +29,19 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43q1x46HlhzDqJW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 09:52:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43q21h0pxGzDq9K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 09:56:56 +1100 (AEDT)
 Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
- by mail.linuxfoundation.org (Postfix) with ESMTPSA id 8B9F834A2;
- Tue, 29 Jan 2019 22:52:54 +0000 (UTC)
-Date: Tue, 29 Jan 2019 14:52:53 -0800
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id 35E213470;
+ Tue, 29 Jan 2019 22:56:54 +0000 (UTC)
+Date: Tue, 29 Jan 2019 14:56:52 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH V7 1/4] mm/cma: Add PF flag to force non cma alloc
-Message-Id: <20190129145253.8ac345bf7ca6e66cf08bd985@linux-foundation.org>
-In-Reply-To: <20190114095438.32470-2-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH V7 0/4] mm/kvm/vfio/ppc64: Migrate compound pages out of
+ CMA region
+Message-Id: <20190129145652.c4021a4adf8416618211c38d@linux-foundation.org>
+In-Reply-To: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
 References: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
- <20190114095438.32470-2-aneesh.kumar@linux.ibm.com>
 X-Mailer: Sylpheed 3.6.0 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -65,28 +65,20 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 14 Jan 2019 15:24:33 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+On Mon, 14 Jan 2019 15:24:32 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
 
-> This patch adds PF_MEMALLOC_NOCMA which make sure any allocation in that context
-> is marked non-movable and hence cannot be satisfied by CMA region.
+> ppc64 use CMA area for the allocation of guest page table (hash page table). We won't
+> be able to start guest if we fail to allocate hash page table. We have observed
+> hash table allocation failure because we failed to migrate pages out of CMA region
+> because they were pinned. This happen when we are using VFIO. VFIO on ppc64 pins
+> the entire guest RAM. If the guest RAM pages get allocated out of CMA region, we
+> won't be able to migrate those pages. The pages are also pinned for the lifetime of the
+> guest.
 > 
-> This is useful with get_user_pages_longterm where we want to take a page pin by
-> migrating pages from CMA region. Marking the section PF_MEMALLOC_NOCMA ensures
-> that we avoid unnecessary page migration later.
-> 
-> ...
->
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1406,6 +1406,7 @@ extern struct pid *cad_pid;
->  #define PF_RANDOMIZE		0x00400000	/* Randomize virtual address space */
->  #define PF_SWAPWRITE		0x00800000	/* Allowed to write to swap */
->  #define PF_MEMSTALL		0x01000000	/* Stalled due to lack of memory */
-> +#define PF_MEMALLOC_NOCMA	0x02000000	/* All allocation request will have _GFP_MOVABLE cleared */
->  #define PF_NO_SETAFFINITY	0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
->  #define PF_MCE_EARLY		0x08000000      /* Early kill for mce process policy */
->  #define PF_MUTEX_TESTER		0x20000000	/* Thread belongs to the rt mutex tester */
+> Currently we support migration of non-compound pages. With THP and with the addition of
+>  hugetlb migration we can end up allocating compound pages from CMA region. This
+> patch series add support for migrating compound pages. 
 
-This flag has been taken by PF_UMH so I moved it to 0x10000000.
+Very little review activity is in evidence.  Please identify some
+appropriate reviewers and ask them to take a look?
 
-And we have now run out of PF_ flags.
