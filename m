@@ -2,57 +2,47 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07EA9C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:35:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4603AC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:52:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 76CB52082C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:35:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76CB52082C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
+	by mail.kernel.org (Postfix) with ESMTPS id 81A8920881
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:52:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81A8920881
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43q2tF2QZbzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 10:35:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43q3FT2YxYzDqS8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 10:52:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=davemloft.net
- (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
- envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jikos@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=davemloft.net
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43q2rN4gPgzDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 10:33:55 +1100 (AEDT)
-Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::bf5])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- (Authenticated sender: davem-davemloft)
- by shards.monkeyblade.net (Postfix) with ESMTPSA id A8C3214F19FDA;
- Tue, 29 Jan 2019 15:33:50 -0800 (PST)
-Date: Tue, 29 Jan 2019 15:33:50 -0800 (PST)
-Message-Id: <20190129.153350.778783567985515916.davem@davemloft.net>
-To: Mathias.Thore@infinera.com
-Subject: Re: [PATCH] ucc_geth: Reset BQL queue when stopping device
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <DM6PR10MB3721D7BA109A3823D9DACF1984970@DM6PR10MB3721.namprd10.prod.outlook.com>
-References: <DM6PR10MB37217EA1DBEFE3D5CEB5A85084960@DM6PR10MB3721.namprd10.prod.outlook.com>
- <CADRPPNS3M=j4DDMtq_Mb+Xo1M71_yM+_N7n48u-z5pSSzdBoXg@mail.gmail.com>
- <DM6PR10MB3721D7BA109A3823D9DACF1984970@DM6PR10MB3721.namprd10.prod.outlook.com>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
- (shards.monkeyblade.net [149.20.54.216]);
- Tue, 29 Jan 2019 15:33:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43q3Ch4rPPzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 10:50:36 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id C00A8AE4B;
+ Tue, 29 Jan 2019 23:50:33 +0000 (UTC)
+Date: Wed, 30 Jan 2019 00:50:32 +0100 (CET)
+From: Jiri Kosina <jikos@kernel.org>
+To: Joe Lawrence <joe.lawrence@redhat.com>
+Subject: Re: [PATCH 0/4] powerpc/livepatch: reliable stack unwinder fixes
+In-Reply-To: <20190122155724.27557-1-joe.lawrence@redhat.com>
+Message-ID: <nycvar.YFH.7.76.1901300049470.6626@cbobk.fhfr.pm>
+References: <20190122155724.27557-1-joe.lawrence@redhat.com>
+User-Agent: Alpine 2.21 (LSU 202 2017-01-01)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -64,23 +54,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: David.Gounaris@infinera.com, netdev@vger.kernel.org, leoyang.li@nxp.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Nicolai Stange <nstange@suse.de>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Mathias Thore <Mathias.Thore@infinera.com>
-Date: Tue, 29 Jan 2019 08:07:54 +0000
+On Tue, 22 Jan 2019, Joe Lawrence wrote:
 
-> Is there a scenario where we are clearing the TX ring but don't want to reset the BQL TX queue?
+> This patchset fixes a false negative report (ie, unreliable) from the
+> ppc64 reliable stack unwinder, discussed here [1] when it may
+> inadvertently trip over a stale exception marker left on the stack.
 > 
-> I think it makes sense to keep it in ucc_geth_free_tx since the
-> reason it is needed isn't the timeout per se, but rather the
-> clearing of the TX ring. This way, it will be performed no matter
-> why the driver ends up calling this function.
+> The first two patches fix this bug.  Nicolai's change clears the marker
+> from the stack when an exception is finished.  The next patch modifies
+> the unwinder to only look for such on stack elements when the ABI
+> guarantees that they will actually be initialized.
+> 
+> The final two patches consist of code cleanups that Nicolai and I
+> spotted during the development of the fixes.
+> 
+> Testing included re-running the original test scenario (loading a
+> livepatch module on ppc64le) on a 5.0.0-rc2 kernel as well as a RHEL-7
+> backport.  I ran internal tests on the RHEL-7 backport and no new test
+> failures were introduced.  I believe that Nicolai has done the same
+> with respect to the first patch.
+> 
+> [1] https://lore.kernel.org/lkml/7f468285-b149-37e2-e782-c9e538b997a9@redhat.com/
+> 
+> Joe Lawrence (3):
+>   powerpc/livepatch: relax reliable stack tracer checks for first-frame
+>   powerpc/livepatch: small cleanups in save_stack_trace_tsk_reliable()
+>   powerpc/livepatch: return -ERRNO values in
+>     save_stack_trace_tsk_reliable()
+> 
+> Nicolai Stange (1):
+>   powerpc/64s: Clear on-stack exception marker upon exception return
 
-I absolutely think the BQL reset should remain in ucc_geth_free_tx().
+Michael, are you fine with this going through LP tree, or do you plan to 
+take it through yours?
 
-That way if another callsite for ucc_geth_free_tx() emerges that does
-need the BQL queue reset, it won't be "forgotten".
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
+
