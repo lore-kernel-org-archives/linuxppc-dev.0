@@ -6,46 +6,53 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20752C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:58:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07EA9C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:35:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C185620882
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:58:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C185620882
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id 76CB52082C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:35:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 76CB52082C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=davemloft.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43q23J5YyyzDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 09:58:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43q2tF2QZbzDqNX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 10:35:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
- (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
- envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+ spf=none (mailfrom) smtp.mailfrom=davemloft.net
+ (client-ip=2620:137:e000::1:9; helo=shards.monkeyblade.net;
+ envelope-from=davem@davemloft.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=davemloft.net
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43q21h0pxGzDq9K
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 09:56:56 +1100 (AEDT)
-Received: from akpm3.svl.corp.google.com (unknown [104.133.8.65])
- by mail.linuxfoundation.org (Postfix) with ESMTPSA id 35E213470;
- Tue, 29 Jan 2019 22:56:54 +0000 (UTC)
-Date: Tue, 29 Jan 2019 14:56:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH V7 0/4] mm/kvm/vfio/ppc64: Migrate compound pages out of
- CMA region
-Message-Id: <20190129145652.c4021a4adf8416618211c38d@linux-foundation.org>
-In-Reply-To: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
-References: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
-X-Mailer: Sylpheed 3.6.0 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43q2rN4gPgzDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 10:33:55 +1100 (AEDT)
+Received: from localhost (unknown [IPv6:2601:601:9f80:35cd::bf5])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ (Authenticated sender: davem-davemloft)
+ by shards.monkeyblade.net (Postfix) with ESMTPSA id A8C3214F19FDA;
+ Tue, 29 Jan 2019 15:33:50 -0800 (PST)
+Date: Tue, 29 Jan 2019 15:33:50 -0800 (PST)
+Message-Id: <20190129.153350.778783567985515916.davem@davemloft.net>
+To: Mathias.Thore@infinera.com
+Subject: Re: [PATCH] ucc_geth: Reset BQL queue when stopping device
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <DM6PR10MB3721D7BA109A3823D9DACF1984970@DM6PR10MB3721.namprd10.prod.outlook.com>
+References: <DM6PR10MB37217EA1DBEFE3D5CEB5A85084960@DM6PR10MB3721.namprd10.prod.outlook.com>
+ <CADRPPNS3M=j4DDMtq_Mb+Xo1M71_yM+_N7n48u-z5pSSzdBoXg@mail.gmail.com>
+ <DM6PR10MB3721D7BA109A3823D9DACF1984970@DM6PR10MB3721.namprd10.prod.outlook.com>
+X-Mailer: Mew version 6.8 on Emacs 26.1
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12
+ (shards.monkeyblade.net [149.20.54.216]);
+ Tue, 29 Jan 2019 15:33:50 -0800 (PST)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,28 +64,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: David.Gounaris@infinera.com, netdev@vger.kernel.org, leoyang.li@nxp.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 14 Jan 2019 15:24:32 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+From: Mathias Thore <Mathias.Thore@infinera.com>
+Date: Tue, 29 Jan 2019 08:07:54 +0000
 
-> ppc64 use CMA area for the allocation of guest page table (hash page table). We won't
-> be able to start guest if we fail to allocate hash page table. We have observed
-> hash table allocation failure because we failed to migrate pages out of CMA region
-> because they were pinned. This happen when we are using VFIO. VFIO on ppc64 pins
-> the entire guest RAM. If the guest RAM pages get allocated out of CMA region, we
-> won't be able to migrate those pages. The pages are also pinned for the lifetime of the
-> guest.
+> Is there a scenario where we are clearing the TX ring but don't want to reset the BQL TX queue?
 > 
-> Currently we support migration of non-compound pages. With THP and with the addition of
->  hugetlb migration we can end up allocating compound pages from CMA region. This
-> patch series add support for migrating compound pages. 
+> I think it makes sense to keep it in ucc_geth_free_tx since the
+> reason it is needed isn't the timeout per se, but rather the
+> clearing of the TX ring. This way, it will be performed no matter
+> why the driver ends up calling this function.
 
-Very little review activity is in evidence.  Please identify some
-appropriate reviewers and ask them to take a look?
+I absolutely think the BQL reset should remain in ucc_geth_free_tx().
 
+That way if another callsite for ucc_geth_free_tx() emerges that does
+need the BQL queue reset, it won't be "forgotten".
