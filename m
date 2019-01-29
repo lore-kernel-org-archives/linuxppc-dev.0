@@ -2,103 +2,91 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00527C282D0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 08:11:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4907C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 08:31:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3BDE5214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 08:11:00 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=infinera.com header.i=@infinera.com header.b="fbaN9ZfJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3BDE5214DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=infinera.com
+	by mail.kernel.org (Postfix) with ESMTPS id 00BC220844
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 08:31:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00BC220844
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pfMQ1M0WzDqMS
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 19:10:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pfpW6LT2zDqNR
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 19:30:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=infinera.com
- (client-ip=40.107.76.74; helo=nam02-cy1-obe.outbound.protection.outlook.com;
- envelope-from=mathias.thore@infinera.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=infinera.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=infinera.com header.i=@infinera.com header.b="fbaN9ZfJ";
- dkim-atps=neutral
-Received: from NAM02-CY1-obe.outbound.protection.outlook.com
- (mail-eopbgr760074.outbound.protection.outlook.com [40.107.76.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pfJ219twzDqLJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 19:07:59 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=infinera.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=5BhEtcvqnc8c2kIojiSKpyh6GAQ+BIPmbHgjrwFBO5Y=;
- b=fbaN9ZfJzHgePh/OpmiuXTywrEQNcMIjple6EDNnAREL33M/l54iiT1fgtgKhtnz53wUgd3YXq1yj0HPWCOWHMd4j1hTpbqgkl/nXhqJpA9LxS3IOB+S4FQU5yQ+DLrLFl93EVMDCpXDOpuGYGpv0FkXIXl+U18e937OBuR1yB4=
-Received: from DM6PR10MB3721.namprd10.prod.outlook.com (20.179.69.153) by
- DM6PR10MB2636.namprd10.prod.outlook.com (20.176.89.17) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1558.21; Tue, 29 Jan 2019 08:07:54 +0000
-Received: from DM6PR10MB3721.namprd10.prod.outlook.com
- ([fe80::dde5:6747:ecec:62b5]) by DM6PR10MB3721.namprd10.prod.outlook.com
- ([fe80::dde5:6747:ecec:62b5%4]) with mapi id 15.20.1558.023; Tue, 29 Jan 2019
- 08:07:54 +0000
-From: Mathias Thore <Mathias.Thore@infinera.com>
-To: Li Yang <leoyang.li@nxp.com>
-Subject: RE: [PATCH] ucc_geth: Reset BQL queue when stopping device
-Thread-Topic: [PATCH] ucc_geth: Reset BQL queue when stopping device
-Thread-Index: AQHUtuj3UNEzRrgKOUG24I15ihkwVKXEb4cAgABQNtWAAHWKAIAArdIw
-Date: Tue, 29 Jan 2019 08:07:54 +0000
-Message-ID: <DM6PR10MB3721D7BA109A3823D9DACF1984970@DM6PR10MB3721.namprd10.prod.outlook.com>
-References: <20190128090747.15851-1-mathias.thore@infinera.com>
- <6bc7e64a-b91a-cb6e-ed65-5e412cef3a76@c-s.fr>
- <DM6PR10MB37217EA1DBEFE3D5CEB5A85084960@DM6PR10MB3721.namprd10.prod.outlook.com>
- <CADRPPNS3M=j4DDMtq_Mb+Xo1M71_yM+_N7n48u-z5pSSzdBoXg@mail.gmail.com>
-In-Reply-To: <CADRPPNS3M=j4DDMtq_Mb+Xo1M71_yM+_N7n48u-z5pSSzdBoXg@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=Mathias.Thore@infinera.com; 
-x-originating-ip: [88.131.87.201]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; DM6PR10MB2636;
- 6:XNASzQZETF42rN2Jy7iwKUHaGMyRN0UqmjliJOVDX6Eu9Cr0rll6yALQXXXbqC9GVVM0GY9spk6oFIJ2COftL3qfx7Ja6hHTtl3T7y7fPIArqfI2AuM9DWFGi7bab6IbQzKA6PSjzHqysRKtLDuaWdBPpyEg3cWoR0WNATr3iIaXNxJHBESClibcwYBWePiPfsQYVGFCN6xRWklztOUONQUTv9B/9Wm6EJ6UP8l7xHGEPnhm9mrZRxq9Rme4WBijgx2V+gS/ELsA9RqQIY3237ywCoAwMzycsfSGFCFfy3PDEFLRQSB7wu7+9NhWVILwVLOgqxY2Jl3koU0vQG70eyZEOykVeYowtQVtXtm5Kc5bzZLNqte+J0qQn2BwGMJyubYBWm50ksRoKJfi5HhmAQ9zjnYm3IRGZD51USJlO/Vw/jns7/7dWqeHel3Bj+nN+zl6nBrPoo7NbJtm+gM/qw==;
- 5:pXQ3Ix5j0H7Pf0AsVRIBRHKBfVvzukq5J+2bXOaPbdvYP09IU2XONHU6CUXNBei1rk6PRUtF2D813F5b+gCnL6ArkESkSRap5ru+ay1DdRlXzVitAQ+ZhXxm9bAqisA6RHeC4ZSyttnmWCjxmh8jcWiR+wxbHDHBYY+IL7t9HpVbjCaSwhjI4kkMH8dSszH+aBZhjuGLHmEjNmIJQffOFA==;
- 7:uqsXUvnD4OP54Txjt4/B0OI+kwhIbKnp+gZBGG4sqkUCl386U7R4vipmxEho0dat2Y4nLSYbbSn5pWWRxgX6oFFbUVUFDmDrcssuR4Jy+uMp9xrt6Qk73vKP8xU8T3dGO0izQBizVrCKCCJzmdPASQ==
-x-ms-office365-filtering-correlation-id: 04b1bdee-ed55-4cd1-0e7e-08d685c0df34
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600110)(711020)(4605077)(2017052603328)(7153060)(7193020);
- SRVR:DM6PR10MB2636; 
-x-ms-traffictypediagnostic: DM6PR10MB2636:
-x-microsoft-antispam-prvs: <DM6PR10MB2636714FC1669456CB8C567884970@DM6PR10MB2636.namprd10.prod.outlook.com>
-x-forefront-prvs: 093290AD39
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(376002)(396003)(39860400002)(366004)(136003)(346002)(13464003)(199004)(189003)(81156014)(316002)(8936002)(305945005)(6916009)(74316002)(8676002)(81166006)(7736002)(229853002)(66574012)(6246003)(33656002)(107886003)(53936002)(4326008)(26005)(102836004)(71200400001)(71190400001)(486006)(11346002)(186003)(53546011)(25786009)(478600001)(68736007)(446003)(6506007)(476003)(6436002)(7696005)(66066001)(76176011)(3846002)(9686003)(54906003)(99286004)(106356001)(105586002)(72206003)(55016002)(93886005)(86362001)(256004)(5024004)(6116002)(2906002)(14454004)(97736004);
- DIR:OUT; SFP:1101; SCL:1; SRVR:DM6PR10MB2636;
- H:DM6PR10MB3721.namprd10.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; A:1; MX:1; 
-received-spf: None (protection.outlook.com: infinera.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: FvhPPMDpYJ5gQX9540mdr3cETD6ZdT3nA6WRyV5iguOI4IOcKFvgAxaAVBnXHRF7H1BQ6hsgsQ0uXDZcySb+iVESgK4pnMLGfOS3nfkLpnrSFMbimpFtreg9Aex2slVaqGJLwGzJtzNsIuE1HdVFRoZRH6pnzqQZIOMHFRmknjzEDatPZ6BVoo94e+651uVS6om6akKLex6+K8JJ4imxt6+myFJnUltMXnsaz67YVGyvbVhEzTEB/wfGhEKbG+FcQTn+y64g3ZDUSGqtPuyfmwTtz11peUIxxX6WqNuxKYkcY4qu7JmF5M1As5YHSASsHN8ScsLjQN0kBz7JADpcvG/Z0bkThKH45GGuVsdXCvAnp6ZGA56+e/aepTa5/Ic6ayVlNvQ/cxwOWynf2GqmhVQoxJKD8NoZvyJmpV5g7ao=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pfmZ69KhzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 19:29:18 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0T8PCfq113437
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:29:16 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qajr8aa9j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 03:29:16 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Tue, 29 Jan 2019 08:29:14 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 29 Jan 2019 08:29:12 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0T8TAfX45940990
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 29 Jan 2019 08:29:10 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BA2CD52057;
+ Tue, 29 Jan 2019 08:29:10 +0000 (GMT)
+Received: from [9.145.53.230] (unknown [9.145.53.230])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6312252054;
+ Tue, 29 Jan 2019 08:29:10 +0000 (GMT)
+Subject: Re: [PATCH v3] cxl: Wrap iterations over afu slices inside
+ 'afu_list_lock'
+To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20190129061558.2122-1-vaibhav@linux.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Tue, 29 Jan 2019 09:29:10 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-X-OriginatorOrg: infinera.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 04b1bdee-ed55-4cd1-0e7e-08d685c0df34
-X-MS-Exchange-CrossTenant-originalarrivaltime: 29 Jan 2019 08:07:54.1447 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 285643de-5f5b-4b03-a153-0ae2dc8aaf77
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM6PR10MB2636
+In-Reply-To: <20190129061558.2122-1-vaibhav@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19012908-0016-0000-0000-0000024D3159
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19012908-0017-0000-0000-000032A73304
+Message-Id: <f07a1b9a-7827-3801-5447-3355aea099a8@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-29_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901290064
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,76 +98,214 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Gounaris <David.Gounaris@infinera.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Alastair D'Silva <alastair@linux.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-SXMgdGhlcmUgYSBzY2VuYXJpbyB3aGVyZSB3ZSBhcmUgY2xlYXJpbmcgdGhlIFRYIHJpbmcgYnV0
-IGRvbid0IHdhbnQgdG8gcmVzZXQgdGhlIEJRTCBUWCBxdWV1ZT8NCg0KSSB0aGluayBpdCBtYWtl
-cyBzZW5zZSB0byBrZWVwIGl0IGluIHVjY19nZXRoX2ZyZWVfdHggc2luY2UgdGhlIHJlYXNvbiBp
-dCBpcyBuZWVkZWQgaXNuJ3QgdGhlIHRpbWVvdXQgcGVyIHNlLCBidXQgcmF0aGVyIHRoZSBjbGVh
-cmluZyBvZiB0aGUgVFggcmluZy4gVGhpcyB3YXksIGl0IHdpbGwgYmUgcGVyZm9ybWVkIG5vIG1h
-dHRlciB3aHkgdGhlIGRyaXZlciBlbmRzIHVwIGNhbGxpbmcgdGhpcyBmdW5jdGlvbi4NCg0KLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IExpIFlhbmcgW21haWx0bzpsZW95YW5nLmxp
-QG54cC5jb21dIA0KU2VudDogTW9uZGF5LCAyOCBKYW51YXJ5IDIwMTkgMjI6MzcNClRvOiBNYXRo
-aWFzIFRob3JlIDxNYXRoaWFzLlRob3JlQGluZmluZXJhLmNvbT4NCkNjOiBDaHJpc3RvcGhlIExl
-cm95IDxjaHJpc3RvcGhlLmxlcm95QGMtcy5mcj47IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBEYXZpZCBHb3VuYXJpcyA8RGF2aWQuR291bmFy
-aXNAaW5maW5lcmEuY29tPjsgSm9ha2ltIFRqZXJubHVuZCA8Sm9ha2ltLlRqZXJubHVuZEBpbmZp
-bmVyYS5jb20+DQpTdWJqZWN0OiBSZTogW1BBVENIXSB1Y2NfZ2V0aDogUmVzZXQgQlFMIHF1ZXVl
-IHdoZW4gc3RvcHBpbmcgZGV2aWNlDQoNCk9uIE1vbiwgSmFuIDI4LCAyMDE5IGF0IDg6MzcgQU0g
-TWF0aGlhcyBUaG9yZSA8TWF0aGlhcy5UaG9yZUBpbmZpbmVyYS5jb20+IHdyb3RlOg0KPg0KPiBI
-aSwNCj4NCj4NCj4gVGhpcyBpcyB3aGF0IHdlIG9ic2VydmVkOiB0aGVyZSB3YXMgYSBzdG9ybSBv
-biB0aGUgbWVkaXVtIHNvIHRoYXQgb3VyIGNvbnRyb2xsZXIgY291bGQgbm90IGRvIGl0cyBUWCwg
-cmVzdWx0aW5nIGluIHRpbWVvdXQuIFdoZW4gdGltZW91dCBvY2N1cnMsIHRoZSBkcml2ZXIgY2xl
-YXJzIGFsbCBkZXNjcmlwdG9ycyBmcm9tIHRoZSBUWCBxdWV1ZS4gVGhlIGZ1bmN0aW9uIGNhbGxl
-ZCBpbiB0aGlzIHBhdGNoIGlzIHVzZWQgdG8gcmVmbGVjdCB0aGlzIGNsZWFyaW5nIGFsc28gaW4g
-dGhlIEJRTCBsYXllci4gV2l0aG91dCBpdCwgdGhlIGNvbnRyb2xsZXIgd291bGQgZ2V0IHN0dWNr
-LCB1bmFibGUgdG8gcGVyZm9ybSBUWCwgZXZlbiBzZXZlcmFsIG1pbnV0ZXMgYWZ0ZXIgdGhlIHN0
-b3JtIGhhZCBlbmRlZC4gQnJpbmdpbmcgdGhlIGRldmljZSBkb3duIGFuZCB0aGVuIHVwIGFnYWlu
-IHdvdWxkIHNvbHZlIHRoZSBwcm9ibGVtLCBidXQgdGhpcyBwYXRjaCBhbHNvIHNvbHZlcyBpdCBh
-dXRvbWF0aWNhbGx5Lg0KDQpUaGUgZXhwbGFuYXRpb24gbWFrZXMgc2Vuc2UuICBTbyB0aGlzIHNo
-b3VsZCBvbmx5IGJlIHJlcXVpcmVkIGluIHRoZSB0aW1lb3V0IHNjZW5hcmlvIGluc3RlYWQgb2Yg
-b3RoZXIgY2xlYW4gdXAgc2NlbmFyaW9zIGxpa2UgZGV2aWNlIHNodXRkb3duPyAgSWYgc28sIGl0
-IHByb2JhYmx5IGl0IHdpbGwgYmUgYmV0dGVyIHRvIGJlIGRvbmUgaW4gdWNjX2dldGhfdGltZW91
-dF93b3JrKCk/DQoNCj4NCj4NCj4gU29tZSBvdGhlciBkcml2ZXJzIGRvIHRoZSBzYW1lLCBmb3Ig
-ZXhhbXBsZSBlMTAwMGUgZHJpdmVyIGNhbGxzIG5ldGRldl9yZXNldF9xdWV1ZSBpbiBpdHMgZTEw
-MDBfY2xlYW5fdHhfcmluZyBmdW5jdGlvbi4gSXQgaXMgcG9zc2libGUgdGhhdCBvdGhlciBkcml2
-ZXJzIHNob3VsZCBkbyB0aGUgc2FtZTsgSSBoYXZlIG5vIHdheSBvZiB2ZXJpZnlpbmcgdGhpcy4N
-Cj4NCj4NCj4gUmVnYXJkcywNCj4NCj4gTWF0aGlhcw0KPg0KPiAtLQ0KPg0KPg0KPiBGcm9tOiBD
-aHJpc3RvcGhlIExlcm95IDxjaHJpc3RvcGhlLmxlcm95QGMtcy5mcj4NCj4gU2VudDogTW9uZGF5
-LCBKYW51YXJ5IDI4LCAyMDE5IDEwOjQ4IEFNDQo+IFRvOiBNYXRoaWFzIFRob3JlOyBsZW95YW5n
-LmxpQG54cC5jb207IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7IA0KPiBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZzsgRGF2aWQgR291bmFyaXM7IEpvYWtpbSBUamVybmx1bmQNCj4gU3ViamVj
-dDogUmU6IFtQQVRDSF0gdWNjX2dldGg6IFJlc2V0IEJRTCBxdWV1ZSB3aGVuIHN0b3BwaW5nIGRl
-dmljZQ0KPg0KPg0KPiBDQVVUSU9OOiBUaGlzIGVtYWlsIG9yaWdpbmF0ZWQgZnJvbSBvdXRzaWRl
-IG9mIHRoZSBvcmdhbml6YXRpb24uIERvIG5vdCBjbGljayBsaW5rcyBvciBvcGVuIGF0dGFjaG1l
-bnRzIHVubGVzcyB5b3UgcmVjb2duaXplIHRoZSBzZW5kZXIgYW5kIGtub3cgdGhlIGNvbnRlbnQg
-aXMgc2FmZS4NCj4NCj4NCj4gSGksDQo+DQo+IExlIDI4LzAxLzIwMTkgw6AgMTA6MDcsIE1hdGhp
-YXMgVGhvcmUgYSDDqWNyaXQgOg0KPiA+IEFmdGVyIGEgdGltZW91dCBldmVudCBjYXVzZWQgYnkg
-Zm9yIGV4YW1wbGUgYSBicm9hZGNhc3Qgc3Rvcm0sIHdoZW4gDQo+ID4gdGhlIE1BQyBhbmQgUEhZ
-IGFyZSByZXNldCwgdGhlIEJRTCBUWCBxdWV1ZSBuZWVkcyB0byBiZSByZXNldCBhcyANCj4gPiB3
-ZWxsLiBPdGhlcndpc2UsIHRoZSBkZXZpY2Ugd2lsbCBleGhpYml0IHNldmVyZSBwZXJmb3JtYW5j
-ZSBpc3N1ZXMgDQo+ID4gZXZlbiBhZnRlciB0aGUgc3Rvcm0gaGFzIGVuZGVkLg0KPg0KPiBXaGF0
-IGFyZSB0aGUgc3ltcHRvbW5zID8NCj4NCj4gSXMgdGhpcyByZXNldCBuZWVkZWQgb24gYW55IG5l
-dHdvcmsgZHJpdmVyIGluIHRoYXQgY2FzZSwgb3IgaXMgaXQgDQo+IHNvbWV0aGluZyBwYXJ0aWN1
-bGFyIGZvciB0aGUgdWNjX2dldGggPw0KPiBGb3IgaW5zdGFuY2UsIHRoZSBmcmVlc2NhbGUgZnNf
-ZW5ldCBkb2Vzbid0IGhhdmUgdGhhdCByZXNldC4gU2hvdWxkIGl0IA0KPiBoYXZlIGl0IHRvbyA/
-DQo+DQo+IENocmlzdG9waGUNCj4NCj4gPg0KPiA+IENvLWF1dGhvcmVkLWJ5OiBEYXZpZCBHb3Vu
-YXJpcyA8ZGF2aWQuZ291bmFyaXNAaW5maW5lcmEuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IE1h
-dGhpYXMgVGhvcmUgPG1hdGhpYXMudGhvcmVAaW5maW5lcmEuY29tPg0KPiA+IC0tLQ0KPiA+ICAg
-ZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL3VjY19nZXRoLmMgfCAyICsrDQo+ID4gICAx
-IGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL3VjY19nZXRoLmMgDQo+ID4gYi9kcml2ZXJzL25l
-dC9ldGhlcm5ldC9mcmVlc2NhbGUvdWNjX2dldGguYw0KPiA+IGluZGV4IGMzZDUzOWUyMDllZC4u
-ZWIzZTY1ZTg4NjhmIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVz
-Y2FsZS91Y2NfZ2V0aC5jDQo+ID4gKysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxl
-L3VjY19nZXRoLmMNCj4gPiBAQCAtMTg3OSw2ICsxODc5LDggQEAgc3RhdGljIHZvaWQgdWNjX2dl
-dGhfZnJlZV90eChzdHJ1Y3QgdWNjX2dldGhfcHJpdmF0ZSAqdWdldGgpDQo+ID4gICAgICAgdTE2
-IGksIGo7DQo+ID4gICAgICAgdTggX19pb21lbSAqYmQ7DQo+ID4NCj4gPiArICAgICBuZXRkZXZf
-cmVzZXRfcXVldWUodWdldGgtPm5kZXYpOw0KPiA+ICsNCj4gPiAgICAgICB1Z19pbmZvID0gdWdl
-dGgtPnVnX2luZm87DQo+ID4gICAgICAgdWZfaW5mbyA9ICZ1Z19pbmZvLT51Zl9pbmZvOw0KPiA+
-DQo+ID4NCj4NCg==
+
+
+Le 29/01/2019 à 07:15, Vaibhav Jain a écrit :
+> Within cxl module, iteration over array 'adapter->slices' may be racy
+> at few points as it might be simultaneously read during an EEH and its
+> contents being set to NULL while driver is being unloaded or unbound
+> from the adapter. This might result in a NULL pointer to 'struct afu'
+> being de-referenced during an EEH thereby causing a kernel oops.
+> 
+> This patch fixes this by making sure that all access to the array
+> 'adapter->slices' is wrapped within the context of spin-lock
+> 'adapter->afu_list_lock'.
+> 
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> ---
+
+Thanks for fixing this!
+
+Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
+
+
+
+> Changelog:
+> 
+> v3:
+> * Updated a slice loop in cxl_pci_error_detectected() to ignore NULL
+>    slices [Fred]
+> * Added a NULL AFU check in cxl_pci_slot_reset() [Fred]
+> 
+> v2:
+> * Fixed a wrong comparison of non-null pointer [Fred]
+> * Moved a call to cxl_vphb_error_detected() within a branch that
+>    checks for not null AFU pointer in 'adapter->slices' [Fred]
+> * Removed a misleading comment in code.
+> ---
+>   drivers/misc/cxl/guest.c |  2 ++
+>   drivers/misc/cxl/pci.c   | 39 ++++++++++++++++++++++++++++++---------
+>   2 files changed, 32 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+> index 5d28d9e454f5..08f4a512afad 100644
+> --- a/drivers/misc/cxl/guest.c
+> +++ b/drivers/misc/cxl/guest.c
+> @@ -267,6 +267,7 @@ static int guest_reset(struct cxl *adapter)
+>   	int i, rc;
+>   
+>   	pr_devel("Adapter reset request\n");
+> +	spin_lock(&adapter->afu_list_lock);
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		if ((afu = adapter->afu[i])) {
+>   			pci_error_handlers(afu, CXL_ERROR_DETECTED_EVENT,
+> @@ -283,6 +284,7 @@ static int guest_reset(struct cxl *adapter)
+>   			pci_error_handlers(afu, CXL_RESUME_EVENT, 0);
+>   		}
+>   	}
+> +	spin_unlock(&adapter->afu_list_lock);
+>   	return rc;
+>   }
+>   
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index c79ba1c699ad..300531d6136f 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1805,7 +1805,7 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
+>   	/* There should only be one entry, but go through the list
+>   	 * anyway
+>   	 */
+> -	if (afu->phb == NULL)
+> +	if (afu == NULL || afu->phb == NULL)
+>   		return result;
+>   
+>   	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> @@ -1832,7 +1832,8 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   {
+>   	struct cxl *adapter = pci_get_drvdata(pdev);
+>   	struct cxl_afu *afu;
+> -	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET, afu_result;
+> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
+> +	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
+>   	int i;
+>   
+>   	/* At this point, we could still have an interrupt pending.
+> @@ -1843,6 +1844,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   
+>   	/* If we're permanently dead, give up. */
+>   	if (state == pci_channel_io_perm_failure) {
+> +		spin_lock(&adapter->afu_list_lock);
+>   		for (i = 0; i < adapter->slices; i++) {
+>   			afu = adapter->afu[i];
+>   			/*
+> @@ -1851,6 +1853,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   			 */
+>   			cxl_vphb_error_detected(afu, state);
+>   		}
+> +		spin_unlock(&adapter->afu_list_lock);
+>   		return PCI_ERS_RESULT_DISCONNECT;
+>   	}
+>   
+> @@ -1932,11 +1935,17 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   	 *     * In slot_reset, free the old resources and allocate new ones.
+>   	 *     * In resume, clear the flag to allow things to start.
+>   	 */
+> +
+> +	/* Make sure no one else changes the afu list */
+> +	spin_lock(&adapter->afu_list_lock);
+> +
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+>   
+> -		afu_result = cxl_vphb_error_detected(afu, state);
+> +		if (afu == NULL)
+> +			continue;
+>   
+> +		afu_result = cxl_vphb_error_detected(afu, state);
+>   		cxl_context_detach_all(afu);
+>   		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+>   		pci_deconfigure_afu(afu);
+> @@ -1948,6 +1957,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+>   			 (result == PCI_ERS_RESULT_NEED_RESET))
+>   			result = PCI_ERS_RESULT_NONE;
+>   	}
+> +	spin_unlock(&adapter->afu_list_lock);
+>   
+>   	/* should take the context lock here */
+>   	if (cxl_adapter_context_lock(adapter) != 0)
+> @@ -1980,14 +1990,18 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+>   	 */
+>   	cxl_adapter_context_unlock(adapter);
+>   
+> +	spin_lock(&adapter->afu_list_lock);
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+>   
+> +		if (afu == NULL)
+> +			continue;
+> +
+>   		if (pci_configure_afu(afu, adapter, pdev))
+> -			goto err;
+> +			goto err_unlock;
+>   
+>   		if (cxl_afu_select_best_mode(afu))
+> -			goto err;
+> +			goto err_unlock;
+>   
+>   		if (afu->phb == NULL)
+>   			continue;
+> @@ -1999,16 +2013,16 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+>   			ctx = cxl_get_context(afu_dev);
+>   
+>   			if (ctx && cxl_release_context(ctx))
+> -				goto err;
+> +				goto err_unlock;
+>   
+>   			ctx = cxl_dev_context_init(afu_dev);
+>   			if (IS_ERR(ctx))
+> -				goto err;
+> +				goto err_unlock;
+>   
+>   			afu_dev->dev.archdata.cxl_ctx = ctx;
+>   
+>   			if (cxl_ops->afu_check_and_enable(afu))
+> -				goto err;
+> +				goto err_unlock;
+>   
+>   			afu_dev->error_state = pci_channel_io_normal;
+>   
+> @@ -2029,8 +2043,13 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+>   				result = PCI_ERS_RESULT_DISCONNECT;
+>   		}
+>   	}
+> +
+> +	spin_unlock(&adapter->afu_list_lock);
+>   	return result;
+>   
+> +err_unlock:
+> +	spin_unlock(&adapter->afu_list_lock);
+> +
+>   err:
+>   	/* All the bits that happen in both error_detected and cxl_remove
+>   	 * should be idempotent, so we don't need to worry about leaving a mix
+> @@ -2051,10 +2070,11 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   	 * This is not the place to be checking if everything came back up
+>   	 * properly, because there's no return value: do that in slot_reset.
+>   	 */
+> +	spin_lock(&adapter->afu_list_lock);
+>   	for (i = 0; i < adapter->slices; i++) {
+>   		afu = adapter->afu[i];
+>   
+> -		if (afu->phb == NULL)
+> +		if (afu == NULL || afu->phb == NULL)
+>   			continue;
+>   
+>   		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> @@ -2063,6 +2083,7 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+>   				afu_dev->driver->err_handler->resume(afu_dev);
+>   		}
+>   	}
+> +	spin_unlock(&adapter->afu_list_lock);
+>   }
+>   
+>   static const struct pci_error_handlers cxl_err_handler = {
+> 
+
