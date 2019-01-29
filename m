@@ -2,94 +2,88 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E1F9C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 05:15:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B616C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 06:17:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9B49E2175B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 05:15:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9B49E2175B
+	by mail.kernel.org (Postfix) with ESMTPS id 6F0C62148E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 06:17:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F0C62148E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pZSV5ywJzDqLv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 16:15:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43pbrn6J0DzDqLj
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 17:17:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pZQl2KGpzDqKy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 16:13:34 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0T5ATWJ027815
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 00:13:32 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43pbq05XSTzDqLJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 17:16:12 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0T697Fu052642
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 01:16:09 -0500
 Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qagb88g7g-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qaf7q68bq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 00:13:31 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 01:16:09 -0500
 Received: from localhost
  by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Tue, 29 Jan 2019 05:13:29 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ Tue, 29 Jan 2019 06:16:07 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
  by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 29 Jan 2019 05:13:28 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0T5DQ1H1704372
+ Tue, 29 Jan 2019 06:16:04 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0T6G25a5243216
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 29 Jan 2019 05:13:26 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 95901AE051;
- Tue, 29 Jan 2019 05:13:26 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0AB80AE04D;
- Tue, 29 Jan 2019 05:13:24 +0000 (GMT)
+ Tue, 29 Jan 2019 06:16:02 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 851E511C082;
+ Tue, 29 Jan 2019 06:16:02 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id BAF6611C050;
+ Tue, 29 Jan 2019 06:16:00 +0000 (GMT)
 Received: from vajain21.in.ibm.com (unknown [9.109.223.28])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Tue, 29 Jan 2019 05:13:23 +0000 (GMT)
-Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
- Tue, 29 Jan 2019 10:43:23 +0530
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Tue, 29 Jan 2019 06:16:00 +0000 (GMT)
 From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: christophe lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.ibm.com>
-Subject: Re: [RFC PATCH 1/2] powerpc/powernv: Add support for CXL mode switch
- that need PHB reset
-In-Reply-To: <b6f73f05-bdb3-9a4f-bd10-295a3b988643@linux.vnet.ibm.com>
-References: <20190125051131.29351-1-vaibhav@linux.ibm.com>
- <20190125051131.29351-2-vaibhav@linux.ibm.com>
- <b6f73f05-bdb3-9a4f-bd10-295a3b988643@linux.vnet.ibm.com>
-Date: Tue, 29 Jan 2019 10:43:23 +0530
+To: linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.ibm.com>
+Subject: [PATCH v3] cxl: Wrap iterations over afu slices inside 'afu_list_lock'
+Date: Tue, 29 Jan 2019 11:45:58 +0530
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19012905-0008-0000-0000-000002B744CB
+x-cbid: 19012906-0008-0000-0000-000002B74ACC
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012905-0009-0000-0000-0000222385DA
-Message-Id: <87womo9hcc.fsf@vajain21.in.ibm.com>
+x-cbparentid: 19012906-0009-0000-0000-000022238BFE
+Message-Id: <20190129061558.2122-1-vaibhav@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-29_04:, , signatures=0
+ definitions=2019-01-29_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=986 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901290038
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901290046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,6 +96,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>,
  Alastair D'Silva <alastair@linux.ibm.com>,
  Christophe Lombard <christophe_lombard@fr.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>
@@ -109,30 +104,197 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Within cxl module, iteration over array 'adapter->slices' may be racy
+at few points as it might be simultaneously read during an EEH and its
+contents being set to NULL while driver is being unloaded or unbound
+from the adapter. This might result in a NULL pointer to 'struct afu'
+being de-referenced during an EEH thereby causing a kernel oops.
 
-Thanks for reviewing this patch Christophe,
+This patch fixes this by making sure that all access to the array
+'adapter->slices' is wrapped within the context of spin-lock
+'adapter->afu_list_lock'.
 
-christophe lombard <clombard@linux.vnet.ibm.com> writes:
+Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+---
+Changelog:
 
->> 
->>   	pe = pnv_ioda_get_pe(dev);
->>   	if (!pe)
->> -		return -ENODEV;
->> +		return -ENOENT;
->
-> The return code of pnv_phb_to_cxl_mode() is also returned by an api in 
-> the cxllib librarie. So, hoping that nobody test the value !!
+v3:
+* Updated a slice loop in cxl_pci_error_detectected() to ignore NULL
+  slices [Fred]
+* Added a NULL AFU check in cxl_pci_slot_reset() [Fred]
 
-Agreed. I did peek into cxllib_switch_phb_mode() before sending the
-patch and saw two conflicting cases. While switching to CXL_MODE_PCI we
-make sure that we return kernel error codes and while switching to
-CXL_MODE_CXL we return OPAL error codes.
+v2:
+* Fixed a wrong comparison of non-null pointer [Fred]
+* Moved a call to cxl_vphb_error_detected() within a branch that
+  checks for not null AFU pointer in 'adapter->slices' [Fred]
+* Removed a misleading comment in code.
+---
+ drivers/misc/cxl/guest.c |  2 ++
+ drivers/misc/cxl/pci.c   | 39 ++++++++++++++++++++++++++++++---------
+ 2 files changed, 32 insertions(+), 9 deletions(-)
 
-I havent seen how CX5 handles return values from this function but I am
-betting thats its the usual zero & non-zero return value check, which
-then should work with the proposed change.
-
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 5d28d9e454f5..08f4a512afad 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -267,6 +267,7 @@ static int guest_reset(struct cxl *adapter)
+ 	int i, rc;
+ 
+ 	pr_devel("Adapter reset request\n");
++	spin_lock(&adapter->afu_list_lock);
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		if ((afu = adapter->afu[i])) {
+ 			pci_error_handlers(afu, CXL_ERROR_DETECTED_EVENT,
+@@ -283,6 +284,7 @@ static int guest_reset(struct cxl *adapter)
+ 			pci_error_handlers(afu, CXL_RESUME_EVENT, 0);
+ 		}
+ 	}
++	spin_unlock(&adapter->afu_list_lock);
+ 	return rc;
+ }
+ 
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index c79ba1c699ad..300531d6136f 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1805,7 +1805,7 @@ static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
+ 	/* There should only be one entry, but go through the list
+ 	 * anyway
+ 	 */
+-	if (afu->phb == NULL)
++	if (afu == NULL || afu->phb == NULL)
+ 		return result;
+ 
+ 	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+@@ -1832,7 +1832,8 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ {
+ 	struct cxl *adapter = pci_get_drvdata(pdev);
+ 	struct cxl_afu *afu;
+-	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET, afu_result;
++	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
++	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
+ 	int i;
+ 
+ 	/* At this point, we could still have an interrupt pending.
+@@ -1843,6 +1844,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 
+ 	/* If we're permanently dead, give up. */
+ 	if (state == pci_channel_io_perm_failure) {
++		spin_lock(&adapter->afu_list_lock);
+ 		for (i = 0; i < adapter->slices; i++) {
+ 			afu = adapter->afu[i];
+ 			/*
+@@ -1851,6 +1853,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 			 */
+ 			cxl_vphb_error_detected(afu, state);
+ 		}
++		spin_unlock(&adapter->afu_list_lock);
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	}
+ 
+@@ -1932,11 +1935,17 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 	 *     * In slot_reset, free the old resources and allocate new ones.
+ 	 *     * In resume, clear the flag to allow things to start.
+ 	 */
++
++	/* Make sure no one else changes the afu list */
++	spin_lock(&adapter->afu_list_lock);
++
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		afu = adapter->afu[i];
+ 
+-		afu_result = cxl_vphb_error_detected(afu, state);
++		if (afu == NULL)
++			continue;
+ 
++		afu_result = cxl_vphb_error_detected(afu, state);
+ 		cxl_context_detach_all(afu);
+ 		cxl_ops->afu_deactivate_mode(afu, afu->current_mode);
+ 		pci_deconfigure_afu(afu);
+@@ -1948,6 +1957,7 @@ static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+ 			 (result == PCI_ERS_RESULT_NEED_RESET))
+ 			result = PCI_ERS_RESULT_NONE;
+ 	}
++	spin_unlock(&adapter->afu_list_lock);
+ 
+ 	/* should take the context lock here */
+ 	if (cxl_adapter_context_lock(adapter) != 0)
+@@ -1980,14 +1990,18 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+ 	 */
+ 	cxl_adapter_context_unlock(adapter);
+ 
++	spin_lock(&adapter->afu_list_lock);
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		afu = adapter->afu[i];
+ 
++		if (afu == NULL)
++			continue;
++
+ 		if (pci_configure_afu(afu, adapter, pdev))
+-			goto err;
++			goto err_unlock;
+ 
+ 		if (cxl_afu_select_best_mode(afu))
+-			goto err;
++			goto err_unlock;
+ 
+ 		if (afu->phb == NULL)
+ 			continue;
+@@ -1999,16 +2013,16 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+ 			ctx = cxl_get_context(afu_dev);
+ 
+ 			if (ctx && cxl_release_context(ctx))
+-				goto err;
++				goto err_unlock;
+ 
+ 			ctx = cxl_dev_context_init(afu_dev);
+ 			if (IS_ERR(ctx))
+-				goto err;
++				goto err_unlock;
+ 
+ 			afu_dev->dev.archdata.cxl_ctx = ctx;
+ 
+ 			if (cxl_ops->afu_check_and_enable(afu))
+-				goto err;
++				goto err_unlock;
+ 
+ 			afu_dev->error_state = pci_channel_io_normal;
+ 
+@@ -2029,8 +2043,13 @@ static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+ 				result = PCI_ERS_RESULT_DISCONNECT;
+ 		}
+ 	}
++
++	spin_unlock(&adapter->afu_list_lock);
+ 	return result;
+ 
++err_unlock:
++	spin_unlock(&adapter->afu_list_lock);
++
+ err:
+ 	/* All the bits that happen in both error_detected and cxl_remove
+ 	 * should be idempotent, so we don't need to worry about leaving a mix
+@@ -2051,10 +2070,11 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+ 	 * This is not the place to be checking if everything came back up
+ 	 * properly, because there's no return value: do that in slot_reset.
+ 	 */
++	spin_lock(&adapter->afu_list_lock);
+ 	for (i = 0; i < adapter->slices; i++) {
+ 		afu = adapter->afu[i];
+ 
+-		if (afu->phb == NULL)
++		if (afu == NULL || afu->phb == NULL)
+ 			continue;
+ 
+ 		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+@@ -2063,6 +2083,7 @@ static void cxl_pci_resume(struct pci_dev *pdev)
+ 				afu_dev->driver->err_handler->resume(afu_dev);
+ 		}
+ 	}
++	spin_unlock(&adapter->afu_list_lock);
+ }
+ 
+ static const struct pci_error_handlers cxl_err_handler = {
 -- 
-Vaibhav Jain <vaibhav@linux.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+2.20.1
 
