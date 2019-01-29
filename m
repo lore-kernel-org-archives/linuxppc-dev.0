@@ -2,93 +2,51 @@ Return-Path: <SRS0=r5zj=QF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13078C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 11:11:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C6024C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 12:09:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F1772085B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 11:11:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F1772085B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1879B2147A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 12:09:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1879B2147A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43pkMf17vHzDqPj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 22:11:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43plg24xT0zDqQZ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jan 2019 23:09:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=vaibhav@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43pkJn17YnzDqPX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 22:08:56 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0TB5DRe113874
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 06:08:55 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qajr8k4n2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 06:08:54 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Tue, 29 Jan 2019 11:08:52 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 29 Jan 2019 11:08:51 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0TB8nu546399698
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 29 Jan 2019 11:08:49 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9818111C04C;
- Tue, 29 Jan 2019 11:08:49 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4049111C058;
- Tue, 29 Jan 2019 11:08:47 +0000 (GMT)
-Received: from vajain21.in.ibm.com (unknown [9.109.223.28])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
- Tue, 29 Jan 2019 11:08:47 +0000 (GMT)
-Received: by vajain21.in.ibm.com (sSMTP sendmail emulation);
- Tue, 29 Jan 2019 16:38:46 +0530
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Frederic Barrat <fbarrat@linux.ibm.com>
-Subject: Re: [PATCH v3] cxl: Wrap iterations over afu slices inside
- 'afu_list_lock'
-In-Reply-To: <70f4edca-8a05-df9c-b45e-a8576626d4fd@au1.ibm.com>
-References: <20190129061558.2122-1-vaibhav@linux.ibm.com>
- <70f4edca-8a05-df9c-b45e-a8576626d4fd@au1.ibm.com>
-Date: Tue, 29 Jan 2019 16:38:46 +0530
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 43plbH2f7XzDqNf
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2019 23:06:29 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 899B6EBD;
+ Tue, 29 Jan 2019 04:06:27 -0800 (PST)
+Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
+ [10.1.197.40])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 077333F589;
+ Tue, 29 Jan 2019 04:06:23 -0800 (PST)
+Date: Tue, 29 Jan 2019 12:06:21 +0000
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Xiaowei Bao <xiaowei.bao@nxp.com>, robh+dt@kernel.org
+Subject: Re: [PATCHv5 1/4] dt-bindings: add DT binding for the layerscape
+ PCIe controller with EP mode
+Message-ID: <20190129120621.GB7467@e107981-ln.cambridge.arm.com>
+References: <20190121094500.10657-1-xiaowei.bao@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19012911-0016-0000-0000-0000024D42E9
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19012911-0017-0000-0000-000032A7456A
-Message-Id: <87munjafgh.fsf@vajain21.in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-29_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=591 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901290086
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190121094500.10657-1-xiaowei.bao@nxp.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,31 +58,67 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
+Cc: mark.rutland@arm.com, roy.zang@nxp.com, linuxppc-dev@lists.ozlabs.org,
+ arnd@arndb.de, devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
+ kstewart@linuxfoundation.org, niklas.cassel@axis.com,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kishon@ti.com,
+ minghuan.Lian@nxp.com, cyrille.pitchen@free-electrons.com,
+ linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
+ bhelgaas@google.com, leoyang.li@nxp.com, shawnguo@kernel.org,
+ shawn.lin@rock-chips.com, mingkai.hu@nxp.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Rob,
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
+Is it OK for you if I pull this series into the pci tree ?
 
-> On 29/1/19 5:15 pm, Vaibhav Jain wrote:
->> Within cxl module, iteration over array 'adapter->slices' may be racy
->
-> adapter->slices isn't an array, adapter->afu is the array.
-Thanks for catching this. Have fixed the patch description in the resent patch.
+Please let me know, thanks.
 
->
-> Does this need to go to stable? (I'm guessing we've been hitting actual 
-> Oopses?)
-Re-send patch marked to stable.
+Lorenzo
 
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Thanks !!
-
--- 
-Vaibhav Jain <vaibhav@linux.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
-
+On Mon, Jan 21, 2019 at 05:44:57PM +0800, Xiaowei Bao wrote:
+> Add the documentation for the Device Tree binding for the layerscape PCIe
+> controller with EP mode.
+> 
+> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
+> Reviewed-by: Minghuan Lian <minghuan.lian@nxp.com>
+> Reviewed-by: Zhiqiang Hou <zhiqiang.hou@nxp.com>
+> ---
+> v2:
+>  - Add the SoC specific compatibles.
+> v3:
+>  - modify the commit message.
+> v4:
+>  - no change.
+> v5:
+>  - no change.
+> 
+>  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> index 9b2b8d6..e20ceaa 100644
+> --- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> +++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
+> @@ -13,6 +13,7 @@ information.
+>  
+>  Required properties:
+>  - compatible: should contain the platform identifier such as:
+> +  RC mode:
+>          "fsl,ls1021a-pcie"
+>          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie"
+>          "fsl,ls2088a-pcie"
+> @@ -20,6 +21,8 @@ Required properties:
+>          "fsl,ls1046a-pcie"
+>          "fsl,ls1043a-pcie"
+>          "fsl,ls1012a-pcie"
+> +  EP mode:
+> +	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
+>  - reg: base addresses and lengths of the PCIe controller register blocks.
+>  - interrupts: A list of interrupt outputs of the controller. Must contain an
+>    entry for each entry in the interrupt-names property.
+> -- 
+> 1.7.1
+> 
