@@ -2,60 +2,65 @@ Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27256C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 14:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3DD3C282D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:44:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F09D20882
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 14:48:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ckNDq87I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F09D20882
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id AF7BC21473
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:44:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF7BC21473
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qR7V1hGFzDqVv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 01:48:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qSNk3Z2CzDqVh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 02:44:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=sashal@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.57.200; helo=7.mo3.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="ckNDq87I"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qR5h37rSzDqTG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 01:46:47 +1100 (AEDT)
-Received: from localhost (unknown [23.100.24.84])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0218E218A3;
- Wed, 30 Jan 2019 14:46:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1548859605;
- bh=zeRVrBr0oJAGowAGSlPVn+Ttm5DoqTDo+5G1ws4CBKc=;
- h=Date:From:To:To:To:Cc:Cc:Cc:Subject:In-Reply-To:References:From;
- b=ckNDq87Iv8Rk1hTCOWdqkHElWM1K5BFOHA6DxNFPvg1xgOncHEkOWrUwCotmc3Ue0
- 0XuXlCnjJp30U623HtB5gEuOfdXI5V1hi2o/TJKBHPmfHHFYAjxnaPR1unOxt+BLeX
- 68qn7QUpFYPNxCs6kncKvuXK9JU6CQOa3Ysf3+Ao=
-Date: Wed, 30 Jan 2019 14:46:44 +0000
-From: Sasha Levin <sashal@kernel.org>
-To: Sasha Levin <sashal@kernel.org>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org,
-Subject: Re: [RESEND PATCH v3] cxl: Wrap iterations over afu slices inside
- 'afu_list_lock'
-In-Reply-To: <20190129110618.13481-1-vaibhav@linux.ibm.com>
-References: <20190129110618.13481-1-vaibhav@linux.ibm.com>
-Message-Id: <20190130144645.0218E218A3@mail.kernel.org>
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 78670 seconds by postgrey-1.36 at bilbo;
+ Thu, 31 Jan 2019 02:43:13 AEDT
+Received: from 7.mo3.mail-out.ovh.net (7.mo3.mail-out.ovh.net [46.105.57.200])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qSLn6cqPzDqVd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 02:43:12 +1100 (AEDT)
+Received: from player772.ha.ovh.net (unknown [10.109.146.175])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 9AF231F47DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 16:36:58 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player772.ha.ovh.net (Postfix) with ESMTPSA id D532122B901B;
+ Wed, 30 Jan 2019 15:36:48 +0000 (UTC)
+Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190122044654.GA15124@blackberry>
+ <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
+ <20190128055108.GC3237@blackberry>
+ <f2e9a801-d0a9-bf29-7b3e-29269021ecb4@kaod.org>
+ <20190130054011.GB27109@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <2c8a8d89-1dec-dae0-fbbc-04fab7f328a9@kaod.org>
+Date: Wed, 30 Jan 2019 16:36:48 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190130054011.GB27109@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 14166354104499538823
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjeeggdejkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,69 +72,98 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: , Vaibhav Jain <vaibhav@linux.ibm.com>, stable@vger.kernel.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
+On 1/30/19 6:40 AM, Paul Mackerras wrote:
+> On Tue, Jan 29, 2019 at 02:51:05PM +0100, Cédric Le Goater wrote:
+>>>>> Another general comment is that you seem to have written all this
+>>>>> code assuming we are using HV KVM in a host running bare-metal.
+>>>>
+>>>> Yes. I didn't look at the other configurations. I thought that we could
+>>>> use the kernel_irqchip=off option to begin with. A couple of checks
+>>>> are indeed missing.
+>>>
+>>> Using kernel_irqchip=off would mean that we would not be able to use
+>>> the in-kernel XICS emulation, which would have a performance impact.
+>>
+>> yes. But it is not supported today. Correct ? 
+> 
+> Not correct, it has been working for years, and works in v5.0-rc1 (I
+> just tested it), at both L0 and L1.
 
-[This is an automated email]
+Please see other email for the test is did.
 
-This commit has been processed because it contains a "Fixes:" tag,
-fixing commit: .
+>>> We need an explicit capability for XIVE exploitation that can be
+>>> enabled or disabled on the qemu command line, so that we can enforce a
+>>> uniform set of capabilities across all the hosts in a migration
+>>> domain.  And it's no good to say we have the capability when all
+>>> attempts to use it will fail.  Therefore the kernel needs to say that
+>>> it doesn't have the capability in a PR KVM guest or in a nested HV
+>>> guest.
+>>
+>> OK. I will work on adding a KVM_CAP_PPC_NESTED_IRQ_HV capability 
+>> for future use.
+> 
+> That's not what I meant.  Why do we need that?  I meant that querying
+> the new KVM_CAP_PPC_IRQ_XIVE capability should return 0 if we are in a
+> guest.  It should only return 1 if we are running bare-metal on a P9.
 
-The bot has tested the following trees: v4.20.5, v4.19.18, v4.14.96, v4.9.153, v4.4.172, v3.18.133.
+ok. I guess I need to understand first how the nested guest uses the 
+KVM IRQ device. That is a question in another email thread.   
 
-v4.20.5: Build OK!
-v4.19.18: Build OK!
-v4.14.96: Build OK!
-v4.9.153: Failed to apply! Possible dependencies:
-    bb81733de28c ("cxl: Fix error handling in _cxl_pci_associate_default_context()")
+>>>>> However, we could be using PR KVM (either in a bare-metal host or in a
+>>>>> guest), or we could be doing nested HV KVM where we are using the
+>>>>> kvm_hv module inside a KVM guest and using special hypercalls for
+>>>>> controlling our guests.
+>>>>
+>>>> Yes. 
+>>>>
+>>>> It would be good to talk a little about the nested support (offline 
+>>>> may be) to make sure that we are not missing some major interface that 
+>>>> would require a lot of change. If we need to prepare ground, I think
+>>>> the timing is good.
+>>>>
+>>>> The size of the IRQ number space might be a problem. It seems we 
+>>>> would need to increase it considerably to support multiple nested 
+>>>> guests. That said I haven't look much how nested is designed.  
+>>>
+>>> The current design of nested HV is that the entire non-volatile state
+>>> of all the nested guests is encapsulated within the state and
+>>> resources of the L1 hypervisor.  That means that if the L1 hypervisor
+>>> gets migrated, all of its guests go across inside it and there is no
+>>> extra state that L0 needs to be aware of.  That would imply that the
+>>> VP number space for the nested guests would need to come from within
+>>> the VP number space for L1; but the amount of VP space we allocate to
+>>> each guest doesn't seem to be large enough for that to be practical.
+>>
+>> If the KVM XIVE device had some information on the max number of CPUs 
+>> provisioned for the guest, we could optimize the VP allocation.
+> 
+> The problem is that we might have 1000 guests running under L0, or we
+> might have 1 guest running under L0 and 1000 guests running under it,
+> and we have no way to know which situation to optimize for at the
+> point where an L1 guest starts.  If we had an enormous VP space then
+> we could just give each L1 guest a large amount of VP space and solve
+> it that way; but we don't.
 
-v4.4.172: Failed to apply! Possible dependencies:
-    14baf4d9c739 ("cxl: Add guest-specific code")
-    2b04cf310ba8 ("cxl: Rename some bare-metal specific functions")
-    5be587b11101 ("cxl: Introduce implementation-specific API")
-    73d55c3b59f7 ("cxl: IRQ allocation for guests")
-    8633186209e3 ("cxl: Move common code away from bare-metal-specific files")
-    cbffa3a5146a ("cxl: Separate bare-metal fields in adapter and AFU data structures")
-    d56d301b5174 ("cxl: Move bare-metal specific code to specialized files")
-    ea2d1f95efd7 ("cxl: Isolate a few bare-metal-specific calls")
+There are some ideas to increase our VP space size. Using multiblock 
+per XIVE chip in skiboot is one I think. It's not an obvious change. 
+Also, XIVE2 will add more bits to the NVT index so we will be free 
+to allocate more at once when P10 is available.
 
-v3.18.133: Failed to apply! Possible dependencies:
-    0520336afe5d ("cxl: Export file ops for use by API")
-    0b3f9c757cab ("cxl: Drop commands if the PCI channel is not in normal state")
-    14baf4d9c739 ("cxl: Add guest-specific code")
-    27d4dc7116ee ("cxl: Implement an ioctl to fetch afu card-id, offset-id and mode")
-    3d6b040e7338 ("cxl: sparse: Make declarations static")
-    406e12ec0b64 ("cxl: Cleanup Makefile")
-    456295e284be ("cxl: Fix leaking interrupts if attach process fails")
-    588b34be20bc ("cxl: Convert MMIO read/write macros to inline functions")
-    5be587b11101 ("cxl: Introduce implementation-specific API")
-    62fa19d4b4fd ("cxl: Add ability to reset the card")
-    6428832a7bfa ("cxl: Add cookie parameter to afu_release_irqs()")
-    6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
-    73d55c3b59f7 ("cxl: IRQ allocation for guests")
-    7bb5d91a4dda ("cxl: Rework context lifetimes")
-    80c394fab896 ("cxl: Add explicit precision specifiers")
-    80fa93fce37d ("cxl: Name interrupts in /proc/interrupt")
-    8dde152ea348 ("cxl: fix leak of IRQ names in cxl_free_afu_irqs()")
-    95bc11bcd142 ("cxl: Add image control to sysfs")
-    9bcf28cdb28e ("cxl: Add tracepoints")
-    b087e6190ddc ("cxl: Export optional AFU configuration record in sysfs")
-    b12994fbfe93 ("cxl: cxl_afu_reset() -> __cxl_afu_reset()")
-    bc78b05bb412 ("cxl: Return error to PSL if IRQ demultiplexing fails & print clearer warning")
-    c358d84b4e57 ("cxl: Split afu_register_irqs() function")
-    cbffa3a5146a ("cxl: Separate bare-metal fields in adapter and AFU data structures")
-    de369538436a ("cxl: use more common format specifier")
-    e36f6fe1f7aa ("cxl: Export AFU error buffer via sysfs")
-    ea2d1f95efd7 ("cxl: Isolate a few bare-metal-specific calls")
-    eda3693c842e ("cxl: Rework detach context functions")
+On the same topic, may be we could move the VP allocator from skiboot
+to KVM, allocate the full VP space at the KVM level and let KVM do 
+the VP segmentation. 
 
+Any how, I think that if we knew how much VPs we need to provision for 
+when the KVM XIVE device is created, we would make a better use of the 
+available space. Shouldn't we ?
 
-How should we proceed with this patch?
-
---
 Thanks,
-Sasha
+
+C.
+
