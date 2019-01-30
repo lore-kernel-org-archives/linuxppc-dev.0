@@ -2,62 +2,79 @@ Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BC7AC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 03:28:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9252EC282CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 04:42:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C4A7F20881
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 03:28:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C4A7F20881
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id BF2DD20821
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 04:42:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="JfpAJ9g+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF2DD20821
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43q83C4FndzDqT9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 14:28:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43q9hQ720QzDqTY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:42:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=mst@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::4; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="JfpAJ9g+"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::4])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43q81N1vlKzDqQr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 14:27:03 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 6C54D19CF2C;
- Wed, 30 Jan 2019 03:27:00 +0000 (UTC)
-Received: from redhat.com (ovpn-123-79.rdu2.redhat.com [10.10.123.79])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 7765B183B0;
- Wed, 30 Jan 2019 03:26:58 +0000 (UTC)
-Date: Tue, 29 Jan 2019 22:26:57 -0500
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Jason Wang <jasowang@redhat.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190129222021-mutt-send-email-mst@kernel.org>
-References: <87zhrj8kcp.fsf@morokweng.localdomain>
- <87womn8inf.fsf@morokweng.localdomain>
- <20190129134750-mutt-send-email-mst@kernel.org>
- <6c68f7f7-1b28-6eba-9b8b-2c32efac9701@redhat.com>
- <20190129213137-mutt-send-email-mst@kernel.org>
- <94ab8910-594e-a056-c799-5536d8ae2b0e@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <94ab8910-594e-a056-c799-5536d8ae2b0e@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.29]); Wed, 30 Jan 2019 03:27:01 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43q9ff3K5gzDqS9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 15:40:57 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1548823252;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=wlCPd9t+ai37SuMMWwk22tHj2OiZPFG7JEALF32RN7Q=;
+ b=JfpAJ9g+QjrDPNCWKXdOE3WzEIPMAGhy6PFz5/24bmNOt11uF7noDAd2yF+Dtj9UxJ
+ DNGhV05ANKSLVcl0CI3CCCd8w9g+LCQHG4b5yKceRklhz2we5uFOawA/i1jzrvxtmvQE
+ ffQ0V/rN0Cl3sESnLn4SgXNna2GCYnfveuqZS5OCWT8ugmrKyjGgqNqWYIpKxy95WWdW
+ JxVi2ilYHObT4BItYDv+bpvB798qB3eg+VTiZYHO5/JdjZ/2r4oPQrIjTh7LwCxpK2r9
+ BguE/Diy+qpKYabCXeLa63DD5qrx8WHHHNGsRW39tyV6dLg2JVIRvG1LJHPjZDxapQGZ
+ rmnw==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7NWd5irpgkCKCilfXBXJD48yBI66ylK3+2uPIEi8="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a01:598:8081:5dd1:48c0:9ec:f37f:30cd]
+ by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0U4ebCQ0
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Wed, 30 Jan 2019 05:40:37 +0100 (CET)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (1.0)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+X-Mailer: iPhone Mail (16C101)
+In-Reply-To: <20190129163415.GA14529@lst.de>
+Date: Wed, 30 Jan 2019 05:40:36 +0100
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <F4AB3D9A-97EC-45D7-9061-A750D0934C3C@xenosoft.de>
+References: <20190119140452.GA25198@lst.de>
+ <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
+ <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
+ <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
+ <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
+ <20190128070422.GA2772@lst.de> <20190128162256.GA11737@lst.de>
+ <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
+ <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
+ <20190129161411.GA14022@lst.de> <20190129163415.GA14529@lst.de>
+To: Christoph Hellwig <hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,167 +86,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Alexey Kardashevskiy <aik@linux.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
- linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>, Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 30, 2019 at 11:05:42AM +0800, Jason Wang wrote:
-> 
-> On 2019/1/30 上午10:36, Michael S. Tsirkin wrote:
-> > On Wed, Jan 30, 2019 at 10:24:01AM +0800, Jason Wang wrote:
-> > > On 2019/1/30 上午3:02, Michael S. Tsirkin wrote:
-> > > > On Tue, Jan 29, 2019 at 03:42:44PM -0200, Thiago Jung Bauermann wrote:
-> > > > > Fixing address of powerpc mailing list.
-> > > > > 
-> > > > > Thiago Jung Bauermann <bauerman@linux.ibm.com> writes:
-> > > > > 
-> > > > > > Hello,
-> > > > > > 
-> > > > > > With Christoph's rework of the DMA API that recently landed, the patch
-> > > > > > below is the only change needed in virtio to make it work in a POWER
-> > > > > > secure guest under the ultravisor.
-> > > > > > 
-> > > > > > The other change we need (making sure the device's dma_map_ops is NULL
-> > > > > > so that the dma-direct/swiotlb code is used) can be made in
-> > > > > > powerpc-specific code.
-> > > > > > 
-> > > > > > Of course, I also have patches (soon to be posted as RFC) which hook up
-> > > > > > <linux/mem_encrypt.h> to the powerpc secure guest support code.
-> > > > > > 
-> > > > > > What do you think?
-> > > > > > 
-> > > > > >   From d0629a36a75c678b4a72b853f8f7f8c17eedd6b3 Mon Sep 17 00:00:00 2001
-> > > > > > From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> > > > > > Date: Thu, 24 Jan 2019 22:08:02 -0200
-> > > > > > Subject: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-> > > > > > 
-> > > > > > The host can't access the guest memory when it's encrypted, so using
-> > > > > > regular memory pages for the ring isn't an option. Go through the DMA API.
-> > > > > > 
-> > > > > > Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-> > > > Well I think this will come back to bite us (witness xen which is now
-> > > > reworking precisely this path - but at least they aren't to blame, xen
-> > > > came before ACCESS_PLATFORM).
-> > > > 
-> > > > I also still think the right thing would have been to set
-> > > > ACCESS_PLATFORM for all systems where device can't access all memory.
-> > > > 
-> > > > But I also think I don't have the energy to argue about power secure
-> > > > guest anymore.  So be it for power secure guest since the involved
-> > > > engineers disagree with me.  Hey I've been wrong in the past ;).
-> > > > 
-> > > > But the name "sev_active" makes me scared because at least AMD guys who
-> > > > were doing the sensible thing and setting ACCESS_PLATFORM (unless I'm
-> > > > wrong? I reemember distinctly that's so) will likely be affected too.
-> > > > We don't want that.
-> > > > 
-> > > > So let's find a way to make sure it's just power secure guest for now
-> > > > pls.
-> > > > 
-> > > > I also think we should add a dma_api near features under virtio_device
-> > > > such that these hacks can move off data path.
-> > > 
-> > > Anyway the current Xen code is conflict with spec which said:
-> > > 
-> > > "If this feature bit is set to 0, then the device has same access to memory
-> > > addresses supplied to it as the driver has. In particular, the device will
-> > > always use physical addresses matching addresses used by the driver
-> > > (typically meaning physical addresses used by the CPU) and not translated
-> > > further, and can access any address supplied to it by the driver. When
-> > > clear, this overrides any platform-specific description of whether device
-> > > access is limited or translated in any way, e.g. whether an IOMMU may be
-> > > present. "
-> > > 
-> > > I wonder how much value that the above description can give us. It's kind of
-> > > odd that the behavior of "when the feature is not negotiated" is described
-> > > in the spec.
-> > Hmm what's odd about it? We need to describe the behaviour is all cases.
-> 
-> 
-> Well, try to limit the behavior of 'legacy' driver is tricky or even
-> impossible. Xen is an exact example for this.
+Hi Christoph,
 
-So don't. Xen got grand-fathered in because when that came
-along we thought it's a one off thing. Was easier to just
-add that as a special case. But really >99% of people
-have a hypervisor device with direct guest memory access.
-All else is esoterica.
+Thanks a lot for the updates. I will test the full branch tomorrow.
 
-> 
-> > 
-> > > Personally I think we can remove the above and then we can
-> > > switch to use DMA API unconditionally in guest driver. It may have single
-> > > digit regression probably, we can try to overcome it.
-> > > 
-> > > Thanks
-> > This has been discussed ad nauseum. virtio is all about compatibility.
-> > Losing a couple of lines of code isn't worth breaking working setups.
-> > People that want "just use DMA API no tricks" now have the option.
-> > Setting a flag in a feature bit map is literally a single line
-> > of code in the hypervisor. So stop pushing for breaking working
-> > legacy setups and just fix it in the right place.
-> 
-> 
-> I may miss soemthing, which kind of legacy setup is broken? Do you mean
-> using virtio without IOMMU_PLATFORM on platform with IOMMU? We actually
-> unbreak this setup.
-> 
-> Thanks
+Cheers,
+Christian
 
+Sent from my iPhone
 
-Legacy setups by definition are working setups.  The rules are pretty
-simple. By default virtio == full guest memory access.
-If your access is limited or translated in any way, you use a device
-with ACCESS_PLATFORM. When in doubt use ACCESS_PLATFORM.
-
-Xen was there before, and it does not have a flag and it still
-wants ACCESS_PLATFORM semantics without setting ACCESS_PLATFORM
-sometimes. So we don't want to break existing setups,
-and we make an exception in that case.
-I don't really see any good reason to make more exceptions.
-
-Nor IMHO should we trust all platform people to know about virtio
-and have special kind of DMA API just for virtio.
-
-
-> 
-> > 
-> > > > By the way could you please respond about virtio-iommu and
-> > > > why there's no support for ACCESS_PLATFORM on power?
-> > > > 
-> > > > I have Cc'd you on these discussions.
-> > > > 
-> > > > 
-> > > > Thanks!
-> > > > 
-> > > > 
-> > > > > > ---
-> > > > > >    drivers/virtio/virtio_ring.c | 5 ++++-
-> > > > > >    1 file changed, 4 insertions(+), 1 deletion(-)
-> > > > > > 
-> > > > > > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> > > > > > index cd7e755484e3..321a27075380 100644
-> > > > > > --- a/drivers/virtio/virtio_ring.c
-> > > > > > +++ b/drivers/virtio/virtio_ring.c
-> > > > > > @@ -259,8 +259,11 @@ static bool vring_use_dma_api(struct virtio_device *vdev)
-> > > > > >    	 * not work without an even larger kludge.  Instead, enable
-> > > > > >    	 * the DMA API if we're a Xen guest, which at least allows
-> > > > > >    	 * all of the sensible Xen configurations to work correctly.
-> > > > > > +	 *
-> > > > > > +	 * Also, if guest memory is encrypted the host can't access
-> > > > > > +	 * it directly. In this case, we'll need to use the DMA API.
-> > > > > >    	 */
-> > > > > > -	if (xen_domain())
-> > > > > > +	if (xen_domain() || sev_active())
-> > > > > >    		return true;
-> > > > > > 
-> > > > > >    	return false;
-> > > > > -- 
-> > > > > Thiago Jung Bauermann
-> > > > > IBM Linux Technology Center
+> On 29. Jan 2019, at 17:34, Christoph Hellwig <hch@lst.de> wrote:
+>=20
+>> On Tue, Jan 29, 2019 at 05:14:11PM +0100, Christoph Hellwig wrote:
+>>> On Tue, Jan 29, 2019 at 04:03:32PM +0100, Christian Zigotzky wrote:
+>>> Hi Christoph,
+>>>=20
+>>> I compiled kernels for the X5000 and X1000 from your new branch=20
+>>> 'powerpc-dma.6-debug.2' today. The kernels boot and the P.A. Semi Ethern=
+et=20
+>>> works!
+>>=20
+>> Thanks for testing!  I'll prepare a new series that adds the other
+>> patches on top of this one.
+>=20
+> And that was easier than I thought - we just had a few patches left
+> in powerpc-dma.6, so I've rebased that branch on top of
+> powerpc-dma.6-debug.2:
+>=20
+>    git://git.infradead.org/users/hch/misc.git powerpc-dma.6
+>=20
+> Gitweb:
+>=20
+>    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc=
+-dma.6
+>=20
+> I hope the other patches are simple enough, so just testing the full
+> branch checkout should be fine for now.
