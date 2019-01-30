@@ -2,68 +2,50 @@ Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3FA6C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 09:33:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 976AFC282D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 10:35:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 219AF2086C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 09:33:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 219AF2086C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id DDBCA218A4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 10:35:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDBCA218A4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qJ8Y15pGzDqTn
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 20:33:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.111.247; helo=4.mo5.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 70786 seconds by postgrey-1.36 at bilbo;
- Wed, 30 Jan 2019 20:32:15 AEDT
-Received: from 4.mo5.mail-out.ovh.net (4.mo5.mail-out.ovh.net [178.33.111.247])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qKX94jd0zDqVF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 21:35:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qJ6l5GQCzDqTM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 20:32:13 +1100 (AEDT)
-Received: from player695.ha.ovh.net (unknown [10.109.160.5])
- by mo5.mail-out.ovh.net (Postfix) with ESMTP id 497C721331A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 08:06:47 +0100 (CET)
-Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
- (Authenticated sender: clg@kaod.org)
- by player695.ha.ovh.net (Postfix) with ESMTPSA id 8FB7F20D7C19;
- Wed, 30 Jan 2019 07:06:38 +0000 (UTC)
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190107191006.10648-1-clg@kaod.org>
- <20190107191006.10648-2-clg@kaod.org> <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
- <20190123103009.GB29826@blackberry>
- <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
- <20190128061353.GD3237@blackberry>
- <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
- <20190129041241.GA17660@blackberry>
- <2fd9b526-347d-a1d5-925b-bc633231de64@kaod.org>
- <20190130055546.GC27109@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <6afc7238-4c92-d14c-686c-63ebac4ace40@kaod.org>
-Date: Wed, 30 Jan 2019 08:06:38 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qKV36STkzDqT8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 21:34:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43qKV265Vdz9s9G;
+ Wed, 30 Jan 2019 21:34:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, akpm@linux-foundation.org,
+ x86@kernel.org
+Subject: Re: [PATCH V5 1/5] mm: Update ptep_modify_prot_start/commit to take
+ vm_area_struct as arg
+In-Reply-To: <20190116085035.29729-2-aneesh.kumar@linux.ibm.com>
+References: <20190116085035.29729-1-aneesh.kumar@linux.ibm.com>
+ <20190116085035.29729-2-aneesh.kumar@linux.ibm.com>
+Date: Wed, 30 Jan 2019 21:33:57 +1100
+Message-ID: <87lg32qvsa.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190130055546.GC27109@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 5550405066820914055
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjeefgddutdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,39 +57,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/30/19 6:55 AM, Paul Mackerras wrote:
-> On Tue, Jan 29, 2019 at 06:44:50PM +0100, Cédric Le Goater wrote:
->> On 1/29/19 5:12 AM, Paul Mackerras wrote:
->>> On Mon, Jan 28, 2019 at 07:26:00PM +0100, Cédric Le Goater wrote:
->>>>
->>>> Is clearing the PTEs and repopulating the VMA unsafe ? 
->>>
->>> Actually, now that I come to think of it, there could be any number of
->>> VMAs (well, up to almost 64k of them), since once you have a file
->>> descriptor you can call mmap on it multiple times.
->>>
->>> The more I think about it, the more I think that getting userspace to
->>> manage the mappings with mmap() and munmap() is the right idea if it
->>> can be made to work.
->>
->> We might be able to mmap() and munmap() regions of ESB pages in the RTAS 
->> call "ibm,change-msi".  I think that's the right spot for it. 
-> 
-> I was thinking that the ESB pages should be mmapped for device
-> interrupts at VM startup or when a device is hot-plugged in, and
-> munmapped when the device is hot-removed.  Maybe the mmap could be
-> done in conjunction with the KVM_IRQFD call?
-> 
-> What is the reasoning behind doing it in the ibm,change-msi call?
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-Because when the device is plugged in, it has no interrupts. These are 
-allocated on demand only when the driver is loaded in the guest. 
+> Some architecture may want to call flush_tlb_range from these helpers.
 
-C.
+That's what we want to do, but wouldn't a better description be that
+some architectures may need access to the vma for some reason, one of
+which might be flushing the TLB.
 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/s390/include/asm/pgtable.h       |  4 ++--
+>  arch/s390/mm/pgtable.c                |  6 ++++--
+>  arch/x86/include/asm/paravirt.h       | 11 ++++++-----
+>  arch/x86/include/asm/paravirt_types.h |  5 +++--
+>  arch/x86/xen/mmu.h                    |  4 ++--
+>  arch/x86/xen/mmu_pv.c                 |  8 ++++----
+>  fs/proc/task_mmu.c                    |  4 ++--
+>  include/asm-generic/pgtable.h         | 16 ++++++++--------
+>  mm/memory.c                           |  4 ++--
+>  mm/mprotect.c                         |  4 ++--
+>  10 files changed, 35 insertions(+), 31 deletions(-)
+>
+> diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+> index 063732414dfb..5d730199e37b 100644
+> --- a/arch/s390/include/asm/pgtable.h
+> +++ b/arch/s390/include/asm/pgtable.h
+> @@ -1069,8 +1069,8 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm,
+>  }
+>  
+>  #define __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
+> -pte_t ptep_modify_prot_start(struct mm_struct *, unsigned long, pte_t *);
+> -void ptep_modify_prot_commit(struct mm_struct *, unsigned long, pte_t *, pte_t);
+> +pte_t ptep_modify_prot_start(struct vm_area_struct *, unsigned long, pte_t *);
+> +void ptep_modify_prot_commit(struct vm_area_struct *, unsigned long, pte_t *, pte_t);
+>  
+>  #define __HAVE_ARCH_PTEP_CLEAR_FLUSH
+>  static inline pte_t ptep_clear_flush(struct vm_area_struct *vma,
+> diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
+> index f2cc7da473e4..29c0a21cd34a 100644
+> --- a/arch/s390/mm/pgtable.c
+> +++ b/arch/s390/mm/pgtable.c
+> @@ -301,12 +301,13 @@ pte_t ptep_xchg_lazy(struct mm_struct *mm, unsigned long addr,
+>  }
+>  EXPORT_SYMBOL(ptep_xchg_lazy);
+>  
+> -pte_t ptep_modify_prot_start(struct mm_struct *mm, unsigned long addr,
+> +pte_t ptep_modify_prot_start(struct vm_area_struct *vma, unsigned long addr,
+>  			     pte_t *ptep)
+>  {
+>  	pgste_t pgste;
+>  	pte_t old;
+>  	int nodat;
+> +	struct mm_struct *mm = vma->vm_mm;
+
+If this was my code I'd want the mm as the first variable, to preserve
+the Reverse Christmas tree format.
+
+>  	preempt_disable();
+>  	pgste = ptep_xchg_start(mm, addr, ptep);
+> @@ -320,10 +321,11 @@ pte_t ptep_modify_prot_start(struct mm_struct *mm, unsigned long addr,
+>  }
+>  EXPORT_SYMBOL(ptep_modify_prot_start);
+>  
+> -void ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
+> +void ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr,
+>  			     pte_t *ptep, pte_t pte)
+>  {
+>  	pgste_t pgste;
+> +	struct mm_struct *mm = vma->vm_mm;
+  
+Ditto.
+
+>  	if (!MACHINE_HAS_NX)
+>  		pte_val(pte) &= ~_PAGE_NOEXEC;
+> diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+> index a97f28d914d5..c5a7f18cce7e 100644
+> --- a/arch/x86/include/asm/paravirt.h
+> +++ b/arch/x86/include/asm/paravirt.h
+> @@ -422,25 +422,26 @@ static inline pgdval_t pgd_val(pgd_t pgd)
+>  }
+>  
+>  #define  __HAVE_ARCH_PTEP_MODIFY_PROT_TRANSACTION
+> -static inline pte_t ptep_modify_prot_start(struct mm_struct *mm, unsigned long addr,
+> +static inline pte_t ptep_modify_prot_start(struct vm_area_struct *vma, unsigned long addr,
+>  					   pte_t *ptep)
+>  {
+>  	pteval_t ret;
+>  
+> -	ret = PVOP_CALL3(pteval_t, mmu.ptep_modify_prot_start, mm, addr, ptep);
+> +	ret = PVOP_CALL3(pteval_t, mmu.ptep_modify_prot_start, vma, addr, ptep);
+>  
+>  	return (pte_t) { .pte = ret };
+>  }
+>  
+> -static inline void ptep_modify_prot_commit(struct mm_struct *mm, unsigned long addr,
+> +static inline void ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long addr,
+>  					   pte_t *ptep, pte_t pte)
+>  {
+> +
+
+Unnecessary blank line here.
+
+>  	if (sizeof(pteval_t) > sizeof(long))
+>  		/* 5 arg words */
+> -		pv_ops.mmu.ptep_modify_prot_commit(mm, addr, ptep, pte);
+> +		pv_ops.mmu.ptep_modify_prot_commit(vma, addr, ptep, pte);
+>  	else
+>  		PVOP_VCALL4(mmu.ptep_modify_prot_commit,
+> -			    mm, addr, ptep, pte.pte);
+> +			    vma, addr, ptep, pte.pte);
+>  }
+>  
+>  static inline void set_pte(pte_t *ptep, pte_t pte)
+
+The rest looks good.
+
+cheers
