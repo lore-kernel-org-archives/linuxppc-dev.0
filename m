@@ -2,79 +2,84 @@ Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9252EC282CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 04:42:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC602C282D4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 06:09:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF2DD20821
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 04:42:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="JfpAJ9g+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF2DD20821
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 3A39C20989
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 06:09:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A39C20989
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43q9hQ720QzDqTY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:42:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qCcr0N66zDqTC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 17:09:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::4; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bharata@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="JfpAJ9g+"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::4])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43q9ff3K5gzDqS9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 15:40:57 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1548823252;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=wlCPd9t+ai37SuMMWwk22tHj2OiZPFG7JEALF32RN7Q=;
- b=JfpAJ9g+QjrDPNCWKXdOE3WzEIPMAGhy6PFz5/24bmNOt11uF7noDAd2yF+Dtj9UxJ
- DNGhV05ANKSLVcl0CI3CCCd8w9g+LCQHG4b5yKceRklhz2we5uFOawA/i1jzrvxtmvQE
- ffQ0V/rN0Cl3sESnLn4SgXNna2GCYnfveuqZS5OCWT8ugmrKyjGgqNqWYIpKxy95WWdW
- JxVi2ilYHObT4BItYDv+bpvB798qB3eg+VTiZYHO5/JdjZ/2r4oPQrIjTh7LwCxpK2r9
- BguE/Diy+qpKYabCXeLa63DD5qrx8WHHHNGsRW39tyV6dLg2JVIRvG1LJHPjZDxapQGZ
- rmnw==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7R7NWd5irpgkCKCilfXBXJD48yBI66ylK3+2uPIEi8="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a01:598:8081:5dd1:48c0:9ec:f37f:30cd]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv0U4ebCQ0
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Wed, 30 Jan 2019 05:40:37 +0100 (CET)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (1.0)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-X-Mailer: iPhone Mail (16C101)
-In-Reply-To: <20190129163415.GA14529@lst.de>
-Date: Wed, 30 Jan 2019 05:40:36 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <F4AB3D9A-97EC-45D7-9061-A750D0934C3C@xenosoft.de>
-References: <20190119140452.GA25198@lst.de>
- <bfe4adcc-01c1-7b46-f40a-8e020ff77f58@xenosoft.de>
- <8434e281-eb85-51d9-106f-f4faa559e89c@xenosoft.de>
- <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
- <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
- <20190128070422.GA2772@lst.de> <20190128162256.GA11737@lst.de>
- <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
- <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
- <20190129161411.GA14022@lst.de> <20190129163415.GA14529@lst.de>
-To: Christoph Hellwig <hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qCZn6sPRzDqS9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 17:07:42 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0U65HvU109393
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 01:07:39 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qb23p0ngt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 01:07:39 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.ibm.com>;
+ Wed, 30 Jan 2019 06:07:37 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 30 Jan 2019 06:07:34 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0U67Wtw53411982
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 30 Jan 2019 06:07:32 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 745875204E;
+ Wed, 30 Jan 2019 06:07:32 +0000 (GMT)
+Received: from bharata.ibmuc.com (unknown [9.199.36.73])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5C48B52065;
+ Wed, 30 Jan 2019 06:07:30 +0000 (GMT)
+From: Bharata B Rao <bharata@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH v3 0/4] kvmppc: HMM backend driver to manage pages of
+ secure guest
+Date: Wed, 30 Jan 2019 11:37:22 +0530
+X-Mailer: git-send-email 2.17.1
+X-TM-AS-GCONF: 00
+x-cbid: 19013006-4275-0000-0000-000003079FD1
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19013006-4276-0000-0000-00003815A45C
+Message-Id: <20190130060726.29958-1-bharata@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-30_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=806 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901300046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,48 +91,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxram@us.ibm.com, kvm-ppc@vger.kernel.org,
+ Bharata B Rao <bharata@linux.ibm.com>, benh@linux.ibm.com, linux-mm@kvack.org,
+ jglisse@redhat.com, aneesh.kumar@linux.vnet.ibm.com, paulus@au1.ibm.com,
+ sukadev@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christoph,
+Hi,
 
-Thanks a lot for the updates. I will test the full branch tomorrow.
+A pseries guest can be run as a secure guest on Ultravisor-enabled
+POWER platforms. On such platforms, this driver will be used to manage
+the movement of guest pages between the normal memory managed by
+hypervisor (HV) and secure memory managed by Ultravisor (UV).
 
-Cheers,
-Christian
+Private ZONE_DEVICE memory equal to the amount of secure memory
+available in the platform for running secure guests is created
+via a HMM device. The movement of pages between normal and secure
+memory is done by ->alloc_and_copy() callback routine of migrate_vma().
 
-Sent from my iPhone
+The page-in or page-out requests from UV will come to HV as hcalls and
+HV will call back into UV via uvcalls to satisfy these page requests.
 
-> On 29. Jan 2019, at 17:34, Christoph Hellwig <hch@lst.de> wrote:
->=20
->> On Tue, Jan 29, 2019 at 05:14:11PM +0100, Christoph Hellwig wrote:
->>> On Tue, Jan 29, 2019 at 04:03:32PM +0100, Christian Zigotzky wrote:
->>> Hi Christoph,
->>>=20
->>> I compiled kernels for the X5000 and X1000 from your new branch=20
->>> 'powerpc-dma.6-debug.2' today. The kernels boot and the P.A. Semi Ethern=
-et=20
->>> works!
->>=20
->> Thanks for testing!  I'll prepare a new series that adds the other
->> patches on top of this one.
->=20
-> And that was easier than I thought - we just had a few patches left
-> in powerpc-dma.6, so I've rebased that branch on top of
-> powerpc-dma.6-debug.2:
->=20
->    git://git.infradead.org/users/hch/misc.git powerpc-dma.6
->=20
-> Gitweb:
->=20
->    http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc=
--dma.6
->=20
-> I hope the other patches are simple enough, so just testing the full
-> branch checkout should be fine for now.
+These patches apply and work on the base Ultravisor patches posted by
+Ram Pai at https://www.spinics.net/lists/kvm-ppc/msg14981.html
+
+Changes in v3
+=============
+- Rebased to latest kernel
+- Rebased on top of Ram's base Ultravisor patches, so that all the
+  dependencies are met.
+- Get secure memory size from device tree.
+- Fix a mm struct leak in page-in and page-out hcalls, thereby
+  allowing LPID recycling (Thanks to Sukadev Bhattiprolu for pointing
+  this out)
+
+v2: https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-November/181669.html
+
+Bharata B Rao (4):
+  kvmppc: HMM backend driver to manage pages of secure guest
+  kvmppc: Add support for shared pages in HMM driver
+  kvmppc: H_SVM_INIT_START and H_SVM_INIT_DONE hcalls
+  kvmppc: Handle memory plug/unplug to secure VM
+
+ arch/powerpc/include/asm/hvcall.h           |   9 +
+ arch/powerpc/include/asm/kvm_book3s_hmm.h   |  45 ++
+ arch/powerpc/include/asm/kvm_host.h         |  14 +
+ arch/powerpc/include/asm/ucall-api.h        |  35 ++
+ arch/powerpc/include/uapi/asm/uapi_uvcall.h |   5 +
+ arch/powerpc/kvm/Makefile                   |   3 +
+ arch/powerpc/kvm/book3s_hv.c                |  48 ++
+ arch/powerpc/kvm/book3s_hv_hmm.c            | 559 ++++++++++++++++++++
+ 8 files changed, 718 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/kvm_book3s_hmm.h
+ create mode 100644 arch/powerpc/kvm/book3s_hv_hmm.c
+
+-- 
+2.17.1
+
