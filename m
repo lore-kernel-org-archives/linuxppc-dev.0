@@ -2,70 +2,121 @@ Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D989C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:56:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 708BDC282D7
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:57:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D83CA21473
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:56:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D83CA21473
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id DCDA22087F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 15:57:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DCDA22087F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=embeddedor.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qSdz62ZrzDqTD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 02:56:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qSgl74zCzDqWT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 02:57:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=188.165.54.143; helo=18.mo4.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 79777 seconds by postgrey-1.36 at bilbo;
- Thu, 31 Jan 2019 02:54:41 AEDT
-Received: from 18.mo4.mail-out.ovh.net (18.mo4.mail-out.ovh.net
- [188.165.54.143])
+ spf=permerror (mailfrom) smtp.mailfrom=embeddedor.com
+ (client-ip=192.185.145.182; helo=gateway32.websitewelcome.com;
+ envelope-from=gustavo@embeddedor.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=embeddedor.com
+Received: from gateway32.websitewelcome.com (gateway32.websitewelcome.com
+ [192.185.145.182])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qSc15NLWzDqTC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 02:54:39 +1100 (AEDT)
-Received: from player786.ha.ovh.net (unknown [10.109.146.143])
- by mo4.mail-out.ovh.net (Postfix) with ESMTP id 64C3C1CD4C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 16:54:36 +0100 (CET)
-Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
- (Authenticated sender: clg@kaod.org)
- by player786.ha.ovh.net (Postfix) with ESMTPSA id 5A9AF24BAC87;
- Wed, 30 Jan 2019 15:54:24 +0000 (UTC)
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190107191006.10648-1-clg@kaod.org>
- <20190107191006.10648-2-clg@kaod.org> <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
- <20190123103009.GB29826@blackberry>
- <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
- <20190128061353.GD3237@blackberry>
- <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
- <20190129024503.GA11368@blackberry>
- <f92f71ee-5c8e-f6b1-dbbf-436bbb0624cd@kaod.org>
- <20190130062041.GD27109@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <f941f095-995f-0252-afd9-2a6f6f4ce7db@kaod.org>
-Date: Wed, 30 Jan 2019 16:54:23 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qScr0dPqzDqWL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 02:55:23 +1100 (AEDT)
+Received: from cm16.websitewelcome.com (cm16.websitewelcome.com [100.42.49.19])
+ by gateway32.websitewelcome.com (Postfix) with ESMTP id 51E98282DBE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 09:55:20 -0600 (CST)
+Received: from gator4166.hostgator.com ([108.167.133.22]) by cmsmtp with SMTP
+ id osCug9uQd4FKposCugXA02; Wed, 30 Jan 2019 09:55:20 -0600
+X-Authority-Reason: nr=8
+Received: from [189.250.130.205] (port=46314 helo=[192.168.1.76])
+ by gator4166.hostgator.com with esmtpsa
+ (TLSv1.2:ECDHE-RSA-AES128-GCM-SHA256:128) (Exim 4.91)
+ (envelope-from <gustavo@embeddedor.com>)
+ id 1gosCt-000ggM-VR; Wed, 30 Jan 2019 09:55:20 -0600
+Subject: Re: [PATCH V2] powerpc/ptrace: Mitigate potential Spectre v1
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+References: <1548852360-29886-1-git-send-email-leitao@debian.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=gustavo@embeddedor.com; keydata=
+ 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
+ VtSixD1uOgytAP7RWS474w==
+Message-ID: <bd909a1f-19ad-8880-34ef-9307301652af@embeddedor.com>
+Date: Wed, 30 Jan 2019 09:55:18 -0600
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-In-Reply-To: <20190130062041.GD27109@blackberry>
+In-Reply-To: <1548852360-29886-1-git-send-email-leitao@debian.org>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 14464154630030461831
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrjeeggdekudcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse,
+ please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - lists.ozlabs.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.250.130.205
+X-Source-L: No
+X-Exim-ID: 1gosCt-000ggM-VR
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: ([192.168.1.76]) [189.250.130.205]:46314
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 2
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,209 +128,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/30/19 7:20 AM, Paul Mackerras wrote:
-> On Tue, Jan 29, 2019 at 02:47:55PM +0100, Cédric Le Goater wrote:
->> On 1/29/19 3:45 AM, Paul Mackerras wrote:
->>> On Mon, Jan 28, 2019 at 07:26:00PM +0100, Cédric Le Goater wrote:
->>>> On 1/28/19 7:13 AM, Paul Mackerras wrote:
->>>>> Would we end up with too many VMAs if we just used mmap() to
->>>>> change the mappings from the software-generated pages to the
->>>>> hardware-generated interrupt pages?  
->>>> The sPAPR IRQ number space is 0x8000 wide now. The first 4K are 
->>>> dedicated to CPU IPIs and the remaining 4K are for devices. We can 
->>>
->>> Confused.  You say the number space has 32768 entries but then imply
->>> there are only 8K entries.  Do you mean that the API allows for 15-bit
->>> IRQ numbers but we are only making using of 8192 of them?
->>
->> Ouch. My bad. Let's do it again. 
->>
->> The sPAPR IRQ number space is 0x2000 wide :
->>
->> https://git.qemu.org/?p=qemu.git;a=blob;f=hw/ppc/spapr_irq.c;h=1da7a32348fced0bd638717022fc37a83fc5e279;hb=HEAD#l396
->>
->> The first 4K are dedicated to the CPU IPIs and the remaining 4K are for 
->> devices (which can be extended if needed).
->>
->> So that's 8192 x 2 ESB pages.
->>
->>>> extend the last range if needed as these are for MSIs. Dynamic 
->>>> extensions under KVM should work also.
->>>>
->>>> This to say that we have with 8K x 2 (trigger+EOI) pages. This is a
->>>> lot of mmap(), too much. Also the KVM model needs to be compatible
->>>
->>> I wasn't suggesting an mmap per IRQ, I meant that the bulk of the
->>> space would be covered by a single mmap, overlaid by subsequent mmaps
->>> where we need to map real device interrupts.
->>
->> ok. The same fault handler could be used to populate the VMA with the 
->> ESB pages. 
->>
->> But it would mean extra work on the QEMU side, which is not needed 
->> with this patch. 
+
+
+On 1/30/19 6:46 AM, Breno Leitao wrote:
+> 'regno' is directly controlled by user space, hence leading to a potential
+> exploitation of the Spectre variant 1 vulnerability.
 > 
-> Maybe, but just storing a single vma pointer in our private data is
-> not a feasible approach.  First, you have no control on the lifetime
-> of the vma and thus this is a use-after-free waiting to happen, and
-> secondly, there could be multiple vmas that you need to worry about.
-
-I fully agree. That's why I was uncomfortable with the solution. There 
-are a few other drivers (GPUs if I recall) doing that but it feels wrong.
-
-> Userspace could do multiple mmaps, or could do mprotect or similar on
-> part of an existing mmap, which would split the vma for the mmap into
-> multiple vmas.  You don't get notified about munmap either as far as I
-> can tell, so the vma is liable to go away.  
-
-yes ...
-
-> And it doesn't matter if
-> QEMU would never do such things; if userspace can provoke a
-> use-after-free in the kernel using KVM then someone will write a
-> specially crafted user program to do that.
+> On PTRACE_SETREGS and PTRACE_GETREGS requests, user space passes the
+> register number that would be read or written. This register number is
+> called 'regno' which is part of the 'addr' syscall parameter.
 > 
-> So we either solve it in userspace, or we have to write and maintain
-> complex kernel code with deep links into the MM subsystem.  
->
-> I'd much rather solve it in userspace.
-
-OK, then. I have been reluctant doing so but it seems there are no
-other in-kernel solution. 
-
->>>> with the QEMU emulated one and it was simpler to have one overall
->>>> memory region for the IPI ESBs, one for the END ESBs (if we support
->>>> that one day) and one for the TIMA.
->>>>
->>>>> Are the necessary pages for a PCI
->>>>> passthrough device contiguous in both host real space 
->>>>
->>>> They should as they are the PHB4 ESBs.
->>>>
->>>>> and guest real space ? 
->>>>
->>>> also. That's how we organized the mapping. 
->>>
->>> "How we organized the mapping" is a significant design decision that I
->>> haven't seen documented anywhere, and is really needed for
->>> understanding what's going on.
->>
->> OK. I will add comments on that. See below for some description.
->>
->> There is nothing fancy, it's simply indexed with the interrupt number,
->> like for HW, or for the QEMU XIVE emulated model.
->>
->>>>> If so we'd only need one mmap() for all the device's interrupt
->>>>> pages.
->>>>
->>>> Ah. So we would want to make a special case for the passthrough 
->>>> device and have a mmap() and a memory region for its ESBs. Hmm.
->>>>
->>>> Wouldn't that require to hot plug a memory region under the guest ? 
->>>
->>> No; the way that a memory region works is that userspace can do
->>> whatever disparate mappings it likes within the region on the user
->>> process side, and the corresponding region of guest real address space
->>> follows that automatically.
->>
->> yes. I suppose this should work also for 'ram device' memory mappings.
->>
->> So when the passthrough device is added to the guest, we would add a 
->> new 'ram device' memory region for the device interrupt ESB pages 
->> that would overlap with the initial guest ESB pages.  
+> This 'regno' value is checked against the maximum pt_regs structure size,
+> and then used to dereference it, which matches the initial part of a
+> Spectre v1 (and Spectre v1.1) attack. The dereferenced value, then,
+> is returned to userspace in the GETREGS case.
 > 
-> Not knowing the QEMU internals all that well, I don't at all
-> understand why a new ram device is necesssary. 
-
-'ram device' memory regions are of a special type which is used to 
-directly map into the guest the result of a mmap() in QEMU. 
-
-This is how we propagate the XIVE ESB pages from HW (and the TIMA) 
-to the guest and the Linux kernel. It has other use with VFIO.   
-
-> I would see it as a
-> single virtual area mapping the ESB pages of guest hwirqs that are in
-> use, and we manage those mappings with mmap and munmap.
-
-Yes I think I understand the idea. I will give a try. I need to find the 
-right place to do so in QEMU. See other email thread.
-
->> This is really a different approach.
->>
->>>> which means that we need to provision an address space/container 
->>>> region for theses regions. What are the benefits ? 
->>>>
->>>> Is clearing the PTEs and repopulating the VMA unsafe ? 
->>>
->>> Explicitly unmapping parts of the VMA seems like the wrong way to do
->>> it.  If you have a device mmap where the device wants to change the
->>> physical page underlying parts of the mapping, there should be a way
->>> for it to do that explicitly (but I don't know off the top of my head
->>> what the interface to do that is).
->>>
->>> However, I still haven't seen a clear and concise explanation of what
->>> is being changed, when, and why we need to do that.
->>
->> Yes. I agree on that. The problem is not very different from what we 
->> have today with the XICS-over-XIVE glue in KVM. Let me try to explain.
->>
->>
->> The KVM XICS-over-XIVE device and the proposed KVM XIVE native device 
->> implement an IRQ space for the guest using the generic IPI interrupts 
->> of the XIVE IC controller. These interrupts are allocated at the OPAL
->> level and "mapped" into the guest IRQ number space in the range 0-0x1FFF.
->> Interrupt management is performed in the XIVE way: using loads and 
->> stores on the addresses of the XIVE IPI interrupt ESB pages.
->>
->> Both KVM devices share the same internal structure caching information 
->> on the interrupts, among which the xive_irq_data struct containing the 
->> addresses of the IPI ESB pages and an extra one in case of passthrough. 
->> The later contains the addresses of the ESB pages of the underlying HW 
->> controller interrupts, PHB4 in all cases for now.    
->>
->> A guest when running in the XICS legacy interrupt mode lets the KVM 
->> XICS-over-XIVE device "handle" interrupt management, that is to perform  
->> the loads and stores on the addresses of the ESB pages of the guest 
->> interrupts. 
->>
->> However, when running in XIVE native exploitation mode, the KVM XIVE 
->> native device exposes the interrupt ESB pages to the guest and lets 
->> the guest perform directly the loads and stores. 
->>
->> The VMA exposing the ESB pages make use of a custom VM fault handler
->> which role is to populate the VMA with appropriate pages. When a fault
->> occurs, the guest IRQ number is deduced from the offset, and the ESB 
->> pages of associated XIVE IPI interrupt are inserted in the VMA (using
->> the internal structure caching information on the interrupts).
->>
->> Supporting device passthrough in the guest running in XIVE native 
->> exploitation mode adds some extra refinements because the ESB pages 
->> of a different HW controller (PHB4) need to be exposed to the guest 
->> along with the initial IPI ESB pages of the XIVE IC controller. But
->> the overall mechanic is the same. 
->>
->> When the device HW irqs are mapped into or unmapped from the guest
->> IRQ number space, the passthru_irq helpers, kvmppc_xive_set_mapped()
->> and kvmppc_xive_clr_mapped(), are called to record or clear the 
->> passthrough interrupt information and to perform the switch.
->>
->> The approach taken by this patch is to clear the ESB pages of the 
->> guest IRQ number being mapped and let the VM fault handler repopulate. 
->> The handler will insert the ESB page corresponding to the HW interrupt 
->> of the device being passed-through or the initial IPI ESB page if the
->> device is being removed.   
+> This patch sanitizes 'regno' before using it to dereference pt_reg.
 > 
-> That's a much better write-up.  Thanks.
+> Notice that given that speculation windows are large, the policy is
+> to kill the speculation on the first load and not worry if it can be
+> completed with a dependent load/store [1].
+> 
+> [1] https://marc.info/?l=linux-kernel&m=152449131114778&w=2
+> 
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 
-OK. I will reuse it when time comes.
+Acked-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-Thanks,
-
-C. 
-
+> ---
+>  arch/powerpc/kernel/ptrace.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index cdd5d1d3ae41..7535f89e08cd 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/hw_breakpoint.h>
+>  #include <linux/perf_event.h>
+>  #include <linux/context_tracking.h>
+> +#include <linux/nospec.h>
+>  
+>  #include <linux/uaccess.h>
+>  #include <linux/pkeys.h>
+> @@ -274,6 +275,8 @@ static int set_user_trap(struct task_struct *task, unsigned long trap)
+>   */
+>  int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
+>  {
+> +	unsigned int regs_max;
+> +
+>  	if ((task->thread.regs == NULL) || !data)
+>  		return -EIO;
+>  
+> @@ -297,7 +300,9 @@ int ptrace_get_reg(struct task_struct *task, int regno, unsigned long *data)
+>  	}
+>  #endif
+>  
+> -	if (regno < (sizeof(struct user_pt_regs) / sizeof(unsigned long))) {
+> +	regs_max = sizeof(struct user_pt_regs) / sizeof(unsigned long);
+> +	if (regno < regs_max) {
+> +		regno = array_index_nospec(regno, regs_max);
+>  		*data = ((unsigned long *)task->thread.regs)[regno];
+>  		return 0;
+>  	}
+> @@ -321,6 +326,7 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+>  		return set_user_dscr(task, data);
+>  
+>  	if (regno <= PT_MAX_PUT_REG) {
+> +		regno = array_index_nospec(regno, PT_MAX_PUT_REG + 1);
+>  		((unsigned long *)task->thread.regs)[regno] = data;
+>  		return 0;
+>  	}
+> 
