@@ -1,102 +1,83 @@
-Return-Path: <SRS0=D1of=QG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 011CCC282D8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 21:25:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84324C282D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 01:55:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2FC02218AF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jan 2019 21:24:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2FC02218AF
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B299320989
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 01:55:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LFCR1gvC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B299320989
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qbx431z3zDqQR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 08:24:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qjxR6zXtzDqW5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 12:55:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LFCR1gvC"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qbvL2QfjzDqTJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 08:23:25 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0ULJKT2052291
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 16:23:23 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qbjtyaj7v-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 16:23:22 -0500
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 30 Jan 2019 21:23:22 -0000
-Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 30 Jan 2019 21:23:20 -0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0ULNJfU21758110
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 30 Jan 2019 21:23:19 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2E4E1124055;
- Wed, 30 Jan 2019 21:23:19 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 11628124054;
- Wed, 30 Jan 2019 21:23:19 +0000 (GMT)
-Received: from ltcalpine2-lp20.aus.stglabs.ibm.com (unknown [9.40.195.203])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 30 Jan 2019 21:23:19 +0000 (GMT)
-Received: from ltcalpine2-lp20.aus.stglabs.ibm.com (localhost [IPv6:::1])
- by ltcalpine2-lp20.aus.stglabs.ibm.com (Postfix) with ESMTP id 9C7154260173;
- Wed, 30 Jan 2019 15:23:18 -0600 (CST)
-Subject: [PATCH v02] powerpc/pseries: Check for ceded CPU's during LPAR
- migration
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Juliet Kim <minkim@us.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Nathan Lynch <nathanl@linux.vnet.ibm.com>,
- Gustavo Walbon <gwalbon@linux.vnet.ibm.com>, mwb@linux.vnet.ibm.com
-Date: Wed, 30 Jan 2019 15:23:18 -0600
-User-Agent: StGit/0.18-105-g416a-dirty
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qjvZ3xCMzDqSl
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 12:54:02 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id 101so717665pld.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 17:54:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=iSwJVF0akr2kVYJppTgvIyWL79BXicuVcEgnc3zIsas=;
+ b=LFCR1gvCt7VgAvXOY092LW3oC1Ypi0k84WXZrf61a2DR2T3hkE8VdATF2prGZ17h5R
+ hME/nZ3HGgnu/q/aWzYz+A63Jjs7ULxreEbHupjdWr3BEtCCgUIUhNNcjJ9Enp/ykL/f
+ cVTYcRxzYwl2kmGRbAlcxtjKwzCu3OufCYT7J2mAGgl+PS9eQV+xjtbQe1RG42PBmGVN
+ e68cZ9VGM/Jb3mOtl0GlR/STKRqnb7QR9GI+/sgfnn9j6cpduA7vwsbHZKy2QBWN9qwU
+ cfarce1QOWzAqXF5LcZyWqEli8o7DgUf5g98PvOxvAh5DB0PzLzaGqD07qYJwf66C1Ad
+ EkAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=iSwJVF0akr2kVYJppTgvIyWL79BXicuVcEgnc3zIsas=;
+ b=BhGrGrYetQMHUKTH5TfRL9vMkPfwxobbwApKpuyu1y47uQhY+Rt8ljy33h0+94t/7T
+ nKkRm/O9AdRuIegPtFPnM+OWfZsew6wRW5OPq9S9k8/khnzkn4Na7XZhyjlpSzAP83u7
+ Ge6KjaBC6dEzHC+w6GcZw8JPOMZHOY0pQCH9Y7qgBHe/VC5+j5wADoByCm9U9+QXdmEP
+ /KZOHzthqVwMjLb8e5mx6UTjg8/o7382bUzcQQyVLkikwlftfJSkmWNicRzpn8NtPJFa
+ Dmz+uJ5AchFcicW3d4FoNkeZjDXb926XBK6xbZgeJmZ5i6D8zhr9Sq2RidNqJd1aUt+A
+ wePQ==
+X-Gm-Message-State: AJcUukccS0tbdsZft5adtfp9QM5AI3azVPQlGwdScvMQxu0PWAjx0sE8
+ Px6SXDXO9PZi/04LMg+qBma4Jswj
+X-Google-Smtp-Source: ALg8bN7sQo+G9SoV+f59SYzq9x8NFo7VObZz9hKM0VS1BpQjnnmsD3OANjUSX8o458be9Sv3cWntiw==
+X-Received: by 2002:a17:902:714c:: with SMTP id
+ u12mr32466424plm.234.1548899640226; 
+ Wed, 30 Jan 2019 17:54:00 -0800 (PST)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id p64sm4322108pfi.56.2019.01.30.17.53.58
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 30 Jan 2019 17:53:59 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/papr_scm: Use the correct bind address
+Date: Thu, 31 Jan 2019 12:53:47 +1100
+Message-Id: <20190131015347.21674-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19013021-2213-0000-0000-00000347DAFB
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010506; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01154086; UDB=6.00601742; IPR=6.00934463; 
- MB=3.00025360; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-30 21:23:21
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19013021-2214-0000-0000-00005D2C8916
-Message-Id: <20190130212220.11315.76901.stgit@ltcalpine2-lp20.aus.stglabs.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-30_16:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901300157
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,107 +89,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>, stable@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch is to check for cede'ed CPUs during LPM.  Some extreme
-tests encountered a problem ehere Linux has put some threads to
-sleep (possibly to save energy or something), LPM was attempted,
-and the Linux kernel didn't awaken the sleeping threads, but issued
-the H_JOIN for the active threads.  Since the sleeping threads
-are not awake, they can not issue the expected H_JOIN, and the
-partition would never suspend.  This patch wakes the sleeping
-threads back up.
+When binding an SCM volume to a physical address the hypervisor has the
+option to return early with a continue token with the expectation that
+the guest will resume the bind operation until it completes. A quirk of
+this interface is that the bind address will only be returned by the
+first bind h-call and the subsequent calls will return
+0xFFFF_FFFF_FFFF_FFFF for the bind address.
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Signed-off-by: Gustavo Walbon <gwalbon@linux.vnet.ibm.com>
----
-Changes in v02:
-   -- Rebase to latest powerpc kernel source.
----
- arch/powerpc/include/asm/plpar_wrappers.h |    6 ++----
- arch/powerpc/kernel/rtas.c                |    8 +++++++-
- arch/powerpc/platforms/pseries/setup.c    |   18 ++++++++++++++++++
- 3 files changed, 27 insertions(+), 5 deletions(-)
+We currently do not save the address returned by the first h-call. As a
+result we will use the junk address as the base of the bound region if
+the hypervisor decides to split the bind across multiple h-calls. This
+bug was found when testing with very large SCM volumes where the bind
+process would take more time than they hypervisor's internal h-call time
+limit would allow. This patch fixes the issue by saving the bind address
+from the first call.
 
-diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-index cff5a41..8292eff 100644
---- a/arch/powerpc/include/asm/plpar_wrappers.h
-+++ b/arch/powerpc/include/asm/plpar_wrappers.h
-@@ -26,10 +26,8 @@ static inline void set_cede_latency_hint(u8 latency_hint)
- 	get_lppaca()->cede_latency_hint = latency_hint;
- }
- 
--static inline long cede_processor(void)
--{
--	return plpar_hcall_norets(H_CEDE);
--}
-+int cpu_is_ceded(int cpu);
-+long cede_processor(void);
- 
- static inline long extended_cede_processor(unsigned long latency_hint)
+Cc: stable@vger.kernel.org
+Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/pseries/papr_scm.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index 7d6457ab5d34..bba281b1fe1b 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -43,6 +43,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
  {
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index de35bd8f..fea3d21 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -44,6 +44,7 @@
- #include <asm/time.h>
- #include <asm/mmu.h>
- #include <asm/topology.h>
-+#include <asm/plpar_wrappers.h>
+ 	unsigned long ret[PLPAR_HCALL_BUFSIZE];
+ 	uint64_t rc, token;
++	uint64_t saved = 0;
  
- /* This is here deliberately so it's only used in this file */
- void enter_rtas(unsigned long);
-@@ -942,7 +943,7 @@ int rtas_ibm_suspend_me(u64 handle)
- 	struct rtas_suspend_me_data data;
- 	DECLARE_COMPLETION_ONSTACK(done);
- 	cpumask_var_t offline_mask;
--	int cpuret;
-+	int cpuret, cpu;
+ 	/*
+ 	 * When the hypervisor cannot map all the requested memory in a single
+@@ -56,6 +57,8 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 		rc = plpar_hcall(H_SCM_BIND_MEM, ret, p->drc_index, 0,
+ 				p->blocks, BIND_ANY_ADDR, token);
+ 		token = ret[0];
++		if (!saved)
++			saved = ret[1];
+ 		cond_resched();
+ 	} while (rc == H_BUSY);
  
- 	if (!rtas_service_present("ibm,suspend-me"))
- 		return -ENOSYS;
-@@ -991,6 +992,11 @@ int rtas_ibm_suspend_me(u64 handle)
- 		goto out_hotplug_enable;
+@@ -64,7 +67,7 @@ static int drc_pmem_bind(struct papr_scm_priv *p)
+ 		return -ENXIO;
  	}
  
-+	for_each_present_cpu(cpu) {
-+		if (cpu_is_ceded(cpu))
-+			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
-+	}
-+
- 	/* Call function on all CPUs.  One of us will make the
- 	 * rtas call
- 	 */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 41f62ca2..48ae6d4 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -331,6 +331,24 @@ static int alloc_dispatch_log_kmem_cache(void)
- }
- machine_early_initcall(pseries, alloc_dispatch_log_kmem_cache);
+-	p->bound_addr = ret[1];
++	p->bound_addr = saved;
  
-+static DEFINE_PER_CPU(int, cpu_ceded);
-+
-+int cpu_is_ceded(int cpu)
-+{
-+	return per_cpu(cpu_ceded, cpu);
-+}
-+
-+long cede_processor(void)
-+{
-+	long rc;
-+
-+	per_cpu(cpu_ceded, raw_smp_processor_id()) = 1;
-+	rc = plpar_hcall_norets(H_CEDE);
-+	per_cpu(cpu_ceded, raw_smp_processor_id()) = 0;
-+
-+	return rc;
-+}
-+
- static void pseries_lpar_idle(void)
- {
- 	/*
+ 	dev_dbg(&p->pdev->dev, "bound drc %x to %pR\n", p->drc_index, &p->res);
+ 
+-- 
+2.20.1
 
