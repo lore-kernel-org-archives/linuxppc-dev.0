@@ -2,49 +2,96 @@ Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4200C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:27:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 773EEC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:44:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FE3B2184D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:27:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FE3B2184D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id BCEE620870
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:44:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BCEE620870
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qnJq2c03zDqWj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 15:27:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qngm57tgzDqWh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 15:44:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qnH01sGNzDqS2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 15:26:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43qnGz6QyHz9sBb;
- Thu, 31 Jan 2019 15:26:03 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH v3 1/2] mm: add probe_user_read()
-In-Reply-To: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
-References: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
-Date: Thu, 31 Jan 2019 15:26:03 +1100
-Message-ID: <875zu5pi5g.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qndy5wqBzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 15:42:30 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x0V4YSeR080729
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 23:42:28 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qbss2s13e-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2019 23:42:28 -0500
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 31 Jan 2019 04:42:26 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 31 Jan 2019 04:42:23 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0V4gMYH8061232
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 31 Jan 2019 04:42:22 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4B029A4054;
+ Thu, 31 Jan 2019 04:42:22 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E68E0A405F;
+ Thu, 31 Jan 2019 04:42:19 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.38.122])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 31 Jan 2019 04:42:19 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, akpm@linux-foundation.org,
+ Michal Hocko <mhocko@kernel.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH V7 3/4] powerpc/mm/iommu: Allow migration of cma allocated
+ pages during mm_iommu_do_alloc
+In-Reply-To: <874l9qqsz4.fsf@concordia.ellerman.id.au>
+References: <20190114095438.32470-1-aneesh.kumar@linux.ibm.com>
+ <20190114095438.32470-5-aneesh.kumar@linux.ibm.com>
+ <874l9qqsz4.fsf@concordia.ellerman.id.au>
+Date: Thu, 31 Jan 2019 10:12:17 +0530
 MIME-Version: 1.0
 Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19013104-4275-0000-0000-000003081F78
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19013104-4276-0000-0000-00003816274C
+Message-Id: <87pnsdo2ty.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-01-31_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901310036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,95 +109,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> In powerpc code, there are several places implementing safe
-> access to user data. This is sometimes implemented using
-> probe_kernel_address() with additional access_ok() verification,
-> sometimes with get_user() enclosed in a pagefault_disable()/enable()
-> pair, etc. :
->     show_user_instructions()
->     bad_stack_expansion()
->     p9_hmi_special_emu()
->     fsl_pci_mcheck_exception()
->     read_user_stack_64()
->     read_user_stack_32() on PPC64
->     read_user_stack_32() on PPC32
->     power_pmu_bhrb_to()
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 >
-> In the same spirit as probe_kernel_read(), this patch adds
-> probe_user_read().
+>> The current code doesn't do page migration if the page allocated is a compound page.
+>> With HugeTLB migration support, we can end up allocating hugetlb pages from
+>> CMA region. Also, THP pages can be allocated from CMA region. This patch updates
+>> the code to handle compound pages correctly. The patch also switches to a single
+>> get_user_pages with the right count, instead of doing one get_user_pages per page.
+>> That avoids reading page table multiple times.
 >
-> probe_user_read() does the same as probe_kernel_read() but
-> first checks that it is really a user address.
+> It's not very obvious from the above description that the migration
+> logic is now being done by get_user_pages_longterm(), it just looks like
+> it's all being deleted in this patch. Would be good to mention that.
 >
-> The patch defines this function as a static inline so the "size"
-> variable can be examined for const-ness by the check_object_size()
-> in __copy_from_user_inatomic()
+>> Since these page reference updates are long term pin, switch to
+>> get_user_pages_longterm. That makes sure we fail correctly if the guest RAM
+>> is backed by DAX pages.
 >
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  v3: Moved 'Returns:" comment after description.
->      Explained in the commit log why the function is defined static inline
->
->  v2: Added "Returns:" comment and removed probe_user_address()
->
->  include/linux/uaccess.h | 34 ++++++++++++++++++++++++++++++++++
->  1 file changed, 34 insertions(+)
->
-> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
-> index 37b226e8df13..ef99edd63da3 100644
-> --- a/include/linux/uaccess.h
-> +++ b/include/linux/uaccess.h
-> @@ -263,6 +263,40 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
->  #define probe_kernel_address(addr, retval)		\
->  	probe_kernel_read(&retval, addr, sizeof(retval))
->  
-> +/**
-> + * probe_user_read(): safely attempt to read from a user location
-> + * @dst: pointer to the buffer that shall take the data
-> + * @src: address to read from
-> + * @size: size of the data chunk
-> + *
-> + * Safely read from address @src to the buffer at @dst.  If a kernel fault
-> + * happens, handle that and return -EFAULT.
-> + *
-> + * We ensure that the copy_from_user is executed in atomic context so that
-> + * do_page_fault() doesn't attempt to take mmap_sem.  This makes
-> + * probe_user_read() suitable for use within regions where the caller
-> + * already holds mmap_sem, or other locks which nest inside mmap_sem.
-> + *
-> + * Returns: 0 on success, -EFAULT on error.
-> + */
-> +
-> +#ifndef probe_user_read
-> +static __always_inline long probe_user_read(void *dst, const void __user *src,
-> +					    size_t size)
-> +{
-> +	long ret;
-> +
+> Can you explain that in more detail?
 
-I wonder if we should explicitly switch to USER_DS here?
+DAX pages lifetime is dictated by file system rules and as such, we need
+to make sure that we free these pages on operations like truncate and
+punch hole. If we have long term pin on these pages, which are mostly
+return to userspace with elevated page count, the entity holding the
+long term pin may not be aware of the fact that file got truncated and
+the file system blocks possibly got reused. That can result in corruption.
 
-That would be sort of unusual, but the whole reason for this helper
-existing is to make sure we safely read from user memory and not
-accidentally from kernel.
+Work is going on to solve this issue by either making operations like
+truncate wait or to make these elevated reference counted page/file
+system blocks not to be released back to the file system free list.
 
-cheers
+Till then we prevent long term pin on DAX pages.
 
-> +	if (!access_ok(src, size))
-> +		return -EFAULT;
-> +
-> +	pagefault_disable();
-> +	ret = __copy_from_user_inatomic(dst, src, size);
-> +	pagefault_enable();
-> +
-> +	return ret ? -EFAULT : 0;
-> +}
-> +#endif
-> +
->  #ifndef user_access_begin
->  #define user_access_begin(ptr,len) access_ok(ptr, len)
->  #define user_access_end() do { } while (0)
-> -- 
-> 2.13.3
+Now that we have an API for long term pin, we should ideally be using
+that in the vfio code.
+
+
+>
+>> The patch also converts the hpas member of mm_iommu_table_group_mem_t to a union.
+>> We use the same storage location to store pointers to struct page. We cannot
+>> update all the code path use struct page *, because we access hpas in real mode
+>> and we can't do that struct page * to pfn conversion in real mode.
+>
+> That's a pain, it's asking for bugs mixing two different values in the
+> same array. But I guess it's the least worst option.
+>
+> It sounds like that's a separate change you could do in a separate
+> patch. But it's not, because it's tied to the fact that we're doing a
+> single GUP call.
+
+-aneesh
+
