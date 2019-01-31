@@ -2,61 +2,69 @@ Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00FEBC282D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 02:56:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B88EC282D7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:03:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C8B520989
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 02:56:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6FD2F2184D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:03:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="KS/klICh"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C8B520989
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="LhVWY5S2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD2F2184D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qlHY6Rf5zDqVv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 13:56:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.78; helo=conuserg-11.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="KS/klICh"; 
- dkim-atps=neutral
-Received: from conuserg-11.nifty.com (conuserg-11.nifty.com [210.131.2.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qlRN4JwdzDqVy
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 14:03:12 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qlFh1M3tzDqT8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 13:54:47 +1100 (AEDT)
-Received: from pug.e01.socionext.com (p14092-ipngnfx01kyoto.kyoto.ocn.ne.jp
- [153.142.97.92]) (authenticated)
- by conuserg-11.nifty.com with ESMTP id x0V2rd64008650;
- Thu, 31 Jan 2019 11:53:40 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conuserg-11.nifty.com x0V2rd64008650
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1548903220;
- bh=5uoBhSU0NECHQSXDysma0LK2UEd1UzpFB2egb+QJU5s=;
- h=From:To:Cc:Subject:Date:From;
- b=KS/klIChkS3UtvxOk79uttMt3fcMy/mNvVZ8b50mZzyRGsikVuE0pN2ToUb1b0Pnl
- zdIGr0hSikUsUjWPWNjiUK8BacOmmfA1Zd2ez4gKqpIgAiRF/TH0J+NekAV3qSAAE9
- PnXGVyCwm+mM8Qo0zRcwnIxljPIqHc54g9lSxBaE2ydIvcxjxwSEJNUsNnz1cCOdAS
- Fr9oERmof9ijbOsqR2zVs6dPPTP8koXPfkZJlB1IGaCMBFK0lV+j35jdOLNv8rbYud
- liI/K5sreO0MKOStd8bJv9H7We39Rtd0Y8WmSR77+GeJoYQhJCAocP/FTXG9AQ8S+P
- K6b8Fxs8s+FWQ==
-X-Nifty-SrcIP: [153.142.97.92]
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/prom_init: add __init markers to all functions
-Date: Thu, 31 Jan 2019 11:53:19 +0900
-Message-Id: <1548903199-32695-1-git-send-email-yamada.masahiro@socionext.com>
-X-Mailer: git-send-email 2.7.4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qlPK0LWhzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 14:01:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="LhVWY5S2"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 43qlPJ48Jbz9sBb; Thu, 31 Jan 2019 14:01:24 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1548903684; bh=7j1gHjUvkhk119VEC/ZCTmZWycE0wPoErXEgjulyA3E=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=LhVWY5S2QGSPQ+4EpI1kAXuS93bkmWrdkvDx/wLkSsE/4sRxw3qPs7++55xxvyzKn
+ Whr3BI0e0s+pIRYuUUQRvg1nsY2PSB8DHQEO5mEPzfo71QYYdjbXFAZOb3EkgDDTPG
+ Z4bKkZpPyI5S/Sa4WG3sPktuL7/alM+2CVxGxP6Y5SY8kMnUGvQiBUTRjRsnNyp1Wj
+ hKr/l1ysfTx91H8lTironRKpn5Hcxcr/ObDI7pNFgvBVDwE7LlrMZCnoyuy02cUWya
+ YwntG7IQgq4bzv6ipm63UYt1iqZD7AQvYmKqU/SQ0Egkc22M/n2tyZ+/JiKtukMTpT
+ 8M3fkgdydN3rA==
+Date: Thu, 31 Jan 2019 13:48:19 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
+Message-ID: <20190131024819.GA4675@blackberry>
+References: <20190122052657.GG15124@blackberry>
+ <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
+ <20190123103009.GB29826@blackberry>
+ <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
+ <20190128061353.GD3237@blackberry>
+ <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
+ <20190129024503.GA11368@blackberry>
+ <f92f71ee-5c8e-f6b1-dbbf-436bbb0624cd@kaod.org>
+ <20190130062041.GD27109@blackberry>
+ <f941f095-995f-0252-afd9-2a6f6f4ce7db@kaod.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f941f095-995f-0252-afd9-2a6f6f4ce7db@kaod.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,131 +76,221 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-It is fragile to rely on the compiler's optimization to avoid the
-section mismatch. Some functions may not be necessarily inlined
-when the compiler's inlining heuristic changes.
+On Wed, Jan 30, 2019 at 04:54:23PM +0100, Cédric Le Goater wrote:
+> On 1/30/19 7:20 AM, Paul Mackerras wrote:
+> > On Tue, Jan 29, 2019 at 02:47:55PM +0100, Cédric Le Goater wrote:
+> >> On 1/29/19 3:45 AM, Paul Mackerras wrote:
+> >>> On Mon, Jan 28, 2019 at 07:26:00PM +0100, Cédric Le Goater wrote:
+> >>>> On 1/28/19 7:13 AM, Paul Mackerras wrote:
+> >>>>> Would we end up with too many VMAs if we just used mmap() to
+> >>>>> change the mappings from the software-generated pages to the
+> >>>>> hardware-generated interrupt pages?  
+> >>>> The sPAPR IRQ number space is 0x8000 wide now. The first 4K are 
+> >>>> dedicated to CPU IPIs and the remaining 4K are for devices. We can 
+> >>>
+> >>> Confused.  You say the number space has 32768 entries but then imply
+> >>> there are only 8K entries.  Do you mean that the API allows for 15-bit
+> >>> IRQ numbers but we are only making using of 8192 of them?
+> >>
+> >> Ouch. My bad. Let's do it again. 
+> >>
+> >> The sPAPR IRQ number space is 0x2000 wide :
+> >>
+> >> https://git.qemu.org/?p=qemu.git;a=blob;f=hw/ppc/spapr_irq.c;h=1da7a32348fced0bd638717022fc37a83fc5e279;hb=HEAD#l396
+> >>
+> >> The first 4K are dedicated to the CPU IPIs and the remaining 4K are for 
+> >> devices (which can be extended if needed).
+> >>
+> >> So that's 8192 x 2 ESB pages.
+> >>
+> >>>> extend the last range if needed as these are for MSIs. Dynamic 
+> >>>> extensions under KVM should work also.
+> >>>>
+> >>>> This to say that we have with 8K x 2 (trigger+EOI) pages. This is a
+> >>>> lot of mmap(), too much. Also the KVM model needs to be compatible
+> >>>
+> >>> I wasn't suggesting an mmap per IRQ, I meant that the bulk of the
+> >>> space would be covered by a single mmap, overlaid by subsequent mmaps
+> >>> where we need to map real device interrupts.
+> >>
+> >> ok. The same fault handler could be used to populate the VMA with the 
+> >> ESB pages. 
+> >>
+> >> But it would mean extra work on the QEMU side, which is not needed 
+> >> with this patch. 
+> > 
+> > Maybe, but just storing a single vma pointer in our private data is
+> > not a feasible approach.  First, you have no control on the lifetime
+> > of the vma and thus this is a use-after-free waiting to happen, and
+> > secondly, there could be multiple vmas that you need to worry about.
+> 
+> I fully agree. That's why I was uncomfortable with the solution. There 
+> are a few other drivers (GPUs if I recall) doing that but it feels wrong.
 
-Add __init markers consistently.
+There is the HMM infrastructure (heterogeneous memory model) which
+could possibly be used to do this, but it's very heavyweight for the
+problem we have here.
 
-As for prom_getprop() and prom_getproplen(), they are marked as
-'inline', so inlining is guaranteed because PowerPC never enables
-CONFIG_OPTIMIZE_INLINING. However, it would be better to leave the
-inlining decision to the compiler. I replaced 'inline' with __init.
+> > Userspace could do multiple mmaps, or could do mprotect or similar on
+> > part of an existing mmap, which would split the vma for the mmap into
+> > multiple vmas.  You don't get notified about munmap either as far as I
+> > can tell, so the vma is liable to go away.  
+> 
+> yes ...
+> 
+> > And it doesn't matter if
+> > QEMU would never do such things; if userspace can provoke a
+> > use-after-free in the kernel using KVM then someone will write a
+> > specially crafted user program to do that.
+> > 
+> > So we either solve it in userspace, or we have to write and maintain
+> > complex kernel code with deep links into the MM subsystem.  
+> >
+> > I'd much rather solve it in userspace.
+> 
+> OK, then. I have been reluctant doing so but it seems there are no
+> other in-kernel solution. 
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+I discussed the problem today with David Gibson and he mentioned that
+QEMU does have a lot of freedom in how it assigns the guest hwirq
+numbers.  So you may be able to avoid the problem by (for example)
+never assigning a hwirq to a VFIO device that has previously been used
+for an emulated device (or something like that).
 
- arch/powerpc/kernel/prom_init.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+> >>>> with the QEMU emulated one and it was simpler to have one overall
+> >>>> memory region for the IPI ESBs, one for the END ESBs (if we support
+> >>>> that one day) and one for the TIMA.
+> >>>>
+> >>>>> Are the necessary pages for a PCI
+> >>>>> passthrough device contiguous in both host real space 
+> >>>>
+> >>>> They should as they are the PHB4 ESBs.
+> >>>>
+> >>>>> and guest real space ? 
+> >>>>
+> >>>> also. That's how we organized the mapping. 
+> >>>
+> >>> "How we organized the mapping" is a significant design decision that I
+> >>> haven't seen documented anywhere, and is really needed for
+> >>> understanding what's going on.
+> >>
+> >> OK. I will add comments on that. See below for some description.
+> >>
+> >> There is nothing fancy, it's simply indexed with the interrupt number,
+> >> like for HW, or for the QEMU XIVE emulated model.
+> >>
+> >>>>> If so we'd only need one mmap() for all the device's interrupt
+> >>>>> pages.
+> >>>>
+> >>>> Ah. So we would want to make a special case for the passthrough 
+> >>>> device and have a mmap() and a memory region for its ESBs. Hmm.
+> >>>>
+> >>>> Wouldn't that require to hot plug a memory region under the guest ? 
+> >>>
+> >>> No; the way that a memory region works is that userspace can do
+> >>> whatever disparate mappings it likes within the region on the user
+> >>> process side, and the corresponding region of guest real address space
+> >>> follows that automatically.
+> >>
+> >> yes. I suppose this should work also for 'ram device' memory mappings.
+> >>
+> >> So when the passthrough device is added to the guest, we would add a 
+> >> new 'ram device' memory region for the device interrupt ESB pages 
+> >> that would overlap with the initial guest ESB pages.  
+> > 
+> > Not knowing the QEMU internals all that well, I don't at all
+> > understand why a new ram device is necesssary. 
+> 
+> 'ram device' memory regions are of a special type which is used to 
+> directly map into the guest the result of a mmap() in QEMU. 
+> 
+> This is how we propagate the XIVE ESB pages from HW (and the TIMA) 
+> to the guest and the Linux kernel. It has other use with VFIO.   
+> 
+> > I would see it as a
+> > single virtual area mapping the ESB pages of guest hwirqs that are in
+> > use, and we manage those mappings with mmap and munmap.
+> 
+> Yes I think I understand the idea. I will give a try. I need to find the 
+> right place to do so in QEMU. See other email thread.
+> 
+> >> This is really a different approach.
+> >>
+> >>>> which means that we need to provision an address space/container 
+> >>>> region for theses regions. What are the benefits ? 
+> >>>>
+> >>>> Is clearing the PTEs and repopulating the VMA unsafe ? 
+> >>>
+> >>> Explicitly unmapping parts of the VMA seems like the wrong way to do
+> >>> it.  If you have a device mmap where the device wants to change the
+> >>> physical page underlying parts of the mapping, there should be a way
+> >>> for it to do that explicitly (but I don't know off the top of my head
+> >>> what the interface to do that is).
+> >>>
+> >>> However, I still haven't seen a clear and concise explanation of what
+> >>> is being changed, when, and why we need to do that.
+> >>
+> >> Yes. I agree on that. The problem is not very different from what we 
+> >> have today with the XICS-over-XIVE glue in KVM. Let me try to explain.
+> >>
+> >>
+> >> The KVM XICS-over-XIVE device and the proposed KVM XIVE native device 
+> >> implement an IRQ space for the guest using the generic IPI interrupts 
+> >> of the XIVE IC controller. These interrupts are allocated at the OPAL
+> >> level and "mapped" into the guest IRQ number space in the range 0-0x1FFF.
+> >> Interrupt management is performed in the XIVE way: using loads and 
+> >> stores on the addresses of the XIVE IPI interrupt ESB pages.
+> >>
+> >> Both KVM devices share the same internal structure caching information 
+> >> on the interrupts, among which the xive_irq_data struct containing the 
+> >> addresses of the IPI ESB pages and an extra one in case of passthrough. 
+> >> The later contains the addresses of the ESB pages of the underlying HW 
+> >> controller interrupts, PHB4 in all cases for now.    
+> >>
+> >> A guest when running in the XICS legacy interrupt mode lets the KVM 
+> >> XICS-over-XIVE device "handle" interrupt management, that is to perform  
+> >> the loads and stores on the addresses of the ESB pages of the guest 
+> >> interrupts. 
+> >>
+> >> However, when running in XIVE native exploitation mode, the KVM XIVE 
+> >> native device exposes the interrupt ESB pages to the guest and lets 
+> >> the guest perform directly the loads and stores. 
+> >>
+> >> The VMA exposing the ESB pages make use of a custom VM fault handler
+> >> which role is to populate the VMA with appropriate pages. When a fault
+> >> occurs, the guest IRQ number is deduced from the offset, and the ESB 
+> >> pages of associated XIVE IPI interrupt are inserted in the VMA (using
+> >> the internal structure caching information on the interrupts).
+> >>
+> >> Supporting device passthrough in the guest running in XIVE native 
+> >> exploitation mode adds some extra refinements because the ESB pages 
+> >> of a different HW controller (PHB4) need to be exposed to the guest 
+> >> along with the initial IPI ESB pages of the XIVE IC controller. But
+> >> the overall mechanic is the same. 
+> >>
+> >> When the device HW irqs are mapped into or unmapped from the guest
+> >> IRQ number space, the passthru_irq helpers, kvmppc_xive_set_mapped()
+> >> and kvmppc_xive_clr_mapped(), are called to record or clear the 
+> >> passthrough interrupt information and to perform the switch.
+> >>
+> >> The approach taken by this patch is to clear the ESB pages of the 
+> >> guest IRQ number being mapped and let the VM fault handler repopulate. 
+> >> The handler will insert the ESB page corresponding to the HW interrupt 
+> >> of the device being passed-through or the initial IPI ESB page if the
+> >> device is being removed.   
+> > 
+> > That's a much better write-up.  Thanks.
+> 
+> OK. I will reuse it when time comes.
+> 
+> Thanks,
+> 
+> C. 
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f33ff41..85b0719 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -501,19 +501,19 @@ static int __init prom_next_node(phandle *nodep)
- 	}
- }
- 
--static inline int prom_getprop(phandle node, const char *pname,
-+static int __init prom_getprop(phandle node, const char *pname,
- 			       void *value, size_t valuelen)
- {
- 	return call_prom("getprop", 4, 1, node, ADDR(pname),
- 			 (u32)(unsigned long) value, (u32) valuelen);
- }
- 
--static inline int prom_getproplen(phandle node, const char *pname)
-+static int __init prom_getproplen(phandle node, const char *pname)
- {
- 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
- }
- 
--static void add_string(char **str, const char *q)
-+static void __init add_string(char **str, const char *q)
- {
- 	char *p = *str;
- 
-@@ -523,7 +523,7 @@ static void add_string(char **str, const char *q)
- 	*str = p;
- }
- 
--static char *tohex(unsigned int x)
-+static char __init *tohex(unsigned int x)
- {
- 	static const char digits[] __initconst = "0123456789abcdef";
- 	static char result[9] __prombss;
-@@ -570,7 +570,7 @@ static int __init prom_setprop(phandle node, const char *nodename,
- #define islower(c)	('a' <= (c) && (c) <= 'z')
- #define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
- 
--static unsigned long prom_strtoul(const char *cp, const char **endp)
-+static unsigned long __init prom_strtoul(const char *cp, const char **endp)
- {
- 	unsigned long result = 0, base = 10, value;
- 
-@@ -595,7 +595,7 @@ static unsigned long prom_strtoul(const char *cp, const char **endp)
- 	return result;
- }
- 
--static unsigned long prom_memparse(const char *ptr, const char **retptr)
-+static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
- {
- 	unsigned long ret = prom_strtoul(ptr, retptr);
- 	int shift = 0;
-@@ -2924,7 +2924,7 @@ static void __init fixup_device_tree_pasemi(void)
- 	prom_setprop(iob, name, "device_type", "isa", sizeof("isa"));
- }
- #else	/* !CONFIG_PPC_PASEMI_NEMO */
--static inline void fixup_device_tree_pasemi(void) { }
-+static inline void __init fixup_device_tree_pasemi(void) { }
- #endif
- 
- static void __init fixup_device_tree(void)
-@@ -2986,15 +2986,15 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
- 
- #ifdef CONFIG_PPC64
- #ifdef CONFIG_RELOCATABLE
--static void reloc_toc(void)
-+static void __init reloc_toc(void)
- {
- }
- 
--static void unreloc_toc(void)
-+static void __init unreloc_toc(void)
- {
- }
- #else
--static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
-+static void __init __reloc_toc(unsigned long offset, unsigned long nr_entries)
- {
- 	unsigned long i;
- 	unsigned long *toc_entry;
-@@ -3008,7 +3008,7 @@ static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
- 	}
- }
- 
--static void reloc_toc(void)
-+static void __init reloc_toc(void)
- {
- 	unsigned long offset = reloc_offset();
- 	unsigned long nr_entries =
-@@ -3019,7 +3019,7 @@ static void reloc_toc(void)
- 	mb();
- }
- 
--static void unreloc_toc(void)
-+static void __init unreloc_toc(void)
- {
- 	unsigned long offset = reloc_offset();
- 	unsigned long nr_entries =
--- 
-2.7.4
-
+Paul.
