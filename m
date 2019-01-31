@@ -2,65 +2,50 @@ Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD27BC282D8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 909CDC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:20:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A16F2184D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:04:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="cKVL5p30"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A16F2184D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	by mail.kernel.org (Postfix) with ESMTPS id 1B9F920833
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 04:20:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B9F920833
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qlTF1tVzzDqVb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 14:04:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qn9362DjzDqVh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 15:20:55 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qlPK12BCzDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 14:01:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="cKVL5p30"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 43qlPJ52lKz9s9G; Thu, 31 Jan 2019 14:01:24 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1548903684; bh=CiEa7/ispOH3TP+2ICZWifKUsD/VmMIOhlRYzRKj14g=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cKVL5p304rFqZ24DvDzTJhR21VKjctaIY0phLTQWRE0qiX8TbT7lUrIarGQYyX7IC
- bZcJLso4N4s9YtWRa4bPo1XbX9+iN45M74zdp6Goxypemc9PsPuCPh/Y00UPySlgXf
- 7WfZCh+DPRfh29rzWSen7d7TCX2Wyf5KXkNppnw3eJqDWlTZR4A3yyck9+dBKJ0h/6
- xuHEd8NQg//LxrSb6c6KNxo1am7PL1TANUKHga0DkXsFhVFugcdMjFpLVhwO1P0rHy
- 6us9GV4RxafG0YUK9kYJOys618eHxvgB4z0w9uI8+hpvWq8O1uCp+3x3XkT57V4SVC
- oxCHqELT2xekA==
-Date: Thu, 31 Jan 2019 14:01:20 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 05/19] KVM: PPC: Book3S HV: add a new KVM device for the
- XIVE native exploitation mode
-Message-ID: <20190131030120.GB4675@blackberry>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-6-clg@kaod.org>
- <20190122050520.GC15124@blackberry>
- <d21664e5-1d9c-5a55-5b83-bf5e6247917a@kaod.org>
- <20190130042919.GA27109@blackberry>
- <74d4fe26-9e5a-a72e-815a-223a55f1bc0f@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qn7901vjzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 15:19:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43qn7810Tdz9sBb;
+ Thu, 31 Jan 2019 15:19:16 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Kees Cook <keescook@chromium.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Mike Rapoport <rppt@linux.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc: use probe_user_read()
+In-Reply-To: <afd95fa4747f1c1eb66677025c2c7c9055f43cce.1547652372.git.christophe.leroy@c-s.fr>
+References: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
+ <afd95fa4747f1c1eb66677025c2c7c9055f43cce.1547652372.git.christophe.leroy@c-s.fr>
+Date: Thu, 31 Jan 2019 15:19:13 +1100
+Message-ID: <878sz1pigu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <74d4fe26-9e5a-a72e-815a-223a55f1bc0f@kaod.org>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,80 +57,183 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 30, 2019 at 08:01:22AM +0100, Cédric Le Goater wrote:
-> On 1/30/19 5:29 AM, Paul Mackerras wrote:
-> > On Mon, Jan 28, 2019 at 06:35:34PM +0100, Cédric Le Goater wrote:
-> >> On 1/22/19 6:05 AM, Paul Mackerras wrote:
-> >>> On Mon, Jan 07, 2019 at 07:43:17PM +0100, Cédric Le Goater wrote:
-> >>>> This is the basic framework for the new KVM device supporting the XIVE
-> >>>> native exploitation mode. The user interface exposes a new capability
-> >>>> and a new KVM device to be used by QEMU.
-> >>>
-> >>> [snip]
-> >>>> @@ -1039,7 +1039,10 @@ static int kvmppc_book3s_init(void)
-> >>>>  #ifdef CONFIG_KVM_XIVE
-> >>>>  	if (xive_enabled()) {
-> >>>>  		kvmppc_xive_init_module();
-> >>>> +		kvmppc_xive_native_init_module();
-> >>>>  		kvm_register_device_ops(&kvm_xive_ops, KVM_DEV_TYPE_XICS);
-> >>>> +		kvm_register_device_ops(&kvm_xive_native_ops,
-> >>>> +					KVM_DEV_TYPE_XIVE);
-> >>>
-> >>> I think we want tighter conditions on initializing the xive_native
-> >>> stuff and creating the xive device class.  We could have
-> >>> xive_enabled() returning true in a guest, and this code will get
-> >>> called both by PR KVM and HV KVM (and HV KVM no longer implies that we
-> >>> are running bare metal).
-> >>
-> >> So yes, I gave nested a try with kernel_irqchip=on and the nested hypervisor 
-> >> (L1) obviously crashes trying to call OPAL. I have tighten the test with : 
-> >>
-> >> 	if (xive_enabled() && !kvmhv_on_pseries()) {
-> >>
-> >> for now.
-> >>
-> >> As this is a problem today in 5.0.x, I will send a patch for it if you think
-> > 
-> > How do you mean this is a problem today in 5.0?  I just tried 5.0-rc1
-> > with kernel_irqchip=on in a nested guest and it works just fine.  What
-> > exactly did you test?
-> 
-> L0: Linux 5.0.0-rc3 (+ KVM HV)
-> L1:     QEMU pseries-4.0 (kernel_irqchip=on) - Linux 5.0.0-rc3 (+ KVM HV)
-> L2:          QEMU pseries-4.0 (kernel_irqchip=on) - Linux 5.0.0-rc3
-> 
-> L1 crashes when L2 starts and tries to initialize the KVM IRQ device as 
-> it does an OPAL call and its running under SLOF. See below.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-OK, you must have a QEMU that advertises XIVE to the guest (L1).  In
-that case I can see that L1 would try to do XICS-on-XIVE, which won't
-work.  We need to fix that.  Unfortunately the XICS-on-XICS emulation
-won't work as is in L1 either, but I think we can fix that by
-disabling the real-mode XICS hcall handling.
+> Instead of opencoding, use probe_user_read() to failessly
+> read a user location.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  v3: No change
+>
+>  v2: Using probe_user_read() instead of probe_user_address()
+>
+>  arch/powerpc/kernel/process.c   | 12 +-----------
+>  arch/powerpc/mm/fault.c         |  6 +-----
+>  arch/powerpc/perf/callchain.c   | 20 +++-----------------
+>  arch/powerpc/perf/core-book3s.c |  8 +-------
+>  arch/powerpc/sysdev/fsl_pci.c   | 10 ++++------
+>  5 files changed, 10 insertions(+), 46 deletions(-)
 
-> I don't understand how L2 can work with kernel_irqchip=on. Could you
-> please explain ? 
+Looks good.
 
-If QEMU decides to advertise XIVE to the L2 guest and the L2 guest can
-do XIVE, then the only possibility is to use the XIVE software
-emulation in QEMU, and if kernel_irqchip=on has been specified
-explicitly, maybe QEMU decides to terminate the guest rather than
-implicitly turning off kernel_irqchip.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-If QEMU decides not to advertise XIVE to the L2 guest, or the L2 guest
-can't do XIVE, then we could use the XICS-on-XICS emulation in L1 as
-long as either (a) L1 is not using XIVE, or (b) we modify the
-XICS-on-XICS code to avoid using any XICS or XIVE access (i.e. just
-using calls to generic kernel facilities).
+cheers
 
-Ultimately, if the spapr xive backend code in the kernel could be
-extended to provide all the low-level functions that the XICS-on-XIVE
-code needs, then we could do XICS-on-XIVE in a guest.
-
-Paul.
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index ce393df243aa..6a4b59d574c2 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1298,16 +1298,6 @@ void show_user_instructions(struct pt_regs *regs)
+>  
+>  	pc = regs->nip - (NR_INSN_TO_PRINT * 3 / 4 * sizeof(int));
+>  
+> -	/*
+> -	 * Make sure the NIP points at userspace, not kernel text/data or
+> -	 * elsewhere.
+> -	 */
+> -	if (!__access_ok(pc, NR_INSN_TO_PRINT * sizeof(int), USER_DS)) {
+> -		pr_info("%s[%d]: Bad NIP, not dumping instructions.\n",
+> -			current->comm, current->pid);
+> -		return;
+> -	}
+> -
+>  	seq_buf_init(&s, buf, sizeof(buf));
+>  
+>  	while (n) {
+> @@ -1318,7 +1308,7 @@ void show_user_instructions(struct pt_regs *regs)
+>  		for (i = 0; i < 8 && n; i++, n--, pc += sizeof(int)) {
+>  			int instr;
+>  
+> -			if (probe_kernel_address((const void *)pc, instr)) {
+> +			if (probe_user_read(&instr, (void __user *)pc, sizeof(instr))) {
+>  				seq_buf_printf(&s, "XXXXXXXX ");
+>  				continue;
+>  			}
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> index 887f11bcf330..ec74305fa330 100644
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -276,12 +276,8 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+>  		if ((flags & FAULT_FLAG_WRITE) && (flags & FAULT_FLAG_USER) &&
+>  		    access_ok(nip, sizeof(*nip))) {
+>  			unsigned int inst;
+> -			int res;
+>  
+> -			pagefault_disable();
+> -			res = __get_user_inatomic(inst, nip);
+> -			pagefault_enable();
+> -			if (!res)
+> +			if (!probe_user_read(&inst, nip, sizeof(inst)))
+>  				return !store_updates_sp(inst);
+>  			*must_retry = true;
+>  		}
+> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+> index 0af051a1974e..0680efb2237b 100644
+> --- a/arch/powerpc/perf/callchain.c
+> +++ b/arch/powerpc/perf/callchain.c
+> @@ -159,12 +159,8 @@ static int read_user_stack_64(unsigned long __user *ptr, unsigned long *ret)
+>  	    ((unsigned long)ptr & 7))
+>  		return -EFAULT;
+>  
+> -	pagefault_disable();
+> -	if (!__get_user_inatomic(*ret, ptr)) {
+> -		pagefault_enable();
+> +	if (!probe_user_read(ret, ptr, sizeof(*ret)))
+>  		return 0;
+> -	}
+> -	pagefault_enable();
+>  
+>  	return read_user_stack_slow(ptr, ret, 8);
+>  }
+> @@ -175,12 +171,8 @@ static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
+>  	    ((unsigned long)ptr & 3))
+>  		return -EFAULT;
+>  
+> -	pagefault_disable();
+> -	if (!__get_user_inatomic(*ret, ptr)) {
+> -		pagefault_enable();
+> +	if (!probe_user_read(ret, ptr, sizeof(*ret)))
+>  		return 0;
+> -	}
+> -	pagefault_enable();
+>  
+>  	return read_user_stack_slow(ptr, ret, 4);
+>  }
+> @@ -307,17 +299,11 @@ static inline int current_is_64bit(void)
+>   */
+>  static int read_user_stack_32(unsigned int __user *ptr, unsigned int *ret)
+>  {
+> -	int rc;
+> -
+>  	if ((unsigned long)ptr > TASK_SIZE - sizeof(unsigned int) ||
+>  	    ((unsigned long)ptr & 3))
+>  		return -EFAULT;
+>  
+> -	pagefault_disable();
+> -	rc = __get_user_inatomic(*ret, ptr);
+> -	pagefault_enable();
+> -
+> -	return rc;
+> +	return probe_user_read(ret, ptr, sizeof(*ret));
+>  }
+>  
+>  static inline void perf_callchain_user_64(struct perf_callchain_entry_ctx *entry,
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index b0723002a396..4b64ddf0db68 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -416,7 +416,6 @@ static void power_pmu_sched_task(struct perf_event_context *ctx, bool sched_in)
+>  static __u64 power_pmu_bhrb_to(u64 addr)
+>  {
+>  	unsigned int instr;
+> -	int ret;
+>  	__u64 target;
+>  
+>  	if (is_kernel_addr(addr)) {
+> @@ -427,13 +426,8 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+>  	}
+>  
+>  	/* Userspace: need copy instruction here then translate it */
+> -	pagefault_disable();
+> -	ret = __get_user_inatomic(instr, (unsigned int __user *)addr);
+> -	if (ret) {
+> -		pagefault_enable();
+> +	if (probe_user_read(&instr, (unsigned int __user *)addr, sizeof(instr)))
+>  		return 0;
+> -	}
+> -	pagefault_enable();
+>  
+>  	target = branch_target(&instr);
+>  	if ((!target) || (instr & BRANCH_ABSOLUTE))
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> index 918be816b097..c8a1b26489f5 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -1068,13 +1068,11 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+>  	addr += mfspr(SPRN_MCAR);
+>  
+>  	if (is_in_pci_mem_space(addr)) {
+> -		if (user_mode(regs)) {
+> -			pagefault_disable();
+> -			ret = get_user(inst, (__u32 __user *)regs->nip);
+> -			pagefault_enable();
+> -		} else {
+> +		if (user_mode(regs))
+> +			ret = probe_user_read(&inst, (void __user *)regs->nip,
+> +					      sizeof(inst));
+> +		else
+>  			ret = probe_kernel_address((void *)regs->nip, inst);
+> -		}
+>  
+>  		if (!ret && mcheck_handle_load(regs, inst)) {
+>  			regs->nip += 4;
+> -- 
+> 2.13.3
