@@ -6,67 +6,68 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01AD8C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:31:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25DE2C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:35:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B3D520881
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:31:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B3D520881
+	by mail.kernel.org (Postfix) with ESMTPS id A353220881
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:35:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A353220881
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rFMg6Np2zDqfL
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 09:31:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rFSN5fBFzDqWd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 09:35:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rFKv05FbzDqcY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 09:30:10 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rFQb3gFSzDqTD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 09:34:15 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0VMSlRt128963
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:30:08 -0500
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qc8xh2bqr-1
+ x0VMXjBb089678
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:34:12 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qc8w12ex9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:30:08 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:34:12 -0500
 Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 31 Jan 2019 22:30:07 -0000
-Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 31 Jan 2019 22:34:11 -0000
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
  Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 31 Jan 2019 22:30:05 -0000
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0VMU38322413444
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 31 Jan 2019 22:30:03 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1D418AE063;
- Thu, 31 Jan 2019 22:30:03 +0000 (GMT)
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5854AAE060;
- Thu, 31 Jan 2019 22:30:02 +0000 (GMT)
-Received: from oc8380061452.ibm.com (unknown [9.53.179.224])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 31 Jan 2019 22:30:02 +0000 (GMT)
+ Thu, 31 Jan 2019 22:34:09 -0000
+Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
+ [9.57.199.107])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x0VMY7j817498328
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 31 Jan 2019 22:34:08 GMT
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D133412405A;
+ Thu, 31 Jan 2019 22:34:07 +0000 (GMT)
+Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 862ED124053;
+ Thu, 31 Jan 2019 22:34:06 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.80.225.63])
+ by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 31 Jan 2019 22:34:06 +0000 (GMT)
 Subject: Re: [PATCH v02] powerpc/pseries: Check for ceded CPU's during LPAR
  migration
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  Juliet Kim <minkim@us.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
@@ -77,50 +78,23 @@ References: <20190130212220.11315.76901.stgit@ltcalpine2-lp20.aus.stglabs.ibm.co
  <8736p9pes4.fsf@concordia.ellerman.id.au>
  <65daf21b-dd1d-c22d-4746-65f4ae5d824f@linux.vnet.ibm.com>
  <1030033d-0cca-efa5-2833-ee8bbd7c4e8a@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Thu, 31 Jan 2019 16:30:01 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+Date: Thu, 31 Jan 2019 14:34:05 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
 In-Reply-To: <1030033d-0cca-efa5-2833-ee8bbd7c4e8a@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19013122-0064-0000-0000-000003A0DB18
+x-cbid: 19013122-0060-0000-0000-00000303BFA0
 X-IBM-SpamModules-Scores: 
 X-IBM-SpamModules-Versions: BY=3.00010512; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01154531; UDB=6.00602043; IPR=6.00934963; 
- MB=3.00025380; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-31 22:30:06
+ PH=3.00000004; SC=3.00000277; SDB=6.01154532; UDB=6.00602045; IPR=6.00934964; 
+ MB=3.00025380; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-31 22:34:11
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19013122-0065-0000-0000-00003C3F8104
-Message-Id: <a9c7c0d5-8565-f9cf-7eac-bd47d6e4afe2@linux.vnet.ibm.com>
+x-cbparentid: 19013122-0061-0000-0000-00004821E837
+Message-Id: <25fbcee4-b1c1-de1e-efc0-6bb4bf081d45@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-01-31_12:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -128,7 +102,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901310163
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1901310164
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -144,7 +118,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/31/19 4:21 PM, Tyrel Datwyler wrote:
+On 01/31/2019 02:21 PM, Tyrel Datwyler wrote:
 > On 01/31/2019 01:53 PM, Michael Bringmann wrote:
 >> On 1/30/19 11:38 PM, Michael Ellerman wrote:
 >>> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
@@ -173,6 +147,10 @@ On 1/31/19 4:21 PM, Tyrel Datwyler wrote:
 > 
 > Do we CEDE processors when running dedicated? I thought H_CEDE was part of the
 > Shared Processor LPAR option.
+
+Looks like the cpuidle-pseries driver uses CEDE with dedicated processors as
+long as firmware supports SPLPAR option.
+
 > 
 >>
 >> From the PHYP data we can see that on VP 0, threads 3, 4, 5, 6 and 7 issued
@@ -184,8 +162,18 @@ On 1/31/19 4:21 PM, Tyrel Datwyler wrote:
 > Not according to PAPR. A CEDE'd processor should awaken if signaled by external
 > interrupt such as decrementer or IPI as well.
 
-Checking these points with Pete H.
-Thanks.
+This statement should still apply though. From PAPR:
+
+14.11.3.3 H_CEDE
+The architectural intent of this hcall() is to have the virtual processor, which
+has no useful work to do, enter a wait state ceding its processor capacity to
+other virtual processors until some useful work appears, signaled either through
+an interrupt or a prod hcall(). To help the caller reduce race conditions, this
+call may be made with interrupts disabled but the semantics of the hcall()
+enable the virtual processor’s interrupts so that it may always receive wake up
+interrupt signals.
+
+-Tyrel
 
 > 
 > -Tyrel
@@ -316,14 +304,4 @@ Thanks.
 >>>
 >>
 > 
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
 
