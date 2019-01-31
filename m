@@ -2,60 +2,49 @@ Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D909BC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 05:42:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69BACC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 05:47:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57A922087F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 05:42:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="e7MhdO1i"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57A922087F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	by mail.kernel.org (Postfix) with ESMTPS id EDE952087F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 05:47:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EDE952087F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qpyn30K9zDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 16:42:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qq565rn9zDqWr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 16:47:38 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qpv543zCzDq6B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 16:38:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qq3L2vHxzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 16:46:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="e7MhdO1i"; dkim-atps=neutral
+ header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43qpv341WSz9sBb;
- Thu, 31 Jan 2019 16:38:55 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1548913135;
- bh=QbRkFz2eSuxgAk/k8V5DjMoNfUAh9wTJI0QF91SW+nA=;
- h=Date:From:To:Cc:Subject:From;
- b=e7MhdO1idGS0ykWNXq09oeqGBKEkUA7yjhFtb1nrbXhEeEn9q4ULgkwZrDuWxYp4D
- 62OXn08eFvWbjZqa673uPByamKIKR7ujYZMIZQqDnSTsKs7jXrUtdCfuVJDMn2NNqa
- 4dKsjWI5Lc55kLdrbd0hvK3D9N5Y/cUMUb1uZijj+8bcHOxTaV0Me6XaoJK8p243qR
- BZtnUy+zh/hnDafc1ugdeohCQai5ZpwBRJqLPPte6ErS97JWHzSK2k9kj1HI6KEB1Z
- jL6o+0Aor2A0ZCxhtp16lUZD0i8ip1cHu2OFTHMMRqfz1F92XMVQW620aPR9I7QuuD
- +f3WyJJobEDBw==
-Date: Thu, 31 Jan 2019 16:38:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: linux-next: powerpcle qemu boot failure after merge of the akpm tree
-Message-ID: <20190131163854.307e17ab@canb.auug.org.au>
+ by ozlabs.org (Postfix) with ESMTPSA id 43qq3K6r8jz9sDX;
+ Thu, 31 Jan 2019 16:46:05 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicolai Stange <nstange@suse.de>
+Subject: Re: [PATCH 1/4] powerpc/64s: Clear on-stack exception marker upon
+ exception return
+In-Reply-To: <87a7jirrn6.fsf@suse.de>
+References: <20190122155724.27557-1-joe.lawrence@redhat.com>
+ <20190122155724.27557-2-joe.lawrence@redhat.com>
+ <87tvhqpbzd.fsf@concordia.ellerman.id.au> <87a7jirrn6.fsf@suse.de>
+Date: Thu, 31 Jan 2019 16:46:05 +1100
+Message-ID: <87zhrhnzvm.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/ntkEG4.kWchexs_2hOHxgT1"; protocol="application/pgp-signature"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,59 +56,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Mike Rapoport <rppt@linux.ibm.com>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Joe Lawrence <joe.lawrence@redhat.com>, Nicolai Stange <nstange@suse.de>,
+ Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ live-patching@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/ntkEG4.kWchexs_2hOHxgT1
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Nicolai Stange <nstange@suse.de> writes:
 
-Hi all,
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+>> Joe Lawrence <joe.lawrence@redhat.com> writes:
+>>> From: Nicolai Stange <nstange@suse.de>
+>>>
+>>> The ppc64 specific implementation of the reliable stacktracer,
+>>> save_stack_trace_tsk_reliable(), bails out and reports an "unreliable
+>>> trace" whenever it finds an exception frame on the stack. Stack frames
+>>> are classified as exception frames if the STACK_FRAME_REGS_MARKER magic,
+>>> as written by exception prologues, is found at a particular location.
+>>>
+>>> However, as observed by Joe Lawrence, it is possible in practice that
+>>> non-exception stack frames can alias with prior exception frames and thus,
+>>> that the reliable stacktracer can find a stale STACK_FRAME_REGS_MARKER on
+>>> the stack. It in turn falsely reports an unreliable stacktrace and blocks
+>>> any live patching transition to finish. Said condition lasts until the
+>>> stack frame is overwritten/initialized by function call or other means.
+>>>
+>>> In principle, we could mitigate this by making the exception frame
+>>> classification condition in save_stack_trace_tsk_reliable() stronger:
+>>> in addition to testing for STACK_FRAME_REGS_MARKER, we could also take into
+>>> account that for all exceptions executing on the kernel stack
+>>> - their stack frames's backlink pointers always match what is saved
+>>>   in their pt_regs instance's ->gpr[1] slot and that
+>>> - their exception frame size equals STACK_INT_FRAME_SIZE, a value
+>>>   uncommonly large for non-exception frames.
+>>>
+>>> However, while these are currently true, relying on them would make the
+>>> reliable stacktrace implementation more sensitive towards future changes in
+>>> the exception entry code. Note that false negatives, i.e. not detecting
+>>> exception frames, would silently break the live patching consistency model.
+>>>
+>>> Furthermore, certain other places (diagnostic stacktraces, perf, xmon)
+>>> rely on STACK_FRAME_REGS_MARKER as well.
+>>>
+>>> Make the exception exit code clear the on-stack STACK_FRAME_REGS_MARKER
+>>> for those exceptions running on the "normal" kernel stack and returning
+>>> to kernelspace: because the topmost frame is ignored by the reliable stack
+>>> tracer anyway, returns to userspace don't need to take care of clearing
+>>> the marker.
+>>>
+>>> Furthermore, as I don't have the ability to test this on Book 3E or
+>>> 32 bits, limit the change to Book 3S and 64 bits.
+>>>
+>>> Finally, make the HAVE_RELIABLE_STACKTRACE Kconfig option depend on
+>>> PPC_BOOK3S_64 for documentation purposes. Before this patch, it depended
+>>> on PPC64 && CPU_LITTLE_ENDIAN and because CPU_LITTLE_ENDIAN implies
+>>> PPC_BOOK3S_64, there's no functional change here.
+>>
+>> That has nothing to do with the fix and should really be in a separate
+>> patch.
+>>
+>> I can split it when applying.
+>
+> If you don't mind, that would be nice! Or simply drop that
+> chunk... Otherwise, let me know if I shall send a split v2 for this
+> patch [1/4] only.
 
-[I am guessing that is is something in Andrew's tree that has caused
-this.]
+No worries, I split it out:
 
-My qemu boot of the powerpc pseries_le_defconfig config failed like this:
+commit a50d3250d7ae34c561177a1f9cfb79816fcbcff1
+Author:     Nicolai Stange <nstange@suse.de>
+AuthorDate: Thu Jan 31 16:41:50 2019 +1100
+Commit:     Michael Ellerman <mpe@ellerman.id.au>
+CommitDate: Thu Jan 31 16:43:29 2019 +1100
 
-htab_hash_mask    =3D 0x1ffff
------------------------------------------------------
-numa:   NODE_DATA [mem 0x7ffe7000-0x7ffebfff]
-Kernel panic - not syncing: sparse_buffer_init: Failed to allocate 21474836=
-48 bytes align=3D0x10000 nid=3D0 from=3Dfffffffffffffff
-CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc4 #2
-Call Trace:
-[c00000000105bbd0] [c000000000b1345c] dump_stack+0xb0/0xf4 (unreliable)
-[c00000000105bc10] [c000000000111120] panic+0x168/0x3b8
-[c00000000105bcb0] [c000000000e701c8] sparse_init_nid+0x178/0x550
-[c00000000105bd70] [c000000000e709b4] sparse_init+0x210/0x238
-[c00000000105bdb0] [c000000000e468f4] initmem_init+0x1e0/0x260
-[c00000000105be80] [c000000000e3b9b0] setup_arch+0x354/0x3d4
-[c00000000105bef0] [c000000000e33afc] start_kernel+0x98/0x648
-[c00000000105bf90] [c00000000000b270] start_here_common+0x1c/0x52c
+    powerpc/64s: Make reliable stacktrace dependency clearer
+    
+    Make the HAVE_RELIABLE_STACKTRACE Kconfig option depend on
+    PPC_BOOK3S_64 for documentation purposes. Before this patch, it
+    depended on PPC64 && CPU_LITTLE_ENDIAN and because CPU_LITTLE_ENDIAN
+    implies PPC_BOOK3S_64, there's no functional change here.
+    
+    Signed-off-by: Nicolai Stange <nstange@suse.de>
+    Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
+    [mpe: Split out of larger patch]
+    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
---=20
-Cheers,
-Stephen Rothwell
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 2890d36eb531..73bf87b1d274 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -220,7 +220,7 @@ config PPC
+ 	select HAVE_PERF_USER_STACK_DUMP
+ 	select HAVE_RCU_TABLE_FREE		if SMP
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+-	select HAVE_RELIABLE_STACKTRACE		if PPC64 && CPU_LITTLE_ENDIAN
++	select HAVE_RELIABLE_STACKTRACE		if PPC_BOOK3S_64 && CPU_LITTLE_ENDIAN
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_IRQ_TIME_ACCOUNTING
 
---Sig_/ntkEG4.kWchexs_2hOHxgT1
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
 
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxSie4ACgkQAVBC80lX
-0GyoNwf8D5nWY24NFrP/NjzcK9jc58lkkCPf1DekarNUeR5vdhoLXoFXw4v1ShJz
-EXdvMvCwmCG6eAVANIyRxPpZIwUEKPYOmRE0nP5SIUBoPPt04WLB70SPmPFeaECL
-3CBDDSB8ZkTYLXTRHCWKfwYIHzvktXqf7gTSG73gxTaOv+4bHh3MA3jRZ/3WQJ7/
-EA0m/G3nsfZWVrjyKbiaA0ONS/QRN9tYkMtnrV8S/DVE/U06eSrSeJeKpYZA1FDr
-zPijbbOEY87VgncKCVw/0DOZjdttM/k7uMyR6Gk15ZjbPa2w11IgrbX9MD2zo2tx
-Pm4vgyN0qKKrRuZePOflXndb5x5PNQ==
-=bVoJ
------END PGP SIGNATURE-----
-
---Sig_/ntkEG4.kWchexs_2hOHxgT1--
+cheers
