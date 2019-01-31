@@ -2,68 +2,64 @@ Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B88EC282D7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD27BC282D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:04:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FD2F2184D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:03:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2A16F2184D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 03:04:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="LhVWY5S2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FD2F2184D
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="cKVL5p30"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A16F2184D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qlRN4JwdzDqVy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 14:03:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qlTF1tVzzDqVb
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 14:04:49 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qlPK0LWhzDqQT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qlPK12BCzDqRS
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 14:01:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="LhVWY5S2"; 
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="cKVL5p30"; 
  dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1003)
- id 43qlPJ48Jbz9sBb; Thu, 31 Jan 2019 14:01:24 +1100 (AEDT)
+ id 43qlPJ52lKz9s9G; Thu, 31 Jan 2019 14:01:24 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1548903684; bh=7j1gHjUvkhk119VEC/ZCTmZWycE0wPoErXEgjulyA3E=;
+ t=1548903684; bh=CiEa7/ispOH3TP+2ICZWifKUsD/VmMIOhlRYzRKj14g=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=LhVWY5S2QGSPQ+4EpI1kAXuS93bkmWrdkvDx/wLkSsE/4sRxw3qPs7++55xxvyzKn
- Whr3BI0e0s+pIRYuUUQRvg1nsY2PSB8DHQEO5mEPzfo71QYYdjbXFAZOb3EkgDDTPG
- Z4bKkZpPyI5S/Sa4WG3sPktuL7/alM+2CVxGxP6Y5SY8kMnUGvQiBUTRjRsnNyp1Wj
- hKr/l1ysfTx91H8lTironRKpn5Hcxcr/ObDI7pNFgvBVDwE7LlrMZCnoyuy02cUWya
- YwntG7IQgq4bzv6ipm63UYt1iqZD7AQvYmKqU/SQ0Egkc22M/n2tyZ+/JiKtukMTpT
- 8M3fkgdydN3rA==
-Date: Thu, 31 Jan 2019 13:48:19 +1100
+ b=cKVL5p304rFqZ24DvDzTJhR21VKjctaIY0phLTQWRE0qiX8TbT7lUrIarGQYyX7IC
+ bZcJLso4N4s9YtWRa4bPo1XbX9+iN45M74zdp6Goxypemc9PsPuCPh/Y00UPySlgXf
+ 7WfZCh+DPRfh29rzWSen7d7TCX2Wyf5KXkNppnw3eJqDWlTZR4A3yyck9+dBKJ0h/6
+ xuHEd8NQg//LxrSb6c6KNxo1am7PL1TANUKHga0DkXsFhVFugcdMjFpLVhwO1P0rHy
+ 6us9GV4RxafG0YUK9kYJOys618eHxvgB4z0w9uI8+hpvWq8O1uCp+3x3XkT57V4SVC
+ oxCHqELT2xekA==
+Date: Thu, 31 Jan 2019 14:01:20 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 18/19] KVM: PPC: Book3S HV: add passthrough support
-Message-ID: <20190131024819.GA4675@blackberry>
-References: <20190122052657.GG15124@blackberry>
- <b3788899d86b1d3bb8d141f1126592e3593ac8ef.camel@kernel.crashing.org>
- <20190123103009.GB29826@blackberry>
- <75762dbe-0f08-5b06-e376-744ff87ff4cb@kaod.org>
- <20190128061353.GD3237@blackberry>
- <38b0244d-beb6-3aee-c638-279ca570633c@kaod.org>
- <20190129024503.GA11368@blackberry>
- <f92f71ee-5c8e-f6b1-dbbf-436bbb0624cd@kaod.org>
- <20190130062041.GD27109@blackberry>
- <f941f095-995f-0252-afd9-2a6f6f4ce7db@kaod.org>
+Subject: Re: [PATCH 05/19] KVM: PPC: Book3S HV: add a new KVM device for the
+ XIVE native exploitation mode
+Message-ID: <20190131030120.GB4675@blackberry>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-6-clg@kaod.org>
+ <20190122050520.GC15124@blackberry>
+ <d21664e5-1d9c-5a55-5b83-bf5e6247917a@kaod.org>
+ <20190130042919.GA27109@blackberry>
+ <74d4fe26-9e5a-a72e-815a-223a55f1bc0f@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <f941f095-995f-0252-afd9-2a6f6f4ce7db@kaod.org>
+In-Reply-To: <74d4fe26-9e5a-a72e-815a-223a55f1bc0f@kaod.org>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -82,215 +78,74 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Jan 30, 2019 at 04:54:23PM +0100, Cédric Le Goater wrote:
-> On 1/30/19 7:20 AM, Paul Mackerras wrote:
-> > On Tue, Jan 29, 2019 at 02:47:55PM +0100, Cédric Le Goater wrote:
-> >> On 1/29/19 3:45 AM, Paul Mackerras wrote:
-> >>> On Mon, Jan 28, 2019 at 07:26:00PM +0100, Cédric Le Goater wrote:
-> >>>> On 1/28/19 7:13 AM, Paul Mackerras wrote:
-> >>>>> Would we end up with too many VMAs if we just used mmap() to
-> >>>>> change the mappings from the software-generated pages to the
-> >>>>> hardware-generated interrupt pages?  
-> >>>> The sPAPR IRQ number space is 0x8000 wide now. The first 4K are 
-> >>>> dedicated to CPU IPIs and the remaining 4K are for devices. We can 
+On Wed, Jan 30, 2019 at 08:01:22AM +0100, Cédric Le Goater wrote:
+> On 1/30/19 5:29 AM, Paul Mackerras wrote:
+> > On Mon, Jan 28, 2019 at 06:35:34PM +0100, Cédric Le Goater wrote:
+> >> On 1/22/19 6:05 AM, Paul Mackerras wrote:
+> >>> On Mon, Jan 07, 2019 at 07:43:17PM +0100, Cédric Le Goater wrote:
+> >>>> This is the basic framework for the new KVM device supporting the XIVE
+> >>>> native exploitation mode. The user interface exposes a new capability
+> >>>> and a new KVM device to be used by QEMU.
 > >>>
-> >>> Confused.  You say the number space has 32768 entries but then imply
-> >>> there are only 8K entries.  Do you mean that the API allows for 15-bit
-> >>> IRQ numbers but we are only making using of 8192 of them?
-> >>
-> >> Ouch. My bad. Let's do it again. 
-> >>
-> >> The sPAPR IRQ number space is 0x2000 wide :
-> >>
-> >> https://git.qemu.org/?p=qemu.git;a=blob;f=hw/ppc/spapr_irq.c;h=1da7a32348fced0bd638717022fc37a83fc5e279;hb=HEAD#l396
-> >>
-> >> The first 4K are dedicated to the CPU IPIs and the remaining 4K are for 
-> >> devices (which can be extended if needed).
-> >>
-> >> So that's 8192 x 2 ESB pages.
-> >>
-> >>>> extend the last range if needed as these are for MSIs. Dynamic 
-> >>>> extensions under KVM should work also.
-> >>>>
-> >>>> This to say that we have with 8K x 2 (trigger+EOI) pages. This is a
-> >>>> lot of mmap(), too much. Also the KVM model needs to be compatible
+> >>> [snip]
+> >>>> @@ -1039,7 +1039,10 @@ static int kvmppc_book3s_init(void)
+> >>>>  #ifdef CONFIG_KVM_XIVE
+> >>>>  	if (xive_enabled()) {
+> >>>>  		kvmppc_xive_init_module();
+> >>>> +		kvmppc_xive_native_init_module();
+> >>>>  		kvm_register_device_ops(&kvm_xive_ops, KVM_DEV_TYPE_XICS);
+> >>>> +		kvm_register_device_ops(&kvm_xive_native_ops,
+> >>>> +					KVM_DEV_TYPE_XIVE);
 > >>>
-> >>> I wasn't suggesting an mmap per IRQ, I meant that the bulk of the
-> >>> space would be covered by a single mmap, overlaid by subsequent mmaps
-> >>> where we need to map real device interrupts.
+> >>> I think we want tighter conditions on initializing the xive_native
+> >>> stuff and creating the xive device class.  We could have
+> >>> xive_enabled() returning true in a guest, and this code will get
+> >>> called both by PR KVM and HV KVM (and HV KVM no longer implies that we
+> >>> are running bare metal).
 > >>
-> >> ok. The same fault handler could be used to populate the VMA with the 
-> >> ESB pages. 
+> >> So yes, I gave nested a try with kernel_irqchip=on and the nested hypervisor 
+> >> (L1) obviously crashes trying to call OPAL. I have tighten the test with : 
 > >>
-> >> But it would mean extra work on the QEMU side, which is not needed 
-> >> with this patch. 
+> >> 	if (xive_enabled() && !kvmhv_on_pseries()) {
+> >>
+> >> for now.
+> >>
+> >> As this is a problem today in 5.0.x, I will send a patch for it if you think
 > > 
-> > Maybe, but just storing a single vma pointer in our private data is
-> > not a feasible approach.  First, you have no control on the lifetime
-> > of the vma and thus this is a use-after-free waiting to happen, and
-> > secondly, there could be multiple vmas that you need to worry about.
+> > How do you mean this is a problem today in 5.0?  I just tried 5.0-rc1
+> > with kernel_irqchip=on in a nested guest and it works just fine.  What
+> > exactly did you test?
 > 
-> I fully agree. That's why I was uncomfortable with the solution. There 
-> are a few other drivers (GPUs if I recall) doing that but it feels wrong.
+> L0: Linux 5.0.0-rc3 (+ KVM HV)
+> L1:     QEMU pseries-4.0 (kernel_irqchip=on) - Linux 5.0.0-rc3 (+ KVM HV)
+> L2:          QEMU pseries-4.0 (kernel_irqchip=on) - Linux 5.0.0-rc3
+> 
+> L1 crashes when L2 starts and tries to initialize the KVM IRQ device as 
+> it does an OPAL call and its running under SLOF. See below.
 
-There is the HMM infrastructure (heterogeneous memory model) which
-could possibly be used to do this, but it's very heavyweight for the
-problem we have here.
+OK, you must have a QEMU that advertises XIVE to the guest (L1).  In
+that case I can see that L1 would try to do XICS-on-XIVE, which won't
+work.  We need to fix that.  Unfortunately the XICS-on-XICS emulation
+won't work as is in L1 either, but I think we can fix that by
+disabling the real-mode XICS hcall handling.
 
-> > Userspace could do multiple mmaps, or could do mprotect or similar on
-> > part of an existing mmap, which would split the vma for the mmap into
-> > multiple vmas.  You don't get notified about munmap either as far as I
-> > can tell, so the vma is liable to go away.  
-> 
-> yes ...
-> 
-> > And it doesn't matter if
-> > QEMU would never do such things; if userspace can provoke a
-> > use-after-free in the kernel using KVM then someone will write a
-> > specially crafted user program to do that.
-> > 
-> > So we either solve it in userspace, or we have to write and maintain
-> > complex kernel code with deep links into the MM subsystem.  
-> >
-> > I'd much rather solve it in userspace.
-> 
-> OK, then. I have been reluctant doing so but it seems there are no
-> other in-kernel solution. 
+> I don't understand how L2 can work with kernel_irqchip=on. Could you
+> please explain ? 
 
-I discussed the problem today with David Gibson and he mentioned that
-QEMU does have a lot of freedom in how it assigns the guest hwirq
-numbers.  So you may be able to avoid the problem by (for example)
-never assigning a hwirq to a VFIO device that has previously been used
-for an emulated device (or something like that).
+If QEMU decides to advertise XIVE to the L2 guest and the L2 guest can
+do XIVE, then the only possibility is to use the XIVE software
+emulation in QEMU, and if kernel_irqchip=on has been specified
+explicitly, maybe QEMU decides to terminate the guest rather than
+implicitly turning off kernel_irqchip.
 
-> >>>> with the QEMU emulated one and it was simpler to have one overall
-> >>>> memory region for the IPI ESBs, one for the END ESBs (if we support
-> >>>> that one day) and one for the TIMA.
-> >>>>
-> >>>>> Are the necessary pages for a PCI
-> >>>>> passthrough device contiguous in both host real space 
-> >>>>
-> >>>> They should as they are the PHB4 ESBs.
-> >>>>
-> >>>>> and guest real space ? 
-> >>>>
-> >>>> also. That's how we organized the mapping. 
-> >>>
-> >>> "How we organized the mapping" is a significant design decision that I
-> >>> haven't seen documented anywhere, and is really needed for
-> >>> understanding what's going on.
-> >>
-> >> OK. I will add comments on that. See below for some description.
-> >>
-> >> There is nothing fancy, it's simply indexed with the interrupt number,
-> >> like for HW, or for the QEMU XIVE emulated model.
-> >>
-> >>>>> If so we'd only need one mmap() for all the device's interrupt
-> >>>>> pages.
-> >>>>
-> >>>> Ah. So we would want to make a special case for the passthrough 
-> >>>> device and have a mmap() and a memory region for its ESBs. Hmm.
-> >>>>
-> >>>> Wouldn't that require to hot plug a memory region under the guest ? 
-> >>>
-> >>> No; the way that a memory region works is that userspace can do
-> >>> whatever disparate mappings it likes within the region on the user
-> >>> process side, and the corresponding region of guest real address space
-> >>> follows that automatically.
-> >>
-> >> yes. I suppose this should work also for 'ram device' memory mappings.
-> >>
-> >> So when the passthrough device is added to the guest, we would add a 
-> >> new 'ram device' memory region for the device interrupt ESB pages 
-> >> that would overlap with the initial guest ESB pages.  
-> > 
-> > Not knowing the QEMU internals all that well, I don't at all
-> > understand why a new ram device is necesssary. 
-> 
-> 'ram device' memory regions are of a special type which is used to 
-> directly map into the guest the result of a mmap() in QEMU. 
-> 
-> This is how we propagate the XIVE ESB pages from HW (and the TIMA) 
-> to the guest and the Linux kernel. It has other use with VFIO.   
-> 
-> > I would see it as a
-> > single virtual area mapping the ESB pages of guest hwirqs that are in
-> > use, and we manage those mappings with mmap and munmap.
-> 
-> Yes I think I understand the idea. I will give a try. I need to find the 
-> right place to do so in QEMU. See other email thread.
-> 
-> >> This is really a different approach.
-> >>
-> >>>> which means that we need to provision an address space/container 
-> >>>> region for theses regions. What are the benefits ? 
-> >>>>
-> >>>> Is clearing the PTEs and repopulating the VMA unsafe ? 
-> >>>
-> >>> Explicitly unmapping parts of the VMA seems like the wrong way to do
-> >>> it.  If you have a device mmap where the device wants to change the
-> >>> physical page underlying parts of the mapping, there should be a way
-> >>> for it to do that explicitly (but I don't know off the top of my head
-> >>> what the interface to do that is).
-> >>>
-> >>> However, I still haven't seen a clear and concise explanation of what
-> >>> is being changed, when, and why we need to do that.
-> >>
-> >> Yes. I agree on that. The problem is not very different from what we 
-> >> have today with the XICS-over-XIVE glue in KVM. Let me try to explain.
-> >>
-> >>
-> >> The KVM XICS-over-XIVE device and the proposed KVM XIVE native device 
-> >> implement an IRQ space for the guest using the generic IPI interrupts 
-> >> of the XIVE IC controller. These interrupts are allocated at the OPAL
-> >> level and "mapped" into the guest IRQ number space in the range 0-0x1FFF.
-> >> Interrupt management is performed in the XIVE way: using loads and 
-> >> stores on the addresses of the XIVE IPI interrupt ESB pages.
-> >>
-> >> Both KVM devices share the same internal structure caching information 
-> >> on the interrupts, among which the xive_irq_data struct containing the 
-> >> addresses of the IPI ESB pages and an extra one in case of passthrough. 
-> >> The later contains the addresses of the ESB pages of the underlying HW 
-> >> controller interrupts, PHB4 in all cases for now.    
-> >>
-> >> A guest when running in the XICS legacy interrupt mode lets the KVM 
-> >> XICS-over-XIVE device "handle" interrupt management, that is to perform  
-> >> the loads and stores on the addresses of the ESB pages of the guest 
-> >> interrupts. 
-> >>
-> >> However, when running in XIVE native exploitation mode, the KVM XIVE 
-> >> native device exposes the interrupt ESB pages to the guest and lets 
-> >> the guest perform directly the loads and stores. 
-> >>
-> >> The VMA exposing the ESB pages make use of a custom VM fault handler
-> >> which role is to populate the VMA with appropriate pages. When a fault
-> >> occurs, the guest IRQ number is deduced from the offset, and the ESB 
-> >> pages of associated XIVE IPI interrupt are inserted in the VMA (using
-> >> the internal structure caching information on the interrupts).
-> >>
-> >> Supporting device passthrough in the guest running in XIVE native 
-> >> exploitation mode adds some extra refinements because the ESB pages 
-> >> of a different HW controller (PHB4) need to be exposed to the guest 
-> >> along with the initial IPI ESB pages of the XIVE IC controller. But
-> >> the overall mechanic is the same. 
-> >>
-> >> When the device HW irqs are mapped into or unmapped from the guest
-> >> IRQ number space, the passthru_irq helpers, kvmppc_xive_set_mapped()
-> >> and kvmppc_xive_clr_mapped(), are called to record or clear the 
-> >> passthrough interrupt information and to perform the switch.
-> >>
-> >> The approach taken by this patch is to clear the ESB pages of the 
-> >> guest IRQ number being mapped and let the VM fault handler repopulate. 
-> >> The handler will insert the ESB page corresponding to the HW interrupt 
-> >> of the device being passed-through or the initial IPI ESB page if the
-> >> device is being removed.   
-> > 
-> > That's a much better write-up.  Thanks.
-> 
-> OK. I will reuse it when time comes.
-> 
-> Thanks,
-> 
-> C. 
+If QEMU decides not to advertise XIVE to the L2 guest, or the L2 guest
+can't do XIVE, then we could use the XICS-on-XICS emulation in L1 as
+long as either (a) L1 is not using XIVE, or (b) we modify the
+XICS-on-XICS code to avoid using any XICS or XIVE access (i.e. just
+using calls to generic kernel facilities).
+
+Ultimately, if the spapr xive backend code in the kernel could be
+extended to provide all the low-level functions that the XICS-on-XIVE
+code needs, then we could do XICS-on-XIVE in a guest.
 
 Paul.
