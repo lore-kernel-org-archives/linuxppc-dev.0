@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7391EC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 10:34:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4158C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 10:37:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E511B218AC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 10:34:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 43BEB218AC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 10:37:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rpaUrbJA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E511B218AC
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="nlht15uu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 43BEB218AC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43qxSV6XTmzDqbr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 21:34:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43qxWS26f7zDqSJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 21:37:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,52 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rpaUrbJA"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="nlht15uu"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43qwtw58kpzDqWN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 21:09:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43qwwV5rHMzDqYL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 21:10:34 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43qwtr43lcz9tyxD;
- Thu, 31 Jan 2019 11:09:08 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 43qwwQ3K6Sz9tyxB;
+ Thu, 31 Jan 2019 11:10:30 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=rpaUrbJA; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=nlht15uu; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yJjAMWDGxAcp; Thu, 31 Jan 2019 11:09:08 +0100 (CET)
+ with ESMTP id FheCnulLkp4v; Thu, 31 Jan 2019 11:10:30 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43qwtr31Cwz9tyx9;
- Thu, 31 Jan 2019 11:09:08 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43qwwQ2HGQz9tyx9;
+ Thu, 31 Jan 2019 11:10:30 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1548929348; bh=XQGEmIenrsIUSLMkN6Eh2UH+4Jq+ReCGjA0jRToV2fM=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=rpaUrbJAQX9DIa2ZRbM90VikLDgf03MNAa/GmK0Wtve3e/3pZl9IyhgTC9F/EJN0w
- IJlsEQbRiXNvMjkhtkkbEAzW+3rP3nsM4zue8wb+UY14+lxo3usp4AkAZzb7SwM6re
- 301xDFVROLjaB0K87umcR84rss24UzMtq8Tbxceg=
+ t=1548929430; bh=Wv0JF7XVNnncvSYae7jqrjAVaOTnL2I6Kn3J1WT6QpI=;
+ h=From:Subject:To:Cc:Date:From;
+ b=nlht15uuFeORSCA24QOR/VGW5U4sDj/yg//X2xZBNWc5oGqQRE5kTveka6FXXDivR
+ x9iVjfJFLCdumIC+jPhqMy4Tf2z8stQq7ANDUXxHyDw/g4I29kQttiuaPk8z86rL3h
+ WM4+fygz510EMrpHOMN5lwicz0ciklQCht92f/X4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8BF6C8B814;
- Thu, 31 Jan 2019 11:09:09 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E7768B814;
+ Thu, 31 Jan 2019 11:10:31 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id s4GScOqivpQs; Thu, 31 Jan 2019 11:09:09 +0100 (CET)
+ with ESMTP id 66rAwejk1GCs; Thu, 31 Jan 2019 11:10:31 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 605198B78D;
- Thu, 31 Jan 2019 11:09:09 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4861B8B78D;
+ Thu, 31 Jan 2019 11:10:31 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id DEDC672E14; Thu, 31 Jan 2019 10:09:08 +0000 (UTC)
-Message-Id: <1a102fca8e3853b7f2ef288344399df881eec212.1548852243.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1548852242.git.christophe.leroy@c-s.fr>
-References: <cover.1548852242.git.christophe.leroy@c-s.fr>
+ id 3154372E15; Thu, 31 Jan 2019 10:10:31 +0000 (UTC)
+Message-Id: <da718ce0da4303de0197b46570680843a188f216.1548851096.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v15 13/13] powerpc: clean stack pointers naming
+Subject: [PATCH v2] powerpc/32: Fix CONFIG_VIRT_CPU_ACCOUNTING_NATIVE for
+ 40x/booke
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 31 Jan 2019 10:09:08 +0000 (UTC)
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 31 Jan 2019 10:10:31 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,87 +90,47 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Some stack pointers used to also be thread_info pointers
-and were called tp. Now that they are only stack pointers,
-rename them sp.
+40x/booke have another path to reach 3f from transfer_to_handler,
+make sure it also calls ACCOUNT_CPU_USER_ENTRY() when
+CONFIG_VIRT_CPU_ACCOUNTING_NATIVE is selected.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/irq.c      | 17 +++++++----------
- arch/powerpc/kernel/setup_64.c | 11 +++--------
- 2 files changed, 10 insertions(+), 18 deletions(-)
+ v2: left inside the user entry path
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 938944c6e2ee..8a936723c791 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -659,21 +659,21 @@ void __do_irq(struct pt_regs *regs)
- void do_IRQ(struct pt_regs *regs)
- {
- 	struct pt_regs *old_regs = set_irq_regs(regs);
--	void *curtp, *irqtp, *sirqtp;
-+	void *cursp, *irqsp, *sirqsp;
- 
- 	/* Switch to the irq stack to handle this */
--	curtp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
--	irqtp = hardirq_ctx[raw_smp_processor_id()];
--	sirqtp = softirq_ctx[raw_smp_processor_id()];
-+	cursp = (void *)(current_stack_pointer() & ~(THREAD_SIZE - 1));
-+	irqsp = hardirq_ctx[raw_smp_processor_id()];
-+	sirqsp = softirq_ctx[raw_smp_processor_id()];
- 
- 	/* Already there ? */
--	if (unlikely(curtp == irqtp || curtp == sirqtp)) {
-+	if (unlikely(cursp == irqsp || cursp == sirqsp)) {
- 		__do_irq(regs);
- 		set_irq_regs(old_regs);
- 		return;
- 	}
- 	/* Switch stack and call */
--	call_do_irq(regs, irqtp);
-+	call_do_irq(regs, irqsp);
- 
- 	set_irq_regs(old_regs);
- }
-@@ -695,10 +695,7 @@ void *hardirq_ctx[NR_CPUS] __read_mostly;
- 
- void do_softirq_own_stack(void)
- {
--	void *irqtp;
--
--	irqtp = softirq_ctx[smp_processor_id()];
--	call_do_softirq(irqtp);
-+	call_do_softirq(softirq_ctx[smp_processor_id()]);
- }
- 
- irq_hw_number_t virq_to_hw(unsigned int virq)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 2db1c5f7d141..daa361fc6a24 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -716,19 +716,14 @@ void __init emergency_stack_init(void)
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
- 	for_each_possible_cpu(i) {
--		void *ti;
--
--		ti = alloc_stack(limit, i);
--		paca_ptrs[i]->emergency_sp = ti + THREAD_SIZE;
-+		paca_ptrs[i]->emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
- 
- #ifdef CONFIG_PPC_BOOK3S_64
- 		/* emergency stack for NMI exception handling. */
--		ti = alloc_stack(limit, i);
--		paca_ptrs[i]->nmi_emergency_sp = ti + THREAD_SIZE;
-+		paca_ptrs[i]->nmi_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
- 
- 		/* emergency stack for machine check exception handling. */
--		ti = alloc_stack(limit, i);
--		paca_ptrs[i]->mc_emergency_sp = ti + THREAD_SIZE;
-+		paca_ptrs[i]->mc_emergency_sp = alloc_stack(limit, i) + THREAD_SIZE;
+ arch/powerpc/kernel/entry_32.S | 12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 0768dfd8a64e..d4c6186aa7e8 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -166,6 +166,13 @@ transfer_to_handler:
+ 	   internal debug mode bit to do this. */
+ 	lwz	r12,THREAD_DBCR0(r12)
+ 	andis.	r12,r12,DBCR0_IDM@h
++#endif
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	CURRENT_THREAD_INFO(r9, r1)
++	tophys(r9, r9)
++	ACCOUNT_CPU_USER_ENTRY(r9, r11, r12)
++#endif
++#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
+ 	beq+	3f
+ 	/* From user and task is ptraced - load up global dbcr0 */
+ 	li	r12,-1			/* clear all pending debug events */
+@@ -185,11 +192,6 @@ transfer_to_handler:
+ 	addi	r12,r12,-1
+ 	stw	r12,4(r11)
  #endif
- 	}
- }
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+-	CURRENT_THREAD_INFO(r9, r1)
+-	tophys(r9, r9)
+-	ACCOUNT_CPU_USER_ENTRY(r9, r11, r12)
+-#endif
+ 
+ 	b	3f
+ 
 -- 
 2.13.3
 
