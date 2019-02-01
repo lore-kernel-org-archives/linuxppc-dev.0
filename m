@@ -2,131 +2,80 @@ Return-Path: <SRS0=xfkn=QI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6EEDC282D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 14:16:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 135A5C282D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 14:50:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0684B218AC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 14:16:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0684B218AC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4B5BF20870
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 14:50:28 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VclUM1Gr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B5BF20870
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rfL66LlwzDqj1
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:16:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rg4y1q0gzDqhT
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:50:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="VclUM1Gr"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rfHv33vSzDqg7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2019 01:14:51 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x11EERnM122901
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2019 09:14:48 -0500
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qcpvs2te0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Feb 2019 09:14:48 -0500
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 1 Feb 2019 14:14:47 -0000
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 1 Feb 2019 14:14:45 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x11EEgrK12976200
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 1 Feb 2019 14:14:42 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B8D5A6E053;
- Fri,  1 Feb 2019 14:14:42 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3FC316E04C;
- Fri,  1 Feb 2019 14:14:41 +0000 (GMT)
-Received: from oc8380061452.ibm.com (unknown [9.80.220.243])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP;
- Fri,  1 Feb 2019 14:14:40 +0000 (GMT)
-Subject: Re: [PATCH v02] powerpc/pseries: Check for ceded CPU's during LPAR
- migration
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Juliet Kim <minkim@us.ibm.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Nathan Lynch <nathanl@linux.vnet.ibm.com>,
- Gustavo Walbon <gwalbon@linux.vnet.ibm.com>,
- Pete Heyrman <heyrman@us.ibm.com>
-References: <20190130212220.11315.76901.stgit@ltcalpine2-lp20.aus.stglabs.ibm.com>
- <8736p9pes4.fsf@concordia.ellerman.id.au>
- <65daf21b-dd1d-c22d-4746-65f4ae5d824f@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Fri, 1 Feb 2019 08:14:40 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <65daf21b-dd1d-c22d-4746-65f4ae5d824f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19020114-0016-0000-0000-0000097DB59A
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010516; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01154837; UDB=6.00602233; IPR=6.00935277; 
- MB=3.00025387; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-01 14:14:46
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020114-0017-0000-0000-000041FDA60B
-Message-Id: <e94ed583-a4d9-b03a-cd44-be990b6cfa19@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-01_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902010107
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rg3046DJzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2019 01:48:44 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id p4so42295plq.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Feb 2019 06:48:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=BQS7eYX9HGve9LVug8wOO94RnbbcOyjLdKnO/lDDp2I=;
+ b=VclUM1Gr6vplH2lc6Ex2uMcst7OpLUwzYdrhBjSpiDgIZg76ZHVjpKJ4U4SExjF3QV
+ Od3ncVcWLzN8HgUVQB3KUYeup4HFmP2iE1LT+/OtaQTbCvbGUwggPiD6Pm/POl+Qa6BJ
+ Md0Xm3LYjrStc9gxfllVcDGzfzcB78fp+FLJTEFRLG/J+Vi+TlYL2STO78l/1+ysLbe9
+ gHtU5rJNNQMbJbNDj9yPz7VuQ6bZrSfnwP1kjrFJlgoKfVOTkOp5Qj/mst+wK1BwGFRm
+ 5YHV9KRzExaWbwjLj7uIzqTVFmXCxOB44fYAqN5swmaQaifUYQagLR1fr/V7merQuAco
+ YdpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=BQS7eYX9HGve9LVug8wOO94RnbbcOyjLdKnO/lDDp2I=;
+ b=Ui3SViOY271vLEvkYGG24jx/gQaabFutmTAXtmT3zsg2vY/cq1G+jtQwE8hXKUliZ9
+ QcdVwAEXwMqP0YJJpf0Wo6A6NgeSw+Gw7oFUX8nlp1ZgAMlW5U7JNx0/01BlU90Rk4Dp
+ srXL9b+qELjClHhmg9QGfea4yA0rMj07He67h9IVehHnXYA9MV2Tmumsm3FnaPCB8SI8
+ nAIdBKEuTAkUrCUAvU28Lma4SBT3vQdcjYt69HHT2bIRGgFucAW+Pppmr6wG6vP+iwTC
+ IyPk3qXo2iyEcgxD3WQSbvZxqgvgKfdpALaKmZGLu99d9ZU9VRzrCzizuAKuyXY6aTy6
+ YMsw==
+X-Gm-Message-State: AJcUukfuFNjsu8VwoGkGYtSAC+jMRYi7r5gPi8vsmdnU1hona+9tOcBE
+ NS+mv5fPhSOM43fheWEIkig=
+X-Google-Smtp-Source: ALg8bN5eyyO1GjD67omoBBXbC4wUV9Hny7kZddb4cDJA6juGAKguzsu8tLq3FRvPinM9K65VT/+xzg==
+X-Received: by 2002:a17:902:8641:: with SMTP id
+ y1mr39725750plt.159.1549032522270; 
+ Fri, 01 Feb 2019 06:48:42 -0800 (PST)
+Received: from localhost.corp.microsoft.com ([167.220.255.67])
+ by smtp.googlemail.com with ESMTPSA id n74sm2309674pfi.163.2019.02.01.06.48.33
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Fri, 01 Feb 2019 06:48:41 -0800 (PST)
+From: lantianyu1986@gmail.com
+X-Google-Original-From: Tianyu.Lan@microsoft.com
+To: 
+Subject: [PATCH V2 00/10] X86/KVM/Hyper-V: Add HV ept tlb range list flush
+ support in KVM 
+Date: Fri,  1 Feb 2019 22:48:12 +0800
+Message-Id: <20190201144821.50409-1-Tianyu.Lan@microsoft.com>
+X-Mailer: git-send-email 2.14.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -138,190 +87,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, will.deacon@arm.com,
+ christoffer.dall@arm.com, hpa@zytor.com, kys@microsoft.com,
+ kvmarm@lists.cs.columbia.edu, sashal@kernel.org, sthemmin@microsoft.com,
+ x86@kernel.org, linux@armlinux.org.uk, michael.h.kelley@microsoft.com,
+ mingo@redhat.com, catalin.marinas@arm.com, jhogan@kernel.org,
+ linux-mips@vger.kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>,
+ marc.zyngier@arm.com, haiyangz@microsoft.com, kvm-ppc@vger.kernel.org,
+ bp@alien8.de, pbonzini@redhat.com, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ ralf@linux-mips.org, paul.burton@mips.com, devel@linuxdriverproject.org,
+ vkuznets@redhat.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-See below.
+From: Lan Tianyu <Tianyu.Lan@microsoft.com>
 
-On 1/31/19 3:53 PM, Michael Bringmann wrote:
-> On 1/30/19 11:38 PM, Michael Ellerman wrote:
->> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->>> This patch is to check for cede'ed CPUs during LPM.  Some extreme
->>> tests encountered a problem ehere Linux has put some threads to
->>> sleep (possibly to save energy or something), LPM was attempted,
->>> and the Linux kernel didn't awaken the sleeping threads, but issued
->>> the H_JOIN for the active threads.  Since the sleeping threads
->>> are not awake, they can not issue the expected H_JOIN, and the
->>> partition would never suspend.  This patch wakes the sleeping
->>> threads back up.
->>
->> I'm don't think this is the right solution.
->>
->> Just after your for loop we do an on_each_cpu() call, which sends an IPI
->> to every CPU, and that should wake all CPUs up from CEDE.
->>
->> If that's not happening then there is a bug somewhere, and we need to
->> work out where.
+This patchset is to introduce hv ept tlb range list flush function
+support in the KVM MMU component. Flushing ept tlbs of several address
+range can be done via single hypercall and new list flush function is
+used in the kvm_mmu_commit_zap_page() and FNAME(sync_page). This patchset
+also adds more hv ept tlb range flush support in more KVM MMU function.
 
-From Pete Heyrman:
-    Both sending IPI or H_PROD will awaken a logical processors that has ceded.
-    When you have logical proc doing cede and one logical proc doing prod or IPI
-    you have a race condition that the prod/IPI can proceed the cede request.
-    If you use prod, the hypervisor takes care of the synchronization by ignoring
-    a cede request if it was preceeded by a prod.  With IPI the interrupt is
-    delivered which could then be followed by a cede so OS would need to provide
-    synchronization.
+Change since v1:
+       1) Make flush list as a hlist instead of list in order to 
+       keep struct kvm_mmu_page size.
+       2) Add last_level flag in the struct kvm_mmu_page instead
+       of spte pointer
+       3) Move tlb flush from kvm_mmu_notifier_clear_flush_young() to kvm_age_hva()
+       4) Use range flush in the kvm_vm_ioctl_get/clear_dirty_log()
 
-Shouldn't this answer your concerns about race conditions and the suitability
-of using H_PROD?
+Lan Tianyu (10):
+  X86/Hyper-V: Add parameter offset for
+    hyperv_fill_flush_guest_mapping_list()
+  KVM/VMX: Fill range list in kvm_fill_hv_flush_list_func()
+  KVM/MMU: Add last_level in the struct mmu_spte_page
+  KVM/MMU: Introduce tlb flush with range list
+  KVM/MMU: Flush tlb with range list in sync_page()
+  KVM/MMU: Flush tlb directly in the kvm_mmu_slot_gfn_write_protect()
+  KVM: Add kvm_get_memslot() to get memslot via slot id
+  KVM: Use tlb range flush in the kvm_vm_ioctl_get/clear_dirty_log()
+  KVM: Add flush parameter for kvm_age_hva()
+  KVM/MMU: Use tlb range flush  in the kvm_age_hva()
 
-Michael
-
-> 
-> Let me explain the scenario of the LPM case that Pete Heyrman found, and
-> that Nathan F. was working upon, previously.
-> 
-> In the scenario, the partition has 5 dedicated processors each with 8 threads
-> running.
-> 
->>From the PHYP data we can see that on VP 0, threads 3, 4, 5, 6 and 7 issued
-> a H_CEDE requesting to save energy by putting the requesting thread into
-> sleep mode.  In this state, the thread will only be awakened by H_PROD from
-> another running thread or from an external user action (power off, reboot
-> and such).  Timers and external interrupts are disabled in this mode.
-> 
-> About 3 seconds later, as part of the LPM operation, the other 35 threads
-> have all issued a H_JOIN request.  Join is part of the LPM process where
-> the threads suspend themselves as part of the LPM operation so the partition
-> can be migrated to the target server.
-> 
-> So, the current state is the the OS has suspended the execution of all the
-> threads in the partition without successfully suspending all threads as part
-> of LPM.
-> 
-> Net, OS has an issue where they suspended every processor thread so nothing
-> can run.
-> 
-> This appears to be slightly different than the previous LPM stalls we have
-> seen where the migration stalls because of cpus being taken offline and not
-> making the H_JOIN call.
-> 
-> In this scenario we appear to have CPUs that have done an H_CEDE prior to
-> the LPM. For these CPUs we would need to do a H_PROD to wake them back up
-> so they can do a H_JOIN and allow the LPM to continue.
-> 
-> The problem is that Linux has some threads that they put to sleep (probably
-> to save energy or something), LPM was attempted, Linux didn't awaken the
-> sleeping threads but issued the H_JOIN for the active threads.  Since the
-> sleeping threads don't issue the H_JOIN the partition will never suspend.
-> 
-> I am checking again with Pete regarding your concerns.
-> 
-> Thanks.
-> 
->>
->>
->>> diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
->>> index cff5a41..8292eff 100644
->>> --- a/arch/powerpc/include/asm/plpar_wrappers.h
->>> +++ b/arch/powerpc/include/asm/plpar_wrappers.h
->>> @@ -26,10 +26,8 @@ static inline void set_cede_latency_hint(u8 latency_hint)
->>>  	get_lppaca()->cede_latency_hint = latency_hint;
->>>  }
->>>  
->>> -static inline long cede_processor(void)
->>> -{
->>> -	return plpar_hcall_norets(H_CEDE);
->>> -}
->>> +int cpu_is_ceded(int cpu);
->>> +long cede_processor(void);
->>>  
->>>  static inline long extended_cede_processor(unsigned long latency_hint)
->>>  {
->>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->>> index de35bd8f..fea3d21 100644
->>> --- a/arch/powerpc/kernel/rtas.c
->>> +++ b/arch/powerpc/kernel/rtas.c
->>> @@ -44,6 +44,7 @@
->>>  #include <asm/time.h>
->>>  #include <asm/mmu.h>
->>>  #include <asm/topology.h>
->>> +#include <asm/plpar_wrappers.h>
->>>  
->>>  /* This is here deliberately so it's only used in this file */
->>>  void enter_rtas(unsigned long);
->>> @@ -942,7 +943,7 @@ int rtas_ibm_suspend_me(u64 handle)
->>>  	struct rtas_suspend_me_data data;
->>>  	DECLARE_COMPLETION_ONSTACK(done);
->>>  	cpumask_var_t offline_mask;
->>> -	int cpuret;
->>> +	int cpuret, cpu;
->>>  
->>>  	if (!rtas_service_present("ibm,suspend-me"))
->>>  		return -ENOSYS;
->>> @@ -991,6 +992,11 @@ int rtas_ibm_suspend_me(u64 handle)
->>>  		goto out_hotplug_enable;
->>>  	}
->>>  
->>> +	for_each_present_cpu(cpu) {
->>> +		if (cpu_is_ceded(cpu))
->>> +			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
->>> +	}
->>
->> There's a race condition here, there's nothing to prevent the CPUs you
->> just PROD'ed from going back into CEDE before you do the on_each_cpu()
->> call below> 
->>>  	/* Call function on all CPUs.  One of us will make the
->>>  	 * rtas call
->>>  	 */
->>> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
->>> index 41f62ca2..48ae6d4 100644
->>> --- a/arch/powerpc/platforms/pseries/setup.c
->>> +++ b/arch/powerpc/platforms/pseries/setup.c
->>> @@ -331,6 +331,24 @@ static int alloc_dispatch_log_kmem_cache(void)
->>>  }
->>>  machine_early_initcall(pseries, alloc_dispatch_log_kmem_cache);
->>>  
->>> +static DEFINE_PER_CPU(int, cpu_ceded);
->>> +
->>> +int cpu_is_ceded(int cpu)
->>> +{
->>> +	return per_cpu(cpu_ceded, cpu);
->>> +}
->>> +
->>> +long cede_processor(void)
->>> +{
->>> +	long rc;
->>> +
->>> +	per_cpu(cpu_ceded, raw_smp_processor_id()) = 1;
->>
->> And there's also a race condition here. From the other CPU's perspective
->> the store to cpu_ceded is not necessarily ordered vs the hcall below.
->> Which means the other CPU can see cpu_ceded = 0, and therefore not prod
->> us, but this CPU has already called H_CEDE.
->>
->>> +	rc = plpar_hcall_norets(H_CEDE);
->>> +	per_cpu(cpu_ceded, raw_smp_processor_id()) = 0;
->>> +
->>> +	return rc;
->>> +}
->>> +
->>>  static void pseries_lpar_idle(void)
->>>  {
->>>  	/*
->>
->> cheers
->>
->>
-> 
+ arch/arm/include/asm/kvm_host.h     |  3 ++-
+ arch/arm64/include/asm/kvm_host.h   |  3 ++-
+ arch/mips/include/asm/kvm_host.h    |  3 ++-
+ arch/mips/kvm/mmu.c                 | 11 ++++++--
+ arch/powerpc/include/asm/kvm_host.h |  3 ++-
+ arch/powerpc/kvm/book3s.c           | 10 ++++++--
+ arch/powerpc/kvm/e500_mmu_host.c    |  3 ++-
+ arch/x86/hyperv/nested.c            |  4 +--
+ arch/x86/include/asm/kvm_host.h     | 11 +++++++-
+ arch/x86/include/asm/mshyperv.h     |  2 +-
+ arch/x86/kvm/mmu.c                  | 51 +++++++++++++++++++++++++++++--------
+ arch/x86/kvm/mmu.h                  |  7 +++++
+ arch/x86/kvm/paging_tmpl.h          | 15 ++++++++---
+ arch/x86/kvm/vmx/vmx.c              | 18 +++++++++++--
+ arch/x86/kvm/x86.c                  | 16 +++++++++---
+ include/linux/kvm_host.h            |  1 +
+ virt/kvm/arm/mmu.c                  | 13 ++++++++--
+ virt/kvm/kvm_main.c                 | 51 +++++++++++++++----------------------
+ 18 files changed, 160 insertions(+), 65 deletions(-)
 
 -- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+2.14.4
 
