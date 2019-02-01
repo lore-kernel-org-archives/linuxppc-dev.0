@@ -2,69 +2,51 @@ Return-Path: <SRS0=xfkn=QI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CEA5C282D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 08:37:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDD9DC282D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 09:09:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5104E20869
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 08:37:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ddQtbKnN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5104E20869
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4A46720869
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 09:09:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A46720869
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rVpZ4QgnzDqjM
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 19:37:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+eb6389230dcc0ed0984a+5640+infradead.org+hch@bombadil.srs.infradead.org;
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rWWj0RmpzDqZC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 20:09:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="ddQtbKnN"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rVmb2GQBzDqfN
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 19:35:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=ikQmwCOudLvuAUASG4XFzhMNNaczJkM8u308x81NbX4=; b=ddQtbKnNliZGFyxl5G3Q2Mlle
- +Tf3hgkev9Wfrpjsvx6S1yP7BS8HGBqwLM9udCEoNd6veVybFNstPYQTLL1l9zSHXxABmsBJDJL80
- hLpdBY9SDU7+Iv4d1hd6x66NMA4EBNV+Qjo9b1xRCDML4PhBrsWZeoxv7b4eMQuTMjplgW0ZZow6Z
- o9uwPXkrIuRPuqLkkmmSNoResIoGjNy2oudGSTlMq2j6xw82tYJ0TqNQWn6s4AIUE6iEgjPczXlaZ
- QYBUb8Vny5/6dlkq1jr/CLA3bNywkcjrZZHG8OvAG6Nc4t8NDfVrddNbZURjZr+33TaFckKs9hEHU
- fmrTxtCaA==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1gpUI8-0003p5-A7; Fri, 01 Feb 2019 08:35:16 +0000
-Date: Fri, 1 Feb 2019 00:35:16 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] powerpc: drop page_is_ram() and walk_system_ram_range()
-Message-ID: <20190201083516.GA21946@infradead.org>
-References: <a2cf0c09e15a3f8806096df73e41fae0fa10d2bf.1548962883.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rWTr62nVzDqfq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 20:08:00 +1100 (AEDT)
+Received: by newverein.lst.de (Postfix, from userid 2407)
+ id 0349368CEC; Fri,  1 Feb 2019 10:07:56 +0100 (CET)
+Date: Fri, 1 Feb 2019 10:07:55 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: fix a layering violation in videobuf2 and improve
+ dma_map_resource v2
+Message-ID: <20190201090755.GA16464@lst.de>
+References: <CGME20190118113751epcas2p2d7d678dcf247806a119316aabb4dde21@epcas2p2.samsung.com>
+ <20190118113727.3270-1-hch@lst.de>
+ <774dc557-b690-203f-898f-38755b099068@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <a2cf0c09e15a3f8806096df73e41fae0fa10d2bf.1548962883.git.christophe.leroy@c-s.fr>
-User-Agent: Mutt/1.9.2 (2017-12-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <774dc557-b690-203f-898f-38755b099068@samsung.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,35 +58,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: Niklas =?iso-8859-1?Q?S=F6derlund?=
+ <niklas.soderlund+renesas@ragnatech.se>, Pawel Osciak <pawel@osciak.com>,
+ Russell King <linux@armlinux.org.uk>, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Hellwig <hch@lst.de>, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Jan 31, 2019 at 07:28:49PM +0000, Christophe Leroy wrote:
-> Since commit c40dd2f76644 ("powerpc: Add System RAM to /proc/iomem")
-> it is possible to use the generic walk_system_ram_range() and
-> the generic page_is_ram().
+On Fri, Feb 01, 2019 at 08:05:21AM +0100, Marek Szyprowski wrote:
+> Works fine on older Exynos based boards with IOMMU and CMA disabled.
 > 
-> Fixes: c40dd2f76644 ("powerpc: Add System RAM to /proc/iomem")
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/Kconfig            |  3 ---
->  arch/powerpc/include/asm/page.h |  1 -
->  arch/powerpc/mm/mem.c           | 33 ---------------------------------
->  3 files changed, 37 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 0a26e0075ce5..0006ca6a7664 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -479,9 +479,6 @@ config ARCH_CPU_PROBE_RELEASE
->  config ARCH_ENABLE_MEMORY_HOTPLUG
->  	def_bool y
->  
-> -config ARCH_HAS_WALK_MEMORY
-> -	def_bool y
+> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-powerpc was the last architecture to define ARCH_HAS_WALK_MEMORY,
-so the symbol can be removed now.
+Thanks.  I've merged the ѕeries into the dma-mapping tree, and I've
+also made a stable branch available at:
+
+    git://git.infradead.org/users/hch/dma-mapping.git videobuf-map-resource
+
+in case it needs to be pulled into the media tree.
