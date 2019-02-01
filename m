@@ -2,98 +2,54 @@ Return-Path: <SRS0=xfkn=QI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EF29C282D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 07:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E998C282D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 08:06:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4630020869
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 07:44:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4630020869
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id BE99420863
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 08:06:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE99420863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rTdf6dG4zDqfj
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 18:44:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rV7842FbzDqgL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 19:06:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=benh@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=lst.de
+ (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rTbs3gdqzDqdP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 18:43:01 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x117dulw054134
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2019 02:42:59 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qcf1apu9v-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Feb 2019 02:42:59 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Fri, 1 Feb 2019 07:42:57 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 1 Feb 2019 07:42:55 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x117gsPc61341948
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 1 Feb 2019 07:42:54 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 75E6BAE051;
- Fri,  1 Feb 2019 07:42:54 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 22755AE04D;
- Fri,  1 Feb 2019 07:42:54 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  1 Feb 2019 07:42:54 +0000 (GMT)
-Received: from pasglop (unknown [9.102.39.236])
- (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DBFAAA00FF;
- Fri,  1 Feb 2019 18:42:50 +1100 (AEDT)
-Subject: Re: Does SMP work at all on 40x ?
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 01 Feb 2019 18:42:50 +1100
-In-Reply-To: <5c170dab-4f0b-8be2-e99a-9afd0fa02394@c-s.fr>
-References: <5c170dab-4f0b-8be2-e99a-9afd0fa02394@c-s.fr>
-Organization: IBM Australia
-User-Agent: Evolution 3.30.4 (3.30.4-1.fc29) 
-Mime-Version: 1.0
-X-TM-AS-GCONF: 00
-x-cbid: 19020107-0008-0000-0000-000002B9B69F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020107-0009-0000-0000-00002225BD1B
-Message-Id: <d4933d50eb6d79b6c725050a02b6b58ad81667fc.camel@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-01_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=840 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902010057
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rV594hcdzDqPV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 19:05:00 +1100 (AEDT)
+Received: by newverein.lst.de (Postfix, from userid 2407)
+ id CE91768CEC; Fri,  1 Feb 2019 09:04:56 +0100 (CET)
+Date: Fri, 1 Feb 2019 09:04:56 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Subject: Re: use generic DMA mapping code in powerpc V4
+Message-ID: <20190201080456.GA15456@lst.de>
+References: <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
+ <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
+ <20190128070422.GA2772@lst.de> <20190128162256.GA11737@lst.de>
+ <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
+ <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
+ <20190129161411.GA14022@lst.de> <20190129163415.GA14529@lst.de>
+ <F4AB3D9A-97EC-45D7-9061-A750D0934C3C@xenosoft.de>
+ <96762cd2-65fc-bce5-8c5b-c03bc3baf0a1@xenosoft.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <96762cd2-65fc-bce5-8c5b-c03bc3baf0a1@xenosoft.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,33 +61,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: benh@au1.ibm.com
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-01-30 at 08:16 +0100, Christophe Leroy wrote:
-> In transfer_to_handler() (entry_32.S), we have:
-> 
-> #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-> ...
-> #ifdef CONFIG_SMP
-> 	CURRENT_THREAD_INFO(r9, r1)
-> 	lwz	r9,TI_CPU(r9)
-> 	slwi	r9,r9,3
-> 	add	r11,r11,r9
-> #endif
-> #endif
-> 
-> When running this piece of code, MMU translation is off. But r9 contains 
-> the virtual addr of current_thread_info, so unless I miss something, 
-> this cannot work on the 40x, can it ?
-> 
-> On CONFIG_BOOKE it works because phys addr = virt addr
+On Thu, Jan 31, 2019 at 01:48:26PM +0100, Christian Zigotzky wrote:
+> Hi Christoph,
+>
+> I compiled kernels for the X5000 and X1000 from your branch 'powerpc-dma.6' 
+> today.
+>
+> Gitweb: 
+> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
+>
+> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+>
+> The X1000 and X5000 boot but unfortunately the P.A. Semi Ethernet doesn't 
+> work.
 
-There is no 40x SMP that I am aware of.
+Oh.  Can you try with just the next one and then two patches applied
+over the working setup?  That is first:
 
-Cheers,
-Ben.
+http://git.infradead.org/users/hch/misc.git/commitdiff/b50f42f0fe12965ead395c76bcb6a14f00cdf65b
 
+then also with:
 
+http://git.infradead.org/users/hch/misc.git/commitdiff/21fe52470a483afbb1726741118abef8602dde4d
