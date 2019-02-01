@@ -1,108 +1,83 @@
-Return-Path: <SRS0=ULCe=QH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=xfkn=QI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25DE2C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:35:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C337CC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 00:43:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A353220881
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jan 2019 22:35:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A353220881
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 83D2320B1F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 00:43:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qzrP2UPe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83D2320B1F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rFSN5fBFzDqWd
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 09:35:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rJJ622RhzDqdd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 11:43:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="qzrP2UPe"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rFQb3gFSzDqTD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 09:34:15 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x0VMXjBb089678
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:34:12 -0500
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qc8w12ex9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 17:34:12 -0500
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 31 Jan 2019 22:34:11 -0000
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 31 Jan 2019 22:34:09 -0000
-Received: from b01ledav002.gho.pok.ibm.com (b01ledav002.gho.pok.ibm.com
- [9.57.199.107])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x0VMY7j817498328
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 31 Jan 2019 22:34:08 GMT
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D133412405A;
- Thu, 31 Jan 2019 22:34:07 +0000 (GMT)
-Received: from b01ledav002.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 862ED124053;
- Thu, 31 Jan 2019 22:34:06 +0000 (GMT)
-Received: from oc6857751186.ibm.com (unknown [9.80.225.63])
- by b01ledav002.gho.pok.ibm.com (Postfix) with ESMTP;
- Thu, 31 Jan 2019 22:34:06 +0000 (GMT)
-Subject: Re: [PATCH v02] powerpc/pseries: Check for ceded CPU's during LPAR
- migration
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Juliet Kim <minkim@us.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Nathan Lynch <nathanl@linux.vnet.ibm.com>,
- Gustavo Walbon <gwalbon@linux.vnet.ibm.com>,
- Pete Heyrman <heyrman@us.ibm.com>
-References: <20190130212220.11315.76901.stgit@ltcalpine2-lp20.aus.stglabs.ibm.com>
- <8736p9pes4.fsf@concordia.ellerman.id.au>
- <65daf21b-dd1d-c22d-4746-65f4ae5d824f@linux.vnet.ibm.com>
- <1030033d-0cca-efa5-2833-ee8bbd7c4e8a@linux.vnet.ibm.com>
-Date: Thu, 31 Jan 2019 14:34:05 -0800
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rJGK4gT0zDqdT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 11:42:17 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id 101so2280774pld.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 16:42:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=+SMMq+TllxuViJZw+u/PIKD+ZAPhynoSbuBQYuRGymo=;
+ b=qzrP2UPe6jzcQCJUZcoekv+SCs5LiVOV0kswH17jEht47xFXWeDtc05rUnAaQtrE5p
+ 0Bq/mUCYlXqOO18BjumVzvKh8KSqcDXI+TRs60VbDXBM9hhgxW6hM+wAvJ62SMoEYOA3
+ k/HXNHu3Sq1LzNbNwCGRycAAeG2Alo8OsedZSc2q0yNcBGOoPZpYwfllXl3eNmYm1tJd
+ GKG0evVSLug72QgWqk3YqtDDvr6XV6ILCWrFTCDinFDvSzbvYkfN7qlnayNjs/JrAJE3
+ yPon/atsHIEwBtfjflLm9ct2g279X4/jxoOr2ZVID4KEV7a10BV//dg45aFNHdf3zwCa
+ OC9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=+SMMq+TllxuViJZw+u/PIKD+ZAPhynoSbuBQYuRGymo=;
+ b=td1fmm2xbrKUSetcIKZIM2Rl89O1bE+sOUZogqvpL9r8DSCkwQzTc2708xZR8mRle7
+ 0V/V+YQYt8kzbKtXQqZYgp6o/kXq25eWezQ1d9Os0VwKCMBJF5cdrZHPEAWQxZ/7NA7o
+ M0JTouwYthKA6V7rXq3RMblyk6gVFYZ5ZZkWmVl4Vgi8caHtU4HY9nwTV/tloEU3tvi1
+ 2eq6lYm4mObl5vY8yEvBAo2/i6CtjVSX7dTrHA0FH+uOzgM0fl+wX4OEnfDp9szk2Y3z
+ socsN+fuD8Po5axm1aGQ6/rFjEZzY4lTjBeF9eu3mIvRqkNwduLp3bvg65OgZXjuh5RD
+ OtWw==
+X-Gm-Message-State: AJcUukdYivWGnsRqpW6SQqhdSryVUvEn//UUnCO5wRIR6CqOXt6cyIgc
+ PB+MTQ8WvWjExNhBtT645jiTgcRb
+X-Google-Smtp-Source: ALg8bN4/eyEwUXNKkV1BQPcl1BDRBnVTFCbaswVXKbE3p4oBBRCkYX7b1afjuMt+iVYgs1KRNtN6UA==
+X-Received: by 2002:a17:902:bd0a:: with SMTP id
+ p10mr35887603pls.322.1548981734542; 
+ Thu, 31 Jan 2019 16:42:14 -0800 (PST)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id h134sm10602471pfe.27.2019.01.31.16.42.12
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 31 Jan 2019 16:42:13 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: Escalate reset when IODA reset fails
+Date: Fri,  1 Feb 2019 11:42:01 +1100
+Message-Id: <20190201004201.6512-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <1030033d-0cca-efa5-2833-ee8bbd7c4e8a@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19013122-0060-0000-0000-00000303BFA0
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010512; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000277; SDB=6.01154532; UDB=6.00602045; IPR=6.00934964; 
- MB=3.00025380; MTD=3.00000008; XFM=3.00000015; UTC=2019-01-31 22:34:11
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19013122-0061-0000-0000-00004821E837
-Message-Id: <25fbcee4-b1c1-de1e-efc0-6bb4bf081d45@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-01-31_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1901310164
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -114,194 +89,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 01/31/2019 02:21 PM, Tyrel Datwyler wrote:
-> On 01/31/2019 01:53 PM, Michael Bringmann wrote:
->> On 1/30/19 11:38 PM, Michael Ellerman wrote:
->>> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
->>>> This patch is to check for cede'ed CPUs during LPM.  Some extreme
->>>> tests encountered a problem ehere Linux has put some threads to
->>>> sleep (possibly to save energy or something), LPM was attempted,
->>>> and the Linux kernel didn't awaken the sleeping threads, but issued
->>>> the H_JOIN for the active threads.  Since the sleeping threads
->>>> are not awake, they can not issue the expected H_JOIN, and the
->>>> partition would never suspend.  This patch wakes the sleeping
->>>> threads back up.
->>>
->>> I'm don't think this is the right solution.
->>>
->>> Just after your for loop we do an on_each_cpu() call, which sends an IPI
->>> to every CPU, and that should wake all CPUs up from CEDE.
->>>
->>> If that's not happening then there is a bug somewhere, and we need to
->>> work out where.
->>
->> Let me explain the scenario of the LPM case that Pete Heyrman found, and
->> that Nathan F. was working upon, previously.
->>
->> In the scenario, the partition has 5 dedicated processors each with 8 threads
->> running.
-> 
-> Do we CEDE processors when running dedicated? I thought H_CEDE was part of the
-> Shared Processor LPAR option.
+The IODA reset is used to flush out any OS controlled state from the PHB.
+This reset can fail if a PHB fatal error has occurred in early boot,
+probably due to a because of a bad device. We already do a fundemental
+reset of the device in some cases, so this patch just adds a test to force
+a full reset if firmware reports an error when performing the IODA reset.
 
-Looks like the cpuidle-pseries driver uses CEDE with dedicated processors as
-long as firmware supports SPLPAR option.
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-> 
->>
->> From the PHYP data we can see that on VP 0, threads 3, 4, 5, 6 and 7 issued
->> a H_CEDE requesting to save energy by putting the requesting thread into
->> sleep mode.  In this state, the thread will only be awakened by H_PROD from
->> another running thread or from an external user action (power off, reboot
->> and such).  Timers and external interrupts are disabled in this mode.
-> 
-> Not according to PAPR. A CEDE'd processor should awaken if signaled by external
-> interrupt such as decrementer or IPI as well.
-
-This statement should still apply though. From PAPR:
-
-14.11.3.3 H_CEDE
-The architectural intent of this hcall() is to have the virtual processor, which
-has no useful work to do, enter a wait state ceding its processor capacity to
-other virtual processors until some useful work appears, signaled either through
-an interrupt or a prod hcall(). To help the caller reduce race conditions, this
-call may be made with interrupts disabled but the semantics of the hcall()
-enable the virtual processor’s interrupts so that it may always receive wake up
-interrupt signals.
-
--Tyrel
-
-> 
-> -Tyrel
-> 
->>
->> About 3 seconds later, as part of the LPM operation, the other 35 threads
->> have all issued a H_JOIN request.  Join is part of the LPM process where
->> the threads suspend themselves as part of the LPM operation so the partition
->> can be migrated to the target server.
->>
->> So, the current state is the the OS has suspended the execution of all the
->> threads in the partition without successfully suspending all threads as part
->> of LPM.
->>
->> Net, OS has an issue where they suspended every processor thread so nothing
->> can run.
->>
->> This appears to be slightly different than the previous LPM stalls we have
->> seen where the migration stalls because of cpus being taken offline and not
->> making the H_JOIN call.
->>
->> In this scenario we appear to have CPUs that have done an H_CEDE prior to
->> the LPM. For these CPUs we would need to do a H_PROD to wake them back up
->> so they can do a H_JOIN and allow the LPM to continue.
->>
->> The problem is that Linux has some threads that they put to sleep (probably
->> to save energy or something), LPM was attempted, Linux didn't awaken the
->> sleeping threads but issued the H_JOIN for the active threads.  Since the
->> sleeping threads don't issue the H_JOIN the partition will never suspend.
->>
->> I am checking again with Pete regarding your concerns.
->>
->> Thanks.
->>
->>>
->>>
->>>> diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
->>>> index cff5a41..8292eff 100644
->>>> --- a/arch/powerpc/include/asm/plpar_wrappers.h
->>>> +++ b/arch/powerpc/include/asm/plpar_wrappers.h
->>>> @@ -26,10 +26,8 @@ static inline void set_cede_latency_hint(u8 latency_hint)
->>>>  	get_lppaca()->cede_latency_hint = latency_hint;
->>>>  }
->>>>  
->>>> -static inline long cede_processor(void)
->>>> -{
->>>> -	return plpar_hcall_norets(H_CEDE);
->>>> -}
->>>> +int cpu_is_ceded(int cpu);
->>>> +long cede_processor(void);
->>>>  
->>>>  static inline long extended_cede_processor(unsigned long latency_hint)
->>>>  {
->>>> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->>>> index de35bd8f..fea3d21 100644
->>>> --- a/arch/powerpc/kernel/rtas.c
->>>> +++ b/arch/powerpc/kernel/rtas.c
->>>> @@ -44,6 +44,7 @@
->>>>  #include <asm/time.h>
->>>>  #include <asm/mmu.h>
->>>>  #include <asm/topology.h>
->>>> +#include <asm/plpar_wrappers.h>
->>>>  
->>>>  /* This is here deliberately so it's only used in this file */
->>>>  void enter_rtas(unsigned long);
->>>> @@ -942,7 +943,7 @@ int rtas_ibm_suspend_me(u64 handle)
->>>>  	struct rtas_suspend_me_data data;
->>>>  	DECLARE_COMPLETION_ONSTACK(done);
->>>>  	cpumask_var_t offline_mask;
->>>> -	int cpuret;
->>>> +	int cpuret, cpu;
->>>>  
->>>>  	if (!rtas_service_present("ibm,suspend-me"))
->>>>  		return -ENOSYS;
->>>> @@ -991,6 +992,11 @@ int rtas_ibm_suspend_me(u64 handle)
->>>>  		goto out_hotplug_enable;
->>>>  	}
->>>>  
->>>> +	for_each_present_cpu(cpu) {
->>>> +		if (cpu_is_ceded(cpu))
->>>> +			plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(cpu));
->>>> +	}
->>>
->>> There's a race condition here, there's nothing to prevent the CPUs you
->>> just PROD'ed from going back into CEDE before you do the on_each_cpu()
->>> call below> 
->>>>  	/* Call function on all CPUs.  One of us will make the
->>>>  	 * rtas call
->>>>  	 */
->>>> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
->>>> index 41f62ca2..48ae6d4 100644
->>>> --- a/arch/powerpc/platforms/pseries/setup.c
->>>> +++ b/arch/powerpc/platforms/pseries/setup.c
->>>> @@ -331,6 +331,24 @@ static int alloc_dispatch_log_kmem_cache(void)
->>>>  }
->>>>  machine_early_initcall(pseries, alloc_dispatch_log_kmem_cache);
->>>>  
->>>> +static DEFINE_PER_CPU(int, cpu_ceded);
->>>> +
->>>> +int cpu_is_ceded(int cpu)
->>>> +{
->>>> +	return per_cpu(cpu_ceded, cpu);
->>>> +}
->>>> +
->>>> +long cede_processor(void)
->>>> +{
->>>> +	long rc;
->>>> +
->>>> +	per_cpu(cpu_ceded, raw_smp_processor_id()) = 1;
->>>
->>> And there's also a race condition here. From the other CPU's perspective
->>> the store to cpu_ceded is not necessarily ordered vs the hcall below.
->>> Which means the other CPU can see cpu_ceded = 0, and therefore not prod
->>> us, but this CPU has already called H_CEDE.
->>>
->>>> +	rc = plpar_hcall_norets(H_CEDE);
->>>> +	per_cpu(cpu_ceded, raw_smp_processor_id()) = 0;
->>>> +
->>>> +	return rc;
->>>> +}
->>>> +
->>>>  static void pseries_lpar_idle(void)
->>>>  {
->>>>  	/*
->>>
->>> cheers
->>>
->>>
->>
-> 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 1d6406a..53982f8 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -3943,9 +3943,12 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	 * shutdown PCI devices correctly. We already got IODA table
+ 	 * cleaned out. So we have to issue PHB reset to stop all PCI
+ 	 * transactions from previous kernel. The ppc_pci_reset_phbs
+-	 * kernel parameter will force this reset too.
++	 * kernel parameter will force this reset too. Additionally,
++	 * if the IODA reset above failed then use a bigger hammer.
++	 * This can happen if we get a PHB fatal error in very early
++	 * boot.
+ 	 */
+-	if (is_kdump_kernel() || pci_reset_phbs) {
++	if (is_kdump_kernel() || pci_reset_phbs || rc) {
+ 		pr_info("  Issue PHB reset ...\n");
+ 		pnv_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
+ 		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
+-- 
+2.9.4
 
