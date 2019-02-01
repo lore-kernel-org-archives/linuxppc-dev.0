@@ -3,167 +3,127 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AAA89C282D8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 05:04:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBAC4C282D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 07:07:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C28FF20857
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 05:04:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0D79520869
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 07:07:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="K9aGLhQl"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C28FF20857
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="MG8KYwqA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D79520869
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rQ4G6ClhzDqcF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 16:03:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rSpc64pFzDqgF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Feb 2019 18:07:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
- envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=samsung.com
+ (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com;
+ envelope-from=m.szyprowski@samsung.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="K9aGLhQl"; 
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="MG8KYwqA"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rQ2N2zXQzDqcF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 16:02:20 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id z23so2591439plo.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2019 21:02:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
- h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
- :user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=rvgJHkpx91NF7FNNGl2qq9iT6RkIyiZaCubviVX9lLI=;
- b=K9aGLhQlq7fS2pURD1G5s0rlrO9YZf19YJf+GUjOtZIfyGTggxwDb/sJ3rKDTb+n1V
- 6os7zs06tNLewGQ+Mj7D3CUEg68IaI2aDuGcJTPlenalGKPBHJRxw+sjEvI8CV4mV0z4
- xqwsCx+NmMrqgpBRxwzake62hiJawpRRIacn0H7fNsy7UTs63KVToqB3MwXGn0ISYmTf
- hn1Sa3SKNpKMtISIfvAZbTSXjWS0jL4TDhWLp4lXJr1mwiGo/DlXtCLvo1d7RVw02Gsq
- qu5ADZbOfHSjx1OeAWvTPmlWv+AVtecOiFNgSlEW+V7lkwmjF5jauIOF4N0UShJMqMsM
- HoyA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
- :message-id:date:user-agent:mime-version:in-reply-to
- :content-language:content-transfer-encoding;
- bh=rvgJHkpx91NF7FNNGl2qq9iT6RkIyiZaCubviVX9lLI=;
- b=HJqH5V/YqEDbpMAbluu+KkJ4DY0IsYQDVxcnGL4F84YfeMtyf8gQYJAzuu5LfXl4oS
- uKvdp2fsbDAztQfYV7g6TG+smM7NyezJ+DaG+E5CGmJgSZSFQvjDRSKo5pgzPFMT6eQB
- zus2DeMwDCuFj9WZTqYzvr71UjMFUq6mt9uoxefHoENUzjHCAalyP//XcDqGoki7iyeo
- wU38+1uX6Pl/tajYBc1uR7Yvmwl+tMgqrpztlVcQzcNTuhXPEQfczExriw9FxKdqxFty
- SobA6qBXEylVhJMRJhE11azVjhSuL7pIFYPzaVmFgbDm1CNOtqQiYiAIV6HSuIoij8L8
- iPpQ==
-X-Gm-Message-State: AJcUukdnZItB/AAL3BxrnuFdpfKExRfuqMWRHR9Y89fwT0I4bQeMdNyd
- EL3pr3S83PHick2shZLyph/Enw==
-X-Google-Smtp-Source: ALg8bN5kAELi2SHC0M7xavSgEIjDmrklH6a6e/caiZlJ1Fma9PD0xO4irxPSSFegDWy4X40by1OWzg==
-X-Received: by 2002:a17:902:59c8:: with SMTP id
- d8mr37988420plj.116.1548997335789; 
- Thu, 31 Jan 2019 21:02:15 -0800 (PST)
-Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id 24sm34030993pfl.32.2019.01.31.21.02.12
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Thu, 31 Jan 2019 21:02:14 -0800 (PST)
-Subject: Re: [PATCH] powerpc/mm: Add _PAGE_SAO to _PAGE_CACHE_CTL mask
-To: Michael Ellerman <mpe@ellerman.id.au>, Reza Arbab <arbab@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-References: <1548696702-20686-1-git-send-email-arbab@linux.ibm.com>
- <cd1b7bf3-3c35-09bb-e979-d779b9cf7a18@linux.ibm.com>
- <20190129170347.igcb4yufilshjgri@arbab-laptop.localdomain>
- <87fttap8tc.fsf@concordia.ellerman.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Openpgp: preference=signencrypt
-Autocrypt: addr=aik@ozlabs.ru; keydata=
- mQINBE+rT0sBEADFEI2UtPRsLLvnRf+tI9nA8T91+jDK3NLkqV+2DKHkTGPP5qzDZpRSH6mD
- EePO1JqpVuIow/wGud9xaPA5uvuVgRS1q7RU8otD+7VLDFzPRiRE4Jfr2CW89Ox6BF+q5ZPV
- /pS4v4G9eOrw1v09lEKHB9WtiBVhhxKK1LnUjPEH3ifkOkgW7jFfoYgTdtB3XaXVgYnNPDFo
- PTBYsJy+wr89XfyHr2Ev7BB3Xaf7qICXdBF8MEVY8t/UFsesg4wFWOuzCfqxFmKEaPDZlTuR
- tfLAeVpslNfWCi5ybPlowLx6KJqOsI9R2a9o4qRXWGP7IwiMRAC3iiPyk9cknt8ee6EUIxI6
- t847eFaVKI/6WcxhszI0R6Cj+N4y+1rHfkGWYWupCiHwj9DjILW9iEAncVgQmkNPpUsZECLT
- WQzMuVSxjuXW4nJ6f4OFHqL2dU//qR+BM/eJ0TT3OnfLcPqfucGxubhT7n/CXUxEy+mvWwnm
- s9p4uqVpTfEuzQ0/bE6t7dZdPBua7eYox1AQnk8JQDwC3Rn9kZq2O7u5KuJP5MfludMmQevm
- pHYEMF4vZuIpWcOrrSctJfIIEyhDoDmR34bCXAZfNJ4p4H6TPqPh671uMQV82CfTxTrMhGFq
- 8WYU2AH86FrVQfWoH09z1WqhlOm/KZhAV5FndwVjQJs1MRXD8QARAQABtCRBbGV4ZXkgS2Fy
- ZGFzaGV2c2tpeSA8YWlrQG96bGFicy5ydT6JAjgEEwECACIFAk+rT0sCGwMGCwkIBwMCBhUI
- AgkKCwQWAgMBAh4BAheAAAoJEIYTPdgrwSC5fAIP/0wf/oSYaCq9PhO0UP9zLSEz66SSZUf7
- AM9O1rau1lJpT8RoNa0hXFXIVbqPPKPZgorQV8SVmYRLr0oSmPnTiZC82x2dJGOR8x4E01gK
- TanY53J/Z6+CpYykqcIpOlGsytUTBA+AFOpdaFxnJ9a8p2wA586fhCZHVpV7W6EtUPH1SFTQ
- q5xvBmr3KkWGjz1FSLH4FeB70zP6uyuf/B2KPmdlPkyuoafl2UrU8LBADi/efc53PZUAREih
- sm3ch4AxaL4QIWOmlE93S+9nHZSRo9jgGXB1LzAiMRII3/2Leg7O4hBHZ9Nki8/fbDo5///+
- kD4L7UNbSUM/ACWHhd4m1zkzTbyRzvL8NAVQ3rckLOmju7Eu9whiPueGMi5sihy9VQKHmEOx
- OMEhxLRQbzj4ypRLS9a+oxk1BMMu9cd/TccNy0uwx2UUjDQw/cXw2rRWTRCxoKmUsQ+eNWEd
- iYLW6TCfl9CfHlT6A7Zmeqx2DCeFafqEd69DqR9A8W5rx6LQcl0iOlkNqJxxbbW3ddDsLU/Y
- r4cY20++WwOhSNghhtrroP+gouTOIrNE/tvG16jHs8nrYBZuc02nfX1/gd8eguNfVX/ZTHiR
- gHBWe40xBKwBEK2UeqSpeVTohYWGBkcd64naGtK9qHdo1zY1P55lHEc5Uhlk743PgAnOi27Q
- ns5zuQINBE+rT0sBEACnV6GBSm+25ACT+XAE0t6HHAwDy+UKfPNaQBNTTt31GIk5aXb2Kl/p
- AgwZhQFEjZwDbl9D/f2GtmUHWKcCmWsYd5M/6Ljnbp0Ti5/xi6FyfqnO+G/wD2VhGcKBId1X
- Em/B5y1kZVbzcGVjgD3HiRTqE63UPld45bgK2XVbi2+x8lFvzuFq56E3ZsJZ+WrXpArQXib2
- hzNFwQleq/KLBDOqTT7H+NpjPFR09Qzfa7wIU6pMNF2uFg5ihb+KatxgRDHg70+BzQfa6PPA
- o1xioKXW1eHeRGMmULM0Eweuvpc7/STD3K7EJ5bBq8svoXKuRxoWRkAp9Ll65KTUXgfS+c0x
- gkzJAn8aTG0z/oEJCKPJ08CtYQ5j7AgWJBIqG+PpYrEkhjzSn+DZ5Yl8r+JnZ2cJlYsUHAB9
- jwBnWmLCR3gfop65q84zLXRQKWkASRhBp4JK3IS2Zz7Nd/Sqsowwh8x+3/IUxVEIMaVoUaxk
- Wt8kx40h3VrnLTFRQwQChm/TBtXqVFIuv7/Mhvvcq11xnzKjm2FCnTvCh6T2wJw3de6kYjCO
- 7wsaQ2y3i1Gkad45S0hzag/AuhQJbieowKecuI7WSeV8AOFVHmgfhKti8t4Ff758Z0tw5Fpc
- BFDngh6Lty9yR/fKrbkkp6ux1gJ2QncwK1v5kFks82Cgj+DSXK6GUQARAQABiQIfBBgBAgAJ
- BQJPq09LAhsMAAoJEIYTPdgrwSC5NYEP/2DmcEa7K9A+BT2+G5GXaaiFa098DeDrnjmRvumJ
- BhA1UdZRdfqICBADmKHlJjj2xYo387sZpS6ABbhrFxM6s37g/pGPvFUFn49C47SqkoGcbeDz
- Ha7JHyYUC+Tz1dpB8EQDh5xHMXj7t59mRDgsZ2uVBKtXj2ZkbizSHlyoeCfs1gZKQgQE8Ffc
- F8eWKoqAQtn3j4nE3RXbxzTJJfExjFB53vy2wV48fUBdyoXKwE85fiPglQ8bU++0XdOr9oyy
- j1llZlB9t3tKVv401JAdX8EN0++ETiOovQdzE1m+6ioDCtKEx84ObZJM0yGSEGEanrWjiwsa
- nzeK0pJQM9EwoEYi8TBGhHC9ksaAAQipSH7F2OHSYIlYtd91QoiemgclZcSgrxKSJhyFhmLr
- QEiEILTKn/pqJfhHU/7R7UtlDAmFMUp7ByywB4JLcyD10lTmrEJ0iyRRTVfDrfVP82aMBXgF
- tKQaCxcmLCaEtrSrYGzd1sSPwJne9ssfq0SE/LM1J7VdCjm6OWV33SwKrfd6rOtvOzgadrG6
- 3bgUVBw+bsXhWDd8tvuCXmdY4bnUblxF2B6GOwSY43v6suugBttIyW5Bl2tXSTwP+zQisOJo
- +dpVG2pRr39h+buHB3NY83NEPXm1kUOhduJUA17XUY6QQCAaN4sdwPqHq938S3EmtVhsuQIN
- BFq54uIBEACtPWrRdrvqfwQF+KMieDAMGdWKGSYSfoEGGJ+iNR8v255IyCMkty+yaHafvzpl
- PFtBQ/D7Fjv+PoHdFq1BnNTk8u2ngfbre9wd9MvTDsyP/TmpF0wyyTXhhtYvE267Av4X/BQT
- lT9IXKyAf1fP4BGYdTNgQZmAjrRsVUW0j6gFDrN0rq2J9emkGIPvt9rQt6xGzrd6aXonbg5V
- j6Uac1F42ESOZkIh5cN6cgnGdqAQb8CgLK92Yc8eiCVCH3cGowtzQ2m6U32qf30cBWmzfSH0
- HeYmTP9+5L8qSTA9s3z0228vlaY0cFGcXjdodBeVbhqQYseMF9FXiEyRs28uHAJEyvVZwI49
- CnAgVV/n1eZa5qOBpBL+ZSURm8Ii0vgfvGSijPGbvc32UAeAmBWISm7QOmc6sWa1tobCiVmY
- SNzj5MCNk8z4cddoKIc7Wt197+X/X5JPUF5nQRvg3SEHvfjkS4uEst9GwQBpsbQYH9MYWq2P
- PdxZ+xQE6v7cNB/pGGyXqKjYCm6v70JOzJFmheuUq0Ljnfhfs15DmZaLCGSMC0Amr+rtefpA
- y9FO5KaARgdhVjP2svc1F9KmTUGinSfuFm3quadGcQbJw+lJNYIfM7PMS9fftq6vCUBoGu3L
- j4xlgA/uQl/LPneu9mcvit8JqcWGS3fO+YeagUOon1TRqQARAQABiQRsBBgBCAAgFiEEZSrP
- ibrORRTHQ99dhhM92CvBILkFAlq54uICGwICQAkQhhM92CvBILnBdCAEGQEIAB0WIQQIhvWx
- rCU+BGX+nH3N7sq0YorTbQUCWrni4gAKCRDN7sq0YorTbVVSD/9V1xkVFyUCZfWlRuryBRZm
- S4GVaNtiV2nfUfcThQBfF0sSW/aFkLP6y+35wlOGJE65Riw1C2Ca9WQYk0xKvcZrmuYkK3DZ
- 0M9/Ikkj5/2v0vxz5Z5w/9+IaCrnk7pTnHZuZqOh23NeVZGBls/IDIvvLEjpD5UYicH0wxv+
- X6cl1RoP2Kiyvenf0cS73O22qSEw0Qb9SId8wh0+ClWet2E7hkjWFkQfgJ3hujR/JtwDT/8h
- 3oCZFR0KuMPHRDsCepaqb/k7VSGTLBjVDOmr6/C9FHSjq0WrVB9LGOkdnr/xcISDZcMIpbRm
- EkIQ91LkT/HYIImL33ynPB0SmA+1TyMgOMZ4bakFCEn1vxB8Ir8qx5O0lHMOiWMJAp/PAZB2
- r4XSSHNlXUaWUg1w3SG2CQKMFX7vzA31ZeEiWO8tj/c2ZjQmYjTLlfDK04WpOy1vTeP45LG2
- wwtMA1pKvQ9UdbYbovz92oyZXHq81+k5Fj/YA1y2PI4MdHO4QobzgREoPGDkn6QlbJUBf4To
- pEbIGgW5LRPLuFlOPWHmIS/sdXDrllPc29aX2P7zdD/ivHABslHmt7vN3QY+hG0xgsCO1JG5
- pLORF2N5XpM95zxkZqvYfC5tS/qhKyMcn1kC0fcRySVVeR3tUkU8/caCqxOqeMe2B6yTiU1P
- aNDq25qYFLeYxg67D/4w/P6BvNxNxk8hx6oQ10TOlnmeWp1q0cuutccblU3ryRFLDJSngTEu
- ZgnOt5dUFuOZxmMkqXGPHP1iOb+YDznHmC0FYZFG2KAc9pO0WuO7uT70lL6larTQrEneTDxQ
- CMQLP3qAJ/2aBH6SzHIQ7sfbsxy/63jAiHiT3cOaxAKsWkoV2HQpnmPOJ9u02TPjYmdpeIfa
- X2tXyeBixa3i/6dWJ4nIp3vGQicQkut1YBwR7dJq67/FCV3Mlj94jI0myHT5PIrCS2S8LtWX
- ikTJSxWUKmh7OP5mrqhwNe0ezgGiWxxvyNwThOHc5JvpzJLd32VDFilbxgu4Hhnf6LcgZJ2c
- Zd44XWqUu7FzVOYaSgIvTP0hNrBYm/E6M7yrLbs3JY74fGzPWGRbBUHTZXQEqQnZglXaVB5V
- ZhSFtHopZnBSCUSNDbB+QGy4B/E++Bb02IBTGl/JxmOwG+kZUnymsPvTtnNIeTLHxN/H/ae0
- c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
- DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
- XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <b25efaaa-a559-9223-a830-68b4f9a9ed3e@ozlabs.ru>
-Date: Fri, 1 Feb 2019 16:02:10 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rSmb5ysWzDqft
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 18:05:33 +1100 (AEDT)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20190201070524euoutp0271a6927fde2544e0b1b79d9795f82c41~-K5ckQJNA3054830548euoutp02n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2019 07:05:24 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20190201070524euoutp0271a6927fde2544e0b1b79d9795f82c41~-K5ckQJNA3054830548euoutp02n
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1549004725;
+ bh=LhAbpAXv7b/Jn7o325o9y8sGGKskPWyhIXvcBW6qwkw=;
+ h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+ b=MG8KYwqANB69uO/4zY6Gk0LdoZarp9Cs7FUx70iN6vx6iMthi2rmUrJchyElhuCXI
+ ue8GKuQtrC7k9TPz7Ux2mrPclngbw/w4DjABEufGVXjqX6685rZfpqaLnSZ6UVDyku
+ xRjOqc9xptqOaOL5mSRoZogADQEPWlwdMa3RE1PM=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20190201070524eucas1p229ba0acf0035070676f91a8a232641fd~-K5cCzkFj1110511105eucas1p29;
+ Fri,  1 Feb 2019 07:05:24 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 3F.07.04294.4BFE35C5; Fri,  1
+ Feb 2019 07:05:24 +0000 (GMT)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20190201070523eucas1p28a8a40b06589f725d1facf7a67f730e1~-K5a6jZqr0928209282eucas1p2_;
+ Fri,  1 Feb 2019 07:05:23 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+ 20190201070522eusmtrp26d172e9535374389e9895d570bce24d3~-K5ar7rc10763207632eusmtrp2r;
+ Fri,  1 Feb 2019 07:05:22 +0000 (GMT)
+X-AuditID: cbfec7f4-835ff700000010c6-6e-5c53efb4fa2d
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id 9F.1D.04128.2BFE35C5; Fri,  1
+ Feb 2019 07:05:22 +0000 (GMT)
+Received: from [106.116.147.30] (unknown [106.116.147.30]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20190201070522eusmtip1cb186b54c52224a98fdf4e190acba454~-K5aKnxyo0176601766eusmtip1H;
+ Fri,  1 Feb 2019 07:05:22 +0000 (GMT)
+Subject: Re: fix a layering violation in videobuf2 and improve
+ dma_map_resource v2
+To: Christoph Hellwig <hch@lst.de>, Pawel Osciak <pawel@osciak.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>, =?UTF-8?Q?Niklas_S=c3=b6derlund?=
+ <niklas.soderlund+renesas@ragnatech.se>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Message-ID: <774dc557-b690-203f-898f-38755b099068@samsung.com>
+Date: Fri, 1 Feb 2019 08:05:21 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.0
 MIME-Version: 1.0
-In-Reply-To: <87fttap8tc.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+In-Reply-To: <20190118113727.3270-1-hch@lst.de>
 Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Brightmail-Tracker: H4sIAAAAAAAAA01SbUhTYRjt9e7e3a1m12n4kJI0QjLKaURdNCTT4NKfoiLIj2zmxUSnsqVl
+ RvkRZkstv1CHlIFpWU2by9TUcpnDcpbOaiqCNT/QMgkzy8xyu1r+e895zvOec+AhMbEZX09G
+ xZ5mFbGyGAkh5NW1/+zapps6HOI1li6g7957YUeXPfWljWmf+bTW8g6nTY2lBJ1V8win9YXN
+ iP41u4DTFdp5O3qwYytdMPmTv2c1Y3rXjTHaqisEU1t+kck3VyLmdfEtxDzpSyEYy9w4wYyZ
+ ZgkmR1eFmGnthoPCIOHuCDYmKpFVSP1OCE9dff8Fi9fgZ4tUhXgKKuepkIAEagekaloxFRKS
+ YuoOggeGbMSBbwg+jY/wODCNoKWngr+8Mq038rlBJQLN1ZdLqikEprxWwqpypI5AsXHANnCi
+ mhF0ZVzDrQCj5hEYbhiRVUVQ3qCaVNk2RJQfjP/us3nwqE2Qasyw8euoECjoauNzGgfoKBm2
+ RRdQUujsrLTxGOUGjydLMe7tDP3DN+2sZkDN8GFq5ivOBQ+EhuLRpd6OMGHQLRVyhT8Nywvp
+ CC4Xq/kcyELwqLSe4FS+8NzQvfgTuWjhAdWNUo72h/L2Ab6VBsoezJMOXAh7yKsrwjhaBJkZ
+ Yk7tDmqD5p9t65se7DqSqFdUU6+oo15RR/3ftwzxqpAzm6CUR7LK7bHsGU+lTK5MiI30PBkn
+ 16LFe3u1YPhWjxrnw/WIIpFkjahm7lCIGJclKpPkegQkJnEStQ0eDhGLImRJ51hFXJgiIYZV
+ 6pELyZM4i5JXDQWLqUjZaTaaZeNZxfLUjhSsT0EuvftyiImOtXPhX5NDHds8RJn3049XvR14
+ OGQO2BgdvrpHeiz/vCl41N7i5d79LMDHbO/TtPlSmdt31wY31lAbkNJiTKtbE6RP1h3IsuwM
+ vt30gy7p3S+4c6K3yUyHtkStPZTbu7cxg9THfezPzbbk5tTnVYZNVO/6MEJEXfA/GijhKU/J
+ vLdgCqXsL8NRby1rAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrJIsWRmVeSWpSXmKPExsVy+t/xu7qb3gfHGLS/NrdYufook8WC/dYW
+ Z5vesFtsenyN1eLyrjlsFj0btrJaHJq6l9Hi9/d/rBbLNv1hsrh7Usdiytuf7A7cHpevXWT2
+ 2LSqk81j85J6j8k3ljN6nJ+xkNFj980GNo/Hv16yeTy//J3No2/LKkaPz5vkArii9GyK8ktL
+ UhUy8otLbJWiDS2M9AwtLfSMTCz1DI3NY62MTJX07WxSUnMyy1KL9O0S9DK6r79jLljHWjG9
+ ayprA+MSli5GTg4JAROJz4fOsncxcnEICSxllNhz+ygbREJG4uS0BlYIW1jiz7UuNoiit4wS
+ vS8nM4IkhAVCJGacvc0CkhAR2Msocf/0XbAqZoF/jBLze3cwQrQ0MUosWHsebBabgKFE19su
+ sB28AnYSL//eZAexWQRUJBrPtgHFOThEBWIkrp5jhCgRlDg58wnYrZwC+hJnziwHK2cWUJf4
+ M+8SM4QtL7H97RwoW1zi1pP5TBMYhWYhaZ+FpGUWkpZZSFoWMLKsYhRJLS3OTc8tNtIrTswt
+ Ls1L10vOz93ECIzmbcd+bgH6513wIUYBDkYlHt4Nv4JihFgTy4orcw8xSnAwK4nwHrkbHCPE
+ m5JYWZValB9fVJqTWnyI0RTot4nMUqLJ+cBEk1cSb2hqaG5haWhubG5sZqEkznveoDJKSCA9
+ sSQ1OzW1ILUIpo+Jg1OqgfGmNnP5FrFrlx4dt7ksHT4xLoZPWPHhXyGnJW4OUYJmtWJ2r84v
+ ex+iFL1oy8tTSi9Y5gVvdrjf33f9zgSOH6wTf53SfHnjpFf3j470ht6ZDjfWvPeOZp1l4GRx
+ sO/PCvU761brpmzYKeb3iC+x+4yEVKfUjX+rOLST35nobX+wyaIzec2DDF4lluKMREMt5qLi
+ RAADa/MU/AIAAA==
+X-CMS-MailID: 20190201070523eucas1p28a8a40b06589f725d1facf7a67f730e1
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190118113751epcas2p2d7d678dcf247806a119316aabb4dde21
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190118113751epcas2p2d7d678dcf247806a119316aabb4dde21
+References: <CGME20190118113751epcas2p2d7d678dcf247806a119316aabb4dde21@epcas2p2.samsung.com>
+ <20190118113727.3270-1-hch@lst.de>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -175,52 +135,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Charles Johns <crjohns@us.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>
+Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, Mauro Carvalho Chehab <mchehab@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi All,
 
+On 2019-01-18 12:37, Christoph Hellwig wrote:
+> Hi all,
+>
+> this series fixes a rather gross layering violation in videobuf2, which
+> pokes into arm DMA mapping internals to get a DMA address for memory that
+> does not have a page structure, and to do so fixes up the dma_map_resource
+> implementation to not provide a somewhat dangerous default and improve
+> the error handling.
+>
+> Changes since v1:
+>  - don't apply bus offsets in dma_direct_map_resource
 
-On 31/01/2019 00:35, Michael Ellerman wrote:
-> Reza Arbab <arbab@linux.ibm.com> writes:
-> 
->> On Tue, Jan 29, 2019 at 08:37:28PM +0530, Aneesh Kumar K.V wrote:
->>> Not sure what the fix is about. We set the related hash pte flags via
->>>
->>> 	if ((pteflags & _PAGE_CACHE_CTL) == _PAGE_TOLERANT)
->>> 		rflags |= HPTE_R_I;
->>> 	else if ((pteflags & _PAGE_CACHE_CTL) == _PAGE_NON_IDEMPOTENT)
->>> 		rflags |= (HPTE_R_I | HPTE_R_G);
->>> 	else if ((pteflags & _PAGE_CACHE_CTL) == _PAGE_SAO)
->>> 		rflags |= (HPTE_R_W | HPTE_R_I | HPTE_R_M);
->>
->> Again, nothing broken here, just a code readability thing. As Alexey 
->> (and Charlie) noted, given the above it is a little confusing to define 
->> _PAGE_CACHE_CTL this way:
->>
->>   #define _PAGE_CACHE_CTL      (_PAGE_NON_IDEMPOTENT | _PAGE_TOLERANT)
-> 
-> Yeah that's confusing I agree.
-> 
-> It's not really a maintainability thing, because those bits are in the
-> architecture, so they can't change.
-> 
->> I like Alexey's idea, maybe just use a literal?
->>
->>   #define _PAGE_CACHE_CTL 0x30
-> 
-> I prefer your original patch. It serves as documentation on what values
-> we expect to see in that field.
+Works fine on older Exynos based boards with IOMMU and CMA disabled.
 
+Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-As documentation, it gives an idea that there can be both
-_PAGE_NON_IDEMPOTENT and _PAGE_TOLERANT set which is not true. Putting
-possible values in the comment next to "#define _PAGE_CACHE_CTL" will
-document it properly imho.
-
-
-
+Best regards
 -- 
-Alexey
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
