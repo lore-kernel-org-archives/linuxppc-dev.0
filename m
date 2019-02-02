@@ -7,73 +7,73 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86291C282D8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49896C282D8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:49:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F25EB20857
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:47:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B7A8420857
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 01:49:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rYWWdogH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F25EB20857
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JcBSvhg6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7A8420857
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43rxgB73ZfzDqjv
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 12:47:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43rxht5XWFzDqSr
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 12:49:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="rYWWdogH"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="JcBSvhg6"; 
  dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43rxTg0zVhzDqjd
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2019 12:39:19 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id y4so3739726pgc.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Feb 2019 17:39:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43rxTp5l08zDqgD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2019 12:39:26 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id v28so3748937pgk.10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Feb 2019 17:39:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=6fivvub99Xix9SC3KKfxY3DnEgPVHfJZb9qun3OaRWg=;
- b=rYWWdogHyyfoXHNw5vYGz1rLozTLpmOkP0KHq197u7SHmMLbh+SkNqa7NpQtSdMfQq
- Sg2+fJLGoIFUvNopzkSuf+xcc4vTZubXH7cPBLLLEF9z9cMpKmuLzM00WWcaWtYOlYoY
- 8QZOVzS/gUsOqXwweSfmeSAQirZ8DFeZxbW/1g1BV9EA1eQNZMAK5En0+ASsQb0IFPtW
- 9ehITCoiqh4YiLLPrNJ9/A5Hqo5hIs9LcngkxxNaQ7bQ2DORxuesRxtd5sJsPHHiZCUq
- iuLVUhdb9FEKI7KaHoyxW5MzXqgNtzYoWOuflVepi2+pqZY5pl9G0HkcTbOHhVZ1b240
- 7JiQ==
+ bh=rByqLCOGvQ8nC7iVvwCr6DlPApr36fgfZWbbNDw3cPc=;
+ b=JcBSvhg6DtXatbgMnyQPHGvUT0KXMV+vsEQvkE+bwnES3r8FwaD6AuXKWbGneMDz3s
+ aEP9gz3gTzw9afwA1Vn2/whKrqSfJnjlvkxH/60fVrq78G65y2YhzxhMqoSMw/VRwiZC
+ dgP1qtfqZasGPDUNv4b3GGuTWfjRYD5EqS8hLpq/97GVas2CizzxVgexa58vT7e4WITd
+ azMgVpqULEKmZfeGFvw+m2BQka6NAtIoGdwOu76ZznsaS+VBDxpRT71E0Mc1h19Q5OlU
+ d1sJPU2mHk8QHI42wWDvTqlVz6u7A3UgRLvity26FGTvlrRKwNuldw6wMGzlTElyz/zh
+ iOMw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=6fivvub99Xix9SC3KKfxY3DnEgPVHfJZb9qun3OaRWg=;
- b=OeETpMbA037+NiHbBLs/K62RbIJPVxJIL4jN4c6vDBwlv4jMUI3nC5lKu7yoNKPuTF
- fHSKubqebNp81YEP59EtBuvWWjdbxSBdhJU6xWVeEvOFvkS7ydp8Vzo6U8w3DMuqf/9c
- OUPZV4ytDxztDTmbW20SO9kSt1zu72HjvnR7S7090t/3ZaBU0qZF/ZfLfqtvDOiC0XV9
- i7sgWd+++zJRqorIeRe6Clp2UVgSqT7lS0/GvxJoGlZsLI5GT4Dk1pBykPEFLer0dqMF
- mjV73eNp2nNn4vpWmAGmx7Y3ALUFXiQ1Frc9LK1HxIWGYkBYZK0DpZ4NWutHpNBkO6If
- bC0Q==
-X-Gm-Message-State: AJcUukdLVwpd3sISmkjCIgFSvemuK89WJGIPFE+hJbJhOC8aqvAtcUKs
- cxp7hk1S5hCqK2mktAzpA+s=
-X-Google-Smtp-Source: ALg8bN7W+aadejbG7oa19lQl7G9yPYUZCeqRb9Yml4K7aisKFkTmeYC8Fchg3oAyUGiZP9Vgewt9Xw==
-X-Received: by 2002:a62:16d6:: with SMTP id 205mr41603341pfw.256.1549071557589; 
- Fri, 01 Feb 2019 17:39:17 -0800 (PST)
+ bh=rByqLCOGvQ8nC7iVvwCr6DlPApr36fgfZWbbNDw3cPc=;
+ b=OKr7vZzInRmYWvl87xtCHYHEZOs/u/crCfGRcMGAGMm00rUd3Rl9I/GI58ZqDgkNvA
+ rzvYPPYp7AXyL87ArnhifK5OPGgzH7zqOhri6rX31YC01dKC32bmH4wekUfqcnr+sxLS
+ ASsROjntrP3pkQtHxLtAYE3Ki3QZICoz1qbwP3kI8bVQ4TtCpXnxIyXJK5dlnUvwM5Yh
+ 4Cj+nteCsVei9wYAnMu7vs5epLL+uBcBsWFgn114IyKQTHADBdJTCD7HeCthvi1+e0cJ
+ AVQ6wgpDSrvsqcE2Uqo400YHkVteLO5N/udFw9Ql5MAEXvq9KtsYs0uN3Ta5sKUrpIvi
+ cGvg==
+X-Gm-Message-State: AHQUAubMQ7zNWh2CcOcUW4qU9CPYQ1jQIf66l0V/z6MTEibOTl/7KjiH
+ zYDQs4wM7/3Ed5eWjpLdHbw=
+X-Google-Smtp-Source: AHgI3IY4pbsGdSsiplWwzuSajzIs74vE3bWXmAl9AhEm/chKi5rYt5/pCLZhODFUahdG52LiNoncsw==
+X-Received: by 2002:a63:e5c:: with SMTP id 28mr4247053pgo.369.1549071565234;
+ Fri, 01 Feb 2019 17:39:25 -0800 (PST)
 Received: from localhost.corp.microsoft.com ([167.220.255.67])
- by smtp.googlemail.com with ESMTPSA id d3sm9183425pgl.64.2019.02.01.17.39.10
+ by smtp.googlemail.com with ESMTPSA id d3sm9183425pgl.64.2019.02.01.17.39.17
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Fri, 01 Feb 2019 17:39:16 -0800 (PST)
+ Fri, 01 Feb 2019 17:39:24 -0800 (PST)
 From: lantianyu1986@gmail.com
 X-Google-Original-From: Tianyu.Lan@microsoft.com
 To: 
-Subject: [PATCH V2 4/10] KVM/MMU: Introduce tlb flush with range list
-Date: Sat,  2 Feb 2019 09:38:20 +0800
-Message-Id: <20190202013825.51261-5-Tianyu.Lan@microsoft.com>
+Subject: [PATCH V2 5/10] KVM/MMU: Flush tlb with range list in sync_page()
+Date: Sat,  2 Feb 2019 09:38:21 +0800
+Message-Id: <20190202013825.51261-6-Tianyu.Lan@microsoft.com>
 X-Mailer: git-send-email 2.14.4
 In-Reply-To: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
 References: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
@@ -104,65 +104,67 @@ Sender: "Linuxppc-dev"
 
 From: Lan Tianyu <Tianyu.Lan@microsoft.com>
 
-This patch is to introduce tlb flush with range list interface and use
-struct kvm_mmu_page as list entry. Use flush list function in the
-kvm_mmu_commit_zap_page().
+This patch is to flush tlb via flush list function. Put
+page into flush list when return value of set_spte()
+includes flag SET_SPTE_NEED_REMOTE_TLB_FLUSH. kvm_flush_remote_
+tlbs_with_list() checks whether the flush list is empty
+or not. It also checks whether range tlb flush is available
+and go back to tradiion flush if not.
 
 Signed-off-by: Lan Tianyu <Tianyu.Lan@microsoft.com>
 ---
- arch/x86/kvm/mmu.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+Change since v1:
+       Use check of list_empty in the kvm_flush_remote_tlbs_with_list()
+       to determine flush or not instead of checking set_spte_ret.
+ 
+arch/x86/kvm/paging_tmpl.h | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 70cafd3f95ab..d57574b49823 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -289,6 +289,20 @@ static void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
- 
- 	range.start_gfn = start_gfn;
- 	range.pages = pages;
-+	range.flush_list = NULL;
-+
-+	kvm_flush_remote_tlbs_with_range(kvm, &range);
-+}
-+
-+static void kvm_flush_remote_tlbs_with_list(struct kvm *kvm,
-+		struct hlist_head *flush_list)
-+{
-+	struct kvm_tlb_range range;
-+
-+	if (hlist_empty(flush_list))
-+		return;
-+
-+	range.flush_list = flush_list;
- 
- 	kvm_flush_remote_tlbs_with_range(kvm, &range);
- }
-@@ -2708,6 +2722,7 @@ static void kvm_mmu_commit_zap_page(struct kvm *kvm,
- 				    struct list_head *invalid_list)
- {
- 	struct kvm_mmu_page *sp, *nsp;
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 6bdca39829bc..d84486e75345 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -970,7 +970,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 	int i, nr_present = 0;
+ 	bool host_writable;
+ 	gpa_t first_pte_gpa;
+-	int set_spte_ret = 0;
 +	HLIST_HEAD(flush_list);
  
- 	if (list_empty(invalid_list))
- 		return;
-@@ -2721,7 +2736,15 @@ static void kvm_mmu_commit_zap_page(struct kvm *kvm,
- 	 * In addition, kvm_flush_remote_tlbs waits for all vcpus to exit
- 	 * guest mode and/or lockless shadow page table walks.
- 	 */
--	kvm_flush_remote_tlbs(kvm);
-+	if (kvm_available_flush_tlb_with_range()) {
-+		list_for_each_entry(sp, invalid_list, link)
-+			if (sp->last_level)
-+				hlist_add_head(&sp->flush_link, &flush_list);
-+
-+		kvm_flush_remote_tlbs_with_list(kvm, &flush_list);
-+	} else {
-+		kvm_flush_remote_tlbs(kvm);
-+	}
+ 	/* direct kvm_mmu_page can not be unsync. */
+ 	BUG_ON(sp->role.direct);
+@@ -978,6 +978,7 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 	first_pte_gpa = FNAME(get_level1_sp_gpa)(sp);
  
- 	list_for_each_entry_safe(sp, nsp, invalid_list, link) {
- 		WARN_ON(!sp->role.invalid || sp->root_count);
+ 	for (i = 0; i < PT64_ENT_PER_PAGE; i++) {
++		int set_spte_ret = 0;
+ 		unsigned pte_access;
+ 		pt_element_t gpte;
+ 		gpa_t pte_gpa;
+@@ -1027,14 +1028,20 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 
+ 		host_writable = sp->spt[i] & SPTE_HOST_WRITEABLE;
+ 
+-		set_spte_ret |= set_spte(vcpu, &sp->spt[i],
++		set_spte_ret = set_spte(vcpu, &sp->spt[i],
+ 					 pte_access, PT_PAGE_TABLE_LEVEL,
+ 					 gfn, spte_to_pfn(sp->spt[i]),
+ 					 true, false, host_writable);
++
++		if (set_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH) {
++			struct kvm_mmu_page *leaf_sp = page_header(sp->spt[i]
++					& PT64_BASE_ADDR_MASK);
++			hlist_add_head(&leaf_sp->flush_link, &flush_list);
++		}
++
+ 	}
+ 
+-	if (set_spte_ret & SET_SPTE_NEED_REMOTE_TLB_FLUSH)
+-		kvm_flush_remote_tlbs(vcpu->kvm);
++	kvm_flush_remote_tlbs_with_list(vcpu->kvm, &flush_list);
+ 
+ 	return nr_present;
+ }
 -- 
 2.14.4
 
