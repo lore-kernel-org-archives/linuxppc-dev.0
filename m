@@ -2,78 +2,84 @@ Return-Path: <SRS0=/SFz=QJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-5.9 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D841C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 15:39:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C442C282D7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 15:42:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E62A2084C
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 15:39:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F376C2085A
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Feb 2019 15:42:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sAHg/EBD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E62A2084C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dpimryTQ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F376C2085A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43sJ754rh4zDqLR
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 02:39:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43sJB82DJnzDqNC
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 02:42:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
  envelope-from=deepa.kernel@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="sAHg/EBD"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="dpimryTQ"; 
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43sJ2G3yjJzDqL9
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 02:35:18 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id c73so4738082pfe.13
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Feb 2019 07:35:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43sJ3K2mmxzDqLW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 02:36:12 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id u18so4769887plq.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Feb 2019 07:36:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=MOOCgWMcqNx29qDNgQPggQZMAPyyh787m+mGlOgujkA=;
- b=sAHg/EBDlVWLBUIoEVcqMCGpCbLoqv7KzituBNXF6/2kks+YcGn2lBgl5/YTFtY0Vn
- I1pAoAoYa2Z38m+9nA/NnOv90SUfiN4Dxz/JbTSv8ymtdBTNtuXtFBwqOGbWM2dPkF4D
- djPgs2gC/NzPTcQRhZbvYWglZva7fp4KPyaNuBh9ya7J3yj8aecRhqIrqnnXDsdlrHV5
- WuRF3eqTv+p2tKoL1IJCH3lEJ4+x4bRJntdTPtRENO9EdenrErqfyifmYvnAVf1ImooQ
- L1yswmQ6N4GDnhxBteCU9FBXHtnp6ZFSI3otEvJaZVnCc+gZQlriXsLeXoEH/epAoJ15
- WJ4g==
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=sjG3pmoRTTFYFdvwEJac2XT1gh4h8TOarYdBhlzv53c=;
+ b=dpimryTQNpsUOD95NqhZDMT1JPUKsvNjscDYIHOC81SEYLmAJyQ2xsiyh7x5XyNUDy
+ HBodHK5OWKteeK2UxOtMka/l7DPuuaPUZDlVMLEBI6WK6J3YBMTv4/MiBTXk7+FKg3Ie
+ 5e5gbU1vcHvbQE/Tcka4JyH8gkhu0VBO20ahcL57hLGmC64+p7m/2Fv3Ij0Q8JsOHxxc
+ yHfaoeZCAneDIuYsiRjwoygptvbu4N39ZYBQCKoH0G8zWXkGe2NuFzEel9ifunV6HCiu
+ TbCJ0LlAiXTCO7IH87jU5+3EMu3a+Ul1NvZzBs9KYB7ffPPtqMPiOWrgCx1mIMn4K0GK
+ W/cg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=MOOCgWMcqNx29qDNgQPggQZMAPyyh787m+mGlOgujkA=;
- b=agfRpPKmHesAMtb2UBYRtNpYZkWkQqLdZxDRKRPynjaedo5a1Ue5P1vYeErb6YCaRF
- 6Un6MxRn52YhCxgG9581+FZBCJQKfSsNC7616OBt4uoTw3L5EN7Q9tyg0J1epaNpd1Nt
- lbYvdLBsdSWaFb1iuCGHy+ies8sCesxh9b5KyAiLZGM4B1dWiBXJdfdftvB5swUNIFN3
- dpHCMk9q9AxX3RFRJTHaVpR9VeqRrWOdBN6dTcY1SngFjaZMR5mdfGYoALrQvNkTM05J
- AJ9B5oIo4M7TziCAaMZ1J3NCl5KxecPYDck1f7cK7bZmVCt+l6czDNmfO0Z1rcV1r3VD
- 46Cg==
-X-Gm-Message-State: AHQUAuZZFuh7CM7EPsQqQt2AwEcln0S1H4P9g9S0pL8wk4x3+6SDuX/p
- PNi3ZnrEomlp7RR+Nl8YoCI=
-X-Google-Smtp-Source: AHgI3IbkxPuSE2KX6LqGdFUe5JKhgMoIzKyTPxycKI5WjfhQPUFzvGqOV6pIQXLHL34393sEkcp+cg==
-X-Received: by 2002:a63:c4b:: with SMTP id 11mr2065733pgm.451.1549121716228;
- Sat, 02 Feb 2019 07:35:16 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=sjG3pmoRTTFYFdvwEJac2XT1gh4h8TOarYdBhlzv53c=;
+ b=n2O+QYwIKB1WyD5fgPJnHChgZmkVEdAsmhDlZWVQAUAbMT4dia2agVL9DovlRXLRwf
+ B9kJ+B47YpqFhOSH9liJTGXoSYHl6kRStxd+hZgdsLCou7TSa3kOIshKzom9pf+E/bLr
+ brbOmTN7iw2ZXXBTmsS0RNgBeejfhlpdbta9zNnMrXQ8O6FgEdy1JGbQupXHbRbcp5oh
+ dt5lZsWSsDIEE4HO60Ss2ouaRtr3rUQs6e1s+iHu0GQIXTE7ROzNY4nOZI1029C/F6Tc
+ RnlbNYZoPiaYiBmFrLur4CylKojIN6lC2HAdnKE1VnyYoaW5+A/uwHBB4T8X1IS3Xqyv
+ OoHw==
+X-Gm-Message-State: AJcUukfQUGG7yynUDmS2e8neRoGWQ5FekJ81KzTxafttCboXN1b2sz23
+ q8RTOfGxjSIwTKms0Nf7ZbM=
+X-Google-Smtp-Source: ALg8bN66fiKMbSwIYo4Kfpfln/AoBeYvKVdXYAjGBDRt5vzMAgnTB0MvDtyLMgzFS/YB4HD8YxQ3mg==
+X-Received: by 2002:a17:902:584:: with SMTP id
+ f4mr45545544plf.28.1549121766215; 
+ Sat, 02 Feb 2019 07:36:06 -0800 (PST)
 Received: from localhost.localdomain ([49.206.15.111])
- by smtp.gmail.com with ESMTPSA id m20sm16221611pgb.56.2019.02.02.07.35.04
+ by smtp.gmail.com with ESMTPSA id m20sm16221611pgb.56.2019.02.02.07.35.59
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 02 Feb 2019 07:35:15 -0800 (PST)
+ Sat, 02 Feb 2019 07:36:05 -0800 (PST)
 From: Deepa Dinamani <deepa.kernel@gmail.com>
 To: davem@davemloft.net,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH net-next v5 00/12] net: y2038-safe socket timestamps 
-Date: Sat,  2 Feb 2019 07:34:42 -0800
-Message-Id: <20190202153454.7121-1-deepa.kernel@gmail.com>
+Subject: [PATCH net-next v5 11/12] socket: Rename SO_RCVTIMEO/ SO_SNDTIMEO
+ with _OLD suffixes
+Date: Sat,  2 Feb 2019 07:34:53 -0800
+Message-Id: <20190202153454.7121-12-deepa.kernel@gmail.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190202153454.7121-1-deepa.kernel@gmail.com>
+References: <20190202153454.7121-1-deepa.kernel@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,163 +91,227 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dhowells@redhat.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linux-afs@lists.infradead.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
- deller@gmx.de, jejb@parisc-linux.org, cluster-devel@redhat.com,
- ccaulfie@redhat.com, fenghua.yu@intel.com, arnd@arndb.de, ubraun@linux.ibm.com,
- tglx@linutronix.de, rth@twiddle.net, chris@zankel.net, isdn@linux-pingi.de,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-mips@vger.kernel.org, ralf@linux-mips.org, linux-rdma@vger.kernel.org,
- linux-alpha@vger.kernel.org, schwidefsky@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, linux-parisc@vger.kernel.org, arnd@arndb.de,
+ y2038@lists.linaro.org, netdev@vger.kernel.org, deller@gmx.de,
+ linux-mips@vger.kernel.org, ralf@linux-mips.org, cluster-devel@redhat.com,
+ ccaulfie@redhat.com, paulus@samba.org, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, rth@twiddle.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The series introduces new socket timestamps that are
-y2038 safe.
+SO_RCVTIMEO and SO_SNDTIMEO socket options use struct timeval
+as the time format. struct timeval is not y2038 safe.
+The subsequent patches in the series add support for new socket
+timeout options with _NEW suffix that will use y2038 safe
+data structures. Although the existing struct timeval layout
+is sufficiently wide to represent timeouts, because of the way
+libc will interpret time_t based on user defined flag, these
+new flags provide a way of having a structure that is the same
+for all architectures consistently.
+Rename the existing options with _OLD suffix forms so that the
+right option is enabled for userspace applications according
+to the architecture and time_t definition of libc.
 
-The time data types used for the existing socket timestamp
-options: SO_TIMESTAMP, SO_TIMESTAMPNS and SO_TIMESTAMPING
-are not y2038 safe. The series introduces SO_TIMESTAMP_NEW,
-SO_TIMESTAMPNS_NEW and SO_TIMESTAMPING_NEW to replace these.
-These new timestamps can be used on all architectures.
-
-The alternative considered was to extend the sys_setsockopt()
-by using the flags. We did not receive any strong opinions about
-either of the approaches. Hence, this was chosen, as glibc folks
-preferred this.
-
-The series does not deal with updating the internal kernel socket
-calls like rxrpc to make them y2038 safe. This will be dealt
-with separately.
-
-Note that the timestamps behavior already does not match the
-man page specific behavior:
-SIOCGSTAMP
-    This ioctl should only be used if the socket option SO_TIMESTAMP
-	is not set on the socket. Otherwise, it returns the timestamp of
-	the last packet that was received while SO_TIMESTAMP was not set,
-	or it fails if no such packet has been received,
-	(i.e., ioctl(2) returns -1 with errno set to ENOENT).
-	
-The recommendation is to update the man page to remove the above statement.
-
-The overview of the socket timestamp series is as below:
-1. Delete asm specific socket.h when possible.
-2. Support SO/SCM_TIMESTAMP* options only in userspace.
-3. Rename current SO/SCM_TIMESTAMP* to SO/SCM_TIMESTAMP*_OLD.
-3. Alter socket options so that SOCK_RCVTSTAMPNS does
-   not rely on SOCK_RCVTSTAMP.
-4. Introduce y2038 safe types for socket timestamp.
-5. Introduce new y2038 safe socket options SO/SCM_TIMESTAMP*_NEW.
-6. Intorduce new y2038 safe socket timeout options.
-
-Changes since v4:
-* Fixed the typo in calling sock_get_timeout()
-
-Changes since v3:
-* Rebased onto net-next and fixups as per review comments
-* Merged the socket timeout series
-* Integrated Arnd's patch to simplify compat handling of timeout syscalls
-
-Changes since v2:
-* Removed extra functions to reduce diff churn as per code review
-
-Changes since v1:
-* Dropped the change to disentangle sock flags
-* Renamed sock_timeval to __kernel_sock_timeval
-* Updated a few comments
-* Added documentation changes
-
-Arnd Bergmann (1):
-  socket: move compat timeout handling into sock.c
-
-Deepa Dinamani (11):
-  selftests: add missing include unistd
-  arch: Use asm-generic/socket.h when possible
-  sockopt: Rename SO_TIMESTAMP* to SO_TIMESTAMP*_OLD
-  arch: sparc: Override struct __kernel_old_timeval
-  socket: Use old_timeval types for socket timestamps
-  socket: Add struct __kernel_sock_timeval
-  socket: Add SO_TIMESTAMP[NS]_NEW
-  socket: Add SO_TIMESTAMPING_NEW
-  socket: Update timestamping Documentation
-  socket: Rename SO_RCVTIMEO/ SO_SNDTIMEO with _OLD suffixes
-  sock: Add SO_RCVTIMEO_NEW and SO_SNDTIMEO_NEW
-
- Documentation/networking/timestamping.txt     |  43 ++++-
- arch/alpha/include/uapi/asm/socket.h          |  47 ++++--
- arch/ia64/include/uapi/asm/Kbuild             |   1 +
- arch/ia64/include/uapi/asm/socket.h           | 122 --------------
- arch/mips/include/uapi/asm/socket.h           |  47 ++++--
- arch/parisc/include/uapi/asm/socket.h         |  46 ++++--
- arch/powerpc/include/uapi/asm/socket.h        |   4 +-
- arch/s390/include/uapi/asm/Kbuild             |   1 +
- arch/s390/include/uapi/asm/socket.h           | 119 --------------
- arch/sparc/include/uapi/asm/posix_types.h     |  10 ++
- arch/sparc/include/uapi/asm/socket.h          |  49 ++++--
- arch/x86/include/uapi/asm/Kbuild              |   1 +
- arch/x86/include/uapi/asm/socket.h            |   1 -
- arch/xtensa/include/asm/Kbuild                |   1 +
- arch/xtensa/include/uapi/asm/Kbuild           |   1 +
- arch/xtensa/include/uapi/asm/socket.h         | 124 --------------
- drivers/isdn/mISDN/socket.c                   |   2 +-
- fs/dlm/lowcomms.c                             |   4 +-
- include/linux/skbuff.h                        |  24 ++-
- include/linux/socket.h                        |   8 +
- include/net/sock.h                            |   1 +
- include/uapi/asm-generic/socket.h             |  48 ++++--
- include/uapi/linux/errqueue.h                 |   4 +
- include/uapi/linux/time.h                     |   7 +
- net/bluetooth/hci_sock.c                      |   4 +-
- net/compat.c                                  |  78 +--------
- net/core/scm.c                                |  27 ++++
- net/core/sock.c                               | 151 +++++++++++++-----
- net/ipv4/tcp.c                                |  61 ++++---
- net/rds/af_rds.c                              |  10 +-
- net/rds/recv.c                                |  18 ++-
- net/rxrpc/local_object.c                      |   2 +-
- net/smc/af_smc.c                              |   3 +-
- net/socket.c                                  |  50 ++++--
- net/vmw_vsock/af_vsock.c                      |   4 +-
- .../networking/timestamping/rxtimestamp.c     |   1 +
- 36 files changed, 541 insertions(+), 583 deletions(-)
- delete mode 100644 arch/ia64/include/uapi/asm/socket.h
- delete mode 100644 arch/s390/include/uapi/asm/socket.h
- delete mode 100644 arch/x86/include/uapi/asm/socket.h
- delete mode 100644 arch/xtensa/include/uapi/asm/socket.h
-
--- 
-2.17.1
-
+Signed-off-by: Deepa Dinamani <deepa.kernel@gmail.com>
+Acked-by: Willem de Bruijn <willemb@google.com>
 Cc: ccaulfie@redhat.com
-Cc: chris@zankel.net
-Cc: cluster-devel@redhat.com
-Cc: davem@davemloft.net
 Cc: deller@gmx.de
-Cc: dhowells@redhat.com
-Cc: fenghua.yu@intel.com
-Cc: isdn@linux-pingi.de
-Cc: jejb@parisc-linux.org
-Cc: linux-afs@lists.infradead.org
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: linux-mips@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-rdma@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: netdev@vger.kernel.org
 Cc: paulus@samba.org
 Cc: ralf@linux-mips.org
 Cc: rth@twiddle.net
-Cc: schwidefsky@de.ibm.com
+Cc: cluster-devel@redhat.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-mips@vger.kernel.org
+Cc: linux-parisc@vger.kernel.org
 Cc: sparclinux@vger.kernel.org
-Cc: tglx@linutronix.de
-Cc: ubraun@linux.ibm.com
+---
+ arch/alpha/include/uapi/asm/socket.h   | 7 +++++--
+ arch/mips/include/uapi/asm/socket.h    | 6 ++++--
+ arch/parisc/include/uapi/asm/socket.h  | 6 ++++--
+ arch/powerpc/include/uapi/asm/socket.h | 4 ++--
+ arch/sparc/include/uapi/asm/socket.h   | 7 +++++--
+ fs/dlm/lowcomms.c                      | 4 ++--
+ include/uapi/asm-generic/socket.h      | 6 ++++--
+ net/core/sock.c                        | 4 ++--
+ 8 files changed, 28 insertions(+), 16 deletions(-)
+
+diff --git a/arch/alpha/include/uapi/asm/socket.h b/arch/alpha/include/uapi/asm/socket.h
+index 934ea6268f1a..9826d1db71d0 100644
+--- a/arch/alpha/include/uapi/asm/socket.h
++++ b/arch/alpha/include/uapi/asm/socket.h
+@@ -31,8 +31,8 @@
+ #define SO_RCVBUFFORCE	0x100b
+ #define	SO_RCVLOWAT	0x1010
+ #define	SO_SNDLOWAT	0x1011
+-#define	SO_RCVTIMEO	0x1012
+-#define	SO_SNDTIMEO	0x1013
++#define	SO_RCVTIMEO_OLD	0x1012
++#define	SO_SNDTIMEO_OLD	0x1013
+ #define SO_ACCEPTCONN	0x1014
+ #define SO_PROTOCOL	0x1028
+ #define SO_DOMAIN	0x1029
+@@ -121,6 +121,9 @@
+ 
+ #if !defined(__KERNEL__)
+ 
++#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
++#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
++
+ #if __BITS_PER_LONG == 64
+ #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
+ #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
+diff --git a/arch/mips/include/uapi/asm/socket.h b/arch/mips/include/uapi/asm/socket.h
+index 110f9506d64f..96cc0e907f12 100644
+--- a/arch/mips/include/uapi/asm/socket.h
++++ b/arch/mips/include/uapi/asm/socket.h
+@@ -39,8 +39,8 @@
+ #define SO_RCVBUF	0x1002	/* Receive buffer. */
+ #define SO_SNDLOWAT	0x1003	/* send low-water mark */
+ #define SO_RCVLOWAT	0x1004	/* receive low-water mark */
+-#define SO_SNDTIMEO	0x1005	/* send timeout */
+-#define SO_RCVTIMEO	0x1006	/* receive timeout */
++#define SO_SNDTIMEO_OLD	0x1005	/* send timeout */
++#define SO_RCVTIMEO_OLD	0x1006	/* receive timeout */
+ #define SO_ACCEPTCONN	0x1009
+ #define SO_PROTOCOL	0x1028	/* protocol type */
+ #define SO_DOMAIN	0x1029	/* domain/socket family */
+@@ -132,6 +132,8 @@
+ 
+ #if !defined(__KERNEL__)
+ 
++#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
++#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
+ #if __BITS_PER_LONG == 64
+ #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
+ #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
+diff --git a/arch/parisc/include/uapi/asm/socket.h b/arch/parisc/include/uapi/asm/socket.h
+index bee2a9dde656..046f0cd9cce4 100644
+--- a/arch/parisc/include/uapi/asm/socket.h
++++ b/arch/parisc/include/uapi/asm/socket.h
+@@ -22,8 +22,8 @@
+ #define SO_RCVBUFFORCE	0x100b
+ #define SO_SNDLOWAT	0x1003
+ #define SO_RCVLOWAT	0x1004
+-#define SO_SNDTIMEO	0x1005
+-#define SO_RCVTIMEO	0x1006
++#define SO_SNDTIMEO_OLD	0x1005
++#define SO_RCVTIMEO_OLD	0x1006
+ #define SO_ERROR	0x1007
+ #define SO_TYPE		0x1008
+ #define SO_PROTOCOL	0x1028
+@@ -113,6 +113,8 @@
+ 
+ #if !defined(__KERNEL__)
+ 
++#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
++#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
+ #if __BITS_PER_LONG == 64
+ #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
+ #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
+diff --git a/arch/powerpc/include/uapi/asm/socket.h b/arch/powerpc/include/uapi/asm/socket.h
+index 94de465e0920..12aa0c43e775 100644
+--- a/arch/powerpc/include/uapi/asm/socket.h
++++ b/arch/powerpc/include/uapi/asm/socket.h
+@@ -11,8 +11,8 @@
+ 
+ #define SO_RCVLOWAT	16
+ #define SO_SNDLOWAT	17
+-#define SO_RCVTIMEO	18
+-#define SO_SNDTIMEO	19
++#define SO_RCVTIMEO_OLD	18
++#define SO_SNDTIMEO_OLD	19
+ #define SO_PASSCRED	20
+ #define SO_PEERCRED	21
+ 
+diff --git a/arch/sparc/include/uapi/asm/socket.h b/arch/sparc/include/uapi/asm/socket.h
+index 2b38dda51426..342ffdc3b424 100644
+--- a/arch/sparc/include/uapi/asm/socket.h
++++ b/arch/sparc/include/uapi/asm/socket.h
+@@ -21,8 +21,8 @@
+ #define SO_BSDCOMPAT    0x0400
+ #define SO_RCVLOWAT     0x0800
+ #define SO_SNDLOWAT     0x1000
+-#define SO_RCVTIMEO     0x2000
+-#define SO_SNDTIMEO     0x4000
++#define SO_RCVTIMEO_OLD     0x2000
++#define SO_SNDTIMEO_OLD     0x4000
+ #define SO_ACCEPTCONN	0x8000
+ 
+ #define SO_SNDBUF	0x1001
+@@ -114,6 +114,9 @@
+ 
+ #if !defined(__KERNEL__)
+ 
++#define SO_RCVTIMEO              SO_RCVTIMEO_OLD
++#define SO_SNDTIMEO              SO_SNDTIMEO_OLD
++
+ #if __BITS_PER_LONG == 64
+ #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
+ #define SO_TIMESTAMPNS		SO_TIMESTAMPNS_OLD
+diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
+index 76976d6e50f9..c98ad9777ad9 100644
+--- a/fs/dlm/lowcomms.c
++++ b/fs/dlm/lowcomms.c
+@@ -1089,12 +1089,12 @@ static void sctp_connect_to_sock(struct connection *con)
+ 	 * since O_NONBLOCK argument in connect() function does not work here,
+ 	 * then, we should restore the default value of this attribute.
+ 	 */
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,
++	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_OLD, (char *)&tv,
+ 			  sizeof(tv));
+ 	result = sock->ops->connect(sock, (struct sockaddr *)&daddr, addr_len,
+ 				   0);
+ 	memset(&tv, 0, sizeof(tv));
+-	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,
++	kernel_setsockopt(sock, SOL_SOCKET, SO_SNDTIMEO_OLD, (char *)&tv,
+ 			  sizeof(tv));
+ 
+ 	if (result == -EINPROGRESS)
+diff --git a/include/uapi/asm-generic/socket.h b/include/uapi/asm-generic/socket.h
+index 2713e0fa68ef..c56b8b487c12 100644
+--- a/include/uapi/asm-generic/socket.h
++++ b/include/uapi/asm-generic/socket.h
+@@ -30,8 +30,8 @@
+ #define SO_PEERCRED	17
+ #define SO_RCVLOWAT	18
+ #define SO_SNDLOWAT	19
+-#define SO_RCVTIMEO	20
+-#define SO_SNDTIMEO	21
++#define SO_RCVTIMEO_OLD	20
++#define SO_SNDTIMEO_OLD	21
+ #endif
+ 
+ /* Security levels - as per NRL IPv6 - don't actually do anything */
+@@ -116,6 +116,8 @@
+ 
+ #if !defined(__KERNEL__)
+ 
++#define	SO_RCVTIMEO SO_RCVTIMEO_OLD
++#define	SO_SNDTIMEO SO_SNDTIMEO_OLD
+ #if __BITS_PER_LONG == 64 || (defined(__x86_64__) && defined(__ILP32__))
+ /* on 64-bit and x32, avoid the ?: operator */
+ #define SO_TIMESTAMP		SO_TIMESTAMP_OLD
+diff --git a/net/core/sock.c b/net/core/sock.c
+index a9d1ecce96e5..27b40002b780 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -941,11 +941,11 @@ int sock_setsockopt(struct socket *sock, int level, int optname,
+ 			sk->sk_rcvlowat = val ? : 1;
+ 		break;
+ 
+-	case SO_RCVTIMEO:
++	case SO_RCVTIMEO_OLD:
+ 		ret = sock_set_timeout(&sk->sk_rcvtimeo, optval, optlen);
+ 		break;
+ 
+-	case SO_SNDTIMEO:
++	case SO_SNDTIMEO_OLD:
+ 		ret = sock_set_timeout(&sk->sk_sndtimeo, optval, optlen);
+ 		break;
+ 
+-- 
+2.17.1
+
