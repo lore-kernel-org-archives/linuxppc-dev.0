@@ -2,93 +2,81 @@ Return-Path: <SRS0=4FME=QK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D643C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 11:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64911C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 16:51:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DF75217D6
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 11:41:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DF75217D6
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 962F821773
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 16:51:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="q+k3zJAw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 962F821773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43spp33vNMzDq7h
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 22:41:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43sxg95n3ZzDqHF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 03:51:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
+ (client-ip=2a01:238:20a:202:5301::3; helo=mo6-p01-ob.smtp.rzone.de;
+ envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=xenosoft.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="q+k3zJAw"; 
+ dkim-atps=neutral
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::3])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43splg1bTjzDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 22:39:26 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x13BcxFQ028859
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 06:39:24 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qdsbx3e82-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 06:39:24 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Sun, 3 Feb 2019 11:39:22 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 3 Feb 2019 11:39:18 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x13BdHAj42467394
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sun, 3 Feb 2019 11:39:18 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D985311C050;
- Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6476F11C04C;
- Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.8.84])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
-Date: Sun, 3 Feb 2019 13:39:15 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 10/21] memblock: refactor internal allocation functions
-References: <1548057848-15136-1-git-send-email-rppt@linux.ibm.com>
- <1548057848-15136-11-git-send-email-rppt@linux.ibm.com>
- <87ftt5nrcn.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43sxdG1BYwzDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 03:49:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1549212555;
+ s=strato-dkim-0002; d=xenosoft.de;
+ h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
+ X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+ bh=B6q2ei1aHR9lzl0hOvwoWBIVmVDE9nFvmFewblIeLYs=;
+ b=q+k3zJAwT+iOJ0eUSHjBsX1gX/TwmrIdOVHLMBKMyCWTFy3zd506ce1opOd32TRP+Q
+ exRuhMKXv5K1wyslFDn4QoQOv2GZfDN8BMknedtrjEcifhF94j7q0zl3cTzAcuuP24W6
+ MT8tnPjDscqdl5Pth8l8QdvVpnR4qSWdGSXjmBpLh/uGnN42pWn8SU/NItWb6DbBnBYw
+ Nt9rDXeKFF1W0DOktwEiyDNRPqJ3kjv1qcV5KSWejTNyGW+gS0CAdcKeIbFUmy6X58Pz
+ Qz1ctu1E+2DwHX8I/5RK8SBpzX2pyeOEiBmmG2P5u0O+4etVZ1UQBPMHwv/Hak9dp65C
+ 3n9w==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7CkH3W0cWmG9fyXgS4bddBxLVsnYjg=="
+X-RZG-CLASS-ID: mo00
+Received: from [IPv6:2a02:8109:a400:162c:8c9a:b0b5:e3d3:9527]
+ by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv13Gn2cCf
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
+ 521 ECDH bits, eq. 15360 bits RSA))
+ (Client did not present a certificate);
+ Sun, 3 Feb 2019 17:49:02 +0100 (CET)
+Subject: Re: use generic DMA mapping code in powerpc V4
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+To: Christoph Hellwig <hch@lst.de>
+References: <4d8d4854-dac9-a78e-77e5-0455e8ca56c4@xenosoft.de>
+ <1dec2fbe-f654-dac7-392a-93a5d20e3602@xenosoft.de>
+ <20190128070422.GA2772@lst.de> <20190128162256.GA11737@lst.de>
+ <D64B1ED5-46F9-43CF-9B21-FABB2807289B@xenosoft.de>
+ <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
+ <20190129161411.GA14022@lst.de> <20190129163415.GA14529@lst.de>
+ <F4AB3D9A-97EC-45D7-9061-A750D0934C3C@xenosoft.de>
+ <96762cd2-65fc-bce5-8c5b-c03bc3baf0a1@xenosoft.de>
+ <20190201080456.GA15456@lst.de>
+ <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
+Message-ID: <594beaae-9681-03de-9f42-191cc7d2f8e3@xenosoft.de>
+Date: Sun, 3 Feb 2019 17:49:02 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87ftt5nrcn.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 19020311-0016-0000-0000-000002507A7F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020311-0017-0000-0000-000032AA7DAA
-Message-Id: <20190203113915.GC8620@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-03_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902030099
+In-Reply-To: <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: de-DE
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,128 +88,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
+ linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
+ linux-mm@kvack.org, iommu@lists.linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-(dropped most of 'CC)
+OK, next step: b50f42f0fe12965ead395c76bcb6a14f00cdf65b (powerpc/dma: 
+use the dma_direct mapping routines)
 
-On Sun, Feb 03, 2019 at 08:39:20PM +1100, Michael Ellerman wrote:
-> Mike Rapoport <rppt@linux.ibm.com> writes:
-> 
-> > Currently, memblock has several internal functions with overlapping
-> > functionality. They all call memblock_find_in_range_node() to find free
-> > memory and then reserve the allocated range and mark it with kmemleak.
-> > However, there is difference in the allocation constraints and in fallback
-> > strategies.
-> >
-> > The allocations returning physical address first attempt to find free
-> > memory on the specified node within mirrored memory regions, then retry on
-> > the same node without the requirement for memory mirroring and finally fall
-> > back to all available memory.
-> >
-> > The allocations returning virtual address start with clamping the allowed
-> > range to memblock.current_limit, attempt to allocate from the specified
-> > node from regions with mirroring and with user defined minimal address. If
-> > such allocation fails, next attempt is done with node restriction lifted.
-> > Next, the allocation is retried with minimal address reset to zero and at
-> > last without the requirement for mirrored regions.
-> >
-> > Let's consolidate various fallbacks handling and make them more consistent
-> > for physical and virtual variants. Most of the fallback handling is moved
-> > to memblock_alloc_range_nid() and it now handles node and mirror fallbacks.
-> >
-> > The memblock_alloc_internal() uses memblock_alloc_range_nid() to get a
-> > physical address of the allocated range and converts it to virtual address.
-> >
-> > The fallback for allocation below the specified minimal address remains in
-> > memblock_alloc_internal() because memblock_alloc_range_nid() is used by CMA
-> > with exact requirement for lower bounds.
-> 
-> This is causing problems on some of my machines.
-> 
-> I see NODE_DATA allocations falling back to node 0 when they shouldn't,
-> or didn't previously.
-> 
-> eg, before:
-> 
-> 57990190: (116011251): numa:   NODE_DATA [mem 0xfffe4980-0xfffebfff]
-> 58152042: (116373087): numa:   NODE_DATA [mem 0x8fff90980-0x8fff97fff]
-> 
-> after:
-> 
-> 16356872061562: (6296877055): numa:   NODE_DATA [mem 0xfffe4980-0xfffebfff]
-> 16356872079279: (6296894772): numa:   NODE_DATA [mem 0xfffcd300-0xfffd497f]
-> 16356872096376: (6296911869): numa:     NODE_DATA(1) on node 0
-> 
-> 
-> On some of my other systems it does that, and then panics because it
-> can't allocate anything at all:
-> 
-> [    0.000000] numa:   NODE_DATA [mem 0x7ffcaee80-0x7ffcb3fff]
-> [    0.000000] numa:   NODE_DATA [mem 0x7ffc99d00-0x7ffc9ee7f]
-> [    0.000000] numa:     NODE_DATA(1) on node 0
-> [    0.000000] Kernel panic - not syncing: Cannot allocate 20864 bytes for node 16 data
-> [    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc4-gccN-next-20190201-gdc4c899 #1
-> [    0.000000] Call Trace:
-> [    0.000000] [c0000000011cfca0] [c000000000c11044] dump_stack+0xe8/0x164 (unreliable)
-> [    0.000000] [c0000000011cfcf0] [c0000000000fdd6c] panic+0x17c/0x3e0
-> [    0.000000] [c0000000011cfd90] [c000000000f61bc8] initmem_init+0x128/0x260
-> [    0.000000] [c0000000011cfe60] [c000000000f57940] setup_arch+0x398/0x418
-> [    0.000000] [c0000000011cfee0] [c000000000f50a94] start_kernel+0xa0/0x684
-> [    0.000000] [c0000000011cff90] [c00000000000af70] start_here_common+0x1c/0x52c
-> [    0.000000] Rebooting in 180 seconds..
-> 
-> 
-> So there's something going wrong there, I haven't had time to dig into
-> it though (Sunday night here).
+git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
 
-Yeah, I've misplaced 'nid' and 'MEMBLOCK_ALLOC_ACCESSIBLE' in
-memblock_phys_alloc_try_nid() :(
+git checkout b50f42f0fe12965ead395c76bcb6a14f00cdf65b
 
-Can you please check if the below patch fixes the issue on your systems?
- 
-> cheers
-> 
+Results: The X1000 and X5000 boot but unfortunately the P.A. Semi 
+Ethernet doesn't work.
 
-From 5875b7440e985ce551e6da3cb28aa8e9af697e10 Mon Sep 17 00:00:00 2001
-From: Mike Rapoport <rppt@linux.ibm.com>
-Date: Sun, 3 Feb 2019 13:35:42 +0200
-Subject: [PATCH] memblock: fix parameter order in
- memblock_phys_alloc_try_nid()
-
-The refactoring of internal memblock allocation functions used wrong order
-of parameters in memblock_alloc_range_nid() call from
-memblock_phys_alloc_try_nid().
-Fix it.
-
-Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
----
- mm/memblock.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/mm/memblock.c b/mm/memblock.c
-index e047933..0151a5b 100644
---- a/mm/memblock.c
-+++ b/mm/memblock.c
-@@ -1402,8 +1402,8 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
- 
- phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
- {
--	return memblock_alloc_range_nid(size, align, 0, nid,
--					MEMBLOCK_ALLOC_ACCESSIBLE);
-+	return memblock_alloc_range_nid(size, align, 0,
-+					MEMBLOCK_ALLOC_ACCESSIBLE, nid);
- }
- 
- /**
--- 
-2.7.4
+-- Christian
 
 
--- 
-Sincerely yours,
-Mike.
+On 01 February 2019 at 5:54PM, Christian Zigotzky wrote:
+> Hi Christoph,
+>
+> I will try it at the weekend.
+>
+> Thanks,
+> Christian
+>
+> Sent from my iPhone
+>
+>> On 1. Feb 2019, at 09:04, Christoph Hellwig <hch@lst.de> wrote:
+>>
+>>> On Thu, Jan 31, 2019 at 01:48:26PM +0100, Christian Zigotzky wrote:
+>>> Hi Christoph,
+>>>
+>>> I compiled kernels for the X5000 and X1000 from your branch 'powerpc-dma.6'
+>>> today.
+>>>
+>>> Gitweb:
+>>> http://git.infradead.org/users/hch/misc.git/shortlog/refs/heads/powerpc-dma.6
+>>>
+>>> git clone git://git.infradead.org/users/hch/misc.git -b powerpc-dma.6 a
+>>>
+>>> The X1000 and X5000 boot but unfortunately the P.A. Semi Ethernet doesn't
+>>> work.
+>> Oh.  Can you try with just the next one and then two patches applied
+>> over the working setup?  That is first:
+>>
+>> http://git.infradead.org/users/hch/misc.git/commitdiff/b50f42f0fe12965ead395c76bcb6a14f00cdf65b
+>>
+>> then also with:
+>>
+>> http://git.infradead.org/users/hch/misc.git/commitdiff/21fe52470a483afbb1726741118abef8602dde4d
+
 
