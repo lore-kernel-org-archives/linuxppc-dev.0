@@ -2,23 +2,23 @@ Return-Path: <SRS0=4FME=QK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B8E2C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 10:06:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D643C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 11:41:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3471121773
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 10:06:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3471121773
+	by mail.kernel.org (Postfix) with ESMTPS id 8DF75217D6
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 11:41:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DF75217D6
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43smhg22M0zDqJ3
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 21:06:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43spp33vNMzDq7h
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 22:41:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,42 +29,42 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43smfZ06wQzDqBt
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 21:04:53 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43splg1bTjzDqHH
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 22:39:26 +1100 (AEDT)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x13A4lrY003344
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 05:04:50 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qds0rh756-1
+ x13BcxFQ028859
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 06:39:24 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qdsbx3e82-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 05:04:49 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 06:39:24 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Sun, 3 Feb 2019 10:04:45 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Sun, 3 Feb 2019 11:39:22 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 3 Feb 2019 10:04:34 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x13A4XSJ44368088
+ Sun, 3 Feb 2019 11:39:18 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x13BdHAj42467394
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Sun, 3 Feb 2019 10:04:33 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7B628A4040;
- Sun,  3 Feb 2019 10:04:33 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5359FA4053;
- Sun,  3 Feb 2019 10:04:30 +0000 (GMT)
+ Sun, 3 Feb 2019 11:39:18 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D985311C050;
+ Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6476F11C04C;
+ Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
 Received: from rapoport-lnx (unknown [9.148.8.84])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Sun,  3 Feb 2019 10:04:30 +0000 (GMT)
-Date: Sun, 3 Feb 2019 12:04:28 +0200
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Sun,  3 Feb 2019 11:39:17 +0000 (GMT)
+Date: Sun, 3 Feb 2019 13:39:15 +0200
 From: Mike Rapoport <rppt@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH v2 10/21] memblock: refactor internal allocation functions
@@ -77,18 +77,18 @@ Content-Disposition: inline
 In-Reply-To: <87ftt5nrcn.fsf@concordia.ellerman.id.au>
 User-Agent: Mutt/1.5.24 (2015-08-30)
 X-TM-AS-GCONF: 00
-x-cbid: 19020310-4275-0000-0000-000003097DF6
+x-cbid: 19020311-0016-0000-0000-000002507A7F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020310-4276-0000-0000-000038178E51
-Message-Id: <20190203100428.GB8620@rapoport-lnx>
+x-cbparentid: 19020311-0017-0000-0000-000032AA7DAA
+Message-Id: <20190203113915.GC8620@rapoport-lnx>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-03_06:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=993 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902030085
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902030099
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,33 +100,13 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- devicetree@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, x86@kernel.org,
- linux-mips@vger.kernel.org, Max Filippov <jcmvbkbc@gmail.com>,
- Guo Ren <guoren@kernel.org>, sparclinux@vger.kernel.org,
- Christoph Hellwig <hch@lst.de>, linux-s390@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Richard Weinberger <richard@nod.at>, linux-sh@vger.kernel.org,
- Russell King <linux@armlinux.org.uk>, kasan-dev@googlegroups.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, Mark Salter <msalter@redhat.com>,
- Dennis Zhou <dennis@kernel.org>, Matt Turner <mattst88@gmail.com>,
- linux-snps-arc@lists.infradead.org, uclinux-h8-devel@lists.sourceforge.jp,
- Petr Mladek <pmladek@suse.com>, linux-xtensa@linux-xtensa.org,
- linux-alpha@vger.kernel.org, linux-um@lists.infradead.org,
- linux-m68k@lists.linux-m68k.org, Rob Herring <robh+dt@kernel.org>,
- Greentime Hu <green.hu@gmail.com>, xen-devel@lists.xenproject.org,
- Stafford Horne <shorne@gmail.com>, Guan Xuetao <gxt@pku.edu.cn>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
- openrisc@lists.librecores.org, Vineet Gupta <vgupta@synopsys.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+
+(dropped most of 'CC)
 
 On Sun, Feb 03, 2019 at 08:39:20PM +1100, Michael Ellerman wrote:
 > Mike Rapoport <rppt@linux.ibm.com> writes:
@@ -198,10 +178,48 @@ On Sun, Feb 03, 2019 at 08:39:20PM +1100, Michael Ellerman wrote:
 > So there's something going wrong there, I haven't had time to dig into
 > it though (Sunday night here).
 
-I'll try to see if I can reproduce it with qemu.
+Yeah, I've misplaced 'nid' and 'MEMBLOCK_ALLOC_ACCESSIBLE' in
+memblock_phys_alloc_try_nid() :(
+
+Can you please check if the below patch fixes the issue on your systems?
  
 > cheers
 > 
+
+From 5875b7440e985ce551e6da3cb28aa8e9af697e10 Mon Sep 17 00:00:00 2001
+From: Mike Rapoport <rppt@linux.ibm.com>
+Date: Sun, 3 Feb 2019 13:35:42 +0200
+Subject: [PATCH] memblock: fix parameter order in
+ memblock_phys_alloc_try_nid()
+
+The refactoring of internal memblock allocation functions used wrong order
+of parameters in memblock_alloc_range_nid() call from
+memblock_phys_alloc_try_nid().
+Fix it.
+
+Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+---
+ mm/memblock.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mm/memblock.c b/mm/memblock.c
+index e047933..0151a5b 100644
+--- a/mm/memblock.c
++++ b/mm/memblock.c
+@@ -1402,8 +1402,8 @@ phys_addr_t __init memblock_phys_alloc_range(phys_addr_t size,
+ 
+ phys_addr_t __init memblock_phys_alloc_try_nid(phys_addr_t size, phys_addr_t align, int nid)
+ {
+-	return memblock_alloc_range_nid(size, align, 0, nid,
+-					MEMBLOCK_ALLOC_ACCESSIBLE);
++	return memblock_alloc_range_nid(size, align, 0,
++					MEMBLOCK_ALLOC_ACCESSIBLE, nid);
+ }
+ 
+ /**
+-- 
+2.7.4
+
 
 -- 
 Sincerely yours,
