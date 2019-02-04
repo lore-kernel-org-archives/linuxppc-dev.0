@@ -2,99 +2,60 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0466CC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:18:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 328DFC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:59:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 84B7A2082E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:18:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 84B7A2082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4FD442082E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:59:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FD442082E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tbYX4P7kzDqLX
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 05:18:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tcSZ0bvCzDqLC
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 05:59:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.58.226; helo=3.mo2.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tbVk2PzQzDqKg
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 05:15:58 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x14I8tv1092211
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Feb 2019 13:15:56 -0500
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qerp8dahw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Feb 2019 13:15:55 -0500
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Mon, 4 Feb 2019 18:15:55 -0000
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 4 Feb 2019 18:15:51 -0000
-Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
- [9.57.199.111])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x14IFoeH21299298
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 4 Feb 2019 18:15:50 GMT
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 49A35AC05F;
- Mon,  4 Feb 2019 18:15:50 +0000 (GMT)
-Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0B7F0AC060;
- Mon,  4 Feb 2019 18:15:47 +0000 (GMT)
-Received: from morokweng.localdomain (unknown [9.85.235.178])
- by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTPS;
- Mon,  4 Feb 2019 18:15:46 +0000 (GMT)
-References: <87zhrj8kcp.fsf@morokweng.localdomain>
- <87womn8inf.fsf@morokweng.localdomain>
- <20190129134750-mutt-send-email-mst@kernel.org>
- <6c68f7f7-1b28-6eba-9b8b-2c32efac9701@redhat.com>
- <20190129213137-mutt-send-email-mst@kernel.org>
- <20190130074427.GA29516@lst.de>
-User-agent: mu4e 1.0; emacs 26.1
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-In-reply-to: <20190130074427.GA29516@lst.de>
-Date: Mon, 04 Feb 2019 16:15:41 -0200
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 3.mo2.mail-out.ovh.net (3.mo2.mail-out.ovh.net [46.105.58.226])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tcQs3sPkzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 05:57:40 +1100 (AEDT)
+Received: from player789.ha.ovh.net (unknown [10.109.143.216])
+ by mo2.mail-out.ovh.net (Postfix) with ESMTP id 9539017B997
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 19:57:35 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player789.ha.ovh.net (Postfix) with ESMTPSA id 6B9E1250C020;
+ Mon,  4 Feb 2019 18:57:27 +0000 (UTC)
+Subject: Re: [PATCH 17/19] KVM: PPC: Book3S HV: add get/set accessors for the
+ VP XIVE state
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107191006.10648-1-clg@kaod.org> <20190204052646.GJ1927@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <5ebeb37b-623b-9b82-5628-fd6d78382064@kaod.org>
+Date: Mon, 4 Feb 2019 19:57:26 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19020418-0072-0000-0000-000003F491EC
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010536; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000279; SDB=6.01156339; UDB=6.00603145; IPR=6.00936798; 
- MB=3.00025434; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-04 18:15:54
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020418-0073-0000-0000-00004B0F3C0F
-Message-Id: <875ztzxvw2.fsf@morokweng.localdomain>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-04_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=931 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902040140
+In-Reply-To: <20190204052646.GJ1927@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 10024731296739396487
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeggdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,36 +67,217 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
- Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 2/4/19 6:26 AM, David Gibson wrote:
+> On Mon, Jan 07, 2019 at 08:10:04PM +0100, Cédric Le Goater wrote:
+>> At a VCPU level, the state of the thread context interrupt management
+>> registers needs to be collected. These registers are cached under the
+>> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
+>> pulled from the HW thread. An OPAL call retrieves the backup of the
+>> IPB register in the NVT structure and merges it in the KVM state.
+>>
+>> The structures of the interface between QEMU and KVM provisions some
+>> extra room (two u64) for further extensions if more state needs to be
+>> transferred back to QEMU.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/include/asm/kvm_ppc.h    |  5 ++
+>>  arch/powerpc/include/uapi/asm/kvm.h   |  2 +
+>>  arch/powerpc/kvm/book3s.c             | 24 +++++++++
+>>  arch/powerpc/kvm/book3s_xive_native.c | 78 +++++++++++++++++++++++++++
+>>  4 files changed, 109 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>> index 4cc897039485..49c488af168c 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -270,6 +270,7 @@ union kvmppc_one_reg {
+>>  		u64	addr;
+>>  		u64	length;
+>>  	}	vpaval;
+>> +	u64	xive_timaval[4];
+>>  };
+>>  
+>>  struct kvmppc_ops {
+>> @@ -603,6 +604,8 @@ extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
+>>  extern void kvmppc_xive_native_init_module(void);
+>>  extern void kvmppc_xive_native_exit_module(void);
+>>  extern int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cmd);
+>> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val);
+>> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val);
+>>  
+>>  #else
+>>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
+>> @@ -637,6 +640,8 @@ static inline void kvmppc_xive_native_init_module(void) { }
+>>  static inline void kvmppc_xive_native_exit_module(void) { }
+>>  static inline int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cmd)
+>>  	{ return 0; }
+>> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val) { return 0; }
+>> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val) { return -ENOENT; }
+> 
+> IIRC "VP" is the old name for "TCTX".  Since we're using tctx in the
+> rest of the XIVE code, can we use it here as well.
 
-Christoph Hellwig <hch@lst.de> writes:
+OK. The state we are getting or setting is indeed related to the thread 
+interrupt  context registers. 
 
-> On Tue, Jan 29, 2019 at 09:36:08PM -0500, Michael S. Tsirkin wrote:
->> This has been discussed ad nauseum. virtio is all about compatibility.
->> Losing a couple of lines of code isn't worth breaking working setups.
->> People that want "just use DMA API no tricks" now have the option.
->> Setting a flag in a feature bit map is literally a single line
->> of code in the hypervisor. So stop pushing for breaking working
->> legacy setups and just fix it in the right place.
->
-> I agree with the legacy aspect.  What I am missing is an extremely
-> strong wording that says you SHOULD always set this flag for new
-> hosts, including an explanation why.
+The name VP is related to an identifier to some interrupt context under 
+OPAL (NVT in HW to be precise).  
 
-My understanding of ACCESS_PLATFORM is that it means "this device will
-behave in all aspects like a regular device attached to this bus". Is
-that it? Therefore it should be set because it's the sane thing to do?
+C.
 
---
-Thiago Jung Bauermann
-IBM Linux Technology Center
+> 
+>>  #endif /* CONFIG_KVM_XIVE */
+>>  
+>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>> index 95302558ce10..3c958c39a782 100644
+>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
+>>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
+>>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
+>>  
+>> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
+>> +
+>>  /* Device control API: PPC-specific devices */
+>>  #define KVM_DEV_MPIC_GRP_MISC		1
+>>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
+>> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+>> index de7eed191107..5ad658077a35 100644
+>> --- a/arch/powerpc/kvm/book3s.c
+>> +++ b/arch/powerpc/kvm/book3s.c
+>> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>  				*val = get_reg_val(id, kvmppc_xics_get_icp(vcpu));
+>>  			break;
+>>  #endif /* CONFIG_KVM_XICS */
+>> +#ifdef CONFIG_KVM_XIVE
+>> +		case KVM_REG_PPC_VP_STATE:
+>> +			if (!vcpu->arch.xive_vcpu) {
+>> +				r = -ENXIO;
+>> +				break;
+>> +			}
+>> +			if (xive_enabled())
+>> +				r = kvmppc_xive_native_get_vp(vcpu, val);
+>> +			else
+>> +				r = -ENXIO;
+>> +			break;
+>> +#endif /* CONFIG_KVM_XIVE */
+>>  		case KVM_REG_PPC_FSCR:
+>>  			*val = get_reg_val(id, vcpu->arch.fscr);
+>>  			break;
+>> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>  				r = kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
+>>  			break;
+>>  #endif /* CONFIG_KVM_XICS */
+>> +#ifdef CONFIG_KVM_XIVE
+>> +		case KVM_REG_PPC_VP_STATE:
+>> +			if (!vcpu->arch.xive_vcpu) {
+>> +				r = -ENXIO;
+>> +				break;
+>> +			}
+>> +			if (xive_enabled())
+>> +				r = kvmppc_xive_native_set_vp(vcpu, val);
+>> +			else
+>> +				r = -ENXIO;
+>> +			break;
+>> +#endif /* CONFIG_KVM_XIVE */
+>>  		case KVM_REG_PPC_FSCR:
+>>  			vcpu->arch.fscr = set_reg_val(id, *val);
+>>  			break;
+>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>> index f4eb71eafc57..1aefb366df0b 100644
+>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>> @@ -424,6 +424,84 @@ static int xive_native_validate_queue_size(u32 qsize)
+>>  	}
+>>  }
+>>  
+>> +#define TM_IPB_SHIFT 40
+>> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
+>> +
+>> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>> +{
+>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> +	u64 opal_state;
+>> +	int rc;
+>> +
+>> +	if (!kvmppc_xive_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>> +	if (!xc)
+>> +		return -ENOENT;
+>> +
+>> +	/* Thread context registers. We only care about IPB and CPPR */
+>> +	val->xive_timaval[0] = vcpu->arch.xive_saved_state.w01;
+>> +
+>> +	/*
+>> +	 * Return the OS CAM line to print out the VP identifier in
+>> +	 * the QEMU monitor. This is not restored.
+>> +	 */
+>> +	val->xive_timaval[1] = vcpu->arch.xive_cam_word;
+>> +
+>> +	/* Get the VP state from OPAL */
+>> +	rc = xive_native_get_vp_state(xc->vp_id, &opal_state);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	/*
+>> +	 * Capture the backup of IPB register in the NVT structure and
+>> +	 * merge it in our KVM VP state.
+>> +	 *
+>> +	 * TODO: P10 support.
+>> +	 */
+>> +	val->xive_timaval[0] |= cpu_to_be64(opal_state & TM_IPB_MASK);
+>> +
+>> +	pr_devel("%s NSR=%02x CPPR=%02x IBP=%02x PIPR=%02x w01=%016llx w2=%08x opal=%016llx\n",
+>> +		 __func__,
+>> +		 vcpu->arch.xive_saved_state.nsr,
+>> +		 vcpu->arch.xive_saved_state.cppr,
+>> +		 vcpu->arch.xive_saved_state.ipb,
+>> +		 vcpu->arch.xive_saved_state.pipr,
+>> +		 vcpu->arch.xive_saved_state.w01,
+>> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>> +{
+>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> +	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
+>> +
+>> +	pr_devel("%s w01=%016llx vp=%016llx\n", __func__,
+>> +		 val->xive_timaval[0], val->xive_timaval[1]);
+>> +
+>> +	if (!kvmppc_xive_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>> +	if (!xc || !xive)
+>> +		return -ENOENT;
+>> +
+>> +	/* We can't update the state of a "pushed" VCPU	 */
+>> +	if (WARN_ON(vcpu->arch.xive_pushed))
+>> +		return -EIO;
+>> +
+>> +	/* Thread context registers. only restore IPB and CPPR ? */
+>> +	vcpu->arch.xive_saved_state.w01 = val->xive_timaval[0];
+>> +
+>> +	/*
+>> +	 * There is no need to restore the XIVE internal state (IPB
+>> +	 * stored in the NVT) as the IPB register was merged in KVM VP
+>> +	 * state.
+>> +	 */
+>> +	return 0;
+>> +}
+>> +
+>>  static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long irq,
+>>  					 u64 addr)
+>>  {
+> 
 
