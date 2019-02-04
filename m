@@ -4,57 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7691BC282D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 06:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8998C282D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 06:28:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EB3BE20820
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 06:26:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 020772177E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 06:28:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="mwR5n5mL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EB3BE20820
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="A8i24nMT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 020772177E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tHmT0YWBzDqCg
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 17:26:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tHpB0sSbzDqGb
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 17:28:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tHSK63v5zDqGb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tHSK6d5wzDqGk
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 17:12:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="mwR5n5mL"; dkim-atps=neutral
+ header.b="A8i24nMT"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 43tHSK0TNpz9sMr; Mon,  4 Feb 2019 17:12:48 +1100 (AEDT)
+ id 43tHSK57Nyz9sNB; Mon,  4 Feb 2019 17:12:48 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1549260769;
- bh=a/N99ZIohKV5ixlSg8sG+ouN5khBSVNoTyGBkUzZSGY=;
+ bh=SuhCOASx3SyzoP0b3+2Yh3oHKj7/zNPykwC6N1lmrQ0=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=mwR5n5mLKtKHx5NBkU4jEEK4IF7yRt1/qmzOHwhUllWI0qPRcJ5BUNtx76oiIzAGH
- vI53fRX95W1KVjU05nwRH6qOv9Zeiej4G0mq4LAnhX5tT0t35zb4IoP18FVUUS82e1
- zgIUlbhdEKURSam6YbAQXFzY3mGnjX/eIQ6qcw98=
-Date: Mon, 4 Feb 2019 16:18:34 +1100
+ b=A8i24nMTID7gNA0Cn8XL4x3M8LVTYA5fQtreAjCCqnmQljLRYkomDsDo1AU63sWJe
+ V0iyuy7m84pNsrf+/d+TPPdLX5MTzyYD9r+njkK0rj0RezHJm2AZkpY5jGWA1eZkvB
+ ioRpPOOz4xXp6/PDtvPxcbs/0a0VeQpBnlz/YkcY=
+Date: Mon, 4 Feb 2019 16:26:47 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 14/19] KVM: PPC: Book3S HV: add a control to make the
- XIVE EQ pages dirty
-Message-ID: <20190204051833.GG1927@umbus.fritz.box>
+Subject: Re: [PATCH 17/19] KVM: PPC: Book3S HV: add get/set accessors for the
+ VP XIVE state
+Message-ID: <20190204052646.GJ1927@umbus.fritz.box>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-15-clg@kaod.org>
+ <20190107191006.10648-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="m0vRWufqUC70IDnR"
+ protocol="application/pgp-signature"; boundary="tAmVnWIZ6lqEAvSf"
 Content-Disposition: inline
-In-Reply-To: <20190107184331.8429-15-clg@kaod.org>
+In-Reply-To: <20190107191006.10648-1-clg@kaod.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,111 +73,222 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---m0vRWufqUC70IDnR
+--tAmVnWIZ6lqEAvSf
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 07, 2019 at 07:43:26PM +0100, C=E9dric Le Goater wrote:
-> When the VM is stopped in a migration sequence, the sources are masked
-> and the XIVE IC is synced to stabilize the EQs. When done, the KVM
-> ioctl KVM_DEV_XIVE_SAVE_EQ_PAGES is called to mark dirty the EQ pages.
+On Mon, Jan 07, 2019 at 08:10:04PM +0100, C=E9dric Le Goater wrote:
+> At a VCPU level, the state of the thread context interrupt management
+> registers needs to be collected. These registers are cached under the
+> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
+> pulled from the HW thread. An OPAL call retrieves the backup of the
+> IPB register in the NVT structure and merges it in the KVM state.
 >=20
-> The migration can then transfer the remaining dirty pages to the
-> destination and start collecting the state of the devices.
-
-Is there a reason to make this a separate step from the SYNC
-operation?
-
+> The structures of the interface between QEMU and KVM provisions some
+> extra room (two u64) for further extensions if more state needs to be
+> transferred back to QEMU.
 >=20
 > Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
 > ---
->  arch/powerpc/include/uapi/asm/kvm.h   |  1 +
->  arch/powerpc/kvm/book3s_xive_native.c | 40 +++++++++++++++++++++++++++
->  2 files changed, 41 insertions(+)
+>  arch/powerpc/include/asm/kvm_ppc.h    |  5 ++
+>  arch/powerpc/include/uapi/asm/kvm.h   |  2 +
+>  arch/powerpc/kvm/book3s.c             | 24 +++++++++
+>  arch/powerpc/kvm/book3s_xive_native.c | 78 +++++++++++++++++++++++++++
+>  4 files changed, 109 insertions(+)
 >=20
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/as=
+m/kvm_ppc.h
+> index 4cc897039485..49c488af168c 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -270,6 +270,7 @@ union kvmppc_one_reg {
+>  		u64	addr;
+>  		u64	length;
+>  	}	vpaval;
+> +	u64	xive_timaval[4];
+>  };
+> =20
+>  struct kvmppc_ops {
+> @@ -603,6 +604,8 @@ extern void kvmppc_xive_native_cleanup_vcpu(struct kv=
+m_vcpu *vcpu);
+>  extern void kvmppc_xive_native_init_module(void);
+>  extern void kvmppc_xive_native_exit_module(void);
+>  extern int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cmd);
+> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc=
+_one_reg *val);
+> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc=
+_one_reg *val);
+> =20
+>  #else
+>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 ser=
+ver,
+> @@ -637,6 +640,8 @@ static inline void kvmppc_xive_native_init_module(voi=
+d) { }
+>  static inline void kvmppc_xive_native_exit_module(void) { }
+>  static inline int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cm=
+d)
+>  	{ return 0; }
+> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union=
+ kvmppc_one_reg *val) { return 0; }
+> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union=
+ kvmppc_one_reg *val) { return -ENOENT; }
+
+IIRC "VP" is the old name for "TCTX".  Since we're using tctx in the
+rest of the XIVE code, can we use it here as well.
+
+>  #endif /* CONFIG_KVM_XIVE */
+> =20
 > diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/u=
 api/asm/kvm.h
-> index f3b859223b80..1a8740629acf 100644
+> index 95302558ce10..3c958c39a782 100644
 > --- a/arch/powerpc/include/uapi/asm/kvm.h
 > +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> @@ -680,6 +680,7 @@ struct kvm_ppc_cpu_char {
->  #define   KVM_DEV_XIVE_GET_ESB_FD	1
->  #define   KVM_DEV_XIVE_GET_TIMA_FD	2
->  #define   KVM_DEV_XIVE_VC_BASE		3
-> +#define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
->  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
->  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
+> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
+>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
+>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
 > =20
+> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
+> +
+>  /* Device control API: PPC-specific devices */
+>  #define KVM_DEV_MPIC_GRP_MISC		1
+>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index de7eed191107..5ad658077a35 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>  				*val =3D get_reg_val(id, kvmppc_xics_get_icp(vcpu));
+>  			break;
+>  #endif /* CONFIG_KVM_XICS */
+> +#ifdef CONFIG_KVM_XIVE
+> +		case KVM_REG_PPC_VP_STATE:
+> +			if (!vcpu->arch.xive_vcpu) {
+> +				r =3D -ENXIO;
+> +				break;
+> +			}
+> +			if (xive_enabled())
+> +				r =3D kvmppc_xive_native_get_vp(vcpu, val);
+> +			else
+> +				r =3D -ENXIO;
+> +			break;
+> +#endif /* CONFIG_KVM_XIVE */
+>  		case KVM_REG_PPC_FSCR:
+>  			*val =3D get_reg_val(id, vcpu->arch.fscr);
+>  			break;
+> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>  				r =3D kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
+>  			break;
+>  #endif /* CONFIG_KVM_XICS */
+> +#ifdef CONFIG_KVM_XIVE
+> +		case KVM_REG_PPC_VP_STATE:
+> +			if (!vcpu->arch.xive_vcpu) {
+> +				r =3D -ENXIO;
+> +				break;
+> +			}
+> +			if (xive_enabled())
+> +				r =3D kvmppc_xive_native_set_vp(vcpu, val);
+> +			else
+> +				r =3D -ENXIO;
+> +			break;
+> +#endif /* CONFIG_KVM_XIVE */
+>  		case KVM_REG_PPC_FSCR:
+>  			vcpu->arch.fscr =3D set_reg_val(id, *val);
+>  			break;
 > diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/boo=
 k3s_xive_native.c
-> index a8052867afc1..f2de1bcf3b35 100644
+> index f4eb71eafc57..1aefb366df0b 100644
 > --- a/arch/powerpc/kvm/book3s_xive_native.c
 > +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> @@ -373,6 +373,43 @@ static int kvmppc_xive_native_get_tima_fd(struct kvm=
-ppc_xive *xive, u64 addr)
->  	return put_user(ret, ubufp);
+> @@ -424,6 +424,84 @@ static int xive_native_validate_queue_size(u32 qsize)
+>  	}
 >  }
 > =20
-> +static int kvmppc_xive_native_vcpu_save_eq_pages(struct kvm_vcpu *vcpu)
+> +#define TM_IPB_SHIFT 40
+> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
+> +
+> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_re=
+g *val)
 > +{
 > +	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> +	unsigned int prio;
+> +	u64 opal_state;
+> +	int rc;
+> +
+> +	if (!kvmppc_xive_enabled(vcpu))
+> +		return -EPERM;
 > +
 > +	if (!xc)
 > +		return -ENOENT;
 > +
-> +	for (prio =3D 0; prio < KVMPPC_XIVE_Q_COUNT; prio++) {
-> +		struct xive_q *q =3D &xc->queues[prio];
+> +	/* Thread context registers. We only care about IPB and CPPR */
+> +	val->xive_timaval[0] =3D vcpu->arch.xive_saved_state.w01;
 > +
-> +		if (!q->qpage)
-> +			continue;
+> +	/*
+> +	 * Return the OS CAM line to print out the VP identifier in
+> +	 * the QEMU monitor. This is not restored.
+> +	 */
+> +	val->xive_timaval[1] =3D vcpu->arch.xive_cam_word;
 > +
-> +		/* Mark EQ page dirty for migration */
-> +		mark_page_dirty(vcpu->kvm, gpa_to_gfn(q->guest_qpage));
-> +	}
+> +	/* Get the VP state from OPAL */
+> +	rc =3D xive_native_get_vp_state(xc->vp_id, &opal_state);
+> +	if (rc)
+> +		return rc;
+> +
+> +	/*
+> +	 * Capture the backup of IPB register in the NVT structure and
+> +	 * merge it in our KVM VP state.
+> +	 *
+> +	 * TODO: P10 support.
+> +	 */
+> +	val->xive_timaval[0] |=3D cpu_to_be64(opal_state & TM_IPB_MASK);
+> +
+> +	pr_devel("%s NSR=3D%02x CPPR=3D%02x IBP=3D%02x PIPR=3D%02x w01=3D%016ll=
+x w2=3D%08x opal=3D%016llx\n",
+> +		 __func__,
+> +		 vcpu->arch.xive_saved_state.nsr,
+> +		 vcpu->arch.xive_saved_state.cppr,
+> +		 vcpu->arch.xive_saved_state.ipb,
+> +		 vcpu->arch.xive_saved_state.pipr,
+> +		 vcpu->arch.xive_saved_state.w01,
+> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
+> +
 > +	return 0;
 > +}
 > +
-> +static int kvmppc_xive_native_save_eq_pages(struct kvmppc_xive *xive)
+> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_re=
+g *val)
 > +{
-> +	struct kvm *kvm =3D xive->kvm;
-> +	struct kvm_vcpu *vcpu;
-> +	unsigned int i;
+> +	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
+> +	struct kvmppc_xive *xive =3D vcpu->kvm->arch.xive;
 > +
-> +	pr_devel("%s\n", __func__);
+> +	pr_devel("%s w01=3D%016llx vp=3D%016llx\n", __func__,
+> +		 val->xive_timaval[0], val->xive_timaval[1]);
 > +
-> +	mutex_lock(&kvm->lock);
-> +	kvm_for_each_vcpu(i, vcpu, kvm) {
-> +		kvmppc_xive_native_vcpu_save_eq_pages(vcpu);
-> +	}
-> +	mutex_unlock(&kvm->lock);
+> +	if (!kvmppc_xive_enabled(vcpu))
+> +		return -EPERM;
 > +
+> +	if (!xc || !xive)
+> +		return -ENOENT;
+> +
+> +	/* We can't update the state of a "pushed" VCPU	 */
+> +	if (WARN_ON(vcpu->arch.xive_pushed))
+> +		return -EIO;
+> +
+> +	/* Thread context registers. only restore IPB and CPPR ? */
+> +	vcpu->arch.xive_saved_state.w01 =3D val->xive_timaval[0];
+> +
+> +	/*
+> +	 * There is no need to restore the XIVE internal state (IPB
+> +	 * stored in the NVT) as the IPB register was merged in KVM VP
+> +	 * state.
+> +	 */
 > +	return 0;
 > +}
 > +
->  static int xive_native_validate_queue_size(u32 qsize)
+>  static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long =
+irq,
+>  					 u64 addr)
 >  {
->  	switch (qsize) {
-> @@ -498,6 +535,8 @@ static int kvmppc_xive_native_set_attr(struct kvm_dev=
-ice *dev,
->  		switch (attr->attr) {
->  		case KVM_DEV_XIVE_VC_BASE:
->  			return kvmppc_xive_native_set_vc_base(xive, attr->addr);
-> +		case KVM_DEV_XIVE_SAVE_EQ_PAGES:
-> +			return kvmppc_xive_native_save_eq_pages(xive);
->  		}
->  		break;
->  	case KVM_DEV_XIVE_GRP_SOURCES:
-> @@ -538,6 +577,7 @@ static int kvmppc_xive_native_has_attr(struct kvm_dev=
-ice *dev,
->  		case KVM_DEV_XIVE_GET_ESB_FD:
->  		case KVM_DEV_XIVE_GET_TIMA_FD:
->  		case KVM_DEV_XIVE_VC_BASE:
-> +		case KVM_DEV_XIVE_SAVE_EQ_PAGES:
->  			return 0;
->  		}
->  		break;
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -186,24 +296,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---m0vRWufqUC70IDnR
+--tAmVnWIZ6lqEAvSf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxXyykACgkQbDjKyiDZ
-s5Lo8RAAtJxKIsQQTqRRCdy2Ceug0oOAku4wnCWEQZKjNSzTY/38prpNSKatRPFm
-mPWb/Vlbe8ebNjU9KYTOh+i4Gamry5yzMgD0PqsNf2iFTpomvJwUuPO1ElePdqBk
-fplJfspEgHdu0wSmz4KCDNTnBLqgptpw9FAUK9IlZVBwTYMM26hpKWOx8Th2CRkv
-CCSprh8AzeS8PIhjsZweNYCDmO+CfMvWseiuXw5loTjvMQwzPw1yogXwrsh72qti
-0D/Oj8ikRU+xXsPn7LEKNtxGu2u/Yp9YWhGWoRtdBY6S45y7OyHxkD/P9vjHXqKz
-pGDKIH1wYbdthYTXdBUpVen43scC6cAQtDVLfEdEdQNXoVn/FCYZC8k6N5kfuuZQ
-uAj+q4VZAUlIYdDCAdaY93JP0jjLEpj4DGcTWAXlGj+1mvm/OrZgaSMqjowXGhzz
-iJIDlJGl2Az2gnn24HDsECMhlHLWAPs9o7Tl/pkF5Mqdd7pENVeCKk7deGGZrM3c
-TA1Gnl9kZS1yPCZtxoR0OyxYNJR/m7nf6FXeqjMPmwYeRZ/46vv6wRZqNh3h0YlG
-boHLZ7zqJLJUwl0eC3TI2tyyGVON7txcKY0f4kLHsN41aVqJgpURTw0DXaodynuw
-bfWDb9rIghSdqe39408RPH7wfO4/oCAG9W3vjwIwBjsrhO89kVY=
-=+JoK
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxXzRYACgkQbDjKyiDZ
+s5JibA//RFDvJbbApaUa6duG2EFXzGs6HVwNv8dgZPnLFaN6w94+edGP69CaZ8Ks
+W5ogGRQHXTE3Ar14sgGm3AwSBe6B/LltEEza0QyMgab6bmPWuUB0Opdv6vdYPvzp
+mjooVxi7uEscx/AKGoki5sl1UrCcwFORiPkFKqQWgQdjZDA4x63xgXjHioLOMjB/
+VR41aw4hQi2Mrw7QZJMxRvqXccEvOAVN6AE0dNGO/bVd0wyQ+xR4B87/MvtecBN1
+Ft5TP++MdUelKRP3KbvJoNyrr+mbrXXOJGOcWeled/+LXeWM04mdJn5qFZyxYP2S
+3zDZAenbOBiX7EoGgMg37CSo/zLSEdbzpqCjVaInEVRUdf3+2KpU3++Eyai7/GCO
+plyPSBw+2f0kIFe4nmzpKYlVxv4BAJdoYFaaHcxN662UKMbVJNfMbya6z+Wj3PZA
+E4txsf7sVtgmMBGFLvxGoAMRPebJ2GFWOcyiQo0GB2RxEvCe+StYRTfS2VlwUeK3
+UM8VEFYBb9xw9faDHkHJiwvI9hDgeoltuCI2pkLkBCePOQN8wW75y1eektdMQ+mm
+3aiVt/oGM2Ix+YapCpC2zigRaFVkQgQgglFD45sDPHRnJ1O31GtmKAA0EMqsTSYe
+g4FRXt4ROM7Hse0eF1FqWVhVPdZDqi8o4R1hQAUZkqAsjEinnok=
+=sq+W
 -----END PGP SIGNATURE-----
 
---m0vRWufqUC70IDnR--
+--tAmVnWIZ6lqEAvSf--
