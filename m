@@ -1,69 +1,62 @@
-Return-Path: <SRS0=4FME=QK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEB79C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 18:22:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F094C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 02:00:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 15FDD20820
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Feb 2019 18:22:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15FDD20820
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 844B22083B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 02:00:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="m1uKrs0c"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 844B22083B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43szhB4q7lzDqBY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 05:22:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43szfB6SbmzDqDy
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 05:20:18 +1100 (AEDT)
-Received: from relay9-d.mail.gandi.net (unknown [217.70.183.199])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 1EBDA3A07DB
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2019 19:18:39 +0100 (CET)
-X-Originating-IP: 79.86.19.127
-Received: from [192.168.0.11] (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id 31D30FF802;
- Sun,  3 Feb 2019 18:17:57 +0000 (UTC)
-Subject: Re: [PATCH] hugetlb: allow to free gigantic pages regardless of the
- configuration
-To: akpm@linux-foundation.org, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
- Mike Kravetz <mike.kravetz@oracle.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-References: <20190117183953.5990-1-aghiti@upmem.com>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <65c8ebc7-fc77-bd19-616d-e950ff6b080d@ghiti.fr>
-Date: Sun, 3 Feb 2019 13:17:56 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 43t9rf2JtFzDqGY
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 13:00:02 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43t9pk5ZWqzDqFw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 12:58:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="m1uKrs0c"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 43t9pk38Wzz9sDX; Mon,  4 Feb 2019 12:58:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1549245502;
+ bh=LgaMeKQsK1oVKYKuQCGqnxs1Pbzeq9qd91RWx2d6U+Y=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=m1uKrs0cRPBNTLIMlcjWLkJuvcpulT84jk6BvGqf7NPUognPy2Svn2PSgyuErl3P8
+ 6FfGekTmYwE4P+C39jE9IyezxgkjAnHdcjUDJyjg2ycB3eCXhNwyRPEazEiU0o0Nr7
+ th/Qqc0LjeFAF7jwaS8RoTejHMluP5uwgRI0feM0=
+Date: Mon, 4 Feb 2019 11:50:56 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 03/19] KVM: PPC: Book3S HV: check the IRQ controller type
+Message-ID: <20190204005056.GC2593@umbus.fritz.box>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-4-clg@kaod.org>
+ <20190122045642.GB15124@blackberry>
+ <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <20190117183953.5990-1-aghiti@upmem.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: sv-FI
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="L6iaP+gRLNZHKoI4"
+Content-Disposition: inline
+In-Reply-To: <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,342 +68,118 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: hch@infradead.org, linux-riscv@lists.infradead.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 1/17/19 1:39 PM, Alexandre Ghiti wrote:
-> From: Alexandre Ghiti <alex@ghiti.fr>
->
-> On systems without CMA or (MEMORY_ISOLATION && COMPACTION) activated but
-> that support gigantic pages, boottime reserved gigantic pages can not be
-> freed at all. This patchs simply enables the possibility to hand back
-> those pages to memory allocator.
->
-> This commit then renames gigantic_page_supported and
-> ARCH_HAS_GIGANTIC_PAGE to make them more accurate. Indeed, those values
-> being false does not mean that the system cannot use gigantic pages: it
-> just means that runtime allocation of gigantic pages is not supported,
-> one can still allocate boottime gigantic pages if the architecture supports
-> it.
->
-> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-> ---
->
-> - Compiled on all architectures
-> - Tested on riscv architecture
->
->   arch/arm64/Kconfig                           |  2 +-
->   arch/arm64/include/asm/hugetlb.h             |  7 +++--
->   arch/powerpc/include/asm/book3s/64/hugetlb.h |  4 +--
->   arch/powerpc/platforms/Kconfig.cputype       |  2 +-
->   arch/s390/Kconfig                            |  2 +-
->   arch/s390/include/asm/hugetlb.h              |  7 +++--
->   arch/x86/Kconfig                             |  2 +-
->   arch/x86/include/asm/hugetlb.h               |  7 +++--
->   fs/Kconfig                                   |  2 +-
->   include/linux/gfp.h                          |  2 +-
->   mm/hugetlb.c                                 | 43 +++++++++++++++-------------
->   mm/page_alloc.c                              |  4 +--
->   12 files changed, 48 insertions(+), 36 deletions(-)
->
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index a4168d366127..18239cbd7fcd 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -18,7 +18,7 @@ config ARM64
->   	select ARCH_HAS_FAST_MULTIPLIER
->   	select ARCH_HAS_FORTIFY_SOURCE
->   	select ARCH_HAS_GCOV_PROFILE_ALL
-> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
->   	select ARCH_HAS_KCOV
->   	select ARCH_HAS_MEMBARRIER_SYNC_CORE
->   	select ARCH_HAS_PTE_SPECIAL
-> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-> index fb6609875455..797fc77eabcd 100644
-> --- a/arch/arm64/include/asm/hugetlb.h
-> +++ b/arch/arm64/include/asm/hugetlb.h
-> @@ -65,8 +65,11 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
->   
->   #include <asm-generic/hugetlb.h>
->   
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void) { return true; }
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
-> +static inline bool gigantic_page_runtime_allocation_supported(void)
-> +{
-> +	return true;
-> +}
->   #endif
->   
->   #endif /* __ASM_HUGETLB_H */
-> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> index 5b0177733994..7711f0e2c7e5 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> @@ -32,8 +32,8 @@ static inline int hstate_get_psize(struct hstate *hstate)
->   	}
->   }
->   
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void)
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
-> +static inline bool gigantic_page_runtime_allocation_supported(void)
->   {
->   	return true;
->   }
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index 8c7464c3f27f..779e06bac697 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -319,7 +319,7 @@ config ARCH_ENABLE_SPLIT_PMD_PTLOCK
->   config PPC_RADIX_MMU
->   	bool "Radix MMU Support"
->   	depends on PPC_BOOK3S_64
-> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
->   	default y
->   	help
->   	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
-> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-> index ed554b09eb3f..6776eef6a9ae 100644
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -69,7 +69,7 @@ config S390
->   	select ARCH_HAS_ELF_RANDOMIZE
->   	select ARCH_HAS_FORTIFY_SOURCE
->   	select ARCH_HAS_GCOV_PROFILE_ALL
-> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
->   	select ARCH_HAS_KCOV
->   	select ARCH_HAS_PTE_SPECIAL
->   	select ARCH_HAS_SET_MEMORY
-> diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
-> index 2d1afa58a4b6..57c952f5388e 100644
-> --- a/arch/s390/include/asm/hugetlb.h
-> +++ b/arch/s390/include/asm/hugetlb.h
-> @@ -116,7 +116,10 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
->   	return pte_modify(pte, newprot);
->   }
->   
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void) { return true; }
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
-> +static inline bool gigantic_page_runtime_allocation_supported(void)
-> +{
-> +	return true;
-> +}
->   #endif
->   #endif /* _ASM_S390_HUGETLB_H */
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 6185d4f33296..a88f5a4311c9 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -23,7 +23,7 @@ config X86_64
->   	def_bool y
->   	depends on 64BIT
->   	# Options that are inherently 64-bit kernel only:
-> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
-> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
->   	select ARCH_SUPPORTS_INT128
->   	select ARCH_USE_CMPXCHG_LOCKREF
->   	select HAVE_ARCH_SOFT_DIRTY
-> diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-> index 7469d321f072..5a5e7119ced4 100644
-> --- a/arch/x86/include/asm/hugetlb.h
-> +++ b/arch/x86/include/asm/hugetlb.h
-> @@ -17,8 +17,11 @@ static inline void arch_clear_hugepage_flags(struct page *page)
->   {
->   }
->   
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void) { return true; }
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
-> +static inline bool gigantic_page_runtime_allocation_supported(void)
-> +{
-> +	return true;
-> +}
->   #endif
->   
->   #endif /* _ASM_X86_HUGETLB_H */
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index ac474a61be37..4192d1fde0f0 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -207,7 +207,7 @@ config HUGETLB_PAGE
->   config MEMFD_CREATE
->   	def_bool TMPFS || HUGETLBFS
->   
-> -config ARCH_HAS_GIGANTIC_PAGE
-> +config ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
->   	bool
->   
->   source "fs/configfs/Kconfig"
-> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-> index 5f5e25fd6149..79ff86fabd42 100644
-> --- a/include/linux/gfp.h
-> +++ b/include/linux/gfp.h
-> @@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
->   /* The below functions must be run on a range from a single zone. */
->   extern int alloc_contig_range(unsigned long start, unsigned long end,
->   			      unsigned migratetype, gfp_t gfp_mask);
-> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
->   #endif
-> +extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
->   
->   #ifdef CONFIG_CMA
->   /* CMA stuff */
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index 745088810965..9893ba26b3b8 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1035,7 +1035,6 @@ static int hstate_next_node_to_free(struct hstate *h, nodemask_t *nodes_allowed)
->   		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
->   		nr_nodes--)
->   
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
->   static void destroy_compound_gigantic_page(struct page *page,
->   					unsigned int order)
->   {
-> @@ -1058,6 +1057,7 @@ static void free_gigantic_page(struct page *page, unsigned int order)
->   	free_contig_range(page_to_pfn(page), 1 << order);
->   }
->   
-> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
->   static int __alloc_gigantic_page(unsigned long start_pfn,
->   				unsigned long nr_pages, gfp_t gfp_mask)
->   {
-> @@ -1143,22 +1143,19 @@ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
->   static void prep_new_huge_page(struct hstate *h, struct page *page, int nid);
->   static void prep_compound_gigantic_page(struct page *page, unsigned int order);
->   
-> -#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
-> -static inline bool gigantic_page_supported(void) { return false; }
-> +#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION */
-> +static inline bool gigantic_page_runtime_allocation_supported(void)
-> +{
-> +	return false;
-> +}
->   static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
->   		int nid, nodemask_t *nodemask) { return NULL; }
-> -static inline void free_gigantic_page(struct page *page, unsigned int order) { }
-> -static inline void destroy_compound_gigantic_page(struct page *page,
-> -						unsigned int order) { }
->   #endif
->   
->   static void update_and_free_page(struct hstate *h, struct page *page)
->   {
->   	int i;
->   
-> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
-> -		return;
-> -
->   	h->nr_huge_pages--;
->   	h->nr_huge_pages_node[page_to_nid(page)]--;
->   	for (i = 0; i < pages_per_huge_page(h); i++) {
-> @@ -2276,13 +2273,20 @@ static int adjust_pool_surplus(struct hstate *h, nodemask_t *nodes_allowed,
->   }
->   
->   #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
-> -static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
-> +static int set_max_huge_pages(struct hstate *h, unsigned long count,
->   						nodemask_t *nodes_allowed)
->   {
->   	unsigned long min_count, ret;
->   
-> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
-> -		return h->max_huge_pages;
-> +	if (hstate_is_gigantic(h) &&
-> +		!gigantic_page_runtime_allocation_supported()) {
-> +		spin_lock(&hugetlb_lock);
-> +		if (count > persistent_huge_pages(h)) {
-> +			spin_unlock(&hugetlb_lock);
-> +			return -EINVAL;
-> +		}
-> +		goto decrease_pool;
-> +	}
->   
->   	/*
->   	 * Increase the pool size
-> @@ -2322,6 +2326,7 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
->   			goto out;
->   	}
->   
-> +decrease_pool:
->   	/*
->   	 * Decrease the pool size
->   	 * First return free pages to the buddy allocator (being careful
-> @@ -2350,9 +2355,10 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
->   			break;
->   	}
->   out:
-> -	ret = persistent_huge_pages(h);
-> +	h->max_huge_pages = persistent_huge_pages(h);
->   	spin_unlock(&hugetlb_lock);
-> -	return ret;
-> +
-> +	return 0;
->   }
->   
->   #define HSTATE_ATTR_RO(_name) \
-> @@ -2404,11 +2410,6 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
->   	int err;
->   	NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | __GFP_NORETRY);
->   
-> -	if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
-> -		err = -EINVAL;
-> -		goto out;
-> -	}
-> -
->   	if (nid == NUMA_NO_NODE) {
->   		/*
->   		 * global hstate attribute
-> @@ -2428,7 +2429,9 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
->   	} else
->   		nodes_allowed = &node_states[N_MEMORY];
->   
-> -	h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
-> +	err = set_max_huge_pages(h, count, nodes_allowed);
-> +	if (err)
-> +		goto out;
->   
->   	if (nodes_allowed != &node_states[N_MEMORY])
->   		NODEMASK_FREE(nodes_allowed);
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index cde5dac6229a..81b931db85a1 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -8241,8 +8241,9 @@ int alloc_contig_range(unsigned long start, unsigned long end,
->   				pfn_max_align_up(end), migratetype);
->   	return ret;
->   }
-> +#endif
->   
-> -void free_contig_range(unsigned long pfn, unsigned nr_pages)
-> +void free_contig_range(unsigned long pfn, unsigned int nr_pages)
->   {
->   	unsigned int count = 0;
->   
-> @@ -8254,7 +8255,6 @@ void free_contig_range(unsigned long pfn, unsigned nr_pages)
->   	}
->   	WARN(count != 0, "%d pages are still in use!\n", count);
->   }
-> -#endif
->   
->   #ifdef CONFIG_MEMORY_HOTPLUG
->   /*
 
+--L6iaP+gRLNZHKoI4
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
+On Wed, Jan 23, 2019 at 05:24:13PM +0100, C=E9dric Le Goater wrote:
+> On 1/22/19 5:56 AM, Paul Mackerras wrote:
+> > On Mon, Jan 07, 2019 at 07:43:15PM +0100, C=E9dric Le Goater wrote:
+> >> We will have different KVM devices for interrupts, one for the
+> >> XICS-over-XIVE mode and one for the XIVE native exploitation
+> >> mode. Let's add some checks to make sure we are not mixing the
+> >> interfaces in KVM.
+> >>
+> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
+> >> ---
+> >>  arch/powerpc/kvm/book3s_xive.c | 6 ++++++
+> >>  1 file changed, 6 insertions(+)
+> >>
+> >> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_=
+xive.c
+> >> index f78d002f0fe0..8a4fa45f07f8 100644
+> >> --- a/arch/powerpc/kvm/book3s_xive.c
+> >> +++ b/arch/powerpc/kvm/book3s_xive.c
+> >> @@ -819,6 +819,9 @@ u64 kvmppc_xive_get_icp(struct kvm_vcpu *vcpu)
+> >>  {
+> >>  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
+> >> =20
+> >> +	if (!kvmppc_xics_enabled(vcpu))
+> >> +		return -EPERM;
+> >> +
+> >>  	if (!xc)
+> >>  		return 0;
+> >> =20
+> >> @@ -835,6 +838,9 @@ int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64=
+ icpval)
+> >>  	u8 cppr, mfrr;
+> >>  	u32 xisr;
+> >> =20
+> >> +	if (!kvmppc_xics_enabled(vcpu))
+> >> +		return -EPERM;
+> >> +
+> >>  	if (!xc || !xive)
+> >>  		return -ENOENT;
+> >=20
+> > I can't see how these new checks could ever trigger in the code as it
+> > stands.  Is there a way at present?=20
+>=20
+> It would require some custom QEMU doing silly things : create the XICS=20
+> KVM device, and then call kvm_get_one_reg(KVM_REG_PPC_ICP_STATE) or=20
+> kvm_set_one_reg(icp->cs, KVM_REG_PPC_ICP_STATE) without connecting the
+> vCPU to its presenter.=20
+>=20
+> Today, you get a ENOENT.
 
-Can you consider this patch for inclusion in mm tree ? It lacks reviews 
-from some
-arch maintainers and has been reviewed by Mike Kravetz.
-Tell me if I can do something to help,
+TBH, ENOENT seems fine to me.
 
-Thanks,
+> > Do following patches ever add a path where the new checks could trigger=
+,=20
+> > or is this just an excess of caution?=20
+>=20
+> With the following patches, QEMU could to do something even more silly,
+> which is to mix the interrupt mode interfaces : create a KVM XICS device =
+  =20
+> and call KVM CPU ioctls of the KVM XIVE device, or the opposite.
 
-Alex
+AFAICT, like above, that won't really differ from calling the XIVE CPU
+ioctl()s when no irqchip is set up at all, and should be covered by
+just a !xive check.
 
+>=20
+> > (Your patch description should ideally have answered these questions > =
+for me.)
+>=20
+> Yes. I also think that I introduced this patch to early in the series.
+> It make more sense when the XICS and the XIVE KVM devices are available. =
+=20
+>=20
+> Thanks,
+>=20
+> C.
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--L6iaP+gRLNZHKoI4
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxXjG0ACgkQbDjKyiDZ
+s5JdxBAAu9jVdvgAubApIe5fFdxZuqfau4R5OGIq98z/iEc685DvPAoCEoxknfBM
+ozvOHCc4ylNfWOpDbongndCut1JhhWTDd7H8hZ5NcDkPyGzh5eQzoDPGZhJcMsoi
+fIXe5P7kb6HtWzY2iILlnE7Ya3HAxGICh3AUm4tuQ+U+BYh3XxewEVuSIjFY7mkr
+6b4wpYRPOpE2p2uSBek0p/PDOZR4DVLn+GW2T+4guo+/TblxrXEKG/LJryY9Awf8
+n3KBf8zS/X2jSptQ5J8U4XQY7BuJp13Y0Ktc879UICoX6X+a5yxO2DtID/DQS4Md
+MqLTpd53Cd1IO0I+4ypvtp8kq9RU48EfZkQVzJ/+GHHpzyli9IdX81kDcEv1/Om4
+y+/CIYQ4PigP68OmGutaHMisJLiLu3OtdIKARa4KUv/7thRHdHlLKz8IEa4UynES
+jbY2zoRGVgNetGI0eSZTk97VSnDSWgIampC9auKiDOmRp/fslEp4vPRYNIGzMD9Y
+5ohwaRNdorfcV2owGu3WtY9TUyytKq48C0QWK6d2B4+oSL4XegD34b2xU/m0RV8/
+roB5eFQVBy+3v+aj15UXnRcsehY+281id+SyUdvAhEKyIoagHoO6Qx36QgO4RyPO
+h9OttCU5nYzZDT6jc6eND0FLNcBzSeixQN9FLUAnR3TWW5PKccg=
+=Nc4Y
+-----END PGP SIGNATURE-----
+
+--L6iaP+gRLNZHKoI4--
