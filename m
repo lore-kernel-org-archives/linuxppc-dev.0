@@ -2,80 +2,61 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19C93C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 15:54:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60562C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 16:14:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3E87A2082E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 15:54:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="PCKufqSg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3E87A2082E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8E63120815
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 16:14:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E63120815
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tXMR2gtnzDqJL
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 02:54:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tXq21ysVzDqKM
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 03:14:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yadro.com
- (client-ip=89.207.88.251; helo=mta-01.yadro.com;
- envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=87.98.171.146; helo=9.mo6.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yadro.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="PCKufqSg"; 
- dkim-atps=neutral
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tXF46QzQzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 02:48:56 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id EF92F4196C;
- Mon,  4 Feb 2019 15:36:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- content-type:content-type:content-transfer-encoding:mime-version
- :references:in-reply-to:x-mailer:message-id:date:date:subject
- :subject:from:from:received:received:received; s=mta-01; t=
- 1549294576; x=1551108977; bh=Y7bqz4DPDetczRyG4vWuemSZRvQz7iYuxkl
- Dbk+E/kM=; b=PCKufqSgo50tvCbks3cUJZosbl8zGShYkqUfV8zA2OExgV+8Mjg
- t5jQg1zUvqcZcWd/OpHS3niDZc7WN8PgMSMLGaOaumh7Il44Qxfji22fI+1hLYAY
- gZBSrME1hfJk3iXTnSVd4ZG9zg8wuUJ508+SDzgqXEV5Im83YWuakcLQ=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GWVQY8ui9u28; Mon,  4 Feb 2019 18:36:16 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 2342641931;
- Mon,  4 Feb 2019 18:36:11 +0300 (MSK)
-Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 4 Feb
- 2019 18:36:10 +0300
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-To: <linux-pci@vger.kernel.org>
-Subject: [PATCH RFC v3 06/21] PCI: Pause the devices with movable BARs during
- rescan
-Date: Mon, 4 Feb 2019 18:35:46 +0300
-Message-ID: <20190204153601.7576-7-s.miroshnichenko@yadro.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190204153601.7576-1-s.miroshnichenko@yadro.com>
-References: <20190204153601.7576-1-s.miroshnichenko@yadro.com>
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1803 seconds by postgrey-1.36 at bilbo;
+ Tue, 05 Feb 2019 03:13:24 AEDT
+Received: from 9.mo6.mail-out.ovh.net (9.mo6.mail-out.ovh.net [87.98.171.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tXnJ36HLzDqDd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 03:13:23 +1100 (AEDT)
+Received: from player157.ha.ovh.net (unknown [10.109.146.137])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 47EEA1AD306
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 16:37:46 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player157.ha.ovh.net (Postfix) with ESMTPSA id 8BCA62485E16;
+ Mon,  4 Feb 2019 15:37:38 +0000 (UTC)
+Subject: Re: [PATCH 12/19] KVM: PPC: Book3S HV: record guest queue page address
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-13-clg@kaod.org> <20190204051548.GE1927@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <68a7d46b-bbfb-f3c6-70de-88b81c4291b9@kaod.org>
+Date: Mon, 4 Feb 2019 16:37:38 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
+In-Reply-To: <20190204051548.GE1927@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.17.15.60]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+X-Ovh-Tracer-Id: 6650127802159369095
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeggdejlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,109 +68,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sam Bobroff <sbobroff@linux.ibm.com>,
- Sergey Miroshnichenko <s.miroshnichenko@yadro.com>, linux@yadro.com,
- Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
- Oliver <oohall@gmail.com>, Rajat Jain <rajatja@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Drivers indicate their support of movable BARs by implementing the
-new rescan_prepare() and rescan_done() hooks in the struct pci_driver.
+On 2/4/19 6:15 AM, David Gibson wrote:
+> On Mon, Jan 07, 2019 at 07:43:24PM +0100, Cédric Le Goater wrote:
+>> The guest physical address of the event queue will be part of the
+>> state to transfer in the migration. Cache its value when the queue is
+>> configured, it will save us an OPAL call.
+> 
+> That doesn't sound like a very compelling case - migration is already
+> a hundreds of milliseconds type operation, I wouldn't expect a few
+> extra OPAL calls to be an issue.
 
-All device's activity must be stopped during a rescan, and iounmap()
-+ioremap() must be applied to every used BAR.
+OK. I don't think this is much a problem anyhow. Let's call OPAL.
 
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
----
- drivers/pci/probe.c | 51 +++++++++++++++++++++++++++++++++++++++++++--
- include/linux/pci.h |  2 ++
- 2 files changed, 51 insertions(+), 2 deletions(-)
+C. 
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index bbc12934f041..e18d07996cf3 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -3172,6 +3172,38 @@ unsigned int pci_rescan_bus_bridge_resize(struct pci_dev *bridge)
- 	return max;
- }
  
-+static void pci_bus_rescan_prepare(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct pci_bus *child = dev->subordinate;
-+
-+		if (child) {
-+			pci_bus_rescan_prepare(child);
-+		} else if (dev->driver &&
-+			   dev->driver->rescan_prepare) {
-+			dev->driver->rescan_prepare(dev);
-+		}
-+	}
-+}
-+
-+static void pci_bus_rescan_done(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		struct pci_bus *child = dev->subordinate;
-+
-+		if (child) {
-+			pci_bus_rescan_done(child);
-+		} else if (dev->driver &&
-+			   dev->driver->rescan_done) {
-+			dev->driver->rescan_done(dev);
-+		}
-+	}
-+}
-+
- /**
-  * pci_rescan_bus - Scan a PCI bus for devices
-  * @bus: PCI bus to scan
-@@ -3185,8 +3217,23 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
- 
--	max = pci_scan_child_bus(bus);
--	pci_assign_unassigned_bus_resources(bus);
-+	if (pci_movable_bars_enabled()) {
-+		struct pci_bus *root = bus;
-+
-+		while (!pci_is_root_bus(root))
-+			root = root->parent;
-+
-+		pci_bus_rescan_prepare(root);
-+
-+		max = pci_scan_child_bus(root);
-+		pci_assign_unassigned_root_bus_resources(root);
-+
-+		pci_bus_rescan_done(root);
-+	} else {
-+		max = pci_scan_child_bus(bus);
-+		pci_assign_unassigned_bus_resources(bus);
-+	}
-+
- 	pci_bus_add_devices(bus);
- 
- 	return max;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index ba0b1d0ea2d2..5cd534b6631b 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -777,6 +777,8 @@ struct pci_driver {
- 	int  (*resume)(struct pci_dev *dev);	/* Device woken up */
- 	void (*shutdown)(struct pci_dev *dev);
- 	int  (*sriov_configure)(struct pci_dev *dev, int num_vfs); /* On PF */
-+	void (*rescan_prepare)(struct pci_dev *dev);
-+	void (*rescan_done)(struct pci_dev *dev);
- 	const struct pci_error_handlers *err_handler;
- 	const struct attribute_group **groups;
- 	struct device_driver	driver;
--- 
-2.20.1
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/include/asm/xive.h       | 2 ++
+>>  arch/powerpc/kvm/book3s_xive_native.c | 4 ++++
+>>  2 files changed, 6 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+>> index 7a7aa22d8258..e90c3c5d9533 100644
+>> --- a/arch/powerpc/include/asm/xive.h
+>> +++ b/arch/powerpc/include/asm/xive.h
+>> @@ -74,6 +74,8 @@ struct xive_q {
+>>  	u32			esc_irq;
+>>  	atomic_t		count;
+>>  	atomic_t		pending_count;
+>> +	u64			guest_qpage;
+>> +	u32			guest_qsize;
+>>  };
+>>  
+>>  /* Global enable flags for the XIVE support */
+>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>> index 35d806740c3a..4ca75aade069 100644
+>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>> @@ -708,6 +708,10 @@ static int kvmppc_h_int_set_queue_config(struct kvm_vcpu *vcpu,
+>>  	}
+>>  	qaddr = page_to_virt(page) + (qpage & ~PAGE_MASK);
+>>  
+>> +	/* Backup queue page address and size for migration */
+>> +	q->guest_qpage = qpage;
+>> +	q->guest_qsize = qsize;
+>> +
+>>  	rc = xive_native_configure_queue(xc->vp_id, q, priority,
+>>  					 (__be32 *) qaddr, qsize, true);
+>>  	if (rc) {
+> 
 
