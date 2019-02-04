@@ -2,23 +2,23 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UPPERCASE_50_75,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 023C3C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:26:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF8D3C282D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:28:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E3352083B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:26:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E3352083B
+	by mail.kernel.org (Postfix) with ESMTPS id 5874D2147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:28:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5874D2147A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tF645nCrzDqH5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 15:26:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tF7s3SmczDqF5
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 15:28:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,62 +29,62 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tDx11X6jzDqGT
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 15:19:01 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tDx31LBnzDqGg
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 15:19:02 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x14495KS129425
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 23:18:59 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qe99g8cqv-1
+ x14492T1122821
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 23:19:00 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qe82k29rs-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 23:18:59 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 23:19:00 -0500
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Mon, 4 Feb 2019 04:18:57 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Mon, 4 Feb 2019 04:18:58 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 4 Feb 2019 04:18:54 -0000
+ Mon, 4 Feb 2019 04:18:57 -0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x144Ir1X8323454
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x144IueU58261624
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 4 Feb 2019 04:18:53 GMT
+ Mon, 4 Feb 2019 04:18:56 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 67B3EA4054;
- Mon,  4 Feb 2019 04:18:53 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E21A5A405F;
+ Mon,  4 Feb 2019 04:18:55 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2CE0EA405B;
- Mon,  4 Feb 2019 04:18:52 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id B106CA4054;
+ Mon,  4 Feb 2019 04:18:54 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.195.22.129])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  4 Feb 2019 04:18:51 +0000 (GMT)
+ Mon,  4 Feb 2019 04:18:54 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [RFC PATCH 4/5] powerpc: sstep: Add selftests for add[.] instruction
-Date: Mon,  4 Feb 2019 09:48:38 +0530
+Subject: [RFC PATCH 5/5] powerpc: sstep: Add selftests for addc[.] instruction
+Date: Mon,  4 Feb 2019 09:48:39 +0530
 X-Mailer: git-send-email 2.19.2
 In-Reply-To: <cover.1549253769.git.sandipan@linux.ibm.com>
 References: <cover.1549253769.git.sandipan@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19020404-0008-0000-0000-000002BAB448
+x-cbid: 19020404-0028-0000-0000-00000343B10D
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020404-0009-0000-0000-00002226C0BB
-Message-Id: <40a23eba726a4b96f81a63ab836e3319a916713c.1549253769.git.sandipan@linux.ibm.com>
+x-cbparentid: 19020404-0029-0000-0000-00002401B443
+Message-Id: <9460deae6525f983b6ab44e3e35c1bbbd79d3ef5.1549253769.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-04_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=818 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=745 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902040033
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,28 +103,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds test cases for the add[.] instruction.
+This adds test cases for the addc[.] instruction.
 
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
- arch/powerpc/lib/sstep_tests.c | 194 +++++++++++++++++++++++++++++++++
- 1 file changed, 194 insertions(+)
+ arch/powerpc/include/asm/ppc-opcode.h |   1 +
+ arch/powerpc/lib/sstep_tests.c        | 212 ++++++++++++++++++++++++++
+ 2 files changed, 213 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 07bdb404571c..c0fe90173977 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -326,6 +326,7 @@
+ #define PPC_INST_ADDI			0x38000000
+ #define PPC_INST_ADDIS			0x3c000000
+ #define PPC_INST_ADD			0x7c000214
++#define PPC_INST_ADDC			0x7c000014
+ #define PPC_INST_SUB			0x7c000050
+ #define PPC_INST_BLR			0x4e800020
+ #define PPC_INST_BLRL			0x4e800021
 diff --git a/arch/powerpc/lib/sstep_tests.c b/arch/powerpc/lib/sstep_tests.c
-index a610c778044d..fe6201a2add7 100644
+index fe6201a2add7..d2f4bb66f66f 100644
 --- a/arch/powerpc/lib/sstep_tests.c
 +++ b/arch/powerpc/lib/sstep_tests.c
-@@ -49,6 +49,200 @@ static struct sstep_test tests[] = {
+@@ -243,6 +243,218 @@ static struct sstep_test tests[] = {
  			}
  		}
  	},
 +	{
-+		.mnemonic = "add",
++		.mnemonic = "addc",
 +		.subtests =
 +		{
 +			{
 +				.descr = "RA = LONG_MIN, RB = LONG_MIN",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MIN,
@@ -133,7 +146,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = LONG_MIN, RB = LONG_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MIN,
@@ -142,7 +155,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = LONG_MAX, RB = LONG_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MAX,
@@ -151,7 +164,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = ULONG_MAX, RB = ULONG_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = ULONG_MAX,
@@ -160,7 +173,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = ULONG_MAX, RB = 0x1",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = ULONG_MAX,
@@ -169,7 +182,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MIN, RB = INT_MIN",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = INT_MIN,
@@ -178,7 +191,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MIN, RB = INT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = INT_MIN,
@@ -187,7 +200,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MAX, RB = INT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = INT_MAX,
@@ -196,7 +209,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = UINT_MAX, RB = UINT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = UINT_MAX,
@@ -205,23 +218,32 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = UINT_MAX, RB = 0x1",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
 +				.regs =
 +				{
 +					.gpr[21] = UINT_MAX,
 +					.gpr[22] = 0x1,
++				}
++			},
++			{
++				.descr = "RA = LONG_MIN | INT_MIN, RB = LONG_MIN | INT_MIN",
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
++				.regs =
++				{
++					.gpr[21] = LONG_MIN | (uint) INT_MIN,
++					.gpr[22] = LONG_MIN | (uint) INT_MIN,
 +				}
 +			}
 +		}
 +	},
 +	{
-+		.mnemonic = "add.",
++		.mnemonic = "addc.",
 +		.subtests =
 +		{
 +			{
 +				.descr = "RA = LONG_MIN, RB = LONG_MIN",
 +				.flags = IGNORE_CCR,
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MIN,
@@ -230,7 +252,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = LONG_MIN, RB = LONG_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MIN,
@@ -240,7 +262,7 @@ index a610c778044d..fe6201a2add7 100644
 +			{
 +				.descr = "RA = LONG_MAX, RB = LONG_MAX",
 +				.flags = IGNORE_CCR,
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = LONG_MAX,
@@ -249,7 +271,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = ULONG_MAX, RB = ULONG_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = ULONG_MAX,
@@ -258,7 +280,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = ULONG_MAX, RB = 0x1",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = ULONG_MAX,
@@ -267,7 +289,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MIN, RB = INT_MIN",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = INT_MIN,
@@ -276,7 +298,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MIN, RB = INT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = INT_MIN,
@@ -285,7 +307,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = INT_MAX, RB = INT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = INT_MAX,
@@ -294,7 +316,7 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = UINT_MAX, RB = UINT_MAX",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = UINT_MAX,
@@ -303,11 +325,20 @@ index a610c778044d..fe6201a2add7 100644
 +			},
 +			{
 +				.descr = "RA = UINT_MAX, RB = 0x1",
-+				.instr = PPC_INST_ADD | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
 +				.regs =
 +				{
 +					.gpr[21] = UINT_MAX,
 +					.gpr[22] = 0x1,
++				}
++			},
++			{
++				.descr = "RA = LONG_MIN | INT_MIN, RB = LONG_MIN | INT_MIN",
++				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22) | __PPC_RC31,
++				.regs =
++				{
++					.gpr[21] = LONG_MIN | (uint) INT_MIN,
++					.gpr[22] = LONG_MIN | (uint) INT_MIN,
 +				}
 +			}
 +		}
