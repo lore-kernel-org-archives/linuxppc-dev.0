@@ -3,59 +3,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 328DFC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:59:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F39CAC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 19:48:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FD442082E
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 18:59:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FD442082E
+	by mail.kernel.org (Postfix) with ESMTPS id 6E4102087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 19:48:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E4102087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tcSZ0bvCzDqLC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 05:59:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tdYC2jf9zDqLW
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 06:48:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.58.226; helo=3.mo2.mail-out.ovh.net;
+ (client-ip=87.98.173.157; helo=11.mo7.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 3.mo2.mail-out.ovh.net (3.mo2.mail-out.ovh.net [46.105.58.226])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tcQs3sPkzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 05:57:40 +1100 (AEDT)
-Received: from player789.ha.ovh.net (unknown [10.109.143.216])
- by mo2.mail-out.ovh.net (Postfix) with ESMTP id 9539017B997
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 19:57:35 +0100 (CET)
+X-Greylist: delayed 2367 seconds by postgrey-1.36 at bilbo;
+ Tue, 05 Feb 2019 06:47:00 AEDT
+Received: from 11.mo7.mail-out.ovh.net (11.mo7.mail-out.ovh.net
+ [87.98.173.157])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tdWm3blVzDqKg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 06:46:58 +1100 (AEDT)
+Received: from player738.ha.ovh.net (unknown [10.109.160.226])
+ by mo7.mail-out.ovh.net (Postfix) with ESMTP id CFA2AF8AA3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 20:07:28 +0100 (CET)
 Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
  (Authenticated sender: clg@kaod.org)
- by player789.ha.ovh.net (Postfix) with ESMTPSA id 6B9E1250C020;
- Mon,  4 Feb 2019 18:57:27 +0000 (UTC)
-Subject: Re: [PATCH 17/19] KVM: PPC: Book3S HV: add get/set accessors for the
- VP XIVE state
+ by player738.ha.ovh.net (Postfix) with ESMTPSA id 7C80527A1A97;
+ Mon,  4 Feb 2019 19:07:20 +0000 (UTC)
+Subject: Re: [PATCH 09/19] KVM: PPC: Book3S HV: add a SET_SOURCE control to
+ the XIVE native device
 To: David Gibson <david@gibson.dropbear.id.au>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107191006.10648-1-clg@kaod.org> <20190204052646.GJ1927@umbus.fritz.box>
+ <20190107184331.8429-10-clg@kaod.org> <20190204045751.GD1927@umbus.fritz.box>
 From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <5ebeb37b-623b-9b82-5628-fd6d78382064@kaod.org>
-Date: Mon, 4 Feb 2019 19:57:26 +0100
+Message-ID: <40c8dc36-0d54-1e66-d766-5580c19ae8fd@kaod.org>
+Date: Mon, 4 Feb 2019 20:07:20 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190204052646.GJ1927@umbus.fritz.box>
+In-Reply-To: <20190204045751.GD1927@umbus.fritz.box>
 Content-Type: text/plain; charset=windows-1252
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 10024731296739396487
+X-Ovh-Tracer-Id: 10191645957608213383
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeggdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeggdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,211 +76,228 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/4/19 6:26 AM, David Gibson wrote:
-> On Mon, Jan 07, 2019 at 08:10:04PM +0100, Cédric Le Goater wrote:
->> At a VCPU level, the state of the thread context interrupt management
->> registers needs to be collected. These registers are cached under the
->> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
->> pulled from the HW thread. An OPAL call retrieves the backup of the
->> IPB register in the NVT structure and merges it in the KVM state.
->>
->> The structures of the interface between QEMU and KVM provisions some
->> extra room (two u64) for further extensions if more state needs to be
->> transferred back to QEMU.
+On 2/4/19 5:57 AM, David Gibson wrote:
+> On Mon, Jan 07, 2019 at 07:43:21PM +0100, Cédric Le Goater wrote:
+>> Interrupt sources are simply created at the OPAL level and then
+>> MASKED. KVM only needs to know about their type: LSI or MSI.
+> 
+> This commit message isn't very illuminating.
+
+There is room for improvement certainly.
+ 
 >>
 >> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 >> ---
->>  arch/powerpc/include/asm/kvm_ppc.h    |  5 ++
->>  arch/powerpc/include/uapi/asm/kvm.h   |  2 +
->>  arch/powerpc/kvm/book3s.c             | 24 +++++++++
->>  arch/powerpc/kvm/book3s_xive_native.c | 78 +++++++++++++++++++++++++++
->>  4 files changed, 109 insertions(+)
+>>  arch/powerpc/include/uapi/asm/kvm.h           |  5 +
+>>  arch/powerpc/kvm/book3s_xive_native.c         | 98 +++++++++++++++++++
+>>  .../powerpc/kvm/book3s_xive_native_template.c | 27 +++++
+>>  3 files changed, 130 insertions(+)
+>>  create mode 100644 arch/powerpc/kvm/book3s_xive_native_template.c
 >>
->> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
->> index 4cc897039485..49c488af168c 100644
->> --- a/arch/powerpc/include/asm/kvm_ppc.h
->> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->> @@ -270,6 +270,7 @@ union kvmppc_one_reg {
->>  		u64	addr;
->>  		u64	length;
->>  	}	vpaval;
->> +	u64	xive_timaval[4];
->>  };
->>  
->>  struct kvmppc_ops {
->> @@ -603,6 +604,8 @@ extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
->>  extern void kvmppc_xive_native_init_module(void);
->>  extern void kvmppc_xive_native_exit_module(void);
->>  extern int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cmd);
->> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val);
->> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val);
->>  
->>  #else
->>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
->> @@ -637,6 +640,8 @@ static inline void kvmppc_xive_native_init_module(void) { }
->>  static inline void kvmppc_xive_native_exit_module(void) { }
->>  static inline int kvmppc_xive_native_hcall(struct kvm_vcpu *vcpu, u32 cmd)
->>  	{ return 0; }
->> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val) { return 0; }
->> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val) { return -ENOENT; }
-> 
-> IIRC "VP" is the old name for "TCTX".  Since we're using tctx in the
-> rest of the XIVE code, can we use it here as well.
-
-OK. The state we are getting or setting is indeed related to the thread 
-interrupt  context registers. 
-
-The name VP is related to an identifier to some interrupt context under 
-OPAL (NVT in HW to be precise).  
-
-C.
-
-> 
->>  #endif /* CONFIG_KVM_XIVE */
->>  
 >> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
->> index 95302558ce10..3c958c39a782 100644
+>> index 8b78b12aa118..6fc9660c5aec 100644
 >> --- a/arch/powerpc/include/uapi/asm/kvm.h
 >> +++ b/arch/powerpc/include/uapi/asm/kvm.h
->> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
->>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
->>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
->>  
->> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
+>> @@ -680,5 +680,10 @@ struct kvm_ppc_cpu_char {
+>>  #define   KVM_DEV_XIVE_GET_ESB_FD	1
+>>  #define   KVM_DEV_XIVE_GET_TIMA_FD	2
+>>  #define   KVM_DEV_XIVE_VC_BASE		3
+>> +#define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
 >> +
->>  /* Device control API: PPC-specific devices */
->>  #define KVM_DEV_MPIC_GRP_MISC		1
->>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
->> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
->> index de7eed191107..5ad658077a35 100644
->> --- a/arch/powerpc/kvm/book3s.c
->> +++ b/arch/powerpc/kvm/book3s.c
->> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
->>  				*val = get_reg_val(id, kvmppc_xics_get_icp(vcpu));
->>  			break;
->>  #endif /* CONFIG_KVM_XICS */
->> +#ifdef CONFIG_KVM_XIVE
->> +		case KVM_REG_PPC_VP_STATE:
->> +			if (!vcpu->arch.xive_vcpu) {
->> +				r = -ENXIO;
->> +				break;
->> +			}
->> +			if (xive_enabled())
->> +				r = kvmppc_xive_native_get_vp(vcpu, val);
->> +			else
->> +				r = -ENXIO;
->> +			break;
->> +#endif /* CONFIG_KVM_XIVE */
->>  		case KVM_REG_PPC_FSCR:
->>  			*val = get_reg_val(id, vcpu->arch.fscr);
->>  			break;
->> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
->>  				r = kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
->>  			break;
->>  #endif /* CONFIG_KVM_XICS */
->> +#ifdef CONFIG_KVM_XIVE
->> +		case KVM_REG_PPC_VP_STATE:
->> +			if (!vcpu->arch.xive_vcpu) {
->> +				r = -ENXIO;
->> +				break;
->> +			}
->> +			if (xive_enabled())
->> +				r = kvmppc_xive_native_set_vp(vcpu, val);
->> +			else
->> +				r = -ENXIO;
->> +			break;
->> +#endif /* CONFIG_KVM_XIVE */
->>  		case KVM_REG_PPC_FSCR:
->>  			vcpu->arch.fscr = set_reg_val(id, *val);
->>  			break;
+>> +/* Layout of 64-bit XIVE source attribute values */
+>> +#define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+>> +#define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
+>>  
+>>  #endif /* __LINUX_KVM_POWERPC_H */
 >> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
->> index f4eb71eafc57..1aefb366df0b 100644
+>> index 29a62914de55..2518640d4a58 100644
 >> --- a/arch/powerpc/kvm/book3s_xive_native.c
 >> +++ b/arch/powerpc/kvm/book3s_xive_native.c
->> @@ -424,6 +424,84 @@ static int xive_native_validate_queue_size(u32 qsize)
->>  	}
+>> @@ -31,6 +31,24 @@
+>>  
+>>  #include "book3s_xive.h"
+>>  
+>> +/*
+>> + * We still instantiate them here because we use some of the
+>> + * generated utility functions as well in this file.
+> 
+> And this comment is downright cryptic.
+
+I have removed this part now that the hcalls are not done under
+real mode anymore.
+ 
+> 
+>> + */
+>> +#define XIVE_RUNTIME_CHECKS
+>> +#define X_PFX xive_vm_
+>> +#define X_STATIC static
+>> +#define X_STAT_PFX stat_vm_
+>> +#define __x_tima		xive_tima
+>> +#define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_mmio))
+>> +#define __x_trig_page(xd)	((void __iomem *)((xd)->trig_mmio))
+>> +#define __x_writeb	__raw_writeb
+>> +#define __x_readw	__raw_readw
+>> +#define __x_readq	__raw_readq
+>> +#define __x_writeq	__raw_writeq
+>> +
+>> +#include "book3s_xive_native_template.c"
+>> +
+>>  static void xive_native_cleanup_queue(struct kvm_vcpu *vcpu, int prio)
+>>  {
+>>  	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> @@ -305,6 +323,78 @@ static int kvmppc_xive_native_get_tima_fd(struct kvmppc_xive *xive, u64 addr)
+>>  	return put_user(ret, ubufp);
 >>  }
 >>  
->> +#define TM_IPB_SHIFT 40
->> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
->> +
->> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>> +static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long irq,
+>> +					 u64 addr)
 >> +{
->> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
->> +	u64 opal_state;
->> +	int rc;
+>> +	struct kvmppc_xive_src_block *sb;
+>> +	struct kvmppc_xive_irq_state *state;
+>> +	u64 __user *ubufp = (u64 __user *) addr;
+>> +	u64 val;
+>> +	u16 idx;
 >> +
->> +	if (!kvmppc_xive_enabled(vcpu))
->> +		return -EPERM;
+>> +	pr_devel("%s irq=0x%lx\n", __func__, irq);
 >> +
->> +	if (!xc)
+>> +	if (irq < KVMPPC_XIVE_FIRST_IRQ || irq >= KVMPPC_XIVE_NR_IRQS)
 >> +		return -ENOENT;
 >> +
->> +	/* Thread context registers. We only care about IPB and CPPR */
->> +	val->xive_timaval[0] = vcpu->arch.xive_saved_state.w01;
+>> +	sb = kvmppc_xive_find_source(xive, irq, &idx);
+>> +	if (!sb) {
+>> +		pr_debug("No source, creating source block...\n");
+> 
+> Doesn't this need to be protected by some lock?
+> 
+>> +		sb = kvmppc_xive_create_src_block(xive, irq);
+>> +		if (!sb) {
+>> +			pr_err("Failed to create block...\n");
+>> +			return -ENOMEM;
+>> +		}
+>> +	}
+>> +	state = &sb->irq_state[idx];
+>> +
+>> +	if (get_user(val, ubufp)) {
+>> +		pr_err("fault getting user info !\n");
+>> +		return -EFAULT;
+>> +	}
 >> +
 >> +	/*
->> +	 * Return the OS CAM line to print out the VP identifier in
->> +	 * the QEMU monitor. This is not restored.
+>> +	 * If the source doesn't already have an IPI, allocate
+>> +	 * one and get the corresponding data
 >> +	 */
->> +	val->xive_timaval[1] = vcpu->arch.xive_cam_word;
+>> +	if (!state->ipi_number) {
+>> +		state->ipi_number = xive_native_alloc_irq();
+>> +		if (state->ipi_number == 0) {
+>> +			pr_err("Failed to allocate IRQ !\n");
+>> +			return -ENOMEM;
+>> +		}
+> 
+> Am I right in thinking this is the point at which a specific guest irq
+> number gets bound to a specific host irq number?
+
+yes. the XIVE IRQ state caches this information and 'state' should be 
+protected before being assigned, indeed ... The XICS-over-XIVE device
+also has the same race issue.
+
+It's not showing because where initializing the KVM device sequentially
+from QEMU and only once.
+
+Thanks,
+
+C. 
+ 
+
+> 
+>> +		xive_native_populate_irq_data(state->ipi_number,
+>> +					      &state->ipi_data);
+>> +		pr_debug("%s allocated hw_irq=0x%x for irq=0x%lx\n", __func__,
+>> +			 state->ipi_number, irq);
+>> +	}
 >> +
->> +	/* Get the VP state from OPAL */
->> +	rc = xive_native_get_vp_state(xc->vp_id, &opal_state);
->> +	if (rc)
->> +		return rc;
+>> +	arch_spin_lock(&sb->lock);
 >> +
->> +	/*
->> +	 * Capture the backup of IPB register in the NVT structure and
->> +	 * merge it in our KVM VP state.
->> +	 *
->> +	 * TODO: P10 support.
->> +	 */
->> +	val->xive_timaval[0] |= cpu_to_be64(opal_state & TM_IPB_MASK);
+>> +	/* Restore LSI state */
+>> +	if (val & KVM_XIVE_LEVEL_SENSITIVE) {
+>> +		state->lsi = true;
+>> +		if (val & KVM_XIVE_LEVEL_ASSERTED)
+>> +			state->asserted = true;
+>> +		pr_devel("  LSI ! Asserted=%d\n", state->asserted);
+>> +	}
 >> +
->> +	pr_devel("%s NSR=%02x CPPR=%02x IBP=%02x PIPR=%02x w01=%016llx w2=%08x opal=%016llx\n",
->> +		 __func__,
->> +		 vcpu->arch.xive_saved_state.nsr,
->> +		 vcpu->arch.xive_saved_state.cppr,
->> +		 vcpu->arch.xive_saved_state.ipb,
->> +		 vcpu->arch.xive_saved_state.pipr,
->> +		 vcpu->arch.xive_saved_state.w01,
->> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
+>> +	/* Mask IRQ to start with */
+>> +	state->act_server = 0;
+>> +	state->act_priority = MASKED;
+>> +	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
+>> +	xive_native_configure_irq(state->ipi_number, 0, MASKED, 0);
+>> +
+>> +	/* Increment the number of valid sources and mark this one valid */
+>> +	if (!state->valid)
+>> +		xive->src_count++;
+>> +	state->valid = true;
+>> +
+>> +	arch_spin_unlock(&sb->lock);
 >> +
 >> +	return 0;
 >> +}
 >> +
->> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
->> +{
->> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
->> +	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
->> +
->> +	pr_devel("%s w01=%016llx vp=%016llx\n", __func__,
->> +		 val->xive_timaval[0], val->xive_timaval[1]);
->> +
->> +	if (!kvmppc_xive_enabled(vcpu))
->> +		return -EPERM;
->> +
->> +	if (!xc || !xive)
->> +		return -ENOENT;
->> +
->> +	/* We can't update the state of a "pushed" VCPU	 */
->> +	if (WARN_ON(vcpu->arch.xive_pushed))
->> +		return -EIO;
->> +
->> +	/* Thread context registers. only restore IPB and CPPR ? */
->> +	vcpu->arch.xive_saved_state.w01 = val->xive_timaval[0];
->> +
->> +	/*
->> +	 * There is no need to restore the XIVE internal state (IPB
->> +	 * stored in the NVT) as the IPB register was merged in KVM VP
->> +	 * state.
->> +	 */
->> +	return 0;
->> +}
->> +
->>  static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long irq,
->>  					 u64 addr)
+>>  static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
+>>  				       struct kvm_device_attr *attr)
 >>  {
+>> @@ -317,6 +407,9 @@ static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
+>>  			return kvmppc_xive_native_set_vc_base(xive, attr->addr);
+>>  		}
+>>  		break;
+>> +	case KVM_DEV_XIVE_GRP_SOURCES:
+>> +		return kvmppc_xive_native_set_source(xive, attr->attr,
+>> +						     attr->addr);
+>>  	}
+>>  	return -ENXIO;
+>>  }
+>> @@ -353,6 +446,11 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
+>>  			return 0;
+>>  		}
+>>  		break;
+>> +	case KVM_DEV_XIVE_GRP_SOURCES:
+>> +		if (attr->attr >= KVMPPC_XIVE_FIRST_IRQ &&
+>> +		    attr->attr < KVMPPC_XIVE_NR_IRQS)
+>> +			return 0;
+>> +		break;
+>>  	}
+>>  	return -ENXIO;
+>>  }
+>> diff --git a/arch/powerpc/kvm/book3s_xive_native_template.c b/arch/powerpc/kvm/book3s_xive_native_template.c
+>> new file mode 100644
+>> index 000000000000..e7260da4a596
+>> --- /dev/null
+>> +++ b/arch/powerpc/kvm/book3s_xive_native_template.c
+>> @@ -0,0 +1,27 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2017-2019, IBM Corporation.
+>> + */
+>> +
+>> +/* File to be included by other .c files */
+>> +
+>> +#define XGLUE(a, b) a##b
+>> +#define GLUE(a, b) XGLUE(a, b)
+>> +
+>> +/*
+>> + * TODO: introduce a common template file with the XIVE native layer
+>> + * and the XICS-on-XIVE glue for the utility functions
+>> + */
+>> +static u8 GLUE(X_PFX, esb_load)(struct xive_irq_data *xd, u32 offset)
+>> +{
+>> +	u64 val;
+>> +
+>> +	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
+>> +		offset |= offset << 4;
+>> +
+>> +	val = __x_readq(__x_eoi_page(xd) + offset);
+>> +#ifdef __LITTLE_ENDIAN__
+>> +	val >>= 64-8;
+>> +#endif
+>> +	return (u8)val;
+>> +}
 > 
 
