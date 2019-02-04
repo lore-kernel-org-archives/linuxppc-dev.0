@@ -2,93 +2,88 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F010C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 03:16:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37B2EC282D7
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:20:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6FA642082C
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 03:15:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FA642082C
+	by mail.kernel.org (Postfix) with ESMTPS id 5C8C72083B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 04:20:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C8C72083B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tCXD4Yq9zDqHS
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 14:15:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tDyd6VJjzDqGT
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 15:20:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=chandan@linux.ibm.com; receiver=<UNKNOWN>)
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sandipan@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tCV81GLQzDqFS
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 14:14:07 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1439B16141499
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 22:14:06 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qe9d2encf-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tDwt6cRCzDqDC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 15:18:51 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x14494qK129391
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 23:18:48 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qe99g8cmh-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 22:14:05 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 23:18:48 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.ibm.com>;
- Mon, 4 Feb 2019 03:14:03 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
+ Mon, 4 Feb 2019 04:18:47 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 4 Feb 2019 03:14:00 -0000
+ Mon, 4 Feb 2019 04:18:45 -0000
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com
  (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x143DxYV55247052
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x144Ihjs8323422
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 4 Feb 2019 03:14:00 GMT
+ Mon, 4 Feb 2019 04:18:43 GMT
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E1AC7A405B;
- Mon,  4 Feb 2019 03:13:59 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 2B81AA405F;
+ Mon,  4 Feb 2019 04:18:43 +0000 (GMT)
 Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D18E4A4054;
- Mon,  4 Feb 2019 03:13:58 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.199.49.99])
+ by IMSVA (Postfix) with ESMTP id E3E98A405B;
+ Mon,  4 Feb 2019 04:18:41 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.195.22.129])
  by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon,  4 Feb 2019 03:13:58 +0000 (GMT)
-From: Chandan Rajendra <chandan@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: BUG: memcmp(): Accessing invalid memory location
-Date: Mon, 04 Feb 2019 08:44:34 +0530
-Organization: IBM
-In-Reply-To: <87imy3oj67.fsf@concordia.ellerman.id.au>
-References: <17042269.pB4heZKTbK@localhost.localdomain>
- <87tvhpnmpe.fsf@concordia.ellerman.id.au>
- <87imy3oj67.fsf@concordia.ellerman.id.au>
+ Mon,  4 Feb 2019 04:18:41 +0000 (GMT)
+From: Sandipan Das <sandipan@linux.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [RFC PATCH 0/5] powerpc: sstep: Emulation test infrastructure
+Date: Mon,  4 Feb 2019 09:48:34 +0530
+X-Mailer: git-send-email 2.19.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19020403-0020-0000-0000-000003112365
+x-cbid: 19020404-4275-0000-0000-0000030A16C6
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020403-0021-0000-0000-000021622C87
-Message-Id: <3007738.Qcfhteo05g@localhost.localdomain>
+x-cbparentid: 19020404-4276-0000-0000-0000381816F2
+Message-Id: <cover.1549253769.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-04_02:, , signatures=0
+ definitions=2019-02-04_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902040024
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=855 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902040033
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,146 +95,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Simon Guo <wei.guo.simon@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: naveen.n.rao@linux.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ ravi.bangoria@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Friday, February 1, 2019 4:43:52 PM IST Michael Ellerman wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > Adding Simon who wrote the code.
-> >
-> > Chandan Rajendra <chandan@linux.ibm.com> writes:
-> >> When executing fstests' generic/026 test, I hit the following call trace,
-> >>
-> >> [  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
-> >> [  417.062172] Faulting instruction address: 0xc000000000092240
-> >> [  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
-> >> [  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
-> >> [  417.062366] Modules linked in:
-> >> [  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
-> >> [  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
-> >> [  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
-> >> [  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
-> >> [  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
-> >>                GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
-> >>                GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
-> >>                GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
-> >>                GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
-> >>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >>                GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
-> >>                GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
-> >>                GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
-> >> [  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
-> >> [  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
-> >> [  417.063709] Call Trace:
-> >> [  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
-> >> [  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
-> >> [  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
-> >> [  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
-> >> [  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
-> >> [  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
-> >> [  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
-> >> [  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
-> >> [  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
-> >> [  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
-> >> [  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
-> >> [  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
-> >> [  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
-> >> [  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
-> >> [  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
-> >> [  417.064930] Instruction dump:
-> >> [  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
-> >> [  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
-> >> [  417.065150] ---[ end trace 0d060411b5e3741b ]---
-> >>
-> >>
-> >> Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
-> >> argument of memcmp() was set to 12. s1 argument of memcmp() had the value
-> >> 0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
-> >>
-> >> The following is the code path within memcmp() that gets executed for the
-> >> above mentioned values,
-> >>
-> >> - Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
-> >> - We then prefetch the contents of r3 & r4 and branch to
-> >>   .Ldiffoffset_8bytes_make_align_start.
-> >> - Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
-> >>   "SGI" part of the string. r3's value is then aligned. r4's value is
-> >>   incremented by 3. For comparing the remaining 9 bytes, we jump to
-> >>   .Lcmp_lt32bytes.
-> >> - Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
-> >>   .Lcmp_rest_lt8bytes.
-> >> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
-> >>   value and hence ends up accessing the "next" double word. The "next" double
-> >>   word happens to occur after the last page mapped into the kernel's address
-> >>   space and hence this leads to the previously listed oops.
-> >
-> > Thanks for the analysis.
-> >
-> > This is just a bug, we can't read past the end of the source or dest.
-> 
-> How about this, works for me.
-> 
-> cheers
-> 
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index 844d8e774492..2a302158cb53 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
->  	beq	.Lzero
->  
->  .Lcmp_rest_lt8bytes:
-> -	/* Here we have only less than 8 bytes to compare with. at least s1
-> -	 * Address is aligned with 8 bytes.
-> -	 * The next double words are load and shift right with appropriate
-> -	 * bits.
-> +	/*
-> +	 * Here we have less than 8 bytes left to compare with. We mustn't read
-> +	 * past the end of either source or dest.
->  	 */
-> -	subfic  r6,r5,8
-> -	slwi	r6,r6,3
-> -	LD	rA,0,r3
-> -	LD	rB,0,r4
-> -	srd	rA,rA,r6
-> -	srd	rB,rB,r6
-> -	cmpld	cr0,rA,rB
-> +
-> +	/* If we have less than 4 bytes, just do byte at a time */
-> +	cmpwi   cr1, r5, 4
-> +	blt	cr1, .Lshort
-> +
-> +	/* Compare 4 bytes */
-> +	LW	rA,0,r3
-> +	LW	rB,0,r4
-> +	cmpd	cr0,rA,rB
->  	bne	cr0,.LcmpAB_lightweight
-> -	b	.Lzero
-> +
-> +	/* If we had exactly 4 bytes left, we're done now */
-> +	beq	cr1, .Lzero
-> +
-> +	/* Otherwise do what ever's left a byte at a time */
-> +	subi	r5, r5, 4
-> +	addi	r3, r3, 4
-> +	addi	r4, r4, 4
-> +	b	.Lshort
->  
->  .Lnon_zero:
->  	mr	r3,rC
-> 
-> 
+This aims to add a test infrastructure for the in-kernel instruction
+emulation code. This is currently limited to testing only the basic
+integer operations and supports verification of the GPRs, LR, XER and
+CR.
 
-With the above patch, Linux kernel does not end up in oops. Hence,
+There can be multiple test cases for each instruction. Each test case
+has to be provided with the initial register state (in the form of a
+struct pt_regs) and the 32-bit instruction to test.
 
-Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
+Apart from verifying the end result, problems with the behaviour of
+certain instructions for things like setting certain bits in CR or
+XER (which can also be processor dependent) can be identified.
+For example, the newly introduced CA32 bit in XER, exclusive to P9
+CPUs as of now, was not being set when expected for some of the
+arithmetic and shift instructions. With this infrastructure, it will
+be easier to identify such problems and rectify them. The test cases
+for the addc[.] instruction demonstrate this for different scenarios
+where the CA and CA32 bits of XER should be set.
+
+Sandipan Das (5):
+  powerpc: Add bitmasks for D-form instruction fields
+  powerpc: Add bitmask for Rc instruction field
+  powerpc: sstep: Add instruction emulation selftests
+  powerpc: sstep: Add selftests for add[.] instruction
+  powerpc: sstep: Add selftests for addc[.] instruction
+
+ arch/powerpc/Kconfig.debug            |   5 +
+ arch/powerpc/include/asm/ppc-opcode.h |   5 +
+ arch/powerpc/lib/Makefile             |   1 +
+ arch/powerpc/lib/exec_test_instr.S    | 150 +++++++
+ arch/powerpc/lib/sstep_tests.c        | 564 ++++++++++++++++++++++++++
+ 5 files changed, 725 insertions(+)
+ create mode 100644 arch/powerpc/lib/exec_test_instr.S
+ create mode 100644 arch/powerpc/lib/sstep_tests.c
 
 -- 
-chandan
-
-
+2.19.2
 
