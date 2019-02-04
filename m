@@ -2,56 +2,83 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 462E7C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 12:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FF89C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 14:12:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 62A802082F
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 12:41:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 62A802082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 469582082E
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 14:12:19 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="gvkSu0ci"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 469582082E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tS4R1bPLzDqCt
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 23:41:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tV5X3L5HzDqHh
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 01:12:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="gvkSu0ci"; 
+ dkim-atps=neutral
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tS1r6CFDzDqGC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 23:38:55 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 839C668D93; Mon,  4 Feb 2019 13:38:52 +0100 (CET)
-Date: Mon, 4 Feb 2019 13:38:52 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Olof Johansson <olof@lixom.net>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20190204123852.GA10428@lst.de>
-References: <6f2d6bc9-696b-2cb1-8a4e-df3da2bd6c0a@xenosoft.de>
- <20190129161411.GA14022@lst.de> <20190129163415.GA14529@lst.de>
- <F4AB3D9A-97EC-45D7-9061-A750D0934C3C@xenosoft.de>
- <96762cd2-65fc-bce5-8c5b-c03bc3baf0a1@xenosoft.de>
- <20190201080456.GA15456@lst.de>
- <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
- <594beaae-9681-03de-9f42-191cc7d2f8e3@xenosoft.de>
- <20190204075616.GA5408@lst.de>
- <ffbf56ae-c259-47b5-9deb-7fb21fead254@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tV3N1B7czDqG8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 01:10:23 +1100 (AEDT)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x14E8xdT027994;
+ Mon, 4 Feb 2019 14:10:15 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
+ bh=JPYLcAP4VkvLUtdSN+MQh/nNpzonf9onT0VM4MS/sso=;
+ b=gvkSu0cihfJrrxz5V76J8jOoPChR8dGQ/3YvKyZlO0IdkCqP27xjO+RYLo5/udQUlpUR
+ USN3IS32Vh/Ta1In8vOhhaOhnkOnAPJIRFDUBB68hFCerPw7sVQULSv4ZjsWw7+i+fkm
+ DiHLQE4UXnpCUsrpMJX8jkXlwuNZjbBAuM9LsZ7d+IkERt5bantqoEFV1tgLCj3X+Z5i
+ MlO1xmdAWBR64SnhaYlmDO4GUIJ13jOARvWUn4AlNa1HU2wpMary0zq2z6xyw90wYHrm
+ AhUV2HjnOh4p/dS8IkKu+HRnoqDkXyVOgrdL7YSIiM4D1nh27y97MUVmKMQcHGSnvGFv qA== 
+Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
+ by aserp2130.oracle.com with ESMTP id 2qd97enagy-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 04 Feb 2019 14:10:14 +0000
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x14EAEoA025591
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 4 Feb 2019 14:10:14 GMT
+Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x14EACST021055;
+ Mon, 4 Feb 2019 14:10:12 GMT
+Received: from kadam (/197.157.0.20) by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Mon, 04 Feb 2019 14:10:12 +0000
+Date: Mon, 4 Feb 2019 17:10:05 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Roy Pledge <Roy.Pledge@nxp.com>, Ioana Ciornei <ioana.ciornei@nxp.com>
+Subject: [PATCH] soc: fsl: dpio: Use after free in dpaa2_dpio_remove()
+Message-ID: <20190204141005.GA915@kadam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ffbf56ae-c259-47b5-9deb-7fb21fead254@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Mailer: git-send-email haha only kidding
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9156
+ signatures=668682
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=2 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=959 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1902040113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,42 +90,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, Li Yang <leoyang.li@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 04, 2019 at 01:13:54PM +0100, Christian Zigotzky wrote:
->>> Results: The X1000 and X5000 boot but unfortunately the P.A. Semi Ethernet
->>> doesn't work.
->> Are there any interesting messages in the boot log?  Can you send me
->> the dmesg?
->>
-> Here you are: http://www.xenosoft.de/dmesg_X1000_with_DMA_updates.txt
+The dpaa2_io_down(priv->io) call frees "priv->io" so I've shifted the
+code around a little bit to avoid the use after free.
 
-It seems like the pasemi driver fails to set a DMA mask, but seems
-otherwise 64-bit DMA capable.  The old PPC code didn't verify the
-dma mask during the map operations, but the x86-derived generic
-code does.
+Fixes: 991e873223e9 ("soc: fsl: dpio: use a cpumask to identify which cpus are unused")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/soc/fsl/dpio/dpio-driver.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This patch just sets the DMA mask.
-
-Olof: does this look ok?  The DMA device seems to not directly
-bound by the net driver, but not really used by anything else in tree
-either..
-
-diff --git a/drivers/net/ethernet/pasemi/pasemi_mac.c b/drivers/net/ethernet/pasemi/pasemi_mac.c
-index d21041554507..d98bd447c536 100644
---- a/drivers/net/ethernet/pasemi/pasemi_mac.c
-+++ b/drivers/net/ethernet/pasemi/pasemi_mac.c
-@@ -1716,6 +1716,7 @@ pasemi_mac_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		err = -ENODEV;
- 		goto out;
- 	}
-+	dma_set_mask(&mac->dma_pdev->dev, DMA_BIT_MASK(32));
+diff --git a/drivers/soc/fsl/dpio/dpio-driver.c b/drivers/soc/fsl/dpio/dpio-driver.c
+index 2d4af32a0dec..a28799b62d53 100644
+--- a/drivers/soc/fsl/dpio/dpio-driver.c
++++ b/drivers/soc/fsl/dpio/dpio-driver.c
+@@ -220,12 +220,12 @@ static int dpaa2_dpio_remove(struct fsl_mc_device *dpio_dev)
  
- 	mac->iob_pdev = pci_get_device(PCI_VENDOR_ID_PASEMI, 0xa001, NULL);
- 	if (!mac->iob_pdev) {
+ 	dev = &dpio_dev->dev;
+ 	priv = dev_get_drvdata(dev);
++	cpu = dpaa2_io_get_cpu(priv->io);
+ 
+ 	dpaa2_io_down(priv->io);
+ 
+ 	dpio_teardown_irqs(dpio_dev);
+ 
+-	cpu = dpaa2_io_get_cpu(priv->io);
+ 	cpumask_set_cpu(cpu, cpus_unused_mask);
+ 
+ 	err = dpio_open(dpio_dev->mc_io, 0, dpio_dev->obj_desc.id,
+-- 
+2.17.1
+
