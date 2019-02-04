@@ -2,61 +2,93 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F094C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 02:00:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F010C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 03:16:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 844B22083B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 02:00:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="m1uKrs0c"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 844B22083B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 6FA642082C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 03:15:59 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6FA642082C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43t9rf2JtFzDqGY
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 13:00:02 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tCXD4Yq9zDqHS
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 14:15:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=chandan@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43t9pk5ZWqzDqFw
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 12:58:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="m1uKrs0c"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 43t9pk38Wzz9sDX; Mon,  4 Feb 2019 12:58:22 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1549245502;
- bh=LgaMeKQsK1oVKYKuQCGqnxs1Pbzeq9qd91RWx2d6U+Y=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=m1uKrs0cRPBNTLIMlcjWLkJuvcpulT84jk6BvGqf7NPUognPy2Svn2PSgyuErl3P8
- 6FfGekTmYwE4P+C39jE9IyezxgkjAnHdcjUDJyjg2ycB3eCXhNwyRPEazEiU0o0Nr7
- th/Qqc0LjeFAF7jwaS8RoTejHMluP5uwgRI0feM0=
-Date: Mon, 4 Feb 2019 11:50:56 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 03/19] KVM: PPC: Book3S HV: check the IRQ controller type
-Message-ID: <20190204005056.GC2593@umbus.fritz.box>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-4-clg@kaod.org>
- <20190122045642.GB15124@blackberry>
- <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tCV81GLQzDqFS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 14:14:07 +1100 (AEDT)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1439B16141499
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Feb 2019 22:14:06 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qe9d2encf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Feb 2019 22:14:05 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.ibm.com>;
+ Mon, 4 Feb 2019 03:14:03 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 4 Feb 2019 03:14:00 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x143DxYV55247052
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 4 Feb 2019 03:14:00 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id E1AC7A405B;
+ Mon,  4 Feb 2019 03:13:59 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D18E4A4054;
+ Mon,  4 Feb 2019 03:13:58 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.199.49.99])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  4 Feb 2019 03:13:58 +0000 (GMT)
+From: Chandan Rajendra <chandan@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: BUG: memcmp(): Accessing invalid memory location
+Date: Mon, 04 Feb 2019 08:44:34 +0530
+Organization: IBM
+In-Reply-To: <87imy3oj67.fsf@concordia.ellerman.id.au>
+References: <17042269.pB4heZKTbK@localhost.localdomain>
+ <87tvhpnmpe.fsf@concordia.ellerman.id.au>
+ <87imy3oj67.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="L6iaP+gRLNZHKoI4"
-Content-Disposition: inline
-In-Reply-To: <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+X-TM-AS-GCONF: 00
+x-cbid: 19020403-0020-0000-0000-000003112365
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19020403-0021-0000-0000-000021622C87
+Message-Id: <3007738.Qcfhteo05g@localhost.localdomain>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-04_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902040024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,118 +100,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Simon Guo <wei.guo.simon@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---L6iaP+gRLNZHKoI4
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Jan 23, 2019 at 05:24:13PM +0100, C=E9dric Le Goater wrote:
-> On 1/22/19 5:56 AM, Paul Mackerras wrote:
-> > On Mon, Jan 07, 2019 at 07:43:15PM +0100, C=E9dric Le Goater wrote:
-> >> We will have different KVM devices for interrupts, one for the
-> >> XICS-over-XIVE mode and one for the XIVE native exploitation
-> >> mode. Let's add some checks to make sure we are not mixing the
-> >> interfaces in KVM.
+On Friday, February 1, 2019 4:43:52 PM IST Michael Ellerman wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> 
+> > Adding Simon who wrote the code.
+> >
+> > Chandan Rajendra <chandan@linux.ibm.com> writes:
+> >> When executing fstests' generic/026 test, I hit the following call trace,
 > >>
-> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> >> ---
-> >>  arch/powerpc/kvm/book3s_xive.c | 6 ++++++
-> >>  1 file changed, 6 insertions(+)
+> >> [  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
+> >> [  417.062172] Faulting instruction address: 0xc000000000092240
+> >> [  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
+> >> [  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
+> >> [  417.062366] Modules linked in:
+> >> [  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
+> >> [  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
+> >> [  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
+> >> [  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
+> >> [  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
+> >>                GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
+> >>                GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
+> >>                GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
+> >>                GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
+> >>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> >>                GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
+> >>                GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
+> >>                GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
+> >> [  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
+> >> [  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
+> >> [  417.063709] Call Trace:
+> >> [  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
+> >> [  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
+> >> [  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
+> >> [  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
+> >> [  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
+> >> [  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
+> >> [  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
+> >> [  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
+> >> [  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
+> >> [  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
+> >> [  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
+> >> [  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
+> >> [  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
+> >> [  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
+> >> [  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
+> >> [  417.064930] Instruction dump:
+> >> [  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
+> >> [  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
+> >> [  417.065150] ---[ end trace 0d060411b5e3741b ]---
 > >>
-> >> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_=
-xive.c
-> >> index f78d002f0fe0..8a4fa45f07f8 100644
-> >> --- a/arch/powerpc/kvm/book3s_xive.c
-> >> +++ b/arch/powerpc/kvm/book3s_xive.c
-> >> @@ -819,6 +819,9 @@ u64 kvmppc_xive_get_icp(struct kvm_vcpu *vcpu)
-> >>  {
-> >>  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> >> =20
-> >> +	if (!kvmppc_xics_enabled(vcpu))
-> >> +		return -EPERM;
-> >> +
-> >>  	if (!xc)
-> >>  		return 0;
-> >> =20
-> >> @@ -835,6 +838,9 @@ int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64=
- icpval)
-> >>  	u8 cppr, mfrr;
-> >>  	u32 xisr;
-> >> =20
-> >> +	if (!kvmppc_xics_enabled(vcpu))
-> >> +		return -EPERM;
-> >> +
-> >>  	if (!xc || !xive)
-> >>  		return -ENOENT;
-> >=20
-> > I can't see how these new checks could ever trigger in the code as it
-> > stands.  Is there a way at present?=20
->=20
-> It would require some custom QEMU doing silly things : create the XICS=20
-> KVM device, and then call kvm_get_one_reg(KVM_REG_PPC_ICP_STATE) or=20
-> kvm_set_one_reg(icp->cs, KVM_REG_PPC_ICP_STATE) without connecting the
-> vCPU to its presenter.=20
->=20
-> Today, you get a ENOENT.
+> >>
+> >> Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
+> >> argument of memcmp() was set to 12. s1 argument of memcmp() had the value
+> >> 0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
+> >>
+> >> The following is the code path within memcmp() that gets executed for the
+> >> above mentioned values,
+> >>
+> >> - Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
+> >> - We then prefetch the contents of r3 & r4 and branch to
+> >>   .Ldiffoffset_8bytes_make_align_start.
+> >> - Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
+> >>   "SGI" part of the string. r3's value is then aligned. r4's value is
+> >>   incremented by 3. For comparing the remaining 9 bytes, we jump to
+> >>   .Lcmp_lt32bytes.
+> >> - Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
+> >>   .Lcmp_rest_lt8bytes.
+> >> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
+> >>   value and hence ends up accessing the "next" double word. The "next" double
+> >>   word happens to occur after the last page mapped into the kernel's address
+> >>   space and hence this leads to the previously listed oops.
+> >
+> > Thanks for the analysis.
+> >
+> > This is just a bug, we can't read past the end of the source or dest.
+> 
+> How about this, works for me.
+> 
+> cheers
+> 
+> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> index 844d8e774492..2a302158cb53 100644
+> --- a/arch/powerpc/lib/memcmp_64.S
+> +++ b/arch/powerpc/lib/memcmp_64.S
+> @@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
+>  	beq	.Lzero
+>  
+>  .Lcmp_rest_lt8bytes:
+> -	/* Here we have only less than 8 bytes to compare with. at least s1
+> -	 * Address is aligned with 8 bytes.
+> -	 * The next double words are load and shift right with appropriate
+> -	 * bits.
+> +	/*
+> +	 * Here we have less than 8 bytes left to compare with. We mustn't read
+> +	 * past the end of either source or dest.
+>  	 */
+> -	subfic  r6,r5,8
+> -	slwi	r6,r6,3
+> -	LD	rA,0,r3
+> -	LD	rB,0,r4
+> -	srd	rA,rA,r6
+> -	srd	rB,rB,r6
+> -	cmpld	cr0,rA,rB
+> +
+> +	/* If we have less than 4 bytes, just do byte at a time */
+> +	cmpwi   cr1, r5, 4
+> +	blt	cr1, .Lshort
+> +
+> +	/* Compare 4 bytes */
+> +	LW	rA,0,r3
+> +	LW	rB,0,r4
+> +	cmpd	cr0,rA,rB
+>  	bne	cr0,.LcmpAB_lightweight
+> -	b	.Lzero
+> +
+> +	/* If we had exactly 4 bytes left, we're done now */
+> +	beq	cr1, .Lzero
+> +
+> +	/* Otherwise do what ever's left a byte at a time */
+> +	subi	r5, r5, 4
+> +	addi	r3, r3, 4
+> +	addi	r4, r4, 4
+> +	b	.Lshort
+>  
+>  .Lnon_zero:
+>  	mr	r3,rC
+> 
+> 
 
-TBH, ENOENT seems fine to me.
+With the above patch, Linux kernel does not end up in oops. Hence,
 
-> > Do following patches ever add a path where the new checks could trigger=
-,=20
-> > or is this just an excess of caution?=20
->=20
-> With the following patches, QEMU could to do something even more silly,
-> which is to mix the interrupt mode interfaces : create a KVM XICS device =
-  =20
-> and call KVM CPU ioctls of the KVM XIVE device, or the opposite.
+Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
 
-AFAICT, like above, that won't really differ from calling the XIVE CPU
-ioctl()s when no irqchip is set up at all, and should be covered by
-just a !xive check.
+-- 
+chandan
 
->=20
-> > (Your patch description should ideally have answered these questions > =
-for me.)
->=20
-> Yes. I also think that I introduced this patch to early in the series.
-> It make more sense when the XICS and the XIVE KVM devices are available. =
-=20
->=20
-> Thanks,
->=20
-> C.
->=20
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
 
---L6iaP+gRLNZHKoI4
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxXjG0ACgkQbDjKyiDZ
-s5JdxBAAu9jVdvgAubApIe5fFdxZuqfau4R5OGIq98z/iEc685DvPAoCEoxknfBM
-ozvOHCc4ylNfWOpDbongndCut1JhhWTDd7H8hZ5NcDkPyGzh5eQzoDPGZhJcMsoi
-fIXe5P7kb6HtWzY2iILlnE7Ya3HAxGICh3AUm4tuQ+U+BYh3XxewEVuSIjFY7mkr
-6b4wpYRPOpE2p2uSBek0p/PDOZR4DVLn+GW2T+4guo+/TblxrXEKG/LJryY9Awf8
-n3KBf8zS/X2jSptQ5J8U4XQY7BuJp13Y0Ktc879UICoX6X+a5yxO2DtID/DQS4Md
-MqLTpd53Cd1IO0I+4ypvtp8kq9RU48EfZkQVzJ/+GHHpzyli9IdX81kDcEv1/Om4
-y+/CIYQ4PigP68OmGutaHMisJLiLu3OtdIKARa4KUv/7thRHdHlLKz8IEa4UynES
-jbY2zoRGVgNetGI0eSZTk97VSnDSWgIampC9auKiDOmRp/fslEp4vPRYNIGzMD9Y
-5ohwaRNdorfcV2owGu3WtY9TUyytKq48C0QWK6d2B4+oSL4XegD34b2xU/m0RV8/
-roB5eFQVBy+3v+aj15UXnRcsehY+281id+SyUdvAhEKyIoagHoO6Qx36QgO4RyPO
-h9OttCU5nYzZDT6jc6eND0FLNcBzSeixQN9FLUAnR3TWW5PKccg=
-=Nc4Y
------END PGP SIGNATURE-----
-
---L6iaP+gRLNZHKoI4--
