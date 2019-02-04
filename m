@@ -2,68 +2,62 @@ Return-Path: <SRS0=Z4Cu=QL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA843C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 09:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CFC3C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 10:18:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05BA62147A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 09:52:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="Ma5rR66u"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05BA62147A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8FF692081B
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 10:18:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FF692081B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tNKH2BYPzDqH6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 20:52:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43tNvT4cS6zDqHP
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Feb 2019 21:18:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.73.133; helo=10.mo177.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="Ma5rR66u"; dkim-atps=neutral
-X-Greylist: delayed 2584 seconds by postgrey-1.36 at bilbo;
- Mon, 04 Feb 2019 20:50:30 AEDT
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 10.mo177.mail-out.ovh.net (10.mo177.mail-out.ovh.net
+ [46.105.73.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tNHV2RwXzDqDB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 20:50:30 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=3Dq+g6lR0JWV+AnlTj24dxl1gWoTDQj222HSXcEWh0w=; b=Ma5rR66u/2Sf
- QtW4I8S4yNJLqRBfUBGTG76/QFi0CHORPq4fxqK60x9CCOXz0VFgUpooN7AhAWpFc+dNrwHIELsi2
- 2W+Uf/gu+KqDV4gtF29MsT8dJ4uRNwJ5n6+V9B4hyUKsf79Qz1w3+jKzRNI/0tHKFmw1oWcL8WdCW
- 7JTg4=;
-Received: from 53.97-247-81.adsl-dyn.isp.belgacom.be ([81.247.97.53]
- helo=finisterre.ee.mobilebroadband)
- by heliosphere.sirena.org.uk with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gqaDe-0000gd-Dn; Mon, 04 Feb 2019 09:07:10 +0000
-Received: by finisterre.ee.mobilebroadband (Postfix, from userid 1000)
- id C90F1440082; Mon,  4 Feb 2019 09:07:08 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: wen yang <yellowriver2010@hotmail.com>
-Subject: Applied "ASoC: fsl-asoc-card: fix object reference leaks in
- fsl_asoc_card_probe" to the asoc tree
-In-Reply-To: 
-X-Patchwork-Hint: ignore
-Message-Id: <20190204090708.C90F1440082@finisterre.ee.mobilebroadband>
-Date: Mon,  4 Feb 2019 09:07:08 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43tNsY41J4zDqDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 21:16:30 +1100 (AEDT)
+Received: from player732.ha.ovh.net (unknown [10.109.160.46])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id C179DE345E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Feb 2019 11:16:26 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player732.ha.ovh.net (Postfix) with ESMTPSA id 8808C236EC90;
+ Mon,  4 Feb 2019 10:16:18 +0000 (UTC)
+Subject: Re: [PATCH 03/19] KVM: PPC: Book3S HV: check the IRQ controller type
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-4-clg@kaod.org> <20190122045642.GB15124@blackberry>
+ <29eab965-3e98-714c-7686-f6caa59f3672@kaod.org>
+ <20190204005056.GC2593@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <a13a03f5-520e-b87f-51bc-f5376fe9fa50@kaod.org>
+Date: Mon, 4 Feb 2019 11:16:16 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190204005056.GC2593@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 1223290251204791175
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeggddugecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,81 +69,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org, Timur Tabi <timur@kernel.org>,
- Xiubo Li <Xiubo.Lee@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, Wen Yang <yellowriver2010@hotmil.com>,
- Fabio Estevam <festevam@gmail.com>, linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
+On 2/4/19 1:50 AM, David Gibson wrote:
+> On Wed, Jan 23, 2019 at 05:24:13PM +0100, Cédric Le Goater wrote:
+>> On 1/22/19 5:56 AM, Paul Mackerras wrote:
+>>> On Mon, Jan 07, 2019 at 07:43:15PM +0100, Cédric Le Goater wrote:
+>>>> We will have different KVM devices for interrupts, one for the
+>>>> XICS-over-XIVE mode and one for the XIVE native exploitation
+>>>> mode. Let's add some checks to make sure we are not mixing the
+>>>> interfaces in KVM.
+>>>>
+>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>> ---
+>>>>  arch/powerpc/kvm/book3s_xive.c | 6 ++++++
+>>>>  1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>>>> index f78d002f0fe0..8a4fa45f07f8 100644
+>>>> --- a/arch/powerpc/kvm/book3s_xive.c
+>>>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>>>> @@ -819,6 +819,9 @@ u64 kvmppc_xive_get_icp(struct kvm_vcpu *vcpu)
+>>>>  {
+>>>>  	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>>>>  
+>>>> +	if (!kvmppc_xics_enabled(vcpu))
+>>>> +		return -EPERM;
+>>>> +
+>>>>  	if (!xc)
+>>>>  		return 0;
+>>>>  
+>>>> @@ -835,6 +838,9 @@ int kvmppc_xive_set_icp(struct kvm_vcpu *vcpu, u64 icpval)
+>>>>  	u8 cppr, mfrr;
+>>>>  	u32 xisr;
+>>>>  
+>>>> +	if (!kvmppc_xics_enabled(vcpu))
+>>>> +		return -EPERM;
+>>>> +
+>>>>  	if (!xc || !xive)
+>>>>  		return -ENOENT;
+>>>
+>>> I can't see how these new checks could ever trigger in the code as it
+>>> stands.  Is there a way at present? 
+>>
+>> It would require some custom QEMU doing silly things : create the XICS 
+>> KVM device, and then call kvm_get_one_reg(KVM_REG_PPC_ICP_STATE) or 
+>> kvm_set_one_reg(icp->cs, KVM_REG_PPC_ICP_STATE) without connecting the
+>> vCPU to its presenter. 
+>>
+>> Today, you get a ENOENT.
+> 
+> TBH, ENOENT seems fine to me.
+> 
+>>> Do following patches ever add a path where the new checks could trigger, 
+>>> or is this just an excess of caution? 
+>>
+>> With the following patches, QEMU could to do something even more silly,
+>> which is to mix the interrupt mode interfaces : create a KVM XICS device    
+>> and call KVM CPU ioctls of the KVM XIVE device, or the opposite.
+> 
+> AFAICT, like above, that won't really differ from calling the XIVE CPU
+> ioctl()s when no irqchip is set up at all, and should be covered by
+> just a !xive check.
 
-   ASoC: fsl-asoc-card: fix object reference leaks in fsl_asoc_card_probe
-
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+we can drop that patch. It does not bring much.
 
 Thanks,
-Mark
 
-From 11907e9d3533648615db08140e3045b829d2c141 Mon Sep 17 00:00:00 2001
-From: wen yang <yellowriver2010@hotmail.com>
-Date: Sat, 2 Feb 2019 14:53:16 +0000
-Subject: [PATCH] ASoC: fsl-asoc-card: fix object reference leaks in
- fsl_asoc_card_probe
+C.
 
-The of_find_device_by_node() takes a reference to the underlying device
-structure, we should release that reference.
-
-Signed-off-by: Wen Yang <yellowriver2010@hotmil.com>
-Cc: Timur Tabi <timur@kernel.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: alsa-devel@alsa-project.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl-asoc-card.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
-index 81f2fe2c6d23..60f87a0d99f4 100644
---- a/sound/soc/fsl/fsl-asoc-card.c
-+++ b/sound/soc/fsl/fsl-asoc-card.c
-@@ -689,6 +689,7 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
- asrc_fail:
- 	of_node_put(asrc_np);
- 	of_node_put(codec_np);
-+	put_device(&cpu_pdev->dev);
- fail:
- 	of_node_put(cpu_np);
- 
--- 
-2.20.1
+> 
+>>
+>>> (Your patch description should ideally have answered these questions > for me.)
+>>
+>> Yes. I also think that I introduced this patch to early in the series.
+>> It make more sense when the XICS and the XIVE KVM devices are available.  
+>>
+>> Thanks,
+>>
+>> C.
+>>
+> 
 
