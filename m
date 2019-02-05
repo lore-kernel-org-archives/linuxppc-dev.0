@@ -2,74 +2,61 @@ Return-Path: <SRS0=EZew=QM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A5CCC282DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 14:00:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF3FEC282CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 15:09:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55033207E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 14:00:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 484DC217D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 15:09:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="xba7Y1yc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55033207E0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="siss61x5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 484DC217D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43v5n52gs4zDqMT
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:00:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43v7KN21ySzDqGn
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 02:09:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.90; helo=conssluserg-05.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=acme@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="xba7Y1yc"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="siss61x5"; 
  dkim-atps=neutral
-Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
- [210.131.2.90])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43v5lG2M8kzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 00:58:33 +1100 (AEDT)
-Received: from mail-vs1-f53.google.com (mail-vs1-f53.google.com
- [209.85.217.53]) (authenticated)
- by conssluserg-05.nifty.com with ESMTP id x15Dw6sC001746
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Feb 2019 22:58:06 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com x15Dw6sC001746
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1549375087;
- bh=AjgLywK2VDzp55WjU1GyDmSsVxNAlS6VPujdzvOAsSA=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=xba7Y1yctyll8CcukF068TbGO0R6QVw2Ns0XsUzLqllI/Ff66we/WmrMwFru3qizn
- 40LYpWnDT8vBxS7tBXLqrlG7Y43I3BnWvbRsV2J518Y3ee36psbinjPqSjg0VhcXNh
- uLzOGu4EdAW9zlMOCqf7ZLRKYVneKGONOZJ54Gnk4QpyI9PNH2w7E33/I4oGwtJjb1
- GgsUYGmRI/JPbFpWtBVDlVRMS9a2fCDADdIpxKUdtGyXms+MclqTTKttBikrd0GU1O
- foy8x1BauA+yhWnBOMaxCL5QiIWlB0O4YAJO8uTKSfdE/mJKAZAPPE5eDXGcFKNt1B
- pGunQBPwVKH5w==
-X-Nifty-SrcIP: [209.85.217.53]
-Received: by mail-vs1-f53.google.com with SMTP id n10so2140816vso.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Feb 2019 05:58:06 -0800 (PST)
-X-Gm-Message-State: AHQUAuamodIt10252SK8Fm/3CHF+Q1cWZQGof+fiGr/ehUxb2COQxUi2
- i96uUfYZvn6t1/SX5t4HGjQM1CIq0mGcDVp+3N0=
-X-Google-Smtp-Source: AHgI3IaYfiLYqqe+Yn3YjcLynHJboGBRJAfVFK/uyA45qYNAw3yFl9dWRhlpKi7APD4ZBQNgkEbRR2VZNgPjlw7MIaE=
-X-Received: by 2002:a67:485:: with SMTP id 127mr2176110vse.54.1549375085786;
- Tue, 05 Feb 2019 05:58:05 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43v7Gk0yqPzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 02:07:26 +1100 (AEDT)
+Received: from quaco.ghostprotocols.net (unknown [190.15.121.82])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 14BD5217F9;
+ Tue,  5 Feb 2019 15:07:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1549379244;
+ bh=DPMuQxYJDsG5DwcJk3yjYAcLSO9wgVW0tnnR494xP/I=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=siss61x5ylqj0cqWKxbd/0H5dQ/LX5x9RBUseb5fmXfKS5BOYAhgihj1bu9izBRP2
+ rcf9Z/dVCMu5H1dDwC2taXiBfoAX3Tj9TUjgVi2JyUmDS+V9TstG13mz3UPUORU5Cs
+ H0797fe57v8e9ivkCHquobDA7/ITMhx4hygzn/7E=
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 2/8] perf mem/c2c: Fix perf_mem_events to support powerpc
+Date: Tue,  5 Feb 2019 12:07:02 -0300
+Message-Id: <20190205150708.9012-3-acme@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190205150708.9012-1-acme@kernel.org>
+References: <20190205150708.9012-1-acme@kernel.org>
 MIME-Version: 1.0
-References: <1548903199-32695-1-git-send-email-yamada.masahiro@socionext.com>
- <87k1iemsvz.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87k1iemsvz.fsf@concordia.ellerman.id.au>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Tue, 5 Feb 2019 22:57:29 +0900
-X-Gmail-Original-Message-ID: <CAK7LNARGpmcSVt9qsKDsPNb3KZkPc+QP9Aeh6Q-=o+J-K88Sgg@mail.gmail.com>
-Message-ID: <CAK7LNARGpmcSVt9qsKDsPNb3KZkPc+QP9Aeh6Q-=o+J-K88Sgg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/prom_init: add __init markers to all functions
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,200 +68,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Don Zickus <dzickus@redhat.com>,
+ Ravi Bangoria <ravi.bangoria@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, Joe Mario <jmario@redhat.com>,
+ Clark Williams <williams@redhat.com>, Dick Fowles <fowles@inreach.com>,
+ linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
+ Jiri Olsa <jolsa@kernel.org>, Namhyung Kim <namhyung@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 5, 2019 at 7:33 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
->
-> > It is fragile to rely on the compiler's optimization to avoid the
-> > section mismatch. Some functions may not be necessarily inlined
-> > when the compiler's inlining heuristic changes.
-> >
-> > Add __init markers consistently.
-> >
-> > As for prom_getprop() and prom_getproplen(), they are marked as
-> > 'inline', so inlining is guaranteed because PowerPC never enables
-> > CONFIG_OPTIMIZE_INLINING. However, it would be better to leave the
-> > inlining decision to the compiler. I replaced 'inline' with __init.
->
-> I'm going to drop that part because it breaks the build in some
-> configurations (as reported by the build robot).
+From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
 
+PowerPC hardware does not have a builtin latency filter (--ldlat) for
+the "mem-load" event and perf_mem_events by default includes
+"/ldlat=30/" which is causing a failure on PowerPC. Refactor the code to
+support "perf mem/c2c" on PowerPC.
 
-If you drop this part, my motivation for this patch is lost.
+This patch depends on kernel side changes done my Madhavan:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-December/182596.html
 
-My motivation is to allow all architectures to enable
-CONFIG_OPTIMIZE_INLINING.
-(Currently, only x86 can enable it, but I see nothing arch-dependent
-in this feature.)
+Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Acked-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Dick Fowles <fowles@inreach.com>
+Cc: Don Zickus <dzickus@redhat.com>
+Cc: Joe Mario <jmario@redhat.com>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/20190129132412.771-1-ravi.bangoria@linux.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/Documentation/perf-c2c.txt     | 16 ++++++++++++----
+ tools/perf/Documentation/perf-mem.txt     |  2 +-
+ tools/perf/arch/powerpc/util/Build        |  1 +
+ tools/perf/arch/powerpc/util/mem-events.c | 11 +++++++++++
+ tools/perf/util/mem-events.c              |  2 +-
+ 5 files changed, 26 insertions(+), 6 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/util/mem-events.c
 
-
-When I tested it in 0-day bot, it reported
-section mismatches from prom_getprop() and prom_getproplen().
-
-So, I want to fix the section mismatches without
-relying on 'inline'.
-
-
-My suggestion is this:
-
-static int __init __maybe_unused prom_getproplen(phandle node,
-                                                 const char *pname)
-{
-        return call_prom("getproplen", 2, 1, node, ADDR(pname));
-}
-
-
-It is true you can use the side-effect of 'inline'
-to hide the unused function warnings, but I prefer
-as less inline markers as possible in *.c files.
-
-
-
-
-
-> > diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> > index f33ff41..85b0719 100644
-> > --- a/arch/powerpc/kernel/prom_init.c
-> > +++ b/arch/powerpc/kernel/prom_init.c
-> > @@ -501,19 +501,19 @@ static int __init prom_next_node(phandle *nodep)
-> >       }
-> >  }
-> >
-> > -static inline int prom_getprop(phandle node, const char *pname,
-> > +static int __init prom_getprop(phandle node, const char *pname,
-> >                              void *value, size_t valuelen)
-> >  {
-> >       return call_prom("getprop", 4, 1, node, ADDR(pname),
-> >                        (u32)(unsigned long) value, (u32) valuelen);
-> >  }
-> >
-> > -static inline int prom_getproplen(phandle node, const char *pname)
-> > +static int __init prom_getproplen(phandle node, const char *pname)
-> >  {
-> >       return call_prom("getproplen", 2, 1, node, ADDR(pname));
-> >  }
-> >
-> > -static void add_string(char **str, const char *q)
-> > +static void __init add_string(char **str, const char *q)
-> >  {
-> >       char *p = *str;
-> >
-> > @@ -523,7 +523,7 @@ static void add_string(char **str, const char *q)
-> >       *str = p;
-> >  }
-> >
-> > -static char *tohex(unsigned int x)
-> > +static char __init *tohex(unsigned int x)
-> >  {
-> >       static const char digits[] __initconst = "0123456789abcdef";
-> >       static char result[9] __prombss;
-> > @@ -570,7 +570,7 @@ static int __init prom_setprop(phandle node, const char *nodename,
-> >  #define islower(c)   ('a' <= (c) && (c) <= 'z')
-> >  #define toupper(c)   (islower(c) ? ((c) - 'a' + 'A') : (c))
-> >
-> > -static unsigned long prom_strtoul(const char *cp, const char **endp)
-> > +static unsigned long __init prom_strtoul(const char *cp, const char **endp)
-> >  {
-> >       unsigned long result = 0, base = 10, value;
-> >
-> > @@ -595,7 +595,7 @@ static unsigned long prom_strtoul(const char *cp, const char **endp)
-> >       return result;
-> >  }
-> >
-> > -static unsigned long prom_memparse(const char *ptr, const char **retptr)
-> > +static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
-> >  {
-> >       unsigned long ret = prom_strtoul(ptr, retptr);
-> >       int shift = 0;
-> > @@ -2924,7 +2924,7 @@ static void __init fixup_device_tree_pasemi(void)
-> >       prom_setprop(iob, name, "device_type", "isa", sizeof("isa"));
-> >  }
-> >  #else        /* !CONFIG_PPC_PASEMI_NEMO */
-> > -static inline void fixup_device_tree_pasemi(void) { }
-> > +static inline void __init fixup_device_tree_pasemi(void) { }
->
-> I don't think we need __init for an empty static inline.
-
-I prefer 'static __init' to 'static inline',
-but I can drop this if you are uncomfortable with it.
-
-My work will not be blocked by this.
-
-
-
-> >  #endif
-> >
-> >  static void __init fixup_device_tree(void)
-> > @@ -2986,15 +2986,15 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
-> >
-> >  #ifdef CONFIG_PPC64
-> >  #ifdef CONFIG_RELOCATABLE
-> > -static void reloc_toc(void)
-> > +static void __init reloc_toc(void)
-> >  {
-> >  }
-> >
-> > -static void unreloc_toc(void)
-> > +static void __init unreloc_toc(void)
-> >  {
-> >  }
->
-> Those should be empty static inlines, I'll fix them up.
-
-As I said above, I believe 'static inline' is mostly useful in headers,
-but this is up to you.
-
-
-BTW, I have v2 in hand already.
-Do you need it if it is convenient for you?
-
-I added __init to enter_prom() as well,
-but you may not be comfortable with
-replacing inline with __init.
-
-
-
-
-
-> >  #else
-> > -static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
-> > +static void __init __reloc_toc(unsigned long offset, unsigned long nr_entries)
-> >  {
-> >       unsigned long i;
-> >       unsigned long *toc_entry;
-> > @@ -3008,7 +3008,7 @@ static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
-> >       }
-> >  }
-> >
-> > -static void reloc_toc(void)
-> > +static void __init reloc_toc(void)
-> >  {
-> >       unsigned long offset = reloc_offset();
-> >       unsigned long nr_entries =
-> > @@ -3019,7 +3019,7 @@ static void reloc_toc(void)
-> >       mb();
-> >  }
-> >
-> > -static void unreloc_toc(void)
-> > +static void __init unreloc_toc(void)
-> >  {
-> >       unsigned long offset = reloc_offset();
-> >       unsigned long nr_entries =
->
->
-> cheers
-
-
-
+diff --git a/tools/perf/Documentation/perf-c2c.txt b/tools/perf/Documentation/perf-c2c.txt
+index 095aebdc5bb7..e6150f21267d 100644
+--- a/tools/perf/Documentation/perf-c2c.txt
++++ b/tools/perf/Documentation/perf-c2c.txt
+@@ -19,8 +19,11 @@ C2C stands for Cache To Cache.
+ The perf c2c tool provides means for Shared Data C2C/HITM analysis. It allows
+ you to track down the cacheline contentions.
+ 
+-The tool is based on x86's load latency and precise store facility events
+-provided by Intel CPUs. These events provide:
++On x86, the tool is based on load latency and precise store facility events
++provided by Intel CPUs. On PowerPC, the tool uses random instruction sampling
++with thresholding feature.
++
++These events provide:
+   - memory address of the access
+   - type of the access (load and store details)
+   - latency (in cycles) of the load access
+@@ -46,7 +49,7 @@ RECORD OPTIONS
+ 
+ -l::
+ --ldlat::
+-	Configure mem-loads latency.
++	Configure mem-loads latency. (x86 only)
+ 
+ -k::
+ --all-kernel::
+@@ -119,11 +122,16 @@ Following perf record options are configured by default:
+   -W,-d,--phys-data,--sample-cpu
+ 
+ Unless specified otherwise with '-e' option, following events are monitored by
+-default:
++default on x86:
+ 
+   cpu/mem-loads,ldlat=30/P
+   cpu/mem-stores/P
+ 
++and following on PowerPC:
++
++  cpu/mem-loads/
++  cpu/mem-stores/
++
+ User can pass any 'perf record' option behind '--' mark, like (to enable
+ callchains and system wide monitoring):
+ 
+diff --git a/tools/perf/Documentation/perf-mem.txt b/tools/perf/Documentation/perf-mem.txt
+index f8d2167cf3e7..199ea0f0a6c0 100644
+--- a/tools/perf/Documentation/perf-mem.txt
++++ b/tools/perf/Documentation/perf-mem.txt
+@@ -82,7 +82,7 @@ RECORD OPTIONS
+ 	Be more verbose (show counter open errors, etc)
+ 
+ --ldlat <n>::
+-	Specify desired latency for loads event.
++	Specify desired latency for loads event. (x86 only)
+ 
+ In addition, for report all perf report options are valid, and for record
+ all perf record options.
+diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+index 2e6595310420..ba98bd006488 100644
+--- a/tools/perf/arch/powerpc/util/Build
++++ b/tools/perf/arch/powerpc/util/Build
+@@ -2,6 +2,7 @@ libperf-y += header.o
+ libperf-y += sym-handling.o
+ libperf-y += kvm-stat.o
+ libperf-y += perf_regs.o
++libperf-y += mem-events.o
+ 
+ libperf-$(CONFIG_DWARF) += dwarf-regs.o
+ libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+diff --git a/tools/perf/arch/powerpc/util/mem-events.c b/tools/perf/arch/powerpc/util/mem-events.c
+new file mode 100644
+index 000000000000..d08311f04e95
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/mem-events.c
+@@ -0,0 +1,11 @@
++// SPDX-License-Identifier: GPL-2.0
++#include "mem-events.h"
++
++/* PowerPC does not support 'ldlat' parameter. */
++char *perf_mem_events__name(int i)
++{
++	if (i == PERF_MEM_EVENTS__LOAD)
++		return (char *) "cpu/mem-loads/";
++
++	return (char *) "cpu/mem-stores/";
++}
+diff --git a/tools/perf/util/mem-events.c b/tools/perf/util/mem-events.c
+index 93f74d8d3cdd..42c3e5a229d2 100644
+--- a/tools/perf/util/mem-events.c
++++ b/tools/perf/util/mem-events.c
+@@ -28,7 +28,7 @@ struct perf_mem_event perf_mem_events[PERF_MEM_EVENTS__MAX] = {
+ static char mem_loads_name[100];
+ static bool mem_loads_name__init;
+ 
+-char *perf_mem_events__name(int i)
++char * __weak perf_mem_events__name(int i)
+ {
+ 	if (i == PERF_MEM_EVENTS__LOAD) {
+ 		if (!mem_loads_name__init) {
 -- 
-Best Regards
-Masahiro Yamada
+2.20.1
+
