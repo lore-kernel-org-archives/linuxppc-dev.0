@@ -2,51 +2,63 @@ Return-Path: <SRS0=EZew=QM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6CE9C282CC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 12:26:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C03DBC282CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 13:07:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17B6420821
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 12:26:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17B6420821
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id ED4CC20844
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 13:07:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ED4CC20844
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43v3hq6bzRzDqPj
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 23:26:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=benh@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43v4c46nlyzDqNC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 00:07:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.76.150; helo=10.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 10.mo178.mail-out.ovh.net (10.mo178.mail-out.ovh.net
+ [46.105.76.150])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43v3Y26qV9zDqN0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 23:19:34 +1100 (AEDT)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x15CJEAM024082;
- Tue, 5 Feb 2019 06:19:15 -0600
-Message-ID: <e898ac7b25e7303628499ec2fda6a0251bf8863b.camel@kernel.crashing.org>
-Subject: Re: [RFC/WIP] powerpc: Fix 32-bit handling of MSR_EE on exceptions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 05 Feb 2019 23:19:14 +1100
-In-Reply-To: <5a97253c-0ec4-d61f-fa9e-ea5da8590f32@c-s.fr>
-References: <fe3a79e078c644d9c1379ef5f8c431d787b6d0c8.camel@kernel.crashing.org>
- <cbce315b-82f9-c748-92e4-97bb819c9098@c-s.fr>
- <ab9139902a64f8d0b187f7db0f8a16a5b85791ac.camel@kernel.crashing.org>
- <5a97253c-0ec4-d61f-fa9e-ea5da8590f32@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.4 (3.30.4-1.fc29) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43v4Wd4CGgzDqM9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 00:03:24 +1100 (AEDT)
+Received: from player756.ha.ovh.net (unknown [10.109.146.211])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 9550F4E84A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 14:03:20 +0100 (CET)
+Received: from kaod.org (deibp9eh1--blueice1n0.emea.ibm.com [195.212.29.162])
+ (Authenticated sender: clg@kaod.org)
+ by player756.ha.ovh.net (Postfix) with ESMTPSA id A3B5E2684DE3;
+ Tue,  5 Feb 2019 13:03:13 +0000 (UTC)
+Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
+ source configuration
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-16-clg@kaod.org> <20190204052148.GH1927@umbus.fritz.box>
+ <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
+ <20190205053233.GG22661@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
+Date: Tue, 5 Feb 2019 14:03:11 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190205053233.GG22661@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 9914674582449392519
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeeigdeggecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,55 +70,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Diana Craciun <diana.craciun@nxp.com>, Scott Wood <oss@buserror.net>,
- Nick Piggin <npiggin@au1.ibm.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, 2019-02-05 at 10:45 +0100, Christophe Leroy wrote:
-> > > I tested it on the 8xx with the below changes in addition. No issue seen
-> > > so far.
-> > 
-> > Thanks !
-> > 
-> > I'll merge that in.
+On 2/5/19 6:32 AM, David Gibson wrote:
+> On Mon, Feb 04, 2019 at 05:07:28PM +0100, Cédric Le Goater wrote:
+>> On 2/4/19 6:21 AM, David Gibson wrote:
+>>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, Cédric Le Goater wrote:
+>>>> Theses are use to capure the XIVE EAS table of the KVM device, the
+>>>> configuration of the source targets.
+>>>>
+>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>> ---
+>>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
+>>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 +++++++++++++++++++++++++++
+>>>>  2 files changed, 98 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>>>> index 1a8740629acf..faf024f39858 100644
+>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
+>>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
+>>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
+>>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
+>>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
+>>>>  
+>>>>  /* Layout of 64-bit XIVE source attribute values */
+>>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+>>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
+>>>>  
+>>>> +/* Layout of 64-bit eas attribute values */
+>>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
+>>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
+>>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
+>>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
+>>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
+>>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
+>>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
+>>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
+>>>> +
+>>>>  #endif /* __LINUX_KVM_POWERPC_H */
+>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>>>> index f2de1bcf3b35..0468b605baa7 100644
+>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvmppc_xive *xive, long irq, u64 addr)
+>>>>  	return 0;
+>>>>  }
+>>>>  
+>>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, long irq,
+>>>> +				      u64 addr)
+>>>
+>>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" EAS
+>>> values, but rather essentially the "source config" in the terminology
+>>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
+>>> the EAS, but since it's the PAPR architected state that we need to
+>>> preserve across migration, I'd prefer to stick as close as we can to
+>>> the PAPR terminology.
+>>
+>> But we don't have an equivalent name in the PAPR specs for the tuple 
+>> (prio, server). We could use the generic 'target' name may be ? even 
+>> if this is usually referring to a CPU number.
 > 
-> I'm currently working on a refactorisation and simplification of
-> exception and syscall entry on ppc32.
+> Um.. what?  That's about terminology for one of the fields in this
+> thing, not about the name for the thing itself.
 > 
-> I plan to take your patch in my serie as it helps quite a bit. I hope 
-> you don't mind. I expect to come out with a series this week.
-
-Ah ok, you want to take over the series then ? We still need to convert
-all the other CPU variants... to be honest I've been distracted, and
-taking some time off. I'll be leaving IBM by the end of next week, so I
-don't really see myself finishing this work properly.
-
-> > The main obscure area is that business with the irqsoff tracer and thus
-> > the need to create stack frames around calls to trace_hardirqs_* ... we
-> > do it in some places and not others, but I've not managed to make it
-> > crash either. I need to get to the bottom of that, and possibly provide
-> > proper macro helpers like ppc64 has to do it.
+>> Or, IVE (Interrupt Vector Entry) ? which makes some sense. 
+>> This is was the former name in HW. I think we recycle it for KVM.
 > 
-> I can't see anything special around this in ppc32 code. As far as I 
-> understand, a stack frame is put in place when there is a need to
-> save and restore some volatile registers. At the places where nothing 
-> needs to be saved, nothing is done. I think that's the normal way for 
-> any function call, isn't it ?
+> That's a terrible idea, which will make a confusing situation even
+> more confusing.
 
-Not exactly. There's an issue with one of the tracers using
-__bultin_return_address(1) which can crash afaik if we don't have
-"enough" stack frames on the stack, so there are cases where we need to
-create one explicitly around the tracing calls bcs there's only one on
-the actual stack.
+Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very 
+similar to the hcalls anyhow.
 
-I don't know the full details, I was planning on doing a bunch of tests
-in sim to figure out exactly what happens and what needs to be done
-(and whether our existing code is correct or not), but didn't get to it
-so far.
-
-Cheers,
-Ben.
- 
+C.
 
