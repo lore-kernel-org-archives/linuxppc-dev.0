@@ -2,45 +2,55 @@ Return-Path: <SRS0=EZew=QM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20D36C282CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 11:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63742C282CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 11:26:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 42AFB2070B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 11:22:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 42AFB2070B
+	by mail.kernel.org (Postfix) with ESMTPS id DAF06207E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 11:26:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAF06207E0
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43v2Hb1fw7zDqDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 22:22:51 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43v2Mr75RjzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 22:26:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43v2F371z5zDqCq
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 22:20:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43v2Jq3Rl4zDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 22:23:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43v2F35Mfjz9sMp;
- Tue,  5 Feb 2019 22:20:39 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43v2Jn1pDRz9sMp;
+ Tue,  5 Feb 2019 22:23:52 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [RFC PATCH] powerpc: fix get_arch_dma_ops() for NTB devices
-In-Reply-To: <20190204081752.GA5730@lst.de>
-References: <20190128133203.mon4a3nkrzijn43g@alfbook-pro.local>
- <87imy6pain.fsf@concordia.ellerman.id.au> <20190204081752.GA5730@lst.de>
-Date: Tue, 05 Feb 2019 22:20:32 +1100
-Message-ID: <87h8dimqgv.fsf@concordia.ellerman.id.au>
+To: Alexandre Ghiti <aghiti@upmem.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Mike Kravetz <mike.kravetz@oracle.com>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] hugetlb: allow to free gigantic pages regardless of the
+ configuration
+In-Reply-To: <20190117183953.5990-1-aghiti@upmem.com>
+References: <20190117183953.5990-1-aghiti@upmem.com>
+Date: Tue, 05 Feb 2019 22:23:51 +1100
+Message-ID: <87ef8mmqbc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -54,71 +64,340 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Alexander Fomichev <fomichev.ru@gmail.com>, linux@yadro.com
+Cc: hch@infradead.org, linux-riscv@lists.infradead.org,
+ Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christoph Hellwig <hch@lst.de> writes:
-> On Wed, Jan 30, 2019 at 11:58:40PM +1100, Michael Ellerman wrote:
->> Alexander Fomichev <fomichev.ru@gmail.com> writes:
->> 
->> > get_dma_ops() falls into arch-dependant get_arch_dma_ops(), which
->> > historically returns NULL on PowerPC. Therefore dma_set_mask() fails.
->> > This affects Switchtec (and probably other) NTB devices, that they fail
->> > to initialize.
->> 
->> What's an NTB device?
->> 
->> drivers/ntb I assume?
->> 
->> So it's a PCI device of some sort, but presumably the device you're
->> calling dma_set_mask() on is an NTB device not a PCI device?
->> 
->> But then it works if you tell it to use the PCI DMA ops?
->> 
->> At the very least the code should be checking for the NTB bus type and
->> only returning the PCI ops in that specific case, not for all devices.
+Alexandre Ghiti <aghiti@upmem.com> writes:
+
+> From: Alexandre Ghiti <alex@ghiti.fr>
 >
-> Can you provide the context?  E.g. the patch and the rest of the commit
-> log.  This all looks rather odd to me.
+> On systems without CMA or (MEMORY_ISOLATION && COMPACTION) activated but
+> that support gigantic pages, boottime reserved gigantic pages can not be
+> freed at all. This patchs simply enables the possibility to hand back
+> those pages to memory allocator.
+>
+> This commit then renames gigantic_page_supported and
+> ARCH_HAS_GIGANTIC_PAGE to make them more accurate. Indeed, those values
+> being false does not mean that the system cannot use gigantic pages: it
+> just means that runtime allocation of gigantic pages is not supported,
+> one can still allocate boottime gigantic pages if the architecture supports
+> it.
+>
+> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+> ---
+>
+> - Compiled on all architectures
+> - Tested on riscv architecture
+>
+>  arch/arm64/Kconfig                           |  2 +-
+>  arch/arm64/include/asm/hugetlb.h             |  7 +++--
+>  arch/powerpc/include/asm/book3s/64/hugetlb.h |  4 +--
+>  arch/powerpc/platforms/Kconfig.cputype       |  2 +-
 
-Sorry, here it is.
+The powerpc parts look fine.
 
-Or on lore: https://lore.kernel.org/linuxppc-dev/20190128133203.mon4a3nkrzijn43g@alfbook-pro.local/
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-Subject: [RFC PATCH] powerpc: fix get_arch_dma_ops() for NTB devices
+cheers
 
-get_dma_ops() falls into arch-dependant get_arch_dma_ops(), which
-historically returns NULL on PowerPC. Therefore dma_set_mask() fails.
-This affects Switchtec (and probably other) NTB devices, that they fail
-to initialize.
-The proposed patch should fix the issue.
-
----
- arch/powerpc/include/asm/dma-mapping.h | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index ebf6680..cb6ac96 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -70,14 +70,11 @@ extern struct dma_map_ops dma_iommu_ops;
- #endif
- extern const struct dma_map_ops dma_nommu_ops;
-
-+extern const struct dma_map_ops *get_pci_dma_ops(void);
-+
- static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
- {
--	/* We don't handle the NULL dev case for ISA for now. We could
--	 * do it via an out of line call but it is not needed for now. The
--	 * only ISA DMA device we support is the floppy and we have a hack
--	 * in the floppy driver directly to get a device for us.
--	 */
--	return NULL;
-+	return get_pci_dma_ops();
- }
-
- /*
+>  arch/s390/Kconfig                            |  2 +-
+>  arch/s390/include/asm/hugetlb.h              |  7 +++--
+>  arch/x86/Kconfig                             |  2 +-
+>  arch/x86/include/asm/hugetlb.h               |  7 +++--
+>  fs/Kconfig                                   |  2 +-
+>  include/linux/gfp.h                          |  2 +-
+>  mm/hugetlb.c                                 | 43 +++++++++++++++-------------
+>  mm/page_alloc.c                              |  4 +--
+>  12 files changed, 48 insertions(+), 36 deletions(-)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index a4168d366127..18239cbd7fcd 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -18,7 +18,7 @@ config ARM64
+>  	select ARCH_HAS_FAST_MULTIPLIER
+>  	select ARCH_HAS_FORTIFY_SOURCE
+>  	select ARCH_HAS_GCOV_PROFILE_ALL
+> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
+>  	select ARCH_HAS_KCOV
+>  	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+>  	select ARCH_HAS_PTE_SPECIAL
+> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+> index fb6609875455..797fc77eabcd 100644
+> --- a/arch/arm64/include/asm/hugetlb.h
+> +++ b/arch/arm64/include/asm/hugetlb.h
+> @@ -65,8 +65,11 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
+>  
+>  #include <asm-generic/hugetlb.h>
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void) { return true; }
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+> +static inline bool gigantic_page_runtime_allocation_supported(void)
+> +{
+> +	return true;
+> +}
+>  #endif
+>  
+>  #endif /* __ASM_HUGETLB_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> index 5b0177733994..7711f0e2c7e5 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> @@ -32,8 +32,8 @@ static inline int hstate_get_psize(struct hstate *hstate)
+>  	}
+>  }
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void)
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+> +static inline bool gigantic_page_runtime_allocation_supported(void)
+>  {
+>  	return true;
+>  }
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 8c7464c3f27f..779e06bac697 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -319,7 +319,7 @@ config ARCH_ENABLE_SPLIT_PMD_PTLOCK
+>  config PPC_RADIX_MMU
+>  	bool "Radix MMU Support"
+>  	depends on PPC_BOOK3S_64
+> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
+>  	default y
+>  	help
+>  	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index ed554b09eb3f..6776eef6a9ae 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -69,7 +69,7 @@ config S390
+>  	select ARCH_HAS_ELF_RANDOMIZE
+>  	select ARCH_HAS_FORTIFY_SOURCE
+>  	select ARCH_HAS_GCOV_PROFILE_ALL
+> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
+>  	select ARCH_HAS_KCOV
+>  	select ARCH_HAS_PTE_SPECIAL
+>  	select ARCH_HAS_SET_MEMORY
+> diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
+> index 2d1afa58a4b6..57c952f5388e 100644
+> --- a/arch/s390/include/asm/hugetlb.h
+> +++ b/arch/s390/include/asm/hugetlb.h
+> @@ -116,7 +116,10 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
+>  	return pte_modify(pte, newprot);
+>  }
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void) { return true; }
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+> +static inline bool gigantic_page_runtime_allocation_supported(void)
+> +{
+> +	return true;
+> +}
+>  #endif
+>  #endif /* _ASM_S390_HUGETLB_H */
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 6185d4f33296..a88f5a4311c9 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -23,7 +23,7 @@ config X86_64
+>  	def_bool y
+>  	depends on 64BIT
+>  	# Options that are inherently 64-bit kernel only:
+> -	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+> +	select ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION if (MEMORY_ISOLATION && COMPACTION) || CMA
+>  	select ARCH_SUPPORTS_INT128
+>  	select ARCH_USE_CMPXCHG_LOCKREF
+>  	select HAVE_ARCH_SOFT_DIRTY
+> diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
+> index 7469d321f072..5a5e7119ced4 100644
+> --- a/arch/x86/include/asm/hugetlb.h
+> +++ b/arch/x86/include/asm/hugetlb.h
+> @@ -17,8 +17,11 @@ static inline void arch_clear_hugepage_flags(struct page *page)
+>  {
+>  }
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void) { return true; }
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+> +static inline bool gigantic_page_runtime_allocation_supported(void)
+> +{
+> +	return true;
+> +}
+>  #endif
+>  
+>  #endif /* _ASM_X86_HUGETLB_H */
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index ac474a61be37..4192d1fde0f0 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -207,7 +207,7 @@ config HUGETLB_PAGE
+>  config MEMFD_CREATE
+>  	def_bool TMPFS || HUGETLBFS
+>  
+> -config ARCH_HAS_GIGANTIC_PAGE
+> +config ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+>  	bool
+>  
+>  source "fs/configfs/Kconfig"
+> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> index 5f5e25fd6149..79ff86fabd42 100644
+> --- a/include/linux/gfp.h
+> +++ b/include/linux/gfp.h
+> @@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
+>  /* The below functions must be run on a range from a single zone. */
+>  extern int alloc_contig_range(unsigned long start, unsigned long end,
+>  			      unsigned migratetype, gfp_t gfp_mask);
+> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
+>  #endif
+> +extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
+>  
+>  #ifdef CONFIG_CMA
+>  /* CMA stuff */
+> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+> index 745088810965..9893ba26b3b8 100644
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -1035,7 +1035,6 @@ static int hstate_next_node_to_free(struct hstate *h, nodemask_t *nodes_allowed)
+>  		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
+>  		nr_nodes--)
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>  static void destroy_compound_gigantic_page(struct page *page,
+>  					unsigned int order)
+>  {
+> @@ -1058,6 +1057,7 @@ static void free_gigantic_page(struct page *page, unsigned int order)
+>  	free_contig_range(page_to_pfn(page), 1 << order);
+>  }
+>  
+> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION
+>  static int __alloc_gigantic_page(unsigned long start_pfn,
+>  				unsigned long nr_pages, gfp_t gfp_mask)
+>  {
+> @@ -1143,22 +1143,19 @@ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
+>  static void prep_new_huge_page(struct hstate *h, struct page *page, int nid);
+>  static void prep_compound_gigantic_page(struct page *page, unsigned int order);
+>  
+> -#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
+> -static inline bool gigantic_page_supported(void) { return false; }
+> +#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE_RUNTIME_ALLOCATION */
+> +static inline bool gigantic_page_runtime_allocation_supported(void)
+> +{
+> +	return false;
+> +}
+>  static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
+>  		int nid, nodemask_t *nodemask) { return NULL; }
+> -static inline void free_gigantic_page(struct page *page, unsigned int order) { }
+> -static inline void destroy_compound_gigantic_page(struct page *page,
+> -						unsigned int order) { }
+>  #endif
+>  
+>  static void update_and_free_page(struct hstate *h, struct page *page)
+>  {
+>  	int i;
+>  
+> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
+> -		return;
+> -
+>  	h->nr_huge_pages--;
+>  	h->nr_huge_pages_node[page_to_nid(page)]--;
+>  	for (i = 0; i < pages_per_huge_page(h); i++) {
+> @@ -2276,13 +2273,20 @@ static int adjust_pool_surplus(struct hstate *h, nodemask_t *nodes_allowed,
+>  }
+>  
+>  #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
+> -static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+> +static int set_max_huge_pages(struct hstate *h, unsigned long count,
+>  						nodemask_t *nodes_allowed)
+>  {
+>  	unsigned long min_count, ret;
+>  
+> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
+> -		return h->max_huge_pages;
+> +	if (hstate_is_gigantic(h) &&
+> +		!gigantic_page_runtime_allocation_supported()) {
+> +		spin_lock(&hugetlb_lock);
+> +		if (count > persistent_huge_pages(h)) {
+> +			spin_unlock(&hugetlb_lock);
+> +			return -EINVAL;
+> +		}
+> +		goto decrease_pool;
+> +	}
+>  
+>  	/*
+>  	 * Increase the pool size
+> @@ -2322,6 +2326,7 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+>  			goto out;
+>  	}
+>  
+> +decrease_pool:
+>  	/*
+>  	 * Decrease the pool size
+>  	 * First return free pages to the buddy allocator (being careful
+> @@ -2350,9 +2355,10 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+>  			break;
+>  	}
+>  out:
+> -	ret = persistent_huge_pages(h);
+> +	h->max_huge_pages = persistent_huge_pages(h);
+>  	spin_unlock(&hugetlb_lock);
+> -	return ret;
+> +
+> +	return 0;
+>  }
+>  
+>  #define HSTATE_ATTR_RO(_name) \
+> @@ -2404,11 +2410,6 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+>  	int err;
+>  	NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | __GFP_NORETRY);
+>  
+> -	if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
+> -		err = -EINVAL;
+> -		goto out;
+> -	}
+> -
+>  	if (nid == NUMA_NO_NODE) {
+>  		/*
+>  		 * global hstate attribute
+> @@ -2428,7 +2429,9 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+>  	} else
+>  		nodes_allowed = &node_states[N_MEMORY];
+>  
+> -	h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
+> +	err = set_max_huge_pages(h, count, nodes_allowed);
+> +	if (err)
+> +		goto out;
+>  
+>  	if (nodes_allowed != &node_states[N_MEMORY])
+>  		NODEMASK_FREE(nodes_allowed);
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index cde5dac6229a..81b931db85a1 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -8241,8 +8241,9 @@ int alloc_contig_range(unsigned long start, unsigned long end,
+>  				pfn_max_align_up(end), migratetype);
+>  	return ret;
+>  }
+> +#endif
+>  
+> -void free_contig_range(unsigned long pfn, unsigned nr_pages)
+> +void free_contig_range(unsigned long pfn, unsigned int nr_pages)
+>  {
+>  	unsigned int count = 0;
+>  
+> @@ -8254,7 +8255,6 @@ void free_contig_range(unsigned long pfn, unsigned nr_pages)
+>  	}
+>  	WARN(count != 0, "%d pages are still in use!\n", count);
+>  }
+> -#endif
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG
+>  /*
+> -- 
+> 2.16.2
