@@ -2,53 +2,85 @@ Return-Path: <SRS0=EZew=QM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C46AC282CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 07:25:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AFDFC282CB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 09:47:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B84E32083B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 07:25:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B84E32083B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id C3B392080D
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 09:47:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tdXs+VIw"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3B392080D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43tx1v4SFvzDqM3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 18:25:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43v09T2frGzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 20:47:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="tdXs+VIw"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43tx0C5X0BzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 18:24:11 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 6EB4968D93; Tue,  5 Feb 2019 08:24:07 +0100 (CET)
-Date: Tue, 5 Feb 2019 08:24:07 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190205072407.GA4311@lst.de>
-References: <87zhrj8kcp.fsf@morokweng.localdomain>
- <87womn8inf.fsf@morokweng.localdomain>
- <20190129134750-mutt-send-email-mst@kernel.org>
- <6c68f7f7-1b28-6eba-9b8b-2c32efac9701@redhat.com>
- <20190129213137-mutt-send-email-mst@kernel.org>
- <20190130074427.GA29516@lst.de> <875ztzxvw2.fsf@morokweng.localdomain>
- <20190204152416-mutt-send-email-mst@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43v07j6FLSzDqDs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Feb 2019 20:45:53 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43v07d3THZz9tyPB;
+ Tue,  5 Feb 2019 10:45:49 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=tdXs+VIw; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id dXChvhensFNw; Tue,  5 Feb 2019 10:45:49 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43v07d2MCfz9tyNw;
+ Tue,  5 Feb 2019 10:45:49 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1549359949; bh=1EWijiHvsQbTEzSvc8Y/QFmCbJlovRN/wRsU/X3VUZA=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=tdXs+VIwGKt2G4sedqJxpXS2ltXscWHoxOYxENtnzBvLhpaI01NyaSBaXJns1Amw6
+ 1q1ztfw1LB8kLq7UrdeLRr/aqp4Kh7jj/Eku5P/8F0kgSxO0iON5xZE6elHYfHkNXn
+ WISwQ2N9ydn6dq2tSFjzE+bg5X0JMElLzw2/WY+w=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 61BE18B7FE;
+ Tue,  5 Feb 2019 10:45:50 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id tN9ez-Y8zI_D; Tue,  5 Feb 2019 10:45:50 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F2AF08B7F3;
+ Tue,  5 Feb 2019 10:45:49 +0100 (CET)
+Subject: Re: [RFC/WIP] powerpc: Fix 32-bit handling of MSR_EE on exceptions
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <fe3a79e078c644d9c1379ef5f8c431d787b6d0c8.camel@kernel.crashing.org>
+ <cbce315b-82f9-c748-92e4-97bb819c9098@c-s.fr>
+ <ab9139902a64f8d0b187f7db0f8a16a5b85791ac.camel@kernel.crashing.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <5a97253c-0ec4-d61f-fa9e-ea5da8590f32@c-s.fr>
+Date: Tue, 5 Feb 2019 10:45:49 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190204152416-mutt-send-email-mst@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ab9139902a64f8d0b187f7db0f8a16a5b85791ac.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,33 +92,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Diana Craciun <diana.craciun@nxp.com>, Scott Wood <oss@buserror.net>,
+ Nick Piggin <npiggin@au1.ibm.com>, Laurentiu Tudor <laurentiu.tudor@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 04, 2019 at 04:38:21PM -0500, Michael S. Tsirkin wrote:
-> It was designed to make, when set, as many guests as we can work
-> correctly, and it seems to be successful in doing exactly that.
+
+
+Le 20/12/2018 à 23:35, Benjamin Herrenschmidt a écrit :
 > 
-> Unfortunately there could be legacy guests that do work correctly but
-> become slow. Whether trying to somehow work around that
-> can paint us into a corner where things again don't
-> work for some people is a question worth discussing.
+>>>    /*
+>>>     * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+>>> @@ -205,20 +208,46 @@ transfer_to_handler_cont:
+>>>    	mflr	r9
+>>>    	lwz	r11,0(r9)		/* virtual address of handler */
+>>>    	lwz	r9,4(r9)		/* where to go when done */
+>>> +#if defined(CONFIG_PPC_8xx) && defined(CONFIG_PERF_EVENTS)
+>>> +	mtspr	SPRN_NRI, r0
+>>> +#endif
+>>
+>> That's not part of your patch, it's already in the tree.
+> 
+> Yup rebase glitch.
+> 
+>   .../...
+> 
+>> I tested it on the 8xx with the below changes in addition. No issue seen
+>> so far.
+> 
+> Thanks !
+> 
+> I'll merge that in.
 
-The other problem is that some qemu machines just throw passthrough
-devices and virtio devices on the same virtual PCI(e) bus, and have a
-common IOMMU setup for the whole bus / root port / domain.  I think
-this is completely bogus, but unfortunately it is out in the field.
+I'm currently working on a refactorisation and simplification of
+exception and syscall entry on ppc32.
 
-Given that power is one of these examples I suspect that is what
-Thiago referes to.  But in this case the answer can't be that we
-pile on hack ontop of another, but instead introduce a new qemu
-machine that separates these clearly, and make that mandatory for
-the secure guest support.
+I plan to take your patch in my serie as it helps quite a bit. I hope 
+you don't mind. I expect to come out with a series this week.
+
+> 
+> The main obscure area is that business with the irqsoff tracer and thus
+> the need to create stack frames around calls to trace_hardirqs_* ... we
+> do it in some places and not others, but I've not managed to make it
+> crash either. I need to get to the bottom of that, and possibly provide
+> proper macro helpers like ppc64 has to do it.
+
+I can't see anything special around this in ppc32 code. As far as I 
+understand, a stack frame is put in place when there is a need to
+save and restore some volatile registers. At the places where nothing 
+needs to be saved, nothing is done. I think that's the normal way for 
+any function call, isn't it ?
+
+Christophe
