@@ -2,51 +2,53 @@ Return-Path: <SRS0=EZew=QM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71CB1C282CB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 18:04:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E08DC282D7
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 18:06:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4E93C2083B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 18:04:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E93C2083B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5C432217D6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Feb 2019 18:06:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C432217D6
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vCC972ffzDqNm
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:04:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vCFC2q9qzDqKX
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:06:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 43vC9H02FlzDqMs
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 05:02:57 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ACB40EBD;
- Tue,  5 Feb 2019 10:02:55 -0800 (PST)
-Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
- [10.1.197.40])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5015C3F557;
- Tue,  5 Feb 2019 10:02:52 -0800 (PST)
-Date: Tue, 5 Feb 2019 18:02:47 +0000
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCHv6 1/4] dt-bindings: add DT binding for the layerscape
- PCIe controller with EP mode
-Message-ID: <20190205180247.GA13891@e107981-ln.cambridge.arm.com>
-References: <20190122063328.25228-1-xiaowei.bao@nxp.com>
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vCB45x1qzDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 05:03:37 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 6E307C05093A;
+ Tue,  5 Feb 2019 18:03:35 +0000 (UTC)
+Received: from thinkpad.redhat.com (ovpn-204-71.brq.redhat.com [10.40.204.71])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id C5861166C1;
+ Tue,  5 Feb 2019 18:03:33 +0000 (UTC)
+From: Laurent Vivier <lvivier@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/mm: move a KERN_WARNING message to KERN_DEBUG
+Date: Tue,  5 Feb 2019 19:03:29 +0100
+Message-Id: <20190205180329.1452-1-lvivier@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190122063328.25228-1-xiaowei.bao@nxp.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.31]); Tue, 05 Feb 2019 18:03:35 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,66 +60,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, roy.zang@nxp.com, arnd@arndb.de,
- devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
- kstewart@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kishon@ti.com,
- minghuan.Lian@nxp.com, robh+dt@kernel.org, cyrille.pitchen@free-electrons.com,
- linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
- bhelgaas@google.com, leoyang.li@nxp.com, shawnguo@kernel.org,
- shawn.lin@rock-chips.com, mingkai.hu@nxp.com
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 22, 2019 at 02:33:25PM +0800, Xiaowei Bao wrote:
-> Add the documentation for the Device Tree binding for the layerscape PCIe
-> controller with EP mode.
-> 
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-> Reviewed-by: Minghuan Lian <minghuan.lian@nxp.com>
-> Reviewed-by: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-> Reviewed-by: Rob Herring <robh+dt@kernel.org>
-> ---
-> v2:
->  - Add the SoC specific compatibles.
-> v3:
->  - modify the commit message.
-> v4:
->  - no change.
-> v5:
->  - no change.
-> v6:
->  - no change.
-> 
->  .../devicetree/bindings/pci/layerscape-pci.txt     |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+resize_hpt_for_hotplug() reports a warning when it cannot
+increase the hash page table ("Unable to resize hash page
+table to target order") but this is not blocking and
+can make user thinks something has not worked properly.
 
-Applied the series to pci/layerscape for v5.1, thanks.
+If the operation cannot be done the real error message
+will be reported by arch_add_memory() if create_section_mapping()
+fails.
 
-Lorenzo
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+---
+ arch/powerpc/mm/hash_utils_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> diff --git a/Documentation/devicetree/bindings/pci/layerscape-pci.txt b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> index 9b2b8d6..e20ceaa 100644
-> --- a/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> +++ b/Documentation/devicetree/bindings/pci/layerscape-pci.txt
-> @@ -13,6 +13,7 @@ information.
->  
->  Required properties:
->  - compatible: should contain the platform identifier such as:
-> +  RC mode:
->          "fsl,ls1021a-pcie"
->          "fsl,ls2080a-pcie", "fsl,ls2085a-pcie"
->          "fsl,ls2088a-pcie"
-> @@ -20,6 +21,8 @@ Required properties:
->          "fsl,ls1046a-pcie"
->          "fsl,ls1043a-pcie"
->          "fsl,ls1012a-pcie"
-> +  EP mode:
-> +	"fsl,ls1046a-pcie-ep", "fsl,ls-pcie-ep"
->  - reg: base addresses and lengths of the PCIe controller register blocks.
->  - interrupts: A list of interrupt outputs of the controller. Must contain an
->    entry for each entry in the interrupt-names property.
-> -- 
-> 1.7.1
-> 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0cc7fbc3bd1c..b762bdceb510 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -778,7 +778,7 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
+ 
+ 		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
+ 		if (rc && (rc != -ENODEV))
+-			printk(KERN_WARNING
++			printk(KERN_DEBUG
+ 			       "Unable to resize hash page table to target order %d: %d\n",
+ 			       target_hpt_shift, rc);
+ 	}
+-- 
+2.20.1
+
