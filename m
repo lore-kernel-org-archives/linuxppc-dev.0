@@ -2,122 +2,103 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FE2CC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 15:58:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE49FC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:28:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B30BC2080D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 15:58:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B30BC2080D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 36445218B0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:28:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="TFhBhkr6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36445218B0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vmM16nTnzDqRC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 02:58:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vx16579CzDqQf
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:28:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.4.54; helo=eur03-db5-obe.outbound.protection.outlook.com;
+ envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="TFhBhkr6"; 
+ dkim-atps=neutral
+Received: from EUR03-DB5-obe.outbound.protection.outlook.com
+ (mail-eopbgr40054.outbound.protection.outlook.com [40.107.4.54])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vmKJ2rjnzDqJs
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 02:56:52 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x16Ftdtf086673
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Feb 2019 10:56:50 -0500
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qg1jj4ey0-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2019 10:56:49 -0500
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 6 Feb 2019 15:56:48 -0000
-Received: from b01cxnp22033.gho.pok.ibm.com (9.57.198.23)
- by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 6 Feb 2019 15:56:45 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x16FuiTq13893860
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 6 Feb 2019 15:56:44 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B389B205F;
- Wed,  6 Feb 2019 15:56:44 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BB353B2064;
- Wed,  6 Feb 2019 15:56:42 +0000 (GMT)
-Received: from oc8380061452.ibm.com (unknown [9.80.222.60])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed,  6 Feb 2019 15:56:42 +0000 (GMT)
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH v03] powerpc/numa: Perform full re-add of CPU for PRRN/VPHN
- topology update
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Wed, 6 Feb 2019 09:56:42 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vwzG3nFwzDqKX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 09:26:47 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=fDWhHuIytJeH0rtxQYHGe5xLAJ0ORLc6v5yI6Qjk6oY=;
+ b=TFhBhkr6MzGiZwu46WIV6EXmk2E0EW1mrpZoSvuk4qYaYMPLTI6Pvl0wtWXsjJVGl+fB6m1WV8dSqs997Bv100PcUkxneB3kF5UIGVP1+nXHcjEvzUaw4zVjNnPQ4vAKt3nrE193r1G9ys843EYwukcJlYDZ5u3lFZP+atyh4TE=
+Received: from AM6PR04MB5863.eurprd04.prod.outlook.com (20.179.1.11) by
+ AM6PR04MB4984.eurprd04.prod.outlook.com (20.177.33.215) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1580.20; Wed, 6 Feb 2019 22:26:39 +0000
+Received: from AM6PR04MB5863.eurprd04.prod.outlook.com
+ ([fe80::6c22:d122:2edf:d948]) by AM6PR04MB5863.eurprd04.prod.outlook.com
+ ([fe80::6c22:d122:2edf:d948%5]) with mapi id 15.20.1601.016; Wed, 6 Feb 2019
+ 22:26:39 +0000
+From: Leo Li <leoyang.li@nxp.com>
+To: Pankaj Bansal <pankaj.bansal@nxp.com>, Rob Herring <robh+dt@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>
+Subject: RE: [PATCH v4 1/2] dt-bindings: soc: fsl: Document Qixis FPGA usage
+Thread-Topic: [PATCH v4 1/2] dt-bindings: soc: fsl: Document Qixis FPGA usage
+Thread-Index: AQHUvTubh4bC8JQ7jEC50paUIPX1DKXTWE+Q
+Date: Wed, 6 Feb 2019 22:26:39 +0000
+Message-ID: <AM6PR04MB5863F3BE0D7C560F3DFECD618F6F0@AM6PR04MB5863.eurprd04.prod.outlook.com>
+References: <20190205153924.7204-1-pankaj.bansal@nxp.com>
+ <20190205153924.7204-2-pankaj.bansal@nxp.com>
+In-Reply-To: <20190205153924.7204-2-pankaj.bansal@nxp.com>
+Accept-Language: en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19020615-0068-0000-0000-0000038ED9AD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010548; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000279; SDB=6.01157182; UDB=6.00603690; IPR=6.00937711; 
- MB=3.00025465; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-06 15:56:47
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020615-0069-0000-0000-0000476866B6
-Message-Id: <305ed693-ea85-8a70-1d3c-ae405aebc0ad@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-06_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902060123
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=leoyang.li@nxp.com; 
+x-originating-ip: [136.62.168.190]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1; AM6PR04MB4984;
+ 6:Y01MUPa6Y2igeJ0XEgBqiOGv4mFu0s+fTK1v3Q0hL7s1nZSlnjeLx9PQJ3kCR2IOpvGJvEF9FswFdOV56IneuRy2NoXYlyhNDiTPNcf661B6lWWtMvOGd9pnOz2Xdn8hyqFRmwfS2ffYTnpIZKqAMjYtvd+/HTKNlqIRsr82Xei8VfOWlTXMQ4UFj6eWcOzQFWHbFGLCmywXy0GXCmd9WpgP1unLAmatDkjEy+g+2C8z5YkkY/gFqsu9ONCdccQIgcFi0qEves54I8r2PZupvCGv2o5XT4lhmKSa5Q17Ai892RWt2Wx315syor4OnFKPJoFgc7ko33xq+MzR6/Q6D8nwAFZt3Afta42BhkaegX1tarjWfUoZp0rxx8dEWlZKKjzB0tVurx7PgPaCwosAtF1miR7BjMUK/I1ZxRSEFbMvWsn6w393NjhGR/NUAlq9bkezLbllGFywNxqhUs1Lkw==;
+ 5:w8RJJctIJy/oEfvUmSQpjZrODqP+T5WYQvp5z2az9miMy1YKmgKe8pV99GRxoIGHNlEa+e4YU/Oq6HNg5RMHSST9MS9WmdS22bpjzRnRcPKbFw2QX7ooXg21kD5j2CZVBqIGP6YiR2b1ahF2lkgLt6ZwftXtg2V/lPZrvmZbFiQJSj83nr9F/VUQzTtVIQk1cM1aibRFfutCxGN50SzUWQ==;
+ 7:57plv/WE+zz56ZYaT/XObX00hWXBm0mIFlRCFJvBDSE/GRtVDpQRFnMnFBgh4+l5wr3JUiWNIrOwH9OVnxy6lFqfHolmyGa5RhGpPOm5Ctk7gCfomLYD7ZIMpXA3mQqUoIJGyORwESDKikWUqmOqfw==
+x-ms-office365-filtering-correlation-id: 13441a9e-f750-4ac5-58eb-08d68c8229ef
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600110)(711020)(4605077)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:AM6PR04MB4984; 
+x-ms-traffictypediagnostic: AM6PR04MB4984:
+x-microsoft-antispam-prvs: <AM6PR04MB49848143C2D9F1ED1A82A3488F6F0@AM6PR04MB4984.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0940A19703
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(39860400002)(136003)(346002)(396003)(376002)(366004)(13464003)(189003)(199004)(256004)(6436002)(99286004)(14444005)(55016002)(486006)(66066001)(478600001)(7696005)(11346002)(9686003)(446003)(14454004)(8676002)(476003)(54906003)(316002)(305945005)(7736002)(74316002)(81166006)(110136005)(8936002)(86362001)(229853002)(106356001)(6116002)(3846002)(76176011)(81156014)(105586002)(71190400001)(71200400001)(25786009)(26005)(97736004)(33656002)(186003)(102836004)(2906002)(6506007)(53546011)(53936002)(6246003)(68736007)(4326008);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4984;
+ H:AM6PR04MB5863.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: EzofSGqlbKftbPN0G6fepoiZHp5cj5h6FAqoPPZswjQ4ESg3z0Wl6gkRbk8kLsr2Jgqw/8mFbbvG09fHkteuGMAxAEAZys+JC36HnrcGw+jC9BoZClQnThMFUlH1/HSyJtctp/s5ZRV9F86y6DiPlrEHdYU+0QJ0Lceg4dvzg7VovtngjDPker7YikEG2IH3s1zcelYStaxd3GgDgWquHCc8PGD8dzzq5QulF1x7cdgENb4tllLhsFREA+CVIQzGYmVDUDo8frRoD+dg1SqJhLiatp+owHeHhSauVeXwLlzXYH0qmoEQcK6cS6ZFu/5DzwBFjiXvVvxP9ryYkpgbaKzZdGqghyrfhSSRPanOEyhMdCDHwSMVGi1DlQivTTsnsrmMjZAtNL2rBQvG9FszjEC/q7sIvSSSz+vTqYNwzgI=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 13441a9e-f750-4ac5-58eb-08d68c8229ef
+X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Feb 2019 22:26:39.5862 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4984
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,275 +110,78 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Kees Cook <keescook@chromium.org>, Nicholas Piggin <npiggin@gmail.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Juliet Kim <minkim@us.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
- Corentin Labbe <clabbe@baylibre.com>,
- Nathan Lynch <nathanl@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Guenter Roeck <linux@roeck-us.net>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: "open list : OPEN FIRMWARE AND
+ FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On pseries systems, performing changes to a partition's affinity
-can result in altering the nodes a CPU is assigned to the
-current system.  For example, some systems are subject to resource
-balancing operations by the operator or control software.  In such
-environments, system CPUs may be in node 1 and 3 at boot, and be
-moved to nodes 2, 3, and 5, for better performance.
-
-The current implementation attempts to recognize such changes within
-the powerpc-specific version of arch_update_cpu_topology to modify a
-range of system data structures directly.  However, some scheduler
-data structures may be inaccessible, or the timing of a node change
-may still lead to corruption or error in other modules (e.g. user
-space) which do not receive notification of these changes.
-
-This patch modifies the PRRN/VPHN topology update worker function to
-recognize an affinity change for a CPU, and to perform a full DLPAR
-remove and add of the CPU instead of dynamically changing its node
-to resolve this issue.
-
-[Based upon patch submission:
-Subject: [PATCH] powerpc/pseries: Perform full re-add of CPU for topology update post-migration
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue Oct 30 05:43:36 AEDT 2018
-]
-
-[Replace patch submission:
-Subject: [PATCH] powerpc/topology: Update numa mask when cpu node mapping changes
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Wed Oct 10 15:24:46 AEDT 2018
-]
-
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
-Changes in v03:
-  -- Fixed under-scheduling of topo updates.
-Changes in v02:
-  -- Reuse more of the previous implementation to reduce patch size
-  -- Replace former calls to numa_update_cpu_topology(false) by
-     topology_schedule_update
-  -- Make sure that we report topology changes back through
-     arch_update_cpu_topology
-  -- Fix problem observed in powerpc next kernel with updating
-     cpu_associativity_changes_mask in timer_topology_fn when both
-     prrn_enabled and vphn_enabled, and many extra CPUs are possible,
-     but not installed.
-  -- Fix problem with updating cpu_associativity_changes_mask when
-     VPHN associativity information does not arrive until after first
-     call to update topology occurs.
----
- arch/powerpc/include/asm/topology.h |    7 +---
- arch/powerpc/kernel/rtasd.c         |    2 +
- arch/powerpc/mm/numa.c              |   69 +++++++++++++++++++++++------------
- 3 files changed, 48 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-index f85e2b0..79505c3 100644
---- a/arch/powerpc/include/asm/topology.h
-+++ b/arch/powerpc/include/asm/topology.h
-@@ -42,7 +42,7 @@ static inline int pcibus_to_node(struct pci_bus *bus)
- 
- extern int sysfs_add_device_to_node(struct device *dev, int nid);
- extern void sysfs_remove_device_from_node(struct device *dev, int nid);
--extern int numa_update_cpu_topology(bool cpus_locked);
-+extern void topology_schedule_update(void);
- 
- static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
- {
-@@ -77,10 +77,7 @@ static inline void sysfs_remove_device_from_node(struct device *dev,
- {
- }
- 
--static inline int numa_update_cpu_topology(bool cpus_locked)
--{
--	return 0;
--}
-+static inline void topology_schedule_update(void) {}
- 
- static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node) {}
- 
-diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-index 8a1746d..b1828de 100644
---- a/arch/powerpc/kernel/rtasd.c
-+++ b/arch/powerpc/kernel/rtasd.c
-@@ -285,7 +285,7 @@ static void handle_prrn_event(s32 scope)
- 	 * the RTAS event.
- 	 */
- 	pseries_devicetree_update(-scope);
--	numa_update_cpu_topology(false);
-+	topology_schedule_update();
- }
- 
- static void handle_rtas_event(const struct rtas_error_log *log)
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index ef6bdf1..a750ec0 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1077,6 +1077,9 @@ struct topology_update_data {
- static void reset_topology_timer(void);
- static int topology_timer_secs = 1;
- static int topology_inited;
-+static int topology_update_in_progress;
-+static int topology_changed;
-+static unsigned long topology_scans;
- 
- /*
-  * Change polling interval for associativity changes.
-@@ -1297,9 +1300,9 @@ static int update_lookup_table(void *data)
-  * Update the node maps and sysfs entries for each cpu whose home node
-  * has changed. Returns 1 when the topology has changed, and 0 otherwise.
-  *
-- * cpus_locked says whether we already hold cpu_hotplug_lock.
-+ * readd_cpus: Also readd any CPUs that have changed affinity
-  */
--int numa_update_cpu_topology(bool cpus_locked)
-+static int numa_update_cpu_topology(bool readd_cpus)
- {
- 	unsigned int cpu, sibling, changed = 0;
- 	struct topology_update_data *updates, *ud;
-@@ -1307,7 +1310,8 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	struct device *dev;
- 	int weight, new_nid, i = 0;
- 
--	if (!prrn_enabled && !vphn_enabled && topology_inited)
-+	if ((!prrn_enabled && !vphn_enabled && topology_inited) ||
-+		topology_update_in_progress)
- 		return 0;
- 
- 	weight = cpumask_weight(&cpu_associativity_changes_mask);
-@@ -1318,6 +1322,8 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	if (!updates)
- 		return 0;
- 
-+	topology_update_in_progress = 1;
-+
- 	cpumask_clear(&updated_cpus);
- 
- 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
-@@ -1339,16 +1345,21 @@ int numa_update_cpu_topology(bool cpus_locked)
- 
- 		new_nid = find_and_online_cpu_nid(cpu);
- 
--		if (new_nid == numa_cpu_lookup_table[cpu]) {
-+		if ((new_nid == numa_cpu_lookup_table[cpu]) ||
-+			!cpu_present(cpu)) {
- 			cpumask_andnot(&cpu_associativity_changes_mask,
- 					&cpu_associativity_changes_mask,
- 					cpu_sibling_mask(cpu));
--			dbg("Assoc chg gives same node %d for cpu%d\n",
-+			if (cpu_present(cpu))
-+				dbg("Assoc chg gives same node %d for cpu%d\n",
- 					new_nid, cpu);
- 			cpu = cpu_last_thread_sibling(cpu);
- 			continue;
- 		}
- 
-+		if (readd_cpus)
-+			dlpar_cpu_readd(cpu);
-+
- 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
- 			ud = &updates[i++];
- 			ud->next = &updates[i];
-@@ -1390,23 +1401,15 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	if (!cpumask_weight(&updated_cpus))
- 		goto out;
- 
--	if (cpus_locked)
--		stop_machine_cpuslocked(update_cpu_topology, &updates[0],
--					&updated_cpus);
--	else
--		stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
-+	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
- 
- 	/*
- 	 * Update the numa-cpu lookup table with the new mappings, even for
- 	 * offline CPUs. It is best to perform this update from the stop-
- 	 * machine context.
- 	 */
--	if (cpus_locked)
--		stop_machine_cpuslocked(update_lookup_table, &updates[0],
--					cpumask_of(raw_smp_processor_id()));
--	else
--		stop_machine(update_lookup_table, &updates[0],
--			     cpumask_of(raw_smp_processor_id()));
-+	stop_machine(update_lookup_table, &updates[0],
-+		     cpumask_of(raw_smp_processor_id()));
- 
- 	for (ud = &updates[0]; ud; ud = ud->next) {
- 		unregister_cpu_under_node(ud->cpu, ud->old_nid);
-@@ -1420,35 +1423,53 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	}
- 
- out:
-+	topology_changed = changed;
-+	topology_update_in_progress = 0;
- 	kfree(updates);
- 	return changed;
- }
- 
- int arch_update_cpu_topology(void)
- {
--	return numa_update_cpu_topology(true);
-+	int changed = topology_changed;
-+
-+	topology_changed = 0;
-+	return changed;
- }
- 
- static void topology_work_fn(struct work_struct *work)
- {
--	rebuild_sched_domains();
-+	lock_device_hotplug();
-+	if (numa_update_cpu_topology(true))
-+		rebuild_sched_domains();
-+	unlock_device_hotplug();
- }
- static DECLARE_WORK(topology_work, topology_work_fn);
- 
--static void topology_schedule_update(void)
-+void topology_schedule_update(void)
- {
--	schedule_work(&topology_work);
-+	if (!topology_update_in_progress)
-+		schedule_work(&topology_work);
- }
- 
- static void topology_timer_fn(struct timer_list *unused)
- {
-+	bool sdo = false;
-+
-+	if (topology_scans < 1)
-+		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
-+			    nr_cpumask_bits);
-+
- 	if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
--		topology_schedule_update();
--	else if (vphn_enabled) {
-+		sdo =  true;
-+	if (vphn_enabled) {
- 		if (update_cpu_associativity_changes_mask() > 0)
--			topology_schedule_update();
-+			sdo =  true;
- 		reset_topology_timer();
- 	}
-+	if (sdo)
-+		topology_schedule_update();
-+	topology_scans++;
- }
- static struct timer_list topology_timer;
- 
-@@ -1561,7 +1582,7 @@ void __init shared_proc_topology_init(void)
- 	if (lppaca_shared_proc(get_lppaca())) {
- 		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
- 			    nr_cpumask_bits);
--		numa_update_cpu_topology(false);
-+		topology_schedule_update();
- 	}
- }
- 
-
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGFua2FqIEJhbnNhbA0K
+PiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSA1LCAyMDE5IDQ6MTUgQU0NCj4gVG86IExlbyBMaSA8
+bGVveWFuZy5saUBueHAuY29tPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IE1h
+cmsNCj4gUnV0bGFuZCA8bWFyay5ydXRsYW5kQGFybS5jb20+DQo+IENjOiBsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0K
+PiBvcGVuIGxpc3QgOiBPUEVOIEZJUk1XQVJFIEFORCBGTEFUVEVORUQgREVWSUNFIFRSRUUgQklO
+RElOR1MNCj4gPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgUGFua2FqIEJhbnNhbCA8cGFu
+a2FqLmJhbnNhbEBueHAuY29tPg0KPiBTdWJqZWN0OiBbUEFUQ0ggdjQgMS8yXSBkdC1iaW5kaW5n
+czogc29jOiBmc2w6IERvY3VtZW50IFFpeGlzIEZQR0EgdXNhZ2UNCj4gDQo+IGFuIEZQR0EtYmFz
+ZWQgc3lzdGVtIGNvbnRyb2xsZXIsIGNhbGxlZCDigJxRaXhpc+KAnSwgd2hpY2gNCj4gbWFuYWdl
+cyBzZXZlcmFsIGNyaXRpY2FsIHN5c3RlbSBmZWF0dXJlcywgaW5jbHVkaW5nOg0KPiDigKIgUmVz
+ZXQgc2VxdWVuY2luZw0KPiDigKIgUG93ZXIgc3VwcGx5IGNvbmZpZ3VyYXRpb24NCj4g4oCiIEJv
+YXJkIGNvbmZpZ3VyYXRpb24NCj4g4oCiIGhhcmR3YXJlIGNvbmZpZ3VyYXRpb24NCj4gDQo+IFRo
+ZSBxaXhpcyByZWdpc3RlcnMgYXJlIGFjY2Vzc2libGUgb3ZlciBvbmUgb3IgbW9yZSBzeXN0ZW0t
+c3BlY2lmaWMNCj4gaW50ZXJmYWNlcywgdHlwaWNhbGx5IEkyQywgSlRBRyBvciBhbiBlbWJlZGRl
+ZCBwcm9jZXNzb3IuDQoNCkluIHRoZW9yeSB0aGUgb24tYm9hcmQgRlBHQSBpcyBub3QgcGFydCBv
+ZiB0aGUgU29DLiAgVGhlIFFpeGlzIGRldmljZSBoYXMgYmVlbiBkZWZpbmVkIHByZXZpb3VzbHkg
+aW4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2JvYXJkL2ZzbC1ib2FyZC50eHQg
+ZmlsZS4gIEFsdGhvdWdoIG5vcm1hbGx5IGJvYXJkIGJpbmRpbmdzIGFyZSBkZWZpbmVkIGluIGFy
+Y2hpdGVjdHVyZSBzcGVjaWZpYyBiaW5kaW5nIGZvbGRlcnMsIHRoaXMgaXMgYSBnb29kIHBsYWNl
+IGZvciBib2FyZCByZWxhdGVkIHN0dWZmIHVzZWQgYWNyb3NzIG11bHRpcGxlIGFyY2hpdGVjdHVy
+ZXMuICBZb3UgY2FuIHVwZGF0ZSB0aGUgZXhpc3RpbmcgYmluZGluZyBpZiBuZWVkZWQuDQoNCj4g
+DQo+IFNpZ25lZC1vZmYtYnk6IFBhbmthaiBCYW5zYWwgPHBhbmthai5iYW5zYWxAbnhwLmNvbT4N
+Cj4gLS0tDQo+IA0KPiBOb3RlczoNCj4gICAgIFY0Og0KPiAgICAgLSBObyBDaGFuZ2UNCj4gICAg
+IFYzOg0KPiAgICAgLSBBZGRlZCBib2FyZG5hbWUgYmFzZWQgY29tcGF0aWJsZSBmaWVsZCBpbiBi
+aW5kaW5ncw0KPiAgICAgLSBBZGRlZCBiaW5kaW5ncyBmb3IgTU1JTyBiYXNlZCBGUEdBDQo+ICAg
+ICBWMjoNCj4gICAgIC0gTm8gY2hhbmdlDQo+IA0KPiAgLi4uL2JpbmRpbmdzL3NvYy9mc2wvcWl4
+aXNfY3RybC50eHQgICAgICAgICAgfCA1MyArKysrKysrKysrKysrKysrKysNCj4gIDEgZmlsZSBj
+aGFuZ2VkLCA1MyBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcWl4aXNfY3RybC50eHQNCj4gYi9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9xaXhpc19jdHJsLnR4dA0KPiBuZXcg
+ZmlsZSBtb2RlIDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwMDAwMDAuLjVkNTEwZGYxNGJlOA0KPiAt
+LS0gL2Rldi9udWxsDQo+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9z
+b2MvZnNsL3FpeGlzX2N0cmwudHh0DQo+IEBAIC0wLDAgKzEsNTMgQEANCj4gKyogUUlYSVMgRlBH
+QSBibG9jaw0KPiArDQo+ICthbiBGUEdBLWJhc2VkIHN5c3RlbSBjb250cm9sbGVyLCBjYWxsZWQg
+4oCcUWl4aXPigJ0sIHdoaWNoDQo+ICttYW5hZ2VzIHNldmVyYWwgY3JpdGljYWwgc3lzdGVtIGZl
+YXR1cmVzLCBpbmNsdWRpbmc6DQo+ICvigKIgQ29uZmlndXJhdGlvbiBzd2l0Y2ggbW9uaXRvcmlu
+Zw0KPiAr4oCiIFBvd2VyIG9uL29mZiBzZXF1ZW5jaW5nDQo+ICvigKIgUmVzZXQgc2VxdWVuY2lu
+Zw0KPiAr4oCiIFBvd2VyIHN1cHBseSBjb25maWd1cmF0aW9uDQo+ICvigKIgQm9hcmQgY29uZmln
+dXJhdGlvbg0KPiAr4oCiIGhhcmR3YXJlIGNvbmZpZ3VyYXRpb24NCj4gK+KAoiBCYWNrZ3JvdW5k
+IHBvd2VyIGRhdGEgY29sbGVjdGlvbiAoRENNKQ0KPiAr4oCiIEZhdWx0IG1vbml0b3JpbmcNCj4g
+K+KAoiBSQ1cgYnlwYXNzIFNSQU0gKHJlcGxhY2UgZmxhc2ggUkNXIHdpdGggaW50ZXJuYWwgUkNX
+KSAoTk9SIG9ubHkpDQo+ICvigKIgRGVkaWNhdGVkIGZ1bmN0aW9uYWwgdmFsaWRhdGlvbiBibG9j
+a3MgKFBPU3QvSVJTLCB0cmlnZ2VyZWQgZXZlbnQsIGFuZCBzbw0KPiBvbikNCj4gK+KAoiBJMkMg
+bWFzdGVyIGZvciByZW1vdGUgYm9hcmQgY29udHJvbCBldmVuIHdpdGggbm8gRFVUIGF2YWlsYWJs
+ZQ0KPiArDQo+ICtUaGUgcWl4aXMgcmVnaXN0ZXJzIGFyZSBhY2Nlc3NpYmxlIG92ZXIgb25lIG9y
+IG1vcmUgc3lzdGVtLXNwZWNpZmljDQo+IGludGVyZmFjZXMsDQo+ICt0eXBpY2FsbHkgSTJDLCBK
+VEFHIG9yIGFuIGVtYmVkZGVkIHByb2Nlc3Nvci4NCj4gKw0KPiArRlBHQSBjb25uZWN0ZWQgdG8g
+STJDOg0KPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gKw0KPiArIC0gY29tcGF0aWJsZTogc2hv
+dWxkIGJlIGEgYm9hcmQtc3BlY2lmaWMgc3RyaW5nIGZvbGxvd2VkIGJ5IGEgc3RyaW5nDQo+ICsg
+ICBpbmRpY2F0aW5nIHRoZSB0eXBlIG9mIEZQR0EuICBFeGFtcGxlOg0KPiArCSJmc2wsPGJvYXJk
+Pi1mcGdhIiwgImZzbCxmcGdhLXFpeGlzLWkyYyINCj4gKyAtIHJlZyA6IGkyYyBhZGRyZXNzIG9m
+IHRoZSBxaXhpcyBkZXZpY2UuDQo+ICsNCj4gK0V4YW1wbGUgKExYMjE2MEEtUURTKToNCj4gKwkv
+KiBUaGUgRlBHQSBub2RlICovDQo+ICsgICAgICAgIGZwZ2FANjYgew0KPiArCQljb21wYXRpYmxl
+ID0gImZzbCxseDIxNjBhcWRzLWZwZ2EiLCAiZnNsLGZwZ2EtcWl4aXMtaTJjIjsNCj4gKwkJcmVn
+ID0gPDB4NjY+Ow0KPiArCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gKwkJI3NpemUtY2VsbHMg
+PSA8MD47DQo+ICsJfQ0KPiArDQo+ICsqIEZyZWVzY2FsZSBvbi1ib2FyZCBGUEdBDQo+ICsNCj4g
+K1RoaXMgaXMgdGhlIG1lbW9yeS1tYXBwZWQgcmVnaXN0ZXJzIGZvciBvbiBib2FyZCBGUEdBLg0K
+PiArDQo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiArLSBjb21wYXRpYmxlOiBzaG91bGQgYmUg
+YSBib2FyZC1zcGVjaWZpYyBzdHJpbmcgZm9sbG93ZWQgYnkgYSBzdHJpbmcNCj4gKyAgaW5kaWNh
+dGluZyB0aGUgdHlwZSBvZiBGUEdBLiAgRXhhbXBsZToNCj4gKwkiZnNsLDxib2FyZD4tZnBnYSIs
+ICJmc2wsZnBnYS1xaXhpcyINCj4gKy0gcmVnOiBzaG91bGQgY29udGFpbiB0aGUgYWRkcmVzcyBh
+bmQgdGhlIGxlbmd0aCBvZiB0aGUgRlBHQSByZWdpc3RlciBzZXQuDQo+ICsNCj4gK0V4YW1wbGUg
+KExTMjA4MEEtUkRCKToNCj4gKw0KPiArICAgICAgICBjcGxkQDMsMCB7DQo+ICsgICAgICAgICAg
+ICAgICAgY29tcGF0aWJsZSA9ICJmc2wsbHMyMDgwYXJkYi1mcGdhIiwgImZzbCxmcGdhLXFpeGlz
+IjsNCj4gKyAgICAgICAgICAgICAgICByZWcgPSA8MHgzIDAgMHgxMDAwMD47DQo+ICsgICAgICAg
+IH07DQo+ICsNCj4gLS0NCj4gMi4xNy4xDQoNCg==
