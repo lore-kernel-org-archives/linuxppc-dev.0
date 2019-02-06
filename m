@@ -3,45 +3,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BE0DC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 11:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AF32C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 11:51:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C43A020823
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 11:39:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C43A020823
+	by mail.kernel.org (Postfix) with ESMTPS id 855872184E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 11:51:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 855872184E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vfbq1h8CzDqPP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:39:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vftc1JhpzDqPP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:51:52 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vfYj65LHzDqNG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 22:37:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vfrZ4DnzzDqPP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 22:50:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43vfYj008Yz9sLw;
- Wed,  6 Feb 2019 22:37:12 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 43vfrZ2K1nz9sLw;
+ Wed,  6 Feb 2019 22:50:06 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH] powerpc/prom_init: add __init markers to all functions
-In-Reply-To: <CAK7LNARGpmcSVt9qsKDsPNb3KZkPc+QP9Aeh6Q-=o+J-K88Sgg@mail.gmail.com>
-References: <1548903199-32695-1-git-send-email-yamada.masahiro@socionext.com>
- <87k1iemsvz.fsf@concordia.ellerman.id.au>
- <CAK7LNARGpmcSVt9qsKDsPNb3KZkPc+QP9Aeh6Q-=o+J-K88Sgg@mail.gmail.com>
-Date: Wed, 06 Feb 2019 22:37:08 +1100
-Message-ID: <87womdkv17.fsf@concordia.ellerman.id.au>
+To: Chandan Rajendra <chandan@linux.ibm.com>
+Subject: Re: BUG: memcmp(): Accessing invalid memory location
+In-Reply-To: <3007738.Qcfhteo05g@localhost.localdomain>
+References: <17042269.pB4heZKTbK@localhost.localdomain>
+ <87tvhpnmpe.fsf@concordia.ellerman.id.au>
+ <87imy3oj67.fsf@concordia.ellerman.id.au>
+ <3007738.Qcfhteo05g@localhost.localdomain>
+Date: Wed, 06 Feb 2019 22:50:04 +1100
+Message-ID: <87tvhhkufn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -55,167 +56,148 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Simon Guo <wei.guo.simon@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> On Tue, Feb 5, 2019 at 7:33 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->>
->> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
->>
->> > It is fragile to rely on the compiler's optimization to avoid the
->> > section mismatch. Some functions may not be necessarily inlined
->> > when the compiler's inlining heuristic changes.
+Chandan Rajendra <chandan@linux.ibm.com> writes:
+> On Friday, February 1, 2019 4:43:52 PM IST Michael Ellerman wrote:
+>> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> 
+>> > Adding Simon who wrote the code.
 >> >
->> > Add __init markers consistently.
+>> > Chandan Rajendra <chandan@linux.ibm.com> writes:
+>> >> When executing fstests' generic/026 test, I hit the following call trace,
+>> >>
+>> >> [  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
+>> >> [  417.062172] Faulting instruction address: 0xc000000000092240
+>> >> [  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
+>> >> [  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
+>> >> [  417.062366] Modules linked in:
+>> >> [  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
+>> >> [  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
+>> >> [  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
+>> >> [  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
+>> >> [  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
+>> >>                GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
+>> >>                GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
+>> >>                GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
+>> >>                GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
+>> >>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>> >>                GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
+>> >>                GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
+>> >>                GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
+>> >> [  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
+>> >> [  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
+>> >> [  417.063709] Call Trace:
+>> >> [  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
+>> >> [  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
+>> >> [  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
+>> >> [  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
+>> >> [  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
+>> >> [  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
+>> >> [  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
+>> >> [  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
+>> >> [  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
+>> >> [  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
+>> >> [  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
+>> >> [  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
+>> >> [  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
+>> >> [  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
+>> >> [  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
+>> >> [  417.064930] Instruction dump:
+>> >> [  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
+>> >> [  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
+>> >> [  417.065150] ---[ end trace 0d060411b5e3741b ]---
+>> >>
+>> >>
+>> >> Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
+>> >> argument of memcmp() was set to 12. s1 argument of memcmp() had the value
+>> >> 0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
+>> >>
+>> >> The following is the code path within memcmp() that gets executed for the
+>> >> above mentioned values,
+>> >>
+>> >> - Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
+>> >> - We then prefetch the contents of r3 & r4 and branch to
+>> >>   .Ldiffoffset_8bytes_make_align_start.
+>> >> - Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
+>> >>   "SGI" part of the string. r3's value is then aligned. r4's value is
+>> >>   incremented by 3. For comparing the remaining 9 bytes, we jump to
+>> >>   .Lcmp_lt32bytes.
+>> >> - Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
+>> >>   .Lcmp_rest_lt8bytes.
+>> >> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
+>> >>   value and hence ends up accessing the "next" double word. The "next" double
+>> >>   word happens to occur after the last page mapped into the kernel's address
+>> >>   space and hence this leads to the previously listed oops.
 >> >
->> > As for prom_getprop() and prom_getproplen(), they are marked as
->> > 'inline', so inlining is guaranteed because PowerPC never enables
->> > CONFIG_OPTIMIZE_INLINING. However, it would be better to leave the
->> > inlining decision to the compiler. I replaced 'inline' with __init.
->>
->> I'm going to drop that part because it breaks the build in some
->> configurations (as reported by the build robot).
+>> > Thanks for the analysis.
+>> >
+>> > This is just a bug, we can't read past the end of the source or dest.
+>> 
+>> How about this, works for me.
+>> 
+>> cheers
+>> 
+>> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+>> index 844d8e774492..2a302158cb53 100644
+>> --- a/arch/powerpc/lib/memcmp_64.S
+>> +++ b/arch/powerpc/lib/memcmp_64.S
+>> @@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
+>>  	beq	.Lzero
+>>  
+>>  .Lcmp_rest_lt8bytes:
+>> -	/* Here we have only less than 8 bytes to compare with. at least s1
+>> -	 * Address is aligned with 8 bytes.
+>> -	 * The next double words are load and shift right with appropriate
+>> -	 * bits.
+>> +	/*
+>> +	 * Here we have less than 8 bytes left to compare with. We mustn't read
+>> +	 * past the end of either source or dest.
+>>  	 */
+>> -	subfic  r6,r5,8
+>> -	slwi	r6,r6,3
+>> -	LD	rA,0,r3
+>> -	LD	rB,0,r4
+>> -	srd	rA,rA,r6
+>> -	srd	rB,rB,r6
+>> -	cmpld	cr0,rA,rB
+>> +
+>> +	/* If we have less than 4 bytes, just do byte at a time */
+>> +	cmpwi   cr1, r5, 4
+>> +	blt	cr1, .Lshort
+>> +
+>> +	/* Compare 4 bytes */
+>> +	LW	rA,0,r3
+>> +	LW	rB,0,r4
+>> +	cmpd	cr0,rA,rB
+>>  	bne	cr0,.LcmpAB_lightweight
+>> -	b	.Lzero
+>> +
+>> +	/* If we had exactly 4 bytes left, we're done now */
+>> +	beq	cr1, .Lzero
+>> +
+>> +	/* Otherwise do what ever's left a byte at a time */
+>> +	subi	r5, r5, 4
+>> +	addi	r3, r3, 4
+>> +	addi	r4, r4, 4
+>> +	b	.Lshort
+>>  
+>>  .Lnon_zero:
+>>  	mr	r3,rC
+>> 
+>> 
 >
+> With the above patch, Linux kernel does not end up in oops. Hence,
 >
-> If you drop this part, my motivation for this patch is lost.
+> Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
 
-That's no good then :)
+Thanks.
 
-> My motivation is to allow all architectures to enable
-> CONFIG_OPTIMIZE_INLINING.
-> (Currently, only x86 can enable it, but I see nothing arch-dependent
-> in this feature.)
-
-Hmm OK.
-
-> When I tested it in 0-day bot, it reported
-> section mismatches from prom_getprop() and prom_getproplen().
->
-> So, I want to fix the section mismatches without
-> relying on 'inline'.
->
-> My suggestion is this:
->
-> static int __init __maybe_unused prom_getproplen(phandle node,
->                                                  const char *pname)
-> {
->         return call_prom("getproplen", 2, 1, node, ADDR(pname));
-> }
-
-Yeah I guess that works. My concern was whether it generates any code
-when it's unused, but it seems at least with modern GCC it doesn't.
-
-
->> > diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
->> > index f33ff41..85b0719 100644
->> > --- a/arch/powerpc/kernel/prom_init.c
->> > +++ b/arch/powerpc/kernel/prom_init.c
->> > @@ -501,19 +501,19 @@ static int __init prom_next_node(phandle *nodep)
->> >       }
->> >  }
->> >
->> > -static inline int prom_getprop(phandle node, const char *pname,
->> > +static int __init prom_getprop(phandle node, const char *pname,
->> >                              void *value, size_t valuelen)
->> >  {
->> >       return call_prom("getprop", 4, 1, node, ADDR(pname),
->> >                        (u32)(unsigned long) value, (u32) valuelen);
->> >  }
->> >
->> > -static inline int prom_getproplen(phandle node, const char *pname)
->> > +static int __init prom_getproplen(phandle node, const char *pname)
->> >  {
->> >       return call_prom("getproplen", 2, 1, node, ADDR(pname));
->> >  }
->> >
->> > -static void add_string(char **str, const char *q)
->> > +static void __init add_string(char **str, const char *q)
->> >  {
->> >       char *p = *str;
->> >
->> > @@ -523,7 +523,7 @@ static void add_string(char **str, const char *q)
->> >       *str = p;
->> >  }
->> >
->> > -static char *tohex(unsigned int x)
->> > +static char __init *tohex(unsigned int x)
->> >  {
->> >       static const char digits[] __initconst = "0123456789abcdef";
->> >       static char result[9] __prombss;
->> > @@ -570,7 +570,7 @@ static int __init prom_setprop(phandle node, const char *nodename,
->> >  #define islower(c)   ('a' <= (c) && (c) <= 'z')
->> >  #define toupper(c)   (islower(c) ? ((c) - 'a' + 'A') : (c))
->> >
->> > -static unsigned long prom_strtoul(const char *cp, const char **endp)
->> > +static unsigned long __init prom_strtoul(const char *cp, const char **endp)
->> >  {
->> >       unsigned long result = 0, base = 10, value;
->> >
->> > @@ -595,7 +595,7 @@ static unsigned long prom_strtoul(const char *cp, const char **endp)
->> >       return result;
->> >  }
->> >
->> > -static unsigned long prom_memparse(const char *ptr, const char **retptr)
->> > +static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
->> >  {
->> >       unsigned long ret = prom_strtoul(ptr, retptr);
->> >       int shift = 0;
->> > @@ -2924,7 +2924,7 @@ static void __init fixup_device_tree_pasemi(void)
->> >       prom_setprop(iob, name, "device_type", "isa", sizeof("isa"));
->> >  }
->> >  #else        /* !CONFIG_PPC_PASEMI_NEMO */
->> > -static inline void fixup_device_tree_pasemi(void) { }
->> > +static inline void __init fixup_device_tree_pasemi(void) { }
->>
->> I don't think we need __init for an empty static inline.
->
-> I prefer 'static __init' to 'static inline',
-> but I can drop this if you are uncomfortable with it.
-
-I guess I'm just used to empty stubs being static inline, but it doesn't
-really matter, as long as the compiler generates no code for them.
-
->> >  static void __init fixup_device_tree(void)
->> > @@ -2986,15 +2986,15 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
->> >
->> >  #ifdef CONFIG_PPC64
->> >  #ifdef CONFIG_RELOCATABLE
->> > -static void reloc_toc(void)
->> > +static void __init reloc_toc(void)
->> >  {
->> >  }
->> >
->> > -static void unreloc_toc(void)
->> > +static void __init unreloc_toc(void)
->> >  {
->> >  }
->>
->> Those should be empty static inlines, I'll fix them up.
->
-> As I said above, I believe 'static inline' is mostly useful in headers,
-> but this is up to you.
-
-No I think you've convinced me.
-
-> BTW, I have v2 in hand already.
-> Do you need it if it is convenient for you?
-
-Yes please send it.
-
-> I added __init to enter_prom() as well,
-> but you may not be comfortable with
-> replacing inline with __init.
-
-That's fine.
-
-I'd forgotten the 64-bit version was in assembly. We should really move
-it to a separate file and put it in init.text too.
+How many times had you hit the original oops? ie. was it easily
+reproducible?
 
 cheers
