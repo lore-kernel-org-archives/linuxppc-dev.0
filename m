@@ -2,86 +2,84 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9455FC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:14:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F674C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:44:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE0D32073D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:14:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE0D32073D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C8DC920B1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:44:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8DC920B1F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vgNW07DKzDqQJ
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 23:14:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vh323wJ7zDqR2
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 23:44:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=maddy@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
+ envelope-from=chandan@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vgKB1fDSzDqPR
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 23:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vh0M2vr2zDqPb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 23:41:55 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x16C5BoG075153
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Feb 2019 07:11:22 -0500
+ x16Cdggm031671
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Feb 2019 07:41:52 -0500
 Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qfxgdbjd6-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qfy84a8ju-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2019 07:11:22 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2019 07:41:51 -0500
 Received: from localhost
  by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 6 Feb 2019 12:11:20 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ for <linuxppc-dev@lists.ozlabs.org> from <chandan@linux.ibm.com>;
+ Wed, 6 Feb 2019 12:41:50 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
  by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 6 Feb 2019 12:11:18 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x16CBH8a52691074
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Feb 2019 12:11:17 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C5935AE05D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:11:17 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6A965AE056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:11:17 +0000 (GMT)
-Received: from [9.126.27.63] (unknown [9.126.27.63])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:11:17 +0000 (GMT)
-Subject: Re: [PATCH v2] powerpc/perf: Use PVR rather than oprofile field to
- determine CPU version
-To: linuxppc-dev@lists.ozlabs.org
-References: <20190206063024.8489-1-rashmica.g@gmail.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Wed, 6 Feb 2019 17:41:16 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ Wed, 6 Feb 2019 12:41:47 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x16CfkND54001850
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 6 Feb 2019 12:41:46 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 45D8C4204F;
+ Wed,  6 Feb 2019 12:41:46 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3DD9E42045;
+ Wed,  6 Feb 2019 12:41:45 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.102.0.46])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed,  6 Feb 2019 12:41:45 +0000 (GMT)
+From: Chandan Rajendra <chandan@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: BUG: memcmp(): Accessing invalid memory location
+Date: Wed, 06 Feb 2019 18:12:21 +0530
+Organization: IBM
+In-Reply-To: <87tvhhkufn.fsf@concordia.ellerman.id.au>
+References: <17042269.pB4heZKTbK@localhost.localdomain>
+ <3007738.Qcfhteo05g@localhost.localdomain>
+ <87tvhhkufn.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190206063024.8489-1-rashmica.g@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 X-TM-AS-GCONF: 00
-x-cbid: 19020612-0016-0000-0000-000002531D84
+x-cbid: 19020612-0016-0000-0000-00000253209E
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020612-0017-0000-0000-000032AD266B
-Message-Id: <3085b26c-d4af-1f41-c6b6-9d523290e843@linux.vnet.ibm.com>
+x-cbparentid: 19020612-0017-0000-0000-000032AD29AC
+Message-Id: <8003799.llySgfcyUA@localhost.localdomain>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-06_07:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -89,7 +87,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902060096
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902060100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,241 +99,156 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Simon Guo <wei.guo.simon@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Wednesday, February 6, 2019 5:20:04 PM IST Michael Ellerman wrote:
+> Chandan Rajendra <chandan@linux.ibm.com> writes:
+> > On Friday, February 1, 2019 4:43:52 PM IST Michael Ellerman wrote:
+> >> Michael Ellerman <mpe@ellerman.id.au> writes:
+> >> 
+> >> > Adding Simon who wrote the code.
+> >> >
+> >> > Chandan Rajendra <chandan@linux.ibm.com> writes:
+> >> >> When executing fstests' generic/026 test, I hit the following call trace,
+> >> >>
+> >> >> [  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
+> >> >> [  417.062172] Faulting instruction address: 0xc000000000092240
+> >> >> [  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
+> >> >> [  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
+> >> >> [  417.062366] Modules linked in:
+> >> >> [  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
+> >> >> [  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
+> >> >> [  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
+> >> >> [  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
+> >> >> [  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
+> >> >>                GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
+> >> >>                GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
+> >> >>                GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
+> >> >>                GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
+> >> >>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> >> >>                GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
+> >> >>                GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
+> >> >>                GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
+> >> >> [  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
+> >> >> [  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
+> >> >> [  417.063709] Call Trace:
+> >> >> [  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
+> >> >> [  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
+> >> >> [  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
+> >> >> [  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
+> >> >> [  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
+> >> >> [  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
+> >> >> [  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
+> >> >> [  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
+> >> >> [  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
+> >> >> [  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
+> >> >> [  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
+> >> >> [  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
+> >> >> [  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
+> >> >> [  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
+> >> >> [  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
+> >> >> [  417.064930] Instruction dump:
+> >> >> [  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
+> >> >> [  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
+> >> >> [  417.065150] ---[ end trace 0d060411b5e3741b ]---
+> >> >>
+> >> >>
+> >> >> Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
+> >> >> argument of memcmp() was set to 12. s1 argument of memcmp() had the value
+> >> >> 0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
+> >> >>
+> >> >> The following is the code path within memcmp() that gets executed for the
+> >> >> above mentioned values,
+> >> >>
+> >> >> - Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
+> >> >> - We then prefetch the contents of r3 & r4 and branch to
+> >> >>   .Ldiffoffset_8bytes_make_align_start.
+> >> >> - Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
+> >> >>   "SGI" part of the string. r3's value is then aligned. r4's value is
+> >> >>   incremented by 3. For comparing the remaining 9 bytes, we jump to
+> >> >>   .Lcmp_lt32bytes.
+> >> >> - Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
+> >> >>   .Lcmp_rest_lt8bytes.
+> >> >> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
+> >> >>   value and hence ends up accessing the "next" double word. The "next" double
+> >> >>   word happens to occur after the last page mapped into the kernel's address
+> >> >>   space and hence this leads to the previously listed oops.
+> >> >
+> >> > Thanks for the analysis.
+> >> >
+> >> > This is just a bug, we can't read past the end of the source or dest.
+> >> 
+> >> How about this, works for me.
+> >> 
+> >> cheers
+> >> 
+> >> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> >> index 844d8e774492..2a302158cb53 100644
+> >> --- a/arch/powerpc/lib/memcmp_64.S
+> >> +++ b/arch/powerpc/lib/memcmp_64.S
+> >> @@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
+> >>  	beq	.Lzero
+> >>  
+> >>  .Lcmp_rest_lt8bytes:
+> >> -	/* Here we have only less than 8 bytes to compare with. at least s1
+> >> -	 * Address is aligned with 8 bytes.
+> >> -	 * The next double words are load and shift right with appropriate
+> >> -	 * bits.
+> >> +	/*
+> >> +	 * Here we have less than 8 bytes left to compare with. We mustn't read
+> >> +	 * past the end of either source or dest.
+> >>  	 */
+> >> -	subfic  r6,r5,8
+> >> -	slwi	r6,r6,3
+> >> -	LD	rA,0,r3
+> >> -	LD	rB,0,r4
+> >> -	srd	rA,rA,r6
+> >> -	srd	rB,rB,r6
+> >> -	cmpld	cr0,rA,rB
+> >> +
+> >> +	/* If we have less than 4 bytes, just do byte at a time */
+> >> +	cmpwi   cr1, r5, 4
+> >> +	blt	cr1, .Lshort
+> >> +
+> >> +	/* Compare 4 bytes */
+> >> +	LW	rA,0,r3
+> >> +	LW	rB,0,r4
+> >> +	cmpd	cr0,rA,rB
+> >>  	bne	cr0,.LcmpAB_lightweight
+> >> -	b	.Lzero
+> >> +
+> >> +	/* If we had exactly 4 bytes left, we're done now */
+> >> +	beq	cr1, .Lzero
+> >> +
+> >> +	/* Otherwise do what ever's left a byte at a time */
+> >> +	subi	r5, r5, 4
+> >> +	addi	r3, r3, 4
+> >> +	addi	r4, r4, 4
+> >> +	b	.Lshort
+> >>  
+> >>  .Lnon_zero:
+> >>  	mr	r3,rC
+> >> 
+> >> 
+> >
+> > With the above patch, Linux kernel does not end up in oops. Hence,
+> >
+> > Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
+> 
+> Thanks.
+> 
+> How many times had you hit the original oops? ie. was it easily
+> reproducible?
 
-On 06/02/19 12:00 PM, Rashmica Gupta wrote:
-> Currently the perf CPU backend drivers detect what CPU they're on using
-> cur_cpu_spec->oprofile_cpu_type.
->
-> Although that works, it's a bit crufty to be using oprofile related fields,
-> especially seeing as oprofile is more or less unused these days.
->
-> It also means perf is reliant on the fragile logic in setup_cpu_spec()
-> which detects when we're using a logical PVR and copies back the PMU
-> related fields from the raw CPU entry. So lets check the PVR directly.
-Nice work. I wanted to do this for some time now
-but never got to it. Thanks for doing this.
+I could recreate the issue within 20 iterations of the test. For verifying
+your patch, I let the test run for 500 iterations.
 
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+-- 
+chandan
 
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
-> ---
-> v2: fixed misspelling of PVR_VER_E500V2
->
->   arch/powerpc/perf/e500-pmu.c    | 10 ++++++----
->   arch/powerpc/perf/e6500-pmu.c   |  5 +++--
->   arch/powerpc/perf/hv-24x7.c     |  6 +++---
->   arch/powerpc/perf/mpc7450-pmu.c |  5 +++--
->   arch/powerpc/perf/power5+-pmu.c |  6 +++---
->   arch/powerpc/perf/power5-pmu.c  |  5 +++--
->   arch/powerpc/perf/power6-pmu.c  |  5 +++--
->   arch/powerpc/perf/power7-pmu.c  |  7 ++++---
->   arch/powerpc/perf/power8-pmu.c  |  5 +++--
->   arch/powerpc/perf/power9-pmu.c  |  4 +---
->   arch/powerpc/perf/ppc970-pmu.c  |  8 +++++---
->   11 files changed, 37 insertions(+), 29 deletions(-)
->
-> diff --git a/arch/powerpc/perf/e500-pmu.c b/arch/powerpc/perf/e500-pmu.c
-> index fb664929f5da..e1a185a30928 100644
-> --- a/arch/powerpc/perf/e500-pmu.c
-> +++ b/arch/powerpc/perf/e500-pmu.c
-> @@ -122,12 +122,14 @@ static struct fsl_emb_pmu e500_pmu = {
->
->   static int init_e500_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type)
-> -		return -ENODEV;
-> +	unsigned int pvr = mfspr(SPRN_PVR);
->
-> -	if (!strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/e500mc"))
-> +	/* ec500mc */
-> +	if ((PVR_VER(pvr) == PVR_VER_E500MC) || (PVR_VER(pvr) == PVR_VER_E5500))
->   		num_events = 256;
-> -	else if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/e500"))
-> +	/* e500 */
-> +	else if ((PVR_VER(pvr) != PVR_VER_E500V1) &&
-> +			(PVR_VER(pvr) != PVR_VER_E500V2))
->   		return -ENODEV;
->
->   	return register_fsl_emb_pmu(&e500_pmu);
-> diff --git a/arch/powerpc/perf/e6500-pmu.c b/arch/powerpc/perf/e6500-pmu.c
-> index 3d877aa777b5..47c93d13da1a 100644
-> --- a/arch/powerpc/perf/e6500-pmu.c
-> +++ b/arch/powerpc/perf/e6500-pmu.c
-> @@ -111,8 +111,9 @@ static struct fsl_emb_pmu e6500_pmu = {
->
->   static int init_e6500_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -		strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/e6500"))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if (PVR_VER(pvr) != PVR_VER_E6500)
->   		return -ENODEV;
->
->   	return register_fsl_emb_pmu(&e6500_pmu);
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 72238eedc360..30dd379ddcd3 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1583,16 +1583,16 @@ static int hv_24x7_init(void)
->   {
->   	int r;
->   	unsigned long hret;
-> +	unsigned int pvr = mfspr(SPRN_PVR);
->   	struct hv_perf_caps caps;
->
->   	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
->   		pr_debug("not a virtualized system, not enabling\n");
->   		return -ENODEV;
-> -	} else if (!cur_cpu_spec->oprofile_cpu_type)
-> -		return -ENODEV;
-> +	}
->
->   	/* POWER8 only supports v1, while POWER9 only supports v2. */
-> -	if (!strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8"))
-> +	if (PVR_VER(pvr) == PVR_POWER8)
->   		interface_version = 1;
->   	else {
->   		interface_version = 2;
-> diff --git a/arch/powerpc/perf/mpc7450-pmu.c b/arch/powerpc/perf/mpc7450-pmu.c
-> index d115c5635bf3..17e69cabbcac 100644
-> --- a/arch/powerpc/perf/mpc7450-pmu.c
-> +++ b/arch/powerpc/perf/mpc7450-pmu.c
-> @@ -413,8 +413,9 @@ struct power_pmu mpc7450_pmu = {
->
->   static int __init init_mpc7450_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/7450"))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if (PVR_VER(pvr) != PVR_7450)
->   		return -ENODEV;
->
->   	return register_power_pmu(&mpc7450_pmu);
-> diff --git a/arch/powerpc/perf/power5+-pmu.c b/arch/powerpc/perf/power5+-pmu.c
-> index 0526dac66007..17a32e7ef234 100644
-> --- a/arch/powerpc/perf/power5+-pmu.c
-> +++ b/arch/powerpc/perf/power5+-pmu.c
-> @@ -679,9 +679,9 @@ static struct power_pmu power5p_pmu = {
->
->   static int __init init_power5p_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5+")
-> -	     && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5++")))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if (PVR_VER(pvr) != PVR_POWER5p)
->   		return -ENODEV;
->
->   	return register_power_pmu(&power5p_pmu);
-> diff --git a/arch/powerpc/perf/power5-pmu.c b/arch/powerpc/perf/power5-pmu.c
-> index 4dc99f9f7962..844782e6d367 100644
-> --- a/arch/powerpc/perf/power5-pmu.c
-> +++ b/arch/powerpc/perf/power5-pmu.c
-> @@ -620,8 +620,9 @@ static struct power_pmu power5_pmu = {
->
->   static int __init init_power5_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power5"))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if (PVR_VER(pvr) != PVR_POWER5)
->   		return -ENODEV;
->
->   	return register_power_pmu(&power5_pmu);
-> diff --git a/arch/powerpc/perf/power6-pmu.c b/arch/powerpc/perf/power6-pmu.c
-> index 9c9d646b68a1..9659b781f588 100644
-> --- a/arch/powerpc/perf/power6-pmu.c
-> +++ b/arch/powerpc/perf/power6-pmu.c
-> @@ -542,8 +542,9 @@ static struct power_pmu power6_pmu = {
->
->   static int __init init_power6_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power6"))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if (PVR_VER(pvr) != PVR_POWER6)
->   		return -ENODEV;
->
->   	return register_power_pmu(&power6_pmu);
-> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-> index 6dbae9884ec4..79f05a7f28c6 100644
-> --- a/arch/powerpc/perf/power7-pmu.c
-> +++ b/arch/powerpc/perf/power7-pmu.c
-> @@ -447,11 +447,12 @@ static struct power_pmu power7_pmu = {
->
->   static int __init init_power7_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if ((PVR_VER(pvr) != PVR_POWER7) && (PVR_VER(pvr) != PVR_POWER7p))
->   		return -ENODEV;
->
-> -	if (pvr_version_is(PVR_POWER7p))
-> +	if (PVR_VER(pvr) == PVR_POWER7p)
->   		power7_pmu.flags |= PPMU_SIAR_VALID;
->
->   	return register_power_pmu(&power7_pmu);
-> diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-> index d12a2db26353..81a5142efab0 100644
-> --- a/arch/powerpc/perf/power8-pmu.c
-> +++ b/arch/powerpc/perf/power8-pmu.c
-> @@ -382,9 +382,10 @@ static struct power_pmu power8_pmu = {
->   static int __init init_power8_pmu(void)
->   {
->   	int rc;
-> +	unsigned int pvr = mfspr(SPRN_PVR);
->
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8"))
-> +	if ((PVR_VER(pvr) != PVR_POWER8E) && (PVR_VER(pvr) != PVR_POWER8NVL)
-> +			&& PVR_VER(pvr) != PVR_POWER8)
->   		return -ENODEV;
->
->   	rc = register_power_pmu(&power8_pmu);
-> diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-> index 0ff9c43733e9..6b414b8bedfd 100644
-> --- a/arch/powerpc/perf/power9-pmu.c
-> +++ b/arch/powerpc/perf/power9-pmu.c
-> @@ -438,9 +438,7 @@ static int __init init_power9_pmu(void)
->   	int rc = 0;
->   	unsigned int pvr = mfspr(SPRN_PVR);
->
-> -	/* Comes from cpu_specs[] */
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power9"))
-> +	if (PVR_VER(pvr) != PVR_POWER9)
->   		return -ENODEV;
->
->   	/* Blacklist events */
-> diff --git a/arch/powerpc/perf/ppc970-pmu.c b/arch/powerpc/perf/ppc970-pmu.c
-> index 8b6a8a36fa38..5832de10e073 100644
-> --- a/arch/powerpc/perf/ppc970-pmu.c
-> +++ b/arch/powerpc/perf/ppc970-pmu.c
-> @@ -492,9 +492,11 @@ static struct power_pmu ppc970_pmu = {
->
->   static int __init init_ppc970_pmu(void)
->   {
-> -	if (!cur_cpu_spec->oprofile_cpu_type ||
-> -	    (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970")
-> -	     && strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/970MP")))
-> +	unsigned int pvr = mfspr(SPRN_PVR);
-> +
-> +	if ((PVR_VER(pvr) != PVR_970) && (PVR_VER(pvr) != PVR_970MP)
-> +			&& (PVR_VER(pvr) != PVR_970FX)
-> +			&& (PVR_VER(pvr) != PVR_970GX))
->   		return -ENODEV;
->
->   	return register_power_pmu(&ppc970_pmu);
+
 
