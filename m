@@ -2,64 +2,64 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A013C282CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:53:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 243A2C282CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:54:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 80B4D2184E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:53:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8D7692184E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:54:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="bO5uGonu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 80B4D2184E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fYsMvMuI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8D7692184E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vPbd4FThzDqNr
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:53:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vPdJ4h1TzDqLg
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:54:28 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vPSQ1fXnzDqLg
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:46:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vPSP5CWDzDqKL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="bO5uGonu"; dkim-atps=neutral
+ header.b="fYsMvMuI"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 43vPSQ034Gz9sNH; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
+ id 43vPSP304qz9sMl; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1549417606;
- bh=mWDhgurBVaJ27aViCyXXFgoNn7cKVC8HUIeAdFg38kY=;
+ d=gibson.dropbear.id.au; s=201602; t=1549417605;
+ bh=2WNbqNew+IJifbU8BdCM/Y/23UsGevq55eRZKVnaXNk=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=bO5uGonuAS3Zm1eTnQ+uEFaYwHJxPSaP4UrKNJNVTZO/5d3mJf2ZG1CCfhkEqeprI
- q9AMgaQCylGuCMUxxR+8ghARMK7/ZJIKpDv+rDCLmo/FoSCHtlPnUUnhL/0lcoDKqZ
- diAykQoHQLfwAVIqQ0i246J0XuvzXmR8k7wWL8S0=
-Date: Wed, 6 Feb 2019 12:24:47 +1100
+ b=fYsMvMuI5812o5wj4fiVqFnFDfQXcZL5+QEULuHa+fFySti27JizRq04aKbBq18kC
+ cftNkuF4mVOL3WIuW04jI++QtNNxhkj22sUfcIAUV92Nrf67Z4dVa+av6mJHGJK92I
+ Xn6cB5IOZndV4n2uIcQV5cxZ7OnsguHbAr9ypfYo=
+Date: Wed, 6 Feb 2019 12:18:00 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
- source configuration
-Message-ID: <20190206012447.GR22661@umbus.fritz.box>
+To: Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+Message-ID: <20190206011800.GN22661@umbus.fritz.box>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-16-clg@kaod.org>
- <20190204052148.GH1927@umbus.fritz.box>
- <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
- <20190205053233.GG22661@umbus.fritz.box>
- <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
- <20190206012329.GQ22661@umbus.fritz.box>
+ <20190122044654.GA15124@blackberry>
+ <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
+ <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
+ <06b7c4d2-72ba-ca4f-aded-789280798136@kaod.org>
+ <20190204053610.GK1927@umbus.fritz.box>
+ <dc59257b-c780-7b81-f3d8-46269b834c2d@kaod.org>
+ <20190205221315.GB29038@blackberry>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="IUSVF+LtaR4kWxuH"
+ protocol="application/pgp-signature"; boundary="o+ZCuNqY+dEAKBWl"
 Content-Disposition: inline
-In-Reply-To: <20190206012329.GQ22661@umbus.fritz.box>
+In-Reply-To: <20190205221315.GB29038@blackberry>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -73,106 +73,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---IUSVF+LtaR4kWxuH
+--o+ZCuNqY+dEAKBWl
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 06, 2019 at 12:23:29PM +1100, David Gibson wrote:
-> On Tue, Feb 05, 2019 at 02:03:11PM +0100, C=E9dric Le Goater wrote:
-> > On 2/5/19 6:32 AM, David Gibson wrote:
-> > > On Mon, Feb 04, 2019 at 05:07:28PM +0100, C=E9dric Le Goater wrote:
-> > >> On 2/4/19 6:21 AM, David Gibson wrote:
-> > >>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, C=E9dric Le Goater wrote:
-> > >>>> Theses are use to capure the XIVE EAS table of the KVM device, the
-> > >>>> configuration of the source targets.
-> > >>>>
-> > >>>> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> > >>>> ---
-> > >>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
-> > >>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 ++++++++++++++++++++++=
-+++++
-> > >>>>  2 files changed, 98 insertions(+)
-> > >>>>
-> > >>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/in=
-clude/uapi/asm/kvm.h
-> > >>>> index 1a8740629acf..faf024f39858 100644
-> > >>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> > >>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> > >>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
-> > >>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
-> > >>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
-> > >>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
-> > >>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
-> > >>>> =20
-> > >>>>  /* Layout of 64-bit XIVE source attribute values */
-> > >>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
-> > >>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
-> > >>>> =20
-> > >>>> +/* Layout of 64-bit eas attribute values */
-> > >>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
-> > >>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
-> > >>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
-> > >>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
-> > >>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
-> > >>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
-> > >>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
-> > >>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
-> > >>>> +
-> > >>>>  #endif /* __LINUX_KVM_POWERPC_H */
-> > >>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/=
-kvm/book3s_xive_native.c
-> > >>>> index f2de1bcf3b35..0468b605baa7 100644
-> > >>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> > >>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> > >>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvm=
-ppc_xive *xive, long irq, u64 addr)
-> > >>>>  	return 0;
-> > >>>>  }
-> > >>>> =20
-> > >>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, l=
-ong irq,
-> > >>>> +				      u64 addr)
-> > >>>
-> > >>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" E=
-AS
-> > >>> values, but rather essentially the "source config" in the terminolo=
-gy
-> > >>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
-> > >>> the EAS, but since it's the PAPR architected state that we need to
-> > >>> preserve across migration, I'd prefer to stick as close as we can to
-> > >>> the PAPR terminology.
+On Wed, Feb 06, 2019 at 09:13:15AM +1100, Paul Mackerras wrote:
+> On Tue, Feb 05, 2019 at 12:31:28PM +0100, C=E9dric Le Goater wrote:
+> > >>> As for nesting, I suggest for the foreseeable future we stick to XI=
+CS
+> > >>> emulation in nested guests.
 > > >>
-> > >> But we don't have an equivalent name in the PAPR specs for the tuple=
-=20
-> > >> (prio, server). We could use the generic 'target' name may be ? even=
-=20
-> > >> if this is usually referring to a CPU number.
-> > >=20
-> > > Um.. what?  That's about terminology for one of the fields in this
-> > > thing, not about the name for the thing itself.
-> > >=20
-> > >> Or, IVE (Interrupt Vector Entry) ? which makes some sense.=20
-> > >> This is was the former name in HW. I think we recycle it for KVM.
-> > >=20
-> > > That's a terrible idea, which will make a confusing situation even
-> > > more confusing.
+> > >> ok. so no kernel_irqchip at all. hmm.=20
 > >=20
-> > Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very=20
-> > similar to the hcalls anyhow.
+> > I was confused with what Paul calls 'XICS emulation'. It's not the QEMU
+> > XICS emulated device but the XICS-over-XIVE KVM device, the KVM XICS=20
+> > device KVM uses when under a P9 processor.=20
 >=20
-> Yes, I think that's a good idea.
+> Actually there are two separate implementations of XICS emulation in
+> KVM.  The first (older) one is almost entirely a software emulation
+> but does have some cases where it accesses an underlying XICS device
+> in order to make some things faster (IPIs and pass-through of a device
+> interrupt to a guest).  The other, newer one is the XICS-on-XIVE
+> emulation that Ben wrote, which uses the XIVE hardware pretty heavily.
+> My patch was about making the the older code work when there is no
+> XICS available to the host.
 
-Actually... AIUI the SET_CONFIG hcalls shouldn't be a fast path.  Can
-we simplify things further by removing the hcall implementation from
-the kernel entirely, and have qemu implement them by basically just
-forwarding them to the appropriate SET_CONFIG ioctl()?
+Ah, right.  To clarify my earlier statements in light of this:
+
+ * We definitely want some sort of kernel-XICS available in a nested
+   guest.  AIUI, this is now accomplished, so, Yay!
+
+ * Implementing the L2 XICS in terms of L1's PAPR-XIVE would be a
+   bonus, but it's a much lower priority.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -180,24 +120,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---IUSVF+LtaR4kWxuH
+--o+ZCuNqY+dEAKBWl
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxaN18ACgkQbDjKyiDZ
-s5Ib5RAAnBPWne1f+5r8DVripgRBuj+bTIpvb3NVI3aaSmOJIulAIkCY9mKULCRK
-CgYAUfHqWvers9zRkPGCnttlE6brvncugI+sKhrYJBOQN9O5epgP5Ve3iLWNBaOK
-rcKQ/j4SbfpccQiYmZcw/dRkJANVKRS08UBfmkC891MfSUjhRXRRQwqBefvTksEp
-EUmE4QTJET9L/nhRwzd5LTnOwNl5gYjHOO72EWUQznodctysmWm5J1Ko4u9Zvpvc
-0VcVL670OfxoJtTzn0D0gyuL087iHZt7glWBSVQC1r/EilWQg0hX/CJ3TJKjCfBu
-WWP9Xsz2oJe/oSJzlTjgO2lWcNbZze/kSVsmJpO334D1heAKFD98UfXOSjuXSI5I
-ToQ2udl8jdIGNuyV1Dy6J4G5zMTf/RIoN+vh+PDgB441tbO2NRaYUOeURdmXmMdV
-OJsMTKbOpAmm7Gd8kUuRoKqlaYXp0x46XeqevqSgJ+E0gpQd9OVgfYRYFHi2ACYO
-3TsWa689+YVpDzhEsAtTJuzWC0IpBr+V4UbZa1De8Y+59zkbuAO3Al1tsbAOCQfF
-W+gcRRnfUEdP1axhJ1uq54anKJkuri3NDoxz1Bn2yXgNrodWmdh9NHVD1Rm9Jyij
-jM9UX4RiVmSDUTwlTYcvyKsUnLsvz9rku3jEFqMJ21J01m2aDa0=
-=JKCz
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxaNcYACgkQbDjKyiDZ
+s5KMFA/9Ea25W4mwq61gaNMyUtvsa8KqPjL4f5PryrwBCsCXdxwnV+gyiT/mCOdC
+djMYoagDTYGqbk5y2I4XDODaF9znNDirLIGOEZPtB1KNzPsK65BOvNaSiGNFXJW+
+ZQ6aNEQX1xaoGwqXZ2MAcuMLQtYrD4RAZ+HwHY15unnd1JMecOCbWsDRYF+/hjq9
+AOi3Rb+K7Z2vQb8rr+kgzMFyxCVx6gD0G9oTX283RhWjliqom2wXlTpCv5cd1aAK
+mNeJzNVoPFblIH0B/hj/aXWaTInRmkPtuV28nFCRaNROZNkYh/LweOdHGvdo5/E8
+A+4Yzsmn2IUILglriy/I3JF2MhCaIReXLBCXct3mQKOsPGSmUPGfS7iCHfYAA5b2
+6eiqkN4gUplxtOuyVIHj/bNgnfVgeJUkWVF67RDfw26FS0EumPb/Hl247c+6W+LS
+U1fS9+0TgDUCjDn33zZuTJT5NrXjOeCzYtap3x8LbbtIykugBQUN6E4vlh2rYCON
++oOyZK3ETZ4tqjYhajzdoBQOehGIDvntg6m8/Jqncf+0lVVF3wJHBCwwqxSzUnRj
+mzRlxUNJA16Wn0q+ZUFu0USbuJletsfqIZmhT45G+Fls51BidrQMu+gp+y0T9eem
+KXAIwlOKCtQ4BQirKplzXuHKRJU/3qUKlSWcjwY6OO9/5Yih8Rs=
+=gIj3
 -----END PGP SIGNATURE-----
 
---IUSVF+LtaR4kWxuH--
+--o+ZCuNqY+dEAKBWl--
