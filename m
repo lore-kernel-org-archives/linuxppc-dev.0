@@ -2,93 +2,65 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 779E7C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 06:39:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8ACDC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 07:14:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB4F72175B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 06:39:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="iwgCmD7g";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="HkZax93Z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB4F72175B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	by mail.kernel.org (Postfix) with ESMTPS id 001A32175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 07:14:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 001A32175B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vWxj0NGHzDqPR
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 17:39:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vXkr0wZhzDqQF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 18:14:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=87.98.172.249; helo=8.mo3.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="iwgCmD7g"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="HkZax93Z"; dkim-atps=neutral
-X-Greylist: delayed 497 seconds by postgrey-1.36 at bilbo;
- Wed, 06 Feb 2019 17:37:34 AEDT
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vWvy1sNGzDqNj
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 17:37:33 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 4E2C821F26;
- Wed,  6 Feb 2019 01:29:10 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Wed, 06 Feb 2019 01:29:10 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding; s=fm1; bh=DvB4NkafIWFYaaslKMOvtAB0aK
- mWHFxWBaby6aGlaaw=; b=iwgCmD7gyi9O4/QtJj+1UCUBFpgjcWdvif2TnoGwD1
- ZYwpwOTOSEqwuudoymITQU/V6LAEe70N/RYOpgZs+nRxAurgR1w5SU3WClQTGdUC
- vXCQg2sur4jEmW38OpWQa4euyMv/uPKrxp0zB1jDmwaUeG3WHCe/yxbaHBRNq5ad
- ozHQn0OGtHTW6oUK1sPyqq69sNfScxZRVqou1lUTh04WY09o5URZg+TYhEkuHYWH
- e/CUbilbcJkssceZaJxOB6Fqrvexsi5FZ84RVEVCtOILeKXd6QogzfR80OXP9tMk
- h6NJuA1njiiNQMsBMlTZpW8byvEnO8ybylzfDnc2mm7g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:date:from
- :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
- :x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=DvB4NkafIWFYaaslK
- MOvtAB0aKmWHFxWBaby6aGlaaw=; b=HkZax93ZEJOcUxkmUCzl7mZYzmJN0tQ30
- mU+Qc4A4e2IeRYzQOTypkaGQdD9RG/1LwwjGoUr4tfI706q2tSqlDqll+I6geMkR
- yffw01gGcdWNtU5xTBhss0h6E0777+FwXCqDZdCmdQ1pk7JHZefnGlLQKAly+ngT
- Lru6B+Og6cvnbbd5jw60ha4nVmipRC9GYVaiWSFppfB/2aQoRTIH9YGrz86RFAnT
- w7klYAQtvj3J3n/VjyYYJe4hcs9YHj2yoc+MLpQeuRMrSiz0qN0ywz/DQTNX7zS8
- epedU7RmmYUsZiQefe1piuYo8X29OAbvMQBaAtCagLAzLOEvDwnBQ==
-X-ME-Sender: <xms:tX5aXGuIgC3ERiWFMGxt0QlJzBpqOw5LJ2OhhEkoptc4tON0LRp0SA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtledrkeejgdeliecutefuodetggdotefrodftvf
- curfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthenuceurghilhhouhhtmecufedt
- tdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvffufffkofgggfestdekredtre
- dttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhs
- shgvlhhlrdgttgeqnecuffhomhgrihhnpegsohhokhefshdrshgsnecukfhppeduvddvrd
- elledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhs
- shgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:tX5aXPJ4X16qHjYoAcOemAYcfd9iZ2MK4PRc2sakzPDmIDnCkk-xxQ>
- <xmx:tX5aXLlFK5lIb7ORs9etx18dRzsPI_FQ7XIyWFnzdXni0BnB1AjMaw>
- <xmx:tX5aXIJVirCtTCCt4GGmsPpyP8LVU1XM8AKnYnGTzBL_PA12kW-zrQ>
- <xmx:tn5aXJwjfE9jsjlIz00valWlAUkDpYnOJeutDMBQfuokxAbHPlYCyA>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 1D586E4314;
- Wed,  6 Feb 2019 01:29:07 -0500 (EST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv/idle: Restore IAMR after idle
-Date: Wed,  6 Feb 2019 17:28:37 +1100
-Message-Id: <20190206062837.26917-1-ruscur@russell.cc>
-X-Mailer: git-send-email 2.20.1
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 8.mo3.mail-out.ovh.net (8.mo3.mail-out.ovh.net [87.98.172.249])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vXj56GMlzDqP7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 18:13:12 +1100 (AEDT)
+Received: from player746.ha.ovh.net (unknown [10.109.146.1])
+ by mo3.mail-out.ovh.net (Postfix) with ESMTP id 84C5D1FAA2B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 08:07:47 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player746.ha.ovh.net (Postfix) with ESMTPSA id B72CE281A506;
+ Wed,  6 Feb 2019 07:07:36 +0000 (UTC)
+Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
+ source configuration
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-1-clg@kaod.org>
+ <20190107184331.8429-16-clg@kaod.org> <20190204052148.GH1927@umbus.fritz.box>
+ <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
+ <20190205053233.GG22661@umbus.fritz.box>
+ <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
+ <20190206012329.GQ22661@umbus.fritz.box>
+ <20190206012447.GR22661@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <1d92005a-c12d-1a55-d01b-98eded13629c@kaod.org>
+Date: Wed, 6 Feb 2019 08:07:36 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
+In-Reply-To: <20190206012447.GR22661@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 9782381344654527367
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrkeejgddutdegucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,105 +72,131 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Russell Currey <ruscur@russell.cc>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Without restoring the IAMR after idle, execution prevention on POWER9
-with Radix MMU is overwritten and the kernel can freely execute userspace without
-faulting.
+On 2/6/19 2:24 AM, David Gibson wrote:
+> On Wed, Feb 06, 2019 at 12:23:29PM +1100, David Gibson wrote:
+>> On Tue, Feb 05, 2019 at 02:03:11PM +0100, Cédric Le Goater wrote:
+>>> On 2/5/19 6:32 AM, David Gibson wrote:
+>>>> On Mon, Feb 04, 2019 at 05:07:28PM +0100, Cédric Le Goater wrote:
+>>>>> On 2/4/19 6:21 AM, David Gibson wrote:
+>>>>>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, Cédric Le Goater wrote:
+>>>>>>> Theses are use to capure the XIVE EAS table of the KVM device, the
+>>>>>>> configuration of the source targets.
+>>>>>>>
+>>>>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>>>>> ---
+>>>>>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
+>>>>>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 +++++++++++++++++++++++++++
+>>>>>>>  2 files changed, 98 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>> index 1a8740629acf..faf024f39858 100644
+>>>>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
+>>>>>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
+>>>>>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
+>>>>>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
+>>>>>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
+>>>>>>>  
+>>>>>>>  /* Layout of 64-bit XIVE source attribute values */
+>>>>>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+>>>>>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
+>>>>>>>  
+>>>>>>> +/* Layout of 64-bit eas attribute values */
+>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
+>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
+>>>>>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
+>>>>>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
+>>>>>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
+>>>>>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
+>>>>>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
+>>>>>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
+>>>>>>> +
+>>>>>>>  #endif /* __LINUX_KVM_POWERPC_H */
+>>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>> index f2de1bcf3b35..0468b605baa7 100644
+>>>>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvmppc_xive *xive, long irq, u64 addr)
+>>>>>>>  	return 0;
+>>>>>>>  }
+>>>>>>>  
+>>>>>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, long irq,
+>>>>>>> +				      u64 addr)
+>>>>>>
+>>>>>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" EAS
+>>>>>> values, but rather essentially the "source config" in the terminology
+>>>>>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
+>>>>>> the EAS, but since it's the PAPR architected state that we need to
+>>>>>> preserve across migration, I'd prefer to stick as close as we can to
+>>>>>> the PAPR terminology.
+>>>>>
+>>>>> But we don't have an equivalent name in the PAPR specs for the tuple 
+>>>>> (prio, server). We could use the generic 'target' name may be ? even 
+>>>>> if this is usually referring to a CPU number.
+>>>>
+>>>> Um.. what?  That's about terminology for one of the fields in this
+>>>> thing, not about the name for the thing itself.
+>>>>
+>>>>> Or, IVE (Interrupt Vector Entry) ? which makes some sense. 
+>>>>> This is was the former name in HW. I think we recycle it for KVM.
+>>>>
+>>>> That's a terrible idea, which will make a confusing situation even
+>>>> more confusing.
+>>>
+>>> Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very 
+>>> similar to the hcalls anyhow.
+>>
+>> Yes, I think that's a good idea.
+> 
+> Actually... AIUI the SET_CONFIG hcalls shouldn't be a fast path.  
 
-This is necessary when returning from any stop state that modifies user
-state, as well as hypervisor state.
+No indeed. I have move them to standard hcalls in the current version.
 
-To test how this fails without this patch, load the lkdtm driver and
-do the following:
+> Can
+> we simplify things further by removing the hcall implementation from
+> the kernel entirely, and have qemu implement them by basically just
+> forwarding them to the appropriate SET_CONFIG ioctl()?
 
-   echo EXEC_USERSPACE > /sys/kernel/debug/provoke-crash/DIRECT
+Yes. I think we could. 
 
-which won't fault, then boot the kernel with powersave=off, where it
-will fault.  Applying this patch will fix this.
+The hcalls H_INT_SET_SOURCE_CONFIG and H_INT_SET_QUEUE_CONFIG and 
+the KVM ioctls to set the EQ and the SOURCE configuration have a 
+lot in common. I need to look at how we can plug the KVM ioctl in 
+the hcalls under QEMU.
 
-Fixes: 3b10d0095a1e ("powerpc/mm/radix: Prevent kernel execution of user
-space")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Russell Currey <ruscur@russell.cc>
----
- arch/powerpc/include/asm/cpuidle.h |  1 +
- arch/powerpc/kernel/asm-offsets.c  |  1 +
- arch/powerpc/kernel/idle_book3s.S  | 20 ++++++++++++++++++++
- 3 files changed, 22 insertions(+)
+We will have to convert the returned error to respect the PAPR 
+specs or have the ioctls return H_* errors.
 
-diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-index 43e5f31fe64d..ad67dbe59498 100644
---- a/arch/powerpc/include/asm/cpuidle.h
-+++ b/arch/powerpc/include/asm/cpuidle.h
-@@ -77,6 +77,7 @@ struct stop_sprs {
- 	u64 mmcr1;
- 	u64 mmcr2;
- 	u64 mmcra;
-+	u64 iamr;
- };
+
+Let's dig that idea. If we choose that path, QEMU will have an 
+up-to-date EAT and so we won't need to synchronize its state anymore 
+for migration.
  
- #define PNV_IDLE_NAME_LEN    16
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 9ffc72ded73a..10e0314c2b0d 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -774,6 +774,7 @@ int main(void)
- 	STOP_SPR(STOP_MMCR1, mmcr1);
- 	STOP_SPR(STOP_MMCR2, mmcr2);
- 	STOP_SPR(STOP_MMCRA, mmcra);
-+	STOP_SPR(STOP_IAMR, iamr);
- #endif
- 
- 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 7f5ac2e8581b..bb4f552f6c7e 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -200,6 +200,12 @@ pnv_powersave_common:
- 	/* Continue saving state */
- 	SAVE_GPR(2, r1)
- 	SAVE_NVGPRS(r1)
-+
-+BEGIN_FTR_SECTION
-+	mfspr	r5, SPRN_IAMR
-+	std	r5, STOP_IAMR(r13)
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
- 	mfcr	r5
- 	std	r5,_CCR(r1)
- 	std	r1,PACAR1(r13)
-@@ -924,6 +930,13 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	REST_NVGPRS(r1)
- 	REST_GPR(2, r1)
-+
-+BEGIN_FTR_SECTION
-+	ld	r4, STOP_IAMR(r13)
-+	mtspr	SPRN_IAMR, r4
-+	isync
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
- 	ld	r4,PACAKMSR(r13)
- 	ld	r5,_LINK(r1)
- 	ld	r6,_CCR(r1)
-@@ -946,6 +959,13 @@ pnv_wakeup_noloss:
- BEGIN_FTR_SECTION
- 	CHECK_HMI_INTERRUPT
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-+
-+BEGIN_FTR_SECTION
-+	ld	r4, STOP_IAMR(r13)
-+	mtspr	SPRN_IAMR, r4
-+	isync
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-+
- 	ld	r4,PACAKMSR(r13)
- 	ld	r5,_NIP(r1)
- 	ld	r6,_CCR(r1)
--- 
-2.20.1
+H_INT_GET_SOURCE_CONFIG can be implemented in QEMU without any KVM 
+ioctl.
 
+H_INT_GET_QUEUE_INFO could be implemented in QEMU. I need to check 
+how we return the address of the END ESB in sPAPR. We haven't paid 
+much attention to these pages because they are not used under Linux
+and today the address is returned by OPAL. 
+
+H_INT_GET_QUEUE_CONFIG is a little more problematic because we need
+to query into the XIVE HW the EQ index and toggle bit. OPAL support
+is required for that. But we could reduce the KVM support to the 
+ioctl querying these EQ information.
+
+H_INT_ESB could be entirely done under QEMU.
+
+H_INT_SYNC and H_INT_RESET can not.
+
+H_INT_GET_OS_REPORTING_LINE and H_INT_SET_OS_REPORTING_LINE are not
+implemented.
+
+C.
