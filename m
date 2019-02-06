@@ -8,73 +8,72 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17580C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:42:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AADEC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 06:32:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 469FF2080A
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:42:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D354F20818
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 06:32:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V9hL0hqN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 469FF2080A
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="chwskYTV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D354F20818
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vVhK6hvxzDqPf
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 16:42:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vWp00WqszDqQ9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 17:32:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
  envelope-from=rashmica.g@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="V9hL0hqN"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="chwskYTV"; 
  dkim-atps=neutral
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
- [IPv6:2607:f8b0:4864:20::641])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vVfZ2fGzzDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 16:40:51 +1100 (AEDT)
-Received: by mail-pl1-x641.google.com with SMTP id p4so2596328plq.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Feb 2019 21:40:50 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vWm91xY2zDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 17:30:49 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id y4so2485835pgc.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Feb 2019 22:30:48 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=from:to:cc:subject:date:message-id;
- bh=2tsT+BjkKO5C0x70d0CVxJFu3Xnbj2jcTRLQKKgYBXg=;
- b=V9hL0hqN34c/fv8TAMAvhqG+ANFarP8UZuAwxJm2j31QKqCqfqN//HJjrWQC/teBNO
- Z9Ujvk+J/oRucaIjUhWysQY2/ep0bneAkIfuRYb7F+NsQKIdTQThXa+kDZS9WfnkhNE1
- JU+NSwDhX3DZxg0ximOOn82wzOah71fe6jt2gsW5/YFBxn8w+HcfZXJ+M6cWHSS7yRTT
- ZDbyCUiumx8zR3fgvBNfB1FBWfk8tAPLr5JcCIas2ZStSuiSf48zNIKlNO7qJszqGaqI
- mEvf/fEb3onJtMzRpCcQKPfsHA9vBS7fzU7BRhKfgDStdA0wjArx71GxmxW4BmJVHMgL
- I+yw==
+ bh=FgmIibRIauQpilafnQmrFzF5n4x71dTaARn70yO8/Ew=;
+ b=chwskYTVK7MqlDmj6pV3EabvchkvDLyobBprL+sv1/artUuDi/L1dosMxi2IGYau0/
+ E8Q6phj0jcmYF/xbqzPRive9szD/biQLM0FREQS9JvaXUXjNpxs4gRGwDVgs48zGCc6A
+ NFOuRPuUGCHr9x/kSnIgLW00UtFXGJduTbqKVVbA9Zwq4+0QSXf7e0aBV7Ouzys+oCBp
+ njYUGZU9ET7epxya9H8/cDoSUXz04911poBAN7hr1vCuYeEflLu2f5HkdODxJToSiPzt
+ eS35UoHujXNG/heGYKS/5gspXD/l2QQK8iiuzbC6/SrC7Osfb3EjubrI8GBDN4M04cDt
+ oOYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=2tsT+BjkKO5C0x70d0CVxJFu3Xnbj2jcTRLQKKgYBXg=;
- b=qzkPxYKqi95HM7xYB1mb0mIVlwC59Pkbav5zM3NEYy9o7OoysE1ctVam85RKiKfFP2
- WDH1gkfd+U+PUIH+lrJ1pyNHJc08MHOjuZFBptvf4fgnLCsajmRxKeIMGKBeLkz7xYeR
- YrlzbvMVlwn1h0FNFjunCsJH8VTTyrOnGNXN/hGv5DhnGIeTkFAHWd9ElkP7iMoJC4Xq
- cxjTIkGmrsYYnq/gVd4vEq/XugRHsZbFP8NUShot07TO3gL+ZYJcgI7S2NKe/uSKxHCB
- lfdywFmN4PbK1Cbpz+nFGjMY9wZJy8N0mTVx4pD06+OKFpFtV0WILAnPjpMR/7t/VJeb
- 9Z5Q==
-X-Gm-Message-State: AHQUAuYJXc8Uz/xfeSCgNGmoQbdWhu1exVdeYd1sEbPSkOfKjOFIA+he
- B9gy2Hohnvku6m4BebEmJLtlJ5YL
-X-Google-Smtp-Source: AHgI3IZwRjgxg7Iq+F/69QozlYGyeoQHfJLScwdKtYJm6FW7na8eR+3XsJESvv1JU/wRn5257CzHlw==
-X-Received: by 2002:a17:902:a40f:: with SMTP id
- p15mr9180907plq.286.1549431648843; 
- Tue, 05 Feb 2019 21:40:48 -0800 (PST)
+ bh=FgmIibRIauQpilafnQmrFzF5n4x71dTaARn70yO8/Ew=;
+ b=mi2e8647xqkj/AfI/IPI7kdJAetGxtvnetznNvMFLGKqBy+pVkCWMzkrfPYBs4fjjw
+ jRs8cpK9HQxtL9gMtwcv+ra2HpodO3xBPd9x3AzsFySoym1CsRKCemiLUDC7GMjMMyFH
+ uQAQ8kkW9HRgPc8iZZvRguJLmYHk4HNUiW8pxX5T+OE+7Ix/PGhi7awE15G773gc2Z57
+ wOq2y1Q5u1mJZ3ouLWBJ+S9OIV6VW+Jl346IWpbGyCvQsFNq5tottxoE0wLODVaiiS29
+ R8fGlWS5a7f+cpdVBpU0KZIju7k+WwVW8zDMTkQMF1bODZGxZKuTou5fMzGnKelO0fwx
+ Ir8Q==
+X-Gm-Message-State: AHQUAuYKcF/AlqhWSy+QcxD1icHSQtlV77QDx3zlrHlwk+K3Dp5VLcc5
+ xmht5B4BfBmQR7DH5OrMz9f57C89
+X-Google-Smtp-Source: AHgI3IZoqClpf0d3zi4ZO/BXZ/APOUjMKuDDY+tLzpu6qrdBn8+tKVE9F6re2QQJms9Tq5pYz8vW9g==
+X-Received: by 2002:a62:5b44:: with SMTP id p65mr8856076pfb.47.1549434646875; 
+ Tue, 05 Feb 2019 22:30:46 -0800 (PST)
 Received: from rashmica.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id d80sm18954822pfm.146.2019.02.05.21.40.46
+ by smtp.gmail.com with ESMTPSA id n74sm18525988pfi.163.2019.02.05.22.30.44
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 05 Feb 2019 21:40:48 -0800 (PST)
+ Tue, 05 Feb 2019 22:30:46 -0800 (PST)
 From: Rashmica Gupta <rashmica.g@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/perf: Use PVR rather than oprofile field to determine
- CPU version
-Date: Wed,  6 Feb 2019 16:40:38 +1100
-Message-Id: <20190206054038.5479-1-rashmica.g@gmail.com>
+Subject: [PATCH v2] powerpc/perf: Use PVR rather than oprofile field to
+ determine CPU version
+Date: Wed,  6 Feb 2019 17:30:24 +1100
+Message-Id: <20190206063024.8489-1-rashmica.g@gmail.com>
 X-Mailer: git-send-email 2.17.2
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,6 +105,8 @@ related fields from the raw CPU entry. So lets check the PVR directly.
 Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 ---
+v2: fixed misspelling of PVR_VER_E500V2
+
  arch/powerpc/perf/e500-pmu.c    | 10 ++++++----
  arch/powerpc/perf/e6500-pmu.c   |  5 +++--
  arch/powerpc/perf/hv-24x7.c     |  6 +++---
@@ -120,7 +121,7 @@ Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
  11 files changed, 37 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/perf/e500-pmu.c b/arch/powerpc/perf/e500-pmu.c
-index fb664929f5da..f3a4179f46c6 100644
+index fb664929f5da..e1a185a30928 100644
 --- a/arch/powerpc/perf/e500-pmu.c
 +++ b/arch/powerpc/perf/e500-pmu.c
 @@ -122,12 +122,14 @@ static struct fsl_emb_pmu e500_pmu = {
@@ -138,7 +139,7 @@ index fb664929f5da..f3a4179f46c6 100644
 -	else if (strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc/e500"))
 +	/* e500 */
 +	else if ((PVR_VER(pvr) != PVR_VER_E500V1) &&
-+			(PVR_VER(pvr) != PVR_VER_E50V2))
++			(PVR_VER(pvr) != PVR_VER_E500V2))
  		return -ENODEV;
  
  	return register_fsl_emb_pmu(&e500_pmu);
