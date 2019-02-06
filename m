@@ -2,52 +2,63 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5030C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 04:46:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F6FAC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:16:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E92B20844
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 04:46:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E92B20844
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 4F5D4218A1
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 05:16:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="cucTOfTp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F5D4218A1
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vTRk6w1RzDqPP
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 15:46:26 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vV6c1TGpzDqPj
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 16:16:40 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vTPv11tmzDqKl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 15:44:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vV4k21ZVzDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 16:15:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="cucTOfTp"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43vTPt6lfJz9sDX;
- Wed,  6 Feb 2019 15:44:50 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH 1/4] powerpc/64s: Clear on-stack exception marker upon
- exception return
-In-Reply-To: <CAKTCnznr9MoL=eZsNWyGkKYdx7UbLQr86VL=xmC8h2ig8Sw+RQ@mail.gmail.com>
-References: <20190122155724.27557-1-joe.lawrence@redhat.com>
- <20190122155724.27557-2-joe.lawrence@redhat.com>
- <20190202011455.GN26056@350D>
- <CAKTCnzmWCxPRSBdc8T_phtmoBftNZLV3BdFp3Dee5Lc8VGzFYg@mail.gmail.com>
- <87bm3qmqak.fsf@concordia.ellerman.id.au>
- <CAKTCnznr9MoL=eZsNWyGkKYdx7UbLQr86VL=xmC8h2ig8Sw+RQ@mail.gmail.com>
-Date: Wed, 06 Feb 2019 15:44:48 +1100
-Message-ID: <8736p1msov.fsf@concordia.ellerman.id.au>
+ by ozlabs.org (Postfix) with ESMTPSA id 43vV4j5drFz9s7T;
+ Wed,  6 Feb 2019 16:15:01 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1549430102;
+ bh=sT6CGGFNUassOQ8W1pWaYiYVspapVLQpqbmCFLs2nMA=;
+ h=Date:From:To:Cc:Subject:From;
+ b=cucTOfTpHngCoUSYuHxyN+cqOlpVQ1EcZ1ErmpcfnUK0RMJXgPzVTQJqXP04Tz2LE
+ e+sL4aXphcrpgYZ9iG56ookT5KgW+YpYkoy8LgAw73dsFm8HmEgUXuQ4MsbkN/eFAC
+ mKJ7S1vuSJCwL/gtN68SQZUu7Qxp8NEdBDVFOAzGY9WN3b7KGpseTzKv5iii7GFWrk
+ kCCF4umRWyLiI6v1IJcljEuxErPA/wKM9QnKv+mS0QhjV/cjpJcBqTa7FPEqm/jB7O
+ sfqgUcvg8ETPa5t6749MKQtyzEvgnfeayfw/8K/hc+6KoPvCMg35/LuM7VqA/Igceb
+ BmtgfSigtr40g==
+Date: Wed, 6 Feb 2019 16:15:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the akpm-current tree with the
+ powerpc-fixes tree
+Message-ID: <20190206161501.070912bd@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/ocMURUR.zSRJHN=EfOUsA1T"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,138 +70,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Joe Lawrence <joe.lawrence@redhat.com>, Nicolai Stange <nstange@suse.de>,
- Jiri Kosina <jkosina@suse.cz>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Torsten Duwe <duwe@lst.de>, Josh Poimboeuf <jpoimboe@redhat.com>,
- live-patching@vger.kernel.org,
- "open list:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Balbir Singh <bsingharora@gmail.com> writes:
-> On Tue, Feb 5, 2019 at 10:24 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Balbir Singh <bsingharora@gmail.com> writes:
->> > On Sat, Feb 2, 2019 at 12:14 PM Balbir Singh <bsingharora@gmail.com> wrote:
->> >> On Tue, Jan 22, 2019 at 10:57:21AM -0500, Joe Lawrence wrote:
->> >> > From: Nicolai Stange <nstange@suse.de>
->> >> >
->> >> > The ppc64 specific implementation of the reliable stacktracer,
->> >> > save_stack_trace_tsk_reliable(), bails out and reports an "unreliable
->> >> > trace" whenever it finds an exception frame on the stack. Stack frames
->> >> > are classified as exception frames if the STACK_FRAME_REGS_MARKER magic,
->> >> > as written by exception prologues, is found at a particular location.
->> >> >
->> >> > However, as observed by Joe Lawrence, it is possible in practice that
->> >> > non-exception stack frames can alias with prior exception frames and thus,
->> >> > that the reliable stacktracer can find a stale STACK_FRAME_REGS_MARKER on
->> >> > the stack. It in turn falsely reports an unreliable stacktrace and blocks
->> >> > any live patching transition to finish. Said condition lasts until the
->> >> > stack frame is overwritten/initialized by function call or other means.
->> >> >
->> >> > In principle, we could mitigate this by making the exception frame
->> >> > classification condition in save_stack_trace_tsk_reliable() stronger:
->> >> > in addition to testing for STACK_FRAME_REGS_MARKER, we could also take into
->> >> > account that for all exceptions executing on the kernel stack
->> >> > - their stack frames's backlink pointers always match what is saved
->> >> >   in their pt_regs instance's ->gpr[1] slot and that
->> >> > - their exception frame size equals STACK_INT_FRAME_SIZE, a value
->> >> >   uncommonly large for non-exception frames.
->> >> >
->> >> > However, while these are currently true, relying on them would make the
->> >> > reliable stacktrace implementation more sensitive towards future changes in
->> >> > the exception entry code. Note that false negatives, i.e. not detecting
->> >> > exception frames, would silently break the live patching consistency model.
->> >> >
->> >> > Furthermore, certain other places (diagnostic stacktraces, perf, xmon)
->> >> > rely on STACK_FRAME_REGS_MARKER as well.
->> >> >
->> >> > Make the exception exit code clear the on-stack STACK_FRAME_REGS_MARKER
->> >> > for those exceptions running on the "normal" kernel stack and returning
->> >> > to kernelspace: because the topmost frame is ignored by the reliable stack
->> >> > tracer anyway, returns to userspace don't need to take care of clearing
->> >> > the marker.
->> >> >
->> >> > Furthermore, as I don't have the ability to test this on Book 3E or
->> >> > 32 bits, limit the change to Book 3S and 64 bits.
->> >> >
->> >> > Finally, make the HAVE_RELIABLE_STACKTRACE Kconfig option depend on
->> >> > PPC_BOOK3S_64 for documentation purposes. Before this patch, it depended
->> >> > on PPC64 && CPU_LITTLE_ENDIAN and because CPU_LITTLE_ENDIAN implies
->> >> > PPC_BOOK3S_64, there's no functional change here.
->> >> >
->> >> > Fixes: df78d3f61480 ("powerpc/livepatch: Implement reliable stack tracing for the consistency model")
->> >> > Reported-by: Joe Lawrence <joe.lawrence@redhat.com>
->> >> > Signed-off-by: Nicolai Stange <nstange@suse.de>
->> >> > Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
->> >> > ---
->> >> >  arch/powerpc/Kconfig           | 2 +-
->> >> >  arch/powerpc/kernel/entry_64.S | 7 +++++++
->> >> >  2 files changed, 8 insertions(+), 1 deletion(-)
->> >> >
->> >> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> >> > index 2890d36eb531..73bf87b1d274 100644
->> >> > --- a/arch/powerpc/Kconfig
->> >> > +++ b/arch/powerpc/Kconfig
->> >> > @@ -220,7 +220,7 @@ config PPC
->> >> >       select HAVE_PERF_USER_STACK_DUMP
->> >> >       select HAVE_RCU_TABLE_FREE              if SMP
->> >> >       select HAVE_REGS_AND_STACK_ACCESS_API
->> >> > -     select HAVE_RELIABLE_STACKTRACE         if PPC64 && CPU_LITTLE_ENDIAN
->> >> > +     select HAVE_RELIABLE_STACKTRACE         if PPC_BOOK3S_64 && CPU_LITTLE_ENDIAN
->> >> >       select HAVE_SYSCALL_TRACEPOINTS
->> >> >       select HAVE_VIRT_CPU_ACCOUNTING
->> >> >       select HAVE_IRQ_TIME_ACCOUNTING
->> >> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
->> >> > index 435927f549c4..a2c168b395d2 100644
->> >> > --- a/arch/powerpc/kernel/entry_64.S
->> >> > +++ b/arch/powerpc/kernel/entry_64.S
->> >> > @@ -1002,6 +1002,13 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->> >> >       ld      r2,_NIP(r1)
->> >> >       mtspr   SPRN_SRR0,r2
->> >> >
->> >> > +     /*
->> >> > +      * Leaving a stale exception_marker on the stack can confuse
->> >> > +      * the reliable stack unwinder later on. Clear it.
->> >> > +      */
->> >> > +     li      r2,0
->> >> > +     std     r2,STACK_FRAME_OVERHEAD-16(r1)
->> >> > +
->> >>
->> >> Could you please double check, r4 is already 0 at this point
->> >> IIUC. So the change might be a simple
->> >>
->> >> std r4,STACK_FRAME_OVERHEAD-16(r1)
->> >>
->> >
->> > r4 is not 0, sorry for the noise
->>
->> Isn't it?
->
-> It is, I seem to be reading the wrong bits and confused myself, had to
-> re-read mtmsrd to ensure it does not modify RS, just MSR. So I guess
-> we could reuse r4.
+--Sig_/ocMURUR.zSRJHN=EfOUsA1T
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Yeah it's a bit hard to follow now that we have the split exit paths for
-user vs kernel. r4 does get used on the return to userspace case, by
-ACCOUNT_CPU_USER_EXIT(), but for the return to kernel it's still got
-zero in it.
+Hi all,
 
-> Should I send a patch on top of this? I have limited testing
-> infrastructure at the moment, I could use qemu
+Today's linux-next merge of the akpm-current tree got a conflict in:
 
-I'm not sure. It's a bit fragile relying on the r4 value being zero, it
-would be easy to accidentally reuse r4. Though it actually wouldn't
-matter as long as r4 never has "regshere" in it.
+  arch/powerpc/mm/pgtable-book3s64.c
 
-In fact we could store any random value there, it just needs to not be
-the exception marker. eg. we could just stick the SRR0 value in there,
-that should never alias with "regshere".
+between commit:
 
-But I think maybe we're over thinking it, the cost of the li is pretty
-minimal compared to everything else going on here, and this is only on
-the return to kernel case, which is arguably not a super hot path.
+  579b9239c1f3 ("powerpc/radix: Fix kernel crash with mremap()")
 
-cheers
+from the powerpc-fixes tree and commit:
+
+  41bde21e85a7 ("arch/powerpc/mm: Nest MMU workaround for mprotect RW upgra=
+de")
+
+from the akpm-current tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+diff --cc arch/powerpc/mm/pgtable-book3s64.c
+index ecd31569a120,9f154efed1ae..c11c60056669
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@@ -401,24 -398,27 +398,49 @@@ void arch_report_meminfo(struct seq_fil
+  }
+  #endif /* CONFIG_PROC_FS */
+ =20
+ +/*
+ + * For hash translation mode, we use the deposited table to store hash sl=
+ot
+ + * information and they are stored at PTRS_PER_PMD offset from related pmd
+ + * location. Hence a pmd move requires deposit and withdraw.
+ + *
+ + * For radix translation with split pmd ptl, we store the deposited table=
+ in the
+ + * pmd page. Hence if we have different pmd page we need to withdraw duri=
+ng pmd
+ + * move.
+ + *
+ + * With hash we use deposited table always irrespective of anon or not.
+ + * With radix we use deposited table only for anonymous mapping.
+ + */
+ +int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+ +			   struct spinlock *old_pmd_ptl,
+ +			   struct vm_area_struct *vma)
+ +{
+ +	if (radix_enabled())
+ +		return (new_pmd_ptl !=3D old_pmd_ptl) && vma_is_anonymous(vma);
+ +
+ +	return true;
+ +}
+++
++ pte_t ptep_modify_prot_start(struct vm_area_struct *vma, unsigned long ad=
+dr,
++ 			     pte_t *ptep)
++ {
++ 	unsigned long pte_val;
++=20
++ 	/*
++ 	 * Clear the _PAGE_PRESENT so that no hardware parallel update is
++ 	 * possible. Also keep the pte_present true so that we don't take
++ 	 * wrong fault.
++ 	 */
++ 	pte_val =3D pte_update(vma->vm_mm, addr, ptep, _PAGE_PRESENT, _PAGE_INVA=
+LID, 0);
++=20
++ 	return __pte(pte_val);
++=20
++ }
++=20
++ void ptep_modify_prot_commit(struct vm_area_struct *vma, unsigned long ad=
+dr,
++ 			     pte_t *ptep, pte_t old_pte, pte_t pte)
++ {
++ 	if (radix_enabled())
++ 		return radix__ptep_modify_prot_commit(vma, addr,
++ 						      ptep, old_pte, pte);
++ 	set_pte_at(vma->vm_mm, addr, ptep, pte);
++ }
+
+--Sig_/ocMURUR.zSRJHN=EfOUsA1T
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxabVUACgkQAVBC80lX
+0Gz8QggAgtrN83vfPaENyHMWdrr/t6+xWtG20urPqQGGTj3WBAPd5a5OoUUa9a21
+KPwB0+1kdwcFOmupAyCGRzz3+8Zw9jXGxZTSJqYajL1kM5tWoYTQMnSWOIonQDke
+hsVNwclWCd+8D8vzGw8qWN5V1+M3M+OAsck5RiyPMlgicUaDQELQ6bwttKRb0b+x
+2b/D1ZExPngCRkBnBzIcWsh4Br12QkTejlI0IJKGhSj5I7tBm6yWrqoS2/QU3y5Q
+5qlWv9znvKTWZB0boG04nzvQc5SpwUou678XG3qtf8eydW8Wrzu2yfH9uJ+tEhuh
+8Eux6sq1KODdt8k9JDjzh/QxHcCiSQ==
+=ko55
+-----END PGP SIGNATURE-----
+
+--Sig_/ocMURUR.zSRJHN=EfOUsA1T--
