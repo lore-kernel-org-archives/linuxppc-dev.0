@@ -2,103 +2,49 @@ Return-Path: <SRS0=q2Dt=QN=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE49FC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:28:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEA37C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 23:59:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36445218B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 22:28:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="TFhBhkr6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36445218B0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 35A0C20B1F
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 23:59:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35A0C20B1F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vx16579CzDqQf
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:28:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.4.54; helo=eur03-db5-obe.outbound.protection.outlook.com;
- envelope-from=leoyang.li@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="TFhBhkr6"; 
- dkim-atps=neutral
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40054.outbound.protection.outlook.com [40.107.4.54])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vz1s4DP8zDqPH
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 10:59:13 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vwzG3nFwzDqKX
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 09:26:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fDWhHuIytJeH0rtxQYHGe5xLAJ0ORLc6v5yI6Qjk6oY=;
- b=TFhBhkr6MzGiZwu46WIV6EXmk2E0EW1mrpZoSvuk4qYaYMPLTI6Pvl0wtWXsjJVGl+fB6m1WV8dSqs997Bv100PcUkxneB3kF5UIGVP1+nXHcjEvzUaw4zVjNnPQ4vAKt3nrE193r1G9ys843EYwukcJlYDZ5u3lFZP+atyh4TE=
-Received: from AM6PR04MB5863.eurprd04.prod.outlook.com (20.179.1.11) by
- AM6PR04MB4984.eurprd04.prod.outlook.com (20.177.33.215) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1580.20; Wed, 6 Feb 2019 22:26:39 +0000
-Received: from AM6PR04MB5863.eurprd04.prod.outlook.com
- ([fe80::6c22:d122:2edf:d948]) by AM6PR04MB5863.eurprd04.prod.outlook.com
- ([fe80::6c22:d122:2edf:d948%5]) with mapi id 15.20.1601.016; Wed, 6 Feb 2019
- 22:26:39 +0000
-From: Leo Li <leoyang.li@nxp.com>
-To: Pankaj Bansal <pankaj.bansal@nxp.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>
-Subject: RE: [PATCH v4 1/2] dt-bindings: soc: fsl: Document Qixis FPGA usage
-Thread-Topic: [PATCH v4 1/2] dt-bindings: soc: fsl: Document Qixis FPGA usage
-Thread-Index: AQHUvTubh4bC8JQ7jEC50paUIPX1DKXTWE+Q
-Date: Wed, 6 Feb 2019 22:26:39 +0000
-Message-ID: <AM6PR04MB5863F3BE0D7C560F3DFECD618F6F0@AM6PR04MB5863.eurprd04.prod.outlook.com>
-References: <20190205153924.7204-1-pankaj.bansal@nxp.com>
- <20190205153924.7204-2-pankaj.bansal@nxp.com>
-In-Reply-To: <20190205153924.7204-2-pankaj.bansal@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=leoyang.li@nxp.com; 
-x-originating-ip: [136.62.168.190]
-x-ms-publictraffictype: Email
-x-microsoft-exchange-diagnostics: 1; AM6PR04MB4984;
- 6:Y01MUPa6Y2igeJ0XEgBqiOGv4mFu0s+fTK1v3Q0hL7s1nZSlnjeLx9PQJ3kCR2IOpvGJvEF9FswFdOV56IneuRy2NoXYlyhNDiTPNcf661B6lWWtMvOGd9pnOz2Xdn8hyqFRmwfS2ffYTnpIZKqAMjYtvd+/HTKNlqIRsr82Xei8VfOWlTXMQ4UFj6eWcOzQFWHbFGLCmywXy0GXCmd9WpgP1unLAmatDkjEy+g+2C8z5YkkY/gFqsu9ONCdccQIgcFi0qEves54I8r2PZupvCGv2o5XT4lhmKSa5Q17Ai892RWt2Wx315syor4OnFKPJoFgc7ko33xq+MzR6/Q6D8nwAFZt3Afta42BhkaegX1tarjWfUoZp0rxx8dEWlZKKjzB0tVurx7PgPaCwosAtF1miR7BjMUK/I1ZxRSEFbMvWsn6w393NjhGR/NUAlq9bkezLbllGFywNxqhUs1Lkw==;
- 5:w8RJJctIJy/oEfvUmSQpjZrODqP+T5WYQvp5z2az9miMy1YKmgKe8pV99GRxoIGHNlEa+e4YU/Oq6HNg5RMHSST9MS9WmdS22bpjzRnRcPKbFw2QX7ooXg21kD5j2CZVBqIGP6YiR2b1ahF2lkgLt6ZwftXtg2V/lPZrvmZbFiQJSj83nr9F/VUQzTtVIQk1cM1aibRFfutCxGN50SzUWQ==;
- 7:57plv/WE+zz56ZYaT/XObX00hWXBm0mIFlRCFJvBDSE/GRtVDpQRFnMnFBgh4+l5wr3JUiWNIrOwH9OVnxy6lFqfHolmyGa5RhGpPOm5Ctk7gCfomLYD7ZIMpXA3mQqUoIJGyORwESDKikWUqmOqfw==
-x-ms-office365-filtering-correlation-id: 13441a9e-f750-4ac5-58eb-08d68c8229ef
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600110)(711020)(4605077)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:AM6PR04MB4984; 
-x-ms-traffictypediagnostic: AM6PR04MB4984:
-x-microsoft-antispam-prvs: <AM6PR04MB49848143C2D9F1ED1A82A3488F6F0@AM6PR04MB4984.eurprd04.prod.outlook.com>
-x-forefront-prvs: 0940A19703
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(39860400002)(136003)(346002)(396003)(376002)(366004)(13464003)(189003)(199004)(256004)(6436002)(99286004)(14444005)(55016002)(486006)(66066001)(478600001)(7696005)(11346002)(9686003)(446003)(14454004)(8676002)(476003)(54906003)(316002)(305945005)(7736002)(74316002)(81166006)(110136005)(8936002)(86362001)(229853002)(106356001)(6116002)(3846002)(76176011)(81156014)(105586002)(71190400001)(71200400001)(25786009)(26005)(97736004)(33656002)(186003)(102836004)(2906002)(6506007)(53546011)(53936002)(6246003)(68736007)(4326008);
- DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4984;
- H:AM6PR04MB5863.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: EzofSGqlbKftbPN0G6fepoiZHp5cj5h6FAqoPPZswjQ4ESg3z0Wl6gkRbk8kLsr2Jgqw/8mFbbvG09fHkteuGMAxAEAZys+JC36HnrcGw+jC9BoZClQnThMFUlH1/HSyJtctp/s5ZRV9F86y6DiPlrEHdYU+0QJ0Lceg4dvzg7VovtngjDPker7YikEG2IH3s1zcelYStaxd3GgDgWquHCc8PGD8dzzq5QulF1x7cdgENb4tllLhsFREA+CVIQzGYmVDUDo8frRoD+dg1SqJhLiatp+owHeHhSauVeXwLlzXYH0qmoEQcK6cS6ZFu/5DzwBFjiXvVvxP9ryYkpgbaKzZdGqghyrfhSSRPanOEyhMdCDHwSMVGi1DlQivTTsnsrmMjZAtNL2rBQvG9FszjEC/q7sIvSSSz+vTqYNwzgI=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vyzT6T2HzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 10:57:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 43vyzT448qz9s7h;
+ Thu,  7 Feb 2019 10:57:09 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Chandan Rajendra <chandan@linux.ibm.com>
+Subject: Re: BUG: memcmp(): Accessing invalid memory location
+In-Reply-To: <8003799.llySgfcyUA@localhost.localdomain>
+References: <17042269.pB4heZKTbK@localhost.localdomain>
+ <3007738.Qcfhteo05g@localhost.localdomain>
+ <87tvhhkufn.fsf@concordia.ellerman.id.au>
+ <8003799.llySgfcyUA@localhost.localdomain>
+Date: Thu, 07 Feb 2019 10:57:09 +1100
+Message-ID: <87imxwlbca.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 13441a9e-f750-4ac5-58eb-08d68c8229ef
-X-MS-Exchange-CrossTenant-originalarrivaltime: 06 Feb 2019 22:26:39.5862 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4984
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -110,78 +56,158 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "open list : OPEN FIRMWARE AND
- FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Simon Guo <wei.guo.simon@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGFua2FqIEJhbnNhbA0K
-PiBTZW50OiBUdWVzZGF5LCBGZWJydWFyeSA1LCAyMDE5IDQ6MTUgQU0NCj4gVG86IExlbyBMaSA8
-bGVveWFuZy5saUBueHAuY29tPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IE1h
-cmsNCj4gUnV0bGFuZCA8bWFyay5ydXRsYW5kQGFybS5jb20+DQo+IENjOiBsaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0K
-PiBvcGVuIGxpc3QgOiBPUEVOIEZJUk1XQVJFIEFORCBGTEFUVEVORUQgREVWSUNFIFRSRUUgQklO
-RElOR1MNCj4gPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgUGFua2FqIEJhbnNhbCA8cGFu
-a2FqLmJhbnNhbEBueHAuY29tPg0KPiBTdWJqZWN0OiBbUEFUQ0ggdjQgMS8yXSBkdC1iaW5kaW5n
-czogc29jOiBmc2w6IERvY3VtZW50IFFpeGlzIEZQR0EgdXNhZ2UNCj4gDQo+IGFuIEZQR0EtYmFz
-ZWQgc3lzdGVtIGNvbnRyb2xsZXIsIGNhbGxlZCDigJxRaXhpc+KAnSwgd2hpY2gNCj4gbWFuYWdl
-cyBzZXZlcmFsIGNyaXRpY2FsIHN5c3RlbSBmZWF0dXJlcywgaW5jbHVkaW5nOg0KPiDigKIgUmVz
-ZXQgc2VxdWVuY2luZw0KPiDigKIgUG93ZXIgc3VwcGx5IGNvbmZpZ3VyYXRpb24NCj4g4oCiIEJv
-YXJkIGNvbmZpZ3VyYXRpb24NCj4g4oCiIGhhcmR3YXJlIGNvbmZpZ3VyYXRpb24NCj4gDQo+IFRo
-ZSBxaXhpcyByZWdpc3RlcnMgYXJlIGFjY2Vzc2libGUgb3ZlciBvbmUgb3IgbW9yZSBzeXN0ZW0t
-c3BlY2lmaWMNCj4gaW50ZXJmYWNlcywgdHlwaWNhbGx5IEkyQywgSlRBRyBvciBhbiBlbWJlZGRl
-ZCBwcm9jZXNzb3IuDQoNCkluIHRoZW9yeSB0aGUgb24tYm9hcmQgRlBHQSBpcyBub3QgcGFydCBv
-ZiB0aGUgU29DLiAgVGhlIFFpeGlzIGRldmljZSBoYXMgYmVlbiBkZWZpbmVkIHByZXZpb3VzbHkg
-aW4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2JvYXJkL2ZzbC1ib2FyZC50eHQg
-ZmlsZS4gIEFsdGhvdWdoIG5vcm1hbGx5IGJvYXJkIGJpbmRpbmdzIGFyZSBkZWZpbmVkIGluIGFy
-Y2hpdGVjdHVyZSBzcGVjaWZpYyBiaW5kaW5nIGZvbGRlcnMsIHRoaXMgaXMgYSBnb29kIHBsYWNl
-IGZvciBib2FyZCByZWxhdGVkIHN0dWZmIHVzZWQgYWNyb3NzIG11bHRpcGxlIGFyY2hpdGVjdHVy
-ZXMuICBZb3UgY2FuIHVwZGF0ZSB0aGUgZXhpc3RpbmcgYmluZGluZyBpZiBuZWVkZWQuDQoNCj4g
-DQo+IFNpZ25lZC1vZmYtYnk6IFBhbmthaiBCYW5zYWwgPHBhbmthai5iYW5zYWxAbnhwLmNvbT4N
-Cj4gLS0tDQo+IA0KPiBOb3RlczoNCj4gICAgIFY0Og0KPiAgICAgLSBObyBDaGFuZ2UNCj4gICAg
-IFYzOg0KPiAgICAgLSBBZGRlZCBib2FyZG5hbWUgYmFzZWQgY29tcGF0aWJsZSBmaWVsZCBpbiBi
-aW5kaW5ncw0KPiAgICAgLSBBZGRlZCBiaW5kaW5ncyBmb3IgTU1JTyBiYXNlZCBGUEdBDQo+ICAg
-ICBWMjoNCj4gICAgIC0gTm8gY2hhbmdlDQo+IA0KPiAgLi4uL2JpbmRpbmdzL3NvYy9mc2wvcWl4
-aXNfY3RybC50eHQgICAgICAgICAgfCA1MyArKysrKysrKysrKysrKysrKysNCj4gIDEgZmlsZSBj
-aGFuZ2VkLCA1MyBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcWl4aXNfY3RybC50eHQNCj4gYi9Eb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9xaXhpc19jdHJsLnR4dA0KPiBuZXcg
-ZmlsZSBtb2RlIDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwMDAwMDAuLjVkNTEwZGYxNGJlOA0KPiAt
-LS0gL2Rldi9udWxsDQo+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9z
-b2MvZnNsL3FpeGlzX2N0cmwudHh0DQo+IEBAIC0wLDAgKzEsNTMgQEANCj4gKyogUUlYSVMgRlBH
-QSBibG9jaw0KPiArDQo+ICthbiBGUEdBLWJhc2VkIHN5c3RlbSBjb250cm9sbGVyLCBjYWxsZWQg
-4oCcUWl4aXPigJ0sIHdoaWNoDQo+ICttYW5hZ2VzIHNldmVyYWwgY3JpdGljYWwgc3lzdGVtIGZl
-YXR1cmVzLCBpbmNsdWRpbmc6DQo+ICvigKIgQ29uZmlndXJhdGlvbiBzd2l0Y2ggbW9uaXRvcmlu
-Zw0KPiAr4oCiIFBvd2VyIG9uL29mZiBzZXF1ZW5jaW5nDQo+ICvigKIgUmVzZXQgc2VxdWVuY2lu
-Zw0KPiAr4oCiIFBvd2VyIHN1cHBseSBjb25maWd1cmF0aW9uDQo+ICvigKIgQm9hcmQgY29uZmln
-dXJhdGlvbg0KPiAr4oCiIGhhcmR3YXJlIGNvbmZpZ3VyYXRpb24NCj4gK+KAoiBCYWNrZ3JvdW5k
-IHBvd2VyIGRhdGEgY29sbGVjdGlvbiAoRENNKQ0KPiAr4oCiIEZhdWx0IG1vbml0b3JpbmcNCj4g
-K+KAoiBSQ1cgYnlwYXNzIFNSQU0gKHJlcGxhY2UgZmxhc2ggUkNXIHdpdGggaW50ZXJuYWwgUkNX
-KSAoTk9SIG9ubHkpDQo+ICvigKIgRGVkaWNhdGVkIGZ1bmN0aW9uYWwgdmFsaWRhdGlvbiBibG9j
-a3MgKFBPU3QvSVJTLCB0cmlnZ2VyZWQgZXZlbnQsIGFuZCBzbw0KPiBvbikNCj4gK+KAoiBJMkMg
-bWFzdGVyIGZvciByZW1vdGUgYm9hcmQgY29udHJvbCBldmVuIHdpdGggbm8gRFVUIGF2YWlsYWJs
-ZQ0KPiArDQo+ICtUaGUgcWl4aXMgcmVnaXN0ZXJzIGFyZSBhY2Nlc3NpYmxlIG92ZXIgb25lIG9y
-IG1vcmUgc3lzdGVtLXNwZWNpZmljDQo+IGludGVyZmFjZXMsDQo+ICt0eXBpY2FsbHkgSTJDLCBK
-VEFHIG9yIGFuIGVtYmVkZGVkIHByb2Nlc3Nvci4NCj4gKw0KPiArRlBHQSBjb25uZWN0ZWQgdG8g
-STJDOg0KPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4gKw0KPiArIC0gY29tcGF0aWJsZTogc2hv
-dWxkIGJlIGEgYm9hcmQtc3BlY2lmaWMgc3RyaW5nIGZvbGxvd2VkIGJ5IGEgc3RyaW5nDQo+ICsg
-ICBpbmRpY2F0aW5nIHRoZSB0eXBlIG9mIEZQR0EuICBFeGFtcGxlOg0KPiArCSJmc2wsPGJvYXJk
-Pi1mcGdhIiwgImZzbCxmcGdhLXFpeGlzLWkyYyINCj4gKyAtIHJlZyA6IGkyYyBhZGRyZXNzIG9m
-IHRoZSBxaXhpcyBkZXZpY2UuDQo+ICsNCj4gK0V4YW1wbGUgKExYMjE2MEEtUURTKToNCj4gKwkv
-KiBUaGUgRlBHQSBub2RlICovDQo+ICsgICAgICAgIGZwZ2FANjYgew0KPiArCQljb21wYXRpYmxl
-ID0gImZzbCxseDIxNjBhcWRzLWZwZ2EiLCAiZnNsLGZwZ2EtcWl4aXMtaTJjIjsNCj4gKwkJcmVn
-ID0gPDB4NjY+Ow0KPiArCQkjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gKwkJI3NpemUtY2VsbHMg
-PSA8MD47DQo+ICsJfQ0KPiArDQo+ICsqIEZyZWVzY2FsZSBvbi1ib2FyZCBGUEdBDQo+ICsNCj4g
-K1RoaXMgaXMgdGhlIG1lbW9yeS1tYXBwZWQgcmVnaXN0ZXJzIGZvciBvbiBib2FyZCBGUEdBLg0K
-PiArDQo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiArLSBjb21wYXRpYmxlOiBzaG91bGQgYmUg
-YSBib2FyZC1zcGVjaWZpYyBzdHJpbmcgZm9sbG93ZWQgYnkgYSBzdHJpbmcNCj4gKyAgaW5kaWNh
-dGluZyB0aGUgdHlwZSBvZiBGUEdBLiAgRXhhbXBsZToNCj4gKwkiZnNsLDxib2FyZD4tZnBnYSIs
-ICJmc2wsZnBnYS1xaXhpcyINCj4gKy0gcmVnOiBzaG91bGQgY29udGFpbiB0aGUgYWRkcmVzcyBh
-bmQgdGhlIGxlbmd0aCBvZiB0aGUgRlBHQSByZWdpc3RlciBzZXQuDQo+ICsNCj4gK0V4YW1wbGUg
-KExTMjA4MEEtUkRCKToNCj4gKw0KPiArICAgICAgICBjcGxkQDMsMCB7DQo+ICsgICAgICAgICAg
-ICAgICAgY29tcGF0aWJsZSA9ICJmc2wsbHMyMDgwYXJkYi1mcGdhIiwgImZzbCxmcGdhLXFpeGlz
-IjsNCj4gKyAgICAgICAgICAgICAgICByZWcgPSA8MHgzIDAgMHgxMDAwMD47DQo+ICsgICAgICAg
-IH07DQo+ICsNCj4gLS0NCj4gMi4xNy4xDQoNCg==
+Chandan Rajendra <chandan@linux.ibm.com> writes:
+> On Wednesday, February 6, 2019 5:20:04 PM IST Michael Ellerman wrote:
+>> Chandan Rajendra <chandan@linux.ibm.com> writes:
+>> > On Friday, February 1, 2019 4:43:52 PM IST Michael Ellerman wrote:
+>> >> Michael Ellerman <mpe@ellerman.id.au> writes:
+>> >> 
+>> >> > Adding Simon who wrote the code.
+>> >> >
+>> >> > Chandan Rajendra <chandan@linux.ibm.com> writes:
+>> >> >> When executing fstests' generic/026 test, I hit the following call trace,
+>> >> >>
+>> >> >> [  417.061038] BUG: Unable to handle kernel data access at 0xc00000062ac40000
+>> >> >> [  417.062172] Faulting instruction address: 0xc000000000092240
+>> >> >> [  417.062242] Oops: Kernel access of bad area, sig: 11 [#1]
+>> >> >> [  417.062299] LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
+>> >> >> [  417.062366] Modules linked in:
+>> >> >> [  417.062401] CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
+>> >> >> [  417.062495] NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
+>> >> >> [  417.062567] REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
+>> >> >> [  417.062660] MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
+>> >> >> [  417.062750] CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
+>> >> >>                GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
+>> >> >>                GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
+>> >> >>                GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
+>> >> >>                GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
+>> >> >>                GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>> >> >>                GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
+>> >> >>                GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
+>> >> >>                GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
+>> >> >> [  417.063563] NIP [c000000000092240] memcmp+0x120/0x690
+>> >> >> [  417.063635] LR [c00000000066a55c] xfs_attr3_leaf_lookup_int+0x53c/0x5b0
+>> >> >> [  417.063709] Call Trace:
+>> >> >> [  417.063744] [c00000062c0c36c0] [c00000000066a098] xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
+>> >> >> [  417.063851] [c00000062c0c3760] [c000000000693f8c] xfs_da3_node_lookup_int+0x32c/0x5a0
+>> >> >> [  417.063944] [c00000062c0c3820] [c0000000006634a0] xfs_attr_node_addname+0x170/0x6b0
+>> >> >> [  417.064034] [c00000062c0c38b0] [c000000000664ffc] xfs_attr_set+0x2ac/0x340
+>> >> >> [  417.064118] [c00000062c0c39a0] [c000000000758d40] __xfs_set_acl+0xf0/0x230
+>> >> >> [  417.064190] [c00000062c0c3a00] [c000000000758f50] xfs_set_acl+0xd0/0x160
+>> >> >> [  417.064268] [c00000062c0c3aa0] [c0000000004b69b0] set_posix_acl+0xc0/0x130
+>> >> >> [  417.064339] [c00000062c0c3ae0] [c0000000004b6a88] posix_acl_xattr_set+0x68/0x110
+>> >> >> [  417.064412] [c00000062c0c3b20] [c0000000004532d4] __vfs_setxattr+0xa4/0x110
+>> >> >> [  417.064485] [c00000062c0c3b80] [c000000000454c2c] __vfs_setxattr_noperm+0xac/0x240
+>> >> >> [  417.064566] [c00000062c0c3bd0] [c000000000454ee8] vfs_setxattr+0x128/0x130
+>> >> >> [  417.064638] [c00000062c0c3c30] [c000000000455138] setxattr+0x248/0x600
+>> >> >> [  417.064710] [c00000062c0c3d90] [c000000000455738] path_setxattr+0x108/0x120
+>> >> >> [  417.064785] [c00000062c0c3e00] [c000000000455778] sys_setxattr+0x28/0x40
+>> >> >> [  417.064858] [c00000062c0c3e20] [c00000000000bae4] system_call+0x5c/0x70
+>> >> >> [  417.064930] Instruction dump:
+>> >> >> [  417.064964] 7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
+>> >> >> [  417.065051] 4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
+>> >> >> [  417.065150] ---[ end trace 0d060411b5e3741b ]---
+>> >> >>
+>> >> >>
+>> >> >> Both the memory locations passed to memcmp() had "SGI_ACL_FILE" and len
+>> >> >> argument of memcmp() was set to 12. s1 argument of memcmp() had the value
+>> >> >> 0x00000000f4af0485, while s2 argument had the value 0x00000000ce9e316f.
+>> >> >>
+>> >> >> The following is the code path within memcmp() that gets executed for the
+>> >> >> above mentioned values,
+>> >> >>
+>> >> >> - Since len (i.e. 12) is greater than 7, we branch to .Lno_short.
+>> >> >> - We then prefetch the contents of r3 & r4 and branch to
+>> >> >>   .Ldiffoffset_8bytes_make_align_start.
+>> >> >> - Under .Ldiffoffset_novmx_cmp, Since r3 is unaligned we end up comparing
+>> >> >>   "SGI" part of the string. r3's value is then aligned. r4's value is
+>> >> >>   incremented by 3. For comparing the remaining 9 bytes, we jump to
+>> >> >>   .Lcmp_lt32bytes.
+>> >> >> - Here, 8 bytes of the remaining 9 bytes are compared and execution moves to
+>> >> >>   .Lcmp_rest_lt8bytes.
+>> >> >> - Here we execute "LD rB,0,r4". In the case of this bug, r4 has an unaligned
+>> >> >>   value and hence ends up accessing the "next" double word. The "next" double
+>> >> >>   word happens to occur after the last page mapped into the kernel's address
+>> >> >>   space and hence this leads to the previously listed oops.
+>> >> >
+>> >> > Thanks for the analysis.
+>> >> >
+>> >> > This is just a bug, we can't read past the end of the source or dest.
+>> >> 
+>> >> How about this, works for me.
+>> >> 
+>> >> cheers
+>> >> 
+>> >> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+>> >> index 844d8e774492..2a302158cb53 100644
+>> >> --- a/arch/powerpc/lib/memcmp_64.S
+>> >> +++ b/arch/powerpc/lib/memcmp_64.S
+>> >> @@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
+>> >>  	beq	.Lzero
+>> >>  
+>> >>  .Lcmp_rest_lt8bytes:
+>> >> -	/* Here we have only less than 8 bytes to compare with. at least s1
+>> >> -	 * Address is aligned with 8 bytes.
+>> >> -	 * The next double words are load and shift right with appropriate
+>> >> -	 * bits.
+>> >> +	/*
+>> >> +	 * Here we have less than 8 bytes left to compare with. We mustn't read
+>> >> +	 * past the end of either source or dest.
+>> >>  	 */
+>> >> -	subfic  r6,r5,8
+>> >> -	slwi	r6,r6,3
+>> >> -	LD	rA,0,r3
+>> >> -	LD	rB,0,r4
+>> >> -	srd	rA,rA,r6
+>> >> -	srd	rB,rB,r6
+>> >> -	cmpld	cr0,rA,rB
+>> >> +
+>> >> +	/* If we have less than 4 bytes, just do byte at a time */
+>> >> +	cmpwi   cr1, r5, 4
+>> >> +	blt	cr1, .Lshort
+>> >> +
+>> >> +	/* Compare 4 bytes */
+>> >> +	LW	rA,0,r3
+>> >> +	LW	rB,0,r4
+>> >> +	cmpd	cr0,rA,rB
+>> >>  	bne	cr0,.LcmpAB_lightweight
+>> >> -	b	.Lzero
+>> >> +
+>> >> +	/* If we had exactly 4 bytes left, we're done now */
+>> >> +	beq	cr1, .Lzero
+>> >> +
+>> >> +	/* Otherwise do what ever's left a byte at a time */
+>> >> +	subi	r5, r5, 4
+>> >> +	addi	r3, r3, 4
+>> >> +	addi	r4, r4, 4
+>> >> +	b	.Lshort
+>> >>  
+>> >>  .Lnon_zero:
+>> >>  	mr	r3,rC
+>> >> 
+>> >> 
+>> >
+>> > With the above patch, Linux kernel does not end up in oops. Hence,
+>> >
+>> > Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
+>> 
+>> Thanks.
+>> 
+>> How many times had you hit the original oops? ie. was it easily
+>> reproducible?
+>
+> I could recreate the issue within 20 iterations of the test. For verifying
+> your patch, I let the test run for 500 iterations.
+
+OK great. Thanks.
+
+I guess I should be running fstests. What's the easiest way to do that,
+is there an avocado thing for it?
+
+cheers
