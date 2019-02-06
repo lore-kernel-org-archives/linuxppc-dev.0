@@ -7,58 +7,58 @@ X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55CB8C282CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:50:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43FFEC282CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:51:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BE8FD2184E
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:50:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AD29E2184E
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 01:51:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="mhE8N8se"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE8FD2184E
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="ll0tAyxo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD29E2184E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43vPXC4gxBzDqPC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:50:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43vPZ042DYzDqM4
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Feb 2019 12:51:36 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43vPSQ0YjNzDqLd
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:46:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43vPSP6pvXzDqLb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="mhE8N8se"; dkim-atps=neutral
+ header.b="ll0tAyxo"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 43vPSP61PGz9sNG; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
+ id 43vPSP5BhFz9sN9; Wed,  6 Feb 2019 12:46:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1549417605;
- bh=lLTZYYqjvKqM7VMqWxJMWdlKjOxhY3TGsVW5pEnZzeY=;
+ bh=wW/8kwsIiagLdsZWpPopYyBf9Xc1zJlUbrMigm1vJUQ=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=mhE8N8se/wHO/g88R25sr1wsU9TjsBEXjeT3/AkKAXlnsXK3UMSUnbBvpIOWRLo7L
- STt90TnVCjkHjxjyUcAAuFvXdiWuM4JLCeTAKYCkIbvHiddovEV3UUpIaBvsTLVSw+
- UdhU1oW+QkGomjuzwEuWIe+8CdW9guPbL4v8D6fk=
-Date: Wed, 6 Feb 2019 12:23:29 +1100
+ b=ll0tAyxovtX3s/eMt2/QOsFzlwZnTtOEOYQq0aZ2MAvwdQ3IPhQLRfH+Z0x3jLEn7
+ HWREjswOmqGJuqliqLski9+sjWZaqP7DgU/8pT1c9K2PtmTzuQOxRbyQuqO3XPUtUC
+ UY07tHsvcGzNn0jH4uBXT/cQj6qOVvL0vPi6jwnc=
+Date: Wed, 6 Feb 2019 12:23:09 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
- source configuration
-Message-ID: <20190206012329.GQ22661@umbus.fritz.box>
+Subject: Re: [PATCH 06/19] KVM: PPC: Book3S HV: add a GET_ESB_FD control to
+ the XIVE native device
+Message-ID: <20190206012308.GP22661@umbus.fritz.box>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-16-clg@kaod.org>
- <20190204052148.GH1927@umbus.fritz.box>
- <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
- <20190205053233.GG22661@umbus.fritz.box>
- <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
+ <20190107184331.8429-7-clg@kaod.org>
+ <20190204044531.GB1927@umbus.fritz.box>
+ <69791b73-f93e-6957-92e8-5b8620b87731@kaod.org>
+ <20190205052822.GE22661@umbus.fritz.box>
+ <4d565738-a99b-0333-8533-037677358faa@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="KHqYxKoy+XnO4RVf"
+ protocol="application/pgp-signature"; boundary="v9g2r9e2kvGs7M7R"
 Content-Disposition: inline
-In-Reply-To: <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
+In-Reply-To: <4d565738-a99b-0333-8533-037677358faa@kaod.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,92 +78,70 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---KHqYxKoy+XnO4RVf
+--v9g2r9e2kvGs7M7R
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Feb 05, 2019 at 02:03:11PM +0100, C=E9dric Le Goater wrote:
-> On 2/5/19 6:32 AM, David Gibson wrote:
-> > On Mon, Feb 04, 2019 at 05:07:28PM +0100, C=E9dric Le Goater wrote:
-> >> On 2/4/19 6:21 AM, David Gibson wrote:
-> >>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, C=E9dric Le Goater wrote:
-> >>>> Theses are use to capure the XIVE EAS table of the KVM device, the
-> >>>> configuration of the source targets.
+On Tue, Feb 05, 2019 at 01:55:40PM +0100, C=E9dric Le Goater wrote:
+> On 2/5/19 6:28 AM, David Gibson wrote:
+> > On Mon, Feb 04, 2019 at 12:30:39PM +0100, C=E9dric Le Goater wrote:
+> >> On 2/4/19 5:45 AM, David Gibson wrote:
+> >>> On Mon, Jan 07, 2019 at 07:43:18PM +0100, C=E9dric Le Goater wrote:
+> >>>> This will let the guest create a memory mapping to expose the ESB MM=
+IO
+> >>>> regions used to control the interrupt sources, to trigger events, to
+> >>>> EOI or to turn off the sources.
 > >>>>
 > >>>> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
 > >>>> ---
-> >>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
-> >>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 ++++++++++++++++++++++++=
+> >>>>  arch/powerpc/include/uapi/asm/kvm.h   |  4 ++
+> >>>>  arch/powerpc/kvm/book3s_xive_native.c | 97 ++++++++++++++++++++++++=
 +++
-> >>>>  2 files changed, 98 insertions(+)
+> >>>>  2 files changed, 101 insertions(+)
 > >>>>
 > >>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/incl=
 ude/uapi/asm/kvm.h
-> >>>> index 1a8740629acf..faf024f39858 100644
+> >>>> index 8c876c166ef2..6bb61ba141c2 100644
 > >>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
 > >>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> >>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
-> >>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
-> >>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
-> >>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
-> >>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
+> >>>> @@ -675,4 +675,8 @@ struct kvm_ppc_cpu_char {
+> >>>>  #define  KVM_XICS_PRESENTED		(1ULL << 43)
+> >>>>  #define  KVM_XICS_QUEUED		(1ULL << 44)
 > >>>> =20
-> >>>>  /* Layout of 64-bit XIVE source attribute values */
-> >>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
-> >>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
-> >>>> =20
-> >>>> +/* Layout of 64-bit eas attribute values */
-> >>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
-> >>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
-> >>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
-> >>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
-> >>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
-> >>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
-> >>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
-> >>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
-> >>>> +
-> >>>>  #endif /* __LINUX_KVM_POWERPC_H */
-> >>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kv=
-m/book3s_xive_native.c
-> >>>> index f2de1bcf3b35..0468b605baa7 100644
-> >>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> >>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> >>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvmpp=
-c_xive *xive, long irq, u64 addr)
-> >>>>  	return 0;
-> >>>>  }
-> >>>> =20
-> >>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, lon=
-g irq,
-> >>>> +				      u64 addr)
+> >>>> +/* POWER9 XIVE Native Interrupt Controller */
+> >>>> +#define KVM_DEV_XIVE_GRP_CTRL		1
+> >>>> +#define   KVM_DEV_XIVE_GET_ESB_FD	1
 > >>>
-> >>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" EAS
-> >>> values, but rather essentially the "source config" in the terminology
-> >>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
-> >>> the EAS, but since it's the PAPR architected state that we need to
-> >>> preserve across migration, I'd prefer to stick as close as we can to
-> >>> the PAPR terminology.
+> >>> Introducing a new FD for ESB and TIMA seems overkill.  Can't you get
+> >>> to both with an mmap() directly on the xive device fd?  Using the
+> >>> offset to distinguish which one to map, obviously.
 > >>
-> >> But we don't have an equivalent name in the PAPR specs for the tuple=
+> >> The page offset would define some sort of user API. It seems feasible.
+> >> But I am not sure this would be practical in the future if we need to=
 =20
-> >> (prio, server). We could use the generic 'target' name may be ? even=
-=20
-> >> if this is usually referring to a CPU number.
+> >> tune the length.
 > >=20
-> > Um.. what?  That's about terminology for one of the fields in this
-> > thing, not about the name for the thing itself.
-> >=20
-> >> Or, IVE (Interrupt Vector Entry) ? which makes some sense.=20
-> >> This is was the former name in HW. I think we recycle it for KVM.
-> >=20
-> > That's a terrible idea, which will make a confusing situation even
-> > more confusing.
+> > Um.. why not?  I mean, yes the XIVE supports rather a lot of
+> > interrupts, but we have 64-bits of offset we can play with - we can
+> > leave room for billions of ESB slots and still have room for billions
+> > of VPs.
 >=20
-> Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very=20
-> similar to the hcalls anyhow.
+> So the first 4 pages could be the TIMA pages and then would come =20
+> the pages for the interrupt ESBs. I think that we can have different=20
+> vm_fault handler for each mapping.
 
-Yes, I think that's a good idea.
+Um.. no, I'm saying you don't need to tightly pack them.  So you could
+have the ESB pages at 0, the TIMA at, say offset 2^60.
+
+> I wonder how this will work out with pass-through. As Paul said in=20
+> a previous email, it would be better to let QEMU request a new=20
+> mapping to handle the ESB pages of the device being passed through.
+> I guess this is not a special case, just another offset and length.
+
+Right, if we need multiple "chunks" of ESB pages we can given them
+each their own terabyte or several.  No need to be stingy with address
+space.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -171,24 +149,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---KHqYxKoy+XnO4RVf
+--v9g2r9e2kvGs7M7R
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxaNxEACgkQbDjKyiDZ
-s5IYoQ/+IFK+pviiniOJrYiZUNn1YIt9Cxr9VEZr1GRlTeJsPpfYxHh7flVKnahR
-uM59LmduCnU2mF0O+gUQttwZXvI2IuMPVfFcWwwJXItB+jLC6so1dALXSulvDF+6
-XoITD7KxNdyHrYTpS7pSq2f4O3ANV7YS1pni27iPQQSwPw+2wfpVgtg0ta2JnrV2
-MkyJsPzqbBu5T0jpXy2UzU1imvlSddL1ZW0pixaz1YHGf07PT+9sD5NnqeCBS0lI
-N89IniBjMGmUaRLM/kbpoJF5UYVO8OTOfaCgtxvQuQlZAyXTSGAIXRqXMr7JOivH
-nD/BHlwvaYNHButLIs3/HSfLmCHwwDtyifGj0+ZERxQPuT2GPaZ0iTksjBgOnoJm
-Ty0+WXIYz8RoyvkUArIwbwqRZfTLEfsWkOuTGAjkcsBAhsYvCfrcEm+g0zj+w9Db
-blGJy1KFWx/EcNhSuujQsY0KDc53R5y8/4rCodlXiGj4v1QuavpY8Y6qN9Q+q3/S
-eWklbV4N6KllLnqXP0KyDdSIqZIW6tr5aiEYZ7cn4IHgqsuu6USTebVMsvBx06Sl
-jW4wZz9pF+9nDRVCPeUZaNFF98Sjvx4weN4dSv8PWgmz37Jq1iO3TgUOI+NPsfGv
-DAT+eoT2OMIJsf0TIL3/ue4/AQNhx+whgX7d7LG7Q2y2iZe8Xio=
-=PG6F
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxaNvwACgkQbDjKyiDZ
+s5LZbQ//Z8rGXvbT3WT9eTos2kBsnCDO+PRirLlo4YnBAGxGV3o+umxTugKYJ9n8
+dRQNKhQWOTLwaPvunCj4S9DqX8NePF4qO2wbtF0GByfIFEYnXOEvS1ejzSxYikb6
+zzOAfJ4IU/Nlw1t11v5DnO4QRwxm9r9CPse4s/Yw2OWjVun+IWL7INz5qIG/gAWA
+8bjwPcLrUoNDFn69kTrLJNzp83XK/vOeCpgA9h9etFtD6fWLJqH6g289vTg9JTRy
+70/SQYBmnh64gTYIJOHV16qUHX3oUJGh0fdTY+9kMZIe9uewwcRNrdhqV6SQ/3lc
+LAx7T7nWGxF7y0QDkLCiFhJGHGZuM8sbZFkYAKdSyirj0Dli8Z42K7Tv7Tfrbxtr
+k9hkg+KhAoTMPC3f9cm1DwhDJX2wljnEkoIbZ2iv1p7z6BvQJgLpdscSETlDhdAs
+QwGsSu6MChKz4QQETt+KBlTRMUoMDhwBGKW+fHWfwIFsNg5pZHkosAJfj8M0q4nB
+XLwDTIkD6xdZuFsaVu17L9ijD00gZD2E/J9d0a/KjCjPjy0zU7Ce0aNNACOFNCtb
+b4KGtmDTT9egtSLXAVMHHZ+HeQiYluFgyK+38+FYuhK8Cit7PCr/V/YiLDDaTwAp
+Jywd+vy2oqjLV2RgUKxiwQhFwZXhpPKDuxMn1EWYV9tb7YrWrfs=
+=HgWx
 -----END PGP SIGNATURE-----
 
---KHqYxKoy+XnO4RVf--
+--v9g2r9e2kvGs7M7R--
