@@ -2,46 +2,66 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 186B3C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:05:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68663C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:07:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5889221904
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:05:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5889221904
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id ECF6F21904
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:07:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECF6F21904
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wJSd3Q2BzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 00:05:05 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wJWs4bxwzDq9d
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 00:07:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wJ3j5G68zDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:46:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wJCG5zS2zDqSC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+ header.from=kernel.crashing.org
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43wJCG23Mfz8tRw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 43wJ3j1jW4z9sNL; Thu,  7 Feb 2019 23:46:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 43wJ3h6wmRz9sNQ; Thu,  7 Feb 2019 23:46:56 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 7/7] powerpc/pseries: Add firmware details to dump stack
- arch description
-Date: Thu,  7 Feb 2019 23:46:35 +1100
-Message-Id: <20190207124635.3885-7-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190207124635.3885-1-mpe@ellerman.id.au>
-References: <20190207124635.3885-1-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+ id 43wJCG0tLQz9s4Z; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43wJCF2zBBz9s4V
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2019 23:53:28 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x17Cr44m001148;
+ Thu, 7 Feb 2019 06:53:05 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x17Cquoh001141;
+ Thu, 7 Feb 2019 06:52:57 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 7 Feb 2019 06:52:56 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/64: Fix memcmp reading past the end of src/dest
+Message-ID: <20190207125256.GW14180@gate.crashing.org>
+References: <20190207115313.31078-1-mpe@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190207115313.31078-1-mpe@ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -53,82 +73,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, pmladek@suse.com, linux-kernel@vger.kernel.org,
- sergey.senozhatsky@gmail.com, tj@kernel.org, akpm@linux-foundation.org,
- dyoung@redhat.com
+Cc: linuxppc-dev@ozlabs.org, chandan@linux.ibm.com, npiggin@gmail.com,
+ daniel@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Once we have unflattened the device tree we can easily grab these
-firmware version details and add them to dump stack arch description,
-which is printed in case of an oops.
+On Thu, Feb 07, 2019 at 10:53:13PM +1100, Michael Ellerman wrote:
+> Chandan reported that fstests' generic/026 test hit a crash:
 
-Currently /hypervisor only exists on KVM, so if we don't find that look
-for something that suggests we're on phyp and if so that's probably a
-good guess. The actual content of the ibm,fw-net-version seems to be
-a full path so is too long to add to the description.
+> The instruction dump decodes as:
+>   subfic  r6,r5,8
+>   rlwinm  r6,r6,3,0,28
+>   ldbrx   r9,0,r3
+>   ldbrx   r10,0,r4	<-
+> 
+> Which shows us doing an 8 byte load from c00000062ac3fff9, which
+> crosses the page boundary at c00000062ac40000 and faults.
+> 
+> It's not OK for memcmp to read past the end of the source or
+> destination buffers.
 
-Hardware name: ... of:'IBM,FW860.42 (SV860_138)' hv:phyp
+It's not okay to access memory pages unsolicited.  Reading past the end
+is fine per se.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/setup.c | 35 ++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 41f62ca27c63..dfb084f5a573 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -923,6 +923,39 @@ static void pSeries_cmo_feature_init(void)
- 	pr_debug(" <- fw_cmo_feature_init()\n");
- }
- 
-+static void __init pseries_add_dump_stack_arch_desc(void)
-+{
-+	struct device_node *dn;
-+	const char *prop;
-+
-+	dn = of_find_node_by_path("/openprom");
-+	if (dn) {
-+		prop = of_get_property(dn, "model", NULL);
-+		if (prop)
-+			dump_stack_add_arch_desc("of:'%s'", prop);
-+
-+		of_node_put(dn);
-+	}
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+	if (dn) {
-+		prop = of_get_property(dn, "compatible", NULL);
-+		if (prop)
-+			dump_stack_add_arch_desc("hv:%s", prop);
-+
-+		of_node_put(dn);
-+	} else {
-+		dn = of_find_node_by_path("/");
-+		if (dn) {
-+			prop = of_get_property(dn, "ibm,fw-net-version", NULL);
-+			if (prop)
-+				dump_stack_add_arch_desc("hv:phyp");
-+
-+			of_node_put(dn);
-+		}
-+	}
-+}
-+
- /*
-  * Early initialization.  Relocation is on but do not reference unbolted pages
-  */
-@@ -930,6 +963,8 @@ static void __init pseries_init(void)
- {
- 	pr_debug(" -> pseries_init()\n");
- 
-+	pseries_add_dump_stack_arch_desc();
-+
- #ifdef CONFIG_HVC_CONSOLE
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		hvc_vio_init_early();
--- 
-2.20.1
-
+Segher
