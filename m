@@ -3,21 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89ACBC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:05:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A70C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:07:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1287F2175B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:05:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1287F2175B
+	by mail.kernel.org (Postfix) with ESMTPS id 7D0412175B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:07:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D0412175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wW6d6slXzDqSx
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 08:05:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wW8r0HXFzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 08:07:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -27,22 +28,22 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wTZQ6vZTzDq9T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:55:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wTh94hcLzDqQb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 07:00:41 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
  [10.5.11.16])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 5909AC002965;
- Thu,  7 Feb 2019 19:55:40 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 7771DE6A91;
+ Thu,  7 Feb 2019 20:00:39 +0000 (UTC)
 Received: from llong.remote.csb (dhcp-17-35.bos.redhat.com [10.18.17.35])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 194345C240;
- Thu,  7 Feb 2019 19:55:38 +0000 (UTC)
-Subject: Re: [PATCH-tip 15/22] locking/rwsem: Merge owner into count on x86-64
-To: Peter Zijlstra <peterz@infradead.org>
+ by smtp.corp.redhat.com (Postfix) with ESMTP id DAE305C22D;
+ Thu,  7 Feb 2019 20:00:33 +0000 (UTC)
+Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
+ rwsem features
+To: Davidlohr Bueso <dave@stgolabs.net>
 References: <1549566446-27967-1-git-send-email-longman@redhat.com>
- <1549566446-27967-16-git-send-email-longman@redhat.com>
- <20190207194542.GG32511@hirez.programming.kicks-ass.net>
+ <20190207195119.lglz4lb7cnf4ndn2@linux-r8p5>
 From: Waiman Long <longman@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
@@ -89,18 +90,18 @@ Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
  wGA5uquIgb8p3/ENgYpDPrsZ72CxVC2NEJjJwwnRBStjJOGQX4lV1uhN1XsZjBbRHdKF2W9g
  weim8xU=
 Organization: Red Hat
-Message-ID: <7fb70e32-733b-8be5-11d7-655070161c6c@redhat.com>
-Date: Thu, 7 Feb 2019 14:55:37 -0500
+Message-ID: <45b7bbb8-c953-9951-ae6f-e2c3202e5cf2@redhat.com>
+Date: Thu, 7 Feb 2019 15:00:24 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20190207194542.GG32511@hirez.programming.kicks-ass.net>
+In-Reply-To: <20190207195119.lglz4lb7cnf4ndn2@linux-r8p5>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Content-Language: en-US
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Thu, 07 Feb 2019 19:55:41 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.38]); Thu, 07 Feb 2019 20:00:40 +0000 (UTC)
 X-Mailman-Approved-At: Fri, 08 Feb 2019 07:26:14 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -114,55 +115,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
+ linux-ia64@vger.kernel.org, Tim Chen <tim.c.chen@linux.intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, linux-hexagon@vger.kernel.org,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
  linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/07/2019 02:45 PM, Peter Zijlstra wrote:
-> On Thu, Feb 07, 2019 at 02:07:19PM -0500, Waiman Long wrote:
->> On 32-bit architectures, there aren't enough bits to hold both.
->> 64-bit architectures, however, can have enough bits to do that. For
->> x86-64, the physical address can use up to 52 bits. That is 4PB of
->> memory. That leaves 12 bits available for other use. The task structur=
-e
->> pointer is also aligned to the L1 cache size. That means another 6 bit=
-s
->> (64 bytes cacheline) will be available. Reserving 2 bits for status
->> flags, we will have 16 bits for the reader count.  That can supports
->> up to (64k-1) readers.
-> *groan*...
+On 02/07/2019 02:51 PM, Davidlohr Bueso wrote:
+> On Thu, 07 Feb 2019, Waiman Long wrote:
+>> 30 files changed, 1197 insertions(+), 1594 deletions(-)
 >
-> So take qrwlock's idea for a queue, then make the count value (similar
-> to the new mutex); that is have a bit0 be a r/w bit, when w bits 6-N ar=
-e
-> owner, when r they are reader-count. bit1 can be a pending bit, bit2 a
-> handoff bit etc..
+> Performance numbers on numerous workloads, pretty please.
 >
-> That should fit and work on 32bit and 64bit without issue.
+> I'll go and throw this at my mmap_sem intensive workloads
+> I've collected.
 >
-> I have a half-arsed rwsem-atomic.c somewhere that does just that. I jus=
-t
-> never got around to doing all the optimistic spin and steal crap that
-> makes our current rwsem fly.
->
-> And that nicely gets rid of that mind bending BIAS crud.
+> Thanks,
+> Davidlohr
 
-Well, the reason for this compromise is to keep using xadd for readers.
-Your scheme will certainly work, but we have to use cmpxchg for readers
-too. That will have a performance impact especially with multiple
-readers contending which I am trying to avoid.
+Thanks for getting some of the performance numbers. This is the initial
+draft after more than 1 years of hibernation. I will also get other
+performance numbers in subsequent revision of the patch.
 
 Cheers,
 Longman
-
 
