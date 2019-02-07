@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D8C9C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:00:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2171CC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:02:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB78C2175B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:00:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB78C2175B
+	by mail.kernel.org (Postfix) with ESMTPS id 9FBD02175B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:02:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FBD02175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wW1B5HS0zDqQK
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 08:00:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wW3C1lKqzDq5y
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 08:02:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,28 +28,29 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wSZB0hMTzDqQd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:10:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wSZC6d6nzDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:10:27 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
  [10.5.11.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id BB5252551;
- Thu,  7 Feb 2019 19:10:23 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 03F0B37E85;
+ Thu,  7 Feb 2019 19:10:26 +0000 (UTC)
 Received: from llong.com (dhcp-17-35.bos.redhat.com [10.18.17.35])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 9488961146;
- Thu,  7 Feb 2019 19:10:21 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id DB62662FA3;
+ Thu,  7 Feb 2019 19:10:23 +0000 (UTC)
 From: Waiman Long <longman@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH-tip 21/22] locking/rwsem: Wake up all readers in wait queue
-Date: Thu,  7 Feb 2019 14:07:25 -0500
-Message-Id: <1549566446-27967-22-git-send-email-longman@redhat.com>
+Subject: [PATCH-tip 22/22] locking/rwsem: Ensure an RT task will not spin on
+ reader
+Date: Thu,  7 Feb 2019 14:07:26 -0500
+Message-Id: <1549566446-27967-23-git-send-email-longman@redhat.com>
 In-Reply-To: <1549566446-27967-1-git-send-email-longman@redhat.com>
 References: <1549566446-27967-1-git-send-email-longman@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Thu, 07 Feb 2019 19:10:24 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.29]); Thu, 07 Feb 2019 19:10:26 +0000 (UTC)
 X-Mailman-Approved-At: Fri, 08 Feb 2019 07:26:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,70 +76,66 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the front of the wait queue is a reader, other readers
-immediately following the first reader will also be woken up at the
-same time. However, if there is a writer in between. Those readers
-behind the writer will not be woken up.
-
-Because of optimistic spinning, the lock acquisition order is not FIFO
-anyway. The lock handoff mechanism will ensure that lock starvation
-will not happen.
-
-Assuming that the lock hold times of the other readers still in the
-queue will be about the same as the readers that are being woken up,
-there is really not much additional cost other than the additional
-latency due to the wakeup of additional tasks by the waker. Therefore
-all the readers in the queue are woken up when the first waiter is a
-reader to improve reader throughput.
-
-With a locking microbenchmark running on 5.0 based kernel, the total
-locking rates (in kops/s) of the benchmark on a 4-socket 56-core x86-64
-system with equal numbers of readers and writers before all the reader
-spining patches, before this patch and after this patch were as follows:
-
-   # of Threads  Pre-rspin    Pre-Patch   Post-patch
-   ------------  ---------    ---------   ----------
-        2          1,926        8,057       7,397
-        4          1,391        7,680       6,161
-        8            716        7,284       6,405
-       16            618        6,542       6,768
-       32            501        1,449       6,550
-       64             61          480       5,548
-      112             75          769       5,216
-
-At low contention level, there is a slight drop in performance. At high
-contention level, however, this patch gives a big performance boost.
+An RT task can do optimistic spinning only if the lock holder is
+actually running. If the state of the lock holder isn't known, there
+is a possibility that high priority of the RT task may block forward
+progress of the lock holder if they happen to reside on the same CPU.
+This will lead to deadlock. So we have to make sure that an RT task
+will not spin on a reader-owned rwsem.
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- kernel/locking/rwsem-xadd.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/locking/rwsem-xadd.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/locking/rwsem-xadd.c b/kernel/locking/rwsem-xadd.c
-index 3beb942..3cf2e84 100644
+index 3cf2e84..ac1f6c4 100644
 --- a/kernel/locking/rwsem-xadd.c
 +++ b/kernel/locking/rwsem-xadd.c
-@@ -180,16 +180,16 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
- 	}
+@@ -349,12 +349,14 @@ static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
  
- 	/*
--	 * Grant an infinite number of read locks to the readers at the front
--	 * of the queue. We know that woken will be at least 1 as we accounted
--	 * for above. Note we increment the 'active part' of the count by the
-+	 * Grant an infinite number of read locks to all the readers in the
-+	 * queue. We know that woken will be at least 1 as we accounted for
-+	 * above. Note we increment the 'active part' of the count by the
- 	 * number of readers before waking any processes up.
- 	 */
- 	list_for_each_entry_safe(waiter, tmp, &sem->wait_list, list) {
- 		struct task_struct *tsk;
+ /*
+  * Return the folowing three values depending on the lock owner state.
++ *   2	when owner is currently NULL
+  *   1	when owner changes and no reader is detected yet.
+  *   0	when owner changes and the new owner may be a reader.
+  *  -1	when optimistic spinning has to stop because either the owner stops
+  *	running, is unknown, or its timeslice has been used up.
+  */
+ enum owner_state {
++	OWNER_NULL = 2,
+ 	OWNER_SPINNABLE = 1,
+ 	OWNER_READER = 0,
+ 	OWNER_NONSPINNABLE = -1,
+@@ -405,7 +407,8 @@ static noinline enum owner_state rwsem_spin_on_owner(struct rw_semaphore *sem)
+ 	owner = rwsem_get_owner(sem);
+ 	if (!is_rwsem_owner_spinnable(owner))
+ 		return OWNER_NONSPINNABLE;
+-	return is_rwsem_owner_reader(owner) ? OWNER_READER : OWNER_SPINNABLE;
++	return !owner ? OWNER_NULL :
++	       is_rwsem_owner_reader(owner) ? OWNER_READER : OWNER_SPINNABLE;
+ }
  
- 		if (waiter->type == RWSEM_WAITING_FOR_WRITE)
--			break;
-+			continue;
+ static bool rwsem_optimistic_spin(struct rw_semaphore *sem, const long wlock)
+@@ -442,12 +445,13 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem, const long wlock)
+ 			break;
  
- 		woken++;
- 		tsk = waiter->task;
+ 		/*
+-		 * When there's no owner, we might have preempted between the
+-		 * owner acquiring the lock and setting the owner field. If
+-		 * we're an RT task that will live-lock because we won't let
+-		 * the owner complete.
++		 * An RT task cannot do optimistic spinning if it cannot
++		 * be sure the lock holder is running. When there's no owner
++		 * or is reader-owned, an RT task has to stop spinning or
++		 * live-lock may happen if the current task and the lock
++		 * holder happen to run in the same CPU.
+ 		 */
+-		if (!rwsem_get_owner(sem) &&
++		if ((owner_state != OWNER_SPINNABLE) &&
+ 		   (need_resched() || rt_task(current)))
+ 			break;
+ 
 -- 
 1.8.3.1
 
