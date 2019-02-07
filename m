@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 557FBC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6DBDC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:43:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB36220663
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:41:41 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB36220663
+	by mail.kernel.org (Postfix) with ESMTPS id 371F92080F
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:43:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 371F92080F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wVbS0hTGzDqDW
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 07:41:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wVd32Y28zDqTg
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 07:43:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,28 +28,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wSYC6n9jzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:09:35 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wSYG10d7zDqJ2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:09:38 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
  [10.5.11.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id DCCF488E52;
- Thu,  7 Feb 2019 19:09:33 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 1DFDF10FA8;
+ Thu,  7 Feb 2019 19:09:36 +0000 (UTC)
 Received: from llong.com (dhcp-17-35.bos.redhat.com [10.18.17.35])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 4B1361693B;
- Thu,  7 Feb 2019 19:09:28 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 0995D62FA5;
+ Thu,  7 Feb 2019 19:09:33 +0000 (UTC)
 From: Waiman Long <longman@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH-tip 09/22] locking/rwsem: Enhance DEBUG_RWSEMS_WARN_ON() macro
-Date: Thu,  7 Feb 2019 14:07:13 -0500
-Message-Id: <1549566446-27967-10-git-send-email-longman@redhat.com>
+Subject: [PATCH-tip 10/22] locking/rwsem: Enable lock event counting
+Date: Thu,  7 Feb 2019 14:07:14 -0500
+Message-Id: <1549566446-27967-11-git-send-email-longman@redhat.com>
 In-Reply-To: <1549566446-27967-1-git-send-email-longman@redhat.com>
 References: <1549566446-27967-1-git-send-email-longman@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.25]); Thu, 07 Feb 2019 19:09:34 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.28]); Thu, 07 Feb 2019 19:09:36 +0000 (UTC)
 X-Mailman-Approved-At: Fri, 08 Feb 2019 07:26:12 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -75,110 +75,166 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Currently, the DEBUG_RWSEMS_WARN_ON() macro just dumps a stack trace
-when the rwsem isn't in the right state. It does not show the actual
-states of the rwsem. This may not be that helpful in the debugging
-process.
+Add lock event counting calls so that we can track the number of lock
+events happening in the rwsem code.
 
-Enhance the DEBUG_RWSEMS_WARN_ON() macro to also show the current
-content of the rwsem count and owner fields to give more information
-about what is wrong with the rwsem.
+With CONFIG_LOCK_EVENT_COUNTS on and booting a 1-socket 22-core
+44-thread x86-64 system, the non-zero rwsem counts after system bootup
+were as follows:
+
+  rwsem_opt_fail=113
+  rwsem_opt_wlock=13647
+  rwsem_rlock=176
+  rwsem_rlock_fast=10
+  rwsem_wake_reader=153
+  rwsem_wake_writer=139
+  rwsem_wlock=113
+
+It can be seen that most of the lock acquisitions in the slowpath were
+writer-locks in the optimistic spinning code path with no sleeping at
+all. Only about 4% of locks were acquired after sleeping.
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- kernel/locking/rwsem-xadd.h | 19 ++++++++++++-------
- kernel/locking/rwsem.c      |  5 +++--
- 2 files changed, 15 insertions(+), 9 deletions(-)
+ arch/Kconfig                      |  2 +-
+ kernel/locking/lock_events_list.h | 17 +++++++++++++++++
+ kernel/locking/rwsem-xadd.c       | 12 ++++++++++++
+ 3 files changed, 30 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/locking/rwsem-xadd.h b/kernel/locking/rwsem-xadd.h
-index 77151c3..6d2478c 100644
---- a/kernel/locking/rwsem-xadd.h
-+++ b/kernel/locking/rwsem-xadd.h
-@@ -27,9 +27,13 @@
- #define RWSEM_ANONYMOUSLY_OWNED	(1UL << 1)
+diff --git a/arch/Kconfig b/arch/Kconfig
+index af147c2..7471791 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -891,7 +891,7 @@ config ARCH_USE_MEMREMAP_PROT
+ config LOCK_EVENT_COUNTS
+ 	bool "Locking event counts collection"
+ 	depends on DEBUG_FS
+-	depends on QUEUED_SPINLOCKS
++	depends on (QUEUED_SPINLOCKS || RWSEM_XCHGADD_ALGORITHM)
+ 	---help---
+ 	  Enable light-weight counting of various locking related events
+ 	  in the system with minimal performance impact. This reduces
+diff --git a/kernel/locking/lock_events_list.h b/kernel/locking/lock_events_list.h
+index 8b4d2e1..c33c5df 100644
+--- a/kernel/locking/lock_events_list.h
++++ b/kernel/locking/lock_events_list.h
+@@ -48,3 +48,20 @@
+ LOCK_EVENT(lock_use_node4)	/* # of locking ops that use 4th percpu node */
+ LOCK_EVENT(lock_no_node)	/* # of locking ops w/o using percpu node    */
+ #endif /* CONFIG_QUEUED_SPINLOCKS */
++
++#ifdef CONFIG_RWSEM_XCHGADD_ALGORITHM
++/*
++ * Locking events for rwsem
++ */
++LOCK_EVENT(rwsem_sleep_reader)	/* # of reader sleeps			*/
++LOCK_EVENT(rwsem_sleep_writer)	/* # of writer sleeps			*/
++LOCK_EVENT(rwsem_wake_reader)	/* # of reader wakeups			*/
++LOCK_EVENT(rwsem_wake_writer)	/* # of writer wakeups			*/
++LOCK_EVENT(rwsem_opt_wlock)	/* # of write locks opt-spin acquired	*/
++LOCK_EVENT(rwsem_opt_fail)	/* # of failed opt-spinnings		*/
++LOCK_EVENT(rwsem_rlock)		/* # of read locks acquired		*/
++LOCK_EVENT(rwsem_rlock_fast)	/* # of fast read locks acquired	*/
++LOCK_EVENT(rwsem_rlock_fail)	/* # of failed read lock acquisitions	*/
++LOCK_EVENT(rwsem_wlock)		/* # of write locks acquired		*/
++LOCK_EVENT(rwsem_wlock_fail)	/* # of failed write lock acquisitions	*/
++#endif /* CONFIG_RWSEM_XCHGADD_ALGORITHM */
+diff --git a/kernel/locking/rwsem-xadd.c b/kernel/locking/rwsem-xadd.c
+index 62422a6..fff231a 100644
+--- a/kernel/locking/rwsem-xadd.c
++++ b/kernel/locking/rwsem-xadd.c
+@@ -20,6 +20,7 @@
+ #include <linux/osq_lock.h>
  
- #ifdef CONFIG_DEBUG_RWSEMS
--# define DEBUG_RWSEMS_WARN_ON(c)	DEBUG_LOCKS_WARN_ON(c)
-+# define DEBUG_RWSEMS_WARN_ON(c, sem)				\
-+	WARN_ONCE(c, "DEBUG_RWSEMS_WARN_ON(%s): count = 0x%lx, owner = 0x%lx, curr 0x%lx, list %sempty\n",\
-+		#c, atomic_long_read(&(sem)->count),		\
-+		(long)((sem)->owner), (long)current,		\
-+		list_empty(&(sem)->wait_list) ? "" : "not ")
- #else
--# define DEBUG_RWSEMS_WARN_ON(c)
-+# define DEBUG_RWSEMS_WARN_ON(c, sem)
- #endif
- 
- /*
-@@ -168,7 +172,7 @@ static inline void __down_read(struct rw_semaphore *sem)
- 	if (unlikely(atomic_long_inc_return_acquire(&sem->count) <= 0)) {
- 		rwsem_down_read_failed(sem);
- 		DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner &
--					RWSEM_READER_OWNED));
-+					RWSEM_READER_OWNED), sem);
- 	} else {
- 		rwsem_set_reader_owned(sem);
- 	}
-@@ -180,7 +184,7 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
- 		if (IS_ERR(rwsem_down_read_failed_killable(sem)))
- 			return -EINTR;
- 		DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner &
--					RWSEM_READER_OWNED));
-+					RWSEM_READER_OWNED), sem);
- 	} else {
- 		rwsem_set_reader_owned(sem);
- 	}
-@@ -248,7 +252,8 @@ static inline void __up_read(struct rw_semaphore *sem)
- {
- 	long tmp;
- 
--	DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner & RWSEM_READER_OWNED));
-+	DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner & RWSEM_READER_OWNED),
-+				sem);
- 	rwsem_clear_reader_owned(sem);
- 	tmp = atomic_long_dec_return_release(&sem->count);
- 	if (unlikely(tmp < -1 && (tmp & RWSEM_ACTIVE_MASK) == 0))
-@@ -260,7 +265,7 @@ static inline void __up_read(struct rw_semaphore *sem)
-  */
- static inline void __up_write(struct rw_semaphore *sem)
- {
--	DEBUG_RWSEMS_WARN_ON(sem->owner != current);
-+	DEBUG_RWSEMS_WARN_ON(sem->owner != current, sem);
- 	rwsem_clear_owner(sem);
- 	if (unlikely(atomic_long_sub_return_release(RWSEM_ACTIVE_WRITE_BIAS,
- 						    &sem->count) < 0))
-@@ -281,7 +286,7 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
- 	 * read-locked region is ok to be re-ordered into the
- 	 * write side. As such, rely on RELEASE semantics.
- 	 */
--	DEBUG_RWSEMS_WARN_ON(sem->owner != current);
-+	DEBUG_RWSEMS_WARN_ON(sem->owner != current, sem);
- 	tmp = atomic_long_add_return_release(-RWSEM_WAITING_BIAS, &sem->count);
- 	rwsem_set_reader_owned(sem);
- 	if (tmp < 0)
-diff --git a/kernel/locking/rwsem.c b/kernel/locking/rwsem.c
-index 598fc7c..bdfca7c 100644
---- a/kernel/locking/rwsem.c
-+++ b/kernel/locking/rwsem.c
-@@ -17,7 +17,7 @@
  #include "rwsem-xadd.h"
- #else
- #define __rwsem_set_reader_owned(a, b)
--#define DEBUG_RWSEMS_WARN_ON(a)
-+#define DEBUG_RWSEMS_WARN_ON(a, b)
- #endif
++#include "lock_events.h"
  
  /*
-@@ -203,7 +203,8 @@ int __sched down_write_killable_nested(struct rw_semaphore *sem, int subclass)
+  * Guide to the rw_semaphore's count field for common values.
+@@ -147,6 +148,7 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
+ 			 * will notice the queued writer.
+ 			 */
+ 			wake_q_add(wake_q, waiter->task);
++			lockevent_inc(rwsem_wake_writer);
+ 		}
  
- void up_read_non_owner(struct rw_semaphore *sem)
- {
--	DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner & RWSEM_READER_OWNED));
-+	DEBUG_RWSEMS_WARN_ON(!((unsigned long)sem->owner & RWSEM_READER_OWNED),
-+				sem);
- 	__up_read(sem);
+ 		return;
+@@ -214,6 +216,7 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
+ 	}
+ 
+ 	adjustment = woken * RWSEM_ACTIVE_READ_BIAS - adjustment;
++	lockevent_cond_inc(rwsem_wake_reader, woken);
+ 	if (list_empty(&sem->wait_list)) {
+ 		/* hit end of list above */
+ 		adjustment -= RWSEM_WAITING_BIAS;
+@@ -269,6 +272,7 @@ static inline bool rwsem_try_write_lock_unqueued(struct rw_semaphore *sem)
+ 				      count + RWSEM_ACTIVE_WRITE_BIAS);
+ 		if (old == count) {
+ 			rwsem_set_owner(sem);
++			lockevent_inc(rwsem_opt_wlock);
+ 			return true;
+ 		}
+ 
+@@ -394,6 +398,7 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
+ 	osq_unlock(&sem->osq);
+ done:
+ 	preempt_enable();
++	lockevent_cond_inc(rwsem_opt_fail, !taken);
+ 	return taken;
  }
  
+@@ -441,6 +446,7 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 		if (atomic_long_read(&sem->count) >= 0) {
+ 			raw_spin_unlock_irq(&sem->wait_lock);
+ 			rwsem_set_reader_owned(sem);
++			lockevent_inc(rwsem_rlock_fast);
+ 			return sem;
+ 		}
+ 		adjustment += RWSEM_WAITING_BIAS;
+@@ -477,9 +483,11 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 			break;
+ 		}
+ 		schedule();
++		lockevent_inc(rwsem_sleep_reader);
+ 	}
+ 
+ 	__set_current_state(TASK_RUNNING);
++	lockevent_inc(rwsem_rlock);
+ 	return sem;
+ out_nolock:
+ 	list_del(&waiter.list);
+@@ -487,6 +495,7 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 		atomic_long_add(-RWSEM_WAITING_BIAS, &sem->count);
+ 	raw_spin_unlock_irq(&sem->wait_lock);
+ 	__set_current_state(TASK_RUNNING);
++	lockevent_inc(rwsem_rlock_fail);
+ 	return ERR_PTR(-EINTR);
+ }
+ 
+@@ -580,6 +589,7 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 				goto out_nolock;
+ 
+ 			schedule();
++			lockevent_inc(rwsem_sleep_writer);
+ 			set_current_state(state);
+ 		} while ((count = atomic_long_read(&sem->count)) & RWSEM_ACTIVE_MASK);
+ 
+@@ -588,6 +598,7 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 	__set_current_state(TASK_RUNNING);
+ 	list_del(&waiter.list);
+ 	raw_spin_unlock_irq(&sem->wait_lock);
++	lockevent_inc(rwsem_wlock);
+ 
+ 	return ret;
+ 
+@@ -601,6 +612,7 @@ static inline bool rwsem_has_spinner(struct rw_semaphore *sem)
+ 		__rwsem_mark_wake(sem, RWSEM_WAKE_ANY, &wake_q);
+ 	raw_spin_unlock_irq(&sem->wait_lock);
+ 	wake_up_q(&wake_q);
++	lockevent_inc(rwsem_wlock_fail);
+ 
+ 	return ERR_PTR(-EINTR);
+ }
 -- 
 1.8.3.1
 
