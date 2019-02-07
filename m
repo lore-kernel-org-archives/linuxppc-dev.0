@@ -4,38 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 420F8C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 11:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D428C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 12:49:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D15E20818
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 11:55:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D15E20818
+	by mail.kernel.org (Postfix) with ESMTPS id 4733E20823
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 12:49:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4733E20823
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wGvk0ZLgzDqSH
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 22:54:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wJ6h1c5RzDqS9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 23:49:32 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wGsq6QGwzDqD4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 22:53:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wJ3b0S91zDqRh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:46:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 43wGsq4tydz9s7h; Thu,  7 Feb 2019 22:53:19 +1100 (AEDT)
+ id 43wJ3Z6f0cz9s4V; Thu,  7 Feb 2019 23:46:50 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 43wGsq4CfVz9sLw; Thu,  7 Feb 2019 22:53:19 +1100 (AEDT)
+ id 43wJ3Z65Stz9s4Z; Thu,  7 Feb 2019 23:46:50 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc/64: Fix memcmp reading past the end of src/dest
-Date: Thu,  7 Feb 2019 22:53:13 +1100
-Message-Id: <20190207115313.31078-1-mpe@ellerman.id.au>
+Subject: [PATCH v3 1/7] dump_stack: Support adding to the dump stack arch
+ description
+Date: Thu,  7 Feb 2019 23:46:29 +1100
+Message-Id: <20190207124635.3885-1-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -50,127 +51,139 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chandan@linux.ibm.com, daniel@linux.ibm.com, npiggin@gmail.com
+Cc: linux-arch@vger.kernel.org, pmladek@suse.com, linux-kernel@vger.kernel.org,
+ sergey.senozhatsky@gmail.com, tj@kernel.org, akpm@linux-foundation.org,
+ dyoung@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Chandan reported that fstests' generic/026 test hit a crash:
+Arch code can set a "dump stack arch description string" which is
+displayed with oops output to describe the hardware platform.
 
-  BUG: Unable to handle kernel data access at 0xc00000062ac40000
-  Faulting instruction address: 0xc000000000092240
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  LE SMP NR_CPUS=2048 DEBUG_PAGEALLOC NUMA pSeries
-  CPU: 0 PID: 27828 Comm: chacl Not tainted 5.0.0-rc2-next-20190115-00001-g6de6dba64dda #1
-  NIP:  c000000000092240 LR: c00000000066a55c CTR: 0000000000000000
-  REGS: c00000062c0c3430 TRAP: 0300   Not tainted  (5.0.0-rc2-next-20190115-00001-g6de6dba64dda)
-  MSR:  8000000002009033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000842  XER: 20000000
-  CFAR: 00007fff7f3108ac DAR: c00000062ac40000 DSISR: 40000000 IRQMASK: 0
-  GPR00: 0000000000000000 c00000062c0c36c0 c0000000017f4c00 c00000000121a660
-  GPR04: c00000062ac3fff9 0000000000000004 0000000000000020 00000000275b19c4
-  GPR08: 000000000000000c 46494c4500000000 5347495f41434c5f c0000000026073a0
-  GPR12: 0000000000000000 c0000000027a0000 0000000000000000 0000000000000000
-  GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-  GPR20: c00000062ea70020 c00000062c0c38d0 0000000000000002 0000000000000002
-  GPR24: c00000062ac3ffe8 00000000275b19c4 0000000000000001 c00000062ac30000
-  GPR28: c00000062c0c38d0 c00000062ac30050 c00000062ac30058 0000000000000000
-  NIP memcmp+0x120/0x690
-  LR  xfs_attr3_leaf_lookup_int+0x53c/0x5b0
-  Call Trace:
-    xfs_attr3_leaf_lookup_int+0x78/0x5b0 (unreliable)
-    xfs_da3_node_lookup_int+0x32c/0x5a0
-    xfs_attr_node_addname+0x170/0x6b0
-    xfs_attr_set+0x2ac/0x340
-    __xfs_set_acl+0xf0/0x230
-    xfs_set_acl+0xd0/0x160
-    set_posix_acl+0xc0/0x130
-    posix_acl_xattr_set+0x68/0x110
-    __vfs_setxattr+0xa4/0x110
-    __vfs_setxattr_noperm+0xac/0x240
-    vfs_setxattr+0x128/0x130
-    setxattr+0x248/0x600
-    path_setxattr+0x108/0x120
-    sys_setxattr+0x28/0x40
-    system_call+0x5c/0x70
-  Instruction dump:
-  7d201c28 7d402428 7c295040 38630008 38840008 408201f0 4200ffe8 2c050000
-  4182ff6c 20c50008 54c61838 7d201c28 <7d402428> 7d293436 7d4a3436 7c295040
+It is useful to initialise this as early as possible, so that an early
+oops will have the hardware description.
 
-The instruction dump decodes as:
-  subfic  r6,r5,8
-  rlwinm  r6,r6,3,0,28
-  ldbrx   r9,0,r3
-  ldbrx   r10,0,r4	<-
+However in practice we discover the hardware platform in stages, so it
+would be useful to be able to incrementally fill in the hardware
+description as we discover it.
 
-Which shows us doing an 8 byte load from c00000062ac3fff9, which
-crosses the page boundary at c00000062ac40000 and faults.
+This patch adds that ability, by creating dump_stack_add_arch_desc().
 
-It's not OK for memcmp to read past the end of the source or
-destination buffers.
+If there is no existing string it behaves exactly like
+dump_stack_set_arch_desc(). However if there is an existing string it
+appends to it, with a leading space.
 
-The bug is in the code at the .Lcmp_rest_lt8bytes label. To fix it
-test if we have at least 4 bytes to compare and if so do a 4 byte load
-and compare. Otherwise, and/or if we have anything left, jump to the
-existing code that does byte at a time comparison.
+This makes it easy to call it multiple times from different parts of the
+code and get a reasonable looking result.
 
-Reported-by: Chandan Rajendra <chandan@linux.ibm.com>
-Tested-by: Chandan Rajendra <chandan@linux.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+ include/linux/printk.h |  5 ++++
+ lib/dump_stack.c       | 58 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+)
 
-v2: Use cmpdi not cmpwi as pointed out by Nick. It's a 64-bit reg so
-    it's clearer to use a 64-bit compare, even if we know the value is
-    less than 8.
+v3: No change, just widened Cc list.
 
- arch/powerpc/lib/memcmp_64.S | 33 +++++++++++++++++++++------------
- 1 file changed, 21 insertions(+), 12 deletions(-)
+v2: Add a smp_wmb() and comment.
 
-diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-index 844d8e774492..ce4d6ca3a401 100644
---- a/arch/powerpc/lib/memcmp_64.S
-+++ b/arch/powerpc/lib/memcmp_64.S
-@@ -215,20 +215,29 @@ _GLOBAL_TOC(memcmp)
- 	beq	.Lzero
+v1 is here for reference https://lore.kernel.org/lkml/1430824337-15339-1-git-send-email-mpe@ellerman.id.au/
+
+I'll take this series via the powerpc tree if no one minds?
+
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 77740a506ebb..d5fb4f960271 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -198,6 +198,7 @@ u32 log_buf_len_get(void);
+ void log_buf_vmcoreinfo_setup(void);
+ void __init setup_log_buf(int early);
+ __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
++__printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...);
+ void dump_stack_print_info(const char *log_lvl);
+ void show_regs_print_info(const char *log_lvl);
+ extern asmlinkage void dump_stack(void) __cold;
+@@ -256,6 +257,10 @@ static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
+ {
+ }
  
- .Lcmp_rest_lt8bytes:
--	/* Here we have only less than 8 bytes to compare with. at least s1
--	 * Address is aligned with 8 bytes.
--	 * The next double words are load and shift right with appropriate
--	 * bits.
++static inline __printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...)
++{
++}
++
+ static inline void dump_stack_print_info(const char *log_lvl)
+ {
+ }
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 5cff72f18c4a..69b710ff92b5 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -35,6 +35,64 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+ 	va_end(args);
+ }
+ 
++/**
++ * dump_stack_add_arch_desc - add arch-specific info to show with task dumps
++ * @fmt: printf-style format string
++ * @...: arguments for the format string
++ *
++ * See dump_stack_set_arch_desc() for why you'd want to use this.
++ *
++ * This version adds to any existing string already created with either
++ * dump_stack_set_arch_desc() or dump_stack_add_arch_desc(). If there is an
++ * existing string a space will be prepended to the passed string.
++ */
++void __init dump_stack_add_arch_desc(const char *fmt, ...)
++{
++	va_list args;
++	int pos, len;
++	char *p;
++
 +	/*
-+	 * Here we have less than 8 bytes left to compare with. We mustn't read
-+	 * past the end of either source or dest.
- 	 */
--	subfic  r6,r5,8
--	slwi	r6,r6,3
--	LD	rA,0,r3
--	LD	rB,0,r4
--	srd	rA,rA,r6
--	srd	rB,rB,r6
--	cmpld	cr0,rA,rB
++	 * If there's an existing string we snprintf() past the end of it, and
++	 * then turn the terminating NULL of the existing string into a space
++	 * to create one string separated by a space.
++	 *
++	 * If there's no existing string we just snprintf() to the buffer, like
++	 * dump_stack_set_arch_desc(), but without calling it because we'd need
++	 * a varargs version.
++	 */
++	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
++	pos = len;
 +
-+	/* If we have less than 4 bytes, just do byte at a time */
-+	cmpdi   cr1, r5, 4
-+	blt	cr1, .Lshort
++	if (len)
++		pos++;
 +
-+	/* Compare 4 bytes */
-+	LW	rA,0,r3
-+	LW	rB,0,r4
-+	cmplw	cr0,rA,rB
- 	bne	cr0,.LcmpAB_lightweight
--	b	.Lzero
++	if (pos >= sizeof(dump_stack_arch_desc_str))
++		return; /* Ran out of space */
 +
-+	/* If we had exactly 4 bytes left, we're done now */
-+	beq	cr1, .Lzero
++	p = &dump_stack_arch_desc_str[pos];
 +
-+	/* Otherwise do what ever's left a byte at a time */
-+	subi	r5, r5, 4
-+	addi	r3, r3, 4
-+	addi	r4, r4, 4
-+	b	.Lshort
- 
- .Lnon_zero:
- 	mr	r3,rC
++	va_start(args, fmt);
++	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
++	va_end(args);
++
++	if (len) {
++		/*
++		 * Order the stores above in vsnprintf() vs the store of the
++		 * space below which joins the two strings. Note this doesn't
++		 * make the code truly race free because there is no barrier on
++		 * the read side. ie. Another CPU might load the uninitialised
++		 * tail of the buffer first and then the space below (rather
++		 * than the NULL that was there previously), and so print the
++		 * uninitialised tail. But the whole string lives in BSS so in
++		 * practice it should just see NULLs.
++		 */
++		smp_wmb();
++
++		dump_stack_arch_desc_str[len] = ' ';
++	}
++}
++
+ /**
+  * dump_stack_print_info - print generic debug info for dump_stack()
+  * @log_lvl: log level
 -- 
 2.20.1
 
