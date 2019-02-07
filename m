@@ -2,64 +2,66 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43B10C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:01:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2566C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:03:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B11D2217F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:01:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6CA37217F9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:03:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="YlAmKKU0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B11D2217F9
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="o0L39Heb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CA37217F9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43w34H5vmXzDqMb
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 14:01:35 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 43w3654C8LzDqP3
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 14:03:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43w30M60dJzDqMX
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43w30M5HY1zDqMT
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 13:58:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="YlAmKKU0"; dkim-atps=neutral
+ header.b="o0L39Heb"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 43w30M4Q9mz9sN8; Thu,  7 Feb 2019 13:58:11 +1100 (AEDT)
+ id 43w30M3Drpz9s6w; Thu,  7 Feb 2019 13:58:11 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1549508291;
- bh=7X9TIj71WiyYmvnibicoKLKMVlTek4chAz0f0QKNqpI=;
+ bh=kWpV1pDmVi7sHK3czwf5RBFRiOpsX/SwSvaO8I0WrgE=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=YlAmKKU0cMp6jXwYLSqDCMXp6mZOPwdWa56GNACC0nZb1GkQf60sE+ugcnWj8C872
- MmOVBeeiuMTTyYJhCUPQNQ+UToASriXUD3hIlUJVOR+BbwYHxBgzEYHrYT43rehuq6
- eKdrnR9GWpBY6PfDnMECtVfRnwdZz5dnI7K3r/UM=
-Date: Thu, 7 Feb 2019 13:49:50 +1100
+ b=o0L39HebRZItmwG1svp2q1NqUM/A3ZbCNZLx4jyVkQrjjgpIxcghpa4VsCTa/bmWb
+ 48LjEzl15VWmCRGuBDZxEjCQCCszsQ5DI8+pOwVy/IJuctrvIUBTxpvrs75x8pfi8p
+ QLzriRdpeWg9JIt6Xj8HG2BOOFOJJ0UZ0XIEhTVk=
+Date: Thu, 7 Feb 2019 13:51:11 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 06/19] KVM: PPC: Book3S HV: add a GET_ESB_FD control to
- the XIVE native device
-Message-ID: <20190207024950.GA22661@umbus.fritz.box>
+Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
+ mode
+Message-ID: <20190207025111.GB22661@umbus.fritz.box>
 References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-7-clg@kaod.org>
- <20190204044531.GB1927@umbus.fritz.box>
- <69791b73-f93e-6957-92e8-5b8620b87731@kaod.org>
- <20190205052822.GE22661@umbus.fritz.box>
- <4d565738-a99b-0333-8533-037677358faa@kaod.org>
- <20190206012308.GP22661@umbus.fritz.box>
- <1745dd9f-2927-cae6-e8da-c350b0bd0a66@kaod.org>
+ <20190122044654.GA15124@blackberry>
+ <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
+ <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
+ <06b7c4d2-72ba-ca4f-aded-789280798136@kaod.org>
+ <20190204053610.GK1927@umbus.fritz.box>
+ <dc59257b-c780-7b81-f3d8-46269b834c2d@kaod.org>
+ <20190205221315.GB29038@blackberry>
+ <20190206011800.GN22661@umbus.fritz.box>
+ <bf3725b6-9881-74a0-ec4f-43ac409cb496@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="+9kyDs7IugQ0lHaC"
+ protocol="application/pgp-signature"; boundary="DaTEgnRu5pEC8TLg"
 Content-Disposition: inline
-In-Reply-To: <1745dd9f-2927-cae6-e8da-c350b0bd0a66@kaod.org>
+In-Reply-To: <bf3725b6-9881-74a0-ec4f-43ac409cb496@kaod.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,93 +74,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---+9kyDs7IugQ0lHaC
+--DaTEgnRu5pEC8TLg
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Feb 06, 2019 at 08:21:10AM +0100, C=E9dric Le Goater wrote:
-> On 2/6/19 2:23 AM, David Gibson wrote:
-> > On Tue, Feb 05, 2019 at 01:55:40PM +0100, C=E9dric Le Goater wrote:
-> >> On 2/5/19 6:28 AM, David Gibson wrote:
-> >>> On Mon, Feb 04, 2019 at 12:30:39PM +0100, C=E9dric Le Goater wrote:
-> >>>> On 2/4/19 5:45 AM, David Gibson wrote:
-> >>>>> On Mon, Jan 07, 2019 at 07:43:18PM +0100, C=E9dric Le Goater wrote:
-> >>>>>> This will let the guest create a memory mapping to expose the ESB =
-MMIO
-> >>>>>> regions used to control the interrupt sources, to trigger events, =
-to
-> >>>>>> EOI or to turn off the sources.
-> >>>>>>
-> >>>>>> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> >>>>>> ---
-> >>>>>>  arch/powerpc/include/uapi/asm/kvm.h   |  4 ++
-> >>>>>>  arch/powerpc/kvm/book3s_xive_native.c | 97 ++++++++++++++++++++++=
-+++++
-> >>>>>>  2 files changed, 101 insertions(+)
-> >>>>>>
-> >>>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/in=
-clude/uapi/asm/kvm.h
-> >>>>>> index 8c876c166ef2..6bb61ba141c2 100644
-> >>>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> >>>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> >>>>>> @@ -675,4 +675,8 @@ struct kvm_ppc_cpu_char {
-> >>>>>>  #define  KVM_XICS_PRESENTED		(1ULL << 43)
-> >>>>>>  #define  KVM_XICS_QUEUED		(1ULL << 44)
-> >>>>>> =20
-> >>>>>> +/* POWER9 XIVE Native Interrupt Controller */
-> >>>>>> +#define KVM_DEV_XIVE_GRP_CTRL		1
-> >>>>>> +#define   KVM_DEV_XIVE_GET_ESB_FD	1
+On Wed, Feb 06, 2019 at 08:35:24AM +0100, C=E9dric Le Goater wrote:
+> On 2/6/19 2:18 AM, David Gibson wrote:
+> > On Wed, Feb 06, 2019 at 09:13:15AM +1100, Paul Mackerras wrote:
+> >> On Tue, Feb 05, 2019 at 12:31:28PM +0100, C=E9dric Le Goater wrote:
+> >>>>>> As for nesting, I suggest for the foreseeable future we stick to X=
+ICS
+> >>>>>> emulation in nested guests.
 > >>>>>
-> >>>>> Introducing a new FD for ESB and TIMA seems overkill.  Can't you get
-> >>>>> to both with an mmap() directly on the xive device fd?  Using the
-> >>>>> offset to distinguish which one to map, obviously.
-> >>>>
-> >>>> The page offset would define some sort of user API. It seems feasibl=
-e.
-> >>>> But I am not sure this would be practical in the future if we need t=
-o=20
-> >>>> tune the length.
+> >>>>> ok. so no kernel_irqchip at all. hmm.=20
 > >>>
-> >>> Um.. why not?  I mean, yes the XIVE supports rather a lot of
-> >>> interrupts, but we have 64-bits of offset we can play with - we can
-> >>> leave room for billions of ESB slots and still have room for billions
-> >>> of VPs.
+> >>> I was confused with what Paul calls 'XICS emulation'. It's not the QE=
+MU
+> >>> XICS emulated device but the XICS-over-XIVE KVM device, the KVM XICS=
+=20
+> >>> device KVM uses when under a P9 processor.=20
 > >>
-> >> So the first 4 pages could be the TIMA pages and then would come =20
-> >> the pages for the interrupt ESBs. I think that we can have different=
-=20
-> >> vm_fault handler for each mapping.
+> >> Actually there are two separate implementations of XICS emulation in
+> >> KVM.  The first (older) one is almost entirely a software emulation
+> >> but does have some cases where it accesses an underlying XICS device
+> >> in order to make some things faster (IPIs and pass-through of a device
+> >> interrupt to a guest).  The other, newer one is the XICS-on-XIVE
+> >> emulation that Ben wrote, which uses the XIVE hardware pretty heavily.
+> >> My patch was about making the the older code work when there is no
+> >> XICS available to the host.
 > >=20
-> > Um.. no, I'm saying you don't need to tightly pack them.  So you could
-> > have the ESB pages at 0, the TIMA at, say offset 2^60.
->=20
-> Well, we know that the TIMA is 4 pages wide and is "directly" related
-> with the KVM interrupt device. So being at offset 0 seems a good idea.
-> While the ESB segment is of a variable size depending on the number
-> of IRQs and it can come after I think.
->=20
-> >> I wonder how this will work out with pass-through. As Paul said in=20
-> >> a previous email, it would be better to let QEMU request a new=20
-> >> mapping to handle the ESB pages of the device being passed through.
-> >> I guess this is not a special case, just another offset and length.
+> > Ah, right.  To clarify my earlier statements in light of this:
 > >=20
-> > Right, if we need multiple "chunks" of ESB pages we can given them
-> > each their own terabyte or several.  No need to be stingy with address
-> > space.
+> >  * We definitely want some sort of kernel-XICS available in a nested
+> >    guest.  AIUI, this is now accomplished, so, Yay!
+> >=20
+> >  * Implementing the L2 XICS in terms of L1's PAPR-XIVE would be a
+> >    bonus, but it's a much lower priority.
 >=20
-> You can not put them anywhere. They should map the same interrupt range
-> of ESB pages, overlapping with the underlying segment of IPI ESB pages.=
-=20
+> Yes. In this case, the L1 KVM-HV should not advertise KVM_CAP_PPC_IRQ_XIVE
+> to QEMU which will restrict CAS to the XICS only interrupt mode.
 
-I don't really follow what you're saying here.
+Uh... no... we shouldn't change what's available to the guest based on
+host configuration only.  We should just stop advertising the CAP
+saying that *KVM implemented* is available so that qemu will fall back
+to userspace XIVE emulation.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -166,24 +132,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---+9kyDs7IugQ0lHaC
+--DaTEgnRu5pEC8TLg
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxbnM4ACgkQbDjKyiDZ
-s5J5/hAAjM27mh638q+AU4PALSM254/wSvHKLqrXHz8kaZXBDq+InhxS/W15TKMf
-d7nCjya8ScTONeQ9C+G+ljOHFezGvLkpP8k+3UoGzf2rK4zteVa3RJsqbRifC30v
-IB0PEnOw5cyLuzcVcDWnibaHzbf31y7+mOOsp8Qmn4taWwd0RHKSUwKU9i7EZLvZ
-P7toWyvSQ9PwKFzkwe3HKjXr9gUi8XGF0unImr0zuzWMZdfBPnoT5J+spcGC9DlD
-oTseMxP7EdAvzTJFqCat+Tu9CmV4YOfpIHB6sSN/2PZl9/9dJgJrdDpdKCj5qANZ
-An6O9zaLmFguQeq0MP6MJMyO+3o2kS1wMJQbUQdawzz/KXeGjYuMr2gpGyJsX5A3
-yZOJihnOmFWDoksFTWVLKqL+pE+ocv/+k0qM5gQX9PZia+avzW5LtRgsXhTcZnb5
-WZCiDkQ87ppAbyS+GQA+a/cBR6zD2ln2IwpbBrirEKe5XpLm+g6CA7+nByh3aF2Q
-Dx2nIMycyq+wln07pGKbEjHwUOIC5DIIBm5xBhwZssJeTbPCDYssgsWiXQds1dGz
-vrmdIQGPid55RCId5GPaWQ0qviM1kSvrNunQpjMNJFxP0Mlxa2+BzmcwUlj1U7rp
-eoqXbSRvwg/ESs//u1vp5Lq2+H5nZufNyKD4h4l61CJuM7QsrN4=
-=LMB+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxbnR8ACgkQbDjKyiDZ
+s5IuzBAAyBpvYb+cVNWgnlGNW2eEtdNPixG1B2SfMPkxhCbNceP5VUWFecFL8IVV
+g+40FNr6WExE2ap6uMoQfCFQj5oKqWWpEtxUzqWlJEaadVqeQaes5h9teXzDIEcx
+icnNf9XlveqvAoTND9n9d8HZFXtiXMQXhGaiskUUHrZ264GD3nriq0YnuSZ7hD6j
+YaRCPD/WFg9GlD5dP8QXwKAp+wQMFy852lmVALenfJhvSF+qSR1DU4aFWMXsjzsL
+7xa8r36ODZ+yX0FOVJAKqCsnpeXMDDjScG9dnqF9dynH7RvscyCsp66Ga3mhtlP7
+Ys8YKBHgSoOhqWevTaUjkmGuGOQ4dSLCvuZP70Xwa95yNzlu7CkloTNXyP8TVhsO
+JlGSWYcwH0+qtICb+LryzInZEoG8w1Man732cl5tHaXxD/vjqzkr5mIuOT6okbpe
+237FQNETfdlcpVF8/hpNl5ldcyVTd5OlM739KtmSdMLWa9JuE48jHW2+307b1vFh
+jKZ7PnyoZOTyboDIAP4ACrvJpTGhBQtMODfqZaJbIcc84yL3Uy1kApskhRR/GBxi
+NbfScnNbhIjAl2zPgm4AiJWLNM6JcpeoHtPebNu9WQkhdsmMwTB/GNEM3WAoRRLN
+isg/zVGmQTPdh0FW4xpzWHeE72peUDlfBS/jfF+YH6/Tb6ujA40=
+=H9op
 -----END PGP SIGNATURE-----
 
---+9kyDs7IugQ0lHaC--
+--DaTEgnRu5pEC8TLg--
