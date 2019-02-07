@@ -2,70 +2,60 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A19AC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:17:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3D83C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:27:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22158218D9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:17:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22158218D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 3937520844
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 09:27:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3937520844
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wCPV23sSzDqHp
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:17:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wCdG6Hn7zDqBy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:27:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.49.171; helo=4.mo178.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 159485 seconds by postgrey-1.36 at bilbo;
- Thu, 07 Feb 2019 20:14:01 AEDT
-Received: from 4.mo178.mail-out.ovh.net (4.mo178.mail-out.ovh.net
- [46.105.49.171])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wCL11Hf8zDqRd
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 20:14:00 +1100 (AEDT)
-Received: from player711.ha.ovh.net (unknown [10.109.159.90])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id A59634ADC2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 10:13:56 +0100 (CET)
-Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
- (Authenticated sender: clg@kaod.org)
- by player711.ha.ovh.net (Postfix) with ESMTPSA id 29BA92654EE0;
- Thu,  7 Feb 2019 09:13:49 +0000 (UTC)
-Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
- source configuration
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wCZz0qv7zDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 20:25:14 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 7D16B88E64;
+ Thu,  7 Feb 2019 09:25:12 +0000 (UTC)
+Received: from [10.40.204.71] (ovpn-204-71.brq.redhat.com [10.40.204.71])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id ED8F61048125;
+ Thu,  7 Feb 2019 09:25:10 +0000 (UTC)
+Subject: Re: [PATCH v2] powerpc/mm: move a KERN_WARNING message to pr_debug()
 To: David Gibson <david@gibson.dropbear.id.au>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190107184331.8429-16-clg@kaod.org> <20190204052148.GH1927@umbus.fritz.box>
- <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
- <20190205053233.GG22661@umbus.fritz.box>
- <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
- <20190206012329.GQ22661@umbus.fritz.box>
- <20190206012447.GR22661@umbus.fritz.box>
- <1d92005a-c12d-1a55-d01b-98eded13629c@kaod.org>
- <20190207024855.GZ22661@umbus.fritz.box>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <9f03f232-1c47-6e27-6d79-3bcc900fe943@kaod.org>
-Date: Thu, 7 Feb 2019 10:13:48 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+References: <20190205202133.5048-1-lvivier@redhat.com>
+ <20190207030305.GA518@umbus.fritz.box>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <632657bb-acd7-54bd-ac02-0d6f9d87d26b@redhat.com>
+Date: Thu, 7 Feb 2019 10:25:09 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.8.0
 MIME-Version: 1.0
-In-Reply-To: <20190207024855.GZ22661@umbus.fritz.box>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20190207030305.GA518@umbus.fritz.box>
+Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 17785840831576181639
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrledtgddtvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.25]); Thu, 07 Feb 2019 09:25:12 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,165 +67,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/7/19 3:48 AM, David Gibson wrote:
-> On Wed, Feb 06, 2019 at 08:07:36AM +0100, Cédric Le Goater wrote:
->> On 2/6/19 2:24 AM, David Gibson wrote:
->>> On Wed, Feb 06, 2019 at 12:23:29PM +1100, David Gibson wrote:
->>>> On Tue, Feb 05, 2019 at 02:03:11PM +0100, Cédric Le Goater wrote:
->>>>> On 2/5/19 6:32 AM, David Gibson wrote:
->>>>>> On Mon, Feb 04, 2019 at 05:07:28PM +0100, Cédric Le Goater wrote:
->>>>>>> On 2/4/19 6:21 AM, David Gibson wrote:
->>>>>>>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, Cédric Le Goater wrote:
->>>>>>>>> Theses are use to capure the XIVE EAS table of the KVM device, the
->>>>>>>>> configuration of the source targets.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->>>>>>>>> ---
->>>>>>>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
->>>>>>>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 +++++++++++++++++++++++++++
->>>>>>>>>  2 files changed, 98 insertions(+)
->>>>>>>>>
->>>>>>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
->>>>>>>>> index 1a8740629acf..faf024f39858 100644
->>>>>>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
->>>>>>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
->>>>>>>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
->>>>>>>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
->>>>>>>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
->>>>>>>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
->>>>>>>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
->>>>>>>>>  
->>>>>>>>>  /* Layout of 64-bit XIVE source attribute values */
->>>>>>>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
->>>>>>>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
->>>>>>>>>  
->>>>>>>>> +/* Layout of 64-bit eas attribute values */
->>>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
->>>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
->>>>>>>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
->>>>>>>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
->>>>>>>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
->>>>>>>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
->>>>>>>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
->>>>>>>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
->>>>>>>>> +
->>>>>>>>>  #endif /* __LINUX_KVM_POWERPC_H */
->>>>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
->>>>>>>>> index f2de1bcf3b35..0468b605baa7 100644
->>>>>>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
->>>>>>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
->>>>>>>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvmppc_xive *xive, long irq, u64 addr)
->>>>>>>>>  	return 0;
->>>>>>>>>  }
->>>>>>>>>  
->>>>>>>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, long irq,
->>>>>>>>> +				      u64 addr)
->>>>>>>>
->>>>>>>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" EAS
->>>>>>>> values, but rather essentially the "source config" in the terminology
->>>>>>>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
->>>>>>>> the EAS, but since it's the PAPR architected state that we need to
->>>>>>>> preserve across migration, I'd prefer to stick as close as we can to
->>>>>>>> the PAPR terminology.
->>>>>>>
->>>>>>> But we don't have an equivalent name in the PAPR specs for the tuple 
->>>>>>> (prio, server). We could use the generic 'target' name may be ? even 
->>>>>>> if this is usually referring to a CPU number.
->>>>>>
->>>>>> Um.. what?  That's about terminology for one of the fields in this
->>>>>> thing, not about the name for the thing itself.
->>>>>>
->>>>>>> Or, IVE (Interrupt Vector Entry) ? which makes some sense. 
->>>>>>> This is was the former name in HW. I think we recycle it for KVM.
->>>>>>
->>>>>> That's a terrible idea, which will make a confusing situation even
->>>>>> more confusing.
->>>>>
->>>>> Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very 
->>>>> similar to the hcalls anyhow.
->>>>
->>>> Yes, I think that's a good idea.
->>>
->>> Actually... AIUI the SET_CONFIG hcalls shouldn't be a fast path.  
+On 07/02/2019 04:03, David Gibson wrote:
+> On Tue, Feb 05, 2019 at 09:21:33PM +0100, Laurent Vivier wrote:
+>> resize_hpt_for_hotplug() reports a warning when it cannot
+>> increase the hash page table ("Unable to resize hash page
+>> table to target order") but this is not blocking and
+>> can make user thinks something has not worked properly.
+>> As we move the message to the debug area, report again the
+>> ENODEV error.
 >>
->> No indeed. I have move them to standard hcalls in the current version.
+>> If the operation cannot be done the real error message
+>> will be reported by arch_add_memory() if create_section_mapping()
+>> fails.
 >>
->>> Can
->>> we simplify things further by removing the hcall implementation from
->>> the kernel entirely, and have qemu implement them by basically just
->>> forwarding them to the appropriate SET_CONFIG ioctl()?
->>
->> Yes. I think we could. 
+>> Fixes: 7339390d772dd
+>>        powerpc/pseries: Don't give a warning when HPT resizing isn't available
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
 > 
-> Great!
+> Sorry, I'm pretty dubious about this.  It's true that in the case for
+> which this bug was filed this is a harmless situation which deserves a
+> pr_debug() at most.
 > 
->> The hcalls H_INT_SET_SOURCE_CONFIG and H_INT_SET_QUEUE_CONFIG and 
->> the KVM ioctls to set the EQ and the SOURCE configuration have a 
->> lot in common. I need to look at how we can plug the KVM ioctl in 
->> the hcalls under QEMU.
->>
->> We will have to convert the returned error to respect the PAPR 
->> specs or have the ioctls return H_* errors.
-> 
-> I don't think returning H_* values from a kernel call is a good idea.
-> Converting errors is kinda ugly, but I still think it's the better
-> option.  Note that we already have something like this for the HPT
-> resizing hcalls.
+> But that's not necessarily true in all paths leading to this message.
+> It will also trip if we fail to reshrink the HPT after genuinely
+> hotunplugging a bunch of memory, in which case failing to release
+> expected resources does deserve a warning.
 
-ok.
- 
->> Let's dig that idea. If we choose that path, QEMU will have an 
->> up-to-date EAT and so we won't need to synchronize its state anymore 
->> for migration.
-> 
-> I guess so, though I don't see that as essential.
-> 
->> H_INT_GET_SOURCE_CONFIG can be implemented in QEMU without any KVM 
->> ioctl.
->>
->> H_INT_GET_QUEUE_INFO could be implemented in QEMU. I need to check 
->> how we return the address of the END ESB in sPAPR. We haven't paid 
->> much attention to these pages because they are not used under Linux
->> and today the address is returned by OPAL. 
->>
->> H_INT_GET_QUEUE_CONFIG is a little more problematic because we need
->> to query into the XIVE HW the EQ index and toggle bit. OPAL support
->> is required for that. But we could reduce the KVM support to the 
->> ioctl querying these EQ information.
-> 
-> Right, and we'd need an ioctl() like that for migration anyway, yes?
+But if there is a real problem this function should return an error and
+this error should be managed by the caller.
 
-Yes. it is the same need.
+Moreover, the function that can fail (pseries_lpar_resize_hpt()) has
+already a warning for each error case:
 
->> H_INT_ESB could be entirely done under QEMU.
-> 
-> This one can actually happen on fairly hot paths, so I think doing
-> that in qemu probably isn't a good idea.
+ETIMEDOUT: "Unexpected error %d cancelling timed out HPT resize\n"
+EIO:       "Unexpected error %d from H_RESIZE_HPT_PREPARE\n"
+           "Unexpected error %d from H_RESIZE_HPT_COMMIT\n
+ENOSPC:    "Hash collision while resizing HPT\n"
 
-I agree It would nice to have some performance.
+ENODEV has no error message but is already silently ignored.
+EINVAL and EPERM have no message but this happens if hcall is not used
+correctly and deserve only a pr_debug() I think.
 
-This hcall is used when LSIs are involved, which is not really a common 
-configuration. There are no OPAL calls involved. And we are duplicating 
-code at the KVM level to retrigger the interrupt when the level is still
-asserted.
-
-I will benchmark the two options before making a choice. 
-
-C.
-
-
->> H_INT_SYNC and H_INT_RESET can not.
->>
->> H_INT_GET_OS_REPORTING_LINE and H_INT_SET_OS_REPORTING_LINE are not
->> implemented.
->>
->> C.
->>
-> 
-
+Thanks,
+Laurent
