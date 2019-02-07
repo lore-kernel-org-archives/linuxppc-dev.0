@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E3CAC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:52:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E815C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:54:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 072212146E
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:52:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 072212146E
+	by mail.kernel.org (Postfix) with ESMTPS id CF6342084D
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 20:54:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF6342084D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wVqx10HrzDq6c
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 07:52:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wVsp0B6ZzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 07:54:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,29 +28,28 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wSYd69WyzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:09:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wSYr3Qf1zDqRq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 06:10:08 +1100 (AEDT)
 Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
  [10.5.11.12])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id ED98F7AE81;
- Thu,  7 Feb 2019 19:09:55 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 00B3AC06A802;
+ Thu,  7 Feb 2019 19:10:06 +0000 (UTC)
 Received: from llong.com (dhcp-17-35.bos.redhat.com [10.18.17.35])
- by smtp.corp.redhat.com (Postfix) with ESMTP id BF6A560FDF;
- Thu,  7 Feb 2019 19:09:53 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 18D6161146;
+ Thu,  7 Feb 2019 19:09:56 +0000 (UTC)
 From: Waiman Long <longman@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH-tip 16/22] locking/rwsem: Remove redundant computation of
- writer lock word
-Date: Thu,  7 Feb 2019 14:07:20 -0500
-Message-Id: <1549566446-27967-17-git-send-email-longman@redhat.com>
+Subject: [PATCH-tip 17/22] locking/rwsem: Recheck owner if it is not on cpu
+Date: Thu,  7 Feb 2019 14:07:21 -0500
+Message-Id: <1549566446-27967-18-git-send-email-longman@redhat.com>
 In-Reply-To: <1549566446-27967-1-git-send-email-longman@redhat.com>
 References: <1549566446-27967-1-git-send-email-longman@redhat.com>
 X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.25]); Thu, 07 Feb 2019 19:09:56 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.32]); Thu, 07 Feb 2019 19:10:06 +0000 (UTC)
 X-Mailman-Approved-At: Fri, 08 Feb 2019 07:26:13 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -76,111 +75,87 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 64-bit architectures, each rwsem writer will have its unique lock
-word for acquiring the lock. Right now, the writer code recomputes the
-lock word every time it tries to acquire the lock. This is a waste of
-time. The lock word is now cached and reused when it is needed.
+After merging the owner value directly into the count field, it was
+found that the number of failed optimistic spinning operations increased
+significantly during the boot up process.
 
-On 32-bit architectures, the extra constant argument to
-rwsem_try_write_lock() and rwsem_try_write_lock_unqueued() should be
-optimized out by the compiler.
+The cause of this increased failures was tracked down to the condition
+that a lock holder might have just released the lock and gone to sleep
+right after its owner value was fetched by a spinner. So the task might
+have slept, but it was no longer the lock holder. The merging of owner
+into count increases the chance this condition can happen.
+
+To close this failure mode, we are now rechecking the owner value again
+to see if it has been changed in case it is not on cpu.
+
+On a 1-socket x86-64 system, the lock event counts before the patch
+were:
+
+  rwsem_opt_fail=5847
+  rwsem_opt_wlock=7880
+  rwsem_wlock=5847
+
+After the patch, the counts were:
+
+  rwsem_opt_fail=225
+  rwsem_opt_wlock=8541
+  rwsem_wlock=225
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- kernel/locking/rwsem-xadd.c | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ kernel/locking/rwsem-xadd.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
 diff --git a/kernel/locking/rwsem-xadd.c b/kernel/locking/rwsem-xadd.c
-index 0869fbf..16dc7a1 100644
+index 16dc7a1..21d462f 100644
 --- a/kernel/locking/rwsem-xadd.c
 +++ b/kernel/locking/rwsem-xadd.c
-@@ -216,8 +216,8 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
-  * race conditions between checking the rwsem wait list and setting the
-  * sem->count accordingly.
-  */
--static inline bool
--rwsem_try_write_lock(long count, struct rw_semaphore *sem, bool first)
-+static inline bool rwsem_try_write_lock(long count, struct rw_semaphore *sem,
-+					const long wlock, bool first)
- {
- 	long new;
- 
-@@ -227,7 +227,7 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
- 	if (!first && RWSEM_COUNT_HANDOFF(count))
- 		return false;
- 
--	new = (count & ~RWSEM_FLAG_HANDOFF) + RWSEM_WRITER_LOCKED -
-+	new = (count & ~RWSEM_FLAG_HANDOFF) + wlock -
- 	      (list_is_singular(&sem->wait_list) ? RWSEM_FLAG_WAITERS : 0);
- 
- 	if (atomic_long_cmpxchg_acquire(&sem->count, count, new) == count) {
-@@ -242,7 +242,8 @@ static void __rwsem_mark_wake(struct rw_semaphore *sem,
- /*
-  * Try to acquire write lock before the writer has been put on wait queue.
-  */
--static inline bool rwsem_try_write_lock_unqueued(struct rw_semaphore *sem)
-+static inline bool rwsem_try_write_lock_unqueued(struct rw_semaphore *sem,
-+						 const long wlock)
- {
- 	long old, count = atomic_long_read(&sem->count);
- 
-@@ -251,7 +252,7 @@ static inline bool rwsem_try_write_lock_unqueued(struct rw_semaphore *sem)
- 			return false;
- 
- 		old = atomic_long_cmpxchg_acquire(&sem->count, count,
--				count + RWSEM_WRITER_LOCKED);
-+				count + wlock);
- 		if (old == count) {
- 			rwsem_set_owner(sem);
- 			lockevent_inc(rwsem_opt_wlock);
-@@ -338,7 +339,7 @@ static noinline bool rwsem_spin_on_owner(struct rw_semaphore *sem)
- 	return is_rwsem_owner_spinnable(rwsem_get_owner(sem));
+@@ -263,13 +263,25 @@ static inline bool rwsem_try_write_lock_unqueued(struct rw_semaphore *sem,
+ 	}
  }
  
--static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
-+static bool rwsem_optimistic_spin(struct rw_semaphore *sem, const long wlock)
+-static inline bool owner_on_cpu(struct task_struct *owner)
++static inline bool owner_on_cpu(struct task_struct *owner,
++				struct rw_semaphore *sem)
  {
- 	bool taken = false;
- 
-@@ -362,7 +363,7 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
- 		/*
- 		 * Try to acquire the lock
- 		 */
--		if (rwsem_try_write_lock_unqueued(sem)) {
-+		if (rwsem_try_write_lock_unqueued(sem, wlock)) {
- 			taken = true;
- 			break;
- 		}
-@@ -392,7 +393,7 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
- 	return taken;
- }
- #else
--static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
-+static bool rwsem_optimistic_spin(struct rw_semaphore *sem, const long wlock)
- {
- 	return false;
- }
-@@ -514,9 +515,10 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
- 	struct rwsem_waiter waiter;
- 	struct rw_semaphore *ret = sem;
- 	DEFINE_WAKE_Q(wake_q);
-+	const long wlock = RWSEM_WRITER_LOCKED;
- 
- 	/* do optimistic spinning and steal lock if possible */
--	if (rwsem_optimistic_spin(sem))
-+	if (rwsem_optimistic_spin(sem, wlock))
- 		return sem;
- 
  	/*
-@@ -569,7 +571,7 @@ static bool rwsem_optimistic_spin(struct rw_semaphore *sem)
- 	/* wait until we successfully acquire the lock */
- 	set_current_state(state);
- 	while (true) {
--		if (rwsem_try_write_lock(count, sem, first))
-+		if (rwsem_try_write_lock(count, sem, wlock, first))
- 			break;
+ 	 * As lock holder preemption issue, we both skip spinning if
+ 	 * task is not on cpu or its cpu is preempted
+ 	 */
+-	return owner->on_cpu && !vcpu_is_preempted(task_cpu(owner));
++	bool oncpu = owner->on_cpu && !vcpu_is_preempted(task_cpu(owner));
++
++	/*
++	 * There is a slight chance that the lock holder might have
++	 * just release the rwsem and gone to sleep right after we
++	 * fetched the owner value. So we double-check the sem->owner
++	 * field again to see if it has been changed. The sem->owner
++	 * would have been cleared right before the lock was released.
++	 */
++	if (!oncpu && (READ_ONCE(sem->owner) != owner))
++		return true;	/* Assume the new owner is on cpu */
++	return oncpu;
+ }
  
- 		raw_spin_unlock_irq(&sem->wait_lock);
+ static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
+@@ -286,7 +298,7 @@ static inline bool rwsem_can_spin_on_owner(struct rw_semaphore *sem)
+ 	owner = rwsem_get_owner(sem);
+ 	if (owner) {
+ 		ret = is_rwsem_owner_spinnable(owner) &&
+-		      owner_on_cpu(owner);
++		      owner_on_cpu(owner, sem);
+ 	}
+ 	rcu_read_unlock();
+ 	return ret;
+@@ -323,7 +335,7 @@ static noinline bool rwsem_spin_on_owner(struct rw_semaphore *sem)
+ 		 * abort spinning when need_resched or owner is not running or
+ 		 * owner's cpu is preempted.
+ 		 */
+-		if (need_resched() || !owner_on_cpu(owner)) {
++		if (need_resched() || !owner_on_cpu(owner, sem)) {
+ 			rcu_read_unlock();
+ 			return false;
+ 		}
 -- 
 1.8.3.1
 
