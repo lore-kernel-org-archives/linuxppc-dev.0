@@ -2,100 +2,78 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00E0BC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 04:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BF87C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 04:58:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 68DC42147C
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 04:55:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B89662147C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 04:58:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lfEG+2r+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 68DC42147C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sP693IOJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B89662147C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43w5bG24PYzDqQC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 15:55:06 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43w5Yh0rsqzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 15:53:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43w5gQ6n3XzDqHp
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 15:58:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
+ envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="lfEG+2r+"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="sP693IOJ"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43w5Yg6rTVz8tS0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 15:53:43 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43w5Yg6lNVz9sMM; Thu,  7 Feb 2019 15:53:43 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="lfEG+2r+"; 
- dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43w5Yg0kCwz9sLw
- for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2019 15:53:42 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id z11so3997189pgu.0
- for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2019 20:53:42 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43w5dj4p84zDqHm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 15:57:10 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id h3so4240236pfg.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Feb 2019 20:57:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=RtxZd53wIFg6oznxa2HXSEBIN3l24LWVhzFdFkI6uFE=;
- b=lfEG+2r+I4OJT1S95iszvxYPAXUDmp3bkf40cWua/ZbyCTCDAFWtXQ49cIicI5CQ8J
- GFc7SYYvRBiPSU5W4FYOE2/qVbp6sjNSk9t4vGywWOZ14FRveXY15rURRwt3Qn82JVV4
- NMJlIPoqbJ/3W+XQLqH0PhWP2R2zXk/oiCSJpXE7mfahuI08OqHsIpRW9RWlpNpft8R4
- ifuSEvATSMAaZYEljjRz50wcyRa6DompOXfv74K39SPhFUTu5Wa+62khZ/QlEmH5ZHjV
- QNfbDXr7PmsQXc5zlGToiqs4yejD/mWNllOrJkuf4/HcqP8W3XEpxSzxlaQ20I3Z0aLh
- gIHA==
+ h=from:to:cc:subject:date:message-id;
+ bh=pD6Sd4tXhUU1w7g3BhLgkNrC7p2Crz6vdbFgbo4L8xQ=;
+ b=sP693IOJT1vy9y4K8ltwk4eo4Kt656odYTBfL7JbfxJLpRDrXA7sd5V5FAplRo0ZN/
+ 9bs5IkvOCysLUq3dtW6hpgRANKveYOxFuodXwK8NhW5HYURzamYnGPjZ2/8GNBSZBcdF
+ bvUs2FT84nzjKzKmveJjcog3h0mhrSxM5QUnnZCO3xOElVadLLhS0Xn59sVqn5ZbbbKr
+ lHlW6NWIQ2Dw+jGiBltlXJjpgea7oMl88xnpyHlmXPI8HrHwUDO773c2l9ObYwEgOTxo
+ CD+JRpEGKVyFUtKyF6DmM0t11lZZlDY+mRfna4L4D10UB6zvTqb1V8exJIOzAJtzLbpH
+ 8CQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=RtxZd53wIFg6oznxa2HXSEBIN3l24LWVhzFdFkI6uFE=;
- b=sYKO4hICWELLVCCVwGZLnGxdXlMuy6CjQKpdf6mF73Qm2qIYfYtgm2l21uGEc/WvFd
- aK5kfxdB5K0nKDEWJCTzD5KNzvTh0/mnxdbkivfu6Jm/Jao1+u3+Rlxv2QDuXJgaveSv
- stfHlKVAz/ChIhwl5oNlYwLTxUpHct+Dq3KhXoEwEp4w3b74m2ubLM+kq+8SgCrza3MD
- 10aq3Erb9+akmwIOBUKrL319+Rn2VxI5D7il2JemT5X4P/RADxByeVnXL6UohiFsZaAK
- OwuzwtJvmTAgCI9ajOUWMnbTDftt8zHL/XtCPH0OM6e8CRpiiYMM95eK511oaXFCZYJx
- qtog==
-X-Gm-Message-State: AHQUAuavAmrXH03THJucuBad0O2HQb3ALmQabED16KTYQmPwaLjO1pYb
- UcapLhTgKJoXLRGYZK38kbT2nvJN
-X-Google-Smtp-Source: AHgI3IZGsrS20i/UlKDSrlBalq4xksMQ1Iw8wzh4gpl4Fck4UEkBp3CGx5oq7Us5emZ7h1H/aSCO2g==
-X-Received: by 2002:aa7:934f:: with SMTP id 15mr7093852pfn.38.1549515221125;
- Wed, 06 Feb 2019 20:53:41 -0800 (PST)
-Received: from localhost (193-116-103-101.tpgi.com.au. [193.116.103.101])
- by smtp.gmail.com with ESMTPSA id l19sm18541992pfi.71.2019.02.06.20.53.39
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=pD6Sd4tXhUU1w7g3BhLgkNrC7p2Crz6vdbFgbo4L8xQ=;
+ b=YkuoDjrSvk4dXkw3h65f6BMrLMmuQ9QbwoRUBDl7vksnKKj10PNV0D/J4fSesoqfvt
+ MBskhKlxjSqvpJKxz+jDVPa/Yaa4M9zFbgnoyHIOPUEAL5r/L+5CAR8tJD4qoRs9kp05
+ 8binieOUoVKWu2VXRHn180izB3R8qO6hbjUvXGX5ZfmsPFDB5F4yHQLEtYxgh67okX7r
+ amie8/3TLSFOK4AyRPggI1o1ZhEE448lS8EdBT5fe0epRlqXL4bRrX0Td6+4mCoAuZ8z
+ rsfC87uGV0MqcnuuA0++i9gExVSjUneWb76MSk5R1apRpS2ZogjOISGIhXzEND8VsybY
+ lTyg==
+X-Gm-Message-State: AHQUAuZS9/hpKdkvn+eoHvaz/LV17r5Y3z5Do30warE5bGXetGdoyTNt
+ 0er0MACw2nBIA4aXvBX84LM=
+X-Google-Smtp-Source: AHgI3IZe6jbuvbD9VWe/0snFG3vpNh711t9Ibb/PzAZJYJDrUKyRPiQnQdDs4Q3XEaqgIwYtwa9nwA==
+X-Received: by 2002:a63:9d0f:: with SMTP id i15mr12962551pgd.77.1549515428187; 
+ Wed, 06 Feb 2019 20:57:08 -0800 (PST)
+Received: from surajjs2.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id d88sm14586840pfe.19.2019.02.06.20.57.05
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 06 Feb 2019 20:53:40 -0800 (PST)
-Date: Thu, 07 Feb 2019 14:53:34 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v16 16/21] powerpc: Activate CONFIG_THREAD_INFO_IN_TASK
-To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-References: <20190205113219.17903-1-mpe@ellerman.id.au>
- <20190205113219.17903-17-mpe@ellerman.id.au>
-In-Reply-To: <20190205113219.17903-17-mpe@ellerman.id.au>
-MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1549515139.mlgyosrnpx.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+ Wed, 06 Feb 2019 20:57:07 -0800 (PST)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S HV: Optimise mmio emulation for devices on
+ FAST_MMIO_BUS
+Date: Thu,  7 Feb 2019 15:56:50 +1100
+Message-Id: <20190207045650.18322-1-sjitindarsingh@gmail.com>
+X-Mailer: git-send-email 2.13.6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,42 +85,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael Ellerman's on February 5, 2019 9:32 pm:
-> From: Christophe Leroy <christophe.leroy@c-s.fr>
->=20
-> This patch activates CONFIG_THREAD_INFO_IN_TASK which
-> moves the thread_info into task_struct.
->=20
-> Moving thread_info into task_struct has the following advantages:
->   - It protects thread_info from corruption in the case of stack
->     overflows.
->   - Its address is harder to determine if stack addresses are leaked,
->     making a number of attacks more difficult.
->=20
-> This has the following consequences:
->   - thread_info is now located at the beginning of task_struct.
->   - The 'cpu' field is now in task_struct, and only exists when
->     CONFIG_SMP is active.
->   - thread_info doesn't have anymore the 'task' field.
->=20
-> This patch:
->   - Removes all recopy of thread_info struct when the stack changes.
->   - Changes the CURRENT_THREAD_INFO() macro to point to current.
->   - Selects CONFIG_THREAD_INFO_IN_TASK.
->   - Modifies raw_smp_processor_id() to get ->cpu from current without
->     including linux/sched.h to avoid circular inclusion and without
->     including asm/asm-offsets.h to avoid symbol names duplication
->     between ASM constants and C constants.
+Devices on the KVM_FAST_MMIO_BUS by definition have length zero and are
+thus used for notification purposes rather than data transfer. For
+example eventfd for virtio devices.
 
-Come to think of it, can this patch be split out entirely and moved
-earlier as a 32-bit patch? 64-bit does not require that change or the=20
-additional build step AFAIKS?
+This means that when emulating mmio instructions which target devices on
+this bus we can immediately handle them and return without needing to load
+the instruction from guest memory.
 
-Thanks,
-Nick
+For now we restrict this to stores as this is the only use case at
+present.
 
-=
+For a normal guest the effect is negligible, however for a nested guest
+we save on the order of 5us per access.
+
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index bd2dcfbf00cd..be7bc070eae5 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -442,6 +442,24 @@ int kvmppc_hv_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	u32 last_inst;
+ 
+ 	/*
++	 * Fast path - check if the guest physical address corresponds to a
++	 * device on the FAST_MMIO_BUS, if so we can avoid loading the
++	 * instruction all together, then we can just handle it and return.
++	 */
++	if (is_store) {
++		int idx, ret;
++
++		idx = srcu_read_lock(&vcpu->kvm->srcu);
++		ret = kvm_io_bus_write(vcpu, KVM_FAST_MMIO_BUS, (gpa_t) gpa, 0,
++				       NULL);
++		srcu_read_unlock(&vcpu->kvm->srcu, idx);
++		if (!ret) {
++			kvmppc_set_pc(vcpu, kvmppc_get_pc(vcpu) + 4);
++			return RESUME_GUEST;
++		}
++	}
++
++	/*
+ 	 * If we fail, we just return to the guest and try executing it again.
+ 	 */
+ 	if (kvmppc_get_last_inst(vcpu, INST_GENERIC, &last_inst) !=
+-- 
+2.13.6
+
