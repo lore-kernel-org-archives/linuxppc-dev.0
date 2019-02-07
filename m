@@ -2,98 +2,88 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2731DC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 07:01:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0883AC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 07:05:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4EE39218FE
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 07:01:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EE39218FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7BCD3218B0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 07:05:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BCD3218B0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43w8PF1zYFzDqRc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 18:01:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43w8Tt5sYjzDq7n
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 18:05:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
+ envelope-from=anju@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43w8MV0KD6zDqNr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 18:00:05 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43w8RR0nrHzDq7n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 18:03:30 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x176sMsZ035233
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Feb 2019 02:00:03 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qge9ukfd9-1
+ x176sL4L019136
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Feb 2019 02:03:28 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qgd4cx5ay-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Feb 2019 02:00:03 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Feb 2019 02:03:28 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 7 Feb 2019 07:00:01 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Thu, 7 Feb 2019 07:03:26 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 7 Feb 2019 06:59:59 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x176xwPL60358674
+ Thu, 7 Feb 2019 07:03:24 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1773NSm63701010
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 7 Feb 2019 06:59:58 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C35A4AE045;
- Thu,  7 Feb 2019 06:59:58 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 683DBAE04D;
- Thu,  7 Feb 2019 06:59:58 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu,  7 Feb 2019 06:59:58 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id F012FA01B6;
- Thu,  7 Feb 2019 17:59:53 +1100 (AEDT)
-Subject: Re: [PATCH 1/2] powerpc/64s: Work around spurious warning on old gccs
- with -fsanitize-coverage
-To: Segher Boessenkool <segher@kernel.crashing.org>
-References: <20190207053324.17541-1-andrew.donnellan@au1.ibm.com>
- <20190207063736.GS14180@gate.crashing.org>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 7 Feb 2019 17:59:48 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <20190207063736.GS14180@gate.crashing.org>
-Content-Language: en-AU
+ Thu, 7 Feb 2019 07:03:23 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 600ACA4060;
+ Thu,  7 Feb 2019 07:03:23 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 51DA2A405B;
+ Thu,  7 Feb 2019 07:03:22 +0000 (GMT)
+Received: from localhost.localdomain.com (unknown [9.145.146.114])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu,  7 Feb 2019 07:03:22 +0000 (GMT)
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH v3 1/5] powerpc/include: Add data structures and macros for
+ IMC trace mode
+Date: Thu,  7 Feb 2019 12:33:08 +0530
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190207070312.5150-1-anju@linux.vnet.ibm.com>
+References: <20190207070312.5150-1-anju@linux.vnet.ibm.com>
 X-TM-AS-GCONF: 00
-x-cbid: 19020707-0020-0000-0000-00000313D454
+x-cbid: 19020707-0008-0000-0000-000002BD77A8
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19020706-0021-0000-0000-00002164DAF4
-Message-Id: <630e392b-e9a7-6b1e-e3d8-c5382f94e5d7@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+x-cbparentid: 19020707-0009-0000-0000-000022298051
+Message-Id: <20190207070312.5150-2-anju@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-07_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=578 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902070054
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -106,44 +96,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: syzkaller@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
- dvyukov@google.com
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, anju@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 7/2/19 5:37 pm, Segher Boessenkool wrote:
-> On Thu, Feb 07, 2019 at 04:33:23PM +1100, Andrew Donnellan wrote:
->> Some older gccs (<GCC 7), when invoked with -fsanitize-coverage=trace-pc,
->> cause a spurious uninitialised variable warning in dt_cpu_ftrs.c:
->>
->>    arch/powerpc/kernel/dt_cpu_ftrs.c: In function ‘cpufeatures_process_feature’:
->>    arch/powerpc/kernel/dt_cpu_ftrs.c:686:7: warning: ‘m’ may be used uninitialized in this function [-Wmaybe-uninitialized]
->>      if (m->cpu_ftr_bit_mask)
-> 
-> It seems to me the warning is correct?  If enable_unknown is false and no
-> cpu_feature is found, it will in
-> 
-> 	if (m->cpu_ftr_bit_mask)
-> 		cur_cpu_spec->cpu_features |= m->cpu_ftr_bit_mask;
-> 
-> enable random features (whatever was last in the table), or indeed access
-> via NULL if the table is length 0?  So maybe this should be
-> 
-> 	if (known && m->cpu_ftr_bit_mask)
-> 		cur_cpu_spec->cpu_features |= m->cpu_ftr_bit_mask;
-> 
-> instead?  (The code would be much clearer if all the known vs. !known
-> codepath was fully separated here).
+Add the macros needed for IMC (In-Memory Collection Counters) trace-mode
+and data structure to hold the trace-imc record data.
+Also, add the new type "OPAL_IMC_COUNTERS_TRACE" in 'opal-api.h', since
+there is a new switch case added in the opal-calls for IMC.
 
-The table is never length 0, it's a statically defined array.
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/imc-pmu.h  | 39 +++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/opal-api.h |  1 +
+ 2 files changed, 40 insertions(+)
 
-> 
-> 
-> Segher
-> 
-
+diff --git a/arch/powerpc/include/asm/imc-pmu.h b/arch/powerpc/include/asm/imc-pmu.h
+index 69f516ecb2fd..7c2ef0e42661 100644
+--- a/arch/powerpc/include/asm/imc-pmu.h
++++ b/arch/powerpc/include/asm/imc-pmu.h
+@@ -33,6 +33,7 @@
+  */
+ #define THREAD_IMC_LDBAR_MASK           0x0003ffffffffe000ULL
+ #define THREAD_IMC_ENABLE               0x8000000000000000ULL
++#define TRACE_IMC_ENABLE		0x4000000000000000ULL
+ 
+ /*
+  * For debugfs interface for imc-mode and imc-command
+@@ -59,6 +60,34 @@ struct imc_events {
+ 	char *scale;
+ };
+ 
++/*
++ * Trace IMC hardware updates a 64bytes record on
++ * Core Performance Monitoring Counter (CPMC)
++ * overflow. Here is the layout for the trace imc record
++ *
++ * DW 0 : Timebase
++ * DW 1 : Program Counter
++ * DW 2 : PIDR information
++ * DW 3 : CPMC1
++ * DW 4 : CPMC2
++ * DW 5 : CPMC3
++ * Dw 6 : CPMC4
++ * DW 7 : Timebase
++ * .....
++ *
++ * The following is the data structure to hold trace imc data.
++ */
++struct trace_imc_data {
++	u64 tb1;
++	u64 ip;
++	u64 val;
++	u64 cpmc1;
++	u64 cpmc2;
++	u64 cpmc3;
++	u64 cpmc4;
++	u64 tb2;
++};
++
+ /* Event attribute array index */
+ #define IMC_FORMAT_ATTR		0
+ #define IMC_EVENT_ATTR		1
+@@ -68,6 +97,13 @@ struct imc_events {
+ /* PMU Format attribute macros */
+ #define IMC_EVENT_OFFSET_MASK	0xffffffffULL
+ 
++/*
++ * Macro to mask bits 0:21 of first double word(which is the timebase) to
++ * compare with 8th double word (timebase) of trace imc record data.
++ */
++#define IMC_TRACE_RECORD_TB1_MASK      0x3ffffffffffULL
++
++
+ /*
+  * Device tree parser code detects IMC pmu support and
+  * registers new IMC pmus. This structure will hold the
+@@ -113,6 +149,7 @@ struct imc_pmu_ref {
+ 
+ enum {
+ 	IMC_TYPE_THREAD		= 0x1,
++	IMC_TYPE_TRACE		= 0x2,
+ 	IMC_TYPE_CORE		= 0x4,
+ 	IMC_TYPE_CHIP           = 0x10,
+ };
+@@ -123,6 +160,8 @@ enum {
+ #define IMC_DOMAIN_NEST		1
+ #define IMC_DOMAIN_CORE		2
+ #define IMC_DOMAIN_THREAD	3
++/* For trace-imc the domain is still thread but it operates in trace-mode */
++#define IMC_DOMAIN_TRACE	4
+ 
+ extern int init_imc_pmu(struct device_node *parent,
+ 				struct imc_pmu *pmu_ptr, int pmu_id);
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..a4130b21b159 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -1118,6 +1118,7 @@ enum {
+ enum {
+ 	OPAL_IMC_COUNTERS_NEST = 1,
+ 	OPAL_IMC_COUNTERS_CORE = 2,
++	OPAL_IMC_COUNTERS_TRACE = 3,
+ };
+ 
+ 
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.17.1
 
