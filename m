@@ -2,67 +2,102 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2566C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E37CCC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:56:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CA37217F9
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:03:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 244A02175B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 03:56:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="o0L39Heb"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CA37217F9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Va7Lbx3/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 244A02175B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43w3654C8LzDqP3
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 14:03:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43w4HJ4xDGzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 14:56:12 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43w30M5HY1zDqMT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 13:58:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="o0L39Heb"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 43w30M3Drpz9s6w; Thu,  7 Feb 2019 13:58:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1549508291;
- bh=kWpV1pDmVi7sHK3czwf5RBFRiOpsX/SwSvaO8I0WrgE=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=o0L39HebRZItmwG1svp2q1NqUM/A3ZbCNZLx4jyVkQrjjgpIxcghpa4VsCTa/bmWb
- 48LjEzl15VWmCRGuBDZxEjCQCCszsQ5DI8+pOwVy/IJuctrvIUBTxpvrs75x8pfi8p
- QLzriRdpeWg9JIt6Xj8HG2BOOFOJJ0UZ0XIEhTVk=
-Date: Thu, 7 Feb 2019 13:51:11 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
- mode
-Message-ID: <20190207025111.GB22661@umbus.fritz.box>
-References: <20190107184331.8429-1-clg@kaod.org>
- <20190122044654.GA15124@blackberry>
- <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
- <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
- <06b7c4d2-72ba-ca4f-aded-789280798136@kaod.org>
- <20190204053610.GK1927@umbus.fritz.box>
- <dc59257b-c780-7b81-f3d8-46269b834c2d@kaod.org>
- <20190205221315.GB29038@blackberry>
- <20190206011800.GN22661@umbus.fritz.box>
- <bf3725b6-9881-74a0-ec4f-43ac409cb496@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43w4FW5XC8zDq8V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 14:54:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Va7Lbx3/"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43w4FW45tPz8tPg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 14:54:39 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43w4FW3G6Tz9sMM; Thu,  7 Feb 2019 14:54:39 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::641; helo=mail-pl1-x641.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Va7Lbx3/"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com
+ [IPv6:2607:f8b0:4864:20::641])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 43w4FV3sQ8z9s9G
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2019 14:54:38 +1100 (AEDT)
+Received: by mail-pl1-x641.google.com with SMTP id s1so4158842plp.9
+ for <linuxppc-dev@ozlabs.org>; Wed, 06 Feb 2019 19:54:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=vc8cMYF1L6gKIfL6zWo/1A6Usypbec7RL0TLyAaFAsY=;
+ b=Va7Lbx3//9kReCwawXgxZg7fBu1QeF05AwsXKTY9ithupdLxRYB/wo7V6MaUOuq+Tr
+ n6x4wAErss/TRF7ERFNLn1qaZGXazzM1MPew2gqVTEHbg176vrdpdH5np4KU+U0Gatov
+ b/iFWu5dmM6jMb3kJHrllnco4jidwRPyze4602jg7Qm/cqxd6b/Tbxr16OIVeHve7zym
+ 48MMGlk0UTbDzbXdpbuTIGWqlE2xw0cytJTuSPz0LVBHjMvaEmEcav513xVwQj3PICRS
+ NxBG6V9GkEnHFecjmaaMOoLyVaqytuEpb3/Bt6qLceEmJRXIjKSJpvedK7Dom6XQ9jee
+ zebw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=vc8cMYF1L6gKIfL6zWo/1A6Usypbec7RL0TLyAaFAsY=;
+ b=WrGlwjgqIYq4dQwdiZ5e2dFndLQeEW5w6/6Lg3iI1MWorG7A+ZgkAPFHpWwJMpy8Yw
+ MSM3tVxF08Woz1MhPNdNkadEKigToTf76Y9y78R6bNdOs0EluBef08OMJz/cKVWrd96/
+ joXkvU8fj6/ax5lG2mm6Y9rB78GTosEeHve9pWDaVMPq3b5Y3o1yp9EfvoMiLsm4NO8+
+ FVFTvPumOayw3oOmjYKuvLEGYcEy0TJuGC9Ou0ViNP5rJ4RjdcstTA9fZpNt3JGLvn97
+ 0n0ydQ4JXHzKn8MR+3aSPN29SySW5e1EQIp9usmlfWtEQZ3yIaTRy1xSp3CBYnLJ1eoH
+ lMfw==
+X-Gm-Message-State: AHQUAuYuMad1mdt2xuprR4fBYjCDI7YZrd9i6uTDlq7nVW2MygQ4GmAp
+ srNYhIH1oowvSTTATMKrrFZQ9o9PxU8=
+X-Google-Smtp-Source: AHgI3IauhEu7sXBrkEv90GkPIeHE6jN7rORwOXBYiuKjIqRx0jr5gqF2ut6iGXOiJs7DWgXPDke2vw==
+X-Received: by 2002:a17:902:5066:: with SMTP id
+ f35mr14479997plh.78.1549511676596; 
+ Wed, 06 Feb 2019 19:54:36 -0800 (PST)
+Received: from localhost (193-116-103-101.tpgi.com.au. [193.116.103.101])
+ by smtp.gmail.com with ESMTPSA id d11sm9266581pgi.25.2019.02.06.19.54.34
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 06 Feb 2019 19:54:35 -0800 (PST)
+Date: Thu, 07 Feb 2019 13:54:29 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v16 01/21] powerpc/irq: use memblock functions returning
+ virtual address
+To: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+References: <20190205113219.17903-1-mpe@ellerman.id.au>
+ <20190205113219.17903-2-mpe@ellerman.id.au>
+In-Reply-To: <20190205113219.17903-2-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="DaTEgnRu5pEC8TLg"
-Content-Disposition: inline
-In-Reply-To: <bf3725b6-9881-74a0-ec4f-43ac409cb496@kaod.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1549511172.79hcj41212.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,82 +109,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
---DaTEgnRu5pEC8TLg
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Feb 06, 2019 at 08:35:24AM +0100, C=E9dric Le Goater wrote:
-> On 2/6/19 2:18 AM, David Gibson wrote:
-> > On Wed, Feb 06, 2019 at 09:13:15AM +1100, Paul Mackerras wrote:
-> >> On Tue, Feb 05, 2019 at 12:31:28PM +0100, C=E9dric Le Goater wrote:
-> >>>>>> As for nesting, I suggest for the foreseeable future we stick to X=
-ICS
-> >>>>>> emulation in nested guests.
-> >>>>>
-> >>>>> ok. so no kernel_irqchip at all. hmm.=20
-> >>>
-> >>> I was confused with what Paul calls 'XICS emulation'. It's not the QE=
-MU
-> >>> XICS emulated device but the XICS-over-XIVE KVM device, the KVM XICS=
-=20
-> >>> device KVM uses when under a P9 processor.=20
-> >>
-> >> Actually there are two separate implementations of XICS emulation in
-> >> KVM.  The first (older) one is almost entirely a software emulation
-> >> but does have some cases where it accesses an underlying XICS device
-> >> in order to make some things faster (IPIs and pass-through of a device
-> >> interrupt to a guest).  The other, newer one is the XICS-on-XIVE
-> >> emulation that Ben wrote, which uses the XIVE hardware pretty heavily.
-> >> My patch was about making the the older code work when there is no
-> >> XICS available to the host.
-> >=20
-> > Ah, right.  To clarify my earlier statements in light of this:
-> >=20
-> >  * We definitely want some sort of kernel-XICS available in a nested
-> >    guest.  AIUI, this is now accomplished, so, Yay!
-> >=20
-> >  * Implementing the L2 XICS in terms of L1's PAPR-XIVE would be a
-> >    bonus, but it's a much lower priority.
+Michael Ellerman's on February 5, 2019 9:31 pm:
+> From: Christophe Leroy <christophe.leroy@c-s.fr>
 >=20
-> Yes. In this case, the L1 KVM-HV should not advertise KVM_CAP_PPC_IRQ_XIVE
-> to QEMU which will restrict CAS to the XICS only interrupt mode.
+> Since only the virtual address of allocated blocks is used,
+> lets use functions returning directly virtual address.
+>=20
+> Those functions have the advantage of also zeroing the block.
+>=20
+> Suggested-by: Mike Rapoport <rppt@linux.ibm.com>
+> Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/irq.c      |  5 -----
+>  arch/powerpc/kernel/setup_32.c | 26 ++++++++++++++++----------
+>  arch/powerpc/kernel/setup_64.c | 19 +++++++------------
+>  3 files changed, 23 insertions(+), 27 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index bb299613a462..4a5dd8800946 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -725,18 +725,15 @@ void exc_lvl_ctx_init(void)
+>  #endif
+>  #endif
+> =20
+> -		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
+>  		tp =3D critirq_ctx[cpu_nr];
+>  		tp->cpu =3D cpu_nr;
+>  		tp->preempt_count =3D 0;
+> =20
+>  #ifdef CONFIG_BOOKE
+> -		memset((void *)dbgirq_ctx[cpu_nr], 0, THREAD_SIZE);
+>  		tp =3D dbgirq_ctx[cpu_nr];
+>  		tp->cpu =3D cpu_nr;
+>  		tp->preempt_count =3D 0;
+> =20
+> -		memset((void *)mcheckirq_ctx[cpu_nr], 0, THREAD_SIZE);
+>  		tp =3D mcheckirq_ctx[cpu_nr];
+>  		tp->cpu =3D cpu_nr;
+>  		tp->preempt_count =3D HARDIRQ_OFFSET;
+> @@ -754,12 +751,10 @@ void irq_ctx_init(void)
+>  	int i;
+> =20
+>  	for_each_possible_cpu(i) {
+> -		memset((void *)softirq_ctx[i], 0, THREAD_SIZE);
+>  		tp =3D softirq_ctx[i];
+>  		tp->cpu =3D i;
+>  		klp_init_thread_info(tp);
+> =20
+> -		memset((void *)hardirq_ctx[i], 0, THREAD_SIZE);
+>  		tp =3D hardirq_ctx[i];
+>  		tp->cpu =3D i;
+>  		klp_init_thread_info(tp);
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_3=
+2.c
+> index 947f904688b0..1f0b7629c1a6 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -196,6 +196,17 @@ static int __init ppc_init(void)
+>  }
+>  arch_initcall(ppc_init);
+> =20
+> +static void *__init alloc_stack(void)
+> +{
+> +	void *ptr =3D memblock_alloc(THREAD_SIZE, THREAD_SIZE);
+> +
+> +	if (!ptr)
+> +		panic("cannot allocate %d bytes for stack at %pS\n",
+> +		      THREAD_SIZE, (void *)_RET_IP_);
+> +
+> +	return ptr;
+> +}
+> +
+>  void __init irqstack_early_init(void)
+>  {
+>  	unsigned int i;
+> @@ -203,10 +214,8 @@ void __init irqstack_early_init(void)
+>  	/* interrupt stacks must be in lowmem, we get that for free on ppc32
+>  	 * as the memblock is limited to lowmem by default */
+>  	for_each_possible_cpu(i) {
+> -		softirq_ctx[i] =3D (struct thread_info *)
+> -			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+> -		hardirq_ctx[i] =3D (struct thread_info *)
+> -			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+> +		softirq_ctx[i] =3D alloc_stack();
+> +		hardirq_ctx[i] =3D alloc_stack();
+>  	}
+>  }
+> =20
+> @@ -224,13 +233,10 @@ void __init exc_lvl_early_init(void)
+>  		hw_cpu =3D 0;
+>  #endif
+> =20
+> -		critirq_ctx[hw_cpu] =3D (struct thread_info *)
+> -			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+> +		critirq_ctx[hw_cpu] =3D alloc_stack();
+>  #ifdef CONFIG_BOOKE
+> -		dbgirq_ctx[hw_cpu] =3D (struct thread_info *)
+> -			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+> -		mcheckirq_ctx[hw_cpu] =3D (struct thread_info *)
+> -			__va(memblock_phys_alloc(THREAD_SIZE, THREAD_SIZE));
+> +		dbgirq_ctx[hw_cpu] =3D alloc_stack();
+> +		mcheckirq_ctx[hw_cpu] =3D alloc_stack();
+>  #endif
+>  	}
+>  }
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_6=
+4.c
+> index 236c1151a3a7..080dd515d587 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -634,19 +634,17 @@ __init u64 ppc64_bolted_size(void)
+> =20
+>  static void *__init alloc_stack(unsigned long limit, int cpu)
+>  {
+> -	unsigned long pa;
+> +	void *ptr;
+> =20
+>  	BUILD_BUG_ON(STACK_INT_FRAME_SIZE % 16);
+> =20
+> -	pa =3D memblock_alloc_base_nid(THREAD_SIZE, THREAD_SIZE, limit,
+> -					early_cpu_to_node(cpu), MEMBLOCK_NONE);
+> -	if (!pa) {
+> -		pa =3D memblock_alloc_base(THREAD_SIZE, THREAD_SIZE, limit);
+> -		if (!pa)
+> -			panic("cannot allocate stacks");
+> -	}
+> +	ptr =3D memblock_alloc_try_nid(THREAD_SIZE, THREAD_SIZE,
+> +				     MEMBLOCK_LOW_LIMIT, limit,
+> +				     early_cpu_to_node(cpu));
 
-Uh... no... we shouldn't change what's available to the guest based on
-host configuration only.  We should just stop advertising the CAP
-saying that *KVM implemented* is available so that qemu will fall back
-to userspace XIVE emulation.
+This is much nicer. Looks like removing MEMBLOCK_LOW_LIMIT would be a=20
+cleanup for generic kernel code. Actually some of these calls are used
+only by powerpc (memblock_alloc_base_nid) which probably could get
+tidied up. Something for a rainy day or a beginner.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---DaTEgnRu5pEC8TLg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxbnR8ACgkQbDjKyiDZ
-s5IuzBAAyBpvYb+cVNWgnlGNW2eEtdNPixG1B2SfMPkxhCbNceP5VUWFecFL8IVV
-g+40FNr6WExE2ap6uMoQfCFQj5oKqWWpEtxUzqWlJEaadVqeQaes5h9teXzDIEcx
-icnNf9XlveqvAoTND9n9d8HZFXtiXMQXhGaiskUUHrZ264GD3nriq0YnuSZ7hD6j
-YaRCPD/WFg9GlD5dP8QXwKAp+wQMFy852lmVALenfJhvSF+qSR1DU4aFWMXsjzsL
-7xa8r36ODZ+yX0FOVJAKqCsnpeXMDDjScG9dnqF9dynH7RvscyCsp66Ga3mhtlP7
-Ys8YKBHgSoOhqWevTaUjkmGuGOQ4dSLCvuZP70Xwa95yNzlu7CkloTNXyP8TVhsO
-JlGSWYcwH0+qtICb+LryzInZEoG8w1Man732cl5tHaXxD/vjqzkr5mIuOT6okbpe
-237FQNETfdlcpVF8/hpNl5ldcyVTd5OlM739KtmSdMLWa9JuE48jHW2+307b1vFh
-jKZ7PnyoZOTyboDIAP4ACrvJpTGhBQtMODfqZaJbIcc84yL3Uy1kApskhRR/GBxi
-NbfScnNbhIjAl2zPgm4AiJWLNM6JcpeoHtPebNu9WQkhdsmMwTB/GNEM3WAoRRLN
-isg/zVGmQTPdh0FW4xpzWHeE72peUDlfBS/jfF+YH6/Tb6ujA40=
-=H9op
------END PGP SIGNATURE-----
-
---DaTEgnRu5pEC8TLg--
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+=
