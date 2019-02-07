@@ -2,105 +2,98 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE2BC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:10:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A682C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 22:40:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A742A2175B
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 21:10:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A742A2175B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 51A962173B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 22:40:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="fgap+lk+";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="FSLDku7y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 51A962173B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wWF51xJDzDqBN
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 08:10:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wYD81y3jzDqTw
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 09:40:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="fgap+lk+"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="FSLDku7y"; dkim-atps=neutral
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wVtS1JLwzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 07:54:38 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
- [10.5.11.13])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id F32F75F74A;
- Thu,  7 Feb 2019 20:54:35 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-35.bos.redhat.com [10.18.17.35])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 7A4E817A62;
- Thu,  7 Feb 2019 20:54:32 +0000 (UTC)
-Subject: Re: [PATCH-tip 15/22] locking/rwsem: Merge owner into count on x86-64
-To: Peter Zijlstra <peterz@infradead.org>
-References: <1549566446-27967-1-git-send-email-longman@redhat.com>
- <1549566446-27967-16-git-send-email-longman@redhat.com>
- <20190207200848.GH32477@hirez.programming.kicks-ass.net>
-From: Waiman Long <longman@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <d157be4f-fbbe-4541-439b-7f6ab3b1dbdc@redhat.com>
-Date: Thu, 7 Feb 2019 15:54:32 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wYBF74PNzDqTp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 09:38:28 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id 19B1A220EE;
+ Thu,  7 Feb 2019 17:38:26 -0500 (EST)
+Received: from mailfrontend2 ([10.202.2.163])
+ by compute6.internal (MEProxy); Thu, 07 Feb 2019 17:38:26 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ message-id:subject:from:to:cc:date:in-reply-to:references
+ :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
+ x4TKNzHj0Gy+yN+yACU8i0100YqicrHFFcMz4rYNEG4=; b=fgap+lk+PQIFNwrI
+ tFf5UkHFkUq+hA6YAN7LbFWvRiEDfwkcDS5W/3NAqAV3BXZNklw+AuDAdIL4zHPg
+ 5qlsYApcSxxMqVFCF/FNeVorxJSLXIolgVvOWdZg6PTlwwGDeFiGu/CiuZuHL6Rv
+ go4ycf9nY1jXeoFMKA4QtNGsah7UmL5dceyhS8fsPWHpVQI89w+R97yasHDclWO8
+ eFLHTD3/GbeCAcrWwPTYk4vozoQmk9VCjVMEaTetQoSkUQ4B9W4LqTBwJ9m1wrTd
+ 2tP3nJuaPNtaGKx6881xPBH6n0rA/8bkmRXggmyiPFNDTIU4xZ5lUzYyTdWlq5Au
+ SFtD8g==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:content-type
+ :date:from:in-reply-to:message-id:mime-version:references
+ :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
+ :x-sasl-enc; s=fm2; bh=x4TKNzHj0Gy+yN+yACU8i0100YqicrHFFcMz4rYNE
+ G4=; b=FSLDku7yPJ7NAqPRavXaxhyHt8foFoKkDagwuamL4J6ncaWKCl2/o3bNw
+ qDa53j/ndRJKchw3gGJrXCG+iV5Us9CnW9HwbBmmlEkRnZQxtCUQH00ZzCDHh6Dw
+ BXOE+G85TYDNLekUSkT7xfh6d9cjNawXQPpvoIVviOrFLffSdSEf3fTs7/hYceBp
+ wIyGBSlsxZPH00t4DASj27MuTccB3uP1sRjkwpt/fVxRA5toWz+VM9eqiIHLOBKh
+ PH/PlO6UG26+gnQVv16DHeG6ndKYT3y5F5imosOG2kXnTcatuHas+7luHO48+niz
+ xXHegmhVLrgDjY3jEXHCbhl2K2dLQ==
+X-ME-Sender: <xms:YbNcXEv1KeezaeE80or6P13i_oa_GMZf_JBxslC2W4_AZ2HpyFDhIA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtledrledtgdduieelucetufdoteggodetrfdotf
+ fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfquhhtnecuuegrihhlohhuthemucef
+ tddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenfghrlhcuvffnffculdeftd
+ dmnecujfgurhepkffuhffvffgjfhgtfggggfesthejredttderjeenucfhrhhomheptfhu
+ shhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecukf
+ hppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgt
+ uhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:YbNcXIVOxLS84V0_GZCkhNTSDerA8JJGKliqjXSBE1cOnFzB_Z_L6A>
+ <xmx:YbNcXMttThkOLUj44wE5IGNTgSg1dlSDyqpIqajXEiZqrI2pL-flwA>
+ <xmx:YbNcXEUrAOzYvYvj6sKdEB9rQCWAzXFUDHRDGumUL_KzcxFKJf21qw>
+ <xmx:YrNcXIdLm7VgrmTv5eQqN83bObHUsLxApaA2kTEeFKIbVT-fcjViQA>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 139891030F;
+ Thu,  7 Feb 2019 17:38:23 -0500 (EST)
+Message-ID: <1695be3f58d484d52d27a4ef438dd54e0efffb05.camel@russell.cc>
+Subject: Re: [PATCH] powerpc/powernv/idle: Restore IAMR after idle
+From: Russell Currey <ruscur@russell.cc>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Date: Fri, 08 Feb 2019 09:38:20 +1100
+In-Reply-To: <878syrlfnf.fsf@morokweng.localdomain>
+References: <20190206062837.26917-1-ruscur@russell.cc>
+ <1549515373.con208q1rq.astroid@bobo.none>
+ <d7e1bb36080c83353525c39c7bcff7bb7046bae0.camel@russell.cc>
+ <878syrlfnf.fsf@morokweng.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.5 
 MIME-Version: 1.0
-In-Reply-To: <20190207200848.GH32477@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.39]); Thu, 07 Feb 2019 20:54:36 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -112,54 +105,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/07/2019 03:08 PM, Peter Zijlstra wrote:
-> On Thu, Feb 07, 2019 at 02:07:19PM -0500, Waiman Long wrote:
->> On 32-bit architectures, there aren't enough bits to hold both.
->> 64-bit architectures, however, can have enough bits to do that. For
->> x86-64, the physical address can use up to 52 bits. That is 4PB of
->> memory. That leaves 12 bits available for other use. The task structur=
-e
->> pointer is also aligned to the L1 cache size. That means another 6 bit=
-s
->> (64 bytes cacheline) will be available. Reserving 2 bits for status
->> flags, we will have 16 bits for the reader count.  That can supports
->> up to (64k-1) readers.
-> 64k readers sounds like a number that is fairly 'easy' to reach, esp. o=
-n
-> 64bit. These are preemptible locks after all, all we need to do is get
-> 64k tasks nested on enough CPUs.
->
-> I'm sure there's some willing Java proglet around that spawns more than=
+On Thu, 2019-02-07 at 14:37 -0200, Thiago Jung Bauermann wrote:
+> Russell Currey <ruscur@russell.cc> writes:
+> > On Thu, 2019-02-07 at 15:08 +1000, Nicholas Piggin wrote:
+> > > Russell Currey's on February 6, 2019 4:28 pm:
+> > > > 
+> > > > Fixes: 3b10d0095a1e ("powerpc/mm/radix: Prevent kernel
+> > > > execution of
+> > > > user
+> > > > space")
+> > > > Cc: <stable@vger.kernel.org>
+> > > > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > > 
+> > > Good catch and debugging. This really should be a quirk, we don't
+> > > want
+> > > to have to restore this thing on a thread switch.
+> > > 
+> > > Can we put it under a CONFIG option if we're not using IAMR?
+> > 
+> > I don't exactly know when we do or don't use the IAMR (since the
+> > only
+> > thing I've used it for is radix).  When wouldn't we care about
+> > restoring it on hash?
+> 
+> On hash it's used for memory protection keys (code is in
+> arch/powerpc/mm/pkeys.c). The kernel doesn't use protection keys, but
+> userspace apps may use it explicitly via specific syscalls
+> (pkey_alloc(), pkey_mprotect, pkey_free()).
+> 
+> Also, the kernel may use a protection key if the process does an
+> mmap(PROT_EXEC).
 
-> 64k threads just because it can. Run it on a big enough machine (ISTR
-> there's a number of >1k CPU systems out there) and voila.
+I don't understand how this would work, though - in this case we
+wouldn't know on boot if we were going to use the IAMR or not.  On
+radix (unless booting with nosmep) it would always be used, but on hash
+it seems it depends on what userspace does.  How exactly would a
+runtime toggle of "IAMR in use" work?
 
-Yes, that can be a problem.
+With a CONFIG option it would have to depend on PPC_MEM_KEYS ||
+PPC_RADIX_MMU, but those are (pretty much) always going to be on in P8
+and P9, which I already check for.
 
-One possible solution is to check if the count goes negative. If so,
-fail the read lock and make the readers wait in the wait queue until the
-count is in positive territory. That effectively reduces the reader
-count to 15 bits, but it will avoid the overflow situation. I will try
-to add that support into the next version.
-
-Cheers,
-Longman
-
-
-
+> 
+> --
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+> 
 
