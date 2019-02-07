@@ -2,66 +2,65 @@ Return-Path: <SRS0=N2MO=QO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68663C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:07:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78499C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:56:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ECF6F21904
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:07:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECF6F21904
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id B55E821907
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Feb 2019 13:56:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dTixeQLV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B55E821907
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wJWs4bxwzDq9d
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 00:07:53 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wKc76t84zDq7k
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 00:56:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=willy@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="dTixeQLV"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wJCG5zS2zDqSC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43wJCG23Mfz8tRw
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43wJCG0tLQz9s4Z; Thu,  7 Feb 2019 23:53:30 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43wJCF2zBBz9s4V
- for <linuxppc-dev@ozlabs.org>; Thu,  7 Feb 2019 23:53:28 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x17Cr44m001148;
- Thu, 7 Feb 2019 06:53:05 -0600
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x17Cquoh001141;
- Thu, 7 Feb 2019 06:52:57 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Thu, 7 Feb 2019 06:52:56 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/64: Fix memcmp reading past the end of src/dest
-Message-ID: <20190207125256.GW14180@gate.crashing.org>
-References: <20190207115313.31078-1-mpe@ellerman.id.au>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wKYm28KTzDqP0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 00:54:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=MslmhBf6sHBX+lTIZiGv5oF8ktq/q6NsQm5zdWGHpTQ=; b=dTixeQLVu7KVSglvTuT6y6NrB
+ rYgagcrHhJjihyiiIkRYAiB55rstLOlgOmT/ytB6+MR4UHv2vN/3TX71ojKEKepM8SM2PM6G+vVRM
+ SSi1Bqwl0MYMHTVCwd25Tkg7CkQwvFOQ1e5S8dLp8+Mo2W2npAnkDWxmP00Jx0CmqZmL7ayCGsO5k
+ bopYRxg/SUtKwzZ3xaha6RLVrjXS93Tq3k7TytGPy6iLX1acucpccOyvne5HPEFRbNf5FPihb2+bX
+ W4dPTweVdsHFZUub8DYpjK75j3A37u79TwYV91pIW4rBFkGuleAtWDlckD64Rgal0bkx4q9IA739A
+ 2OqF0klUA==;
+Received: from willy by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
+ Hat Linux)) id 1grk7n-0003OL-U6; Thu, 07 Feb 2019 13:53:55 +0000
+Date: Thu, 7 Feb 2019 05:53:55 -0800
+From: Matthew Wilcox <willy@infradead.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v3 1/2] mm: add probe_user_read()
+Message-ID: <20190207135355.GU21860@bombadil.infradead.org>
+References: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190207115313.31078-1-mpe@ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <39fb6c5a191025378676492e140dc012915ecaeb.1547652372.git.christophe.leroy@c-s.fr>
+User-Agent: Mutt/1.9.2 (2017-12-15)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,29 +72,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, chandan@linux.ibm.com, npiggin@gmail.com,
- daniel@linux.ibm.com
+Cc: Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 07, 2019 at 10:53:13PM +1100, Michael Ellerman wrote:
-> Chandan reported that fstests' generic/026 test hit a crash:
-
-> The instruction dump decodes as:
->   subfic  r6,r5,8
->   rlwinm  r6,r6,3,0,28
->   ldbrx   r9,0,r3
->   ldbrx   r10,0,r4	<-
+On Wed, Jan 16, 2019 at 04:59:27PM +0000, Christophe Leroy wrote:
+>  v3: Moved 'Returns:" comment after description.
+>      Explained in the commit log why the function is defined static inline
 > 
-> Which shows us doing an 8 byte load from c00000062ac3fff9, which
-> crosses the page boundary at c00000062ac40000 and faults.
-> 
-> It's not OK for memcmp to read past the end of the source or
-> destination buffers.
+>  v2: Added "Returns:" comment and removed probe_user_address()
 
-It's not okay to access memory pages unsolicited.  Reading past the end
-is fine per se.
+The correct spelling is 'Return:', not 'Returns:':
 
+Return values
+~~~~~~~~~~~~
 
-Segher
+The return value, if any, should be described in a dedicated section
+named ``Return``.
+
