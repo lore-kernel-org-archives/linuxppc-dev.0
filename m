@@ -2,87 +2,80 @@ Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60952C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 14:53:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1396C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 15:04:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8F5782075C
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 14:53:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F5782075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 5A1A920863
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 15:04:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M61Sg1II"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A1A920863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wyqP3SKfzDqc4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 01:53:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wz482lSKzDqZQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 02:04:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
- (client-ip=82.165.15.123; helo=s16892447.onlinehome-server.info;
- envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ilande.co.uk
-Received: from s16892447.onlinehome-server.info (chuckie.co.uk [82.165.15.123])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M61Sg1II"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wynf0sCTzDqXG
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 01:52:03 +1100 (AEDT)
-Received: from host86-138-240-60.range86-138.btcentralplus.com
- ([86.138.240.60] helo=[192.168.1.65])
- by s16892447.onlinehome-server.info with esmtpsa
- (TLS1.0:RSA_AES_128_CBC_SHA1:16) (Exim 4.76)
- (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1gs7Vh-0000XE-WE; Fri, 08 Feb 2019 14:52:11 +0000
-To: Christophe Leroy <christophe.leroy@c-s.fr>, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org
-References: <20190208143319.11980-1-mark.cave-ayland@ilande.co.uk>
- <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
-From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
- mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
- 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
- E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
- PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
- PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
- AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
- OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
- NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
- mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
- z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
- T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
- DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
- y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
- 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
- 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
- YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
- Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
- BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
- opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
- NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
- Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
- KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
- imgcU9TTGC5qd9g=
-Message-ID: <2ed8efb9-5cd4-31bf-6c7b-501b9d1925e6@ilande.co.uk>
-Date: Fri, 8 Feb 2019 14:51:43 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 86.138.240.60
-X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
-Subject: Re: [PATCH] powerpc: fix 32-bit KVM-PR lockup and panic with MacOS
- guest
-X-SA-Exim-Version: 4.2.1 (built Sun, 08 Jan 2012 02:45:44 +0000)
-X-SA-Exim-Scanned: Yes (on s16892447.onlinehome-server.info)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wz2C4vrczDqY2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 02:02:59 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43wz2619x9z9vBxV;
+ Fri,  8 Feb 2019 16:02:54 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=M61Sg1II; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id zHG7QCYHBWWY; Fri,  8 Feb 2019 16:02:54 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43wz2606Zjz9vBxT;
+ Fri,  8 Feb 2019 16:02:54 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1549638174; bh=oNW1cjqNraLzYK6Kh8uFIYVP1M6z46QbE9hpGbjPuM4=;
+ h=From:Subject:To:Cc:Date:From;
+ b=M61Sg1IIWrtqlKJKrthI1aJM1BEbxYs7yYyato/T7F5JpWTmzQThz6qFv0gdEeqIg
+ ZXfCt7K9bPUqH/tnq7AxWtgtNx8LkrFWweVMDRelTQoadpaApcSBZRhShZCqpEi3Wh
+ cnJWzhxSRKVRIeza3cruB7+y5Kdwdcd/7E3Ibg4Q=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7E4948B8DF;
+ Fri,  8 Feb 2019 16:02:55 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id snUdZqBBPijt; Fri,  8 Feb 2019 16:02:55 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BE468B756;
+ Fri,  8 Feb 2019 16:02:55 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 49CB4656D3; Fri,  8 Feb 2019 15:02:55 +0000 (UTC)
+Message-Id: <59dbb1bc305068dd0fe8e2d5a75c4213e0134549.1549638049.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] tools/selftest/vm: allow choosing mem size and page size in
+ map_hugetlb
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Shuah Khan <shuah@kernel.org>
+Date: Fri,  8 Feb 2019 15:02:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,52 +87,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-kselftest@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 08/02/2019 14:45, Christophe Leroy wrote:
+map_hugetlb maps 256Mbytes of memory with default hugepage size.
 
-> Le 08/02/2019 à 15:33, Mark Cave-Ayland a écrit :
->> Commit 8792468da5e1 "powerpc: Add the ability to save FPU without giving it up"
-> 
-> Expected format for the above is:
-> 
-> Commit 123456789abc ("text")
+This patch allows the user to pass the size and page shift as an
+argument in order to use different size and page size.
 
-Hi Christophe,
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ tools/testing/selftests/vm/map_hugetlb.c | 29 +++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
 
-Apologies - I'm fairly new at submitting kernel patches, but I can re-send it in the
-correct format later if required.
+diff --git a/tools/testing/selftests/vm/map_hugetlb.c b/tools/testing/selftests/vm/map_hugetlb.c
+index 9b777fa95f09..5a2d7b8efc40 100644
+--- a/tools/testing/selftests/vm/map_hugetlb.c
++++ b/tools/testing/selftests/vm/map_hugetlb.c
+@@ -23,6 +23,14 @@
+ #define MAP_HUGETLB 0x40000 /* arch specific */
+ #endif
+ 
++#ifndef MAP_HUGE_SHIFT
++#define MAP_HUGE_SHIFT 26
++#endif
++
++#ifndef MAP_HUGE_MASK
++#define MAP_HUGE_MASK 0x3f
++#endif
++
+ /* Only ia64 requires this */
+ #ifdef __ia64__
+ #define ADDR (void *)(0x8000000000000000UL)
+@@ -58,12 +66,29 @@ static int read_bytes(char *addr)
+ 	return 0;
+ }
+ 
+-int main(void)
++int main(int argc, char **argv)
+ {
+ 	void *addr;
+ 	int ret;
++	size_t length = LENGTH;
++	int flags = FLAGS;
++	int shift = 0;
++
++	if (argc > 1)
++		length = atol(argv[1]) << 20;
++	if (argc > 2) {
++		shift = atoi(argv[2]);
++		if (shift)
++			flags |= (shift & MAP_HUGE_MASK) << MAP_HUGE_SHIFT;
++	}
++
++	if (shift)
++		printf("%u kB hugepages\n", 1 << shift);
++	else
++		printf("Default size hugepages\n");
++	printf("Mapping %lu Mbytes\n", (unsigned long)length >> 20);
+ 
+-	addr = mmap(ADDR, LENGTH, PROTECTION, FLAGS, -1, 0);
++	addr = mmap(ADDR, length, PROTECTION, flags, -1, 0);
+ 	if (addr == MAP_FAILED) {
+ 		perror("mmap");
+ 		exit(1);
+-- 
+2.13.3
 
->> unexpectedly removed the MSR_FE0 and MSR_FE1 bits from the bitmask used to
->> update the MSR of the previous thread in __giveup_fpu() causing a KVM-PR MacOS
->> guest to lockup and panic the kernel.
->>
->> Reinstate these bits to the MSR bitmask to enable MacOS guests to run under
->> 32-bit KVM-PR once again without issue.
->>
->> Signed-off-by: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-> 
-> Should include a Fixes: and a Cc to stable ?
-> 
-> Fixes: 8792468da5e1 ("powerpc: Add the ability to save FPU without giving it up")
-> Cc: stable@vger.kernel.org
-
-Indeed, but there are still some questions to be asked here:
-
-1) Why were these bits removed from the original bitmask in the first place without
-it being documented in the commit message?
-
-2) Is this the right fix? I'm told that MacOS guests already run without this patch
-on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
-bug elsewhere in the 32-bit powerpc code.
-
-
-If you think that these points don't matter, then I'm happy to resubmit the patch
-as-is based upon your comments above.
-
-
-ATB,
-
-Mark.
