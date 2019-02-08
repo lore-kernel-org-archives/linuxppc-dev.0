@@ -2,54 +2,82 @@ Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52485C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 03:05:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7993FC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 03:09:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D171C21907
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 03:05:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D171C21907
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E824D21907
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 03:09:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YofiSC/C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E824D21907
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wg5w0SxyzDqVR
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 14:05:08 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wgCL07bxzDqW0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 14:09:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="YofiSC/C"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wg2n254PzDqVT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 14:02:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 43wg2m71Qzz9sBZ;
- Fri,  8 Feb 2019 14:02:24 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/64s: Work around spurious warning on old gccs
- with -fsanitize-coverage
-In-Reply-To: <e1e1fc85-6ab6-ba91-c91f-21c3f51ee6ee@au1.ibm.com>
-References: <20190207053324.17541-1-andrew.donnellan@au1.ibm.com>
- <20190207063736.GS14180@gate.crashing.org>
- <630e392b-e9a7-6b1e-e3d8-c5382f94e5d7@au1.ibm.com>
- <20190207074947.GT14180@gate.crashing.org>
- <e1e1fc85-6ab6-ba91-c91f-21c3f51ee6ee@au1.ibm.com>
-Date: Fri, 08 Feb 2019 14:02:24 +1100
-Message-ID: <87h8dfj83j.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wg9Y0S25zDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 14:08:16 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id w4so1008895plz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Feb 2019 19:08:16 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=En/cQz1CaN6WxYMxiMQSVtOzjQANHlMPZ4WLYqhNDmA=;
+ b=YofiSC/Cjb9GLlkJgmUFfKOhi86LV/x4z6qQTEKF98WHxATlh9yWJFOfp3tGfwWMBH
+ FSOAJxASw7RN4Fp7L8qO0A2+nPs/QDa8iwNX/aQdrjIuq3ZPoSVDNXUCkRaONJZxwGeY
+ YxHjs4zmUmH3JvgxM2SvKZ8QlrbP2kzan03FtM4o7Oib7EEtMIVAxx3LSldXzYLVzFW4
+ oNlOKevEWFmo77yXsQMOJ5GkMbYRgk0QLxNRhNhdkxBq89XGrG0/jK5JaauY/Zuo94IA
+ xEutttpx3u31pmLYqylE/5U2BccKeq5VzNLaWUN5EA9J3s/1CsMJwQArxihFOU0OWWV7
+ cvMg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=En/cQz1CaN6WxYMxiMQSVtOzjQANHlMPZ4WLYqhNDmA=;
+ b=EIB58QsfZ6U0fIwbVgoG+Eti/ZELxN6vUXifyFhieF3/YvXxZifmbWA6lOV/YDlGjn
+ RENEt20MtG0tgou0Qa5tj6+eFMs4G66Pi+stmQeGOlhOdSUb0B/ufKjDX+304h3+OrZI
+ xdURHSTz6aCwD8/GBP+Z7RRYXbVFl/wxGz4bcx+ebkAqwq+NRqjChr7ghvs4B1XJpPtB
+ EwmuuVbJy7dqnUgkrMZA4J1qbpmCYNOFrbE/uOgWbEFz1FZafhxc8Jy0orB6sU+CGcMl
+ EUAsVJxuEBk17yg2MmJsNdmzLHjHCLppvxO+PZ6ytqZFzuxgTS7dhRlQR0La0OLP7+Zh
+ 6yWQ==
+X-Gm-Message-State: AHQUAuaEhvMnVsqVka0fGAf2G8fuhiwrAFjTasNWl9s263C8zEBwXJ+z
+ G1gbqJfwq+Lk/TTVnRqSTONFWqw2
+X-Google-Smtp-Source: AHgI3IbuI6yLGBqIhxPmkbIFLG1Wf73TiDPybX8JhYQK0fwwwNs8V8+ASW5RBjLsTRCFHceIR8HzbQ==
+X-Received: by 2002:a17:902:a70b:: with SMTP id
+ w11mr20128607plq.84.1549595294634; 
+ Thu, 07 Feb 2019 19:08:14 -0800 (PST)
+Received: from wafer.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id o66sm658884pgo.75.2019.02.07.19.08.12
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 07 Feb 2019 19:08:13 -0800 (PST)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/7] powerpc/eeh: Use debugfs_create_u32 for eeh_max_freezes
+Date: Fri,  8 Feb 2019 14:07:56 +1100
+Message-Id: <20190208030802.10805-1-oohall@gmail.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,92 +89,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: syzkaller@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
- dvyukov@google.com
+Cc: Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Donnellan <andrew.donnellan@au1.ibm.com> writes:
-> (+ Nick)
->
-> On 7/2/19 6:49 pm, Segher Boessenkool wrote:
->> On Thu, Feb 07, 2019 at 05:59:48PM +1100, Andrew Donnellan wrote:
->>> On 7/2/19 5:37 pm, Segher Boessenkool wrote:
->>>> On Thu, Feb 07, 2019 at 04:33:23PM +1100, Andrew Donnellan wrote:
->>>>> Some older gccs (<GCC 7), when invoked with -fsanitize-coverage=3Dtra=
-ce-pc,
->>>>> cause a spurious uninitialised variable warning in dt_cpu_ftrs.c:
->>>>>
->>>>>    arch/powerpc/kernel/dt_cpu_ftrs.c: In function
->>>>>    =E2=80=98cpufeatures_process_feature=E2=80=99:
->>>>>    arch/powerpc/kernel/dt_cpu_ftrs.c:686:7: warning: =E2=80=98m=E2=80=
-=99 may be used
->>>>>    uninitialized in this function [-Wmaybe-uninitialized]
->>>>>      if (m->cpu_ftr_bit_mask)
->>>>
->>>> It seems to me the warning is correct?  If enable_unknown is false and=
- no
->>>> cpu_feature is found, it will in
->>>>
->>>> 	if (m->cpu_ftr_bit_mask)
->>>> 		cur_cpu_spec->cpu_features |=3D m->cpu_ftr_bit_mask;
->>>>
->>>> enable random features (whatever was last in the table), or indeed acc=
-ess
->>>> via NULL if the table is length 0?  So maybe this should be
->>>>
->>>> 	if (known && m->cpu_ftr_bit_mask)
->>>> 		cur_cpu_spec->cpu_features |=3D m->cpu_ftr_bit_mask;
->>>>
->>>> instead?  (The code would be much clearer if all the known vs. !known
->>>> codepath was fully separated here).
->>>
->>> The table is never length 0, it's a statically defined array.
->>=20
->> Sure, and presumably that is why newer GCC doesn't warn.  But what about
->> the other point?  Is this code ever correct?  Enabling random features
->> (in cur_cpu_spec->cpu_features) when the name isn't found seems wrong.
->
-> Now that I'm replying without being 2 minutes before a meeting :)
->
-> The warning is still spurious, but the logic looks very suspicious.
->
-> I think your solution looks correct, though the whole function could be=20
-> cleaned up a bit.
->
-> I also notice that if enable_unknown =3D=3D false, then I think an unknow=
-n=20
-> feature will still print "enabling" and return true, which seems wrong.
->
-> How does something like the following look, which I could send instead=20
-> and will probably solve the spurious warnings issues anyway?
+There's no need to the custom getter/setter functions so we should remove
+them in favour of using the generic one. While we're here, change the type
+of eeh_max_freeze to uint32_t and print the value in decimal rather than
+hex because printing it in hex makes no sense.
 
-I'd prefer a minimal fix that we can backport. How about:
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/include/asm/eeh.h |  2 +-
+ arch/powerpc/kernel/eeh.c      | 21 +++------------------
+ 2 files changed, 4 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu=
-_ftrs.c
-index 8be3721d9302..a1acccd25839 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -675,12 +675,10 @@ static bool __init cpufeatures_process_feature(struct=
- dt_cpu_feature *f)
- 		}
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 8b596d096ebe..c003628441cc 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -219,7 +219,7 @@ struct eeh_ops {
+ };
+ 
+ extern int eeh_subsystem_flags;
+-extern int eeh_max_freezes;
++extern uint32_t eeh_max_freezes;
+ extern struct eeh_ops *eeh_ops;
+ extern raw_spinlock_t confirm_error_lock;
+ 
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index ae05203eb4de..f6e65375a8de 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -109,7 +109,7 @@ EXPORT_SYMBOL(eeh_subsystem_flags);
+  * frozen count in last hour exceeds this limit, the PE will
+  * be forced to be offline permanently.
+  */
+-int eeh_max_freezes = 5;
++uint32_t eeh_max_freezes = 5;
+ 
+ /* Platform dependent EEH operations */
+ struct eeh_ops *eeh_ops = NULL;
+@@ -1796,22 +1796,8 @@ static int eeh_enable_dbgfs_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
+-static int eeh_freeze_dbgfs_set(void *data, u64 val)
+-{
+-	eeh_max_freezes = val;
+-	return 0;
+-}
+-
+-static int eeh_freeze_dbgfs_get(void *data, u64 *val)
+-{
+-	*val = eeh_max_freezes;
+-	return 0;
+-}
+-
+ DEFINE_DEBUGFS_ATTRIBUTE(eeh_enable_dbgfs_ops, eeh_enable_dbgfs_get,
+ 			 eeh_enable_dbgfs_set, "0x%llx\n");
+-DEFINE_DEBUGFS_ATTRIBUTE(eeh_freeze_dbgfs_ops, eeh_freeze_dbgfs_get,
+-			 eeh_freeze_dbgfs_set, "0x%llx\n");
+ #endif
+ 
+ static int __init eeh_init_proc(void)
+@@ -1822,9 +1808,8 @@ static int __init eeh_init_proc(void)
+ 		debugfs_create_file_unsafe("eeh_enable", 0600,
+ 					   powerpc_debugfs_root, NULL,
+ 					   &eeh_enable_dbgfs_ops);
+-		debugfs_create_file_unsafe("eeh_max_freezes", 0600,
+-					   powerpc_debugfs_root, NULL,
+-					   &eeh_freeze_dbgfs_ops);
++		debugfs_create_u32("eeh_max_freezes", 0600,
++				powerpc_debugfs_root, &eeh_max_freezes);
+ #endif
  	}
-=20
--	if (!known && enable_unknown) {
--		if (!feat_try_enable_unknown(f)) {
--			pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
--				f->name);
--			return false;
--		}
-+	if (!known && (!enable_unknown || !feat_try_enable_unknown(f))) {
-+		pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
-+			f->name);
-+		return false;
- 	}
-=20
- 	if (m->cpu_ftr_bit_mask)
+ 
+-- 
+2.20.1
 
-
-cheers
