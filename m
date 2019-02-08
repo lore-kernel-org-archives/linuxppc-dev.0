@@ -2,80 +2,92 @@ Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 760D8C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 11:01:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7854C282CC
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 11:13:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9464A21924
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 11:01:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4443220863
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 11:13:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="oljw+vjc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9464A21924
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	dkim=pass (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="lk9OVUVL";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="e4vN246+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4443220863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wsgn2y3DzDqX0
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 22:01:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wsxG1XdmzDqX1
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 22:13:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p01-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5301::3; helo=mo6-p01-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
+ dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="oljw+vjc"; 
- dkim-atps=neutral
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::3])
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="lk9OVUVL"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="e4vN246+"; dkim-atps=neutral
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wsdX6353zDqVq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 21:59:42 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1549623578;
- s=strato-dkim-0002; d=xenosoft.de;
- h=To:References:Message-Id:Cc:Date:In-Reply-To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=5vM19Mse6Fg0iyC0wbkxDF21CFIQD2YJabqo5tMcP3Y=;
- b=oljw+vjcL7ArDYeDOJ88Iy5pIIl8wqfWXAWaAMbNXs2vhLtkLaU5bansp1kTUJIRqm
- RWtU6qX4Czn8msQQFlRXrTs5HRii6P00GK93fghYlidDvzTACT1jI6zvcPqxUH4kLSMM
- vWpRZAk141dpumy5BSsWH8Q57fbm1M3+Q35COU1diEkFQKqM8Rm6DoPpimfEEa5q9T+7
- ucIUl+Gdu+E4j14769o4Q1818V5xTmHl5JnJ/27fpNfCOi7T32T6Z7UVfc1QBtnR449J
- wn8WftSm9b+SQUpLnAFpxZqLM4X0FUp9UYQVfwbawyZzRHRCbdd8KDwZhbMy60K00CiG
- N/CQ==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6Kxrf+5Dj7x4Ql+BpvNtdS8exno1lfFcAX4Rep/HqzVAjBMh+akM"
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:5097:f73f:b2d2:de7]
- by smtp.strato.de (RZmta 44.9 AUTH) with ESMTPSA id t0203dv18AxF5ae
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Fri, 8 Feb 2019 11:59:15 +0100 (CET)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (1.0)
-Subject: Re: use generic DMA mapping code in powerpc V4
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-X-Mailer: iPhone Mail (16C101)
-In-Reply-To: <20190208091818.GA23491@lst.de>
-Date: Fri, 8 Feb 2019 11:59:14 +0100
-Content-Transfer-Encoding: quoted-printable
-Message-Id: <A289D18C-1239-4296-B58F-FFB0DF1D9C79@xenosoft.de>
-References: <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
- <594beaae-9681-03de-9f42-191cc7d2f8e3@xenosoft.de>
- <20190204075616.GA5408@lst.de>
- <ffbf56ae-c259-47b5-9deb-7fb21fead254@xenosoft.de>
- <20190204123852.GA10428@lst.de>
- <b1c0161f-4211-03af-022d-0db7237516e9@xenosoft.de>
- <20190206151505.GA31065@lst.de> <20190206151655.GA31172@lst.de>
- <61EC67B1-12EF-42B6-B69B-B59F9E4FC474@xenosoft.de>
- <7c1f208b-6909-3b0a-f9f9-38ff1ac3d617@xenosoft.de>
- <20190208091818.GA23491@lst.de>
-To: Christoph Hellwig <hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wsvH09zgzDqWQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 22:11:38 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id ED2582206A;
+ Fri,  8 Feb 2019 06:11:33 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Fri, 08 Feb 2019 06:11:33 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm1; bh=OKWzDgix67djhgSsc9UWkOAtWH
+ iFpLZ1KqFQGyLLmqA=; b=lk9OVUVLRdVSvnspzItR4dC/htBOhicMCEO/u4YqL1
+ +Fv7gWn73J9+rp9ONH+Hqd/6bL652vBukt88ve/9nPZfTq061+YGKRLhSUxDsuYl
+ 82skBJDxc5KyYelRbbDpFUJ3cF//EPIi6yAhnYvB9PkEVX/9960gSr5N2h7FVZ5Q
+ D/LwEFCkfvFxD/nMDqiY7K0FfRpw4YihyRXVpsgtdi1I5Eq0O1R2exYxCTfMXofc
+ veL1N93pPrQMaaD23ZIkMmGEPtoYMDpS7d/1GBCa7dQqCbZ8xJYeRqCWVZuyDuOt
+ p875jrOm07db6mkrW29c0Fzf2uM1fIXcV0wiEbsqHgcw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=OKWzDgix67djhgSsc
+ 9UWkOAtWHiFpLZ1KqFQGyLLmqA=; b=e4vN246+kL/Ry7AdhpwERJuE21fSZN0wn
+ iq1XaIIkZnYCRfhc0dcdnlw310w9Dvstgw/RPAw+ETBx/GgN+HHIb8MXZ1mAx6Sg
+ 02H+42aMjXW8xWC8CqIs3JE8Hw6OYsHzrnGSo2DvOsU0Q57sp/OrYJS4xY67nu6N
+ PoSR9An8jZ/eBs5ddFjudqY54X0nFDPW4QddmxlhFmEZeYI6eRODShSzRVKm8g4+
+ TqDhA9C/1nAe0rL7ho/drdRMfIk3h9JXZQT1jsi8KdQna89MCZC9Tv/Dtb4jaYuB
+ bqGAm8L0IVQTV6myUoYZegdF7226LKBMnstM2yudxwLSAuKOLPyCQ==
+X-ME-Sender: <xms:5WNdXPb-uQbbb-zB1FMVkmctV2gl4P6Qwytj4v0TObZZRk5PXoZDfw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedtledrledvgddvhecutefuodetggdotefrodftvf
+ curfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthenuceurghilhhouhhtmecufedt
+ tdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvffufffkofgggfestdekredtre
+ dttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgihuceorhhushgtuhhrsehruhhs
+ shgvlhhlrdgttgeqnecuffhomhgrihhnpegsohhokhefshdrshgsnecukfhppeduvddurd
+ eghedrvdduledrfeenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruhhs
+ shgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:5WNdXCqIL_itIuFXELliWhgatJ0SXZHpPib1mTx7RPxE5HBjN2R_BA>
+ <xmx:5WNdXM-i9RRRJcoCHN9wpZm7o8tFvYUaUTr0rdlV9NIDHueiHntjwQ>
+ <xmx:5WNdXJ9Vr0QrGcc6jds2QOgwfxSG3-sec4MFPHXdzSwRy-DQzGNevA>
+ <xmx:5WNdXInFh-jwXxIOC-h-rF80xguoMMpVeQ5mZe_PkTSaChCDnLnc1g>
+Received: from crackle.ozlabs.ibm.com.com
+ (ppp121-45-219-3.bras1.cbr2.internode.on.net [121.45.219.3])
+ by mail.messagingengine.com (Postfix) with ESMTPA id C2C47E4046;
+ Fri,  8 Feb 2019 06:11:31 -0500 (EST)
+From: Russell Currey <ruscur@russell.cc>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/powernv/idle: Restore IAMR after idle
+Date: Fri,  8 Feb 2019 22:11:03 +1100
+Message-Id: <20190208111103.4901-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,30 +99,74 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-OK, I will test it.
+Without restoring the IAMR after idle, execution prevention on POWER9
+with Radix MMU is overwritten and the kernel can freely execute userspace without
+faulting.
 
-=E2=80=94 Christian
+This is necessary when returning from any stop state that modifies user
+state, as well as hypervisor state.
 
-Sent from my iPhone
+To test how this fails without this patch, load the lkdtm driver and
+do the following:
 
-> On 8. Feb 2019, at 10:18, Christoph Hellwig <hch@lst.de> wrote:
->=20
->> On Fri, Feb 08, 2019 at 10:01:46AM +0100, Christian Zigotzky wrote:
->> Hi Christoph,
->>=20
->> Your new patch fixes the problems with the P.A. Semi Ethernet! :-)
->=20
-> Thanks a lot once again for testing!
->=20
-> Now can you test with this patch and the whole series?
->=20
-> I've updated the powerpc-dma.6 branch to include this fix.
+   echo EXEC_USERSPACE > /sys/kernel/debug/provoke-crash/DIRECT
+
+which won't fault, then boot the kernel with powersave=off, where it
+will fault.  Applying this patch will fix this.
+
+Fixes: 3b10d0095a1e ("powerpc/mm/radix: Prevent kernel execution of user
+space")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+Since v1:
+      - no longer use paca to save IAMR, instead use _DAR (thanks mpe)
+      - remove isync and pnv_wakeup_noloss section (thanks Nick)
+
+ arch/powerpc/kernel/idle_book3s.S | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 7f5ac2e8581b..551cc4649021 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -200,6 +200,13 @@ pnv_powersave_common:
+ 	/* Continue saving state */
+ 	SAVE_GPR(2, r1)
+ 	SAVE_NVGPRS(r1)
++
++BEGIN_FTR_SECTION
++	/* _DAR is unused here, so (ab)use it to save the IAMR */
++	mfspr	r5,SPRN_IAMR
++	std	r5,_DAR(r1)
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++
+ 	mfcr	r5
+ 	std	r5,_CCR(r1)
+ 	std	r1,PACAR1(r13)
+@@ -924,6 +931,17 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 	REST_NVGPRS(r1)
+ 	REST_GPR(2, r1)
++
++BEGIN_FTR_SECTION
++	/* IAMR was saved in regs->dar in pnv_powersave_common */
++	ld	r4,_DAR(r1)
++	mtspr	SPRN_IAMR,r4
++	/*
++	 * We don't need an isync here because the upcoming mtmsrd is
++	 * execution synchronizing.
++	 */
++END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
++
+ 	ld	r4,PACAKMSR(r13)
+ 	ld	r5,_LINK(r1)
+ 	ld	r6,_CCR(r1)
+-- 
+2.20.1
+
