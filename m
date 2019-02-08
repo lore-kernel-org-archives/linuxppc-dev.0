@@ -2,67 +2,92 @@ Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E925FC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 05:21:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD91CC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 05:46:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1746220863
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 05:21:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="cvFmwXtD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1746220863
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 0A6872147C
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 05:46:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0A6872147C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wk6q0sKBzDqW3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 16:21:07 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43wk434Mj5zDqTn
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 16:18:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wkgg52mzzDqWP
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 16:46:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="cvFmwXtD"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 43wk43125tz9sNx; Fri,  8 Feb 2019 16:18:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1549603123;
- bh=PV+f3Ho8IucPdoLGi8WNvPbR4LnFHYYgkouse5zx1tA=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=cvFmwXtDKK/gQuEcTcNNzoqPjM/VlsLuw5t1GXXNCoNT/8NahG3GZQ/TnAQ8enx5N
- HI0hne8IHWCC+vqHF1kn6jVgpBirporLinIQh/HOB2KkLWYrf4StD4k2eVbARfXPU8
- OM9tKUS8eN5RslxUeQZ+ZKJeEA4MxBOZC8MXuTlI=
-Date: Fri, 8 Feb 2019 16:07:47 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 00/19] KVM: PPC: Book3S HV: add XIVE native exploitation
- mode
-Message-ID: <20190208050747.GC2688@umbus.fritz.box>
-References: <2f9b4420-ef90-20b8-d31b-dc547a6aa6b4@kaod.org>
- <a420acfb9f375b27bc1203fbb15312a61eb0c34d.camel@kernel.crashing.org>
- <06b7c4d2-72ba-ca4f-aded-789280798136@kaod.org>
- <20190204053610.GK1927@umbus.fritz.box>
- <dc59257b-c780-7b81-f3d8-46269b834c2d@kaod.org>
- <20190205221315.GB29038@blackberry>
- <20190206011800.GN22661@umbus.fritz.box>
- <bf3725b6-9881-74a0-ec4f-43ac409cb496@kaod.org>
- <20190207025111.GB22661@umbus.fritz.box>
- <2d623da8-31e4-bdc9-c5e4-ea3689a795dd@kaod.org>
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43wkdc72tSzDqVL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 16:44:17 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x185dvJd139776
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Feb 2019 00:44:15 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qgx8vv1h3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2019 00:44:14 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Fri, 8 Feb 2019 05:44:13 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 8 Feb 2019 05:44:08 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x185i7Nm36044910
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 8 Feb 2019 05:44:07 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5A85AAE057;
+ Fri,  8 Feb 2019 05:44:07 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 17D2BAE04D;
+ Fri,  8 Feb 2019 05:44:04 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Fri,  8 Feb 2019 05:44:03 +0000 (GMT)
+Date: Fri, 8 Feb 2019 11:14:03 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: Re: [PATCH v03] powerpc/numa: Perform full re-add of CPU for
+ PRRN/VPHN topology update
+References: <305ed693-ea85-8a70-1d3c-ae405aebc0ad@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="t0UkRYy7tHLRMCai"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <2d623da8-31e4-bdc9-c5e4-ea3689a795dd@kaod.org>
+In-Reply-To: <305ed693-ea85-8a70-1d3c-ae405aebc0ad@linux.vnet.ibm.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 19020805-0020-0000-0000-0000031444D0
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19020805-0021-0000-0000-0000216551A8
+Message-Id: <20190208054403.GA24971@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-08_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902080041
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,113 +99,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Rob Herring <robh@kernel.org>, Kees Cook <keescook@chromium.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Al Viro <viro@zeniv.linux.org.uk>, Juliet Kim <minkim@us.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Lynch <nathanl@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>, Corentin Labbe <clabbe@baylibre.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+> 
+>  int arch_update_cpu_topology(void)
+>  {
+> -	return numa_update_cpu_topology(true);
+> +	int changed = topology_changed;
+> +
+> +	topology_changed = 0;
+> +	return changed;
+>  }
+> 
 
---t0UkRYy7tHLRMCai
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Do we need Powerpc override for arch_update_cpu_topology() now?  That
+topology_changed sometime back doesn't seem to have help. The scheduler
+atleast now is neglecting whether the topology changed or not.
 
-On Thu, Feb 07, 2019 at 09:31:06AM +0100, C=E9dric Le Goater wrote:
-> On 2/7/19 3:51 AM, David Gibson wrote:
-> > On Wed, Feb 06, 2019 at 08:35:24AM +0100, C=E9dric Le Goater wrote:
-> >> On 2/6/19 2:18 AM, David Gibson wrote:
-> >>> On Wed, Feb 06, 2019 at 09:13:15AM +1100, Paul Mackerras wrote:
-> >>>> On Tue, Feb 05, 2019 at 12:31:28PM +0100, C=E9dric Le Goater wrote:
-> >>>>>>>> As for nesting, I suggest for the foreseeable future we stick to=
- XICS
-> >>>>>>>> emulation in nested guests.
-> >>>>>>>
-> >>>>>>> ok. so no kernel_irqchip at all. hmm.=20
-> >>>>>
-> >>>>> I was confused with what Paul calls 'XICS emulation'. It's not the =
-QEMU
-> >>>>> XICS emulated device but the XICS-over-XIVE KVM device, the KVM XIC=
-S=20
-> >>>>> device KVM uses when under a P9 processor.=20
-> >>>>
-> >>>> Actually there are two separate implementations of XICS emulation in
-> >>>> KVM.  The first (older) one is almost entirely a software emulation
-> >>>> but does have some cases where it accesses an underlying XICS device
-> >>>> in order to make some things faster (IPIs and pass-through of a devi=
-ce
-> >>>> interrupt to a guest).  The other, newer one is the XICS-on-XIVE
-> >>>> emulation that Ben wrote, which uses the XIVE hardware pretty heavil=
-y.
-> >>>> My patch was about making the the older code work when there is no
-> >>>> XICS available to the host.
-> >>>
-> >>> Ah, right.  To clarify my earlier statements in light of this:
-> >>>
-> >>>  * We definitely want some sort of kernel-XICS available in a nested
-> >>>    guest.  AIUI, this is now accomplished, so, Yay!
-> >>>
-> >>>  * Implementing the L2 XICS in terms of L1's PAPR-XIVE would be a
-> >>>    bonus, but it's a much lower priority.
-> >>
-> >> Yes. In this case, the L1 KVM-HV should not advertise KVM_CAP_PPC_IRQ_=
-XIVE
-> >> to QEMU which will restrict CAS to the XICS only interrupt mode.
-> >=20
-> > Uh... no... we shouldn't change what's available to the guest based on
-> > host configuration only.  We should just stop advertising the CAP
-> > saying that *KVM implemented* is available=20
->=20
-> yes. that is what I meant.
->=20
-> > so that qemu will fall back to userspace XIVE emulation.
->=20
-> even if kernel_irqchip is required ?=20
+Also we can do away with the new topology_changed.
 
-Well, no, but if we don't specify.
+>  static void topology_work_fn(struct work_struct *work)
+>  {
+> -	rebuild_sched_domains();
+> +	lock_device_hotplug();
+> +	if (numa_update_cpu_topology(true))
+> +		rebuild_sched_domains();
+> +	unlock_device_hotplug();
+>  }
 
-> Today, QEMU just fails to start.
+Should this hunk be a separate patch by itself to say why
+rebuild_sched_domains with a changelog that explains why it should be under
+lock_device_hotplug? rebuild_sched_domains already takes cpuset_mutex. 
+So I am not sure if we need to take device_hotplug_lock.
 
-If we specify kernel_irqchip=3Don but the kernel can't support that I
-think that's the right thing to do.
+>  static DECLARE_WORK(topology_work, topology_work_fn);
+> 
+> -static void topology_schedule_update(void)
+> +void topology_schedule_update(void)
+>  {
+> -	schedule_work(&topology_work);
+> +	if (!topology_update_in_progress)
+> +		schedule_work(&topology_work);
+>  }
+> 
+>  static void topology_timer_fn(struct timer_list *unused)
+>  {
+> +	bool sdo = false;
 
-> With the dual mode, the interrupt mode=20
-> is negotiated at CAS time and when merged, the KVM device will be created=
-=20
-> at reset. In case of failure, QEMU will abort.=20
->=20
-> I am not saying it is not possible but we will need some internal=20
-> infrastructure to handle dynamically the fall back to userspace
-> emulation.
+Is sdo any abbrevation?
 
-Uh.. we do?  I think in all cases we need to make the XICS vs. XIVE
-decision first (i.e. what we present to the guest), then we should
-decide how to implement it (userspace, KVM accelerated, impossible and
-give up).
+> +
+> +	if (topology_scans < 1)
+> +		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+> +			    nr_cpumask_bits);
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Why do we need topology_scan? Just to make sure
+cpu_associativity_changes_mask is populated only once?
+cant we use a static bool inside the function for the same?
 
---t0UkRYy7tHLRMCai
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
+> +
+>  	if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
+> -		topology_schedule_update();
+> -	else if (vphn_enabled) {
+> +		sdo =  true;
+> +	if (vphn_enabled) {
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxdDp0ACgkQbDjKyiDZ
-s5L1lQ/+Nvinl/jySO64cCRsHDaXhyAOeqnlPxa3lcUF7IE4fq25F6AsytDG7pb+
-DVmWTnAOg4glLkduJDsGVrJ5Y1Kd9Dpm1pxr9E5H72a6ZAbwZ9NVZIOFv0LIug03
-lDsWC/aZ1ipCbfUlVkDm1moHPr+n+WzKQy+LOQNnwrcsA/s40MbQsMoNvAN1jS5m
-l+nkh8z+iw3LBDvMRZbEjkgOyEfjEMHPWpZxGoByY812sYAm7Sm0rz93O4jTfeEL
-lOARA5IGI7ZZyowhg+T03h0oM1MgeCtwxkIhRhhNXF86hrsWDvAmNODXdKJBSAje
-4i6vfu8DQWB2Y+gSJQPl18yENF69r/Z1zuXHfovEAikdVJfN9y5qKusN7JGVjQSa
-AQ7/wpa20JLfzgovFuS1aPFdBOyf+M6wa+3RDP45x5QVuefWE/AE72tYYlERCwad
-7i3cjzsmqb+k0xoWat0trhOUIsE0nBURJi6GfQrhzfmivUza06u2Rj6TbxXz/Gix
-l+ZZ2TjlvdsQ2jso2QzQZdhL1hM2ytO/KplcDCat5g/dbZtLNWdO0nMDOs2EVE3f
-JB8AAOZr2lqOSH1tRbwu56gpMNnJjOeXsqWymcz6o2jbG6zXXMXVFwP05gcSfh2o
-pAy+HzlfGzV9OhQs7XxO8E+zCgmwjtqcd09+5hQzDPSlOunfkD4=
-=CstI
------END PGP SIGNATURE-----
+Any reason to remove the else above?
 
---t0UkRYy7tHLRMCai--
+>  		if (update_cpu_associativity_changes_mask() > 0)
+> -			topology_schedule_update();
+> +			sdo =  true;
+>  		reset_topology_timer();
+>  	}
+> +	if (sdo)
+> +		topology_schedule_update();
+> +	topology_scans++;
+>  }
+
+Are the above two hunks necessary? Not getting how the current changes are
+different from the previous.
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
+
