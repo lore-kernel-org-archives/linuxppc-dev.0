@@ -2,80 +2,82 @@ Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05456C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 13:14:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CB0AC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 13:16:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 71CCB2083B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 13:14:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C8419217D8
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 13:16:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H1rtBAC6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 71CCB2083B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jftFbt5y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8419217D8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43wwcY4C3nzDqXd
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 00:14:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43wwgc66nFzDqZ1
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 00:16:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="H1rtBAC6"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="jftFbt5y"; 
  dkim-atps=neutral
-Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
- [IPv6:2607:f8b0:4864:20::143])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ww7d3xfmzDqVF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 23:52:29 +1100 (AEDT)
-Received: by mail-it1-x143.google.com with SMTP id r6so8615464itk.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2019 04:52:29 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=LDK44LZ1k99mOaAc9CKhDYps2G+WpnDTmjYqSSZJIIQ=;
- b=H1rtBAC6CN5mKbwt2OWvkE+8Vf96wiBU4shWlmiwzneKfOYhMGO84CvlxQQQgTVU9u
- shZXWlNIdQu4ixFLfOYGNjGnHpAebqxOXZGQIB9fXF54Vxn6z5EamGcvIH7vzKdJHeMj
- ZiHilmh2A2hvQ06pd02I2zgwngKmx0ME072rOHOdQ8K8AnUCvhYLp521u83U68Qt+pO7
- Ivx6n7SZFPlZSFZE/hxZaLsGBFKuz+TgrpZs1pueYSpdpTGZwX2yYTwHQlehHh8eekCJ
- 6YZGByTvc8suZMeBMISd8oKe4OpIrUt7w3g+o61bZ9DgP64/bfYaFrfj/bq2hFPKBKGL
- H1Rg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=LDK44LZ1k99mOaAc9CKhDYps2G+WpnDTmjYqSSZJIIQ=;
- b=P2Lu+vc+ieIaos3fNXt3rjdfu0sPOMj8jZVP1b4xbl2FfCc0uznz/OVuEdy6l0Ara4
- vnXpAX8RXWXg/jDCqs7YecvMJx1W7Hy2JW6i3BYreYm5RaV0+QDkK+HzZsdmrBylL6EV
- VVojlYZKbJCRVFcmUvq59O6Q0bD3F56UssA4AYRerwxYsZyA7mABBAI8hRPTTiV4ziaI
- A97yAalUv+79d37x4vMKdS+/efvt4I3qYHt2dwqzLOY98wvFTyV/835nv4OkdYzybdMU
- 7iJao6mt7E7o9XBUlxbf+tpdAD4ysYeE5IB3Zg9PUN3aZaxQbSIkt/ePnWiiNM0erKGt
- DxhA==
-X-Gm-Message-State: AHQUAub/xRpCa4nTdH4A+Jsqiixg2ivkWArgv8iTYqe6VjUFKXUXQdlG
- Owzc6T4AofAhdpU3Lz0AYcE4W8iCrnmLBDtLFAU=
-X-Google-Smtp-Source: AHgI3IaWs10jnsDCwU60HQ1FPAEXmUpDJcXEMRc3QgI5OdMqIsYjlV6uPxTZjWa3BgOwxhxY9Os1u900eu8774lGyoo=
-X-Received: by 2002:a6b:ec05:: with SMTP id c5mr571825ioh.279.1549630347398;
- Fri, 08 Feb 2019 04:52:27 -0800 (PST)
-MIME-Version: 1.0
-References: <20190208030802.10805-1-oohall@gmail.com>
- <20190208030802.10805-6-oohall@gmail.com>
- <87zhr6iotc.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87zhr6iotc.fsf@concordia.ellerman.id.au>
-From: Oliver <oohall@gmail.com>
-Date: Fri, 8 Feb 2019 23:52:15 +1100
-Message-ID: <CAOSf1CHUqp72Ry11KLdoh=ukth+_A6WE=GmwfcA2wmWygovjpQ@mail.gmail.com>
-Subject: Re: [PATCH 6/7] powerpc/eeh: Allow disabling recovery
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ww7c5sB3zDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Feb 2019 23:52:28 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43ww7X19WJz9v0dP;
+ Fri,  8 Feb 2019 13:52:24 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=jftFbt5y; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 3tYoLmEof-0G; Fri,  8 Feb 2019 13:52:24 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43ww7X08K8z9v0dJ;
+ Fri,  8 Feb 2019 13:52:24 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1549630344; bh=3cTg49j7kaqjz/JFl/xsM6+jMcAItBSkH7yaOvqokj0=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=jftFbt5yrL5S93+bF6eZO0T/rXrz5GDEsJ/1vNSyD5S5HAmdoggodftOE6U9fXeUX
+ auK82zcQHj911upLEW/XBuyzbECvs6op7Hgazr1MzemmH/1Z52ZO7VDWq3DZI6jPIt
+ Xm/0Q60VSmQKXMgwY/untJjyNjqmvetsHcInl4jo=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E66D8B8D7;
+ Fri,  8 Feb 2019 13:52:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 4Dt48y_dwCUa; Fri,  8 Feb 2019 13:52:25 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 123E08B756;
+ Fri,  8 Feb 2019 13:52:25 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 05822653E8; Fri,  8 Feb 2019 12:52:25 +0000 (UTC)
+Message-Id: <6f7163e3c49baceb21ac756dc79828abaf93ecbe.1549630193.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1549630193.git.christophe.leroy@c-s.fr>
+References: <cover.1549630193.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v1 04/16] powerpc/32: make the 6xx/8xx EXC_XFER_TEMPLATE()
+ similar to the 40x/booke one
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+Date: Fri,  8 Feb 2019 12:52:25 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,38 +89,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 8, 2019 at 8:58 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Oliver O'Halloran <oohall@gmail.com> writes:
->
-> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> > index d1f0bdf41fac..92809b137e39 100644
-> > --- a/arch/powerpc/kernel/eeh.c
-> > +++ b/arch/powerpc/kernel/eeh.c
-> > @@ -1810,7 +1817,11 @@ static int __init eeh_init_proc(void)
-> >                                          &eeh_enable_dbgfs_ops);
-> >               debugfs_create_u32("eeh_max_freezes", 0600,
-> >                               powerpc_debugfs_root, &eeh_max_freezes);
-> > +             debugfs_create_bool("eeh_disable_recovery", 0600,
-> > +                             powerpc_debugfs_root,
-> > +                             &eeh_debugfs_no_recover);
-> >               eeh_cache_debugfs_init();
-> > +#endif
->
-> There's that endif.
+6xx/8xx EXC_XFER_TEMPLATE() macro adds a i##n symbol which is
+unused and can be removed.
+40x and booke EXC_XFER_TEMPLATE() macros takes msr from the caller
+while the 6xx/8xx version uses only MSR_KERNEL as msr value.
 
-Bleh
+This patch modifies the 6xx/8xx version to make it similar to the
+40x and booke versions.
 
->
-> Whem I'm doing rebasing and think I might have broken bisectability I
-> build every commit with:
->
->   https://github.com/mpe/misc-scripts/blob/master/git/for-each-commit
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_32.h | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Thanks, I have something similar for skiboot but never got around to
-porting it to the kernel.
+diff --git a/arch/powerpc/kernel/head_32.h b/arch/powerpc/kernel/head_32.h
+index cf3d00844597..985758cbf577 100644
+--- a/arch/powerpc/kernel/head_32.h
++++ b/arch/powerpc/kernel/head_32.h
+@@ -99,13 +99,12 @@
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;	\
+ 	xfer(n, hdlr)
+ 
+-#define EXC_XFER_TEMPLATE(n, hdlr, trap, copyee, tfer, ret)	\
++#define EXC_XFER_TEMPLATE(hdlr, trap, msr, copyee, tfer, ret)	\
+ 	li	r10,trap;					\
+ 	stw	r10,_TRAP(r11);					\
+-	LOAD_MSR_KERNEL(r10, MSR_KERNEL);			\
++	LOAD_MSR_KERNEL(r10, msr);				\
+ 	copyee(r10, r9);					\
+ 	bl	tfer;						\
+-i##n:								\
+ 	.long	hdlr;						\
+ 	.long	ret
+ 
+@@ -113,19 +112,19 @@ i##n:								\
+ #define NOCOPY(d, s)
+ 
+ #define EXC_XFER_STD(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n, NOCOPY, transfer_to_handler_full,	\
++	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, NOCOPY, transfer_to_handler_full,	\
+ 			  ret_from_except_full)
+ 
+ #define EXC_XFER_LITE(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n+1, NOCOPY, transfer_to_handler, \
++	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, NOCOPY, transfer_to_handler, \
+ 			  ret_from_except)
+ 
+ #define EXC_XFER_EE(n, hdlr)		\
+-	EXC_XFER_TEMPLATE(n, hdlr, n, COPY_EE, transfer_to_handler_full, \
++	EXC_XFER_TEMPLATE(hdlr, n, MSR_KERNEL, COPY_EE, transfer_to_handler_full, \
+ 			  ret_from_except_full)
+ 
+ #define EXC_XFER_EE_LITE(n, hdlr)	\
+-	EXC_XFER_TEMPLATE(n, hdlr, n+1, COPY_EE, transfer_to_handler, \
++	EXC_XFER_TEMPLATE(hdlr, n+1, MSR_KERNEL, COPY_EE, transfer_to_handler, \
+ 			  ret_from_except)
+ 
+ #endif /* __HEAD_32_H__ */
+-- 
+2.13.3
+
