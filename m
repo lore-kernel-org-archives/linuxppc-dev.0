@@ -5,70 +5,68 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F665C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 20:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44EDAC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 21:27:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E995E2083B
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 20:00:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E995E2083B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 4BDA621929
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 21:27:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BDA621929
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43xjbG5KQLzDqSv
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 07:00:42 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43xjYN0nd2zDqQL
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 06:59:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xlWW1DgJzDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 08:27:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43xjYM5kTzz8tXf
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 06:59:03 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43xjYM5DKSz9sMr; Sun, 10 Feb 2019 06:59:03 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-X-Greylist: delayed 2267 seconds by postgrey-1.36 at bilbo;
- Sun, 10 Feb 2019 06:59:02 AEDT
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
+ (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=stevens-zone.net
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43xjYL701Rz9sMp;
- Sun, 10 Feb 2019 06:59:02 +1100 (AEDT)
-Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1gsY9T-0005w1-AV; Sat, 09 Feb 2019 13:18:59 -0600
-Message-ID: <cca1d555eaad9027ef23cc06925575cadf3a09df.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Date: Sat, 09 Feb 2019 13:18:57 -0600
-In-Reply-To: <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
-References: <20190208123416.1051-1-mpe@ellerman.id.au>
- <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: christophe.leroy@c-s.fr, mpe@ellerman.id.au,
- linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc: Make PPC_64K_PAGES depend on only 44x or
- PPC_BOOK3S_64
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xlTV1lpGzDqSc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 08:25:49 +1100 (AEDT)
+Received: from mintppc.lan ([80.189.87.237]) by mrelayeu.kundenserver.de
+ (mreue012 [212.227.15.163]) with ESMTPA (Nemesis) id
+ 1N2BQM-1hFF1e2EFa-013ciY; Sat, 09 Feb 2019 22:12:52 +0100
+From: Darren Stevens <darren@stevens-zone.net>
+To: Christoph Hellwig <hch@lst.de>
+Date: Sat, 09 Feb 2019 21:10:58 +0000 (GMT)
+Message-ID: <4d5302a8b75.61849dba@auth.smtp.1and1.co.uk>
+In-Reply-To: <20190208091818.GA23491@lst.de>
+References: <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
+ <594beaae-9681-03de-9f42-191cc7d2f8e3@xenosoft.de>
+ <20190204075616.GA5408@lst.de>
+ <ffbf56ae-c259-47b5-9deb-7fb21fead254@xenosoft.de>
+ <20190204123852.GA10428@lst.de>
+ <b1c0161f-4211-03af-022d-0db7237516e9@xenosoft.de>
+ <20190206151505.GA31065@lst.de> <20190206151655.GA31172@lst.de>
+ <61EC67B1-12EF-42B6-B69B-B59F9E4FC474@xenosoft.de>
+ <7c1f208b-6909-3b0a-f9f9-38ff1ac3d617@xenosoft.de>
+ <20190208091818.GA23491@lst.de>
+User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
+Subject: Re: use generic DMA mapping code in powerpc V4
+MIME-Version: 1.0
+Content-Type: text/plain
+X-Provags-ID: V03:K1:SWtdbAmuF5oWHVG0iVqb+VmTq5SfUqG+M3Vz+yEx3ywU4kmnJgz
+ i+WU8+tBHdXB+9w3T6CTYQ7rL/+S+pogfcb9xwIxrlaNxOejc+tmS2Tk3ZsJvG6hwzNLEYg
+ D+6BMEKDBWCrxkgCzr7L5KP2WMTEQLFxvdnosJldyhHooAMPNoBE/rM4g0w+k2fmuEP3FNZ
+ fZMVW1oPc6URjPxRUvS8Q==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:qDKyDsX5uBg=:WXeW71GYK4R8KGd43F1vuR
+ 8+/droYaxxFRZN1QB1SlFh/kwIoZAGXNt9QaJNVftN96GIwJXrBYPlsfgjc0jDjx4y1orUSS+
+ FWwKLX4ralDl04uV6NMXd1ClMOO9+MX+ouwTtXu4YWDPvcHaxqSJmDfLZE/7UIUoUNPkFrKJN
+ 6Mbe0zVWvR+XC02HNEg3uJtGPOCROGZZyvZLfTAslOK1f+ZCucVBRBsWz1FZMcwJjKL/W9HtC
+ ayjPhLCbQRnqbRhd4inoQlFnS4yj2viwP97P0Dj5gjmE7HBTneYj2Az9kohUBAUGukAMGBYpX
+ oA7R7yESjbqVViqovEdz+8C50gY6ySkA019IwmR9QnZk3xxEQhHWSU6LO6jYgi25yO7o0Q7+7
+ bWQOA8geAAJGuf+/KOvjAkUkqn9axUpNCz18H9etYGXIWUbXKBW4rQomXNDvHB68MqtnDVagn
+ /O4KZPcf71G/sZvqWVsXnYTkyvZS1p1IPHJHe3Z/sxNaYUdV0j31T5ZIuzZze0qcnXe0IYEp/
+ QbkTH9bcqkq0fNxt4BnPpZIyouEmYsOlKdQIOeVjtQ62dyZWI+9eCBFASGFU1Kk5fhT8kxtqO
+ 53RHkJUbv3fRJLDV4DcLZK9P20sst/b8Jaei3Yw+RnyqOM3xDBYsyDZcdaA523dcArUXRRdnc
+ Ou+9VeNO3jvglAxgbabgzUCXNLJKirDZc3fkw+LokyLOW7y2f3JsE97TLqLRIh2nr/McgUhu+
+ nbmkJGQO9LcoauwzeJluAaFLPCsPKxW4cP/xYECo63GmwiqodHWv3kIXaEc=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,58 +78,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, Julian Margetson <runaway@candw.ms>,
+ Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, 2019-02-08 at 13:01 +0000, Christophe Leroy wrote:
-> 
-> On 02/08/2019 12:34 PM, Michael Ellerman wrote:
-> > In commit 7820856a4fcd ("powerpc/mm/book3e/64: Remove unsupported
-> > 64Kpage size from 64bit booke") we dropped the 64K page size support
-> > from the 64-bit nohash (Book3E) code.
-> > 
-> > But we didn't update the dependencies of the PPC_64K_PAGES option,
-> > meaning a randconfig can still trigger this code and cause a build
-> > breakage, eg:
-> >    arch/powerpc/include/asm/nohash/64/pgtable.h:14:2: error: #error "Page
-> > size not supported"
-> >    arch/powerpc/include/asm/nohash/mmu-book3e.h:275:2: error: #error
-> > Unsupported page size
-> > 
-> > So remove PPC_BOOK3E_64 from the dependencies. This also means we
-> > don't need to worry about PPC_FSL_BOOK3E, because that was just trying
-> > to prevent the PPC_BOOK3E_64=y && PPC_FSL_BOOK3E=y case.
-> 
-> Does it means some cleanup could be done, for instance:
-> 
-> arch/powerpc/include/asm/nohash/64/pgalloc.h:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/pgalloc.h:#endif /* 
-> CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/64/pgtable.h:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/slice.h:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/slice.h:#else /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/64/slice.h:#endif /* 
-> !CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/pte-book3e.h:#ifdef CONFIG_PPC_64K_PAGES
-> 
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
+Hello Christoph
 
-More generally, if fsl is the only supported book3e platform and that's not
-expected to change, everything in tlb_low_64e.S except the bolted and e6500
-variants could go away.
+On 08/02/2019, Christoph Hellwig wrote:
+> On Fri, Feb 08, 2019 at 10:01:46AM +0100, Christian Zigotzky wrote:
+>> Hi Christoph,
+>>
+>> Your new patch fixes the problems with the P.A. Semi Ethernet! :-)
+>
+> Thanks a lot once again for testing!
+>
+> Now can you test with this patch and the whole series?
+>
+> I've updated the powerpc-dma.6 branch to include this fix.
 
--Scott
+Update: I found the following in my dmesg, think it points to an of-by-one error in the pfn selection:
 
+Feb  9 19:47:00 Cyrus kernel: [    0.000000] Top of RAM: 0x200000000, Total RAM: 0x200000000
+Feb  9 19:47:00 Cyrus kernel: [    0.000000] Memory hole size: 0MB
+Feb  9 19:47:00 Cyrus kernel: [    0.000000] Zone ranges:
+Feb  9 19:47:00 Cyrus kernel: [    0.000000]   DMA      [mem 0x0000000000000000-0x000000007fffefff]
+Feb  9 19:47:00 Cyrus kernel: [    0.000000]   Normal   [mem 0x000000007ffff000-0x00000001ffffffff]
+
+I had a quick look but couldn't see where though.
+
+Regards
+Darren
 
