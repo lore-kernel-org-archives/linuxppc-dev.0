@@ -1,70 +1,90 @@
-Return-Path: <SRS0=r06i=QP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=dqXl=QQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D5BDC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 21:55:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AFF8C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 00:12:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17CC4218D2
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Feb 2019 21:55:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8E27120869
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 00:12:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="mte4lPZx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17CC4218D2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="LbLALWqm"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E27120869
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43x89s15PVzDqc6
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 08:55:13 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43x87w6mLWzDqbp
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 08:53:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xCCx3FPBzDqZb
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 11:12:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="mte4lPZx"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 43x87w4pLHz9sN1; Sat,  9 Feb 2019 08:53:32 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1549662812; bh=TTJ2NxioFhOLInM0cq+OcJdONxa2x0s7rtZrdUd40Wk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=mte4lPZxMBgEtoIzYEfjvrFsQIC9INB3a/exJY4yNulObP+/LFT1Z7AEotMPWwPgm
- HXKWJ5YqMJL+vHtoyEcnOJKjRP9M0LA+ZR+6sHpSyWrSvR/3HhEtVFXzu0GcySae58
- bEUPmbtNjIFsPvkbShgfZ+9XfR5bnPbfHCNUDNRbArVku8d6Afl4LKCe3/rkKVryiW
- p6mNA42GZLdbZITF8kAL27lr07RdsKI3MIorJeke/4moxd9OAHlDL7Gh8TCeP7uvZU
- cdYy1US+c2k9GwGa6mjKRrWK4TgOzOaZe7rG3zJzGPCh+5umUqBlRRUaMtAxrmYPsY
- b1V9X8M+zeSrQ==
-Date: Sat, 9 Feb 2019 08:53:29 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH 06/19] KVM: PPC: Book3S HV: add a GET_ESB_FD control to
- the XIVE native device
-Message-ID: <20190208215329.GA9529@blackberry>
-References: <20190204044531.GB1927@umbus.fritz.box>
- <69791b73-f93e-6957-92e8-5b8620b87731@kaod.org>
- <20190205052822.GE22661@umbus.fritz.box>
- <4d565738-a99b-0333-8533-037677358faa@kaod.org>
- <20190206012308.GP22661@umbus.fritz.box>
- <1745dd9f-2927-cae6-e8da-c350b0bd0a66@kaod.org>
- <20190207024950.GA22661@umbus.fritz.box>
- <d20bbaca-5b49-66e4-9d99-21d991c2c345@kaod.org>
- <20190208051523.GD2688@umbus.fritz.box>
- <9b556f53-fcfb-2ca3-019e-6ced0ec74c2a@kaod.org>
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::241; helo=mail-lj1-x241.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="LbLALWqm"; dkim-atps=neutral
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com
+ [IPv6:2a00:1450:4864:20::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xCB92LG0zDqZQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 11:10:40 +1100 (AEDT)
+Received: by mail-lj1-x241.google.com with SMTP id f21-v6so3005622ljj.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2019 16:10:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=esUN0eAUy4YWkP+bozuSr/XyV8kG31d8rYJRedvgykU=;
+ b=LbLALWqmuur3vFRa25JFyrgBoAdC34KiufM5BZY6FVjl/WYfmGblutfsjwJLgcnL2s
+ 7WfLx0BMAxPDJUxhk3YWwQvooGaab1y8eWCVbR4BtrKqYJ8QmykyrhzkiPDRsWkCWKX2
+ tpgX9WKhMrvACLp3JH8Bq642be3K34aaxe+NA=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=esUN0eAUy4YWkP+bozuSr/XyV8kG31d8rYJRedvgykU=;
+ b=GQEITc8/FGrV/zzen/gDFmwlnQuHO4RhZ6m1FPBCl4AhhuqPwXTFZ7zbpGtnU87ogj
+ UFnfo93SSYHnsyGyKgxQc0wy3JUejhFecFU2hP9xpc5Pi3CGCJLyUnLZM6CN0QDfwi4U
+ LJG2J1SynAGwdDc2SV4gjvAGaLiQX9w68cYnNA1dk1mJfaw6sCy4huirDtqA8IGwPIAq
+ +GfiCtPCmJ2elGlB1wuKdaf8lz8Yogqq3hIcWw6q/9TsGiVKQjU1zWxSOStLFM2a9FEK
+ rik8j3PRRzZMWBbJK4waCW4f89XBqJZ48FLuiP5sEedletnS3JuQH4unfO48od+CIJl9
+ hHmA==
+X-Gm-Message-State: AHQUAuYAmHYUYYXTBFbm+W/JY51j7vXM4W62PGHr6+gH3r1mdJl7msci
+ BLqIK6mK96XVWZU1bwKCKXi+2wQK9/k=
+X-Google-Smtp-Source: AHgI3IZUkby5SJ/j7wiFcQFnd17HK5mGJ6innG9DLytZJDZ+KrPj/cLe49ZGVbpJB/kVn6EMxOr2dg==
+X-Received: by 2002:a2e:8808:: with SMTP id
+ x8-v6mr14903117ljh.190.1549671036336; 
+ Fri, 08 Feb 2019 16:10:36 -0800 (PST)
+Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com.
+ [209.85.167.47])
+ by smtp.gmail.com with ESMTPSA id f16-v6sm702833lji.88.2019.02.08.16.10.35
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 08 Feb 2019 16:10:36 -0800 (PST)
+Received: by mail-lf1-f47.google.com with SMTP id f5so3789315lfc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2019 16:10:35 -0800 (PST)
+X-Received: by 2002:ac2:4191:: with SMTP id z17mr14867539lfh.117.1549670639775; 
+ Fri, 08 Feb 2019 16:03:59 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9b556f53-fcfb-2ca3-019e-6ced0ec74c2a@kaod.org>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+References: <1549566446-27967-1-git-send-email-longman@redhat.com>
+ <CAHk-=wjfyrFBjifzmgMVrkrvEePEPaBTDq7D=f2i5kD2E=SqRQ@mail.gmail.com>
+ <d7476dfb-1653-747b-b865-5597ba5fc1c1@redhat.com>
+In-Reply-To: <d7476dfb-1653-747b-b865-5597ba5fc1c1@redhat.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 8 Feb 2019 16:03:43 -0800
+X-Gmail-Original-Message-ID: <CAHk-=whzAGRJQE43NHaC8sCECLr-QnpHYst+TJq-qhfp9eK-Qw@mail.gmail.com>
+Message-ID: <CAHk-=whzAGRJQE43NHaC8sCECLr-QnpHYst+TJq-qhfp9eK-Qw@mail.gmail.com>
+Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
+ rwsem features
+To: Waiman Long <longman@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,35 +96,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch <linux-arch@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, linux-hexagon@vger.kernel.org,
+ the arch/x86 maintainers <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 08, 2019 at 08:58:14AM +0100, Cédric Le Goater wrote:
-> On 2/8/19 6:15 AM, David Gibson wrote:
-> > On Thu, Feb 07, 2019 at 10:03:15AM +0100, Cédric Le Goater wrote:
-> >> That's the plan I have in mind as suggested by Paul if I understood it well.
-> >> The mechanics are more complex than the patch zapping the PTEs from the VMA
-> >> but it's also safer.
-> > 
-> > Well, yes, where "safer" means "has the possibility to be correct".
-> 
-> Well, the only problem with the kernel approach is keeping a pointer on 
-> the VMA. If we could call find_vma(), it would be perfectly safe and much 
-> more simpler.
+On Fri, Feb 8, 2019 at 12:31 PM Waiman Long <longman@redhat.com> wrote:
+>
+> >  (b) what's the new fastpath case
+>
+> The only change in the fastpath is the use of cmpxchg for writer lock.
 
-You seem to be assuming that the kernel can easily work out a single
-virtual address which will be the only place where a given set of
-interrupt pages are mapped.  But that is really not possible in the
-general case, because userspace could have mapped the fd at many
-different offsets in many different places.
+.. since a big deal here was about using the generic atomic accessor
+functions, I really was looking forward to seeing the *actual* fast
+path code generation.
 
-QEMU doesn't do that; in QEMU, the mmaps are sufficiently limited that
-it can work out a single virtual address that needs to be changed.
-The way that QEMU should tell the kernel what that address is and what
-the mapping should be changed to, is via the existing munmap()/mmap()
-interface.
+In other words, right now I have very little visibility in how it
+actually affects the code. Looking at the patches themselves doesn't
+make it obvious. I was hoping for the overview to really explain the
+whole "before and after" situation, and it didn't. Not at the high
+level, and not at a low level. And no performance numbers in the
+overview either.
 
-Paul.
+And yes, I see the numbers in the patches, but what I really hoped for
+was some real load numbers. In particular, I would have loved to see
+numbers from th ekernel test robot "will-it-scale.per_thread_ops"
+case, which is the one that had a 65% regression due to the lack of
+reader spinning.
+
+So I was kind of hoping to hear whether that regression is basically
+entirely gone with this patch series, or if we still have a regression
+due to the extra downgrade, or what?
+
+                 Linus
