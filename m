@@ -2,71 +2,62 @@ Return-Path: <SRS0=dqXl=QQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44EDAC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 21:27:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59D16C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:18:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BDA621929
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 21:27:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BDA621929
+	by mail.kernel.org (Postfix) with ESMTPS id 7320521919
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:18:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7320521919
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43xlWW1DgJzDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 08:27:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xnzG54qjzDqSy
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 10:18:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.74; helo=mout.kundenserver.de;
  envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=stevens-zone.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43xlTV1lpGzDqSc
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 08:25:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xnxR201szDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 10:16:42 +1100 (AEDT)
 Received: from mintppc.lan ([80.189.87.237]) by mrelayeu.kundenserver.de
- (mreue012 [212.227.15.163]) with ESMTPA (Nemesis) id
- 1N2BQM-1hFF1e2EFa-013ciY; Sat, 09 Feb 2019 22:12:52 +0100
+ (mreue108 [212.227.15.179]) with ESMTPA (Nemesis) id
+ 1MMXcP-1gZ0dw0ly3-00JYQn; Sun, 10 Feb 2019 00:16:35 +0100
 From: Darren Stevens <darren@stevens-zone.net>
-To: Christoph Hellwig <hch@lst.de>
-Date: Sat, 09 Feb 2019 21:10:58 +0000 (GMT)
-Message-ID: <4d5302a8b75.61849dba@auth.smtp.1and1.co.uk>
-In-Reply-To: <20190208091818.GA23491@lst.de>
-References: <9632DCDF-B9D9-416C-95FC-006B6005E2EC@xenosoft.de>
- <594beaae-9681-03de-9f42-191cc7d2f8e3@xenosoft.de>
- <20190204075616.GA5408@lst.de>
- <ffbf56ae-c259-47b5-9deb-7fb21fead254@xenosoft.de>
- <20190204123852.GA10428@lst.de>
- <b1c0161f-4211-03af-022d-0db7237516e9@xenosoft.de>
- <20190206151505.GA31065@lst.de> <20190206151655.GA31172@lst.de>
- <61EC67B1-12EF-42B6-B69B-B59F9E4FC474@xenosoft.de>
- <7c1f208b-6909-3b0a-f9f9-38ff1ac3d617@xenosoft.de>
- <20190208091818.GA23491@lst.de>
+To: linuxppc-dev@lists.ozlabs.org,
+	oss@buserror.net
+Date: Sat, 09 Feb 2019 23:14:41 +0000 (GMT)
+Message-ID: <4d531fb8828.51b92386@auth.smtp.1and1.co.uk>
 User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
-Subject: Re: use generic DMA mapping code in powerpc V4
+Subject: [PATCH] powerpc/85xx: Activate Cyrus disk-activity LED
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Provags-ID: V03:K1:SWtdbAmuF5oWHVG0iVqb+VmTq5SfUqG+M3Vz+yEx3ywU4kmnJgz
- i+WU8+tBHdXB+9w3T6CTYQ7rL/+S+pogfcb9xwIxrlaNxOejc+tmS2Tk3ZsJvG6hwzNLEYg
- D+6BMEKDBWCrxkgCzr7L5KP2WMTEQLFxvdnosJldyhHooAMPNoBE/rM4g0w+k2fmuEP3FNZ
- fZMVW1oPc6URjPxRUvS8Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:qDKyDsX5uBg=:WXeW71GYK4R8KGd43F1vuR
- 8+/droYaxxFRZN1QB1SlFh/kwIoZAGXNt9QaJNVftN96GIwJXrBYPlsfgjc0jDjx4y1orUSS+
- FWwKLX4ralDl04uV6NMXd1ClMOO9+MX+ouwTtXu4YWDPvcHaxqSJmDfLZE/7UIUoUNPkFrKJN
- 6Mbe0zVWvR+XC02HNEg3uJtGPOCROGZZyvZLfTAslOK1f+ZCucVBRBsWz1FZMcwJjKL/W9HtC
- ayjPhLCbQRnqbRhd4inoQlFnS4yj2viwP97P0Dj5gjmE7HBTneYj2Az9kohUBAUGukAMGBYpX
- oA7R7yESjbqVViqovEdz+8C50gY6ySkA019IwmR9QnZk3xxEQhHWSU6LO6jYgi25yO7o0Q7+7
- bWQOA8geAAJGuf+/KOvjAkUkqn9axUpNCz18H9etYGXIWUbXKBW4rQomXNDvHB68MqtnDVagn
- /O4KZPcf71G/sZvqWVsXnYTkyvZS1p1IPHJHe3Z/sxNaYUdV0j31T5ZIuzZze0qcnXe0IYEp/
- QbkTH9bcqkq0fNxt4BnPpZIyouEmYsOlKdQIOeVjtQ62dyZWI+9eCBFASGFU1Kk5fhT8kxtqO
- 53RHkJUbv3fRJLDV4DcLZK9P20sst/b8Jaei3Yw+RnyqOM3xDBYsyDZcdaA523dcArUXRRdnc
- Ou+9VeNO3jvglAxgbabgzUCXNLJKirDZc3fkw+LokyLOW7y2f3JsE97TLqLRIh2nr/McgUhu+
- nbmkJGQO9LcoauwzeJluAaFLPCsPKxW4cP/xYECo63GmwiqodHWv3kIXaEc=
+X-Provags-ID: V03:K1:5oPvqf/wPwCBTyjg/77R1a1P0Y76v7cGy/t88Jq0yqqALo5CLV4
+ 2I7fz3Il73mV+J4cZ5JNxSL30CNosB6B4UbM/IGg5z/iWRIqJ2jrfpheh2WeyOFirxxw+FY
+ GAnmCYZvREgKKN29Nw/2sKbpYWHajtImwBlw5bopB5WbLZ5aKcVsVDAaroDb1z3K87JiMUR
+ ikYUjlPxm1+IYlcpxQdCw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:X9T/B51Hm4w=:m9Rtaf7eLWL4q8pbJQWPuv
+ uNEavUTDehntwzPsrle9nz6H8Sq39n+ZTLqbMiS4bY7h2MbE45xh/ZZKl2FFpBCfSYyLRCLWB
+ 1K3/p1cqThenzYn4ZkGaoYclPIMr8mqKzU7Yy0yFYlzn+RJvq3rai90GL+oImQYTtu3HdTHWT
+ MXxkRIYDBxll59eMyv9hIWZc2VZ4tDkqnWUSIwNKsuwJVcy+i6eEna2s03FU+0gSqsgOIlwJf
+ grLKO6fxIBALeqYlu6xo/+0LlWWWAtENzqXwUjYDsizDNaZ7Ui35+pBU6odhqQYucKdWzs7xa
+ pBn9rKV31phF0eiwg3Rh1pQgBLEG/W8T/wa2T+YgIaARiTlroOzvgbr3yLnYJF8RJiOpwPMVh
+ U8EnoGJmLb/7pop2PO94ycNP5MMVo/d31j5iO8vw8mjv5lmPKqZVlrxkzH9XvAp745qzrVIGu
+ TO6l4Aam+Csg0asVYiYxbF4TGntRRlgpfV2GHdJZALrZRxmsJw4KOUgZvXTcu1G08rD+geI+F
+ YEltH4InihAzJhZUgy9zKzFdIWFhOCwKHEdL5Fp8/oph2Z1oawcbe0ZJ1fEYa1YU+eSKnt7mI
+ MIn8zVtvnMmKErl73KOHhW11VSjN2zka59hp7sfRsJ6ozVDbYgQQ2Q2UTC4kTC93j9mpayy0x
+ 3ZQ7KoMOW1ntXSptmBYuom31AS6iSu1E9gfQcoIFIotwV2Lpa/UyVlt4P5zNUOa6RjXpAFbH1
+ VvWpBdrMGWxDjU05V+h35WgVf92syDa50Ist2cGO+Eu+VpWCpwEb4qDjRF8=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,36 +69,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Julian Margetson <runaway@candw.ms>,
- Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: chzigotzky@xenosoft.de
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Christoph
+The disk activity LED on the Cyrus board is attached to a gpio pin,
+add the required device-tree node for the kernel driver to use.
 
-On 08/02/2019, Christoph Hellwig wrote:
-> On Fri, Feb 08, 2019 at 10:01:46AM +0100, Christian Zigotzky wrote:
->> Hi Christoph,
->>
->> Your new patch fixes the problems with the P.A. Semi Ethernet! :-)
->
-> Thanks a lot once again for testing!
->
-> Now can you test with this patch and the whole series?
->
-> I've updated the powerpc-dma.6 branch to include this fix.
+Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
-Update: I found the following in my dmesg, think it points to an of-by-one error in the pfn selection:
+---
 
-Feb  9 19:47:00 Cyrus kernel: [    0.000000] Top of RAM: 0x200000000, Total RAM: 0x200000000
-Feb  9 19:47:00 Cyrus kernel: [    0.000000] Memory hole size: 0MB
-Feb  9 19:47:00 Cyrus kernel: [    0.000000] Zone ranges:
-Feb  9 19:47:00 Cyrus kernel: [    0.000000]   DMA      [mem 0x0000000000000000-0x000000007fffefff]
-Feb  9 19:47:00 Cyrus kernel: [    0.000000]   Normal   [mem 0x000000007ffff000-0x00000001ffffffff]
-
-I had a quick look but couldn't see where though.
-
-Regards
-Darren
+diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+index 15e8440..348cfdb 100644
+--- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
++++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
+@@ -82,6 +82,15 @@
+            gpios = <&gpio0 2 1>;
+        };
+ 
++       leds {
++           compatible = "gpio-leds";
++
++           hdd {
++               label = "Disk Activity";
++               gpios = <&gpio0 5 0>;
++               linux,default-trigger = "disk-activity";
++           };
++       };
+    };
+ 
+    rio: rapidio@ffe0c0000 {
 
