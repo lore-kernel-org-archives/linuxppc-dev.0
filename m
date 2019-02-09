@@ -6,58 +6,60 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59D16C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:18:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E01E5C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:23:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7320521919
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:18:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7320521919
+	by mail.kernel.org (Postfix) with ESMTPS id 57CB221919
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:23:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57CB221919
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43xnzG54qjzDqSy
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 10:18:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xp4z22nZzDqTX
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 10:23:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=212.227.17.10; helo=mout.kundenserver.de;
  envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=stevens-zone.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+X-Greylist: delayed 311 seconds by postgrey-1.36 at bilbo;
+ Sun, 10 Feb 2019 10:21:49 AEDT
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43xnxR201szDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 10:16:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xp3K5QHQzDqMB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 10:21:49 +1100 (AEDT)
 Received: from mintppc.lan ([80.189.87.237]) by mrelayeu.kundenserver.de
- (mreue108 [212.227.15.179]) with ESMTPA (Nemesis) id
- 1MMXcP-1gZ0dw0ly3-00JYQn; Sun, 10 Feb 2019 00:16:35 +0100
+ (mreue107 [212.227.15.179]) with ESMTPA (Nemesis) id
+ 1MNLZc-1gTlRu3uhe-00Ong2; Sun, 10 Feb 2019 00:16:29 +0100
 From: Darren Stevens <darren@stevens-zone.net>
 To: linuxppc-dev@lists.ozlabs.org,
 	oss@buserror.net
-Date: Sat, 09 Feb 2019 23:14:41 +0000 (GMT)
-Message-ID: <4d531fb8828.51b92386@auth.smtp.1and1.co.uk>
+Date: Sat, 09 Feb 2019 23:14:34 +0000 (GMT)
+Message-ID: <4d531fb86c6.a2619d3@auth.smtp.1and1.co.uk>
 User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
-Subject: [PATCH] powerpc/85xx: Activate Cyrus disk-activity LED
+Subject: [PATCH] powerpc/85xx:  Add Cyrus board power-off and reset nodes
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Provags-ID: V03:K1:5oPvqf/wPwCBTyjg/77R1a1P0Y76v7cGy/t88Jq0yqqALo5CLV4
- 2I7fz3Il73mV+J4cZ5JNxSL30CNosB6B4UbM/IGg5z/iWRIqJ2jrfpheh2WeyOFirxxw+FY
- GAnmCYZvREgKKN29Nw/2sKbpYWHajtImwBlw5bopB5WbLZ5aKcVsVDAaroDb1z3K87JiMUR
- ikYUjlPxm1+IYlcpxQdCw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:X9T/B51Hm4w=:m9Rtaf7eLWL4q8pbJQWPuv
- uNEavUTDehntwzPsrle9nz6H8Sq39n+ZTLqbMiS4bY7h2MbE45xh/ZZKl2FFpBCfSYyLRCLWB
- 1K3/p1cqThenzYn4ZkGaoYclPIMr8mqKzU7Yy0yFYlzn+RJvq3rai90GL+oImQYTtu3HdTHWT
- MXxkRIYDBxll59eMyv9hIWZc2VZ4tDkqnWUSIwNKsuwJVcy+i6eEna2s03FU+0gSqsgOIlwJf
- grLKO6fxIBALeqYlu6xo/+0LlWWWAtENzqXwUjYDsizDNaZ7Ui35+pBU6odhqQYucKdWzs7xa
- pBn9rKV31phF0eiwg3Rh1pQgBLEG/W8T/wa2T+YgIaARiTlroOzvgbr3yLnYJF8RJiOpwPMVh
- U8EnoGJmLb/7pop2PO94ycNP5MMVo/d31j5iO8vw8mjv5lmPKqZVlrxkzH9XvAp745qzrVIGu
- TO6l4Aam+Csg0asVYiYxbF4TGntRRlgpfV2GHdJZALrZRxmsJw4KOUgZvXTcu1G08rD+geI+F
- YEltH4InihAzJhZUgy9zKzFdIWFhOCwKHEdL5Fp8/oph2Z1oawcbe0ZJ1fEYa1YU+eSKnt7mI
- MIn8zVtvnMmKErl73KOHhW11VSjN2zka59hp7sfRsJ6ozVDbYgQQ2Q2UTC4kTC93j9mpayy0x
- 3ZQ7KoMOW1ntXSptmBYuom31AS6iSu1E9gfQcoIFIotwV2Lpa/UyVlt4P5zNUOa6RjXpAFbH1
- VvWpBdrMGWxDjU05V+h35WgVf92syDa50Ist2cGO+Eu+VpWCpwEb4qDjRF8=
+X-Provags-ID: V03:K1:+oc10Ns1Z9OOv7QRHhv/BV0WMxeatlQOBD7PsJsS8uzVZHJgUhr
+ 24Emoil8dr2AyPFQ8I4+lxRQiPYeHK2S1KEIIISgd6bC/sP1tYcPbkCD+V1ao3YqHFGy7TM
+ 5445MXaLpB9PDqGGgqDJS7l68g0leEUpdfjNRkEkjQdNBXwa+j5ZQK/tLrvFZs63O1rWf23
+ PYTsGYAUKxszKE5UzwTyA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:y0G1tIThgJU=:s3o4yqpvBZ/qkLlhVMmoGz
+ 2MjcyfGwS/87lnqgWxWleqLcqXwH4Ncxh8e0HRZ8gRUqUkBiBhTkX8R96i+g1iB/a5pdMUSsv
+ n9eWhkbmEK1iP9aw60vo0V7xyLFYqvCaBM8+4WYbcwvOjq4CTe0zl6H6WDHjfD9OLwtfPpvS7
+ OHEV/+YbSkZYLYL+ZeTXsUPtcLMEl5W2+sjjGYDDZ9RcTrMR4hJhhg92Jl0PZJ7hQWptqri3y
+ rFYuLDlt4qwp2fCkk4ASwOtu29JOFXXyTYJ2+zLFIHUmfkRjIyBJvnEs+IZnXCuZFeB0Dh7CR
+ I7iLtaieLOZuH83Flx/zV/Mv3QEED6EmnJqZnu5/Jh9lZ54DR5QlR72Ts0q6iiFwozHmt3W6j
+ +rDAh0HtFKESAgBBPX5uQJloBrM79fJiFYTc1Jd7VyXssn7yLrGuZ8kXODpVjDphE4YLt2L7z
+ actxMG+SDuwprOJXfCA9Ew5yWRU6ICz1A7lOYIESGwNl07KV2JDU+agKG58xKf3+SGzjdgPye
+ QSgGmfr9HQENi5nx8DN2RCmd0ZOelQplzI1WLZxr//bHEKrKc9k0DaQQdAqpurIY1n8UksJw9
+ 3q2ilRvYZ9MRpSjNGskl4pex6OosOtbRwN/mFGnRkp4z8UfHwq8/Vs3N5i2cQY9RWuzP4yIIZ
+ 2wRxiK2zSV/3faEp6lGe1xuxzVPuKOFsNOjEpARb16HOOVGhhhAsC5KjSNwpZZPXyDJEameec
+ chh8nIifP3wR+4YA6EBqEkGRSDsKB/0TwOhtp24O0JbO6H40H9z7M7wZ8M0=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,35 +71,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chzigotzky@xenosoft.de
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The disk activity LED on the Cyrus board is attached to a gpio pin,
-add the required device-tree node for the kernel driver to use.
+The Cyrus board from Varisys has power-off and reset functions attached
+to gpio pins. Add the required device-tree bindings.
 
 Signed-off-by: Darren Stevens <darren@stevens-zone.net>
 
 ---
 
 diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-index 15e8440..348cfdb 100644
+index c603390..15e8440 100644
 --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
 +++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-@@ -82,6 +82,15 @@
-            gpios = <&gpio0 2 1>;
+@@ -71,6 +71,17 @@
+                reg = <0x6f>;
+            };
         };
- 
-+       leds {
-+           compatible = "gpio-leds";
 +
-+           hdd {
-+               label = "Disk Activity";
-+               gpios = <&gpio0 5 0>;
-+               linux,default-trigger = "disk-activity";
-+           };
++       gpio-poweroff {
++           compatible = "gpio-poweroff";
++           gpios = <&gpio0 3 1>;
 +       };
++
++       gpio-restart {
++           compatible = "gpio-restart";
++           gpios = <&gpio0 2 1>;
++       };
++
     };
  
     rio: rapidio@ffe0c0000 {
