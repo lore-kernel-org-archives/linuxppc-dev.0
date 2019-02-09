@@ -2,80 +2,69 @@ Return-Path: <SRS0=dqXl=QQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E134C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 01:46:29 +0000 (UTC)
-Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C33D5C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 09:43:40 +0000 (UTC)
+Received: from lists.ozlabs.org (unknown [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8C41E217D8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 01:46:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MDAZophP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C41E217D8
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id E8E6A217D8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 09:43:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8E6A217D8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43xFJf0sjMzDqcV
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 12:46:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xRvF638FzDqXQ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 20:43:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::144; helo=mail-it1-x144.google.com;
- envelope-from=deepa.kernel@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.51.53; helo=5.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MDAZophP"; 
- dkim-atps=neutral
-Received: from mail-it1-x144.google.com (mail-it1-x144.google.com
- [IPv6:2607:f8b0:4864:20::144])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 5.mo178.mail-out.ovh.net (5.mo178.mail-out.ovh.net
+ [46.105.51.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43xFGm75RvzDqZW
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 12:44:48 +1100 (AEDT)
-Received: by mail-it1-x144.google.com with SMTP id c9so13846943itj.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Feb 2019 17:44:48 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=ll6utr+E4KfSWBkxlzzCxCgAe0VO4EUDQW3TXLdDpGY=;
- b=MDAZophPccpEBkwjEu0yNdj8ZjsQxHZoRWnzwamVRcFu8r7Ig0NhQlK0YvmzjRF5QR
- TgcKGXaP4ee1P+S/a0rQ2+7UiyxnPbjp7wIKXUfbI1A+R0bjOHRwHykEAbVrKlZ5XMRy
- lW4dGvuT+IedIGdh5nShDzxnMDdGO0txe51ksvaZbMsLRx23d76MnlG3BBi4Gmn69thl
- xWzvM2aGsPw94MO+MhX6e4G6gJeopOb0pawYb13EVs+xmYELU+XgOdMRl1pmrIiKuJsU
- tlFuRb0FOFESQgKh3xQyw6O3xR2F2JKb17js6wJUSX6C95W2N71tiA5RCxZ2f4L4Gh8H
- cqKg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=ll6utr+E4KfSWBkxlzzCxCgAe0VO4EUDQW3TXLdDpGY=;
- b=hH+TbDFcyItJpylSJN0gYb4UjWH8NuIPkLsv3N0VPqjbYWwb9AlDlJVWJat10SRi4Y
- VxQLzKReOz8MDxHwurh5M3x/Zus/vEIgmaQZiEzYvnkEP4EkctQMcz6F+AiUhZsU6V7I
- RAocuf3HVhK1tQbOcgv1xdpYMs9f+ApY/PjiX3QeyVmRtcNUdti5xleFIwlr3EY3r0wf
- huWZaMzxotg8RmxBRUOFk5NKQ2mIhhySHAMcYa99VVtGE/gN+78SEaIDB48qg2ZFRV0/
- nBiQVIIMxh/5aFHr3PmH21I/sNAXQqM4fUAm+Z50U4JzOHUEqy8niWjQELdTD7Xu/PhI
- BF/w==
-X-Gm-Message-State: AHQUAuZmNQ3NvrZjDpjSsk3ixtXBBRyRGoNJ3z/b3E5x+8GyT7PXqemb
- K5oRCwu4i7bMrJQZk+ghc6f27yesCvgiGrBKZr8=
-X-Google-Smtp-Source: AHgI3IY6QR0TgFBSRnx7k50PrdwZjR9n6uuI2e6b4PsPo9m4Lv9EuBSpIZeO3O5wiWXMtobd9tOzC4xAVsLdS+zi4Xs=
-X-Received: by 2002:a24:955:: with SMTP id 82mr788760itm.58.1549676686827;
- Fri, 08 Feb 2019 17:44:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xRsL5RCGzDqWn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 20:41:56 +1100 (AEDT)
+Received: from player715.ha.ovh.net (unknown [10.109.160.62])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 96DE84FECB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Feb 2019 10:41:52 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player715.ha.ovh.net (Postfix) with ESMTPSA id CFC2F27A9245;
+ Sat,  9 Feb 2019 09:41:40 +0000 (UTC)
+Subject: Re: [PATCH 06/19] KVM: PPC: Book3S HV: add a GET_ESB_FD control to
+ the XIVE native device
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190204044531.GB1927@umbus.fritz.box>
+ <69791b73-f93e-6957-92e8-5b8620b87731@kaod.org>
+ <20190205052822.GE22661@umbus.fritz.box>
+ <4d565738-a99b-0333-8533-037677358faa@kaod.org>
+ <20190206012308.GP22661@umbus.fritz.box>
+ <1745dd9f-2927-cae6-e8da-c350b0bd0a66@kaod.org>
+ <20190207024950.GA22661@umbus.fritz.box>
+ <d20bbaca-5b49-66e4-9d99-21d991c2c345@kaod.org>
+ <20190208051523.GD2688@umbus.fritz.box>
+ <9b556f53-fcfb-2ca3-019e-6ced0ec74c2a@kaod.org>
+ <20190208215329.GA9529@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <8c915ed7-5aa5-1276-6598-d5dcd115dd56@kaod.org>
+Date: Sat, 9 Feb 2019 10:41:38 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-References: <20190202153454.7121-1-deepa.kernel@gmail.com>
- <20190202153454.7121-13-deepa.kernel@gmail.com>
- <87r2clku4j.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87r2clku4j.fsf@concordia.ellerman.id.au>
-From: Deepa Dinamani <deepa.kernel@gmail.com>
-Date: Fri, 8 Feb 2019 17:44:34 -0800
-Message-ID: <CABeXuvqpexo4g7xQihKPoOd4ce4rLq0Agy-jYMELYvOAnqmXJA@mail.gmail.com>
-Subject: Re: [PATCH net-next v5 12/12] sock: Add SO_RCVTIMEO_NEW and
- SO_SNDTIMEO_NEW
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20190208215329.GA9529@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 11556236647453199239
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrleefgdegvdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,31 +76,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- Parisc List <linux-parisc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Network Devel Mailing List <netdev@vger.kernel.org>,
- Helge Deller <deller@gmx.de>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, linux-mips@vger.kernel.org,
- cluster-devel <cluster-devel@redhat.com>, ccaulfie@redhat.com,
- Paul Mackerras <paulus@samba.org>, linux-alpha@vger.kernel.org,
- sparclinux <sparclinux@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>, Richard Henderson <rth@twiddle.net>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> You touched powerpc in the previous patch but not this one.
->
-> That's because we use the asm-generic version I assume.
+On 2/8/19 10:53 PM, Paul Mackerras wrote:
+> On Fri, Feb 08, 2019 at 08:58:14AM +0100, Cédric Le Goater wrote:
+>> On 2/8/19 6:15 AM, David Gibson wrote:
+>>> On Thu, Feb 07, 2019 at 10:03:15AM +0100, Cédric Le Goater wrote:
+>>>> That's the plan I have in mind as suggested by Paul if I understood it well.
+>>>> The mechanics are more complex than the patch zapping the PTEs from the VMA
+>>>> but it's also safer.
+>>>
+>>> Well, yes, where "safer" means "has the possibility to be correct".
+>>
+>> Well, the only problem with the kernel approach is keeping a pointer on 
+>> the VMA. If we could call find_vma(), it would be perfectly safe and much 
+>> more simpler.
+> 
+> You seem to be assuming that the kernel can easily work out a single
+> virtual address which will be the only place where a given set of
+> interrupt pages are mapped.  But that is really not possible in the
+> general case, because userspace could have mapped the fd at many
+> different offsets in many different places.
+> 
+> QEMU doesn't do that; in QEMU, the mmaps are sufficiently limited that
+> it can work out a single virtual address that needs to be changed.
+> The way that QEMU should tell the kernel what that address is and what
+> the mapping should be changed to, is via the existing munmap()/mmap()
+> interface.
 
-That is correct.
+Yes. We agreed on that. QEMU should handle these mappings somewhere in 
+VFIO. It's me grumbling, that's all.
 
-> Would be good to mention in the change log though to avoid any confusion.
+The discussion has moved to the mmap() interface of the KVM device. The 
+current proposal adds controls on the device creating fds to mmap() the 
+TIMA pages and the ESB pages. David is proposing to use directly the fd 
+of the KVM device to mmap() these pages with a different offset for each 
+set. 
 
-I'm not sure how to do that now. It looks like the series has already
-been applied to net-next with a couple of merge conflicts fixed.
+I think that should work pretty well, for passthrough also. The fault 
+handler should take care of populating the VMA(s) with the appropriate 
+pages. 
 
--Deepa
+We might support END notification one day, so we should have room for 
+these pages. And nested might require IRQ space extensions at L1. 
+something to keep in mind.
+
+C.
+  
