@@ -1,65 +1,107 @@
-Return-Path: <SRS0=dqXl=QQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=nti5=QR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E01E5C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:23:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71351C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 05:17:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 57CB221919
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Feb 2019 23:23:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57CB221919
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=stevens-zone.net
+	by mail.kernel.org (Postfix) with ESMTPS id 738AD21773
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 05:17:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 738AD21773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43xp4z22nZzDqTX
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 10:23:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43xxx93m2czDqVN
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 10 Feb 2019 16:17:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=stevens-zone.net
- (client-ip=212.227.17.10; helo=mout.kundenserver.de;
- envelope-from=darren@stevens-zone.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=stevens-zone.net
-X-Greylist: delayed 311 seconds by postgrey-1.36 at bilbo;
- Sun, 10 Feb 2019 10:21:49 AEDT
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43xp3K5QHQzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 10:21:49 +1100 (AEDT)
-Received: from mintppc.lan ([80.189.87.237]) by mrelayeu.kundenserver.de
- (mreue107 [212.227.15.179]) with ESMTPA (Nemesis) id
- 1MNLZc-1gTlRu3uhe-00Ong2; Sun, 10 Feb 2019 00:16:29 +0100
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org,
-	oss@buserror.net
-Date: Sat, 09 Feb 2019 23:14:34 +0000 (GMT)
-Message-ID: <4d531fb86c6.a2619d3@auth.smtp.1and1.co.uk>
-User-Agent: YAM/2.9p1 (AmigaOS4; PPC; rv:20140418r7798)
-Subject: [PATCH] powerpc/85xx:  Add Cyrus board power-off and reset nodes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43xxvM5fsDzDqM1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 16:15:27 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1A5Dxsn043239
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 00:15:24 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qjd1bskjj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Feb 2019 00:15:24 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Sun, 10 Feb 2019 05:15:23 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 10 Feb 2019 05:15:20 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1A5FJ298389040
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Sun, 10 Feb 2019 05:15:19 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B562A11C04A;
+ Sun, 10 Feb 2019 05:15:19 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6426411C04C;
+ Sun, 10 Feb 2019 05:15:19 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Sun, 10 Feb 2019 05:15:19 +0000 (GMT)
+Received: from [9.81.210.234] (unknown [9.81.210.234])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E4D92A01C9;
+ Sun, 10 Feb 2019 16:15:09 +1100 (AEDT)
+Subject: Re: [PATCH 1/2] powerpc/64s: Work around spurious warning on old gccs
+ with -fsanitize-coverage
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20190207053324.17541-1-andrew.donnellan@au1.ibm.com>
+ <20190207063736.GS14180@gate.crashing.org>
+ <630e392b-e9a7-6b1e-e3d8-c5382f94e5d7@au1.ibm.com>
+ <20190207074947.GT14180@gate.crashing.org>
+ <e1e1fc85-6ab6-ba91-c91f-21c3f51ee6ee@au1.ibm.com>
+ <87h8dfj83j.fsf@concordia.ellerman.id.au>
+ <20190208154147.GX14180@gate.crashing.org>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Sun, 10 Feb 2019 16:14:37 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Provags-ID: V03:K1:+oc10Ns1Z9OOv7QRHhv/BV0WMxeatlQOBD7PsJsS8uzVZHJgUhr
- 24Emoil8dr2AyPFQ8I4+lxRQiPYeHK2S1KEIIISgd6bC/sP1tYcPbkCD+V1ao3YqHFGy7TM
- 5445MXaLpB9PDqGGgqDJS7l68g0leEUpdfjNRkEkjQdNBXwa+j5ZQK/tLrvFZs63O1rWf23
- PYTsGYAUKxszKE5UzwTyA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:y0G1tIThgJU=:s3o4yqpvBZ/qkLlhVMmoGz
- 2MjcyfGwS/87lnqgWxWleqLcqXwH4Ncxh8e0HRZ8gRUqUkBiBhTkX8R96i+g1iB/a5pdMUSsv
- n9eWhkbmEK1iP9aw60vo0V7xyLFYqvCaBM8+4WYbcwvOjq4CTe0zl6H6WDHjfD9OLwtfPpvS7
- OHEV/+YbSkZYLYL+ZeTXsUPtcLMEl5W2+sjjGYDDZ9RcTrMR4hJhhg92Jl0PZJ7hQWptqri3y
- rFYuLDlt4qwp2fCkk4ASwOtu29JOFXXyTYJ2+zLFIHUmfkRjIyBJvnEs+IZnXCuZFeB0Dh7CR
- I7iLtaieLOZuH83Flx/zV/Mv3QEED6EmnJqZnu5/Jh9lZ54DR5QlR72Ts0q6iiFwozHmt3W6j
- +rDAh0HtFKESAgBBPX5uQJloBrM79fJiFYTc1Jd7VyXssn7yLrGuZ8kXODpVjDphE4YLt2L7z
- actxMG+SDuwprOJXfCA9Ew5yWRU6ICz1A7lOYIESGwNl07KV2JDU+agKG58xKf3+SGzjdgPye
- QSgGmfr9HQENi5nx8DN2RCmd0ZOelQplzI1WLZxr//bHEKrKc9k0DaQQdAqpurIY1n8UksJw9
- 3q2ilRvYZ9MRpSjNGskl4pex6OosOtbRwN/mFGnRkp4z8UfHwq8/Vs3N5i2cQY9RWuzP4yIIZ
- 2wRxiK2zSV/3faEp6lGe1xuxzVPuKOFsNOjEpARb16HOOVGhhhAsC5KjSNwpZZPXyDJEameec
- chh8nIifP3wR+4YA6EBqEkGRSDsKB/0TwOhtp24O0JbO6H40H9z7M7wZ8M0=
+In-Reply-To: <20190208154147.GX14180@gate.crashing.org>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 19021005-0028-0000-0000-00000346B689
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021005-0029-0000-0000-00002404CE87
+Message-Id: <0202627b-ac63-233b-41bc-b16a19b54c0f@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-10_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=848 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902100040
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,38 +113,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>
+Cc: syzkaller@googlegroups.com, linuxppc-dev@lists.ozlabs.org,
+ dvyukov@google.com, Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The Cyrus board from Varisys has power-off and reset functions attached
-to gpio pins. Add the required device-tree bindings.
+On 9/2/19 2:41 am, Segher Boessenkool wrote:
+> On Fri, Feb 08, 2019 at 02:02:24PM +1100, Michael Ellerman wrote:
+>> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+>> index 8be3721d9302..a1acccd25839 100644
+>> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+>> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+>> @@ -675,12 +675,10 @@ static bool __init cpufeatures_process_feature(struct dt_cpu_feature *f)
+>>   		}
+>>   	}
+>>   
+>> -	if (!known && enable_unknown) {
+>> -		if (!feat_try_enable_unknown(f)) {
+>> -			pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
+>> -				f->name);
+>> -			return false;
+>> -		}
+>> +	if (!known && (!enable_unknown || !feat_try_enable_unknown(f))) {
+>> +		pr_info("not enabling: %s (unknown and unsupported by kernel)\n",
+>> +			f->name);
+>> +		return false;
+>>   	}
+>>   
+>>   	if (m->cpu_ftr_bit_mask)
+>     		cur_cpu_spec->cpu_features |= m->cpu_ftr_bit_mask;
+> 
+> This still set the wrong mask here, which is the bug you're trying to fix.
+> It should only do this if "known", afaics.
 
-Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+I've got a v2 ready to send which fixes both things.
 
----
+> 
+> 
+> Segher
+> 
 
-diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-index c603390..15e8440 100644
---- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-+++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-@@ -71,6 +71,17 @@
-                reg = <0x6f>;
-            };
-        };
-+
-+       gpio-poweroff {
-+           compatible = "gpio-poweroff";
-+           gpios = <&gpio0 3 1>;
-+       };
-+
-+       gpio-restart {
-+           compatible = "gpio-restart";
-+           gpios = <&gpio0 2 1>;
-+       };
-+
-    };
- 
-    rio: rapidio@ffe0c0000 {
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
