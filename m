@@ -2,99 +2,71 @@ Return-Path: <SRS0=3oxj=QS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BAA4C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:58:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09AAFC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 11:00:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D53420838
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:58:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D53420838
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 77EEA20838
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 11:00:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="0U7b+TSC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77EEA20838
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43yjTD1DzjzDqQr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 21:58:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43yjWP3J5DzDqKZ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:00:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="0U7b+TSC"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43yjQm4GPxzDqQ0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 21:56:48 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1BAtopJ052326
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:56:45 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qk4k711af-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:56:45 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 11 Feb 2019 10:56:44 -0000
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 11 Feb 2019 10:56:42 -0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1BAuf2p31719472
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Feb 2019 10:56:41 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 710EDBE054;
- Mon, 11 Feb 2019 10:56:41 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2E5F4BE053;
- Mon, 11 Feb 2019 10:56:40 +0000 (GMT)
-Received: from [9.124.31.182] (unknown [9.124.31.182])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Feb 2019 10:56:39 +0000 (GMT)
-Subject: Re: [PATCH v3 1/2] drivers/mtd: Use mtd->name when registering nvmem
- device
-To: Boris Brezillon <boris.brezillon@collabora.com>
-References: <20190208151419.1800-1-aneesh.kumar@linux.ibm.com>
- <20190210135552.65f532bb@collabora.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Mon, 11 Feb 2019 16:26:38 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43yjRz14TXzDqQN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 21:57:51 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=H4FKzYfPZLq064fpvMaxRyPbo6mwWdcW0fXgF0VWycY=; b=0U7b+TSCrog3RuwY+5aIN+sYF
+ hv/X24vYbiLjaTad2ObIWMdW7Cp2r/5OoaUpAoXctxc/VYvLlvd8Jg876MzN8pgTjMW8CZ3P1r/K0
+ V/l2fLFDfV1pgkRUFU9xzkmvMbliuyWhgYyM+5CQxhzMD875i3oOU3bLFnwzd6Z1n69EGanR7kB8K
+ jwNrR1x25pUNYuM1WWMfiO/CFWtHodA2Mmztx2gmUubEivvDlwHAS5qsyCdKdk3uPgvtfWI5OmsKO
+ 4D+eGwN6yN1S/MmNn/tvUdF/HvrjMc60lzn96bluUcUP+BS/cOvXQ1En41wBhdBg2BY4eZU6c4md3
+ EkSdmP65w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gt9HI-0007Ng-0y; Mon, 11 Feb 2019 10:57:32 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 535FA20D0E3CF; Mon, 11 Feb 2019 11:57:29 +0100 (CET)
+Date: Mon, 11 Feb 2019 11:57:29 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Waiman Long <longman@redhat.com>
+Subject: Re: [PATCH] locking/rwsem: Remove arch specific rwsem files
+Message-ID: <20190211105729.GH32534@hirez.programming.kicks-ass.net>
+References: <1549850450-10171-1-git-send-email-longman@redhat.com>
+ <20190211093601.GT32511@hirez.programming.kicks-ass.net>
+ <20190211094044.GG32534@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <20190210135552.65f532bb@collabora.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19021110-8235-0000-0000-00000E5A7F24
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010576; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000279; SDB=6.01159462; UDB=6.00605069; IPR=6.00940008; 
- MB=3.00025523; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-11 10:56:43
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021110-8236-0000-0000-0000446D9BE4
-Message-Id: <2f3cae2b-32d2-0651-29ef-2359221de4ef@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-11_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=865 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902110086
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190211094044.GG32534@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,28 +78,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Alban Bedel <albeu@free.fr>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/10/19 6:25 PM, Boris Brezillon wrote:
-> Hello Aneesh,
+On Mon, Feb 11, 2019 at 10:40:44AM +0100, Peter Zijlstra wrote:
+> On Mon, Feb 11, 2019 at 10:36:01AM +0100, Peter Zijlstra wrote:
+> > On Sun, Feb 10, 2019 at 09:00:50PM -0500, Waiman Long wrote:
+> > > +static inline int __down_read_trylock(struct rw_semaphore *sem)
+> > > +{
+> > > +	long tmp;
+> > > +
+> > > +	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
+> > > +		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
+> > > +				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
+> > > +			return 1;
+> > 
+> > That really wants to be:
+> > 
+> > 		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+> > 						    tmp + RWSEM_ACTIVE_READ_BIAS))
+> > 
+> > > +		}
+> > > +	}
+> > > +	return 0;
+> > > +}
 > 
-> On Fri,  8 Feb 2019 20:44:18 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
-> 
->> With this patch, we use the mtd->name instead of concatenating the name with '0'
->>
->> Fixes: c4dfa25ab307 ("mtd: add support for reading MTD devices via the nvmem API")
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> 
-> You forgot to Cc the MTD ML and maintainers. Can you please send a new
-> version?
-> 
+> Also, the is the one case where LL/SC can actually do 'better'. Do you
+> have benchmarks for say PowerPC or ARM64 ?
 
-linux-mtd list is on CC: Is that not sufficient?
-
--aneesh
-
+Ah, I see they already used asm-generic/rwsem.h which has similar code
+to the above.
