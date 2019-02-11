@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 101DBC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 15:07:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7BB7C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 15:13:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8435A222B0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 15:06:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 10CB3222A7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 15:13:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="hxsOQDjY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8435A222B0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iUZAaV6W"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 10CB3222A7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ypzN4tfMzDqSs
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 02:06:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43yq6S3Qr7zDqX2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 02:13:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -30,34 +30,34 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="hxsOQDjY"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="iUZAaV6W"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43yptt3vQFzDqHZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 02:03:02 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43yq1Y504NzDqCY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 02:08:49 +1100 (AEDT)
 Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 22626222AF;
- Mon, 11 Feb 2019 15:02:59 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 4DFFD217D9;
+ Mon, 11 Feb 2019 15:08:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1549897380;
- bh=iojwmthKxCQ/NFwwh14njk1F6PEB/40JDWJnQqgmG38=;
+ s=default; t=1549897727;
+ bh=CoOmR7NqHxcaQvOe0gQejhG6FyI+loYebLGpmf4bffw=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=hxsOQDjY4MsggB9XT03cv/8NpFpD0u1f46Yz0MHZr5PYyIPLO4u38LpCuVRgWyRMI
- QCEo1xN0IQ8RllZ1UXAZueIsAYrxwBkupScvfOD3LCdJvE7pCnZ+2yHyykTr5N47Rr
- qFKGW2nlpBRHig4VwY0ZPMrPgE5AHfZbkS01XLgI=
+ b=iUZAaV6WZWiOn1hpcY4bJcGdkX2eZwJ3IiitqFnnh99BjAGY96fiGN0iS8VIugllF
+ LzQrLpFn0KtpMyAaoqMgTejy+yuThEYTSD/XzPaIEVcw2Qdi3f3N1/t2vY7G2ZanQi
+ JyxENNBNvl93Nc35yZaaMiVg8YuGKihltgZVRVuY=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.14 153/205] block/swim3: Fix -EBUSY error when re-opening
+Subject: [PATCH 4.9 096/137] block/swim3: Fix -EBUSY error when re-opening
  device after unmount
-Date: Mon, 11 Feb 2019 15:19:11 +0100
-Message-Id: <20190211141838.365059688@linuxfoundation.org>
+Date: Mon, 11 Feb 2019 15:19:37 +0100
+Message-Id: <20190211141820.936429686@linuxfoundation.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190211141827.214852402@linuxfoundation.org>
-References: <20190211141827.214852402@linuxfoundation.org>
+In-Reply-To: <20190211141811.964925535@linuxfoundation.org>
+References: <20190211141811.964925535@linuxfoundation.org>
 User-Agent: quilt/0.65
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -84,7 +84,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+4.9-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
@@ -106,7 +106,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index 0d7527c6825a..2f7acdb830c3 100644
+index c264f2d284a7..2e0a9e2531cb 100644
 --- a/drivers/block/swim3.c
 +++ b/drivers/block/swim3.c
 @@ -1027,7 +1027,11 @@ static void floppy_release(struct gendisk *disk, fmode_t mode)
