@@ -2,89 +2,86 @@ Return-Path: <SRS0=3oxj=QS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 575D4C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 21:41:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39438C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:48:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C94E2081B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 21:41:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C94E2081B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 7666F2184E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:48:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="MlSZBhMC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7666F2184E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43yzkf0VvqzDqY0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 08:41:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43z1Cc1WskzDqXs
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:48:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
- (client-ip=82.165.15.123; helo=s16892447.onlinehome-server.info;
- envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ilande.co.uk
-Received: from s16892447.onlinehome-server.info (chuckie.co.uk [82.165.15.123])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="MlSZBhMC"; 
+ dkim-atps=neutral
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43yzhd6qTBzDqYJ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 08:39:44 +1100 (AEDT)
-Received: from host86-133-194-245.range86-133.btcentralplus.com
- ([86.133.194.245] helo=[192.168.1.65])
- by s16892447.onlinehome-server.info with esmtpsa
- (TLS1.0:RSA_AES_128_CBC_SHA1:16) (Exim 4.76)
- (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1gtJIt-0004Im-9W; Mon, 11 Feb 2019 21:39:52 +0000
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, paulus@samba.org,
- mpe@ellerman.id.au, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-References: <20190208143319.11980-1-mark.cave-ayland@ilande.co.uk>
- <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
- <2ed8efb9-5cd4-31bf-6c7b-501b9d1925e6@ilande.co.uk>
- <c2d6938902656f2829be8077c656cee9235c21b1.camel@kernel.crashing.org>
-From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
- mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
- 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
- E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
- PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
- PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
- AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
- OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
- NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
- mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
- z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
- T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
- DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
- y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
- 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
- 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
- YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
- Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
- BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
- opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
- NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
- Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
- KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
- imgcU9TTGC5qd9g=
-Message-ID: <46205b6a-7671-5d90-9507-b5b20045b99d@ilande.co.uk>
-Date: Mon, 11 Feb 2019 21:39:26 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43z1931mG9zDqXm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 09:45:52 +1100 (AEDT)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1BMhfbR080591;
+ Mon, 11 Feb 2019 22:44:50 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=from : to : cc :
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=corp-2018-07-02;
+ bh=5o86+WlRzT0Hhn4QJL5kLu5bSJTU1vffRIZ0ttnB1EA=;
+ b=MlSZBhMCsIFCTUo0EIPL0tPnswkHaSGhLsLeLDsJtU0vCNa46hIRRwnWmZSJMf688QxF
+ YfShCZB8rrfpNQU2rjW9bZ6NE1kq9Zeczsj2tyi+FNtwLEbk799j8ZAiasLuzHoOfl0W
+ Xo3MyqoH9tyXpg/1cG6wwMG/TLaUZDVevzLwdHfp/LuFIbDLtYidG+ReUKsulAaalIVf
+ YqH2t7Wtxgv/iFnMIPqorbKWsfOUBzIF/Uou4/FQJ3509CoaV/FXjsZN3CaF8wE/LKVE
+ qDr9sCOeKQBYER0qMM6Cvq63erEgMnEp1448hqV7AaO20jWtZMt40cDFVkI46fDjJFjR vA== 
+Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
+ by aserp2130.oracle.com with ESMTP id 2qhre58p9n-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Feb 2019 22:44:50 +0000
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+ by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x1BMin5P030881
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Feb 2019 22:44:49 GMT
+Received: from abhmp0022.oracle.com (abhmp0022.oracle.com [141.146.116.28])
+ by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x1BMimLO006595;
+ Mon, 11 Feb 2019 22:44:48 GMT
+Received: from localhost.localdomain (/73.60.114.248)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Mon, 11 Feb 2019 14:44:47 -0800
+From: Daniel Jordan <daniel.m.jordan@oracle.com>
+To: jgg@ziepe.ca
+Subject: [PATCH 2/5] vfio/spapr_tce: use pinned_vm instead of locked_vm to
+ account pinned pages
+Date: Mon, 11 Feb 2019 17:44:34 -0500
+Message-Id: <20190211224437.25267-3-daniel.m.jordan@oracle.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <c2d6938902656f2829be8077c656cee9235c21b1.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 86.133.194.245
-X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
-Subject: Re: [PATCH] powerpc: fix 32-bit KVM-PR lockup and panic with MacOS
- guest
-X-SA-Exim-Version: 4.2.1 (built Sun, 08 Jan 2012 02:45:44 +0000)
-X-SA-Exim-Scanned: Yes (on s16892447.onlinehome-server.info)
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9164
+ signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=3 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1902110162
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,44 +93,221 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
+ aik@ozlabs.ru, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, daniel.m.jordan@oracle.com, linux-mm@kvack.org,
+ alex.williamson@redhat.com, mdf@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, cl@linux.com, hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 11/02/2019 00:30, Benjamin Herrenschmidt wrote:
+Beginning with bc3e53f682d9 ("mm: distinguish between mlocked and pinned
+pages"), locked and pinned pages are accounted separately.  The SPAPR
+TCE VFIO IOMMU driver accounts pinned pages to locked_vm; use pinned_vm
+instead.
 
-> On Fri, 2019-02-08 at 14:51 +0000, Mark Cave-Ayland wrote:
->>
->> Indeed, but there are still some questions to be asked here:
->>
->> 1) Why were these bits removed from the original bitmask in the first place without
->> it being documented in the commit message?
->>
->> 2) Is this the right fix? I'm told that MacOS guests already run without this patch
->> on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
->> bug elsewhere in the 32-bit powerpc code.
->>
->>
->> If you think that these points don't matter, then I'm happy to resubmit the patch
->> as-is based upon your comments above.
-> 
-> We should write a test case to verify that FE0/FE1 are properly
-> preserved/context-switched etc... I bet if we accidentally wiped them,
-> we wouldn't notice 99.9% of the time.
+pinned_vm recently became atomic and so no longer relies on mmap_sem
+held as writer: delete.
 
-Right I guess it's more likely to cause in issue in the KVM PR case because the guest
-can alter the flags in a way that doesn't go through the normal process switch mechanism.
+Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+---
+ Documentation/vfio.txt              |  6 +--
+ drivers/vfio/vfio_iommu_spapr_tce.c | 64 ++++++++++++++---------------
+ 2 files changed, 33 insertions(+), 37 deletions(-)
 
-The original patchset at
-https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg98326.html does include
-some tests in the first few patches, but AFAICT they are concerned with the contents
-of the FP registers rather than the related MSRs.
+diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+index f1a4d3c3ba0b..fa37d65363f9 100644
+--- a/Documentation/vfio.txt
++++ b/Documentation/vfio.txt
+@@ -308,7 +308,7 @@ This implementation has some specifics:
+    currently there is no way to reduce the number of calls. In order to make
+    things faster, the map/unmap handling has been implemented in real mode
+    which provides an excellent performance which has limitations such as
+-   inability to do locked pages accounting in real time.
++   inability to do pinned pages accounting in real time.
+ 
+ 4) According to sPAPR specification, A Partitionable Endpoint (PE) is an I/O
+    subtree that can be treated as a unit for the purposes of partitioning and
+@@ -324,7 +324,7 @@ This implementation has some specifics:
+ 		returns the size and the start of the DMA window on the PCI bus.
+ 
+ 	VFIO_IOMMU_ENABLE
+-		enables the container. The locked pages accounting
++		enables the container. The pinned pages accounting
+ 		is done at this point. This lets user first to know what
+ 		the DMA window is and adjust rlimit before doing any real job.
+ 
+@@ -454,7 +454,7 @@ This implementation has some specifics:
+ 
+    PPC64 paravirtualized guests generate a lot of map/unmap requests,
+    and the handling of those includes pinning/unpinning pages and updating
+-   mm::locked_vm counter to make sure we do not exceed the rlimit.
++   mm::pinned_vm counter to make sure we do not exceed the rlimit.
+    The v2 IOMMU splits accounting and pinning into separate operations:
+ 
+    - VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index c424913324e3..f47e020dc5e4 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -34,9 +34,11 @@
+ static void tce_iommu_detach_group(void *iommu_data,
+ 		struct iommu_group *iommu_group);
+ 
+-static long try_increment_locked_vm(struct mm_struct *mm, long npages)
++static long try_increment_pinned_vm(struct mm_struct *mm, long npages)
+ {
+-	long ret = 0, locked, lock_limit;
++	long ret = 0;
++	s64 pinned;
++	unsigned long lock_limit;
+ 
+ 	if (WARN_ON_ONCE(!mm))
+ 		return -EPERM;
+@@ -44,39 +46,33 @@ static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+ 	if (!npages)
+ 		return 0;
+ 
+-	down_write(&mm->mmap_sem);
+-	locked = mm->locked_vm + npages;
++	pinned = atomic64_add_return(npages, &mm->pinned_vm);
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++	if (pinned > lock_limit && !capable(CAP_IPC_LOCK)) {
+ 		ret = -ENOMEM;
+-	else
+-		mm->locked_vm += npages;
++		atomic64_sub(npages, &mm->pinned_vm);
++	}
+ 
+-	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
++	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%lu%s\n", current->pid,
+ 			npages << PAGE_SHIFT,
+-			mm->locked_vm << PAGE_SHIFT,
+-			rlimit(RLIMIT_MEMLOCK),
+-			ret ? " - exceeded" : "");
+-
+-	up_write(&mm->mmap_sem);
++			atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
++			rlimit(RLIMIT_MEMLOCK), ret ? " - exceeded" : "");
+ 
+ 	return ret;
+ }
+ 
+-static void decrement_locked_vm(struct mm_struct *mm, long npages)
++static void decrement_pinned_vm(struct mm_struct *mm, long npages)
+ {
+ 	if (!mm || !npages)
+ 		return;
+ 
+-	down_write(&mm->mmap_sem);
+-	if (WARN_ON_ONCE(npages > mm->locked_vm))
+-		npages = mm->locked_vm;
+-	mm->locked_vm -= npages;
+-	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
++	if (WARN_ON_ONCE(npages > atomic64_read(&mm->pinned_vm)))
++		npages = atomic64_read(&mm->pinned_vm);
++	atomic64_sub(npages, &mm->pinned_vm);
++	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%lu\n", current->pid,
+ 			npages << PAGE_SHIFT,
+-			mm->locked_vm << PAGE_SHIFT,
++			atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
+ 			rlimit(RLIMIT_MEMLOCK));
+-	up_write(&mm->mmap_sem);
+ }
+ 
+ /*
+@@ -110,7 +106,7 @@ struct tce_container {
+ 	bool enabled;
+ 	bool v2;
+ 	bool def_window_pending;
+-	unsigned long locked_pages;
++	unsigned long pinned_pages;
+ 	struct mm_struct *mm;
+ 	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+ 	struct list_head group_list;
+@@ -283,7 +279,7 @@ static int tce_iommu_find_free_table(struct tce_container *container)
+ static int tce_iommu_enable(struct tce_container *container)
+ {
+ 	int ret = 0;
+-	unsigned long locked;
++	unsigned long pinned;
+ 	struct iommu_table_group *table_group;
+ 	struct tce_iommu_group *tcegrp;
+ 
+@@ -292,15 +288,15 @@ static int tce_iommu_enable(struct tce_container *container)
+ 
+ 	/*
+ 	 * When userspace pages are mapped into the IOMMU, they are effectively
+-	 * locked memory, so, theoretically, we need to update the accounting
+-	 * of locked pages on each map and unmap.  For powerpc, the map unmap
++	 * pinned memory, so, theoretically, we need to update the accounting
++	 * of pinned pages on each map and unmap.  For powerpc, the map unmap
+ 	 * paths can be very hot, though, and the accounting would kill
+ 	 * performance, especially since it would be difficult to impossible
+ 	 * to handle the accounting in real mode only.
+ 	 *
+ 	 * To address that, rather than precisely accounting every page, we
+-	 * instead account for a worst case on locked memory when the iommu is
+-	 * enabled and disabled.  The worst case upper bound on locked memory
++	 * instead account for a worst case on pinned memory when the iommu is
++	 * enabled and disabled.  The worst case upper bound on pinned memory
+ 	 * is the size of the whole iommu window, which is usually relatively
+ 	 * small (compared to total memory sizes) on POWER hardware.
+ 	 *
+@@ -317,7 +313,7 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 *
+ 	 * So we do not allow enabling a container without a group attached
+ 	 * as there is no way to know how much we should increment
+-	 * the locked_vm counter.
++	 * the pinned_vm counter.
+ 	 */
+ 	if (!tce_groups_attached(container))
+ 		return -ENODEV;
+@@ -335,12 +331,12 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	if (ret)
+ 		return ret;
+ 
+-	locked = table_group->tce32_size >> PAGE_SHIFT;
+-	ret = try_increment_locked_vm(container->mm, locked);
++	pinned = table_group->tce32_size >> PAGE_SHIFT;
++	ret = try_increment_pinned_vm(container->mm, pinned);
+ 	if (ret)
+ 		return ret;
+ 
+-	container->locked_pages = locked;
++	container->pinned_pages = pinned;
+ 
+ 	container->enabled = true;
+ 
+@@ -355,7 +351,7 @@ static void tce_iommu_disable(struct tce_container *container)
+ 	container->enabled = false;
+ 
+ 	BUG_ON(!container->mm);
+-	decrement_locked_vm(container->mm, container->locked_pages);
++	decrement_pinned_vm(container->mm, container->pinned_pages);
+ }
+ 
+ static void *tce_iommu_open(unsigned long arg)
+@@ -658,7 +654,7 @@ static long tce_iommu_create_table(struct tce_container *container,
+ 	if (!table_size)
+ 		return -EINVAL;
+ 
+-	ret = try_increment_locked_vm(container->mm, table_size >> PAGE_SHIFT);
++	ret = try_increment_pinned_vm(container->mm, table_size >> PAGE_SHIFT);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -677,7 +673,7 @@ static void tce_iommu_free_table(struct tce_container *container,
+ 	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
+ 
+ 	iommu_tce_table_put(tbl);
+-	decrement_locked_vm(container->mm, pages);
++	decrement_pinned_vm(container->mm, pages);
+ }
+ 
+ static long tce_iommu_create_window(struct tce_container *container,
+-- 
+2.20.1
 
-Who is the right person to ask about fixing issues related to context switching with
-KVM PR? I did add the original author's email address to my first few emails but have
-had no response back :/
-
-
-ATB,
-
-Mark.
