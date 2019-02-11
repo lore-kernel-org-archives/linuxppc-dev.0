@@ -2,54 +2,86 @@ Return-Path: <SRS0=3oxj=QS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC22AC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 19:38:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15B65C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 20:29:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3D83020863
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 19:38:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D83020863
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 876DF218A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 20:29:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="rHzXgdt4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 876DF218A4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43yx0H0LMNzDqZX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 06:38:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43yy773BmjzDqbW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 07:29:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=tom.hromatka@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="rHzXgdt4"; 
+ dkim-atps=neutral
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43yws60kF0zDqWj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 06:31:54 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D62ECC0CD165;
- Mon, 11 Feb 2019 19:31:51 +0000 (UTC)
-Received: from llong.com (dhcp-17-59.bos.redhat.com [10.18.17.59])
- by smtp.corp.redhat.com (Postfix) with ESMTP id BA6275C236;
- Mon, 11 Feb 2019 19:31:49 +0000 (UTC)
-From: Waiman Long <longman@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v2 2/2] locking/rwsem: Optimize down_read_trylock()
-Date: Mon, 11 Feb 2019 14:31:26 -0500
-Message-Id: <1549913486-16799-3-git-send-email-longman@redhat.com>
-In-Reply-To: <1549913486-16799-1-git-send-email-longman@redhat.com>
-References: <1549913486-16799-1-git-send-email-longman@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.32]); Mon, 11 Feb 2019 19:31:52 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43yw244bxwzDqLN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 05:54:30 +1100 (AEDT)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1BIs73N086296;
+ Mon, 11 Feb 2019 18:54:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=cc : from : subject :
+ to : message-id : date : mime-version : content-type :
+ content-transfer-encoding; s=corp-2018-07-02;
+ bh=4ByW/4xuYeZpU6Ji5zEdXp2SfHWcqBWdhqSPdBUYdmU=;
+ b=rHzXgdt42rE9vK+wdVhMIYFRXE3OXCllJ451Kg7OiOju7kptlPQUlByCaZ3rx82eAbk2
+ v+S7UrUSm1AT87drQqqq4LQotiRUZ0U5XWugIWM3ze7IAszmXWXiiJMcZFrkudYilI/q
+ 11mpggscYJ3zeQXYfoVeS6OFcx2Vvd/xzJFqexhC3zdJULWU1hDAUWOoV3R/oEHV8UlV
+ 5Xm3WMvN9V+5izqraxSAYkKmkzbuRXvG6HxDhy1Fycv+lNqL9lDpigdvdP+j1Q7AHGi1
+ bgvdEgWbYljDhPyI/BAK/lyEjE/yJSj7w4AXEgDzUibnnefdPwufUh2oYTVWtTl5yeI0 ww== 
+Received: from userv0021.oracle.com (userv0021.oracle.com [156.151.31.71])
+ by aserp2130.oracle.com with ESMTP id 2qhre57kkg-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Feb 2019 18:54:27 +0000
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+ by userv0021.oracle.com (8.14.4/8.14.4) with ESMTP id x1BIsQmf022408
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 11 Feb 2019 18:54:26 GMT
+Received: from abhmp0013.oracle.com (abhmp0013.oracle.com [141.146.116.19])
+ by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x1BIsP9n007814;
+ Mon, 11 Feb 2019 18:54:25 GMT
+Received: from OracleL460.vogsphere (/10.65.172.160)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Mon, 11 Feb 2019 10:54:25 -0800
+From: Tom Hromatka <tom.hromatka@oracle.com>
+Subject: [QUESTION] powerpc, libseccomp, and spu
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <df04c747-58c1-4757-b0ef-1ccea745defb@oracle.com>
+Date: Mon, 11 Feb 2019 11:54:24 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9164
+ signatures=668683
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=736 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1902110138
+X-Mailman-Approved-At: Tue, 12 Feb 2019 07:27:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,102 +93,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Borislav Petkov <bp@alien8.de>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Waiman Long <longman@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Paul Moore <paul@paul-moore.com>, Dhaval Giani <dhaval.giani@oracle.com>,
+ tom.hromatka@oracle.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Modify __down_read_trylock() to make it generate slightly better code
-(smaller and maybe a tiny bit faster).
+PowerPC experts,
 
-Before this patch, down_read_trylock:
+Paul Moore and I are working on the v2.4 release of libseccomp,
+and as part of this work I need to update the syscall table for
+each architecture.
 
-   0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
-   0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
-   0x000000000000000b <+11>:    mov    %rdx,%rax
-   0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
-   0x0000000000000013 <+19>:    cmp    %rax,%rdx
-   0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
-   0x0000000000000018 <+24>:    mov    (%rdi),%rdx
-   0x000000000000001b <+27>:    test   %rdx,%rdx
-   0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
-   0x0000000000000020 <+32>:    xor    %eax,%eax
-   0x0000000000000022 <+34>:    retq
-   0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
-   0x000000000000002c <+44>:    or     $0x3,%rax
-   0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
-   0x0000000000000034 <+52>:    mov    $0x1,%eax
-   0x0000000000000039 <+57>:    retq
+I have incorporated the new ppc syscall.tbl into libseccomp, but
+I am not familiar with the value of "spu" in the ABI column.  For
+example:
 
-After patch, down_read_trylock:
+22	32	umount				sys_oldumount
+22	64	umount				sys_ni_syscall
+22	spu	umount				sys_ni_syscall
 
-   0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:     mov    (%rdi),%rax
-   0x0000000000000008 <+8>:     test   %rax,%rax
-   0x000000000000000b <+11>:    js     0x2f <down_read_trylock+47>
-   0x000000000000000d <+13>:    lea    0x1(%rax),%rdx
-   0x0000000000000011 <+17>:    lock cmpxchg %rdx,(%rdi)
-   0x0000000000000016 <+22>:    jne    0x8 <down_read_trylock+8>
-   0x0000000000000018 <+24>:    mov    %gs:0x0,%rax
-   0x0000000000000021 <+33>:    or     $0x3,%rax
-   0x0000000000000025 <+37>:    mov    %rax,0x20(%rdi)
-   0x0000000000000029 <+41>:    mov    $0x1,%eax
-   0x000000000000002e <+46>:    retq
-   0x000000000000002f <+47>:    xor    %eax,%eax
-   0x0000000000000031 <+49>:    retq
+In libseccomp, we maintain a 32-bit ppc syscall table and a 64-bit
+ppc syscall table.  Do we also need to add a "spu" ppc syscall
+table?  Some clarification on the syscalls marked "spu" and "nospu"
+would be greatly appreciated.
 
-By using a rwsem microbenchmark, the down_read_trylock() rate on a
-x86-64 system before and after the patch were:
+Thanks.
 
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           27,787          28,259
-        2            8,359           9,234
-
-On a ARM64 system, the performance results were:
-
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           24,155          25,000
-        2            6,820           8,699
-
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- kernel/locking/rwsem.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
-index 067e265..028bc33 100644
---- a/kernel/locking/rwsem.h
-+++ b/kernel/locking/rwsem.h
-@@ -175,11 +175,11 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
- 
- static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
--	long tmp;
-+	long tmp = atomic_long_read(&sem->count);
- 
--	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
--		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
--				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
-+	while (tmp >= 0) {
-+		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-+					tmp + RWSEM_ACTIVE_READ_BIAS)) {
- 			return 1;
- 		}
- 	}
--- 
-1.8.3.1
-
+Tom
