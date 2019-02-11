@@ -5,84 +5,84 @@ X-Spam-Level:
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E533CC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:16:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B041BC169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:18:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1972C20838
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:16:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1972C20838
+	by mail.kernel.org (Postfix) with ESMTPS id 3881620838
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 10:18:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3881620838
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43yhXW1Zp5zDqQW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 21:16:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43yhZG50B1zDqRK
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 21:18:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=sandipan@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43yhVb3Ld8zDqNx
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 21:15:02 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1BAEGRQ042820
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:15:00 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qk507wvxb-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43yhWc1rV3zDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 21:15:56 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1BAE3A1138693
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:15:53 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qk550wmt1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:15:00 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 05:15:53 -0500
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Mon, 11 Feb 2019 10:14:58 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Mon, 11 Feb 2019 10:15:51 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 11 Feb 2019 10:14:56 -0000
+ Mon, 11 Feb 2019 10:15:48 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1BAEtxI4587944
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1BAFl1Z59769052
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Mon, 11 Feb 2019 10:14:55 GMT
+ Mon, 11 Feb 2019 10:15:47 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2D4DEAE045;
- Mon, 11 Feb 2019 10:14:55 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E51DAAE051;
+ Mon, 11 Feb 2019 10:15:46 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 20E79AE056;
- Mon, 11 Feb 2019 10:14:54 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E8DB7AE04D;
+ Mon, 11 Feb 2019 10:15:45 +0000 (GMT)
 Received: from [9.124.31.81] (unknown [9.124.31.81])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 11 Feb 2019 10:14:53 +0000 (GMT)
-Subject: Re: [RFC PATCH 5/5] powerpc: sstep: Add selftests for addc[.]
- instruction
+ Mon, 11 Feb 2019 10:15:45 +0000 (GMT)
+Subject: Re: [RFC PATCH 3/5] powerpc: sstep: Add instruction emulation
+ selftests
 To: Daniel Axtens <dja@axtens.net>
 References: <cover.1549253769.git.sandipan@linux.ibm.com>
- <9460deae6525f983b6ab44e3e35c1bbbd79d3ef5.1549253769.git.sandipan@linux.ibm.com>
- <878syn3zqz.fsf@dja-thinkpad.axtens.net>
+ <196d2330aef453b4eb3cb66febeb79110aadd567.1549253769.git.sandipan@linux.ibm.com>
+ <87bm3j40cv.fsf@dja-thinkpad.axtens.net>
 From: Sandipan Das <sandipan@linux.ibm.com>
-Date: Mon, 11 Feb 2019 15:44:53 +0530
+Date: Mon, 11 Feb 2019 15:45:45 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <878syn3zqz.fsf@dja-thinkpad.axtens.net>
+In-Reply-To: <87bm3j40cv.fsf@dja-thinkpad.axtens.net>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19021110-0028-0000-0000-000003471845
+x-cbid: 19021110-4275-0000-0000-0000030E0044
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021110-0029-0000-0000-0000240532BD
-Message-Id: <91145f12-2ff1-3bc8-89ef-b969c385b413@linux.ibm.com>
+x-cbparentid: 19021110-4276-0000-0000-0000381C10D5
+Message-Id: <47476580-2027-da7e-ad9e-162f91af49b7@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-11_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -110,49 +110,65 @@ Sender: "Linuxppc-dev"
 
 
 
-On 11/02/19 6:30 AM, Daniel Axtens wrote:
+On 11/02/19 6:17 AM, Daniel Axtens wrote:
 > Hi Sandipan,
 > 
->> +			{
->> +				.descr = "RA = LONG_MIN | INT_MIN, RB = LONG_MIN | INT_MIN",
->> +				.instr = PPC_INST_ADDC | ___PPC_RT(20) | ___PPC_RA(21) | ___PPC_RB(22),
->> +				.regs =
->> +				{
->> +					.gpr[21] = LONG_MIN | (uint) INT_MIN,
->> +					.gpr[22] = LONG_MIN | (uint) INT_MIN,
->> +				}
->> +			}
-> I don't know what this bit pattern is supposed to represent - is it
-> supposed to be the smallest 32bit integer and the smallest 64bit
-> integer 8000000080000000 - so you test 32 and 64 bit overflow at the
-> same time? 
+> I'm not really confident to review the asm, but I did have a couple of
+> questions about the C:
+> 
+>> +#define MAX_INSNS	32
+> This doesn't seem to be used...
 > 
 
-Yes, exactly.
+True. Thanks for pointing this out.
 
+>> +int execute_instr(struct pt_regs *regs, unsigned int instr)
+>> +{
+>> +	extern unsigned int exec_instr_execute[];
+>> +	extern int exec_instr(struct pt_regs *regs);
 > 
-> For the series:
-> Tested-by: Daniel Axtens <dja@axtens.net> # Power8 LE
-> 
-> I notice the output is quite verbose, and doesn't include a line when it
-> starts:
-> 
-> [    0.826181] Running code patching self-tests ...
-> [    0.826607] Running feature fixup self-tests ...
-> [    0.826615] nop     : R0 = LONG_MAX                                      [PASS]
-> [    0.826617] add     : RA = LONG_MIN, RB = LONG_MIN                       [PASS]
-> 
-> Maybe it would be good to include a line saying "Running single-step
-> emulation self-tests" and perhaps by default on printing when there is a
-> failure.
+> These externs sit inside the function scope. This feels less than ideal
+> to me - is there a reason not to have these at global scope?
 > 
 
-That makes sense. Will include it in the next revision.
+Currently, execute_instr() is the only consumer. So, I thought I'd keep
+them local for now.
 
-> Finally, I think you might be able to squash patches 1 and 2 and patches
-> 4 and 5, but that's just my personal preference.
+>> +
+>> +	if (!regs || !instr)
+>> +		return -EINVAL;
+>> +
+>> +	/* Patch the NOP with the actual instruction */
+>> +	patch_instruction(&exec_instr_execute[0], instr);
+>> +	if (exec_instr(regs)) {
+>> +		pr_info("execution failed, opcode = 0x%08x\n", instr);
+>> +		return -EFAULT;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
 > 
+>> +late_initcall(run_sstep_tests);
+> A design question: is there a reason to run these as an initcall rather
+> than as a module that could either be built in or loaded separately? I'm
+> not saying you have to do this, but I was wondering if you had
+> considered it?
+> 
+
+I did. As of now, there are some existing tests in test_emulate_step.c
+which use the same approach. So, I thought I'd stick with that approach
+to start off. This is anyway controlled by a Kconfig option.
+
+> Lastly, snowpatch reports some checkpatch issues for this and your
+> remaining patches: https://patchwork.ozlabs.org/patch/1035683/ (You are
+> allowed to violate checkpatch rules with justification, FWIW)
+> 
+
+Will look into them.
+
 > Regards,
 > Daniel
+>> -- 
+>> 2.19.2
 > 
 
