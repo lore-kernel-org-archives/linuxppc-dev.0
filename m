@@ -2,101 +2,67 @@ Return-Path: <SRS0=3oxj=QS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4537EC169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 13:49:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5B37C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 13:52:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C01CC222AA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 13:49:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C01CC222AA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 40F4E21B18
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 13:52:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Y3FsRwM5"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 40F4E21B18
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ynG64nMHzDqBg
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 00:49:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ynJz1HKdzDqVM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 00:52:03 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+9b1dcb6e3a5668f89bb7+5650+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=lst.de
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="Y3FsRwM5"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ymxx5cqmzDqSc
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 00:35:33 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1BDTV9S000768
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 08:35:31 -0500
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qk81eea6h-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 08:35:31 -0500
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 11 Feb 2019 13:35:29 -0000
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 11 Feb 2019 13:35:01 -0000
-Received: from b01ledav001.gho.pok.ibm.com (b01ledav001.gho.pok.ibm.com
- [9.57.199.106])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1BDZ0sV23330918
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Feb 2019 13:35:00 GMT
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 41B322805A;
- Mon, 11 Feb 2019 13:35:00 +0000 (GMT)
-Received: from b01ledav001.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 14A3C28059;
- Mon, 11 Feb 2019 13:34:59 +0000 (GMT)
-Received: from [9.85.73.133] (unknown [9.85.73.133])
- by b01ledav001.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 11 Feb 2019 13:34:58 +0000 (GMT)
-Subject: Re: [PATCH v3 1/2] drivers/mtd: Use mtd->name when registering nvmem
- device
-To: Boris Brezillon <boris.brezillon@collabora.com>
-References: <20190208151419.1800-1-aneesh.kumar@linux.ibm.com>
- <20190210135552.65f532bb@collabora.com>
- <2f3cae2b-32d2-0651-29ef-2359221de4ef@linux.ibm.com>
- <20190211121628.30c22370@collabora.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Mon, 11 Feb 2019 19:04:57 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ymyW2JjmzDqSQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 00:36:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:
+ Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+ Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=0RjqkG/Z5AYAcLHmSc7mP71T89y/DfZMMiXjibyrQmQ=; b=Y3FsRwM508xCp0G/iq7D7q6Q/
+ +Vwi2bjqQKsAiiybpIONc9kDJSCDfA6pqDu8AnIz5sEaBbndwnVYbFDnFne3CHZi1WdV54Uvhpv0K
+ jH4Etxr6yTNOEJukMJ/JItoRIKFmPzLXFJgroJmn8FrOTatK73R4HRUf3CzKowvoyRk5uwh6xk4PA
+ NDNmTyXcCcCW0lxygBsuZo9fTYg62B0UyhyZW2okyzN6zxAInjMQQUaqGLlfbzWr30HWW3Bk9E8SF
+ qoG1HgEhPJoH5IglNMpq4TBx3wmSatK07824fW3D7DUXCKqYSMHLKC070cqxT8SkwCSbWl5Eu/uNd
+ HRoGlklLg==;
+Received: from 089144210182.atnat0019.highway.a1.net ([89.144.210.182]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gtBkc-0008Ld-Db; Mon, 11 Feb 2019 13:35:58 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: iommu@lists.linux-foundation.org
+Subject: dma_declare_coherent spring cleaning
+Date: Mon, 11 Feb 2019 14:35:42 +0100
+Message-Id: <20190211133554.30055-1-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <20190211121628.30c22370@collabora.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19021113-2213-0000-0000-0000034E09E3
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010577; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000279; SDB=6.01159515; UDB=6.00605101; IPR=6.00940061; 
- MB=3.00025525; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-11 13:35:29
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021113-2214-0000-0000-00005D515212
-Message-Id: <c7885c03-6cd5-d6ba-b2f4-63e2d1f03cd4@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-11_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=909 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902110106
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,39 +74,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Alban Bedel <albeu@free.fr>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+Cc: linux-xtensa@linux-xtensa.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ x86@kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-snps-arc@lists.infradead.org, Lee Jones <lee.jones@linaro.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/11/19 4:46 PM, Boris Brezillon wrote:
-> On Mon, 11 Feb 2019 16:26:38 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
-> 
->> On 2/10/19 6:25 PM, Boris Brezillon wrote:
->>> Hello Aneesh,
->>>
->>> On Fri,  8 Feb 2019 20:44:18 +0530
->>> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
->>>    
->>>> With this patch, we use the mtd->name instead of concatenating the name with '0'
->>>>
->>>> Fixes: c4dfa25ab307 ("mtd: add support for reading MTD devices via the nvmem API")
->>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->>>
->>> You forgot to Cc the MTD ML and maintainers. Can you please send a new
->>> version?
->>>    
->>
->> linux-mtd list is on CC: Is that not sufficient?
-> 
-> Not in your original email, I added it in my reply.
-> 
+Hi all,
 
-
-Sorry about that. I will now resend with linux-mtd on CC: I missed that 
-earlier.
-
--aneesh
-
+this series removes various bits of dead code and refactors the
+remaining functionality around dma_declare_coherent to be a somewhat
+more coherent code base.
