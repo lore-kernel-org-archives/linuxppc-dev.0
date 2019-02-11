@@ -2,66 +2,63 @@ Return-Path: <SRS0=3oxj=QS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40632C282D7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 14:41:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63404C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 14:44:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AECDB2081B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 14:41:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="pXOWGeD0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AECDB2081B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id DF23320700
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 14:44:24 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF23320700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43ypPS5HDczDqHG
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:41:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43ypTL4pKXzDqWl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:44:22 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43ypMG5xWkzDqRk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:39:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=fq9p=qs=linuxfoundation.org=gregkh@kernel.org;
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 43ypMF6nx7z8sX5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:39:05 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 43ypMF3J0yz9sQv; Tue, 12 Feb 2019 01:39:05 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=suse.com
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=pmladek@suse.com;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="pXOWGeD0"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=suse.com
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ypHF6BfkzDqST
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:35:37 +1100 (AEDT)
-Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id EEB92204EC;
- Mon, 11 Feb 2019 14:35:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1549895735;
- bh=3RQdn07mbs9dLl9vM2TE1866YD1cCOpzfORTzj/vjvM=;
- h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=pXOWGeD0d5uvbCqTwuVPO6l218m1sH2uo4ZUTMWv09HkiPNXX1JMgcOzKwLr6iJGa
- VosB6gRsQNydcsLu59ITc3Mx7680Ag2xm890URgA1sE+rdLNQb1WaHamvt593jmsjP
- G5I55ajZxPPtTpNMAKbdcjDr9NpofmpW/9oCNBKI=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.20 278/352] block/swim3: Fix regression on PowerBook G3
-Date: Mon, 11 Feb 2019 15:18:25 +0100
-Message-Id: <20190211141904.651713385@linuxfoundation.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190211141846.543045703@linuxfoundation.org>
-References: <20190211141846.543045703@linuxfoundation.org>
-User-Agent: quilt/0.65
-X-stable: review
-X-Patchwork-Hint: ignore
+ by ozlabs.org (Postfix) with ESMTPS id 43ypMD1hjGz9sQt
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Feb 2019 01:39:02 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id AA1BEAC63;
+ Mon, 11 Feb 2019 14:38:59 +0000 (UTC)
+Date: Mon, 11 Feb 2019 15:38:59 +0100
+From: Petr Mladek <pmladek@suse.com>
+To: Andrea Parri <andrea.parri@amarulasolutions.com>
+Subject: Re: [PATCH v3 1/7] dump_stack: Support adding to the dump stack arch
+ description
+Message-ID: <20190211143859.dd2lkccxod3f2fwn@pathway.suse.cz>
+References: <20190207124635.3885-1-mpe@ellerman.id.au>
+ <20190211125035.GA1562@andrea>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190211125035.GA1562@andrea>
+User-Agent: NeoMutt/20170421 (1.8.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,141 +70,236 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@kernel.dk>, Sasha Levin <sashal@kernel.org>,
- Stan Johnson <userm57@yahoo.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Finn Thain <fthain@telegraphics.com.au>, stable@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, sergey.senozhatsky@gmail.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, tj@kernel.org,
+ akpm@linux-foundation.org, dyoung@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-4.20-stable review patch.  If anyone has any objections, please let me know.
+On Mon 2019-02-11 13:50:35, Andrea Parri wrote:
+> Hi Michael,
+> 
+> 
+> On Thu, Feb 07, 2019 at 11:46:29PM +1100, Michael Ellerman wrote:
+> > Arch code can set a "dump stack arch description string" which is
+> > displayed with oops output to describe the hardware platform.
+> > 
+> > It is useful to initialise this as early as possible, so that an early
+> > oops will have the hardware description.
+> > 
+> > However in practice we discover the hardware platform in stages, so it
+> > would be useful to be able to incrementally fill in the hardware
+> > description as we discover it.
+> > 
+> > This patch adds that ability, by creating dump_stack_add_arch_desc().
+> > 
+> > If there is no existing string it behaves exactly like
+> > dump_stack_set_arch_desc(). However if there is an existing string it
+> > appends to it, with a leading space.
+> > 
+> > This makes it easy to call it multiple times from different parts of the
+> > code and get a reasonable looking result.
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> >  include/linux/printk.h |  5 ++++
+> >  lib/dump_stack.c       | 58 ++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 63 insertions(+)
+> > 
+> > v3: No change, just widened Cc list.
+> > 
+> > v2: Add a smp_wmb() and comment.
+> > 
+> > v1 is here for reference https://lore.kernel.org/lkml/1430824337-15339-1-git-send-email-mpe@ellerman.id.au/
+> > 
+> > I'll take this series via the powerpc tree if no one minds?
+> > 
+> > 
+> > diff --git a/include/linux/printk.h b/include/linux/printk.h
+> > index 77740a506ebb..d5fb4f960271 100644
+> > --- a/include/linux/printk.h
+> > +++ b/include/linux/printk.h
+> > @@ -198,6 +198,7 @@ u32 log_buf_len_get(void);
+> >  void log_buf_vmcoreinfo_setup(void);
+> >  void __init setup_log_buf(int early);
+> >  __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
+> > +__printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...);
+> >  void dump_stack_print_info(const char *log_lvl);
+> >  void show_regs_print_info(const char *log_lvl);
+> >  extern asmlinkage void dump_stack(void) __cold;
+> > @@ -256,6 +257,10 @@ static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
+> >  {
+> >  }
+> >  
+> > +static inline __printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...)
+> > +{
+> > +}
+> > +
+> >  static inline void dump_stack_print_info(const char *log_lvl)
+> >  {
+> >  }
+> > diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+> > index 5cff72f18c4a..69b710ff92b5 100644
+> > --- a/lib/dump_stack.c
+> > +++ b/lib/dump_stack.c
+> > @@ -35,6 +35,64 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+> >  	va_end(args);
+> >  }
+> >  
+> > +/**
+> > + * dump_stack_add_arch_desc - add arch-specific info to show with task dumps
+> > + * @fmt: printf-style format string
+> > + * @...: arguments for the format string
+> > + *
+> > + * See dump_stack_set_arch_desc() for why you'd want to use this.
+> > + *
+> > + * This version adds to any existing string already created with either
+> > + * dump_stack_set_arch_desc() or dump_stack_add_arch_desc(). If there is an
+> > + * existing string a space will be prepended to the passed string.
+> > + */
+> > +void __init dump_stack_add_arch_desc(const char *fmt, ...)
+> > +{
+> > +	va_list args;
+> > +	int pos, len;
+> > +	char *p;
+> > +
+> > +	/*
+> > +	 * If there's an existing string we snprintf() past the end of it, and
+> > +	 * then turn the terminating NULL of the existing string into a space
+> > +	 * to create one string separated by a space.
+> > +	 *
+> > +	 * If there's no existing string we just snprintf() to the buffer, like
+> > +	 * dump_stack_set_arch_desc(), but without calling it because we'd need
+> > +	 * a varargs version.
+> > +	 */
+> > +	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
+> > +	pos = len;
+> > +
+> > +	if (len)
+> > +		pos++;
+> > +
+> > +	if (pos >= sizeof(dump_stack_arch_desc_str))
+> > +		return; /* Ran out of space */
+> > +
+> > +	p = &dump_stack_arch_desc_str[pos];
+> > +
+> > +	va_start(args, fmt);
+> > +	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
+> > +	va_end(args);
+> > +
+> > +	if (len) {
+> > +		/*
+> > +		 * Order the stores above in vsnprintf() vs the store of the
+> > +		 * space below which joins the two strings. Note this doesn't
+> > +		 * make the code truly race free because there is no barrier on
+> > +		 * the read side. ie. Another CPU might load the uninitialised
+> > +		 * tail of the buffer first and then the space below (rather
+> > +		 * than the NULL that was there previously), and so print the
+> > +		 * uninitialised tail. But the whole string lives in BSS so in
+> > +		 * practice it should just see NULLs.
+> 
+> The comment doesn't say _why_ we need to order these stores: IOW, what
+> will or can go wrong without this order?  This isn't clear to me.
+>
+> Another good practice when adding smp_*-constructs (as discussed, e.g.,
+> at KS'18) is to indicate the matching construct/synch. mechanism.
 
-------------------
+Yes, one barrier without a counter-part is suspicious.
 
-[ Upstream commit 427c5ce4417cba0801fbf79c8525d1330704759c ]
+If the parallel access is really needed then we could define the
+current length as atomic_t and use:
 
-As of v4.20, the swim3 driver crashes when loaded on a PowerBook G3
-(Wallstreet).
+	+ atomic_cmpxchg() to reserve the space for the string
+	+ %*s to limit the printed length
 
-MacIO PCI driver attached to Gatwick chipset
-MacIO PCI driver attached to Heathrow chipset
-swim3 0.00015000:floppy: [fd0] SWIM3 floppy controller in media bay
-0.00013020:ch-a: ttyS0 at MMIO 0xf3013020 (irq = 16, base_baud = 230400) is a Z85c30 ESCC - Serial port
-0.00013000:ch-b: ttyS1 at MMIO 0xf3013000 (irq = 17, base_baud = 230400) is a Z85c30 ESCC - Infrared port
-macio: fixed media-bay irq on gatwick
-macio: fixed left floppy irqs
-swim3 1.00015000:floppy: [fd1] Couldn't request interrupt
-Unable to handle kernel paging request for data at address 0x00000024
-Faulting instruction address: 0xc02652f8
-Oops: Kernel access of bad area, sig: 11 [#1]
-BE SMP NR_CPUS=2 PowerMac
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.20.0 #2
-NIP:  c02652f8 LR: c026915c CTR: c0276d1c
-REGS: df43ba10 TRAP: 0300   Not tainted  (4.20.0)
-MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 28228288  XER: 00000100
-DAR: 00000024 DSISR: 40000000
-GPR00: c026915c df43bac0 df439060 c0731524 df494700 00000000 c06e1c08 00000001
-GPR08: 00000001 00000000 df5ff220 00001032 28228282 00000000 c0004ca4 00000000
-GPR16: 00000000 00000000 00000000 c073144c dfffe064 c0731524 00000120 c0586108
-GPR24: c073132c c073143c c073143c 00000000 c0731524 df67cd70 df494700 00000001
-NIP [c02652f8] blk_mq_free_rqs+0x28/0xf8
-LR [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-Call Trace:
-[df43bac0] [c0045f50] flush_workqueue_prep_pwqs+0x178/0x1c4 (unreliable)
-[df43bae0] [c026915c] blk_mq_sched_tags_teardown+0x58/0x84
-[df43bb00] [c02697f0] blk_mq_exit_sched+0x9c/0xb8
-[df43bb20] [c0252794] elevator_exit+0x84/0xa4
-[df43bb40] [c0256538] blk_exit_queue+0x30/0x50
-[df43bb50] [c0256640] blk_cleanup_queue+0xe8/0x184
-[df43bb70] [c034732c] swim3_attach+0x330/0x5f0
-[df43bbb0] [c034fb24] macio_device_probe+0x58/0xec
-[df43bbd0] [c032ba88] really_probe+0x1e4/0x2f4
-[df43bc00] [c032bd28] driver_probe_device+0x64/0x204
-[df43bc20] [c0329ac4] bus_for_each_drv+0x60/0xac
-[df43bc50] [c032b824] __device_attach+0xe8/0x160
-[df43bc80] [c032ab38] bus_probe_device+0xa0/0xbc
-[df43bca0] [c0327338] device_add+0x3d8/0x630
-[df43bcf0] [c0350848] macio_add_one_device+0x444/0x48c
-[df43bd50] [c03509f8] macio_pci_add_devices+0x168/0x1bc
-[df43bd90] [c03500ec] macio_pci_probe+0xc0/0x10c
-[df43bda0] [c02ad884] pci_device_probe+0xd4/0x184
-[df43bdd0] [c032ba88] really_probe+0x1e4/0x2f4
-[df43be00] [c032bd28] driver_probe_device+0x64/0x204
-[df43be20] [c032bfcc] __driver_attach+0x104/0x108
-[df43be40] [c0329a00] bus_for_each_dev+0x64/0xb4
-[df43be70] [c032add8] bus_add_driver+0x154/0x238
-[df43be90] [c032ca24] driver_register+0x84/0x148
-[df43bea0] [c0004aa0] do_one_initcall+0x40/0x188
-[df43bf00] [c0690100] kernel_init_freeable+0x138/0x1d4
-[df43bf30] [c0004cbc] kernel_init+0x18/0x10c
-[df43bf40] [c00121e4] ret_from_kernel_thread+0x14/0x1c
-Instruction dump:
-5484d97e 4bfff4f4 9421ffe0 7c0802a6 bf410008 7c9e2378 90010024 8124005c
-2f890000 419e0078 81230004 7c7c1b78 <81290024> 2f890000 419e0064 81440000
----[ end trace 12025ab921a9784c ]---
+In the worst case, we would print an incomplete string.
+See below for a sample code.
 
-Reverting commit 8ccb8cb1892b ("swim3: convert to blk-mq") resolves the
-problem.
 
-That commit added a struct blk_mq_tag_set to struct floppy_state and
-initialized it with a blk_mq_init_sq_queue() call. Unfortunately, there
-is a memset() in swim3_add_device() that subsequently clears the
-floppy_state struct. That means fs->tag_set->ops is a NULL pointer, and
-it gets dereferenced by blk_mq_free_rqs() which gets called in the
-request_irq() error path. Move the memset() to fix this bug.
+BTW: There are very few users of dump_stack_set_arch_desc().
+I would use dump_stack_add_arch_desc() everywhere to keep
+it simple and have a reasonable semantic.
 
-BTW, the request_irq() failure for the left mediabay floppy (fd1) is not
-a regression. I don't know why it happens. The right media bay floppy
-(fd0) works fine however.
 
-Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
-Fixes: 8ccb8cb1892b ("swim3: convert to blk-mq")
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+This is what I mean (only compile tested):
 
-Signed-off-by: Jens Axboe <axboe@kernel.dk>
-
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/block/swim3.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index 3f6df3f1f5d9..1046459f172b 100644
---- a/drivers/block/swim3.c
-+++ b/drivers/block/swim3.c
-@@ -1091,8 +1091,6 @@ static int swim3_add_device(struct macio_dev *mdev, int index)
- 	struct floppy_state *fs = &floppy_states[index];
- 	int rc = -EBUSY;
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 5cff72f18c4a..311dd20cc6a7 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -14,9 +14,10 @@
+ #include <linux/utsname.h>
  
--	/* Do this first for message macros */
--	memset(fs, 0, sizeof(*fs));
- 	fs->mdev = mdev;
- 	fs->index = index;
+ static char dump_stack_arch_desc_str[128];
++static atomic_t arch_desc_str_len;
  
-@@ -1192,14 +1190,15 @@ static int swim3_attach(struct macio_dev *mdev,
- 			return rc;
- 	}
+ /**
+- * dump_stack_set_arch_desc - set arch-specific str to show with task dumps
++ * dump_stack_set_arch_desc - add arch-specific str to show with task dumps
+  * @fmt: printf-style format string
+  * @...: arguments for the format string
+  *
+@@ -25,13 +26,32 @@ static char dump_stack_arch_desc_str[128];
+  * arch wants to make use of such an ID string, it should initialize this
+  * as soon as possible during boot.
+  */
+-void __init dump_stack_set_arch_desc(const char *fmt, ...)
++void __init dump_stack_add_arch_desc(const char *fmt, ...)
+ {
+-	va_list args;
++	va_list args, args2;
++	int len, cur_len, old_len;
  
--	fs = &floppy_states[floppy_count];
--
- 	disk = alloc_disk(1);
- 	if (disk == NULL) {
- 		rc = -ENOMEM;
- 		goto out_unregister;
- 	}
- 
-+	fs = &floppy_states[floppy_count];
-+	memset(fs, 0, sizeof(*fs));
+ 	va_start(args, fmt);
+-	vsnprintf(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str),
 +
- 	disk->queue = blk_mq_init_sq_queue(&fs->tag_set, &swim3_mq_ops, 2,
- 						BLK_MQ_F_SHOULD_MERGE);
- 	if (IS_ERR(disk->queue)) {
--- 
-2.19.1
++	va_copy(args2, args);
++	len = vsnprintf(NULL, sizeof(dump_stack_arch_desc_str),
++			fmt, args2);
++	va_end(args2);
++
++try_again:
++	cur_len = atomic_read(&arch_desc_str_len);
++	if (cur_len + len > sizeof(dump_stack_arch_desc_str))
++		goto out;
++
++	old_len = atomic_cmpxchg(&arch_desc_str_len,
++				 cur_len, cur_len + len);
++	if (old_len != cur_len)
++		goto try_again;
++
++	vsnprintf(dump_stack_arch_desc_str + old_len,
++		  sizeof(dump_stack_arch_desc_str) - old_len,
+ 		  fmt, args);
++out:
+ 	va_end(args);
+ }
+ 
+@@ -44,6 +64,8 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+  */
+ void dump_stack_print_info(const char *log_lvl)
+ {
++	int len;
++
+ 	printk("%sCPU: %d PID: %d Comm: %.20s %s%s %s %.*s\n",
+ 	       log_lvl, raw_smp_processor_id(), current->pid, current->comm,
+ 	       kexec_crash_loaded() ? "Kdump: loaded " : "",
+@@ -52,9 +74,11 @@ void dump_stack_print_info(const char *log_lvl)
+ 	       (int)strcspn(init_utsname()->version, " "),
+ 	       init_utsname()->version);
+ 
+-	if (dump_stack_arch_desc_str[0] != '\0')
+-		printk("%sHardware name: %s\n",
+-		       log_lvl, dump_stack_arch_desc_str);
++	len = atomic_read(&arch_desc_str_len);
++	if (len) {
++		printk("%sHardware name: %*s\n",
++		       log_lvl, len, dump_stack_arch_desc_str);
++	}
+ 
+ 	print_worker_info(log_lvl, current);
+ }
 
-
-
+Best Regards,
+Petr
