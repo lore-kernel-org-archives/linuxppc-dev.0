@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A99C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC535C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:57:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A53922083B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:56:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6D30F2083B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Feb 2019 22:57:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="HnEn0xS6"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A53922083B
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="EG0ZXxRI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6D30F2083B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43z1Nn6FpFzDqcT
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:56:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43z1Qm60ghzDqXr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:57:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=oracle.com
  (client-ip=156.151.31.85; helo=userp2120.oracle.com;
@@ -29,46 +29,46 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="HnEn0xS6"; 
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="EG0ZXxRI"; 
  dkim-atps=neutral
 Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43z19J0rDkzDqbx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43z19J2MXFzDqXm
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 09:46:11 +1100 (AEDT)
 Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
- by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1BMhgq5079616;
- Mon, 11 Feb 2019 22:44:54 GMT
+ by userp2120.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1BMhV8N079558;
+ Mon, 11 Feb 2019 22:44:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
  h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=corp-2018-07-02;
- bh=lNNVFPUWTRhNE8iqw8ALNGW4x7tdbqFw7nSGCVoIqbc=;
- b=HnEn0xS6VXXZwacMqdL+G2YTsezKd8bC2zALO+fMvwXK7yNNIdx2SEyBXHAQcWr0hWPH
- xFL1cpGYlZeIGxFVuwVk/blwtPCZ/qitfP3s2/AqwfDM7MldOF34fKElHAoscHbHzDEH
- NODKcW8CH40UlUuWcQ6O74uctfb+VX8qmi4HJA0ssRmRYpS9HjzCYbajNJ6hdrAmp035
- ZRa4K70w/oRxK1O9L9EPCguGCbkC4mB5dk64JhtD56TcT6Ms831Diow9RBQ6Hm4Vw6hH
- BLdOK7jjHdd+EYP7nShsNbLdmOnWIbNMT2dKOItdbfzrRDlPRyguA5RQ35ZnmHE/mJlt jg== 
+ bh=8MbdNDL3CBMqXq9cKy6Blm5jHVV6AhFQ5tncilAoYP0=;
+ b=EG0ZXxRIiRONLX+NDCb7AU32LV8AKND2VEChzN77taJ7iEGUuI1z4OoUMuQpnZicawWe
+ RXogTQPXYeYaXWw3MQUOEFU7gL1zAD2Ly8l/sIUldPQdQPyEW3RIW/4wAuYoavKVlWHU
+ Y2rrABeTstBOJEOlT0RlbS8RAkrfdCFJMFS+J5b+K7Zo4RkNB1ReF/V2w6BHsqRkDykn
+ Mssyo/lzb7IEt0LAlz/bGhphSCrT7nJe17mf3n30G8KdVDWwDt8P3O+iLjqbtOvrBcmk
+ fBm5gS0hG0WZBzuHwkJytEj2gdnYfXVTzUyWnxy8cbaVmOZFgHqQqlGzGOKFSxmz9wuU dQ== 
 Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
- by userp2120.oracle.com with ESMTP id 2qhredrqvq-1
+ by userp2120.oracle.com with ESMTP id 2qhredrqvs-1
  (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Feb 2019 22:44:54 +0000
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x1BMim4E030846
+ Mon, 11 Feb 2019 22:44:56 +0000
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x1BMitAb031041
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Feb 2019 22:44:48 GMT
+ Mon, 11 Feb 2019 22:44:55 GMT
 Received: from abhmp0022.oracle.com (abhmp0022.oracle.com [141.146.116.28])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x1BMik3u013837;
- Mon, 11 Feb 2019 22:44:46 GMT
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x1BMisBM026862;
+ Mon, 11 Feb 2019 22:44:54 GMT
 Received: from localhost.localdomain (/73.60.114.248)
  by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Mon, 11 Feb 2019 14:44:45 -0800
+ with ESMTP ; Mon, 11 Feb 2019 14:44:54 -0800
 From: Daniel Jordan <daniel.m.jordan@oracle.com>
 To: jgg@ziepe.ca
-Subject: [PATCH 1/5] vfio/type1: use pinned_vm instead of locked_vm to account
+Subject: [PATCH 5/5] kvm/book3s: use pinned_vm instead of locked_vm to account
  pinned pages
-Date: Mon, 11 Feb 2019 17:44:33 -0500
-Message-Id: <20190211224437.25267-2-daniel.m.jordan@oracle.com>
+Date: Mon, 11 Feb 2019 17:44:37 -0500
+Message-Id: <20190211224437.25267-6-daniel.m.jordan@oracle.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
 References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
@@ -102,90 +102,83 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Beginning with bc3e53f682d9 ("mm: distinguish between mlocked and pinned
-pages"), locked and pinned pages are accounted separately.  Type1
-accounts pinned pages to locked_vm; use pinned_vm instead.
+Memory used for TCE tables in kvm_vm_ioctl_create_spapr_tce is currently
+accounted to locked_vm because it stays resident and its allocation is
+directly triggered from userspace as explained in f8626985c7c2 ("KVM:
+PPC: Account TCE-containing pages in locked_vm").
+
+However, since the memory comes straight from the page allocator (and to
+a lesser extent unreclaimable slab) and is effectively pinned, it should
+be accounted with pinned_vm (see bc3e53f682d9 ("mm: distinguish between
+mlocked and pinned pages")).
 
 pinned_vm recently became atomic and so no longer relies on mmap_sem
 held as writer: delete.
 
 Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
 ---
- drivers/vfio/vfio_iommu_type1.c | 31 ++++++++++++-------------------
- 1 file changed, 12 insertions(+), 19 deletions(-)
+ arch/powerpc/kvm/book3s_64_vio.c | 35 ++++++++++++++------------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
-index 73652e21efec..a56cc341813f 100644
---- a/drivers/vfio/vfio_iommu_type1.c
-+++ b/drivers/vfio/vfio_iommu_type1.c
-@@ -257,7 +257,8 @@ static int vfio_iova_put_vfio_pfn(struct vfio_dma *dma, struct vfio_pfn *vpfn)
- static int vfio_lock_acct(struct vfio_dma *dma, long npage, bool async)
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 532ab79734c7..2f8d7c051e4e 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -56,39 +56,34 @@ static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
+ 	return tce_pages + ALIGN(stt_bytes, PAGE_SIZE) / PAGE_SIZE;
+ }
+ 
+-static long kvmppc_account_memlimit(unsigned long stt_pages, bool inc)
++static long kvmppc_account_memlimit(unsigned long pages, bool inc)
  {
- 	struct mm_struct *mm;
--	int ret;
+ 	long ret = 0;
 +	s64 pinned_vm;
-+	int ret = 0;
  
- 	if (!npage)
- 		return 0;
-@@ -266,24 +267,15 @@ static int vfio_lock_acct(struct vfio_dma *dma, long npage, bool async)
- 	if (!mm)
- 		return -ESRCH; /* process exited */
+ 	if (!current || !current->mm)
+ 		return ret; /* process exited */
  
--	ret = down_write_killable(&mm->mmap_sem);
--	if (!ret) {
--		if (npage > 0) {
--			if (!dma->lock_cap) {
--				unsigned long limit;
+-	down_write(&current->mm->mmap_sem);
 -
--				limit = task_rlimit(dma->task,
--						RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+	pinned_vm = atomic64_add_return(npage, &mm->pinned_vm);
+ 	if (inc) {
+-		unsigned long locked, lock_limit;
++		unsigned long lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
  
--				if (mm->locked_vm + npage > limit)
--					ret = -ENOMEM;
--			}
-+	if (npage > 0 && !dma->lock_cap) {
-+		unsigned long limit = task_rlimit(dma->task, RLIMIT_MEMLOCK) >>
-+								   PAGE_SHIFT;
-+		if (pinned_vm > limit) {
-+			atomic64_sub(npage, &mm->pinned_vm);
-+			ret = -ENOMEM;
- 		}
--
--		if (!ret)
--			mm->locked_vm += npage;
--
--		up_write(&mm->mmap_sem);
+-		locked = current->mm->locked_vm + stt_pages;
+-		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+-		if (locked > lock_limit && !capable(CAP_IPC_LOCK))
++		pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
++		if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
+ 			ret = -ENOMEM;
+-		else
+-			current->mm->locked_vm += stt_pages;
++			atomic64_sub(pages, &current->mm->pinned_vm);
++		}
+ 	} else {
+-		if (WARN_ON_ONCE(stt_pages > current->mm->locked_vm))
+-			stt_pages = current->mm->locked_vm;
++		pinned_vm = atomic64_read(&current->mm->pinned_vm);
++		if (WARN_ON_ONCE(pages > pinned_vm))
++			pages = pinned_vm;
+ 
+-		current->mm->locked_vm -= stt_pages;
++		atomic64_sub(pages, &current->mm->pinned_vm);
  	}
  
- 	if (async)
-@@ -401,6 +393,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
- 	long ret, pinned = 0, lock_acct = 0;
- 	bool rsvd;
- 	dma_addr_t iova = vaddr - dma->vaddr + dma->iova;
-+	atomic64_t *pinned_vm = &current->mm->pinned_vm;
+-	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%ld %ld/%ld%s\n", current->pid,
+-			inc ? '+' : '-',
+-			stt_pages << PAGE_SHIFT,
+-			current->mm->locked_vm << PAGE_SHIFT,
+-			rlimit(RLIMIT_MEMLOCK),
+-			ret ? " - exceeded" : "");
+-
+-	up_write(&current->mm->mmap_sem);
++	pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%lu %ld/%lu%s\n", current->pid,
++			inc ? '+' : '-', pages << PAGE_SHIFT,
++			atomic64_read(&current->mm->pinned_vm) << PAGE_SHIFT,
++			rlimit(RLIMIT_MEMLOCK), ret ? " - exceeded" : "");
  
- 	/* This code path is only user initiated */
- 	if (!current->mm)
-@@ -418,7 +411,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
- 	 * pages are already counted against the user.
- 	 */
- 	if (!rsvd && !vfio_find_vpfn(dma, iova)) {
--		if (!dma->lock_cap && current->mm->locked_vm + 1 > limit) {
-+		if (!dma->lock_cap && atomic64_read(pinned_vm) + 1 > limit) {
- 			put_pfn(*pfn_base, dma->prot);
- 			pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n", __func__,
- 					limit << PAGE_SHIFT);
-@@ -445,7 +438,7 @@ static long vfio_pin_pages_remote(struct vfio_dma *dma, unsigned long vaddr,
- 
- 		if (!rsvd && !vfio_find_vpfn(dma, iova)) {
- 			if (!dma->lock_cap &&
--			    current->mm->locked_vm + lock_acct + 1 > limit) {
-+			    atomic64_read(pinned_vm) + lock_acct + 1 > limit) {
- 				put_pfn(pfn, dma->prot);
- 				pr_warn("%s: RLIMIT_MEMLOCK (%ld) exceeded\n",
- 					__func__, limit << PAGE_SHIFT);
+ 	return ret;
+ }
 -- 
 2.20.1
 
