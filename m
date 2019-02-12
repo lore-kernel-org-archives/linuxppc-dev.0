@@ -2,64 +2,67 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6711DC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33C12C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:57:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 175FA20842
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:55:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 175FA20842
+	by mail.kernel.org (Postfix) with ESMTPS id AC9D02184A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:57:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC9D02184A
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zJ1p1jX9zDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 20:55:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zJ3d5zymzDqP8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 20:57:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.208.65; helo=mail-ed1-f65.google.com;
+ (client-ip=209.85.208.66; helo=mail-ed1-f66.google.com;
  envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ed1-f65.google.com (mail-ed1-f65.google.com
- [209.85.208.65])
+Received: from mail-ed1-f66.google.com (mail-ed1-f66.google.com
+ [209.85.208.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zHzm1yLyzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 20:53:56 +1100 (AEDT)
-Received: by mail-ed1-f65.google.com with SMTP id x7so1622881eds.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:53:56 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zHzq1XVhzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 20:53:59 +1100 (AEDT)
+Received: by mail-ed1-f66.google.com with SMTP id b20so707060edw.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:53:58 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
- :content-transfer-encoding;
- bh=EFijitDAnYbGumAIWyNs+KdKOOdzXlmahj3GLOHXWfY=;
- b=Uf90/+o31PVKlHhFzjNYBleUTku/THjewJMa7w6IMv7snLRyl63lqpA28C/R8K8Um5
- fb8jpT3aByjCadnQYFoF8pFm8kBT4dIwHrxt02zw4VT4i7gmf8kwSLVvRPUOk9cULtsu
- ybCz1a+0BuAlUqJmyuYRNFOMizwTy7YvQhLTEYTQLkVjk9gVViC1q47bLdqh1O1is/Co
- XNw1XTgKwh97zb8nIUI7Dr2M3F7ZbPJoSPf019LO4dP3mYuqm+JW8jd54H2gaCVI49ly
- b8pLP5+GHR7J6iGpv8Unmc1kHzaoQjuBNYKbRlKIPvMRk2GeHzHlSMrEkVyXKuS29v2J
- S5yg==
-X-Gm-Message-State: AHQUAuZg60XNRXVTh7tH+CayccZA9ZjhMexUb3Bo70s9EmCKmmARE0pq
- dDcrCTrQSOMSao69BWHwRh4=
-X-Google-Smtp-Source: AHgI3IZuQQu7DIy+YQkt/vIiKLToazp6FM++4dnhmcZqF3E9VfSmrDOChUquc2Ds0W5XPmXFSJDecA==
-X-Received: by 2002:a17:906:32c7:: with SMTP id
- k7mr2066905ejk.180.1549965233523; 
- Tue, 12 Feb 2019 01:53:53 -0800 (PST)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=g0Xnfni1nNLyqqMZYXWTGGae7dfySvPUxOC1YigUua0=;
+ b=hJBMIqSq7AjCXeYW8B5MBXEV0z3qqPX4GuisMUZr/JWWtOHT/+AaQmouLA31Nsy0Js
+ ObLYS7i0carJCG2EIOWOCpqwagU7wX3lZ6OzB8IUNVTqKmS1+MhsW+bc7pGgbbqDPYW1
+ YuFFmEK5941v6dY6QrnAJosyO1SAf8Gg8PKU59xC04wCNX37DxOnv6+yRuRq6SwtngLR
+ gbF83WLrFxLV4nKiE5EwA6X3A5WG4P+VTT7yuH54tEMYCHlPd9t+V3zgwXEmSGZ/aCO/
+ 24ofTyk0CNWUmAc2dDqhpedkR8BOhIJ/jOOwIpZoaf9L+HWfsvs9buqNqv7ExMOaqvYy
+ 9DLw==
+X-Gm-Message-State: AHQUAua8MdIoYTJ2vifKqLhTUKahGrmG3wGvxeBCWzEzGtmu6VH5NoZ/
+ hGWl5vhRzqoUnTeCNIMxAOI=
+X-Google-Smtp-Source: AHgI3IYI+XQIdqqNKKXiwk3GZD4kvnkwSEFaqfDAQjdPPwJO5MpWchNSzvqMlUDOtjpHeFQrvetnVQ==
+X-Received: by 2002:a17:906:3e95:: with SMTP id
+ a21mr2097068ejj.44.1549965236193; 
+ Tue, 12 Feb 2019 01:53:56 -0800 (PST)
 Received: from tiehlicka.microfocus.com (prg-ext-pat.suse.com.
  [213.151.95.130])
- by smtp.gmail.com with ESMTPSA id i14sm2876791ejy.25.2019.02.12.01.53.51
+ by smtp.gmail.com with ESMTPSA id i14sm2876791ejy.25.2019.02.12.01.53.55
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 12 Feb 2019 01:53:52 -0800 (PST)
+ Tue, 12 Feb 2019 01:53:55 -0800 (PST)
 From: Michal Hocko <mhocko@kernel.org>
 To: <linux-mm@kvack.org>
-Subject: [PATCH 0/2] x86, numa: always initialize all possible nodes
-Date: Tue, 12 Feb 2019 10:53:41 +0100
-Message-Id: <20190212095343.23315-1-mhocko@kernel.org>
+Subject: [PATCH 1/2] x86, numa: always initialize all possible nodes
+Date: Tue, 12 Feb 2019 10:53:42 +0100
+Message-Id: <20190212095343.23315-2-mhocko@kernel.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190212095343.23315-1-mhocko@kernel.org>
+References: <20190212095343.23315-1-mhocko@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -76,18 +79,234 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
  Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
  LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
- Dave Hansen <dave.hansen@intel.com>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+ Dave Hansen <dave.hansen@intel.com>, Michal Hocko <mhocko@suse.com>,
+ Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi,
-this has been posted as an RFC previously [1]. There didn't seem to be
-any objections so I am reposting this for inclusion. I have added a
-debugging patch which prints the zonelist setup for each numa node
-for an easier debugging of a broken zonelist setup.
+From: Michal Hocko <mhocko@suse.com>
 
-[1] http://lkml.kernel.org/r/20190114082416.30939-1-mhocko@kernel.org
+Pingfan Liu has reported the following splat
+[    5.772742] BUG: unable to handle kernel paging request at 0000000000002088
+[    5.773618] PGD 0 P4D 0
+[    5.773618] Oops: 0000 [#1] SMP NOPTI
+[    5.773618] CPU: 2 PID: 1 Comm: swapper/0 Not tainted 4.20.0-rc1+ #3
+[    5.773618] Hardware name: Dell Inc. PowerEdge R7425/02MJ3T, BIOS 1.4.3 06/29/2018
+[    5.773618] RIP: 0010:__alloc_pages_nodemask+0xe2/0x2a0
+[    5.773618] Code: 00 00 44 89 ea 80 ca 80 41 83 f8 01 44 0f 44 ea 89 da c1 ea 08 83 e2 01 88 54 24 20 48 8b 54 24 08 48 85 d2 0f 85 46 01 00 00 <3b> 77 08 0f 82 3d 01 00 00 48 89 f8 44 89 ea 48 89
+e1 44 89 e6 89
+[    5.773618] RSP: 0018:ffffaa600005fb20 EFLAGS: 00010246
+[    5.773618] RAX: 0000000000000000 RBX: 00000000006012c0 RCX: 0000000000000000
+[    5.773618] RDX: 0000000000000000 RSI: 0000000000000002 RDI: 0000000000002080
+[    5.773618] RBP: 00000000006012c0 R08: 0000000000000000 R09: 0000000000000002
+[    5.773618] R10: 00000000006080c0 R11: 0000000000000002 R12: 0000000000000000
+[    5.773618] R13: 0000000000000001 R14: 0000000000000000 R15: 0000000000000002
+[    5.773618] FS:  0000000000000000(0000) GS:ffff8c69afe00000(0000) knlGS:0000000000000000
+[    5.773618] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[    5.773618] CR2: 0000000000002088 CR3: 000000087e00a000 CR4: 00000000003406e0
+[    5.773618] Call Trace:
+[    5.773618]  new_slab+0xa9/0x570
+[    5.773618]  ___slab_alloc+0x375/0x540
+[    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
+[    5.773618]  __slab_alloc+0x1c/0x38
+[    5.773618]  __kmalloc_node_track_caller+0xc8/0x270
+[    5.773618]  ? pinctrl_bind_pins+0x2b/0x2a0
+[    5.773618]  devm_kmalloc+0x28/0x60
+[    5.773618]  pinctrl_bind_pins+0x2b/0x2a0
+[    5.773618]  really_probe+0x73/0x420
+[    5.773618]  driver_probe_device+0x115/0x130
+[    5.773618]  __driver_attach+0x103/0x110
+[    5.773618]  ? driver_probe_device+0x130/0x130
+[    5.773618]  bus_for_each_dev+0x67/0xc0
+[    5.773618]  ? klist_add_tail+0x3b/0x70
+[    5.773618]  bus_add_driver+0x41/0x260
+[    5.773618]  ? pcie_port_setup+0x4d/0x4d
+[    5.773618]  driver_register+0x5b/0xe0
+[    5.773618]  ? pcie_port_setup+0x4d/0x4d
+[    5.773618]  do_one_initcall+0x4e/0x1d4
+[    5.773618]  ? init_setup+0x25/0x28
+[    5.773618]  kernel_init_freeable+0x1c1/0x26e
+[    5.773618]  ? loglevel+0x5b/0x5b
+[    5.773618]  ? rest_init+0xb0/0xb0
+[    5.773618]  kernel_init+0xa/0x110
+[    5.773618]  ret_from_fork+0x22/0x40
+[    5.773618] Modules linked in:
+[    5.773618] CR2: 0000000000002088
+[    5.773618] ---[ end trace 1030c9120a03d081 ]---
 
+with his AMD machine with the following topology
+  NUMA node0 CPU(s):     0,8,16,24
+  NUMA node1 CPU(s):     2,10,18,26
+  NUMA node2 CPU(s):     4,12,20,28
+  NUMA node3 CPU(s):     6,14,22,30
+  NUMA node4 CPU(s):     1,9,17,25
+  NUMA node5 CPU(s):     3,11,19,27
+  NUMA node6 CPU(s):     5,13,21,29
+  NUMA node7 CPU(s):     7,15,23,31
+
+[    0.007418] Early memory node ranges
+[    0.007419]   node   1: [mem 0x0000000000001000-0x000000000008efff]
+[    0.007420]   node   1: [mem 0x0000000000090000-0x000000000009ffff]
+[    0.007422]   node   1: [mem 0x0000000000100000-0x000000005c3d6fff]
+[    0.007422]   node   1: [mem 0x00000000643df000-0x0000000068ff7fff]
+[    0.007423]   node   1: [mem 0x000000006c528000-0x000000006fffffff]
+[    0.007424]   node   1: [mem 0x0000000100000000-0x000000047fffffff]
+[    0.007425]   node   5: [mem 0x0000000480000000-0x000000087effffff]
+
+and nr_cpus set to 4. The underlying reason is tha the device is bound
+to node 2 which doesn't have any memory and init_cpu_to_node only
+initializes memory-less nodes for possible cpus which nr_cpus restrics.
+This in turn means that proper zonelists are not allocated and the page
+allocator blows up.
+
+Fix the issue by reworking how x86 initializes the memory less nodes.
+The current implementation is hacked into the workflow and it doesn't
+allow any flexibility. There is init_memory_less_node called for each
+offline node that has a CPU as already mentioned above. This will make
+sure that we will have a new online node without any memory. Much later
+on we build a zone list for this node and things seem to work, except
+they do not (e.g. due to nr_cpus). Not to mention that it doesn't really
+make much sense to consider an empty node as online because we just
+consider this node whenever we want to iterate nodes to use and empty
+node is obviously not the best candidate. This is all just too fragile.
+
+The new code relies on the arch specific initialization to allocate all
+possible NUMA nodes (including memory less) - numa_register_memblks in
+this case. Generic code then initializes both zonelists (__build_all_zonelists)
+and allocator internals (free_area_init_nodes) for all non-null pgdats
+rather than online ones.
+
+For the x86 specific part also do not make new node online in alloc_node_data
+because this is too early to know that. numa_register_memblks knows that
+a node has some memory so it can make the node online appropriately.
+init_memory_less_node hack can be safely removed altogether now.
+
+Reported-by: Pingfan Liu <kernelfans@gmail.com>
+Tested-by: Pingfan Liu <kernelfans@gmail.com>
+Signed-off-by: Michal Hocko <mhocko@suse.com>
+---
+ arch/x86/mm/numa.c | 27 +++------------------------
+ mm/page_alloc.c    | 15 +++++++++------
+ 2 files changed, 12 insertions(+), 30 deletions(-)
+
+diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
+index 1308f5408bf7..b3621ee4dfe8 100644
+--- a/arch/x86/mm/numa.c
++++ b/arch/x86/mm/numa.c
+@@ -216,8 +216,6 @@ static void __init alloc_node_data(int nid)
+ 
+ 	node_data[nid] = nd;
+ 	memset(NODE_DATA(nid), 0, sizeof(pg_data_t));
+-
+-	node_set_online(nid);
+ }
+ 
+ /**
+@@ -570,7 +568,7 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+ 		return -EINVAL;
+ 
+ 	/* Finally register nodes. */
+-	for_each_node_mask(nid, node_possible_map) {
++	for_each_node_mask(nid, numa_nodes_parsed) {
+ 		u64 start = PFN_PHYS(max_pfn);
+ 		u64 end = 0;
+ 
+@@ -581,9 +579,6 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+ 			end = max(mi->blk[i].end, end);
+ 		}
+ 
+-		if (start >= end)
+-			continue;
+-
+ 		/*
+ 		 * Don't confuse VM with a node that doesn't have the
+ 		 * minimum amount of memory:
+@@ -592,6 +587,8 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
+ 			continue;
+ 
+ 		alloc_node_data(nid);
++		if (end)
++			node_set_online(nid);
+ 	}
+ 
+ 	/* Dump memblock with node info and return. */
+@@ -721,21 +718,6 @@ void __init x86_numa_init(void)
+ 	numa_init(dummy_numa_init);
+ }
+ 
+-static void __init init_memory_less_node(int nid)
+-{
+-	unsigned long zones_size[MAX_NR_ZONES] = {0};
+-	unsigned long zholes_size[MAX_NR_ZONES] = {0};
+-
+-	/* Allocate and initialize node data. Memory-less node is now online.*/
+-	alloc_node_data(nid);
+-	free_area_init_node(nid, zones_size, 0, zholes_size);
+-
+-	/*
+-	 * All zonelists will be built later in start_kernel() after per cpu
+-	 * areas are initialized.
+-	 */
+-}
+-
+ /*
+  * Setup early cpu_to_node.
+  *
+@@ -763,9 +745,6 @@ void __init init_cpu_to_node(void)
+ 		if (node == NUMA_NO_NODE)
+ 			continue;
+ 
+-		if (!node_online(node))
+-			init_memory_less_node(node);
+-
+ 		numa_set_node(cpu, node);
+ 	}
+ }
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 2ec9cc407216..2e097f336126 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -5361,10 +5361,11 @@ static void __build_all_zonelists(void *data)
+ 	if (self && !node_online(self->node_id)) {
+ 		build_zonelists(self);
+ 	} else {
+-		for_each_online_node(nid) {
++		for_each_node(nid) {
+ 			pg_data_t *pgdat = NODE_DATA(nid);
+ 
+-			build_zonelists(pgdat);
++			if (pgdat)
++				build_zonelists(pgdat);
+ 		}
+ 
+ #ifdef CONFIG_HAVE_MEMORYLESS_NODES
+@@ -6644,10 +6645,8 @@ static unsigned long __init find_min_pfn_for_node(int nid)
+ 	for_each_mem_pfn_range(i, nid, &start_pfn, NULL, NULL)
+ 		min_pfn = min(min_pfn, start_pfn);
+ 
+-	if (min_pfn == ULONG_MAX) {
+-		pr_warn("Could not find start_pfn for node %d\n", nid);
++	if (min_pfn == ULONG_MAX)
+ 		return 0;
+-	}
+ 
+ 	return min_pfn;
+ }
+@@ -6991,8 +6990,12 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
+ 	mminit_verify_pageflags_layout();
+ 	setup_nr_node_ids();
+ 	zero_resv_unavail();
+-	for_each_online_node(nid) {
++	for_each_node(nid) {
+ 		pg_data_t *pgdat = NODE_DATA(nid);
++
++		if (!pgdat)
++			continue;
++
+ 		free_area_init_node(nid, NULL,
+ 				find_min_pfn_for_node(nid), NULL);
+ 
+-- 
+2.20.1
 
