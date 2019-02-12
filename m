@@ -2,91 +2,91 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 019CEC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 10:21:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66F7FC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 11:40:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 446FB21900
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 10:21:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 446FB21900
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9AB0A214DA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 11:40:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rpiD7R85"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AB0A214DA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zJbv22FXzDqK3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 21:21:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zLM929qpzDq67
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:40:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rpiD7R85"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zJYm5b9PzDqNR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 21:19:56 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1CAJeVg037008
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 05:19:53 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qkt9xw3th-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 05:19:53 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Tue, 12 Feb 2019 10:19:51 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 12 Feb 2019 10:19:47 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1CAJk1Q55377984
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 12 Feb 2019 10:19:46 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 55C9311C058;
- Tue, 12 Feb 2019 10:19:46 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 28A8A11C050;
- Tue, 12 Feb 2019 10:19:45 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.59.139])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Tue, 12 Feb 2019 10:19:45 +0000 (GMT)
-Date: Tue, 12 Feb 2019 12:19:43 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH 0/2] x86, numa: always initialize all possible nodes
-References: <20190212095343.23315-1-mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zLJx5KMnzDqNp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 22:38:55 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43zLJn040Nz9v0Gq;
+ Tue, 12 Feb 2019 12:38:49 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=rpiD7R85; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 983SEZ5gs7oC; Tue, 12 Feb 2019 12:38:48 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43zLJm5c2Kz9v0Gn;
+ Tue, 12 Feb 2019 12:38:48 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1549971528; bh=+nWwf4m2ZiyJGOlotJzr2fuERjfLOsm0rPxjR/sxClc=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=rpiD7R85ztjkH/+wDCOI2l0GT2FujLIBH6e6+uQv7WieZb9ApvMV6trd85wZeTr1j
+ TCdnNfj0HACYi6pq86RBnlP0YPSdGREgc/AYb2+iAV78syykOCBKCamQgAkfWj7/dI
+ LQcTZ9WsIiQatkuGRsFFCDcNonA2Pgv2YvDdOtiM=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D65A08B7F3;
+ Tue, 12 Feb 2019 12:38:49 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id jGAZdQqgzJWR; Tue, 12 Feb 2019 12:38:49 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BDB808B7EB;
+ Tue, 12 Feb 2019 12:38:48 +0100 (CET)
+Subject: Re: [PATCH v4 3/3] powerpc/32: Add KASAN support
+To: Daniel Axtens <dja@axtens.net>, Andrey Ryabinin
+ <aryabinin@virtuozzo.com>, Andrey Konovalov <andreyknvl@google.com>
+References: <cover.1548166824.git.christophe.leroy@c-s.fr>
+ <1f5629e03181d0e30efc603f00dad78912991a45.1548166824.git.christophe.leroy@c-s.fr>
+ <87ef8i45km.fsf@dja-thinkpad.axtens.net>
+ <69720148-fd19-0810-5a1d-96c45e2ec00c@c-s.fr>
+ <CAAeHK+wcUwLiSQffUkcyiH2fuox=VihJadEqQqRG1YfU3Y2gDA@mail.gmail.com>
+ <f8b9e9ec-991b-6824-46c2-f7fc0aaa7fb8@c-s.fr>
+ <CAAeHK+zop5ajOJQ4KEYbuxMRegk2GM1LvuGcSbCU1O5EZxB0MA@mail.gmail.com>
+ <805fbf9d-a10f-03e0-aa52-6f6bd16059b9@virtuozzo.com>
+ <87imxpak4r.fsf@linkitivity.dja.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <a11adaf3-beda-ed0c-e6aa-9ef30f2e80cf@c-s.fr>
+Date: Tue, 12 Feb 2019 12:38:48 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190212095343.23315-1-mhocko@kernel.org>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 19021210-0016-0000-0000-0000025576C3
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021210-0017-0000-0000-000032AF976F
-Message-Id: <20190212101942.GA20902@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-12_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=655 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902120076
+In-Reply-To: <87imxpak4r.fsf@linkitivity.dja.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,32 +98,146 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Dave Hansen <dave.hansen@intel.com>, Peter Zijlstra <peterz@infradead.org>,
- x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
- Pingfan Liu <kernelfans@gmail.com>, linux-mm@kvack.org,
- Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Alexander Potapenko <glider@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, Dmitry Vyukov <dvyukov@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 12, 2019 at 10:53:41AM +0100, Michal Hocko wrote:
-> Hi,
-> this has been posted as an RFC previously [1]. There didn't seem to be
-> any objections so I am reposting this for inclusion. I have added a
-> debugging patch which prints the zonelist setup for each numa node
-> for an easier debugging of a broken zonelist setup.
+
+
+Le 12/02/2019 à 02:08, Daniel Axtens a écrit :
+> Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
 > 
-> [1] http://lkml.kernel.org/r/20190114082416.30939-1-mhocko@kernel.org
+>> On 2/11/19 3:25 PM, Andrey Konovalov wrote:
+>>> On Sat, Feb 9, 2019 at 12:55 PM christophe leroy
+>>> <christophe.leroy@c-s.fr> wrote:
+>>>>
+>>>> Hi Andrey,
+>>>>
+>>>> Le 08/02/2019 à 18:40, Andrey Konovalov a écrit :
+>>>>> On Fri, Feb 8, 2019 at 6:17 PM Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>>>>>
+>>>>>> Hi Daniel,
+>>>>>>
+>>>>>> Le 08/02/2019 à 17:18, Daniel Axtens a écrit :
+>>>>>>> Hi Christophe,
+>>>>>>>
+>>>>>>> I've been attempting to port this to 64-bit Book3e nohash (e6500),
+>>>>>>> although I think I've ended up with an approach more similar to Aneesh's
+>>>>>>> much earlier (2015) series for book3s.
+>>>>>>>
+>>>>>>> Part of this is just due to the changes between 32 and 64 bits - we need
+>>>>>>> to hack around the discontiguous mappings - but one thing that I'm
+>>>>>>> particularly puzzled by is what the kasan_early_init is supposed to do.
+>>>>>>
+>>>>>> It should be a problem as my patch uses a 'for_each_memblock(memory,
+>>>>>> reg)' loop.
+>>>>>>
+>>>>>>>
+>>>>>>>> +void __init kasan_early_init(void)
+>>>>>>>> +{
+>>>>>>>> +    unsigned long addr = KASAN_SHADOW_START;
+>>>>>>>> +    unsigned long end = KASAN_SHADOW_END;
+>>>>>>>> +    unsigned long next;
+>>>>>>>> +    pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
+>>>>>>>> +    int i;
+>>>>>>>> +    phys_addr_t pa = __pa(kasan_early_shadow_page);
+>>>>>>>> +
+>>>>>>>> +    BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
+>>>>>>>> +
+>>>>>>>> +    if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
+>>>>>>>> +            panic("KASAN not supported with Hash MMU\n");
+>>>>>>>> +
+>>>>>>>> +    for (i = 0; i < PTRS_PER_PTE; i++)
+>>>>>>>> +            __set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
+>>>>>>>> +                         kasan_early_shadow_pte + i,
+>>>>>>>> +                         pfn_pte(PHYS_PFN(pa), PAGE_KERNEL_RO), 0);
+>>>>>>>> +
+>>>>>>>> +    do {
+>>>>>>>> +            next = pgd_addr_end(addr, end);
+>>>>>>>> +            pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_pte);
+>>>>>>>> +    } while (pmd++, addr = next, addr != end);
+>>>>>>>> +}
+>>>>>>>
+>>>>>>> As far as I can tell it's mapping the early shadow page, read-only, over
+>>>>>>> the KASAN_SHADOW_START->KASAN_SHADOW_END range, and it's using the early
+>>>>>>> shadow PTE array from the generic code.
+>>>>>>>
+>>>>>>> I haven't been able to find an answer to why this is in the docs, so I
+>>>>>>> was wondering if you or anyone else could explain the early part of
+>>>>>>> kasan init a bit better.
+>>>>>>
+>>>>>> See https://www.kernel.org/doc/html/latest/dev-tools/kasan.html for an
+>>>>>> explanation of the shadow.
+>>>>>>
+>>>>>> When shadow is 0, it means the memory area is entirely accessible.
+>>>>>>
+>>>>>> It is necessary to setup a shadow area as soon as possible because all
+>>>>>> data accesses check the shadow area, from the begining (except for a few
+>>>>>> files where sanitizing has been disabled in Makefiles).
+>>>>>>
+>>>>>> Until the real shadow area is set, all access are granted thanks to the
+>>>>>> zero shadow area beeing for of zeros.
+>>>>>
+>>>>> Not entirely correct. kasan_early_init() indeed maps the whole shadow
+>>>>> memory range to the same kasan_early_shadow_page. However as kernel
+>>>>> loads and memory gets allocated this shadow page gets rewritten with
+>>>>> non-zero values by different KASAN allocator hooks. Since these values
+>>>>> come from completely different parts of the kernel, but all land on
+>>>>> the same page, kasan_early_shadow_page's content can be considered
+>>>>> garbage. When KASAN checks memory accesses for validity it detects
+>>>>> these garbage shadow values, but doesn't print any reports, as the
+>>>>> reporting routine bails out on the current->kasan_depth check (which
+>>>>> has the value of 1 initially). Only after kasan_init() completes, when
+>>>>> the proper shadow memory is mapped, current->kasan_depth gets set to 0
+>>>>> and we start reporting bad accesses.
+>>>>
+>>>> That's surprising, because in the early phase I map the shadow area
+>>>> read-only, so I do not expect it to get modified unless RO protection is
+>>>> failing for some reason.
+>>>
+>>> Actually it might be that the allocator hooks don't modify shadow at
+>>> this point, as the allocator is not yet initialized. However stack
+>>> should be getting poisoned and unpoisoned from the very start. But the
+>>> generic statement that early shadow gets dirtied should be correct.
+>>> Might it be that you don't use stack instrumentation?
+>>>
+>>
+>> Yes, stack instrumentation is not used here, because shadow offset which we pass to
+>> the -fasan-shadow-offset= cflag is not specified here. So the logic in scrpits/Makefile.kasan
+>> just fallbacks to CFLAGS_KASAN_MINIMAL, which is outline and without stack instrumentation.
+>>
+>> Christophe, you can specify KASAN_SHADOW_OFFSET either in Kconfig (e.g. x86_64) or
+>> in Makefile (e.g. arm64). And make early mapping writable, because compiler generated code will write
+>> to shadow memory in function prologue/epilogue.
+> 
+> Hmm. Is this limitation just that compilers have not implemented
+> out-of-line support for stack instrumentation, or is there a deeper
+> reason that stack/global instrumentation relies upon inline
+> instrumentation?
 
-FWIW, 
+No, it looks like as soon as we define KASAN_SHADOW_OFFSET in Makefile 
+in addition to asm/kasan.h, stack instrumentation works with out-of-line.
 
-Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
+I'll send series v5 soon.
 
-for the series. 
+Christophe
 
-
--- 
-Sincerely yours,
-Mike.
-
+> 
+> I ask because it's very common on ppc64 to have the virtual address
+> space split up into discontiguous blocks. I know this means we lose
+> inline instrumentation, but I didn't realise we'd also lose stack and
+> global instrumentation...
+> 
+> I wonder if it would be worth, in the distant future, trying to
+> implement a smarter scheme in compilers where we could insert more
+> complex inline mapping schemes.
+> 
+> Regards,
+> Daniel
+> 
