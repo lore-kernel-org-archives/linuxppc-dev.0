@@ -2,60 +2,88 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BEA0C169C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:00:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8968C169C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:10:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A2DED21855
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:00:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 613AF217FA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 01:10:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="EiKYcvmn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2DED21855
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="jtkrfv5h"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 613AF217FA
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43z4894jsrzDqNV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 12:00:25 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43z46G5R0gzDqNV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 11:58:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43z4Mr2bDLzDqKb
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 12:10:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="EiKYcvmn"; 
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="jtkrfv5h"; 
  dkim-atps=neutral
-Received: by ozlabs.org (Postfix)
- id 43z46G4h5nz9s5c; Tue, 12 Feb 2019 11:58:46 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 43z46G3syvz9sDr; Tue, 12 Feb 2019 11:58:46 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1549933126; bh=dfGqYHqqveniBa3KxQDo/sV1ciDm2pvPrUOVrW8XC7M=;
- h=Date:From:To:Cc:Subject:From;
- b=EiKYcvmnAt/foOegqtvk/TF83J0V5qOxCsJrnLJGtaetSp+PcWtD967YmEAYL9bed
- E/n4E0lXf6Gey9C54yBzw6TqqZOiSwRDZElsse+S4HksWzfnRbi74yaegbv3Dooz2d
- VHfv6+YQQGji5bKZ0FmzdeF9lUdNsRFghsdvReW10I0KCpn9YG7qOsrF02dUykkA+6
- BpUA0//RskrAbLlMgUcgCt4018AhDB6p9MDhbKEXZMbwBFAEWg5xBpji+yqNmYfY8F
- bn4mQi+Sna8a89OdT/CXMEnOJg+m3oPgqjBc7gKRlK4N/eeUL3XNAzGko4xZJgRMSw
- LWXZoMJqPqJuw==
-Date: Tue, 12 Feb 2019 11:58:29 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/powernv: Don't reprogram SLW image on every KVM
- guest entry/exit
-Message-ID: <20190212005829.GB7353@blackberry>
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43z4Kp17DkzDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 12:08:45 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id z9so429654pfi.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Feb 2019 17:08:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=WfZyIsccqWR3lZErvejq0nP1VhlSzDJCMVE8xMZxBo4=;
+ b=jtkrfv5h0Z5ESOjhOeJ+kwO2Ti2RhZaG9kOTT32sBA33x6st698ZR104Kzny8NB9Gg
+ 8BBn24As3ax0MfwHfqh03vMdOsNkun4gA5eQAn+8U0jrslgVwBGMd/XTec5AbF37LhYW
+ YoRYcglS/a37IsHlilhe4vSt8Gq0twliHzroY=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version:content-transfer-encoding;
+ bh=WfZyIsccqWR3lZErvejq0nP1VhlSzDJCMVE8xMZxBo4=;
+ b=rfQKMzsgrFWGDKILKFdxqlGpP2fOSMM37/DZH/WVL03Jb+/ngKsNoh25g5lcqB6eaX
+ wJv1bwsSm8pFGpcdh7WbSCwkWhox+qO6dLe8Es7juXNb9jGjOKbr0MEOZ+9OH1oKfj4s
+ g3ymluL4aYfKbL2speFDOvWrlAULl4OmMI1TxLhS1hFANpOqroowuSmNaVwK62337XUx
+ i+4s7YNawZygfSdd4Ej6W19j/lb3LBN8qJ/LrndHi7s/plNII3p1nTDmwq8wSn4DcIKV
+ jimj/GA1SQaT6JbkXs6DeF2/TS1684Mm8GF1KyBwut8G+8fUKA4ECNfsHMzyu4QzkyXF
+ LRuQ==
+X-Gm-Message-State: AHQUAua6RCbDEtkSlUeVxPQkth1IY8+4Fe+OjBcGlLPRuggLY5NUASzO
+ c4jMV3CtKio3e7UiLm+TT49pmA==
+X-Google-Smtp-Source: AHgI3IYwyw2dUTqU1GUA+O3qTH7XPl2tZBiWgJCD013uPJgIBjqRK0tLqD7dhhCkrMJ3SKiUfeDYFw==
+X-Received: by 2002:a62:ca03:: with SMTP id n3mr1216531pfg.241.1549933723290; 
+ Mon, 11 Feb 2019 17:08:43 -0800 (PST)
+Received: from localhost (124-171-97-196.dyn.iinet.net.au. [124.171.97.196])
+ by smtp.gmail.com with ESMTPSA id o126sm7732968pfb.126.2019.02.11.17.08.41
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 11 Feb 2019 17:08:42 -0800 (PST)
+From: Daniel Axtens <dja@axtens.net>
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Andrey Konovalov <andreyknvl@google.com>,
+ christophe leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v4 3/3] powerpc/32: Add KASAN support
+In-Reply-To: <805fbf9d-a10f-03e0-aa52-6f6bd16059b9@virtuozzo.com>
+References: <cover.1548166824.git.christophe.leroy@c-s.fr>
+ <1f5629e03181d0e30efc603f00dad78912991a45.1548166824.git.christophe.leroy@c-s.fr>
+ <87ef8i45km.fsf@dja-thinkpad.axtens.net>
+ <69720148-fd19-0810-5a1d-96c45e2ec00c@c-s.fr>
+ <CAAeHK+wcUwLiSQffUkcyiH2fuox=VihJadEqQqRG1YfU3Y2gDA@mail.gmail.com>
+ <f8b9e9ec-991b-6824-46c2-f7fc0aaa7fb8@c-s.fr>
+ <CAAeHK+zop5ajOJQ4KEYbuxMRegk2GM1LvuGcSbCU1O5EZxB0MA@mail.gmail.com>
+ <805fbf9d-a10f-03e0-aa52-6f6bd16059b9@virtuozzo.com>
+Date: Tue, 12 Feb 2019 12:08:36 +1100
+Message-ID: <87imxpak4r.fsf@linkitivity.dja.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.24 (2015-08-30)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,163 +95,151 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Alexander Potapenko <glider@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kasan-dev <kasan-dev@googlegroups.com>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>, Dmitry Vyukov <dvyukov@google.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Commit 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via stop-api
-only on Hotplug", 2017-07-21) added two calls to opal_slw_set_reg()
-inside pnv_cpu_offline(), with the aim of changing the LPCR value in
-the SLW image to disable wakeups from the decrementer while a CPU is
-offline.  However, pnv_cpu_offline() gets called each time a secondary
-CPU thread is woken up to participate in running a KVM guest, that is,
-not just when a CPU is offlined.
+Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
 
-Since opal_slw_set_reg() is a very slow operation (with observed
-execution times around 20 milliseconds), this means that an offline
-secondary CPU can often be busy doing the opal_slw_set_reg() call
-when the primary CPU wants to grab all the secondary threads so that
-it can run a KVM guest.  This leads to messages like "KVM: couldn't
-grab CPU n" being printed and guest execution failing.
+> On 2/11/19 3:25 PM, Andrey Konovalov wrote:
+>> On Sat, Feb 9, 2019 at 12:55 PM christophe leroy
+>> <christophe.leroy@c-s.fr> wrote:
+>>>
+>>> Hi Andrey,
+>>>
+>>> Le 08/02/2019 =C3=A0 18:40, Andrey Konovalov a =C3=A9crit :
+>>>> On Fri, Feb 8, 2019 at 6:17 PM Christophe Leroy <christophe.leroy@c-s.=
+fr> wrote:
+>>>>>
+>>>>> Hi Daniel,
+>>>>>
+>>>>> Le 08/02/2019 =C3=A0 17:18, Daniel Axtens a =C3=A9crit :
+>>>>>> Hi Christophe,
+>>>>>>
+>>>>>> I've been attempting to port this to 64-bit Book3e nohash (e6500),
+>>>>>> although I think I've ended up with an approach more similar to Anee=
+sh's
+>>>>>> much earlier (2015) series for book3s.
+>>>>>>
+>>>>>> Part of this is just due to the changes between 32 and 64 bits - we =
+need
+>>>>>> to hack around the discontiguous mappings - but one thing that I'm
+>>>>>> particularly puzzled by is what the kasan_early_init is supposed to =
+do.
+>>>>>
+>>>>> It should be a problem as my patch uses a 'for_each_memblock(memory,
+>>>>> reg)' loop.
+>>>>>
+>>>>>>
+>>>>>>> +void __init kasan_early_init(void)
+>>>>>>> +{
+>>>>>>> +    unsigned long addr =3D KASAN_SHADOW_START;
+>>>>>>> +    unsigned long end =3D KASAN_SHADOW_END;
+>>>>>>> +    unsigned long next;
+>>>>>>> +    pmd_t *pmd =3D pmd_offset(pud_offset(pgd_offset_k(addr), addr)=
+, addr);
+>>>>>>> +    int i;
+>>>>>>> +    phys_addr_t pa =3D __pa(kasan_early_shadow_page);
+>>>>>>> +
+>>>>>>> +    BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
+>>>>>>> +
+>>>>>>> +    if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
+>>>>>>> +            panic("KASAN not supported with Hash MMU\n");
+>>>>>>> +
+>>>>>>> +    for (i =3D 0; i < PTRS_PER_PTE; i++)
+>>>>>>> +            __set_pte_at(&init_mm, (unsigned long)kasan_early_shad=
+ow_page,
+>>>>>>> +                         kasan_early_shadow_pte + i,
+>>>>>>> +                         pfn_pte(PHYS_PFN(pa), PAGE_KERNEL_RO), 0);
+>>>>>>> +
+>>>>>>> +    do {
+>>>>>>> +            next =3D pgd_addr_end(addr, end);
+>>>>>>> +            pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_=
+pte);
+>>>>>>> +    } while (pmd++, addr =3D next, addr !=3D end);
+>>>>>>> +}
+>>>>>>
+>>>>>> As far as I can tell it's mapping the early shadow page, read-only, =
+over
+>>>>>> the KASAN_SHADOW_START->KASAN_SHADOW_END range, and it's using the e=
+arly
+>>>>>> shadow PTE array from the generic code.
+>>>>>>
+>>>>>> I haven't been able to find an answer to why this is in the docs, so=
+ I
+>>>>>> was wondering if you or anyone else could explain the early part of
+>>>>>> kasan init a bit better.
+>>>>>
+>>>>> See https://www.kernel.org/doc/html/latest/dev-tools/kasan.html for an
+>>>>> explanation of the shadow.
+>>>>>
+>>>>> When shadow is 0, it means the memory area is entirely accessible.
+>>>>>
+>>>>> It is necessary to setup a shadow area as soon as possible because all
+>>>>> data accesses check the shadow area, from the begining (except for a =
+few
+>>>>> files where sanitizing has been disabled in Makefiles).
+>>>>>
+>>>>> Until the real shadow area is set, all access are granted thanks to t=
+he
+>>>>> zero shadow area beeing for of zeros.
+>>>>
+>>>> Not entirely correct. kasan_early_init() indeed maps the whole shadow
+>>>> memory range to the same kasan_early_shadow_page. However as kernel
+>>>> loads and memory gets allocated this shadow page gets rewritten with
+>>>> non-zero values by different KASAN allocator hooks. Since these values
+>>>> come from completely different parts of the kernel, but all land on
+>>>> the same page, kasan_early_shadow_page's content can be considered
+>>>> garbage. When KASAN checks memory accesses for validity it detects
+>>>> these garbage shadow values, but doesn't print any reports, as the
+>>>> reporting routine bails out on the current->kasan_depth check (which
+>>>> has the value of 1 initially). Only after kasan_init() completes, when
+>>>> the proper shadow memory is mapped, current->kasan_depth gets set to 0
+>>>> and we start reporting bad accesses.
+>>>
+>>> That's surprising, because in the early phase I map the shadow area
+>>> read-only, so I do not expect it to get modified unless RO protection is
+>>> failing for some reason.
+>>=20
+>> Actually it might be that the allocator hooks don't modify shadow at
+>> this point, as the allocator is not yet initialized. However stack
+>> should be getting poisoned and unpoisoned from the very start. But the
+>> generic statement that early shadow gets dirtied should be correct.
+>> Might it be that you don't use stack instrumentation?
+>>=20
+>
+> Yes, stack instrumentation is not used here, because shadow offset which =
+we pass to
+> the -fasan-shadow-offset=3D cflag is not specified here. So the logic in =
+scrpits/Makefile.kasan
+> just fallbacks to CFLAGS_KASAN_MINIMAL, which is outline and without stac=
+k instrumentation.
+>
+> Christophe, you can specify KASAN_SHADOW_OFFSET either in Kconfig (e.g. x=
+86_64) or
+> in Makefile (e.g. arm64). And make early mapping writable, because compil=
+er generated code will write
+> to shadow memory in function prologue/epilogue.
 
-There is no need to reprogram the SLW image on every KVM guest entry
-and exit.  So that we do it only when a CPU is really transitioning
-between online and offline, this moves the calls to
-pnv_program_cpu_hotplug_lpcr() into pnv_smp_cpu_kill_self().
+Hmm. Is this limitation just that compilers have not implemented
+out-of-line support for stack instrumentation, or is there a deeper
+reason that stack/global instrumentation relies upon inline
+instrumentation?
 
-Fixes: 24be85a23d1f ("powerpc/powernv: Clear PECE1 in LPCR via stop-api only on Hotplug")
-Cc: stable@vger.kernel.org # v4.14+
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/include/asm/powernv.h    |  2 ++
- arch/powerpc/platforms/powernv/idle.c | 27 ++-------------------------
- arch/powerpc/platforms/powernv/smp.c  | 25 +++++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 25 deletions(-)
+I ask because it's very common on ppc64 to have the virtual address
+space split up into discontiguous blocks. I know this means we lose
+inline instrumentation, but I didn't realise we'd also lose stack and
+global instrumentation...
 
-diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
-index 2f3ff7a27881..d85fcfea32ca 100644
---- a/arch/powerpc/include/asm/powernv.h
-+++ b/arch/powerpc/include/asm/powernv.h
-@@ -23,6 +23,8 @@ extern int pnv_npu2_handle_fault(struct npu_context *context, uintptr_t *ea,
- 				unsigned long *flags, unsigned long *status,
- 				int count);
- 
-+void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val);
-+
- void pnv_tm_init(void);
- #else
- static inline void powernv_set_nmmu_ptcr(unsigned long ptcr) { }
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 35f699ebb662..e52f9b06dd9c 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -458,7 +458,8 @@ EXPORT_SYMBOL_GPL(pnv_power9_force_smt4_release);
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- 
- #ifdef CONFIG_HOTPLUG_CPU
--static void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
-+
-+void pnv_program_cpu_hotplug_lpcr(unsigned int cpu, u64 lpcr_val)
- {
- 	u64 pir = get_hard_smp_processor_id(cpu);
- 
-@@ -481,20 +482,6 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- {
- 	unsigned long srr1;
- 	u32 idle_states = pnv_get_supported_cpuidle_states();
--	u64 lpcr_val;
--
--	/*
--	 * We don't want to take decrementer interrupts while we are
--	 * offline, so clear LPCR:PECE1. We keep PECE2 (and
--	 * LPCR_PECE_HVEE on P9) enabled as to let IPIs in.
--	 *
--	 * If the CPU gets woken up by a special wakeup, ensure that
--	 * the SLW engine sets LPCR with decrementer bit cleared, else
--	 * the CPU will come back to the kernel due to a spurious
--	 * wakeup.
--	 */
--	lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
--	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
- 
- 	__ppc64_runlatch_off();
- 
-@@ -526,16 +513,6 @@ unsigned long pnv_cpu_offline(unsigned int cpu)
- 
- 	__ppc64_runlatch_on();
- 
--	/*
--	 * Re-enable decrementer interrupts in LPCR.
--	 *
--	 * Further, we want stop states to be woken up by decrementer
--	 * for non-hotplug cases. So program the LPCR via stop api as
--	 * well.
--	 */
--	lpcr_val = mfspr(SPRN_LPCR) | (u64)LPCR_PECE1;
--	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
--
- 	return srr1;
- }
- #endif
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 0d354e19ef92..db09c7022635 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -39,6 +39,7 @@
- #include <asm/cpuidle.h>
- #include <asm/kexec.h>
- #include <asm/reg.h>
-+#include <asm/powernv.h>
- 
- #include "powernv.h"
- 
-@@ -153,6 +154,7 @@ static void pnv_smp_cpu_kill_self(void)
- {
- 	unsigned int cpu;
- 	unsigned long srr1, wmask;
-+	u64 lpcr_val;
- 
- 	/* Standard hot unplug procedure */
- 	/*
-@@ -174,6 +176,19 @@ static void pnv_smp_cpu_kill_self(void)
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		wmask = SRR1_WAKEMASK_P8;
- 
-+	/*
-+	 * We don't want to take decrementer interrupts while we are
-+	 * offline, so clear LPCR:PECE1. We keep PECE2 (and
-+	 * LPCR_PECE_HVEE on P9) enabled so as to let IPIs in.
-+	 *
-+	 * If the CPU gets woken up by a special wakeup, ensure that
-+	 * the SLW engine sets LPCR with decrementer bit cleared, else
-+	 * the CPU will come back to the kernel due to a spurious
-+	 * wakeup.
-+	 */
-+	lpcr_val = mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1;
-+	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
-+
- 	while (!generic_check_cpu_restart(cpu)) {
- 		/*
- 		 * Clear IPI flag, since we don't handle IPIs while
-@@ -246,6 +261,16 @@ static void pnv_smp_cpu_kill_self(void)
- 
- 	}
- 
-+	/*
-+	 * Re-enable decrementer interrupts in LPCR.
-+	 *
-+	 * Further, we want stop states to be woken up by decrementer
-+	 * for non-hotplug cases. So program the LPCR via stop api as
-+	 * well.
-+	 */
-+	lpcr_val = mfspr(SPRN_LPCR) | (u64)LPCR_PECE1;
-+	pnv_program_cpu_hotplug_lpcr(cpu, lpcr_val);
-+
- 	DBG("CPU%d coming online...\n", cpu);
- }
- 
--- 
-2.11.0
+I wonder if it would be worth, in the distant future, trying to
+implement a smarter scheme in compilers where we could insert more
+complex inline mapping schemes.
 
+Regards,
+Daniel
