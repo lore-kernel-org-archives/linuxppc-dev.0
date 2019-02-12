@@ -2,69 +2,91 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4EC44C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 019CEC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 10:21:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8AE1E2184A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 09:58:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8AE1E2184A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 446FB21900
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 10:21:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 446FB21900
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zJ5L2ZcWzDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 20:58:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zJbv22FXzDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 21:21:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.208.67; helo=mail-ed1-f67.google.com;
- envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-ed1-f67.google.com (mail-ed1-f67.google.com
- [209.85.208.67])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zHzr2fWrzDqNk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 20:54:00 +1100 (AEDT)
-Received: by mail-ed1-f67.google.com with SMTP id d9so1596714edh.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 01:54:00 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=VWzlY1PPQ+/67pm+/z2QkBDdCvOyUHPQEXMFpI7S4nM=;
- b=tpwRmfyNRA/Bks2cLmIxp+Im3OBhAqNA6QpeAeW8nzLjcNz2dODKE/WcJkJaNtGHc4
- N4xb0GGixUxTbujsYPD5OvkHvavpuf1cq59gFsUS7KZfm4dabxTDCuooEcLMJHym2Lv8
- glMbd6RXBrQ3QKHE4nhYb5JIiFigg/lBKQBcheXM7nFtPT5YFTcTxwKiAs+kKCbXf23B
- rHKxzr2h3uVDBGqYkUgB5RMyi6+fqUeCS8qmV01oxtcc3s6pO58q07Ub48uT5xciON6t
- r+QkEQ+VWKEpO1Iwv69DRzIrTA97u+WG8pdsGLCQ4JBCaMqxa/LXzSSMMKh82rwEwvZh
- O8Vg==
-X-Gm-Message-State: AHQUAubRGrCi6HocqIV+U/LzhK+CkLm150yOC6m1K2l9s90We344TWTz
- 8K9oMADsu60eQGdr1qyM6Zc=
-X-Google-Smtp-Source: AHgI3IaDbQaoXUddyxRvptd1P3Q3Dkjw68Kopy2TfOs74h07Sehg+Np/NzTW4ul6z23IsVehH0xtyg==
-X-Received: by 2002:a17:906:18f1:: with SMTP id
- e17mr2093489ejf.82.1549965237531; 
- Tue, 12 Feb 2019 01:53:57 -0800 (PST)
-Received: from tiehlicka.microfocus.com (prg-ext-pat.suse.com.
- [213.151.95.130])
- by smtp.gmail.com with ESMTPSA id i14sm2876791ejy.25.2019.02.12.01.53.56
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 12 Feb 2019 01:53:56 -0800 (PST)
-From: Michal Hocko <mhocko@kernel.org>
-To: <linux-mm@kvack.org>
-Subject: [PATCH 2/2] mm: be more verbose about zonelist initialization
-Date: Tue, 12 Feb 2019 10:53:43 +0100
-Message-Id: <20190212095343.23315-3-mhocko@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190212095343.23315-1-mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zJYm5b9PzDqNR
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 21:19:56 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1CAJeVg037008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 05:19:53 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qkt9xw3th-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 05:19:53 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Tue, 12 Feb 2019 10:19:51 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 12 Feb 2019 10:19:47 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1CAJk1Q55377984
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Tue, 12 Feb 2019 10:19:46 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 55C9311C058;
+ Tue, 12 Feb 2019 10:19:46 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 28A8A11C050;
+ Tue, 12 Feb 2019 10:19:45 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.59.139])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 12 Feb 2019 10:19:45 +0000 (GMT)
+Date: Tue, 12 Feb 2019 12:19:43 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH 0/2] x86, numa: always initialize all possible nodes
 References: <20190212095343.23315-1-mhocko@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190212095343.23315-1-mhocko@kernel.org>
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 19021210-0016-0000-0000-0000025576C3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021210-0017-0000-0000-000032AF976F
+Message-Id: <20190212101942.GA20902@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-12_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=655 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902120076
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,42 +99,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
- Dave Hansen <dave.hansen@intel.com>, Michal Hocko <mhocko@suse.com>,
+ Dave Hansen <dave.hansen@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+ x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ Pingfan Liu <kernelfans@gmail.com>, linux-mm@kvack.org,
  Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michal Hocko <mhocko@suse.com>
+On Tue, Feb 12, 2019 at 10:53:41AM +0100, Michal Hocko wrote:
+> Hi,
+> this has been posted as an RFC previously [1]. There didn't seem to be
+> any objections so I am reposting this for inclusion. I have added a
+> debugging patch which prints the zonelist setup for each numa node
+> for an easier debugging of a broken zonelist setup.
+> 
+> [1] http://lkml.kernel.org/r/20190114082416.30939-1-mhocko@kernel.org
 
-We have seen several bugs where zonelists have not been initialized
-properly and it is not really straightforward to track those bugs down.
-One way to help a bit at least is to dump zonelists of each node when
-they are (re)initialized.
+FWIW, 
 
-Signed-off-by: Michal Hocko <mhocko@suse.com>
----
- mm/page_alloc.c | 5 +++++
- 1 file changed, 5 insertions(+)
+Reviewed-by: Mike Rapoport <rppt@linux.ibm.com>
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2e097f336126..c30d59f803fb 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5259,6 +5259,11 @@ static void build_zonelists(pg_data_t *pgdat)
- 
- 	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
- 	build_thisnode_zonelists(pgdat);
-+
-+	pr_info("node[%d] zonelist: ", pgdat->node_id);
-+	for_each_zone_zonelist(zone, z, &pgdat->node_zonelists[ZONELIST_FALLBACK], MAX_NR_ZONES-1)
-+		pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
-+	pr_cont("\n");
- }
- 
- #ifdef CONFIG_HAVE_MEMORYLESS_NODES
+for the series. 
+
+
 -- 
-2.20.1
+Sincerely yours,
+Mike.
 
