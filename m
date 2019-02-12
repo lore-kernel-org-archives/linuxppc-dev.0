@@ -2,58 +2,70 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1656AC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:00:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFF69C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:18:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3049D222B1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:00:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3049D222B1
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=buserror.net
+	by mail.kernel.org (Postfix) with ESMTPS id 182CF222C7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:18:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 182CF222C7
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zc6J1HKDzDqN7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 09:00:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zcW76NBhzDqN6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 09:18:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=buserror.net
- (client-ip=165.227.176.147; helo=baldur.buserror.net;
- envelope-from=oss@buserror.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.72.36; helo=2.mo4.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=buserror.net
-X-Greylist: delayed 1273 seconds by postgrey-1.36 at bilbo;
- Wed, 13 Feb 2019 08:59:01 AEDT
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zc4P3WQ5zDqMb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 08:59:01 +1100 (AEDT)
-Received: from [2601:449:8400:7293:12bf:48ff:fe84:c9a0]
- by baldur.buserror.net with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- (Exim 4.89) (envelope-from <oss@buserror.net>)
- id 1gtfiH-0007nV-Dq; Tue, 12 Feb 2019 15:35:33 -0600
-Message-ID: <86a59a19d817826f7efca5fab253bddb732eb9d1.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Darren Stevens <darren@stevens-zone.net>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 12 Feb 2019 15:35:32 -0600
-In-Reply-To: <4d531fb8828.51b92386@auth.smtp.1and1.co.uk>
-References: <4d531fb8828.51b92386@auth.smtp.1and1.co.uk>
-Organization: Red Hat
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 2601:449:8400:7293:12bf:48ff:fe84:c9a0
-X-SA-Exim-Rcpt-To: darren@stevens-zone.net, linuxppc-dev@lists.ozlabs.org,
- chzigotzky@xenosoft.de
-X-SA-Exim-Mail-From: oss@buserror.net
-Subject: Re: [PATCH] powerpc/85xx: Activate Cyrus disk-activity LED
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on baldur.buserror.net)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 2.mo4.mail-out.ovh.net (2.mo4.mail-out.ovh.net [46.105.72.36])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zcTR50wSzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 09:17:15 +1100 (AEDT)
+Received: from player789.ha.ovh.net (unknown [10.109.159.20])
+ by mo4.mail-out.ovh.net (Postfix) with ESMTP id 72A141CD116
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 23:07:19 +0100 (CET)
+Received: from kaod.org (102.221.90.212.static.wline.lns.sme.cust.swisscom.ch
+ [212.90.221.102]) (Authenticated sender: clg@kaod.org)
+ by player789.ha.ovh.net (Postfix) with ESMTPSA id DDA4729B69DE;
+ Tue, 12 Feb 2019 22:07:11 +0000 (UTC)
+Subject: Re: [PATCH 06/19] KVM: PPC: Book3S HV: add a GET_ESB_FD control to
+ the XIVE native device
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <20190205052822.GE22661@umbus.fritz.box>
+ <4d565738-a99b-0333-8533-037677358faa@kaod.org>
+ <20190206012308.GP22661@umbus.fritz.box>
+ <1745dd9f-2927-cae6-e8da-c350b0bd0a66@kaod.org>
+ <20190207024950.GA22661@umbus.fritz.box>
+ <d20bbaca-5b49-66e4-9d99-21d991c2c345@kaod.org>
+ <20190208051523.GD2688@umbus.fritz.box>
+ <9b556f53-fcfb-2ca3-019e-6ced0ec74c2a@kaod.org>
+ <20190208215329.GA9529@blackberry>
+ <8c915ed7-5aa5-1276-6598-d5dcd115dd56@kaod.org>
+ <20190211023842.GE7230@umbus.fritz.box>
+ <9dc53c6bccd6fd303481217f768ec173992431e2.camel@kernel.crashing.org>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <a01fbedc-10db-b99b-9e77-943f413fcca4@kaod.org>
+Date: Tue, 12 Feb 2019 23:07:11 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <9dc53c6bccd6fd303481217f768ec173992431e2.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 4870361526182251399
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrledvgdduheelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,42 +77,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: chzigotzky@xenosoft.de
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2019-02-09 at 23:14 +0000, Darren Stevens wrote:
-> The disk activity LED on the Cyrus board is attached to a gpio pin,
-> add the required device-tree node for the kernel driver to use.
+On 2/11/19 7:42 AM, Benjamin Herrenschmidt wrote:
+> On Mon, 2019-02-11 at 13:38 +1100, David Gibson wrote:
+>>
+>> 1) All in kernel
+>>
+>> The offset always maps directly to guest irq number and the kernel
+>> somehow binds it either to an IPI or a host irq as necessary.
+>> Cédric's original code attempts this, but the mechanism of keeping a
+>> pointer to the VMA can't work.
 > 
-> Signed-off-by: Darren Stevens <darren@stevens-zone.net>
+> Why do you need a pointer to the VMA anyway ? unmap_mapping_range()
+> doesn't need a VMA for the unmap part, and faults/mmaps have the VMA.
 > 
-> ---
+>> But.. remapping the irqs should be sufficiently infrequent that it
+>> might be ok to consider simply stepping through all the hosting
+>> process's VMAs to do this.
 > 
-> diff --git a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-> b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-> index 15e8440..348cfdb 100644
-> --- a/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-> +++ b/arch/powerpc/boot/dts/fsl/cyrus_p5020.dts
-> @@ -82,6 +82,15 @@
->             gpios = <&gpio0 2 1>;
->         };
->  
-> +       leds {
-> +           compatible = "gpio-leds";
-> +
-> +           hdd {
-> +               label = "Disk Activity";
-> +               gpios = <&gpio0 5 0>;
-> +               linux,default-trigger = "disk-activity";
-> +           };
-> +       };
->     };
+> Which unmap_mapping_range() does for you as I explained previously. You
+> only need the address space. See how spufs does it (among others).
 
-This patch is whitespace-mangled (as is your other one).  Could you try
-sending with git send-email?
+and the different CAPI drivers. This is much better and it works fine.
 
--Scott
+On the same topic, the XIVE IC on P10 will use IPI ESB pages for the 
+PHB interrupts sources. We will still need this kind of remapping but 
+the pages will be from the same controller.
 
+Thanks,
 
+C.
