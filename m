@@ -2,56 +2,105 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E5ADC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 20:54:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E369C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 21:23:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9A6E520842
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 20:54:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9A6E520842
+	by mail.kernel.org (Postfix) with ESMTPS id 8FDB3222BE
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 21:23:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8FDB3222BE
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zZdk4rY5zDqRS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 07:54:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zbGr3sx7zDqMV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 08:23:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
+ envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zZby2dqrzDqLP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 07:52:46 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zbDy75H9zDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 08:21:22 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com
+ [10.5.11.13])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 59282C074110;
- Tue, 12 Feb 2019 20:52:44 +0000 (UTC)
-Received: from w520.home (ovpn-116-24.phx2.redhat.com [10.3.116.24])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 6D6B35C21A;
- Tue, 12 Feb 2019 20:52:43 +0000 (UTC)
-Date: Tue, 12 Feb 2019 13:52:42 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] vfio/spapr_tce: Skip unsetting already unset table
-Message-ID: <20190212135242.78b988d0@w520.home>
-In-Reply-To: <20190211074917.125723-1-aik@ozlabs.ru>
-References: <20190211074917.125723-1-aik@ozlabs.ru>
+ by mx1.redhat.com (Postfix) with ESMTPS id E8A7559448;
+ Tue, 12 Feb 2019 21:21:19 +0000 (UTC)
+Received: from llong.remote.csb (ovpn-121-56.rdu2.redhat.com [10.10.121.56])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id A32D67D8C4;
+ Tue, 12 Feb 2019 21:21:16 +0000 (UTC)
+Subject: Re: [PATCH v2 2/2] locking/rwsem: Optimize down_read_trylock()
+To: Linus Torvalds <torvalds@linux-foundation.org>
+References: <1549913486-16799-1-git-send-email-longman@redhat.com>
+ <1549913486-16799-3-git-send-email-longman@redhat.com>
+ <CAHk-=wjTmSg6zX=xKFSPZor7FWi3s4D0dy-hz_M=yeF_6478QA@mail.gmail.com>
+From: Waiman Long <longman@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ weim8xU=
+Organization: Red Hat
+Message-ID: <ef66f262-d68e-58ea-34f6-15b88803cf71@redhat.com>
+Date: Tue, 12 Feb 2019 16:21:10 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+In-Reply-To: <CAHk-=wjTmSg6zX=xKFSPZor7FWi3s4D0dy-hz_M=yeF_6478QA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Tue, 12 Feb 2019 20:52:44 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.39]); Tue, 12 Feb 2019 21:21:21 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,61 +112,95 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-arch <linux-arch@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
+ Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, linux-hexagon@vger.kernel.org,
+ the arch/x86 maintainers <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 11 Feb 2019 18:49:17 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On 02/12/2019 02:58 PM, Linus Torvalds wrote:
+> On Mon, Feb 11, 2019 at 11:31 AM Waiman Long <longman@redhat.com> wrote=
+:
+>> Modify __down_read_trylock() to make it generate slightly better code
+>> (smaller and maybe a tiny bit faster).
+> This looks good, but I would ask you to try one slightly different appr=
+oach.
+>
+> Instead of this:
+>
+>>        long tmp =3D atomic_long_read(&sem->count);
+>>
+>>        while (tmp >=3D 0) {
+>>                if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+>>                                        tmp + RWSEM_ACTIVE_READ_BIAS)) =
+{
+>>                        return 1;
+>>                }
+>>        }
+> try doing this instead:
+>
+>         long tmp =3D 0;
+>
+>         do {
+>                 if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+>                                         tmp + RWSEM_ACTIVE_READ_BIAS)) =
+{
+>                         return 1;
+>         } while (tmp >=3D 0);
+>         return 0;
+>
+> because especially when it comes to locking, it's usually better to
+> just *guess* that the lock is unlocked, than it is to actually read
+> from the line to see what the state is.
+>
+> Often - but certainly not always - the lock is the first access to the
+> target cacheline, and assuming the trylock is successful (which I
+> think is the case we want to optimize for), we're much better off
+> causing that first access to be a read-for-ownership, rather than a
+> read-for-sharing.
+>
+> Because if you first read from the line, and then do a cmpxchg, and if
+> the line was not in the cache, your cache coherency protocol will
+> generally go through two states: first shared (for the initial read)
+> and then exclusive-dirty (for the cmpxchg).
+>
+> Now, this is obviously very micro-architecture dependent, and in fact
+> the microarchitecture could even see the "predict fallthrough to a
+> cmpxchg with the same address" and turn the first read into a
+> read-for-ownership, but we've done this at some point before, and the
+> "guess unlocked" was actually the one that performed better.
+>
+> Of course, the downside is that it might be worse when the guess is
+> incorrect - either because of a nested read lock or due to an actual
+> conflict with a write, but on the whole those *should* be the rare
+> cases, and not the cases where we necessarily optimize for latency of
+> the operation.
+>
+> Hmm?
 
-> VFIO TCE IOMMU v2 owns IOMMU tables so when detach a IOMMU group from
-> a container, we need to unset those from a group so we call unset_window()
-> so do we unconditionally. We also unset tables when removing a DMA window
+I looked at the assembly code in arch/x86/include/asm/rwsem.h. For both
+trylocks (read & write), the count is read first before attempting to
+lock it. We did the same for all trylock functions in other locks.
+Depending on how the trylock is used and how contended the lock is, it
+may help or hurt performance. Changing down_read_trylock to do an
+unconditional cmpxchg will change the performance profile of existing
+code. So I would prefer keeping the current code.
 
-Patch looks ok, but this first sentence trails off into a bit of a word
-salad.  Care to refine a bit?  Thanks,
+I do notice now that the generic down_write_trylock() code is doing an
+unconditional compxchg. So I wonder if we should change it to read the
+lock first like other trylocks or just leave it as it is.
 
-Alex
+Cheers,
+Longman
 
-> via the VFIO_IOMMU_SPAPR_TCE_REMOVE ioctl.
-> 
-> The window removal checks if the table actually exists (hidden inside
-> tce_iommu_find_table()) but the group detaching does not so the user
-> may see duplicating messages:
-> pci 0009:03     : [PE# fd] Removing DMA window #0
-> pci 0009:03     : [PE# fd] Removing DMA window #1
-> pci 0009:03     : [PE# fd] Removing DMA window #0
-> pci 0009:03     : [PE# fd] Removing DMA window #1
-> 
-> At the moment this is not a problem as the second invocation
-> of unset_window() writes zeroes to the HW registers again and exits early
-> as there is no table.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> 
-> When doing VFIO PCI hot unplug, first we remove the DMA window and
-> set container->tables[num] - this is a first couple of messages.
-> Then we detach the group and then we see another couple of the same
-> messages which confused myself.
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index c424913..8dbb270 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -1235,7 +1235,8 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
->  	}
->  
->  	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> -		table_group->ops->unset_window(table_group, i);
-> +		if (container->tables[i])
-> +			table_group->ops->unset_window(table_group, i);
->  
->  	table_group->ops->release_ownership(table_group);
->  }
 
