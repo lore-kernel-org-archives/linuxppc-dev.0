@@ -2,72 +2,40 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66F7FC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 11:40:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1F96C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 12:04:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9AB0A214DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 11:40:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rpiD7R85"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9AB0A214DA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 45BF42075D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 12:04:45 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45BF42075D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zLM929qpzDq67
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 22:40:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zLtf57RzzDqQN
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 23:04:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=virtuozzo.com
+ (client-ip=185.231.240.75; helo=relay.sw.ru;
+ envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rpiD7R85"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=virtuozzo.com
+Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zLJx5KMnzDqNp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 22:38:55 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 43zLJn040Nz9v0Gq;
- Tue, 12 Feb 2019 12:38:49 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=rpiD7R85; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 983SEZ5gs7oC; Tue, 12 Feb 2019 12:38:48 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 43zLJm5c2Kz9v0Gn;
- Tue, 12 Feb 2019 12:38:48 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1549971528; bh=+nWwf4m2ZiyJGOlotJzr2fuERjfLOsm0rPxjR/sxClc=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=rpiD7R85ztjkH/+wDCOI2l0GT2FujLIBH6e6+uQv7WieZb9ApvMV6trd85wZeTr1j
- TCdnNfj0HACYi6pq86RBnlP0YPSdGREgc/AYb2+iAV78syykOCBKCamQgAkfWj7/dI
- LQcTZ9WsIiQatkuGRsFFCDcNonA2Pgv2YvDdOtiM=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D65A08B7F3;
- Tue, 12 Feb 2019 12:38:49 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jGAZdQqgzJWR; Tue, 12 Feb 2019 12:38:49 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BDB808B7EB;
- Tue, 12 Feb 2019 12:38:48 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zLqx4hgzzDqNp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 23:02:20 +1100 (AEDT)
+Received: from [172.16.25.12] by relay.sw.ru with esmtp (Exim 4.91)
+ (envelope-from <aryabinin@virtuozzo.com>)
+ id 1gtWlM-0007z9-PX; Tue, 12 Feb 2019 15:02:08 +0300
 Subject: Re: [PATCH v4 3/3] powerpc/32: Add KASAN support
-To: Daniel Axtens <dja@axtens.net>, Andrey Ryabinin
- <aryabinin@virtuozzo.com>, Andrey Konovalov <andreyknvl@google.com>
+To: Daniel Axtens <dja@axtens.net>, Andrey Konovalov <andreyknvl@google.com>, 
+ christophe leroy <christophe.leroy@c-s.fr>
 References: <cover.1548166824.git.christophe.leroy@c-s.fr>
  <1f5629e03181d0e30efc603f00dad78912991a45.1548166824.git.christophe.leroy@c-s.fr>
  <87ef8i45km.fsf@dja-thinkpad.axtens.net>
@@ -77,15 +45,15 @@ References: <cover.1548166824.git.christophe.leroy@c-s.fr>
  <CAAeHK+zop5ajOJQ4KEYbuxMRegk2GM1LvuGcSbCU1O5EZxB0MA@mail.gmail.com>
  <805fbf9d-a10f-03e0-aa52-6f6bd16059b9@virtuozzo.com>
  <87imxpak4r.fsf@linkitivity.dja.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <a11adaf3-beda-ed0c-e6aa-9ef30f2e80cf@c-s.fr>
-Date: Tue, 12 Feb 2019 12:38:48 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Message-ID: <dee48cfa-946f-c4c2-c3ae-dd4c1fec3aca@virtuozzo.com>
+Date: Tue, 12 Feb 2019 15:02:30 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.0
 MIME-Version: 1.0
 In-Reply-To: <87imxpak4r.fsf@linkitivity.dja.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -110,7 +78,7 @@ Sender: "Linuxppc-dev"
 
 
 
-Le 12/02/2019 à 02:08, Daniel Axtens a écrit :
+On 2/12/19 4:08 AM, Daniel Axtens wrote:
 > Andrey Ryabinin <aryabinin@virtuozzo.com> writes:
 > 
 >> On 2/11/19 3:25 PM, Andrey Konovalov wrote:
@@ -220,15 +188,12 @@ Le 12/02/2019 à 02:08, Daniel Axtens a écrit :
 > out-of-line support for stack instrumentation, or is there a deeper
 > reason that stack/global instrumentation relies upon inline
 > instrumentation?
-
-No, it looks like as soon as we define KASAN_SHADOW_OFFSET in Makefile 
-in addition to asm/kasan.h, stack instrumentation works with out-of-line.
-
-I'll send series v5 soon.
-
-Christophe
-
 > 
+
+Yes, it's simply wasn't implemented in compilers. Stack [un]poisoning code is always inlined.
+
+But globals is the opposite of that, they all poisoned out-of-line via __asan_register_globals() call.
+
 > I ask because it's very common on ppc64 to have the virtual address
 > space split up into discontiguous blocks. I know this means we lose
 > inline instrumentation, but I didn't realise we'd also lose stack and
@@ -238,6 +203,11 @@ Christophe
 > implement a smarter scheme in compilers where we could insert more
 > complex inline mapping schemes.
 > 
+
+I'd say it depends on performance boost that inline might give for those complex inline schemes.
+The whole inline instrumentation thing exists only because it gives better performance.
+
+
 > Regards,
 > Daniel
 > 
