@@ -2,55 +2,64 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1669C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 15:27:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A38E5C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 16:52:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88DB120836
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 15:27:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88DB120836
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
+	by mail.kernel.org (Postfix) with ESMTPS id 4BDF9217D9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 16:52:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=amazonses.com header.i=@amazonses.com header.b="dPwog4Db"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BDF9217D9
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zRNg4w2MzDqPB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 02:27:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zTGm06tDzDq7c
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 03:52:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=lst.de
- (client-ip=213.95.11.211; helo=newverein.lst.de; envelope-from=hch@lst.de;
+ spf=pass (mailfrom) smtp.mailfrom=amazonses.com
+ (client-ip=54.240.9.31; helo=a9-31.smtp-out.amazonses.com;
+ envelope-from=01000168e29daf0a-cb3a9394-e3dd-4d88-ad3c-31df1f9ec052-000000@amazonses.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lst.de
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linux.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=amazonses.com header.i=@amazonses.com
+ header.b="dPwog4Db"; dkim-atps=neutral
+Received: from a9-31.smtp-out.amazonses.com (a9-31.smtp-out.amazonses.com
+ [54.240.9.31])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zRLl4C8nzDqHd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 02:25:49 +1100 (AEDT)
-Received: by newverein.lst.de (Postfix, from userid 2407)
- id 1358A68DDC; Tue, 12 Feb 2019 16:25:45 +0100 (CET)
-Date: Tue, 12 Feb 2019 16:25:45 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: Re: use generic DMA mapping code in powerpc V4
-Message-ID: <20190212152543.GA24061@lst.de>
-References: <20190204123852.GA10428@lst.de>
- <b1c0161f-4211-03af-022d-0db7237516e9@xenosoft.de>
- <20190206151505.GA31065@lst.de> <20190206151655.GA31172@lst.de>
- <61EC67B1-12EF-42B6-B69B-B59F9E4FC474@xenosoft.de>
- <7c1f208b-6909-3b0a-f9f9-38ff1ac3d617@xenosoft.de>
- <20190208091818.GA23491@lst.de>
- <4e7137db-e600-0d20-6fb2-6d0f9739aca3@xenosoft.de>
- <20190211073804.GA15841@lst.de>
- <820bfeb1-30c0-3d5a-54a2-c4f9a8c15b0e@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zTD643TMzDqNQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 03:50:14 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
+ s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1549990211;
+ h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:MIME-Version:Content-Type:Feedback-ID;
+ bh=d9wM12jhuDTWdWt+Pkovf6I5uVUhrDCPMcwRg2iB6/c=;
+ b=dPwog4Db8cxWFTs8RaPbWPHsdjVXXzK6xqpC2es8j1a9vMwSTJTBbxIqClS4bTWi
+ jn3E5648vwwyFuDLlzLP3ebtNmQ8QHcaanGSqOxZWOF9WwuscWPvVRcezYZjIzwFHH3
+ zSJ0zA/tay7p90Jbs8Pdv9fCw9l9ZFY8VqBAPqsw=
+Date: Tue, 12 Feb 2019 16:50:11 +0000
+From: Christopher Lameter <cl@linux.com>
+X-X-Sender: cl@nuc-kabylake
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH 2/5] vfio/spapr_tce: use pinned_vm instead of locked_vm
+ to account pinned pages
+In-Reply-To: <ee4d14db-05c3-6208-503c-16e287fa78eb@ozlabs.ru>
+Message-ID: <01000168e29daf0a-cb3a9394-e3dd-4d88-ad3c-31df1f9ec052-000000@email.amazonses.com>
+References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+ <20190211224437.25267-3-daniel.m.jordan@oracle.com>
+ <ee4d14db-05c3-6208-503c-16e287fa78eb@ozlabs.ru>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <820bfeb1-30c0-3d5a-54a2-c4f9a8c15b0e@xenosoft.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=US-ASCII
+X-SES-Outgoing: 2019.02.12-54.240.9.31
+Feedback-ID: 1.us-east-1.fQZZZ0Xtj2+TD7V5apTT/NrT6QKuPgzCT/IC7XYgDKI=:AmazonSES
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,36 +71,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Darren Stevens <darren@stevens-zone.net>,
- linux-kernel@vger.kernel.org, Julian Margetson <runaway@candw.ms>,
- linux-mm@kvack.org, iommu@lists.linux-foundation.org,
- Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, jgg@ziepe.ca,
+ linux-fpga@vger.kernel.org, atull@kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-mm@kvack.org, alex.williamson@redhat.com, mdf@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 12, 2019 at 01:42:56PM +0100, Christian Zigotzky wrote:
-> On 11 February 2019 at 08:38AM, Christoph Hellwig wrote:
->> On Sun, Feb 10, 2019 at 01:00:20PM +0100, Christian Zigotzky wrote:
->>> I tested the whole series today. The kernels boot and the P.A. Semi
->>> Ethernet works! :-) Thanks a lot!
->>>
->>> I also tested it in a virtual e5500 QEMU machine today. Unfortunately the
->>> kernel crashes.
->> This looks like a patch I fixed in mainline a while ago, but which
->> the powerpc tree didn't have yet.
->>
->> I've cherry picked this commit
->> ("swiotlb: clear io_tlb_start and io_tlb_end in swiotlb_exit")
->>
->> and added it to the powerpc-dma.6 tree, please retry with that one.
->>
-> Hello Christoph,
->
-> Have you added it to the powerpc-dma.6 tree yet? The last commit was 4 days 
-> ago.
+On Tue, 12 Feb 2019, Alexey Kardashevskiy wrote:
 
-I added it, but forgot to push it out.  It is there now, sorry:
+> Now it is 3 independent accesses (actually 4 but the last one is
+> diagnostic) with no locking around them. Why do not we need a lock
+> anymore precisely? Thanks,
 
-http://git.infradead.org/users/hch/misc.git/commitdiff/2cf0745b7420af4a3e871d5a970a45662dfae69c
+Updating a regular counter is racy and requires a lock. It was converted
+to be an atomic which can be incremented without a race.
