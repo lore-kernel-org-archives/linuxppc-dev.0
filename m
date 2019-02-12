@@ -2,71 +2,82 @@ Return-Path: <SRS0=0iBm=QT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7AD93C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 13:29:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6850C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 13:38:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EEC22217D9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 13:29:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 341FB2184A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 13:38:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="mLAa+90a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEC22217D9
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="p2HcFkRS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 341FB2184A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zNmR0QdQzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:29:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zNz21H9TzDqQV
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:38:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="mLAa+90a"; dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="p2HcFkRS"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zNhF5xrbzDqP1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 00:25:49 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=vWyEFKoZa/UBq+vRmN2N8BqiM0rFEYhHj/ZSk9dgI8M=; b=mLAa+90auwABrVT4GKqhuDkv0
- imWEqXm6ymnRIoIFMkPFvKLGUQD17vu09MjNgQnmtc66LOwYo+6wNZnfrNpIOjI4dPaeg3RzYuiN5
- gD5mt0OlPbGDyycBLue5YkcBAptFK2fJUFk/hbvi+suireXhE6iY36yt7vmtatXidVBPDgn8SPIK1
- Q6Z/aAYKsmuABMjkXlPmj/sJavwY4/lez/g/5R6/GDfLDnvqhgj7yllnhC2OPk8wyMiva5plYQX//
- IICDBG/AHwbnYoo58P6bwwqOeLTzehNeXSb90Ws0H/aiG+ZIEtNNFzkWZGDsU0TD57b0quPmdAKCe
- hIMIgqU+Q==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gtY4A-0004nH-Fd; Tue, 12 Feb 2019 13:25:38 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 483E420D0C1D8; Tue, 12 Feb 2019 14:25:37 +0100 (CET)
-Date: Tue, 12 Feb 2019 14:25:37 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v2 2/2] locking/rwsem: Optimize down_read_trylock()
-Message-ID: <20190212132537.GL32534@hirez.programming.kicks-ass.net>
-References: <1549913486-16799-1-git-send-email-longman@redhat.com>
- <1549913486-16799-3-git-send-email-longman@redhat.com>
- <20190212132404.GI32494@hirez.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190212132404.GI32494@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zNx23KH2zDqMC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 00:36:54 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 43zNwx57DVz9v1GB;
+ Tue, 12 Feb 2019 14:36:49 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=p2HcFkRS; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id dOOiq_ebMMnF; Tue, 12 Feb 2019 14:36:49 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 43zNwx419jz9v1G9;
+ Tue, 12 Feb 2019 14:36:49 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1549978609; bh=poil0vqGFXHMeWd6QywaPEIOxEm2SJqoaaLYSbpclOc=;
+ h=From:Subject:To:Cc:Date:From;
+ b=p2HcFkRSYO2MZD+VFVI+KhHPjT48msOjR6C4LL7d2eNvN2iBmS9plCVBX01eOgq3h
+ Npgx7f8mA0/UIjYXF4skHXztZ2wqAVReyfir5p8JzWae4J9lUxNWSwBXka+SR6sa+C
+ Iyf5t1PJpZrDdHpVPi/9mZ4f+9nOv+/A5m8Mp3oU=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DFD6A8B7F9;
+ Tue, 12 Feb 2019 14:36:50 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id pPOArjaDN3Kj; Tue, 12 Feb 2019 14:36:50 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 94D588B7EB;
+ Tue, 12 Feb 2019 14:36:50 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5657B6899C; Tue, 12 Feb 2019 13:36:50 +0000 (UTC)
+Message-Id: <cover.1549935247.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v5 0/3] KASAN for powerpc/32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
+Date: Tue, 12 Feb 2019 13:36:50 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,81 +89,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 12, 2019 at 02:24:04PM +0100, Peter Zijlstra wrote:
-> On Mon, Feb 11, 2019 at 02:31:26PM -0500, Waiman Long wrote:
-> > Modify __down_read_trylock() to make it generate slightly better code
-> > (smaller and maybe a tiny bit faster).
-> > 
-> > Before this patch, down_read_trylock:
-> > 
-> >    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-> >    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
-> >    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
-> >    0x000000000000000b <+11>:    mov    %rdx,%rax
-> >    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
-> >    0x0000000000000013 <+19>:    cmp    %rax,%rdx
-> >    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
-> >    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
-> >    0x000000000000001b <+27>:    test   %rdx,%rdx
-> >    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
-> >    0x0000000000000020 <+32>:    xor    %eax,%eax
-> >    0x0000000000000022 <+34>:    retq
-> >    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
-> >    0x000000000000002c <+44>:    or     $0x3,%rax
-> >    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
-> >    0x0000000000000034 <+52>:    mov    $0x1,%eax
-> >    0x0000000000000039 <+57>:    retq
-> > 
-> > After patch, down_read_trylock:
-> > 
-> >    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-> >    0x0000000000000005 <+5>:     mov    (%rdi),%rax
-> >    0x0000000000000008 <+8>:     test   %rax,%rax
-> >    0x000000000000000b <+11>:    js     0x2f <down_read_trylock+47>
-> >    0x000000000000000d <+13>:    lea    0x1(%rax),%rdx
-> >    0x0000000000000011 <+17>:    lock cmpxchg %rdx,(%rdi)
-> >    0x0000000000000016 <+22>:    jne    0x8 <down_read_trylock+8>
-> >    0x0000000000000018 <+24>:    mov    %gs:0x0,%rax
-> >    0x0000000000000021 <+33>:    or     $0x3,%rax
-> >    0x0000000000000025 <+37>:    mov    %rax,0x20(%rdi)
-> >    0x0000000000000029 <+41>:    mov    $0x1,%eax
-> >    0x000000000000002e <+46>:    retq
-> >    0x000000000000002f <+47>:    xor    %eax,%eax
-> >    0x0000000000000031 <+49>:    retq
-> > 
-> > By using a rwsem microbenchmark, the down_read_trylock() rate on a
-> > x86-64 system before and after the patch were:
-> > 
-> >                  Before Patch    After Patch
-> >    # of Threads     rlock           rlock
-> >    ------------     -----           -----
-> >         1           27,787          28,259
-> >         2            8,359           9,234
-> 
-> From 1/2:
-> 
-> 1        29,201  30,143  29,458    28,615  30,172  29,201
-> 2         6,807  13,299   1,171     7,725  15,025   1,804
+This serie adds KASAN support to powerpc/32
 
-Argh, fat fingered and send before I was done typing.
+Tested on nohash/32 (8xx) and book3s/32 (mpc832x ie 603)
 
-What I wanted to say was; those rlock numbers don't match up. What
-gives?
+Changes in v5:
+- Added KASAN_SHADOW_OFFSET in Makefile, otherwise we fallback to KASAN_MINIMAL
+and some stuff like stack instrumentation is not performed
+- Moved calls to kasan_early_init() in head.S because stack instrumentation
+in machine_init was performed before the call to kasan_early_init()
+- Mapping kasan_early_shadow_page RW in kasan_early_init() and
+remaping RO later in kasan_init()
+- Allocating a big memblock() for shadow area, falling back to PAGE_SIZE blocks in case of failure.
 
-The before _this_ patch number of 27k787 should be the same as the after
-first patch number of 30k172.
+Changes in v4:
+- Comments from Andrey (DISABLE_BRANCH_PROFILING, Activation of reports)
+- Proper initialisation of shadow area in kasan_init()
+- Panic in case Hash table is required.
+- Added comments in patch one to explain why *t = *s becomes memcpy(t, s, ...)
+- Call of kasan_init_tags()
+
+Changes in v3:
+- Removed the printk() in kasan_early_init() to avoid build failure (see https://github.com/linuxppc/issues/issues/218)
+- Added necessary changes in asm/book3s/32/pgtable.h to get it work on powerpc 603 family
+- Added a few KASAN_SANITIZE_xxx.o := n to successfully boot on powerpc 603 family
+
+Changes in v2:
+- Rebased.
+- Using __set_pte_at() to build the early table.
+- Worked around and got rid of the patch adding asm/page.h in asm/pgtable-types.h
+    ==> might be fixed independently but not needed for this serie.
+
+For book3s/32 (not 603), it cannot work as is because due to HASHPTE flag, we
+can't use the same pagetable for several PGD entries, and because Hash table
+management is not not active early enough at the time being.
+
+Christophe Leroy (3):
+  powerpc/mm: prepare kernel for KAsan on PPC32
+  powerpc/32: Move early_init() in a separate file
+  powerpc/32: Add KASAN support
+
+ arch/powerpc/Kconfig                         |   1 +
+ arch/powerpc/Makefile                        |   7 ++
+ arch/powerpc/include/asm/book3s/32/pgtable.h |   2 +
+ arch/powerpc/include/asm/kasan.h             |  24 ++++++
+ arch/powerpc/include/asm/nohash/32/pgtable.h |   2 +
+ arch/powerpc/include/asm/ppc_asm.h           |   4 +
+ arch/powerpc/include/asm/setup.h             |   5 ++
+ arch/powerpc/include/asm/string.h            |  14 ++++
+ arch/powerpc/kernel/Makefile                 |  11 ++-
+ arch/powerpc/kernel/asm-offsets.c            |   4 +
+ arch/powerpc/kernel/cputable.c               |  13 ++-
+ arch/powerpc/kernel/early_32.c               |  35 ++++++++
+ arch/powerpc/kernel/head_32.S                |   3 +
+ arch/powerpc/kernel/head_40x.S               |   3 +
+ arch/powerpc/kernel/head_44x.S               |   3 +
+ arch/powerpc/kernel/head_8xx.S               |   3 +
+ arch/powerpc/kernel/head_fsl_booke.S         |   3 +
+ arch/powerpc/kernel/prom_init_check.sh       |  10 ++-
+ arch/powerpc/kernel/setup-common.c           |   2 +
+ arch/powerpc/kernel/setup_32.c               |  28 -------
+ arch/powerpc/lib/Makefile                    |   8 ++
+ arch/powerpc/lib/copy_32.S                   |   9 ++-
+ arch/powerpc/mm/Makefile                     |   3 +
+ arch/powerpc/mm/dump_linuxpagetables.c       |   8 ++
+ arch/powerpc/mm/kasan_init.c                 | 114 +++++++++++++++++++++++++++
+ arch/powerpc/mm/mem.c                        |   4 +
+ 26 files changed, 285 insertions(+), 38 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kasan.h
+ create mode 100644 arch/powerpc/kernel/early_32.c
+ create mode 100644 arch/powerpc/mm/kasan_init.c
+
+-- 
+2.13.3
+
