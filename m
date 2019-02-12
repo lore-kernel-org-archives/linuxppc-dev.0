@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 54AD9C282CA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 18:38:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FF36C282C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 18:40:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A01DC2190B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 18:38:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A01DC2190B
+	by mail.kernel.org (Postfix) with ESMTPS id CEBCC222C4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Feb 2019 18:40:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEBCC222C4
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zWd52khhzDqMM
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 05:38:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zWgP64SqzDqNQ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 05:40:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,24 +28,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zWZw0B2BzDqLy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 05:36:40 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zWdR1DQTzDqLy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 05:38:51 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 33068369BC;
- Tue, 12 Feb 2019 18:36:37 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id D0F6014D2A1;
+ Tue, 12 Feb 2019 18:38:48 +0000 (UTC)
 Received: from llong.remote.csb (ovpn-124-193.rdu2.redhat.com [10.10.124.193])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 2BC5962943;
- Tue, 12 Feb 2019 18:36:33 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 00FF25D962;
+ Tue, 12 Feb 2019 18:38:44 +0000 (UTC)
 Subject: Re: [PATCH v2 2/2] locking/rwsem: Optimize down_read_trylock()
+From: Waiman Long <longman@redhat.com>
 To: Peter Zijlstra <peterz@infradead.org>
 References: <1549913486-16799-1-git-send-email-longman@redhat.com>
  <1549913486-16799-3-git-send-email-longman@redhat.com>
  <20190212132404.GI32494@hirez.programming.kicks-ass.net>
  <20190212132537.GL32534@hirez.programming.kicks-ass.net>
-From: Waiman Long <longman@redhat.com>
+ <a90fa2cf-f891-d64c-101b-adc81e06e0de@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
  xsFNBFgsZGsBEAC3l/RVYISY3M0SznCZOv8aWc/bsAgif1H8h0WPDrHnwt1jfFTB26EzhRea
@@ -91,18 +92,18 @@ Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
  wGA5uquIgb8p3/ENgYpDPrsZ72CxVC2NEJjJwwnRBStjJOGQX4lV1uhN1XsZjBbRHdKF2W9g
  weim8xU=
 Organization: Red Hat
-Message-ID: <a90fa2cf-f891-d64c-101b-adc81e06e0de@redhat.com>
-Date: Tue, 12 Feb 2019 13:36:32 -0500
+Message-ID: <0dc32b77-9485-0800-695d-1a076923b1e6@redhat.com>
+Date: Tue, 12 Feb 2019 13:38:43 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
  Thunderbird/52.9.1
 MIME-Version: 1.0
-In-Reply-To: <20190212132537.GL32534@hirez.programming.kicks-ass.net>
+In-Reply-To: <a90fa2cf-f891-d64c-101b-adc81e06e0de@redhat.com>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Tue, 12 Feb 2019 18:36:38 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.28]); Tue, 12 Feb 2019 18:38:49 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,74 +130,76 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/12/2019 08:25 AM, Peter Zijlstra wrote:
-> On Tue, Feb 12, 2019 at 02:24:04PM +0100, Peter Zijlstra wrote:
->> On Mon, Feb 11, 2019 at 02:31:26PM -0500, Waiman Long wrote:
->>> Modify __down_read_trylock() to make it generate slightly better code
->>> (smaller and maybe a tiny bit faster).
+On 02/12/2019 01:36 PM, Waiman Long wrote:
+> On 02/12/2019 08:25 AM, Peter Zijlstra wrote:
+>> On Tue, Feb 12, 2019 at 02:24:04PM +0100, Peter Zijlstra wrote:
+>>> On Mon, Feb 11, 2019 at 02:31:26PM -0500, Waiman Long wrote:
+>>>> Modify __down_read_trylock() to make it generate slightly better code
+>>>> (smaller and maybe a tiny bit faster).
+>>>>
+>>>> Before this patch, down_read_trylock:
+>>>>
+>>>>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
+>>>>    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
+>>>>    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
+>>>>    0x000000000000000b <+11>:    mov    %rdx,%rax
+>>>>    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
+>>>>    0x0000000000000013 <+19>:    cmp    %rax,%rdx
+>>>>    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
+>>>>    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
+>>>>    0x000000000000001b <+27>:    test   %rdx,%rdx
+>>>>    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
+>>>>    0x0000000000000020 <+32>:    xor    %eax,%eax
+>>>>    0x0000000000000022 <+34>:    retq
+>>>>    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
+>>>>    0x000000000000002c <+44>:    or     $0x3,%rax
+>>>>    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
+>>>>    0x0000000000000034 <+52>:    mov    $0x1,%eax
+>>>>    0x0000000000000039 <+57>:    retq
+>>>>
+>>>> After patch, down_read_trylock:
+>>>>
+>>>>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
+>>>>    0x0000000000000005 <+5>:     mov    (%rdi),%rax
+>>>>    0x0000000000000008 <+8>:     test   %rax,%rax
+>>>>    0x000000000000000b <+11>:    js     0x2f <down_read_trylock+47>
+>>>>    0x000000000000000d <+13>:    lea    0x1(%rax),%rdx
+>>>>    0x0000000000000011 <+17>:    lock cmpxchg %rdx,(%rdi)
+>>>>    0x0000000000000016 <+22>:    jne    0x8 <down_read_trylock+8>
+>>>>    0x0000000000000018 <+24>:    mov    %gs:0x0,%rax
+>>>>    0x0000000000000021 <+33>:    or     $0x3,%rax
+>>>>    0x0000000000000025 <+37>:    mov    %rax,0x20(%rdi)
+>>>>    0x0000000000000029 <+41>:    mov    $0x1,%eax
+>>>>    0x000000000000002e <+46>:    retq
+>>>>    0x000000000000002f <+47>:    xor    %eax,%eax
+>>>>    0x0000000000000031 <+49>:    retq
+>>>>
+>>>> By using a rwsem microbenchmark, the down_read_trylock() rate on a
+>>>> x86-64 system before and after the patch were:
+>>>>
+>>>>                  Before Patch    After Patch
+>>>>    # of Threads     rlock           rlock
+>>>>    ------------     -----           -----
+>>>>         1           27,787          28,259
+>>>>         2            8,359           9,234
+>>> From 1/2:
 >>>
->>> Before this patch, down_read_trylock:
->>>
->>>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
->>>    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
->>>    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
->>>    0x000000000000000b <+11>:    mov    %rdx,%rax
->>>    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
->>>    0x0000000000000013 <+19>:    cmp    %rax,%rdx
->>>    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
->>>    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
->>>    0x000000000000001b <+27>:    test   %rdx,%rdx
->>>    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
->>>    0x0000000000000020 <+32>:    xor    %eax,%eax
->>>    0x0000000000000022 <+34>:    retq
->>>    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
->>>    0x000000000000002c <+44>:    or     $0x3,%rax
->>>    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
->>>    0x0000000000000034 <+52>:    mov    $0x1,%eax
->>>    0x0000000000000039 <+57>:    retq
->>>
->>> After patch, down_read_trylock:
->>>
->>>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
->>>    0x0000000000000005 <+5>:     mov    (%rdi),%rax
->>>    0x0000000000000008 <+8>:     test   %rax,%rax
->>>    0x000000000000000b <+11>:    js     0x2f <down_read_trylock+47>
->>>    0x000000000000000d <+13>:    lea    0x1(%rax),%rdx
->>>    0x0000000000000011 <+17>:    lock cmpxchg %rdx,(%rdi)
->>>    0x0000000000000016 <+22>:    jne    0x8 <down_read_trylock+8>
->>>    0x0000000000000018 <+24>:    mov    %gs:0x0,%rax
->>>    0x0000000000000021 <+33>:    or     $0x3,%rax
->>>    0x0000000000000025 <+37>:    mov    %rax,0x20(%rdi)
->>>    0x0000000000000029 <+41>:    mov    $0x1,%eax
->>>    0x000000000000002e <+46>:    retq
->>>    0x000000000000002f <+47>:    xor    %eax,%eax
->>>    0x0000000000000031 <+49>:    retq
->>>
->>> By using a rwsem microbenchmark, the down_read_trylock() rate on a
->>> x86-64 system before and after the patch were:
->>>
->>>                  Before Patch    After Patch
->>>    # of Threads     rlock           rlock
->>>    ------------     -----           -----
->>>         1           27,787          28,259
->>>         2            8,359           9,234
->> From 1/2:
+>>> 1        29,201  30,143  29,458    28,615  30,172  29,201
+>>> 2         6,807  13,299   1,171     7,725  15,025   1,804
+>> Argh, fat fingered and send before I was done typing.
 >>
->> 1        29,201  30,143  29,458    28,615  30,172  29,201
->> 2         6,807  13,299   1,171     7,725  15,025   1,804
-> Argh, fat fingered and send before I was done typing.
->
-> What I wanted to say was; those rlock numbers don't match up. What
-> gives?
->
-> The before _this_ patch number of 27k787 should be the same as the after
-> first patch number of 30k172.
+>> What I wanted to say was; those rlock numbers don't match up. What
+>> gives?
+>>
+>> The before _this_ patch number of 27k787 should be the same as the after
+>> first patch number of 30k172.
+> The rlock number in patch 1 refers to down_read() which uses xadd. The
+> number here in patch 2 refers specifically to down_read_trylock() which
+> uses cmpxchg() as this patch changes only __down_read_tryulock(). So the
+> performance data differ.
 
-The rlock number in patch 1 refers to down_read() which uses xadd. The
-number here in patch 2 refers specifically to down_read_trylock() which
-uses cmpxchg() as this patch changes only __down_read_tryulock(). So the
-performance data differ.
+You can see that the performance is worse if we use cmpxchg for
+down_read instead of using xadd.
 
 Cheers,
 Longman
-
