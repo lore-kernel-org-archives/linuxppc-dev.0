@@ -2,90 +2,168 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLACK autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B51BCC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 498EDC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:36:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2EF7021B1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:28:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7D205222BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 00:36:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="4uhNkb1F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2EF7021B1A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="oB6g38EZ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D205222BB
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zgPP25bLzDqFm
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 11:28:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zgYv4mTWzDqN1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 11:36:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=oracle.com
- (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
- envelope-from=daniel.m.jordan@oracle.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=oracle.com
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=oracle.com header.i=@oracle.com header.b="4uhNkb1F"; 
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="oB6g38EZ"; 
  dkim-atps=neutral
-Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
+ [IPv6:2607:f8b0:4864:20::644])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zgMH6B41zDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 11:27:07 +1100 (AEDT)
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
- by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1D04ItA127795;
- Wed, 13 Feb 2019 00:26:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
- h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2018-07-02;
- bh=w0tqhPo+t2SUjHi0LS/CYN1wUpJy7dXBRCRCEWoqsoM=;
- b=4uhNkb1FBNWMTFMQtPUk8damVBnjRIUT7GL5gQsYHz64WDzTPPtvcus+e60ProDyirXA
- BIBzWsGcRc0nHdUKObIy7isnuU5mxDmG2Eqhgwswz9l/zeQmVrqvv1bmjZ8tNlW73vQ3
- tIV/bA4IIkByvi7kHkDTFv1HTComQfdsds3sPIbvf/J7/+e7CJkeuo+0gzdHgxyxhTqs
- gOh37VPD3tZ18pYTYvOcFEO/9Q8Z+mwAyAeGdutNQ7Rt8uWL2gmrFHP2efApacziCexv
- WvNERa0JSl/O7luXzRpjaQdoxFvecYasxSh7RwfvLmZctY10vmFVu2Tyzquis+f2PhaC gQ== 
-Received: from aserv0022.oracle.com (aserv0022.oracle.com [141.146.126.234])
- by aserp2130.oracle.com with ESMTP id 2qhre5f4r3-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 13 Feb 2019 00:26:36 +0000
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
- by aserv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x1D0QYY2005778
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 13 Feb 2019 00:26:34 GMT
-Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
- by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id x1D0QUic020233;
- Wed, 13 Feb 2019 00:26:31 GMT
-Received: from ca-dmjordan1.us.oracle.com (/10.211.9.48)
- by default (Oracle Beehive Gateway v4.0)
- with ESMTP ; Tue, 12 Feb 2019 16:26:30 -0800
-Date: Tue, 12 Feb 2019 19:26:50 -0500
-From: Daniel Jordan <daniel.m.jordan@oracle.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH 1/5] vfio/type1: use pinned_vm instead of locked_vm to
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zgX02LHNzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 11:34:40 +1100 (AEDT)
+Received: by mail-pl1-x644.google.com with SMTP id 101so283320pld.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 16:34:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=Y7soHirDIxJzFUwQJpcgzxlvKe2FQs1FDN0wHWCHK3k=;
+ b=oB6g38EZU2d7cL7oss7W1n2/HbtMMRe3ua88W4xCbhDHHoZuBzPCRCS6RoXSYCGdyc
+ AEneiZUfmZUIlw6kdAmu+bEGtw9jqzeYqXfsiGPqSptM0ErHXydatt7ynmSO44HyU8zD
+ Pxpsht/pARmU1BdZaYwJO6bjisS+hUCDTljZLIfEvF15SX2+Yg9dI4AYY9tEbJeFoj7f
+ qy1FzPVXbOLJKZNOI4NqFJyijIffV8GHiDzsYc3tyF8P+k+Xf06sLRjNio2ysr0/G3fK
+ hVaUGmitDjNjkDK1WDEQ4DCC5tJRvpRGTSVHtGTKZW/IRYX52WIeoVttWCAkupH5AYgw
+ X74A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=Y7soHirDIxJzFUwQJpcgzxlvKe2FQs1FDN0wHWCHK3k=;
+ b=g+nW/vRpEY21azVhn339+8Gt7jW9TudFPCdoYaNn9lxBBCKaylspXtYBhQIxkT6U+u
+ S3HOG6jHktNY++qmsvg4oVTGdSs7fckzDHNpmudOXKEMZBv94FXI2HqO+xIGNG3SlCG4
+ 6I53BWyF3gMZe37TgoTZqNkOQjILNso5LfOzyKMk2EHUPwOjZUQojX3RBFLTkcNcVYoJ
+ cZ1b8lKTedDjGC+1M2Fx53UmEMU27QsRiIyCFcEPIJfb4vvq6XJKoQodKnduylrm+xXb
+ x9rB3PP8iBqhGS42OwcfIWu6gLXKMeJMLHwAmAwl6TNK4MlrFfIcmvNddTecYkBAqQee
+ QoKQ==
+X-Gm-Message-State: AHQUAua7Pzb+9xtEEHywS6IlA0WtqT3qYjRMC3uYko0e/0+l2/gRki4X
+ Va+pTs30jnbahreokFcFb3NmMw==
+X-Google-Smtp-Source: AHgI3IZRXfZvVsKAozcEImmEcLoKJrECcL3CZDyV/bGzlgnvh+eqOI4O0Vpl9kGos9lLojWXmFfGrw==
+X-Received: by 2002:a17:902:4025:: with SMTP id
+ b34mr6863042pld.181.1550018078090; 
+ Tue, 12 Feb 2019 16:34:38 -0800 (PST)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id f67sm19836025pff.29.2019.02.12.16.34.31
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 12 Feb 2019 16:34:37 -0800 (PST)
+Subject: Re: [PATCH 2/5] vfio/spapr_tce: use pinned_vm instead of locked_vm to
  account pinned pages
-Message-ID: <20190213002650.kav7xc4r2xs5f3ef@ca-dmjordan1.us.oracle.com>
+To: Alex Williamson <alex.williamson@redhat.com>
 References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
- <20190211224437.25267-2-daniel.m.jordan@oracle.com>
- <20190211225620.GO24692@ziepe.ca>
- <20190211231152.qflff6g2asmkb6hr@ca-dmjordan1.us.oracle.com>
- <20190212114110.17bc8a14@w520.home>
+ <20190211224437.25267-3-daniel.m.jordan@oracle.com>
+ <ee4d14db-05c3-6208-503c-16e287fa78eb@ozlabs.ru>
+ <20190212115652.6cf9a20b@w520.home>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <5e478ac6-814d-d599-e44f-5e90232d30b3@ozlabs.ru>
+Date: Wed, 13 Feb 2019 11:34:28 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190212114110.17bc8a14@w520.home>
-User-Agent: NeoMutt/20180323-268-5a959c
-X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9165
- signatures=668683
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
- priorityscore=1501 malwarescore=0
- suspectscore=0 phishscore=0 bulkscore=0 spamscore=0 clxscore=1015
- lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
- definitions=main-1902120162
+In-Reply-To: <20190212115652.6cf9a20b@w520.home>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,53 +176,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, linux-mm@kvack.org,
- aik@ozlabs.ru, linux-fpga@vger.kernel.org, atull@kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Daniel Jordan <daniel.m.jordan@oracle.com>, Jason Gunthorpe <jgg@ziepe.ca>,
- peterz@infradead.org, mdf@kernel.org, akpm@linux-foundation.org,
+ linux-fpga@vger.kernel.org, atull@kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ jgg@ziepe.ca, mdf@kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org, cl@linux.com, hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 12, 2019 at 11:41:10AM -0700, Alex Williamson wrote:
-> Daniel Jordan <daniel.m.jordan@oracle.com> wrote:
-> > On Mon, Feb 11, 2019 at 03:56:20PM -0700, Jason Gunthorpe wrote:
-> > > I haven't looked at this super closely, but how does this stuff work?
-> > > 
-> > > do_mlock doesn't touch pinned_vm, and this doesn't touch locked_vm...
-> > > 
-> > > Shouldn't all this be 'if (locked_vm + pinned_vm < RLIMIT_MEMLOCK)' ?
-> > >
-> > > Otherwise MEMLOCK is really doubled..  
-> > 
-> > So this has been a problem for some time, but it's not as easy as adding them
-> > together, see [1][2] for a start.
-> > 
-> > The locked_vm/pinned_vm issue definitely needs fixing, but all this series is
-> > trying to do is account to the right counter.
 
-Thanks for taking a look, Alex.
 
-> This still makes me nervous because we have userspace dependencies on
-> setting process locked memory.
+On 13/02/2019 05:56, Alex Williamson wrote:
+> On Tue, 12 Feb 2019 17:56:18 +1100
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+>> On 12/02/2019 09:44, Daniel Jordan wrote:
+>>> Beginning with bc3e53f682d9 ("mm: distinguish between mlocked and pinned
+>>> pages"), locked and pinned pages are accounted separately.  The SPAPR
+>>> TCE VFIO IOMMU driver accounts pinned pages to locked_vm; use pinned_vm
+>>> instead.
+>>>
+>>> pinned_vm recently became atomic and so no longer relies on mmap_sem
+>>> held as writer: delete.
+>>>
+>>> Signed-off-by: Daniel Jordan <daniel.m.jordan@oracle.com>
+>>> ---
+>>>  Documentation/vfio.txt              |  6 +--
+>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 64 ++++++++++++++---------------
+>>>  2 files changed, 33 insertions(+), 37 deletions(-)
+>>>
+>>> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+>>> index f1a4d3c3ba0b..fa37d65363f9 100644
+>>> --- a/Documentation/vfio.txt
+>>> +++ b/Documentation/vfio.txt
+>>> @@ -308,7 +308,7 @@ This implementation has some specifics:
+>>>     currently there is no way to reduce the number of calls. In order to make
+>>>     things faster, the map/unmap handling has been implemented in real mode
+>>>     which provides an excellent performance which has limitations such as
+>>> -   inability to do locked pages accounting in real time.
+>>> +   inability to do pinned pages accounting in real time.
+>>>  
+>>>  4) According to sPAPR specification, A Partitionable Endpoint (PE) is an I/O
+>>>     subtree that can be treated as a unit for the purposes of partitioning and
+>>> @@ -324,7 +324,7 @@ This implementation has some specifics:
+>>>  		returns the size and the start of the DMA window on the PCI bus.
+>>>  
+>>>  	VFIO_IOMMU_ENABLE
+>>> -		enables the container. The locked pages accounting
+>>> +		enables the container. The pinned pages accounting
+>>>  		is done at this point. This lets user first to know what
+>>>  		the DMA window is and adjust rlimit before doing any real job.
+> 
+> I don't know of a ulimit only covering pinned pages, so for
+> documentation it seems more correct to continue referring to this as
+> locked page accounting.
+> 
+>>> @@ -454,7 +454,7 @@ This implementation has some specifics:
+>>>  
+>>>     PPC64 paravirtualized guests generate a lot of map/unmap requests,
+>>>     and the handling of those includes pinning/unpinning pages and updating
+>>> -   mm::locked_vm counter to make sure we do not exceed the rlimit.
+>>> +   mm::pinned_vm counter to make sure we do not exceed the rlimit.
+>>>     The v2 IOMMU splits accounting and pinning into separate operations:
+>>>  
+>>>     - VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
+>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>>> index c424913324e3..f47e020dc5e4 100644
+>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>>> @@ -34,9 +34,11 @@
+>>>  static void tce_iommu_detach_group(void *iommu_data,
+>>>  		struct iommu_group *iommu_group);
+>>>  
+>>> -static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+>>> +static long try_increment_pinned_vm(struct mm_struct *mm, long npages)
+>>>  {
+>>> -	long ret = 0, locked, lock_limit;
+>>> +	long ret = 0;
+>>> +	s64 pinned;
+>>> +	unsigned long lock_limit;
+>>>  
+>>>  	if (WARN_ON_ONCE(!mm))
+>>>  		return -EPERM;
+>>> @@ -44,39 +46,33 @@ static long try_increment_locked_vm(struct mm_struct *mm, long npages)
+>>>  	if (!npages)
+>>>  		return 0;
+>>>  
+>>> -	down_write(&mm->mmap_sem);
+>>> -	locked = mm->locked_vm + npages;
+>>> +	pinned = atomic64_add_return(npages, &mm->pinned_vm);
+>>>  	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>>> -	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>>> +	if (pinned > lock_limit && !capable(CAP_IPC_LOCK)) {
+>>>  		ret = -ENOMEM;
+>>> -	else
+>>> -		mm->locked_vm += npages;
+>>> +		atomic64_sub(npages, &mm->pinned_vm);
+>>> +	}
+>>>  
+>>> -	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+>>> +	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%lu%s\n", current->pid,
+>>>  			npages << PAGE_SHIFT,
+>>> -			mm->locked_vm << PAGE_SHIFT,
+>>> -			rlimit(RLIMIT_MEMLOCK),
+>>> -			ret ? " - exceeded" : "");
+>>> -
+>>> -	up_write(&mm->mmap_sem);
+>>> +			atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
+>>> +			rlimit(RLIMIT_MEMLOCK), ret ? " - exceeded" : "");
+>>>  
+>>>  	return ret;
+>>>  }
+>>>  
+>>> -static void decrement_locked_vm(struct mm_struct *mm, long npages)
+>>> +static void decrement_pinned_vm(struct mm_struct *mm, long npages)
+>>>  {
+>>>  	if (!mm || !npages)
+>>>  		return;
+>>>  
+>>> -	down_write(&mm->mmap_sem);
+>>> -	if (WARN_ON_ONCE(npages > mm->locked_vm))
+>>> -		npages = mm->locked_vm;
+>>> -	mm->locked_vm -= npages;
+>>> -	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
+>>> +	if (WARN_ON_ONCE(npages > atomic64_read(&mm->pinned_vm)))
+>>> +		npages = atomic64_read(&mm->pinned_vm);
+>>> +	atomic64_sub(npages, &mm->pinned_vm);
+>>> +	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%lu\n", current->pid,
+>>>  			npages << PAGE_SHIFT,
+>>> -			mm->locked_vm << PAGE_SHIFT,
+>>> +			atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
+>>>  			rlimit(RLIMIT_MEMLOCK));
+>>> -	up_write(&mm->mmap_sem);  
+>>
+>>
+>> So it used to be down_write+up_write and stuff in between.
+>>
+>> Now it is 3 independent accesses (actually 4 but the last one is
+>> diagnostic) with no locking around them. Why do not we need a lock
+>> anymore precisely? Thanks,
+> 
+> The first 2 look pretty sketchy to me, is there a case where you don't
+> know how many pages you've pinned to unpin them?
 
-Could you please expand on this?  Trying to get more context.
+No case like this, this is why WARN_ON_ONCE(). At the time I could have
+been under impression that pinned_vm is system-global, hence that
+adjustment but we do not really need it there.
 
-> There's a user visible difference if we
-> account for them in the same bucket vs separate.  Perhaps we're
-> counting in the wrong bucket now, but if we "fix" that and userspace
-> adapts, how do we ever go back to accounting both mlocked and pinned
-> memory combined against rlimit?  Thanks,
+>  And can it ever
+> really be correct to just unpin whatever remains?  The last access is
+> diagnostic, which leaves 1.  Daniel's rework to warn on a negative
+> result looks more sane. Thanks,
 
-PeterZ posted an RFC that addresses this point[1].  It kept pinned_vm and
-locked_vm accounting separate, but allowed the two to be added safely to be
-compared against RLIMIT_MEMLOCK.
+Yes it does look sane.
 
-Anyway, until some solution is agreed on, are there objections to converting
-locked_vm to an atomic, to avoid user-visible changes, instead of switching
-locked_vm users to pinned_vm?
 
-Daniel
-
-[1] http://lkml.kernel.org/r/20130524140114.GK23650@twins.programming.kicks-ass.net
+-- 
+Alexey
