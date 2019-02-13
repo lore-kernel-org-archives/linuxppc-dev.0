@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FE4AC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 18:01:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BDF2C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 18:03:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0E205222B6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 18:01:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C6EAC222C9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 18:03:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bAFlw7HH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0E205222B6
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="NbiS68kH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6EAC222C9
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4406mB6F6rzDqSK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 05:01:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4406p26tmtzDqLZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 05:03:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -30,34 +31,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="bAFlw7HH"; dkim-atps=neutral
+ header.b="NbiS68kH"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hw0nxyzDqQY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hz0R44zDqFw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:46 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=WcLYSSamzwychRfxilM3NtfAvhJTsX+gY6/ApUhTD4M=; b=bAFlw7HHvFl1qjn+osTyqe0Wvq
- uzpM1EsoRYtgNrgOIp291+D+MLsPUG1krfujZ0NrhP/+c5L8h4m5kmKnqrR0SNvGs1yEzEbLP1+G1
- nZVOluvk5cUb0Uy2W/3PyhlUElbKOUPb4Cvph4vWMEQm0YXM/++vkgUROq6K/YqKyv6sre6gDTV7S
- jBGnM7/kUZ6Dalib5fyIXBLYYXkkOik71NE5V2+HOFhGgCqrzaZna6XGq1OQuj+dTyEEsEwFYGEds
- VvvYfAC4o3aq6uMmNmMCB4I3q7e3s7x3Mp6AlZlxLA5Azdo9rMD0YFqVpem3mE87v9gMoZGOlk3br
- u23FFuuw==;
+ bh=eZ58SmjxShPdlPalu9FwP6Ih9rIG9TiLHdmUn9VD9ws=; b=NbiS68kHfVezTi1fyDMmrYYDUU
+ /Ed/Q0ZJo6Up4UN9V1P/VTYFZwM3kP4g3A7GpHfxquPQVG0ptG/1s6LNaHVAD8VJC2vskz3D15x+q
+ Y8Rj5piiAjJMDz8oi2qGefQXb7KWsOcM88rTdtv0dw6G057CxDJMBzKak0hSO7vVgy+qaisZCcxnS
+ 6VnKtqupKRGfZ7O4FOmjQ/ESBX2iVdmQJIveALuHUoReczwSINkAR/LmkbDdRunqS+SKttaXpTmtV
+ D5K7FwpHYgoWz75IAW94pko7mxadV9bQB2BQAfcqcPN0pkLtdCCUjxkzqVSwFHs2ErJgNsjrGiIqc
+ O2Q0/Nug==;
 Received: from 089144210182.atnat0019.highway.a1.net ([89.144.210.182]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gtyWW-0008Ul-Um; Wed, 13 Feb 2019 17:40:41 +0000
+ id 1gtyWZ-00006E-CO; Wed, 13 Feb 2019 17:40:43 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 10/11] lib: consolidate the GENERIC_HWEIGHT symbol
-Date: Wed, 13 Feb 2019 18:40:04 +0100
-Message-Id: <20190213174005.28785-11-hch@lst.de>
+Subject: [PATCH 11/11] s390: don't redefined the HAS_IOMEM symbol
+Date: Wed, 13 Feb 2019 18:40:05 +0100
+Message-Id: <20190213174005.28785-12-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190213174005.28785-1-hch@lst.de>
 References: <20190213174005.28785-1-hch@lst.de>
@@ -83,417 +84,35 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Introduce a new ARCH_HAS_HWEIGHT symbol for alpha and ia64, and just
-default to the generic version otherwise.
+Rely on the common defintion instead.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/alpha/Kconfig      | 5 +----
- arch/arc/Kconfig        | 3 ---
- arch/arm/Kconfig        | 4 ----
- arch/arm64/Kconfig      | 3 ---
- arch/c6x/Kconfig        | 3 ---
- arch/csky/Kconfig       | 3 ---
- arch/h8300/Kconfig      | 3 ---
- arch/hexagon/Kconfig    | 3 ---
- arch/ia64/Kconfig       | 1 +
- arch/m68k/Kconfig       | 4 ----
- arch/microblaze/Kconfig | 3 ---
- arch/mips/Kconfig       | 4 ----
- arch/nds32/Kconfig      | 3 ---
- arch/nios2/Kconfig      | 3 ---
- arch/openrisc/Kconfig   | 3 ---
- arch/parisc/Kconfig     | 4 ----
- arch/powerpc/Kconfig    | 4 ----
- arch/riscv/Kconfig      | 3 ---
- arch/s390/Kconfig       | 3 ---
- arch/sh/Kconfig         | 3 ---
- arch/sparc/Kconfig      | 4 ----
- arch/unicore32/Kconfig  | 3 ---
- arch/x86/Kconfig        | 3 ---
- arch/x86/um/Kconfig     | 3 ---
- arch/xtensa/Kconfig     | 3 ---
- lib/Kconfig             | 7 +++++++
- 26 files changed, 9 insertions(+), 79 deletions(-)
+ arch/s390/Kconfig | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 65b5514e5a7f..a549c53563e8 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -2,6 +2,7 @@
- config ALPHA
- 	bool
- 	default y
-+	select ARCH_HAS_HWEIGHT if ALPHA_EV67
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ARCH_NO_PREEMPT
-@@ -446,10 +447,6 @@ config ALPHA_IRONGATE
- 	depends on ALPHA_NAUTILUS
- 	default y
- 
--config GENERIC_HWEIGHT
--	bool
--	default y if !ALPHA_EV67
--
- config ALPHA_AVANTI
- 	bool
- 	depends on ALPHA_XL || ALPHA_AVANTI_CH
-diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index 6476404b98b8..8bf4c0f7cc1d 100644
---- a/arch/arc/Kconfig
-+++ b/arch/arc/Kconfig
-@@ -72,9 +72,6 @@ config MMU
- config NO_IOPORT_MAP
- 	def_bool y
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config HAVE_ARCH_TRANSPARENT_HUGEPAGE
- 	def_bool y
- 	depends on ARC_MMU_V4
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index c230fb1e09ba..b47825767e3d 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -182,10 +182,6 @@ config ARCH_HAS_BANDGAP
- config FIX_EARLYCON_MEM
- 	def_bool y if MMU
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config ARCH_MAY_HAVE_PC_FDC
- 	bool
- 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 7cc3334aba29..98c3776ccf6b 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -237,9 +237,6 @@ config ILLEGAL_POINTER_VALUE
- 	hex
- 	default 0xdead000000000000
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config ZONE_DMA32
- 	def_bool y
- 
-diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
-index 19b145ef7d92..c439d2f46af0 100644
---- a/arch/c6x/Kconfig
-+++ b/arch/c6x/Kconfig
-@@ -28,9 +28,6 @@ config MMU
- config FPU
- 	def_bool n
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config C6X_BIG_KERNEL
- 	bool "Build a big kernel"
- 	help
-diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
-index c0a49cbd3df0..14a9905e99a4 100644
---- a/arch/csky/Kconfig
-+++ b/arch/csky/Kconfig
-@@ -84,9 +84,6 @@ config CPU_NO_USER_BKPT
- 	  instruction exception.
- 	  In kernel we parse the *regs->pc to determine whether to send SIGTRAP or not.
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config MMU
- 	def_bool y
- 
-diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
-index 4f5a1efab822..77ce104bb42e 100644
---- a/arch/h8300/Kconfig
-+++ b/arch/h8300/Kconfig
-@@ -27,9 +27,6 @@ config H8300
- config CPU_BIG_ENDIAN
- 	def_bool y
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config NO_IOPORT_MAP
- 	def_bool y
- 
-diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
-index 7a01f4c5a4f6..fb2996063d5a 100644
---- a/arch/hexagon/Kconfig
-+++ b/arch/hexagon/Kconfig
-@@ -61,9 +61,6 @@ config MMU
- config GENERIC_IRQ_PROBE
- 	def_bool y
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- menu "Machine selection"
- 
- choice
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index fc44c046953e..c9eb106b1f4c 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -8,6 +8,7 @@ menu "Processor type and features"
- 
- config IA64
- 	bool
-+	select ARCH_HAS_HWEIGHT
- 	select ARCH_MIGHT_HAVE_PC_PARPORT
- 	select ARCH_MIGHT_HAVE_PC_SERIO
- 	select ACPI if (!IA64_HP_SIM)
-diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
-index 1bf6abaea604..91b150b6572c 100644
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -38,10 +38,6 @@ config ARCH_HAS_ILOG2_U32
- config ARCH_HAS_ILOG2_U64
- 	bool
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config TIME_LOW_RES
- 	bool
- 	default y
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index d8907d6f969c..0185ac1f0268 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -71,9 +71,6 @@ config ARCH_HAS_ILOG2_U32
- config ARCH_HAS_ILOG2_U64
- 	def_bool n
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- source "arch/microblaze/Kconfig.platform"
- 
- menu "Processor type and features"
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index bd0c9be7e7cf..04e041cac595 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -1042,10 +1042,6 @@ source "arch/mips/paravirt/Kconfig"
- 
- endmenu
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config SCHED_OMIT_FRAME_POINTER
- 	bool
- 	default y
-diff --git a/arch/nds32/Kconfig b/arch/nds32/Kconfig
-index 7b3a36705aa8..979661f0ab51 100644
---- a/arch/nds32/Kconfig
-+++ b/arch/nds32/Kconfig
-@@ -50,9 +50,6 @@ config NDS32
- 	help
- 	  Andes(nds32) Linux support.
- 
--config GENERIC_HWEIGHT
--        def_bool y
--
- config GENERIC_LOCKBREAK
-         def_bool y
- 	depends on PREEMPT
-diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
-index 11ef63217ebe..a0485f5f0db0 100644
---- a/arch/nios2/Kconfig
-+++ b/arch/nios2/Kconfig
-@@ -27,9 +27,6 @@ config NIOS2
- 	select CPU_NO_EFFICIENT_FFS
- 	select ARCH_DISCARD_MEMBLOCK
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config NO_IOPORT_MAP
- 	def_bool y
- 
-diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
-index 15d7df402c19..dc026973e6f6 100644
---- a/arch/openrisc/Kconfig
-+++ b/arch/openrisc/Kconfig
-@@ -46,9 +46,6 @@ config CPU_BIG_ENDIAN
- config MMU
- 	def_bool y
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config NO_IOPORT_MAP
- 	def_bool y
- 
-diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 42282b8e086d..7d5ded83c180 100644
---- a/arch/parisc/Kconfig
-+++ b/arch/parisc/Kconfig
-@@ -86,10 +86,6 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default n
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config TIME_LOW_RES
- 	bool
- 	depends on SMP
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a0e9207893c8..8dd4d2b24fdb 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -96,10 +96,6 @@ config GENERIC_LOCKBREAK
- 	default y
- 	depends on SMP && PREEMPT
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config ARCH_HAS_DMA_SET_COHERENT_MASK
-         bool
- 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 2b173a48bdbc..0acdd7aaaaea 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -69,9 +69,6 @@ config PAGE_OFFSET
- 	default 0xffffffff80000000 if 64BIT && MAXPHYSMEM_2GB
- 	default 0xffffffe000000000 if 64BIT && MAXPHYSMEM_128GB
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config PGTABLE_LEVELS
- 	int
- 	default 3 if 64BIT
 diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 2a5c12be633e..9a25e19364f5 100644
+index 9a25e19364f5..0f62e33ffcb2 100644
 --- a/arch/s390/Kconfig
 +++ b/arch/s390/Kconfig
-@@ -14,9 +14,6 @@ config ARCH_HAS_ILOG2_U32
- config ARCH_HAS_ILOG2_U64
- 	def_bool n
+@@ -159,6 +159,7 @@ config S390
+ 	select MODULES_USE_ELF_RELA
+ 	select NEED_DMA_MAP_STATE	if PCI
+ 	select NEED_SG_DMA_LENGTH	if PCI
++	select NO_IOMEM			if !PCI
+ 	select OLD_SIGACTION
+ 	select OLD_SIGSUSPEND3
+ 	select PCI_DOMAINS		if PCI
+@@ -708,9 +709,6 @@ config PCI_NR_FUNCTIONS
  
--config GENERIC_HWEIGHT
--	def_bool y
+ endif	# PCI
+ 
+-config HAS_IOMEM
+-	def_bool PCI
 -
- config GENERIC_LOCKBREAK
- 	def_bool y if SMP && PREEMPT
- 
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 3d0bd7fbe11a..af6a40af1702 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -94,9 +94,6 @@ config ARCH_DEFCONFIG
- 	default "arch/sh/configs/shx3_defconfig" if SUPERH32
- 	default "arch/sh/configs/cayman_defconfig" if SUPERH64
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config GENERIC_LOCKBREAK
- 	def_bool y
- 	depends on SMP && PREEMPT
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 58270c021b01..78135ac357ed 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -187,10 +187,6 @@ config NR_CPUS
- 
- source "kernel/Kconfig.hz"
- 
--config GENERIC_HWEIGHT
--	bool
--	default y
--
- config ARCH_MAY_HAVE_PC_FDC
- 	bool
- 	default y
-diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
-index 9de1d983a99a..e69a8c3232e1 100644
---- a/arch/unicore32/Kconfig
-+++ b/arch/unicore32/Kconfig
-@@ -38,9 +38,6 @@ config ARCH_HAS_ILOG2_U32
- config ARCH_HAS_ILOG2_U64
- 	bool
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config ARCH_MAY_HAVE_PC_FDC
- 	bool
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f4cb31174e1b..7a9347c7448e 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -255,9 +255,6 @@ config GENERIC_ISA_DMA
- 	def_bool y
- 	depends on ISA_DMA_API
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config ARCH_MAY_HAVE_PC_FDC
- 	def_bool y
- 	depends on ISA_DMA_API
-diff --git a/arch/x86/um/Kconfig b/arch/x86/um/Kconfig
-index f5a8cded3ca4..1628a54af003 100644
---- a/arch/x86/um/Kconfig
-+++ b/arch/x86/um/Kconfig
-@@ -49,6 +49,3 @@ config ARCH_HAS_SC_SIGNALS
- 
- config ARCH_REUSE_HOST_VSYSCALL_AREA
- 	def_bool !64BIT
--
--config GENERIC_HWEIGHT
--	def_bool y
-diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index d02c25184ca0..ff57afdeda04 100644
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -47,9 +47,6 @@ config XTENSA
- 	  with reasonable minimum requirements.  The Xtensa Linux project has
- 	  a home page at <http://www.linux-xtensa.org/>.
- 
--config GENERIC_HWEIGHT
--	def_bool y
--
- config ARCH_HAS_ILOG2_U32
- 	def_bool n
- 
-diff --git a/lib/Kconfig b/lib/Kconfig
-index bd2e7e74c321..91019f26d0a8 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -35,6 +35,13 @@ config RATIONAL
- config GENERIC_CSUM
- 	bool
- 
-+config ARCH_HAS_HWEIGHT
-+	bool
-+
-+config GENERIC_HWEIGHT
-+	default y if !ARCH_HAS_HWEIGHT
-+	bool
-+
- config GENERIC_STRNCPY_FROM_USER
- 	bool
- 
+ config CHSC_SCH
+ 	def_tristate m
+ 	prompt "Support for CHSC subchannels"
 -- 
 2.20.1
 
