@@ -6,55 +6,54 @@ X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDE7BC282C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 01:17:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E4AAC282C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 01:46:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8B77222BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 01:17:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8B77222BB
+	by mail.kernel.org (Postfix) with ESMTPS id 9D484222BA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 01:46:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D484222BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zhTJ5CqMzDqQy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 12:17:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zj7120DczDqRB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 12:46:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.120; helo=mga04.intel.com; envelope-from=lkp@intel.com;
+ (client-ip=134.134.136.24; helo=mga09.intel.com; envelope-from=lkp@intel.com;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga04.intel.com (mga04.intel.com [192.55.52.120])
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zhR25vqHzDqHj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 12:15:24 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zj4s0jfRzDqLK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 12:44:43 +1100 (AEDT)
+X-Amp-Result: UNSCANNABLE
 X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 12 Feb 2019 17:15:21 -0800
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+ by orsmga102.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 12 Feb 2019 17:44:40 -0800
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.58,364,1544515200"; 
- d="gz'50?scan'50,208,50";a="114456510"
+ d="gz'50?scan'50,208,50";a="124044087"
 Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
- by orsmga007.jf.intel.com with ESMTP; 12 Feb 2019 17:15:11 -0800
+ by fmsmga008.fm.intel.com with ESMTP; 12 Feb 2019 17:44:36 -0800
 Received: from kbuild by lkp-server01 with local (Exim 4.89)
  (envelope-from <lkp@intel.com>)
- id 1gtj8o-000E8N-Bu; Wed, 13 Feb 2019 09:15:10 +0800
-Date: Wed, 13 Feb 2019 09:14:50 +0800
+ id 1gtjbH-0009Wr-NW; Wed, 13 Feb 2019 09:44:35 +0800
+Date: Wed, 13 Feb 2019 09:43:05 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Daniel Jordan <daniel.m.jordan@oracle.com>
-Subject: Re: [PATCH 4/5] powerpc/mmu: use pinned_vm instead of locked_vm to
+Subject: Re: [PATCH 5/5] kvm/book3s: use pinned_vm instead of locked_vm to
  account pinned pages
-Message-ID: <201902130917.OXVqEfcK%fengguang.wu@intel.com>
-References: <20190211224437.25267-5-daniel.m.jordan@oracle.com>
+Message-ID: <201902130942.blI6qjyh%fengguang.wu@intel.com>
+References: <20190211224437.25267-6-daniel.m.jordan@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="PNTmBPCT7hxwcZjr"
+Content-Type: multipart/mixed; boundary="opJtzjQTFsWo+cga"
 Content-Disposition: inline
-In-Reply-To: <20190211224437.25267-5-daniel.m.jordan@oracle.com>
+In-Reply-To: <20190211224437.25267-6-daniel.m.jordan@oracle.com>
 User-Agent: Mutt/1.5.23 (2014-03-12)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -78,7 +77,7 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---PNTmBPCT7hxwcZjr
+--opJtzjQTFsWo+cga
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -103,25 +102,33 @@ reproduce:
 
 All errors (new ones prefixed by >>):
 
-   In file included from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
-   arch/powerpc/mm/mmu_context_iommu.c: In function 'mm_iommu_adjust_pinned_vm':
->> arch/powerpc/mm/mmu_context_iommu.c:55:43: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
-      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
-                                              ^~~~~~~~~~~~~~
+   In file included from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
+   arch/powerpc/kvm/book3s_64_vio.c: In function 'kvmppc_account_memlimit':
+>> arch/powerpc/kvm/book3s_64_vio.c:70:42: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
+                                             ^~~~~~~~~~~~~~~~~~~~~~~
    include/linux/atomic.h:75:22: note: in definition of macro '__atomic_op_fence'
      typeof(op##_relaxed(args)) __ret;    \
                          ^~~~
-   arch/powerpc/mm/mmu_context_iommu.c:55:15: note: in expansion of macro 'atomic64_add_return'
-      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+   arch/powerpc/kvm/book3s_64_vio.c:70:15: note: in expansion of macro 'atomic64_add_return'
+      pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
                   ^~~~~~~~~~~~~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:331:52: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
     atomic64_##op##_return_relaxed(long a, atomic64_t *v)   \
                                            ~~~~~~~~~~~~^
@@ -131,24 +138,32 @@ All errors (new ones prefixed by >>):
    arch/powerpc/include/asm/atomic.h:370:1: note: in expansion of macro 'ATOMIC64_OPS'
     ATOMIC64_OPS(add, add)
     ^~~~~~~~~~~~
-   In file included from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
->> arch/powerpc/mm/mmu_context_iommu.c:55:43: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
-      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
-                                              ^~~~~~~~~~~~~~
+   In file included from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
+>> arch/powerpc/kvm/book3s_64_vio.c:70:42: error: passing argument 2 of 'atomic64_add_return_relaxed' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
+                                             ^~~~~~~~~~~~~~~~~~~~~~~
    include/linux/atomic.h:77:23: note: in definition of macro '__atomic_op_fence'
      __ret = op##_relaxed(args);     \
                           ^~~~
-   arch/powerpc/mm/mmu_context_iommu.c:55:15: note: in expansion of macro 'atomic64_add_return'
-      pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
+   arch/powerpc/kvm/book3s_64_vio.c:70:15: note: in expansion of macro 'atomic64_add_return'
+      pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
                   ^~~~~~~~~~~~~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:331:52: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
     atomic64_##op##_return_relaxed(long a, atomic64_t *v)   \
                                            ~~~~~~~~~~~~^
@@ -158,14 +173,18 @@ All errors (new ones prefixed by >>):
    arch/powerpc/include/asm/atomic.h:370:1: note: in expansion of macro 'ATOMIC64_OPS'
     ATOMIC64_OPS(add, add)
     ^~~~~~~~~~~~
->> arch/powerpc/mm/mmu_context_iommu.c:58:25: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
-       atomic64_sub(npages, &mm->pinned_vm);
-                            ^~~~~~~~~~~~~~
+>> arch/powerpc/kvm/book3s_64_vio.c:73:24: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
+       atomic64_sub(pages, &current->mm->pinned_vm);
+                           ^~~~~~~~~~~~~~~~~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:315:58: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
     static __inline__ void atomic64_##op(long a, atomic64_t *v)  \
                                                  ~~~~~~~~~~~~^
@@ -175,25 +194,33 @@ All errors (new ones prefixed by >>):
    arch/powerpc/include/asm/atomic.h:371:1: note: in expansion of macro 'ATOMIC64_OPS'
     ATOMIC64_OPS(sub, subf)
     ^~~~~~~~~~~~
->> arch/powerpc/mm/mmu_context_iommu.c:61:29: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
-      pinned_vm = atomic64_read(&mm->pinned_vm);
-                                ^~~~~~~~~~~~~~
+>> arch/powerpc/kvm/book3s_64_vio.c:76:29: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      pinned_vm = atomic64_read(&current->mm->pinned_vm);
+                                ^~~~~~~~~~~~~~~~~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:300:56: note: expected 'const atomic64_t *' {aka 'const struct <anonymous> *'} but argument is of type 'long unsigned int *'
     static __inline__ long atomic64_read(const atomic64_t *v)
                                          ~~~~~~~~~~~~~~~~~~^
-   arch/powerpc/mm/mmu_context_iommu.c:64:24: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
-      atomic64_sub(npages, &mm->pinned_vm);
-                           ^~~~~~~~~~~~~~
+   arch/powerpc/kvm/book3s_64_vio.c:80:23: error: passing argument 2 of 'atomic64_sub' from incompatible pointer type [-Werror=incompatible-pointer-types]
+      atomic64_sub(pages, &current->mm->pinned_vm);
+                          ^~~~~~~~~~~~~~~~~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:315:58: note: expected 'atomic64_t *' {aka 'struct <anonymous> *'} but argument is of type 'long unsigned int *'
     static __inline__ void atomic64_##op(long a, atomic64_t *v)  \
                                                  ~~~~~~~~~~~~^
@@ -205,104 +232,114 @@ All errors (new ones prefixed by >>):
     ^~~~~~~~~~~~
    In file included from include/linux/kernel.h:14,
                     from include/linux/list.h:9,
-                    from include/linux/rculist.h:10,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
-   arch/powerpc/mm/mmu_context_iommu.c:70:18: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
-       atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
-                     ^~~~~~~~~~~~~~
+                    from include/linux/preempt.h:11,
+                    from include/linux/hardirq.h:5,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
+   arch/powerpc/kvm/book3s_64_vio.c:85:18: error: passing argument 1 of 'atomic64_read' from incompatible pointer type [-Werror=incompatible-pointer-types]
+       atomic64_read(&current->mm->pinned_vm) << PAGE_SHIFT,
+                     ^~~~~~~~~~~~~~~~~~~~~~~
    include/linux/printk.h:136:17: note: in definition of macro 'no_printk'
       printk(fmt, ##__VA_ARGS__);  \
                     ^~~~~~~~~~~
-   arch/powerpc/mm/mmu_context_iommu.c:67:2: note: in expansion of macro 'pr_debug'
-     pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%lu %ld/%lu\n",
+   arch/powerpc/kvm/book3s_64_vio.c:83:2: note: in expansion of macro 'pr_debug'
+     pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%lu %ld/%lu%s\n", current->pid,
      ^~~~~~~~
    In file included from include/linux/atomic.h:7,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/rculist.h:11,
-                    from include/linux/sched/signal.h:5,
-                    from arch/powerpc/mm/mmu_context_iommu.c:13:
+                    from include/linux/llist.h:63,
+                    from include/linux/smp.h:15,
+                    from include/linux/percpu.h:7,
+                    from include/linux/context_tracking_state.h:5,
+                    from include/linux/vtime.h:5,
+                    from include/linux/hardirq.h:8,
+                    from include/linux/kvm_host.h:10,
+                    from arch/powerpc/kvm/book3s_64_vio.c:23:
    arch/powerpc/include/asm/atomic.h:300:56: note: expected 'const atomic64_t *' {aka 'const struct <anonymous> *'} but argument is of type 'long unsigned int *'
     static __inline__ long atomic64_read(const atomic64_t *v)
                                          ~~~~~~~~~~~~~~~~~~^
    cc1: all warnings being treated as errors
 
-vim +/atomic64_add_return_relaxed +55 arch/powerpc/mm/mmu_context_iommu.c
+vim +/atomic64_add_return_relaxed +70 arch/powerpc/kvm/book3s_64_vio.c
 
-  > 13	#include <linux/sched/signal.h>
-    14	#include <linux/slab.h>
-    15	#include <linux/rculist.h>
-    16	#include <linux/vmalloc.h>
-    17	#include <linux/mutex.h>
-    18	#include <linux/migrate.h>
-    19	#include <linux/hugetlb.h>
-    20	#include <linux/swap.h>
-    21	#include <linux/sizes.h>
-    22	#include <asm/mmu_context.h>
-    23	#include <asm/pte-walk.h>
-    24	
-    25	static DEFINE_MUTEX(mem_list_mutex);
-    26	
-    27	#define MM_IOMMU_TABLE_GROUP_PAGE_DIRTY	0x1
-    28	#define MM_IOMMU_TABLE_GROUP_PAGE_MASK	~(SZ_4K - 1)
-    29	
-    30	struct mm_iommu_table_group_mem_t {
-    31		struct list_head next;
-    32		struct rcu_head rcu;
-    33		unsigned long used;
-    34		atomic64_t mapped;
-    35		unsigned int pageshift;
-    36		u64 ua;			/* userspace address */
-    37		u64 entries;		/* number of entries in hpas[] */
-    38		u64 *hpas;		/* vmalloc'ed */
-    39	#define MM_IOMMU_TABLE_INVALID_HPA	((uint64_t)-1)
-    40		u64 dev_hpa;		/* Device memory base address */
-    41	};
-    42	
-    43	static long mm_iommu_adjust_pinned_vm(struct mm_struct *mm,
-    44			unsigned long npages, bool incr)
-    45	{
-    46		long ret = 0;
-    47		unsigned long lock_limit;
-    48		s64 pinned_vm;
-    49	
-    50		if (!npages)
-    51			return 0;
-    52	
-    53		if (incr) {
-    54			lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-  > 55			pinned_vm = atomic64_add_return(npages, &mm->pinned_vm);
-    56			if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
-    57				ret = -ENOMEM;
-  > 58				atomic64_sub(npages, &mm->pinned_vm);
-    59			}
-    60		} else {
-  > 61			pinned_vm = atomic64_read(&mm->pinned_vm);
-    62			if (WARN_ON_ONCE(npages > pinned_vm))
-    63				npages = pinned_vm;
-    64			atomic64_sub(npages, &mm->pinned_vm);
-    65		}
+  > 23	#include <linux/kvm_host.h>
+    24	#include <linux/highmem.h>
+    25	#include <linux/gfp.h>
+    26	#include <linux/slab.h>
+    27	#include <linux/sched/signal.h>
+    28	#include <linux/hugetlb.h>
+    29	#include <linux/list.h>
+    30	#include <linux/anon_inodes.h>
+    31	#include <linux/iommu.h>
+    32	#include <linux/file.h>
+    33	
+    34	#include <asm/kvm_ppc.h>
+    35	#include <asm/kvm_book3s.h>
+    36	#include <asm/book3s/64/mmu-hash.h>
+    37	#include <asm/hvcall.h>
+    38	#include <asm/synch.h>
+    39	#include <asm/ppc-opcode.h>
+    40	#include <asm/kvm_host.h>
+    41	#include <asm/udbg.h>
+    42	#include <asm/iommu.h>
+    43	#include <asm/tce.h>
+    44	#include <asm/mmu_context.h>
+    45	
+    46	static unsigned long kvmppc_tce_pages(unsigned long iommu_pages)
+    47	{
+    48		return ALIGN(iommu_pages * sizeof(u64), PAGE_SIZE) / PAGE_SIZE;
+    49	}
+    50	
+    51	static unsigned long kvmppc_stt_pages(unsigned long tce_pages)
+    52	{
+    53		unsigned long stt_bytes = sizeof(struct kvmppc_spapr_tce_table) +
+    54				(tce_pages * sizeof(struct page *));
+    55	
+    56		return tce_pages + ALIGN(stt_bytes, PAGE_SIZE) / PAGE_SIZE;
+    57	}
+    58	
+    59	static long kvmppc_account_memlimit(unsigned long pages, bool inc)
+    60	{
+    61		long ret = 0;
+    62		s64 pinned_vm;
+    63	
+    64		if (!current || !current->mm)
+    65			return ret; /* process exited */
     66	
-    67		pr_debug("[%d] RLIMIT_MEMLOCK HASH64 %c%lu %ld/%lu\n",
-    68				current ? current->pid : 0, incr ? '+' : '-',
-    69				npages << PAGE_SHIFT,
-    70				atomic64_read(&mm->pinned_vm) << PAGE_SHIFT,
-    71				rlimit(RLIMIT_MEMLOCK));
-    72	
-    73		return ret;
-    74	}
-    75	
+    67		if (inc) {
+    68			unsigned long lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+    69	
+  > 70			pinned_vm = atomic64_add_return(pages, &current->mm->pinned_vm);
+    71			if (pinned_vm > lock_limit && !capable(CAP_IPC_LOCK)) {
+    72				ret = -ENOMEM;
+  > 73				atomic64_sub(pages, &current->mm->pinned_vm);
+    74			}
+    75		} else {
+  > 76			pinned_vm = atomic64_read(&current->mm->pinned_vm);
+    77			if (WARN_ON_ONCE(pages > pinned_vm))
+    78				pages = pinned_vm;
+    79	
+    80			atomic64_sub(pages, &current->mm->pinned_vm);
+    81		}
+    82	
+    83		pr_debug("[%d] RLIMIT_MEMLOCK KVM %c%lu %ld/%lu%s\n", current->pid,
+    84				inc ? '+' : '-', pages << PAGE_SHIFT,
+    85				atomic64_read(&current->mm->pinned_vm) << PAGE_SHIFT,
+    86				rlimit(RLIMIT_MEMLOCK), ret ? " - exceeded" : "");
+    87	
+    88		return ret;
+    89	}
+    90	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---PNTmBPCT7hxwcZjr
+--opJtzjQTFsWo+cga
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICF1sY1wAAy5jb25maWcAlDzZdtw2su/5ij7Oy8yDM7ItK/bcowcQBNlIkwQNkK3lhUeW
+H4sICC50Y1wAAy5jb25maWcAlDzZdtw2su/5ij7Oy8yDM7ItK/bcowcQBNlIkwQNkK3lhUeW
 245OtPi2pJn4728VwKUAgi3fnJlErCpshUJtKPSvv/y6Ys9PD3dXTzfXV7e3P1bfdve7/dXT
 7svq683t7n9WqVpVqlmJVDa/AXFxc//897++P/x3t/9+vXr/29FvR6/31+9Xm93+fne74g/3
 X2++PUMHNw/3v/z6C/zvVwDefYe+9v9e9e1Ojl/fYj+vv90/v/52fb36R7r7fHN1v/rw21vo
@@ -749,4 +786,4 @@ XAP8KG3jyJOXLqkjMaOrMER8LK5aYKIqOCzdGrMq6XiVjjR6hSco6uDgcKz4SjaZed3B370q
 jCGX01RVUeaneqggqZ7RxWjUfsE1AmR+u2mRJ9K7iTsk0pQ1eyQgOkYjvy5Hrpvy6f8B6VyF
 KCGEAQA=
 
---PNTmBPCT7hxwcZjr--
+--opJtzjQTFsWo+cga--
