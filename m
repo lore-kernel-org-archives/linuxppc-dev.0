@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A84C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76C38C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:56:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A6F812070C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:54:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F00A72086C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:56:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="SMaga/sR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A6F812070C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="TBNc9WgD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F00A72086C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4406bD4XySzDqNR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 04:54:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4406dw5QJXzDqCX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 04:56:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,34 +31,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="SMaga/sR"; dkim-atps=neutral
+ header.b="TBNc9WgD"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hk5fZxzDqQC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hn005wzDqR0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=f/qWIarN5IRk73xiPhDWKAJukH3XPrDEoQ8mVk0klfs=; b=SMaga/sR8cTQDjLz627+XRT2sS
- 6whBpzS0bTvT/OJy1GMy7imeMjSvvhoiq9hk5hSjI5zxe2whzsOB1TvwjITl3X7kDxpORWyG7pU2F
- VjrI+5CYnyOuiw3gpOimlh7F2pU0yvamzxrvWKzkRfur86gDrlb9oNJMkqpi9AuZzL/gZ7AQvLuwW
- kkPo4CzElyINi8ss9jADRQYPSaKESem03oC4D4ZqxcbvLRBvGboOQtZx6iVMPyDa7gG+EFZ9KpTgx
- UGZrEf03EqHX8WeZDRZ4MrT+lgL4xIv+dugZFJu+buzMKfdo/wOok9trzIBj3z72HZzEQba1odzZ/
- EdVOEyBA==;
+ bh=n1aMoCWCLlMTFpKq8ZFDijFiHtAA511HYlq9HLPG2Nw=; b=TBNc9WgDkK5Xv2DPyXY6/BuMtL
+ J/l5DRG2sanggFveLMK8cm7VEFuZK/idBwdZ9ZlLfmhjyBU0QwdrHg54P9Sq74V8N4ec8kBeBWsSD
+ VtiEmEzIQPZ2aU0T4sE6O35lYrL88OiZ4PiW4eT2zwKyw0aRcKlX1+X7NIBCSty9gHvPcvK73rcEv
+ oODwBEsPRfJcqpwj6jlWLKgN1rshM/FcY5p8CNesQkEcYvdNbf4mkz/I4CeHi6zvL+aA7v4/wzsnn
+ x+b3N/loWPnLUi4M2GeiaiHCn1rdKRkgVxYotBxH5KbSUvxqh368G8wLYYY2Thkf068wBhg7kK1IA
+ +BLNErPg==;
 Received: from 089144210182.atnat0019.highway.a1.net ([89.144.210.182]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gtyWN-0008JB-1y; Wed, 13 Feb 2019 17:40:31 +0000
+ id 1gtyWP-0008Lo-Gq; Wed, 13 Feb 2019 17:40:33 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 06/11] lockdep: consolidate the LOCKDEP_SUPPORT symbol
-Date: Wed, 13 Feb 2019 18:40:00 +0100
-Message-Id: <20190213174005.28785-7-hch@lst.de>
+Subject: [PATCH 07/11] init: consolidate the GENERIC_CALIBRATE_DELAY symbol
+Date: Wed, 13 Feb 2019 18:40:01 +0100
+Message-Id: <20190213174005.28785-8-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190213174005.28785-1-hch@lst.de>
 References: <20190213174005.28785-1-hch@lst.de>
@@ -84,378 +84,483 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add one definition to lib/Kconfig.debug and let the architectures
-select if it supported.
+Add one definition to init/Kconfig and let the architectures select it
+if supported.  The only complication is xtensa, where it is a user
+visible option - we introduce a xtensa-specific symbol instead to work
+around this.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
+ arch/alpha/Kconfig      | 5 +----
  arch/arc/Kconfig        | 4 +---
  arch/arm/Kconfig        | 5 +----
  arch/arm64/Kconfig      | 4 +---
- arch/hexagon/Kconfig    | 4 +---
+ arch/c6x/Kconfig        | 4 +---
+ arch/csky/Kconfig       | 4 +---
+ arch/ia64/Kconfig       | 5 +----
+ arch/m68k/Kconfig       | 5 +----
  arch/microblaze/Kconfig | 4 +---
  arch/mips/Kconfig       | 5 +----
- arch/openrisc/Kconfig   | 4 +---
- arch/powerpc/Kconfig    | 5 +----
- arch/s390/Kconfig       | 4 +---
- arch/sh/Kconfig         | 4 +---
+ arch/nds32/Kconfig      | 4 +---
+ arch/nios2/Kconfig      | 4 +---
+ arch/parisc/Kconfig     | 5 +----
+ arch/riscv/Kconfig      | 4 +---
+ arch/sh/Kconfig         | 3 ---
  arch/sparc/Kconfig      | 5 +----
  arch/um/Kconfig         | 5 +----
  arch/unicore32/Kconfig  | 4 +---
  arch/x86/Kconfig        | 4 +---
- arch/xtensa/Kconfig     | 4 +---
- lib/Kconfig.debug       | 3 +++
- 16 files changed, 18 insertions(+), 50 deletions(-)
+ arch/xtensa/Kconfig     | 3 ++-
+ init/Kconfig            | 3 +++
+ 21 files changed, 23 insertions(+), 66 deletions(-)
 
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 474202d89b25..65b5514e5a7f 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -25,6 +25,7 @@ config ALPHA
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select AUDIT_ARCH
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CPU_VULNERABILITIES
+ 	select GENERIC_SMP_IDLE_THREAD
+@@ -58,10 +59,6 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default n
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	bool
+-	default y
+-
+ config ZONE_DMA
+ 	bool
+ 	default y
 diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index 065fbd55dcc4..b1d6f297e448 100644
+index b1d6f297e448..e965383c05d7 100644
 --- a/arch/arc/Kconfig
 +++ b/arch/arc/Kconfig
-@@ -42,6 +42,7 @@ config ARC
- 	select HANDLE_DOMAIN_IRQ
- 	select IRQ_DOMAIN
- 	select MODULES_USE_ELF_RELA
-+	select LOCKDEP_SUPPORT
- 	select OF
- 	select OF_EARLY_FLATTREE
- 	select OF_RESERVED_MEM
-@@ -54,9 +55,6 @@ config ARC
- config ARCH_HAS_CACHE_LINE_SIZE
+@@ -17,6 +17,7 @@ config ARC
+ 	select BUILDTIME_EXTABLE_SORT
+ 	select CLONE_BACKWARDS
+ 	select COMMON_CLK
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_ATOMIC64 if !ISA_ARCV2 || !(ARC_HAS_LL64 && ARC_HAS_LLSC)
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_FIND_FIRST_BIT
+@@ -73,9 +74,6 @@ config MMU
+ config NO_IOPORT_MAP
  	def_bool y
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	def_bool y
 -
- config SCHED_OMIT_FRAME_POINTER
+ config GENERIC_HWEIGHT
  	def_bool y
  
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 1995e1b24506..d6e7713a71ae 100644
+index d6e7713a71ae..96780ab64a2e 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -98,6 +98,7 @@ config ARM
- 	select HAVE_UID16
- 	select HAVE_VIRT_CPU_ACCOUNTING_GEN
- 	select IRQ_FORCED_THREADING
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_REL
- 	select NEED_DMA_MAP_STATE
- 	select OF_EARLY_FLATTREE if OF
-@@ -167,10 +168,6 @@ config NO_IOPORT_MAP
- config SBUS
+@@ -36,6 +36,7 @@ config ARM
+ 	select GENERIC_ALLOCATOR
+ 	select GENERIC_ARCH_TOPOLOGY if ARM_CPU_TOPOLOGY
+ 	select GENERIC_ATOMIC64 if CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+ 	select GENERIC_CPU_AUTOPROBE
+ 	select GENERIC_EARLY_IOREMAP
+@@ -184,10 +185,6 @@ config GENERIC_HWEIGHT
  	bool
+ 	default y
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	bool
 -	default y
 -
- config ARCH_HAS_ILOG2_U32
+ config ARCH_MAY_HAVE_PC_FDC
  	bool
  
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index ecbe481ce064..f3d3e48aff26 100644
+index f3d3e48aff26..c39dac831f08 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -157,6 +157,7 @@ config ARM64
- 	select IOMMU_DMA if IOMMU_SUPPORT
- 	select IRQ_DOMAIN
- 	select IRQ_FORCED_THREADING
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_RELA
- 	select MULTI_IRQ_HANDLER
- 	select NEED_DMA_MAP_STATE
-@@ -232,9 +233,6 @@ config ILLEGAL_POINTER_VALUE
- 	hex
- 	default 0xdead000000000000
- 
--config LOCKDEP_SUPPORT
--	def_bool y
--
- config GENERIC_BUG
- 	def_bool y
- 	depends on BUG
-diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
-index b6c3111ec5f9..425217c98a77 100644
---- a/arch/hexagon/Kconfig
-+++ b/arch/hexagon/Kconfig
-@@ -21,6 +21,7 @@ config HEXAGON
- 	select GENERIC_IRQ_SHOW
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_TRACEHOOK
-+	select LOCKDEP_SUPPORT
- 	select ARCH_DISCARD_MEMBLOCK
- 	select NEED_SG_DMA_LENGTH
- 	select NO_IOPORT_MAP
-@@ -46,9 +47,6 @@ config HEXAGON_PHYS_OFFSET
- config FRAME_POINTER
- 	def_bool y
- 
--config LOCKDEP_SUPPORT
--	def_bool y
--
- config EARLY_PRINTK
- 	def_bool y
- 
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index 238f8b410331..1989ba1d1798 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -31,6 +31,7 @@ config MICROBLAZE
- 	select HAVE_OPROFILE
- 	select HAVE_PCI
- 	select IRQ_DOMAIN
-+	select LOCKDEP_SUPPORT
- 	select XILINX_INTC
- 	select MODULES_USE_ELF_RELA
- 	select OF
-@@ -77,9 +78,6 @@ config GENERIC_CALIBRATE_DELAY
- config GENERIC_CSUM
- 	def_bool y
- 
--config LOCKDEP_SUPPORT
--	def_bool y
--
- source "arch/microblaze/Kconfig.platform"
- 
- menu "Processor type and features"
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index d1c89635a459..88792685687c 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -76,6 +76,7 @@ config MIPS
- 	select HAVE_VIRT_CPU_ACCOUNTING_GEN if 64BIT || !SMP
- 	select IRQ_FORCED_THREADING
- 	select ISA if EISA
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_RELA if MODULES && 64BIT
- 	select MODULES_USE_ELF_REL if MODULES
- 	select PERF_USE_VMALLOC
-@@ -3051,10 +3052,6 @@ endchoice
- 
- endmenu
- 
--config LOCKDEP_SUPPORT
--	bool
--	default y
--
- config HAVE_LATENCYTOP_SUPPORT
- 	bool
- 	default y
-diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
-index 514787c0c469..6cb7632fa5b0 100644
---- a/arch/openrisc/Kconfig
-+++ b/arch/openrisc/Kconfig
-@@ -28,6 +28,7 @@ config OPENRISC
- 	select GENERIC_SMP_IDLE_THREAD
- 	select MODULES_USE_ELF_RELA
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select LOCKDEP_SUPPORT
- 	select OR1K_PIC
- 	select CPU_NO_EFFICIENT_FFS if !OPENRISC_HAVE_INST_FF1
- 	select ARCH_USE_QUEUED_SPINLOCKS
-@@ -55,9 +56,6 @@ config NO_IOPORT_MAP
+@@ -85,6 +85,7 @@ config ARM64
+ 	select FRAME_POINTER
+ 	select GENERIC_ALLOCATOR
+ 	select GENERIC_ARCH_TOPOLOGY
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CLOCKEVENTS_BROADCAST
+ 	select GENERIC_CPU_AUTOPROBE
+@@ -247,9 +248,6 @@ config GENERIC_HWEIGHT
  config GENERIC_CSUM
          def_bool y
  
--config LOCKDEP_SUPPORT
--	def_bool  y
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
 -
- menu "Processor type and features"
+ config ZONE_DMA32
+ 	def_bool y
  
- choice
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1156021fd4a8..8b9f3639555f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -91,10 +91,6 @@ config PPC_WATCHDOG
- 	  seleted via the generic lockup detector menu which is why we
- 	  have no standalone config option for it here.
+diff --git a/arch/c6x/Kconfig b/arch/c6x/Kconfig
+index f11465554ecf..d5f382830f49 100644
+--- a/arch/c6x/Kconfig
++++ b/arch/c6x/Kconfig
+@@ -10,6 +10,7 @@ config C6X
+ 	select ARCH_HAS_SYNC_DMA_FOR_DEVICE
+ 	select CLKDEV_LOOKUP
+ 	select GENERIC_ATOMIC64
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_IRQ_SHOW
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select SPARSE_IRQ
+@@ -26,9 +27,6 @@ config MMU
+ config FPU
+ 	def_bool n
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
+index 3c3de7ac95bf..4085ba807e0c 100644
+--- a/arch/csky/Kconfig
++++ b/arch/csky/Kconfig
+@@ -11,6 +11,7 @@ config CSKY
+ 	select IRQ_DOMAIN
+ 	select HANDLE_DOMAIN_IRQ
+ 	select DW_APB_TIMER_OF
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_LIB_ASHLDI3
+ 	select GENERIC_LIB_ASHRDI3
+ 	select GENERIC_LIB_LSHRDI3
+@@ -82,9 +83,6 @@ config CPU_NO_USER_BKPT
+ 	  instruction exception.
+ 	  In kernel we parse the *regs->pc to determine whether to send SIGTRAP or not.
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config GENERIC_CSUM
+ 	def_bool y
+ 
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 8c14b669d194..fc44c046953e 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -34,6 +34,7 @@ config IA64
+ 	select ARCH_HAS_SYNC_DMA_FOR_CPU if SWIOTLB
+ 	select VIRT_TO_BUS
+ 	select ARCH_DISCARD_MEMBLOCK
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PENDING_IRQ if SMP
+ 	select GENERIC_IRQ_SHOW
+@@ -87,10 +88,6 @@ config HUGETLB_PAGE_SIZE_VARIABLE
+ 	depends on HUGETLB_PAGE
+ 	default y
+ 
+-config GENERIC_CALIBRATE_DELAY
 -	bool
 -	default y
 -
- config GENERIC_LOCKBREAK
- 	bool
- 	default y
-@@ -213,6 +209,7 @@ config PPC
- 	select IOMMU_HELPER			if PPC64
- 	select IRQ_DOMAIN
- 	select IRQ_FORCED_THREADING
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_RELA
- 	select NEED_DMA_MAP_STATE		if PPC64 || NOT_COHERENT_CACHE
- 	select NEED_SG_DMA_LENGTH
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 662acc163019..15ccdd04814e 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -8,9 +8,6 @@ config ZONE_DMA
- config CPU_BIG_ENDIAN
+ config HAVE_SETUP_PER_CPU_AREA
  	def_bool y
  
--config LOCKDEP_SUPPORT
--	def_bool y
--
- config ARCH_HAS_ILOG2_U32
- 	def_bool n
- 
-@@ -165,6 +162,7 @@ config S390
- 	select HAVE_VIRT_CPU_ACCOUNTING
- 	select IOMMU_HELPER		if PCI
- 	select IOMMU_SUPPORT		if PCI
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_RELA
- 	select NEED_DMA_MAP_STATE	if PCI
- 	select NEED_SG_DMA_LENGTH	if PCI
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 840c33df6f0e..932f9329cc5f 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -32,6 +32,7 @@ config SUPERH
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select MAY_HAVE_SPARSE_IRQ
- 	select IRQ_FORCED_THREADING
-+	select LOCKDEP_SUPPORT
- 	select RTC_LIB
- 	select GENERIC_ATOMIC64
- 	select GENERIC_IRQ_SHOW
-@@ -128,9 +129,6 @@ config SYS_SUPPORTS_SMP
- config SYS_SUPPORTS_NUMA
+diff --git a/arch/m68k/Kconfig b/arch/m68k/Kconfig
+index 6ace0b2cd5fe..ed03da5430d9 100644
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -14,6 +14,7 @@ config M68K
+ 	select HAVE_UID16
+ 	select VIRT_TO_BUS
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG if RMW_INSNS
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CPU_DEVICES
+ 	select GENERIC_IOMAP
+ 	select GENERIC_STRNCPY_FROM_USER if MMU
+@@ -41,10 +42,6 @@ config GENERIC_HWEIGHT
  	bool
+ 	default y
  
--config LOCKDEP_SUPPORT
--	def_bool y
--
- config ARCH_HAS_ILOG2_U32
- 	def_bool n
- 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 4f8c3f9dd2c6..e7ded2147230 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -85,6 +85,7 @@ config SPARC64
- 	select ARCH_SUPPORTS_ATOMIC_RMW
- 	select HAVE_NMI
- 	select HAVE_REGS_AND_STACK_ACCESS_API
-+	select LOCKDEP_SUPPORT
- 	select ARCH_USE_QUEUED_RWLOCKS
- 	select ARCH_USE_QUEUED_SPINLOCKS
- 	select GENERIC_TIME_VSYSCALL
-@@ -109,10 +110,6 @@ config ARCH_ATU
- 	bool
- 	default y if SPARC64
- 
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	bool
--	default y if SPARC64
+-	default y
 -
- config ARCH_HIBERNATION_POSSIBLE
- 	def_bool y if SPARC64
+ config GENERIC_CSUM
+ 	bool
  
-diff --git a/arch/um/Kconfig b/arch/um/Kconfig
-index f1b7bf7cc66e..49c289cb95e8 100644
---- a/arch/um/Kconfig
-+++ b/arch/um/Kconfig
-@@ -17,6 +17,7 @@ config UML
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index 1989ba1d1798..65a44727a7a2 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -13,6 +13,7 @@ config MICROBLAZE
+ 	select CLONE_BACKWARDS3
+ 	select COMMON_CLK
+ 	select GENERIC_ATOMIC64
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CPU_DEVICES
+ 	select GENERIC_IDLE_POLL_SETUP
+@@ -72,9 +73,6 @@ config ARCH_HAS_ILOG2_U64
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config GENERIC_CSUM
+ 	def_bool y
+ 
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 88792685687c..530eaf950744 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -19,6 +19,7 @@ config MIPS
+ 	select CPU_NO_EFFICIENT_FFS if (TARGET_ISA_REV < 1)
+ 	select CPU_PM if CPU_IDLE
+ 	select GENERIC_ATOMIC64 if !64BIT
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CMOS_UPDATE
+ 	select GENERIC_CPU_AUTOPROBE
+@@ -1044,10 +1045,6 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	bool
+-	default y
+-
+ config SCHED_OMIT_FRAME_POINTER
+ 	bool
+ 	default y
+diff --git a/arch/nds32/Kconfig b/arch/nds32/Kconfig
+index ca62d4f97acb..38135bf98a6f 100644
+--- a/arch/nds32/Kconfig
++++ b/arch/nds32/Kconfig
+@@ -12,6 +12,7 @@ config NDS32
+ 	select CLONE_BACKWARDS
+ 	select COMMON_CLK
+ 	select GENERIC_ATOMIC64
++	select GENERIC_CALIBRATE_DELAY
  	select GENERIC_CPU_DEVICES
  	select GENERIC_CLOCKEVENTS
- 	select HAVE_GCC_PLUGINS
-+	select LOCKDEP_SUPPORT
- 	select STACKTRACE
- 	select STACKTRACE_SUPPORT
- 	select TRACE_IRQFLAGS_SUPPORT
-@@ -35,10 +36,6 @@ config ISA
+ 	select GENERIC_IRQ_CHIP
+@@ -48,9 +49,6 @@ config NDS32
+ 	help
+ 	  Andes(nds32) Linux support.
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config GENERIC_CSUM
+         def_bool y
+ 
+diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
+index 3b50689007f5..10320e023594 100644
+--- a/arch/nios2/Kconfig
++++ b/arch/nios2/Kconfig
+@@ -6,6 +6,7 @@ config NIOS2
+ 	select ARCH_NO_SWAP
+ 	select TIMER_OF
+ 	select GENERIC_ATOMIC64
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CPU_DEVICES
+ 	select GENERIC_IRQ_PROBE
+@@ -31,9 +32,6 @@ config GENERIC_CSUM
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config NO_IOPORT_MAP
+ 	def_bool y
+ 
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index 845067133dc2..fcbc67b6b830 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -27,6 +27,7 @@ config PARISC
+ 	select HAVE_KERNEL_LZO
+ 	select HAVE_KERNEL_XZ
+ 	select GENERIC_ATOMIC64 if !64BIT
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PCI_IOMAP
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+@@ -93,10 +94,6 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	bool
+-	default y
+-
+ config TIME_LOW_RES
+ 	bool
+ 	depends on SMP
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index a6d914631d47..732614eb3683 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -19,6 +19,7 @@ config RISCV
+ 	select ARCH_WANT_FRAME_POINTERS
+ 	select CLONE_BACKWARDS
+ 	select COMMON_CLK
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CPU_DEVICES
+ 	select GENERIC_IRQ_SHOW
+@@ -73,9 +74,6 @@ config GENERIC_BUG
+ config GENERIC_BUG_RELATIVE_POINTERS
+ 	bool
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	def_bool y
+-
+ config GENERIC_CSUM
+ 	def_bool y
+ 
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index 932f9329cc5f..01d09a4637d9 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -103,9 +103,6 @@ config GENERIC_CSUM
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	bool
+-
+ config GENERIC_LOCKBREAK
+ 	def_bool y
+ 	depends on SMP && PREEMPT
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index e7ded2147230..58270c021b01 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -35,6 +35,7 @@ config SPARC
+ 	select HAVE_EBPF_JIT if SPARC64
+ 	select HAVE_DEBUG_BUGVERBOSE
+ 	select GENERIC_SMP_IDLE_THREAD
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_STRNCPY_FROM_USER
+ 	select GENERIC_STRNLEN_USER
+@@ -190,10 +191,6 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
+-config GENERIC_CALIBRATE_DELAY
+-	bool
+-	default y
+-
+ config ARCH_MAY_HAVE_PC_FDC
+ 	bool
+ 	default y
+diff --git a/arch/um/Kconfig b/arch/um/Kconfig
+index 49c289cb95e8..431a11c9ac51 100644
+--- a/arch/um/Kconfig
++++ b/arch/um/Kconfig
+@@ -13,6 +13,7 @@ config UML
+ 	select HAVE_FUTEX_CMPXCHG if FUTEX
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select HAVE_DEBUG_BUGVERBOSE
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_CPU_DEVICES
+ 	select GENERIC_CLOCKEVENTS
+@@ -36,10 +37,6 @@ config ISA
  config SBUS
  	bool
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	bool
 -	default y
 -
- config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
+ config HZ
+ 	int
+ 	default 100
 diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
-index d7dccc247301..7dd2b9f690b1 100644
+index 7dd2b9f690b1..52b4d48e351a 100644
 --- a/arch/unicore32/Kconfig
 +++ b/arch/unicore32/Kconfig
-@@ -11,6 +11,7 @@ config UNICORE32
+@@ -8,6 +8,7 @@ config UNICORE32
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_BZIP2
+ 	select GENERIC_ATOMIC64
++	select GENERIC_CALIBRATE_DELAY
  	select HAVE_KERNEL_LZO
  	select HAVE_KERNEL_LZMA
  	select HAVE_PCI
-+	select LOCKDEP_SUPPORT
- 	select VIRT_TO_BUS
- 	select ARCH_HAVE_CUSTOM_GPIO_H
- 	select GENERIC_FIND_FIRST_BIT
-@@ -33,9 +34,6 @@ config GENERIC_CSUM
- config NO_IOPORT_MAP
- 	bool
+@@ -43,9 +44,6 @@ config ARCH_HAS_ILOG2_U64
+ config GENERIC_HWEIGHT
+ 	def_bool y
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	def_bool y
 -
- config ARCH_HAS_ILOG2_U32
+ config ARCH_MAY_HAVE_PC_FDC
  	bool
  
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index a53d7a4ffd09..aa72acc7f537 100644
+index aa72acc7f537..1bd4f19b6b28 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -196,6 +196,7 @@ config X86
- 	select HAVE_USER_RETURN_NOTIFIER
- 	select HOTPLUG_SMT			if SMP
- 	select IRQ_FORCED_THREADING
-+	select LOCKDEP_SUPPORT
- 	select NEED_SG_DMA_LENGTH
- 	select PCI_DOMAINS			if PCI
- 	select PCI_LOCKLESS_CONFIG		if PCI
-@@ -227,9 +228,6 @@ config ARCH_DEFCONFIG
- 	default "arch/x86/configs/i386_defconfig" if X86_32
- 	default "arch/x86/configs/x86_64_defconfig" if X86_64
+@@ -91,6 +91,7 @@ config X86
+ 	select DCACHE_WORD_ACCESS
+ 	select EDAC_ATOMIC_SCRUB
+ 	select EDAC_SUPPORT
++	select GENERIC_CALIBRATE_DELAY
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CLOCKEVENTS_BROADCAST	if X86_64 || (X86_32 && X86_LOCAL_APIC)
+ 	select GENERIC_CLOCKEVENTS_MIN_ADJUST
+@@ -267,9 +268,6 @@ config ARCH_MAY_HAVE_PC_FDC
+ 	def_bool y
+ 	depends on ISA_DMA_API
  
--config LOCKDEP_SUPPORT
+-config GENERIC_CALIBRATE_DELAY
 -	def_bool y
 -
- config MMU
+ config ARCH_HAS_CPU_RELAX
  	def_bool y
  
 diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index 2c4bb92df487..b264a4dff465 100644
+index b264a4dff465..d02c25184ca0 100644
 --- a/arch/xtensa/Kconfig
 +++ b/arch/xtensa/Kconfig
-@@ -32,6 +32,7 @@ config XTENSA
- 	select HAVE_STACKPROTECTOR
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select IRQ_DOMAIN
-+	select LOCKDEP_SUPPORT
- 	select MODULES_USE_ELF_RELA
- 	select PERF_USE_VMALLOC
- 	select RWSEM_XCHGADD_ALGORITHM
-@@ -62,9 +63,6 @@ config HZ
- 	int
- 	default 100
+@@ -416,8 +416,9 @@ config XTENSA_CPU_CLOCK
+ 	depends on !XTENSA_CALIBRATE_CCOUNT
+ 	default 16
  
--config LOCKDEP_SUPPORT
--	def_bool y
--
- config MMU
- 	def_bool n
+-config GENERIC_CALIBRATE_DELAY
++config XTENSA_GENERIC_CALIBRATE_DELAY
+ 	bool "Auto calibration of the BogoMIPS value"
++	select GENERIC_CALIBRATE_DELAY
+ 	help
+ 	  The BogoMIPS value can easily be derived from the CPU frequency.
  
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d4df5b24d75e..9331914f9598 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1054,6 +1054,9 @@ config DEBUG_PREEMPT
+diff --git a/init/Kconfig b/init/Kconfig
+index c9386a365eea..b7d5ccd4f44c 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -36,6 +36,9 @@ config IRQ_WORK
+ config BUILDTIME_EXTABLE_SORT
+ 	bool
  
- menu "Lock Debugging (spinlocks, mutexes, etc...)"
- 
-+config LOCKDEP_SUPPORT
++config GENERIC_CALIBRATE_DELAY
 +	bool
 +
- config LOCK_DEBUGGING_SUPPORT
+ config THREAD_INFO_IN_TASK
  	bool
- 	depends on TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+ 	help
 -- 
 2.20.1
 
