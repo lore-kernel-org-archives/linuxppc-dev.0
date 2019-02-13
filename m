@@ -2,54 +2,95 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 719F8C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 22:08:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 570DEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:09:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E646D20842
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 22:08:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E646D20842
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9136F2146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:09:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="JpZ8ZbCo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9136F2146E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440DDr72QFzDqWS
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 09:08:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440Fb61Gk7zDqXG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:09:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="JpZ8ZbCo"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440D4R5n5tzDqHG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 09:01:11 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 0F69610F88;
- Wed, 13 Feb 2019 22:01:09 +0000 (UTC)
-Received: from llong.com (ovpn-125-158.rdu2.redhat.com [10.10.125.158])
- by smtp.corp.redhat.com (Postfix) with ESMTP id DA91E600C4;
- Wed, 13 Feb 2019 22:01:04 +0000 (UTC)
-From: Waiman Long <longman@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v4 3/3] locking/rwsem: Optimize down_read_trylock()
-Date: Wed, 13 Feb 2019 17:00:17 -0500
-Message-Id: <1550095217-12047-4-git-send-email-longman@redhat.com>
-In-Reply-To: <1550095217-12047-1-git-send-email-longman@redhat.com>
-References: <1550095217-12047-1-git-send-email-longman@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.28]); Wed, 13 Feb 2019 22:01:09 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440FY04RKkzDqPR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:07:31 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id p8so1959861plo.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 15:07:31 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=ycGZ/lql/XedLXMhQw613j8q5/nW7HtOXu0fJma7tbU=;
+ b=JpZ8ZbCoGmgsStGrD7Ces+eiaAcEBDwP2MwHm1odgXkmFHZ61NwFL4leS20cW9WLfo
+ FGa7uTtaOlqE4a7hhtN87sFCdcCrbr3+9j+g8Zt/SEDaGmT1DL6reEqmJ+sl9zPfB/ZL
+ sIvXBaZIjR95Sae1LORKUqxDVbVAdr+AtYHnQl+AMJJuZk44ObCM+ljD1a66/KrTAs1u
+ uQuAyBu/AGqV21vCZmuyQyTqyTcG+0nfpmGMLnXNosPfVrazfmWI/04pmdJ2OPq1avXF
+ +ffFBzKHBjoz5yrs/5QRZCMudXVQUio/NrXOJ/xwNF8mKZP97g59R7MdV+4bD0TjA6yW
+ JyaQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=ycGZ/lql/XedLXMhQw613j8q5/nW7HtOXu0fJma7tbU=;
+ b=QDwq2slwN66vaiTvLR2sXSkBGFXLY9HnbtjCRDPvlyk3zyT+474oA0Ono5k2rI+tDC
+ qG0ULbndR/2BqYnYsb5DVx0m1Fsfxgh6sznOHqnmjyhDI7BDuD6Gw2js74WGml67+tNq
+ mj60dwQWyIAbSRDTD+jVIoxRkFJeF6bc3lVaLBT7qJgI6ZOYUaQOgrIbAhZo4nhPB1BL
+ UR9JsC6wSgSkI3Jsl0Be+/ffn4tbNxdk6Kt3IQgMDjKmjo/faZMlIMW+DbLW9qh4JlLQ
+ Vy+DydVHZHPii/ZlzkjfYZTch8JCPBjPQLbZLL8Gw1Tn+AtSiviS6DiXL2ygRV5M4ucn
+ XQaw==
+X-Gm-Message-State: AHQUAuZ2/aZnwQGoNDJ4iC27lCI1cofwgri+DO85dVQJQYpoB2CkZIZC
+ qxz1T86FkysX1bYfI7YGheV3wA==
+X-Google-Smtp-Source: AHgI3IbZxmz9Cji7ywEHkD4zdpRd9ZWq16bVDbDKyOfZsY/wyvM5SVUNTc9mXDq5Bsx5HN2KKJx0pw==
+X-Received: by 2002:a17:902:b489:: with SMTP id
+ y9mr666527plr.193.1550099249465; 
+ Wed, 13 Feb 2019 15:07:29 -0800 (PST)
+Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
+ by smtp.gmail.com with ESMTPSA id
+ k71sm454104pga.44.2019.02.13.15.07.28
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 13 Feb 2019 15:07:28 -0800 (PST)
+Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
+ (envelope-from <jgg@ziepe.ca>)
+ id 1gu3cl-0001KE-SJ; Wed, 13 Feb 2019 16:07:27 -0700
+Date: Wed, 13 Feb 2019 16:07:27 -0700
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 1/5] vfio/type1: use pinned_vm instead of locked_vm to
+ account pinned pages
+Message-ID: <20190213230727.GC24692@ziepe.ca>
+References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+ <20190211224437.25267-2-daniel.m.jordan@oracle.com>
+ <20190211225620.GO24692@ziepe.ca>
+ <20190211231152.qflff6g2asmkb6hr@ca-dmjordan1.us.oracle.com>
+ <20190212114110.17bc8a14@w520.home>
+ <20190213002650.kav7xc4r2xs5f3ef@ca-dmjordan1.us.oracle.com>
+ <20190213130330.76ef1987@w520.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190213130330.76ef1987@w520.home>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,125 +102,29 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- Waiman Long <longman@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- linux-arm-kernel@lists.infradead.org, Tim Chen <tim.c.chen@linux.intel.com>,
- linux-parisc@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- nios2-dev@lists.rocketboards.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
+ aik@ozlabs.ru, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-mm@kvack.org, peterz@infradead.org, mdf@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, cl@linux.com,
+ hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Modify __down_read_trylock() to optimize for an unlocked rwsem and make
-it generate slightly better code.
+On Wed, Feb 13, 2019 at 01:03:30PM -0700, Alex Williamson wrote:
+> > PeterZ posted an RFC that addresses this point[1].  It kept pinned_vm and
+> > locked_vm accounting separate, but allowed the two to be added safely to be
+> > compared against RLIMIT_MEMLOCK.
+> 
+> Unless I'm incorrect in the concerns above, I don't see how we can
+> convert vfio before this occurs.
 
-Before this patch, down_read_trylock:
+RDMA was converted to this pinned_vm scheme a long time ago, arguably
+it is a mistake that VFIO did something different... This was to fix
+some other bug where reporting of pages was wrong.
 
-   0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
-   0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
-   0x000000000000000b <+11>:    mov    %rdx,%rax
-   0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
-   0x0000000000000013 <+19>:    cmp    %rax,%rdx
-   0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
-   0x0000000000000018 <+24>:    mov    (%rdi),%rdx
-   0x000000000000001b <+27>:    test   %rdx,%rdx
-   0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
-   0x0000000000000020 <+32>:    xor    %eax,%eax
-   0x0000000000000022 <+34>:    retq
-   0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
-   0x000000000000002c <+44>:    or     $0x3,%rax
-   0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
-   0x0000000000000034 <+52>:    mov    $0x1,%eax
-   0x0000000000000039 <+57>:    retq
+You are not wrong that this approach doesn't entirely make sense
+though. :)
 
-After patch, down_read_trylock:
-
-   0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:	xor    %eax,%eax
-   0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
-   0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
-   0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
-   0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
-   0x000000000000001b <+27>:	or     $0x3,%rax
-   0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
-   0x0000000000000023 <+35>:	mov    $0x1,%eax
-   0x0000000000000028 <+40>:	retq
-   0x0000000000000029 <+41>:	test   %rax,%rax
-   0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
-   0x000000000000002e <+46>:	xor    %eax,%eax
-   0x0000000000000030 <+48>:	retq
-
-By using a rwsem microbenchmark, the down_read_trylock() rate (with a
-load of 10 to lengthen the lock critical section) on a x86-64 system
-before and after the patch were:
-
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           14,496          14,716
-        2            8,644           8,453
-	4            6,799           6,983
-	8            5,664           7,190
-
-On a ARM64 system, the performance results were:
-
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           23,676          24,488
-        2            7,697           9,502
-        4            4,945           3,440
-        8            2,641           1,603
-
-For the uncontended case (1 thread), the new down_read_trylock() is a
-little bit faster. For the contended cases, the new down_read_trylock()
-perform pretty well in x86-64, but performance degrades at high
-contention level on ARM64.
-
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- kernel/locking/rwsem.h | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
-index 45ee002..1f5775a 100644
---- a/kernel/locking/rwsem.h
-+++ b/kernel/locking/rwsem.h
-@@ -174,14 +174,17 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
- 
- static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
--	long tmp;
-+	/*
-+	 * Optimize for the case when the rwsem is not locked at all.
-+	 */
-+	long tmp = RWSEM_UNLOCKED_VALUE;
- 
--	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
--		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
--				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
-+	do {
-+		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-+					tmp + RWSEM_ACTIVE_READ_BIAS)) {
- 			return 1;
- 		}
--	}
-+	} while (tmp >= 0);
- 	return 0;
- }
- 
--- 
-1.8.3.1
-
+Jason
