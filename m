@@ -2,95 +2,65 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 570DEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:09:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AB187C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:18:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9136F2146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:09:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="JpZ8ZbCo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9136F2146E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	by mail.kernel.org (Postfix) with ESMTPS id 2B3C72146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:18:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B3C72146E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Fb61Gk7zDqXG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:09:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440FnP0FdtzDqWK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:18:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
- (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
- envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=134.134.136.65; helo=mga03.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="JpZ8ZbCo"; 
- dkim-atps=neutral
-Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
- [IPv6:2607:f8b0:4864:20::642])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440FY04RKkzDqPR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:07:31 +1100 (AEDT)
-Received: by mail-pl1-x642.google.com with SMTP id p8so1959861plo.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 15:07:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=ycGZ/lql/XedLXMhQw613j8q5/nW7HtOXu0fJma7tbU=;
- b=JpZ8ZbCoGmgsStGrD7Ces+eiaAcEBDwP2MwHm1odgXkmFHZ61NwFL4leS20cW9WLfo
- FGa7uTtaOlqE4a7hhtN87sFCdcCrbr3+9j+g8Zt/SEDaGmT1DL6reEqmJ+sl9zPfB/ZL
- sIvXBaZIjR95Sae1LORKUqxDVbVAdr+AtYHnQl+AMJJuZk44ObCM+ljD1a66/KrTAs1u
- uQuAyBu/AGqV21vCZmuyQyTqyTcG+0nfpmGMLnXNosPfVrazfmWI/04pmdJ2OPq1avXF
- +ffFBzKHBjoz5yrs/5QRZCMudXVQUio/NrXOJ/xwNF8mKZP97g59R7MdV+4bD0TjA6yW
- JyaQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ycGZ/lql/XedLXMhQw613j8q5/nW7HtOXu0fJma7tbU=;
- b=QDwq2slwN66vaiTvLR2sXSkBGFXLY9HnbtjCRDPvlyk3zyT+474oA0Ono5k2rI+tDC
- qG0ULbndR/2BqYnYsb5DVx0m1Fsfxgh6sznOHqnmjyhDI7BDuD6Gw2js74WGml67+tNq
- mj60dwQWyIAbSRDTD+jVIoxRkFJeF6bc3lVaLBT7qJgI6ZOYUaQOgrIbAhZo4nhPB1BL
- UR9JsC6wSgSkI3Jsl0Be+/ffn4tbNxdk6Kt3IQgMDjKmjo/faZMlIMW+DbLW9qh4JlLQ
- Vy+DydVHZHPii/ZlzkjfYZTch8JCPBjPQLbZLL8Gw1Tn+AtSiviS6DiXL2ygRV5M4ucn
- XQaw==
-X-Gm-Message-State: AHQUAuZ2/aZnwQGoNDJ4iC27lCI1cofwgri+DO85dVQJQYpoB2CkZIZC
- qxz1T86FkysX1bYfI7YGheV3wA==
-X-Google-Smtp-Source: AHgI3IbZxmz9Cji7ywEHkD4zdpRd9ZWq16bVDbDKyOfZsY/wyvM5SVUNTc9mXDq5Bsx5HN2KKJx0pw==
-X-Received: by 2002:a17:902:b489:: with SMTP id
- y9mr666527plr.193.1550099249465; 
- Wed, 13 Feb 2019 15:07:29 -0800 (PST)
-Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
- by smtp.gmail.com with ESMTPSA id
- k71sm454104pga.44.2019.02.13.15.07.28
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 13 Feb 2019 15:07:28 -0800 (PST)
-Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
- (envelope-from <jgg@ziepe.ca>)
- id 1gu3cl-0001KE-SJ; Wed, 13 Feb 2019 16:07:27 -0700
-Date: Wed, 13 Feb 2019 16:07:27 -0700
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH 1/5] vfio/type1: use pinned_vm instead of locked_vm to
- account pinned pages
-Message-ID: <20190213230727.GC24692@ziepe.ca>
-References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
- <20190211224437.25267-2-daniel.m.jordan@oracle.com>
- <20190211225620.GO24692@ziepe.ca>
- <20190211231152.qflff6g2asmkb6hr@ca-dmjordan1.us.oracle.com>
- <20190212114110.17bc8a14@w520.home>
- <20190213002650.kav7xc4r2xs5f3ef@ca-dmjordan1.us.oracle.com>
- <20190213130330.76ef1987@w520.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440FVV3BS4zDqVk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:05:22 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2019 15:05:20 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.58,366,1544515200"; d="scan'208";a="138415588"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by orsmga001.jf.intel.com with ESMTP; 13 Feb 2019 15:05:18 -0800
+From: ira.weiny@intel.com
+To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, kvm@vger.kernel.org,
+ linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ linux-rdma@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org,
+ virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
+ devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org,
+ rds-devel@oss.oracle.com
+Subject: [PATCH V2 2/7] mm/gup: Change write parameter to flags in fast walk
+Date: Wed, 13 Feb 2019 15:04:50 -0800
+Message-Id: <20190213230455.5605-3-ira.weiny@intel.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190213230455.5605-1-ira.weiny@intel.com>
+References: <20190211201643.7599-1-ira.weiny@intel.com>
+ <20190213230455.5605-1-ira.weiny@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190213130330.76ef1987@w520.home>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
+X-Mailman-Approved-At: Thu, 14 Feb 2019 10:16:37 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,29 +72,250 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
- aik@ozlabs.ru, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
- linux-mm@kvack.org, peterz@infradead.org, mdf@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, cl@linux.com,
- hao.wu@intel.com
+Cc: Martin Brandenburg <martin@omnibond.com>, Rich Felker <dalias@libc.org>,
+ David Hildenbrand <david@redhat.com>, David Airlie <airlied@linux.ie>,
+ Jason Wang <jasowang@redhat.com>,
+ =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>,
+ Michal Hocko <mhocko@suse.com>, Ira Weiny <ira.weiny@intel.com>,
+ Ben Chan <benchan@chromium.org>, Rob Springer <rspringer@google.com>,
+ Todd Poynor <toddpoynor@google.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Joerg Roedel <joro@8bytes.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>,
+ Ingo Molnar <mingo@redhat.com>, Wu Hao <hao.wu@intel.com>,
+ Alan Tull <atull@kernel.org>, John Hubbard <jhubbard@nvidia.com>,
+ "James E.J. Bottomley" <jejb@linux.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Stefano Stabellini <sstabellini@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Dennis Dalessandro <dennis.dalessandro@intel.com>,
+ Cornelia Huck <cohuck@redhat.com>, Jens Wiklander <jens.wiklander@linaro.org>,
+ Alexandre Bounine <alex.bou9@gmail.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Daniel Vetter <daniel@ffwll.ch>, Moritz Fischer <mdf@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Christian Benvenuti <benve@cisco.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 01:03:30PM -0700, Alex Williamson wrote:
-> > PeterZ posted an RFC that addresses this point[1].  It kept pinned_vm and
-> > locked_vm accounting separate, but allowed the two to be added safely to be
-> > compared against RLIMIT_MEMLOCK.
-> 
-> Unless I'm incorrect in the concerns above, I don't see how we can
-> convert vfio before this occurs.
+From: Ira Weiny <ira.weiny@intel.com>
 
-RDMA was converted to this pinned_vm scheme a long time ago, arguably
-it is a mistake that VFIO did something different... This was to fix
-some other bug where reporting of pages was wrong.
+In order to support more options in the GUP fast walk, change
+the write parameter to flags throughout the call stack.
 
-You are not wrong that this approach doesn't entirely make sense
-though. :)
+This patch does not change functionality and passes FOLL_WRITE
+where write was previously used.
 
-Jason
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+---
+ mm/gup.c | 52 ++++++++++++++++++++++++++--------------------------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/mm/gup.c b/mm/gup.c
+index ee96eaff118c..681388236106 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1417,7 +1417,7 @@ static void undo_dev_pagemap(int *nr, int nr_start, struct page **pages)
+ 
+ #ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
+ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct dev_pagemap *pgmap = NULL;
+ 	int nr_start = *nr, ret = 0;
+@@ -1435,7 +1435,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+ 		if (pte_protnone(pte))
+ 			goto pte_unmap;
+ 
+-		if (!pte_access_permitted(pte, write))
++		if (!pte_access_permitted(pte, flags & FOLL_WRITE))
+ 			goto pte_unmap;
+ 
+ 		if (pte_devmap(pte)) {
+@@ -1487,7 +1487,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+  * useful to have gup_huge_pmd even if we can't operate on ptes.
+  */
+ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	return 0;
+ }
+@@ -1570,12 +1570,12 @@ static int __gup_device_huge_pud(pud_t pud, pud_t *pudp, unsigned long addr,
+ #endif
+ 
+ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
++		unsigned long end, unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct page *head, *page;
+ 	int refs;
+ 
+-	if (!pmd_access_permitted(orig, write))
++	if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	if (pmd_devmap(orig))
+@@ -1608,12 +1608,12 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+ }
+ 
+ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
++		unsigned long end, unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct page *head, *page;
+ 	int refs;
+ 
+-	if (!pud_access_permitted(orig, write))
++	if (!pud_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	if (pud_devmap(orig))
+@@ -1646,13 +1646,13 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+ }
+ 
+ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
+-			unsigned long end, int write,
++			unsigned long end, unsigned int flags,
+ 			struct page **pages, int *nr)
+ {
+ 	int refs;
+ 	struct page *head, *page;
+ 
+-	if (!pgd_access_permitted(orig, write))
++	if (!pgd_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	BUILD_BUG_ON(pgd_devmap(orig));
+@@ -1683,7 +1683,7 @@ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
+ }
+ 
+ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+-		int write, struct page **pages, int *nr)
++		unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pmd_t *pmdp;
+@@ -1705,7 +1705,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 			if (pmd_protnone(pmd))
+ 				return 0;
+ 
+-			if (!gup_huge_pmd(pmd, pmdp, addr, next, write,
++			if (!gup_huge_pmd(pmd, pmdp, addr, next, flags,
+ 				pages, nr))
+ 				return 0;
+ 
+@@ -1715,9 +1715,9 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 			 * pmd format and THP pmd format
+ 			 */
+ 			if (!gup_huge_pd(__hugepd(pmd_val(pmd)), addr,
+-					 PMD_SHIFT, next, write, pages, nr))
++					 PMD_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pte_range(pmd, addr, next, write, pages, nr))
++		} else if (!gup_pte_range(pmd, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (pmdp++, addr = next, addr != end);
+ 
+@@ -1725,7 +1725,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ }
+ 
+ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pud_t *pudp;
+@@ -1738,14 +1738,14 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+ 		if (pud_none(pud))
+ 			return 0;
+ 		if (unlikely(pud_huge(pud))) {
+-			if (!gup_huge_pud(pud, pudp, addr, next, write,
++			if (!gup_huge_pud(pud, pudp, addr, next, flags,
+ 					  pages, nr))
+ 				return 0;
+ 		} else if (unlikely(is_hugepd(__hugepd(pud_val(pud))))) {
+ 			if (!gup_huge_pd(__hugepd(pud_val(pud)), addr,
+-					 PUD_SHIFT, next, write, pages, nr))
++					 PUD_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pmd_range(pud, addr, next, write, pages, nr))
++		} else if (!gup_pmd_range(pud, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (pudp++, addr = next, addr != end);
+ 
+@@ -1753,7 +1753,7 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+ }
+ 
+ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	p4d_t *p4dp;
+@@ -1768,9 +1768,9 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ 		BUILD_BUG_ON(p4d_huge(p4d));
+ 		if (unlikely(is_hugepd(__hugepd(p4d_val(p4d))))) {
+ 			if (!gup_huge_pd(__hugepd(p4d_val(p4d)), addr,
+-					 P4D_SHIFT, next, write, pages, nr))
++					 P4D_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pud_range(p4d, addr, next, write, pages, nr))
++		} else if (!gup_pud_range(p4d, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (p4dp++, addr = next, addr != end);
+ 
+@@ -1778,7 +1778,7 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ }
+ 
+ static void gup_pgd_range(unsigned long addr, unsigned long end,
+-		int write, struct page **pages, int *nr)
++		unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pgd_t *pgdp;
+@@ -1791,14 +1791,14 @@ static void gup_pgd_range(unsigned long addr, unsigned long end,
+ 		if (pgd_none(pgd))
+ 			return;
+ 		if (unlikely(pgd_huge(pgd))) {
+-			if (!gup_huge_pgd(pgd, pgdp, addr, next, write,
++			if (!gup_huge_pgd(pgd, pgdp, addr, next, flags,
+ 					  pages, nr))
+ 				return;
+ 		} else if (unlikely(is_hugepd(__hugepd(pgd_val(pgd))))) {
+ 			if (!gup_huge_pd(__hugepd(pgd_val(pgd)), addr,
+-					 PGDIR_SHIFT, next, write, pages, nr))
++					 PGDIR_SHIFT, next, flags, pages, nr))
+ 				return;
+-		} else if (!gup_p4d_range(pgd, addr, next, write, pages, nr))
++		} else if (!gup_p4d_range(pgd, addr, next, flags, pages, nr))
+ 			return;
+ 	} while (pgdp++, addr = next, addr != end);
+ }
+@@ -1852,7 +1852,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	if (gup_fast_permitted(start, nr_pages)) {
+ 		local_irq_save(flags);
+-		gup_pgd_range(start, end, write, pages, &nr);
++		gup_pgd_range(start, end, write ? FOLL_WRITE : 0, pages, &nr);
+ 		local_irq_restore(flags);
+ 	}
+ 
+@@ -1894,7 +1894,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	if (gup_fast_permitted(start, nr_pages)) {
+ 		local_irq_disable();
+-		gup_pgd_range(addr, end, write, pages, &nr);
++		gup_pgd_range(addr, end, write ? FOLL_WRITE : 0, pages, &nr);
+ 		local_irq_enable();
+ 		ret = nr;
+ 	}
+-- 
+2.20.1
+
