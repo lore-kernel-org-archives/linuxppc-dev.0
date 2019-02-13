@@ -2,79 +2,71 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D5EAC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 05:20:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21097C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 07:05:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EA6D222BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 05:20:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5BD3421904
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 07:05:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mzPiRlBj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EA6D222BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="qfrmHcw3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5BD3421904
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43znsn0S7BzDqQt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 16:20:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zrC50SkfzDqHX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 18:05:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
+ smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
+ helo=bombadil.infradead.org;
+ envelope-from=batv+b68490c3fe13e616ccfb+5652+infradead.org+hch@bombadil.srs.infradead.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::143; helo=mail-it1-x143.google.com;
- envelope-from=oohall@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
+ dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="mzPiRlBj"; 
- dkim-atps=neutral
-Received: from mail-it1-x143.google.com (mail-it1-x143.google.com
- [IPv6:2607:f8b0:4864:20::143])
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="qfrmHcw3"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43znqz3n5DzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 16:18:55 +1100 (AEDT)
-Received: by mail-it1-x143.google.com with SMTP id y184so2848501itc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Feb 2019 21:18:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=uZznnOf6Kl86a0xsqpvMCLNpf4Ux779nlRiTz1OsQzA=;
- b=mzPiRlBjB5LI+FZGzWr3ptX/ZXOAaJu41aXmAbCXHlgZKapoNApk5lh47FOic7Mr+l
- DqeqxIrKlePsfrkZAuZDurPIcpp2otza6Cy9ydTaJ1mO+IfeEnzwOC6BsDirNtrYOjH/
- +VdI8d8/lMuoYUf4UeO1ZYfns/PJgGToeHy7FDmjbD2wk5snTTzXBZRuuITrRTpDJ96U
- bGYink1wwV1Mb59G+OmRHpUovX+dOADXq/LXauugc5ykvG4ukWeIb+u2cyd6pXHcvpJ/
- melP6SZo8+MGosGmBpCgKkKqVSkLbEeaKN7xr4Ti76mGd986bx3TsPOlK20UqNK8lczh
- xG6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=uZznnOf6Kl86a0xsqpvMCLNpf4Ux779nlRiTz1OsQzA=;
- b=aYd0RpB6ouqMy9rDQ8+Zy19D+I+Ys0/H31DLHnZ2JbrsXH7EbM4smYyzpvJea3OM/7
- R/izfQPUEfsHioX/a/W5d+9uxDORJYx3frrsq9xOXjyFWkJP87qktlvwclcFj+XWeEGJ
- eRDBVEw3vXUq5vPlnKqvoXJyIuAF0Q6JqsthWy+JSZdo9Xs0ehT/61k2HcjWs5zMuEsZ
- mUNjEZWRdU15iCa0P0kERKcy6YKM387ddwez2dGv33CAm5V/2TajQu19lEZtZvAvxMB7
- +YlEqzEPEOrcX3fpFG9aEycB0/wE/LIRzDpIizF2ZOye+Bgs0mvVUt3ftZaR94Y7K0RP
- ngjA==
-X-Gm-Message-State: AHQUAuaSioHn/bfWustWxAzsSGJrx/Z3CklKz3CyuXT+4yGhLbE0WET7
- 6gIsRCvnhMcNEJf7nd4yQX8sRPikaswQI/Qk/Gu3KA==
-X-Google-Smtp-Source: AHgI3IaT24kL8AxbdNMJYsfEm7FM1RFFThP7LCGTOD6sKlYGx0pyPCbF3LQvaHvQ3QUmu9dE7HubQBVl+JbbO8ld4EU=
-X-Received: by 2002:a24:9102:: with SMTP id i2mr1208969ite.4.1550035133164;
- Tue, 12 Feb 2019 21:18:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zr6y70mSzDqHK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 18:02:02 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+ MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
+ :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
+ :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+ List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=SyCrC/DKeY+8w7bFKU1IF1vwF6AQyj8P9WfRTm5AAvE=; b=qfrmHcw3MUYo8nkv/ZeWVnn7AP
+ +ZZobAHUlbf1wMgjLzD605oe4szYfA+yJ4F9PsO/YLK+597U1UG37st9M4uctxFcI8fZnngyBg1TO
+ pIRhd5icGke8bDc0sTn0KVTVtBqUrxK/G159hdx8aSL5IupGFI0WhG6wGxOdZOecReDL40buAE0dD
+ zDDZ3KH6meFTKzJPi257gcjyRzg6zy9qGzNHXyg5Mge9S1zcNWbipWldlS5j7dH5kiGpM+S76uPJF
+ akVCWfKsSvAWHykY6aKAvO7E7y/wMCtYSRjR3Rpfp0eQMuovdaYF5L3LQA9AAln1nDCYHEZUsDgDm
+ Ej8bU7QA==;
+Received: from 089144210182.atnat0019.highway.a1.net ([89.144.210.182]
+ helo=localhost)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gtoY7-0000FR-8j; Wed, 13 Feb 2019 07:01:39 +0000
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Olof Johansson <olof@lixom.net>
+Subject: [PATCH 02/32] dma-direct: we might need GFP_DMA for 32-bit dma masks
+Date: Wed, 13 Feb 2019 08:01:03 +0100
+Message-Id: <20190213070133.11259-3-hch@lst.de>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190213070133.11259-1-hch@lst.de>
+References: <20190213070133.11259-1-hch@lst.de>
 MIME-Version: 1.0
-References: <20190208030802.10805-1-oohall@gmail.com>
- <20190208030802.10805-7-oohall@gmail.com>
- <20190213042948.GA28303@tungsten.ozlabs.ibm.com>
-In-Reply-To: <20190213042948.GA28303@tungsten.ozlabs.ibm.com>
-From: Oliver <oohall@gmail.com>
-Date: Wed, 13 Feb 2019 16:18:41 +1100
-Message-ID: <CAOSf1CEAmcCH=FrExUMyQc-qqP342gGbCFbA=REA4P5oW120TQ@mail.gmail.com>
-Subject: Re: [PATCH 7/7] powerpc/eeh: Add eeh_force_recover to debugfs
-To: Sam Bobroff <sbobroff@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
+ bombadil.infradead.org. See http://www.infradead.org/rpr.html
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,182 +78,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Christian Zigotzky <chzigotzky@xenosoft.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 3:38 PM Sam Bobroff <sbobroff@linux.ibm.com> wrote:
->
-> On Fri, Feb 08, 2019 at 02:08:02PM +1100, Oliver O'Halloran wrote:
-> > This patch adds a debugfs interface to force scheduling a recovery event.
-> > This can be used to recover a specific PE or schedule a "special" recovery
-> > even that checks for errors at the PHB level.
-> > To force a recovery of a normal PE, use:
-> >
-> >  echo '<#pe>:<#phb>' > /sys/kernel/debug/powerpc/eeh_force_recover
->
-> How about placing these in the per-PHB debugfs directory?
-> echo '<#pe>' > /sys/kernel/debug/powerpc/PCI0000/eeh_force_recover
->
-> > To force a scan broken PHBs:
-> >
-> >  echo 'null' > /sys/kernel/debug/powerpc/eeh_force_recover
->
-> And keep this one where it is, and just trigger with any write (or a '1'
-> or whatever)?
+If there is no ZONE_DMA32 we might need GFP_DMA to be able to
+allocate memory that satisfies a 32-bit DMA mask.
 
-The per-PHB directories only exist on PowerNV. I'd rather this was
-merged as-is since it handles both platforms. If we want to add the
-per-PHB debugfs stuff to pseries we can do it later.
+Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Tested-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+---
+ kernel/dma/direct.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
->
-> Sam.
->
-> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/eeh_event.h |  1 +
-> >  arch/powerpc/kernel/eeh.c            | 60 ++++++++++++++++++++++++++++
-> >  arch/powerpc/kernel/eeh_event.c      | 25 +++++++-----
-> >  3 files changed, 76 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
-> > index 9884e872686f..6d0412b846ac 100644
-> > --- a/arch/powerpc/include/asm/eeh_event.h
-> > +++ b/arch/powerpc/include/asm/eeh_event.h
-> > @@ -33,6 +33,7 @@ struct eeh_event {
-> >
-> >  int eeh_event_init(void);
-> >  int eeh_send_failure_event(struct eeh_pe *pe);
-> > +int __eeh_send_failure_event(struct eeh_pe *pe);
-> >  void eeh_remove_event(struct eeh_pe *pe, bool force);
-> >  void eeh_handle_normal_event(struct eeh_pe *pe);
-> >  void eeh_handle_special_event(void);
-> > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> > index 92809b137e39..63b91a4918c9 100644
-> > --- a/arch/powerpc/kernel/eeh.c
-> > +++ b/arch/powerpc/kernel/eeh.c
-> > @@ -1805,6 +1805,63 @@ static int eeh_enable_dbgfs_get(void *data, u64 *val)
-> >
-> >  DEFINE_DEBUGFS_ATTRIBUTE(eeh_enable_dbgfs_ops, eeh_enable_dbgfs_get,
-> >                        eeh_enable_dbgfs_set, "0x%llx\n");
-> > +
-> > +static ssize_t eeh_force_recover_write(struct file *filp,
-> > +                             const char __user *user_buf,
-> > +                             size_t count, loff_t *ppos)
-> > +{
-> > +     struct pci_controller *hose;
-> > +     uint32_t phbid, pe_no;
-> > +     struct eeh_pe *pe;
-> > +     char buf[20];
-> > +     int ret;
-> > +
-> > +     ret = simple_write_to_buffer(buf, sizeof(buf), ppos, user_buf, count);
-> > +     if (!ret)
-> > +             return -EFAULT;
-> > +
-> > +     /*
-> > +      * When PE is NULL the event is a "special" event. Rather than
-> > +      * recovering a specific PE it forces the EEH core to scan for failed
-> > +      * PHBs and recovers each. This needs to be done before any device
-> > +      * recoveries can occur.
-> > +      */
-> > +     if (!strncmp(buf, "null", 4)) {
-> > +             pr_err("sending failure event\n");
-> > +             __eeh_send_failure_event(NULL);
-> > +             return count;
-> > +     }
-> > +
-> > +     ret = sscanf(buf, "%x:%x", &phbid, &pe_no);
-> > +     if (ret != 2)
-> > +             return -EINVAL;
-> > +
-> > +     hose = pci_find_hose_for_domain(phbid);
-> > +     if (!hose)
-> > +             return -ENODEV;
-> > +
-> > +     /* Retrieve PE */
-> > +     pe = eeh_pe_get(hose, pe_no, 0);
-> > +     if (!pe)
-> > +             return -ENODEV;
-> > +
-> > +     /*
-> > +      * We don't do any state checking here since the detection
-> > +      * process is async to the recovery process. The recovery
-> > +      * thread *should* not break even if we schedule a recovery
-> > +      * from an odd state (e.g. PE removed, or recovery of a
-> > +      * non-isolated PE)
-> > +      */
-> > +     __eeh_send_failure_event(pe);
-> > +
-> > +     return ret < 0 ? ret : count;
-> > +}
-> > +
-> > +static const struct file_operations eeh_force_recover_fops = {
-> > +     .open   = simple_open,
-> > +     .llseek = no_llseek,
-> > +     .write  = eeh_force_recover_write,
-> > +};
-> >  #endif
-> >
-> >  static int __init eeh_init_proc(void)
-> > @@ -1820,6 +1877,9 @@ static int __init eeh_init_proc(void)
-> >               debugfs_create_bool("eeh_disable_recovery", 0600,
-> >                               powerpc_debugfs_root,
-> >                               &eeh_debugfs_no_recover);
-> > +             debugfs_create_file_unsafe("eeh_force_recover", 0600,
-> > +                             powerpc_debugfs_root, NULL,
-> > +                             &eeh_force_recover_fops);
-> >               eeh_cache_debugfs_init();
-> >  #endif
-> >       }
-> > diff --git a/arch/powerpc/kernel/eeh_event.c b/arch/powerpc/kernel/eeh_event.c
-> > index 19837798bb1d..539aca055d70 100644
-> > --- a/arch/powerpc/kernel/eeh_event.c
-> > +++ b/arch/powerpc/kernel/eeh_event.c
-> > @@ -121,20 +121,11 @@ int eeh_event_init(void)
-> >   * the actual event will be delivered in a normal context
-> >   * (from a workqueue).
-> >   */
-> > -int eeh_send_failure_event(struct eeh_pe *pe)
-> > +int __eeh_send_failure_event(struct eeh_pe *pe)
-> >  {
-> >       unsigned long flags;
-> >       struct eeh_event *event;
-> >
-> > -     /*
-> > -      * If we've manually supressed recovery events via debugfs
-> > -      * then just drop it on the floor.
-> > -      */
-> > -     if (eeh_debugfs_no_recover) {
-> > -             pr_err("EEH: Event dropped due to no_recover setting\n");
-> > -             return 0;
-> > -     }
-> > -
-> >       event = kzalloc(sizeof(*event), GFP_ATOMIC);
-> >       if (!event) {
-> >               pr_err("EEH: out of memory, event not handled\n");
-> > @@ -153,6 +144,20 @@ int eeh_send_failure_event(struct eeh_pe *pe)
-> >       return 0;
-> >  }
-> >
-> > +int eeh_send_failure_event(struct eeh_pe *pe)
-> > +{
-> > +     /*
-> > +      * If we've manually supressed recovery events via debugfs
-> > +      * then just drop it on the floor.
-> > +      */
-> > +     if (eeh_debugfs_no_recover) {
-> > +             pr_err("EEH: Event dropped due to no_recover setting\n");
-> > +             return 0;
-> > +     }
-> > +
-> > +     return __eeh_send_failure_event(pe);
-> > +}
-> > +
-> >  /**
-> >   * eeh_remove_event - Remove EEH event from the queue
-> >   * @pe: Event binding to the PE
-> > --
-> > 2.20.1
-> >
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 355d16acee6d..d5bb51cf27c6 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -132,8 +132,7 @@ struct page *__dma_direct_alloc_pages(struct device *dev, size_t size,
+ 			goto again;
+ 		}
+ 
+-		if (IS_ENABLED(CONFIG_ZONE_DMA) &&
+-		    phys_mask < DMA_BIT_MASK(32) && !(gfp & GFP_DMA)) {
++		if (IS_ENABLED(CONFIG_ZONE_DMA) && !(gfp & GFP_DMA)) {
+ 			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
+ 			goto again;
+ 		}
+-- 
+2.20.1
+
