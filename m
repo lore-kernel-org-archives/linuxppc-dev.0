@@ -2,60 +2,72 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C72FC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 12:55:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC361C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 13:14:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E5989206A3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 12:55:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E5989206A3
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=emerson.com
+	by mail.kernel.org (Postfix) with ESMTPS id CEBC52070C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 13:14:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="iKXNBPgJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEBC52070C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zzyn0B01zDqW4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:55:29 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zzw61X3TzDq5h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 23:53:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4400NK1cGxzDqSk
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 00:14:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=emerson.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 43zzw56t3Hz8tWx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 23:53:09 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 43zzw55zTvz9s7h; Wed, 13 Feb 2019 23:53:09 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=emerson.com
- (client-ip=162.253.133.57; helo=n7.nabble.com;
- envelope-from=sachin.gosavi@emerson.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=emerson.com
-Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
- by ozlabs.org (Postfix) with ESMTP id 43zzw530wPz9s5c
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2019 23:53:07 +1100 (AEDT)
-Received: from n7.nabble.com (localhost [127.0.0.1])
- by n7.nabble.com (Postfix) with ESMTP id 6C8869B57E79
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Feb 2019 05:53:06 -0700 (MST)
-Date: Wed, 13 Feb 2019 05:53:06 -0700 (MST)
-From: sgosavi1 <Sachin.Gosavi@emerson.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1550062386389-0.post@n7.nabble.com>
-In-Reply-To: <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
-References: <1550055691105-0.post@n7.nabble.com>
- <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
- <1550060685213-0.post@n7.nabble.com>
- <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
-Subject: Re: Kernel panic when loading the IDE controller driver
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="iKXNBPgJ"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4400KS4Rp2zDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:11:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=aYXYOSh02VrgFOoAtWZsG3dC6gl0mwh0qQIVsd6b6/U=; b=iKXNBPgJ/QWjwdq9K/ZA6v+x9
+ 5Y3A54QPC72zkNBsg4SgL6/FXbuEbgxUjjZMyeOumCtxt6+KjXuW94vOx+tdr0Gap/U+fRhOEtRcR
+ 5umJ2pljfWs+9TCLUZoW5tO+8wKmpCeVreqbVS3UrJJH3d/tjN89mOiAU7uvZW8wTYr9WHgQy5zDm
+ NlQvX8XP71crgRCjSTVZ4xgb5A10DKgP/Ige657/16+t5l5sZqa8VLkfWNIoXpYC0j+4VHiWaunun
+ GY4ABcJ6XUZPFXm+zW79mgTBCCmQ4rmjPQQIYcDIBl+KJxJVmcd+eCoRvIark50+94JSFMGLSPZJa
+ N6Oe6fM9w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gtuK4-0003qU-Na; Wed, 13 Feb 2019 13:11:32 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 3668222BBEBE5; Wed, 13 Feb 2019 14:11:31 +0100 (CET)
+Date: Wed, 13 Feb 2019 14:11:31 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v3 2/2] mm: be more verbose about zonelist initialization
+Message-ID: <20190213131131.GS32494@hirez.programming.kicks-ass.net>
+References: <20190212095343.23315-3-mhocko@kernel.org>
+ <20190213094315.3504-1-mhocko@kernel.org>
+ <20190213103231.GN32494@hirez.programming.kicks-ass.net>
+ <20190213115014.GC4525@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20190213115014.GC4525@dhcp22.suse.cz>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,35 +79,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Dave Hansen <dave.hansen@intel.com>, x86@kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
+ linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> Why using 4.15.13 which is obsolete instead of using one of the Long 
-> Term Support versions which are still maintained, like 4.14 or 4.19 ? 
-> (see the complete list at https://www.kernel.org/category/releases.html)
+On Wed, Feb 13, 2019 at 12:50:14PM +0100, Michal Hocko wrote:
+> On Wed 13-02-19 11:32:31, Peter Zijlstra wrote:
+> > On Wed, Feb 13, 2019 at 10:43:15AM +0100, Michal Hocko wrote:
+> > > @@ -5259,6 +5261,11 @@ static void build_zonelists(pg_data_t *pgdat)
+> > >  
+> > >  	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
+> > >  	build_thisnode_zonelists(pgdat);
+> > > +
+> > > +	pr_info("node[%d] zonelist: ", pgdat->node_id);
+> > > +	for_each_zone_zonelist(zone, z, &pgdat->node_zonelists[ZONELIST_FALLBACK], MAX_NR_ZONES-1)
+> > > +		pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
+> > > +	pr_cont("\n");
+> > >  }
+> > 
+> > Have you ran this by the SGI and other stupid large machine vendors?
+> 
+> I do not have such a large machine handy. The biggest I have has
+> handfull (say dozen) of NUMA nodes.
+> 
+> > Traditionally they tend to want to remove such things instead of adding
+> > them.
+> 
+> I do not insist on this patch but I find it handy. If there is an
+> opposition I will not miss it much.
 
-Well, when I started this task 4.15.13 was probably the latest stable
-release and hence we decided to port this version. In the older kernel, we
-have the m8260_setup.c source file for our board where the function
-"io_block_mapping" was used to configure the non-standard IO port address
-starting at 0xe0000000 location. This address was passed as the base address
-followed by control address and IRQ number to the ide-core.ko module. In the
-new kernel we do not have an option to send these addresses and IRQ numbers
-as arguments to the driver. Instead the ide-generic.c source file in the new
-kernel uses the standard IO port values and IRQ values. I modified the code
-in the above file to used the addresses and IRQ number we used in the past.
-Also, added code in the "MMU_init" function call available under
-arch/PowerPC/init_32.c to setup the IO port address range by adding the
-"io_block_mapping" call and the required IO port address range.
-
-Is there anything else that needs to be added or how can we configure the
-desired IO address range in the new kernel?
-
-Thanks,
-Sachin
-
-
-
---
-Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
+Well, I don't have machines like that either and don't mind the patch.
+Just raising the issue; I've had the big iron boys complain about
+similar things (typically printing something for every CPU, which gets
+out of hand much faster than zones, but still).
