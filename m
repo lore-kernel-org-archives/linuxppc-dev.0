@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 341E3C282C4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 02:39:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7047FC282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 02:42:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A9231222C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 02:39:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E6E132175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 02:42:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="CA7vJHlD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A9231222C2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="m2UI/OOJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6E132175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zkJS0ZHKzDqQd
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 13:39:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zkMt6sPJzDqPw
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 13:42:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="CA7vJHlD"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="m2UI/OOJ"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zkBn4gpjzDqNj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 13:34:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zkGd2ZtjzDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 13:38:17 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0819F222CC;
- Wed, 13 Feb 2019 02:34:54 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id D6CD8206B6;
+ Wed, 13 Feb 2019 02:38:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1550025295;
- bh=PAh9v9Y+8U4QDfjmor9mETtMhMST8EQwLv/B/xeWvog=;
+ s=default; t=1550025495;
+ bh=8KbKkTtGVpj7XQj+rMMhi+AEp0Y5WGBpMuL5NYrW6O4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=CA7vJHlDTJ+PPvt9hy49aOcvGt8LlS7VuBtGrK33gfE8CCbwDfvxccWTiSrw7UrAe
- yUsbBiy3Y7UDBbo3sUXlZkb6+tBrhdC6EvZ4WVQPxUMhuZXpxXZsTvlq8voHpQ2Woj
- qALM0yPLMfUDjM70mtXZUcLKzSjjYReUSnwpFs3g=
+ b=m2UI/OOJXUKuXnC3Bg4U2JVKlQlALKWFpdIDjKFxP22nmlowW5il5ywLmhvhCsT0O
+ SKTWez6Ybn2FxVHWNDUKIY8jj4nREgfSVL1H2tePXe2s6hp2ki+iYd2Ipv/F+1sP/v
+ 9AmptlnODtDgEvyBX0svN4XTBw48sEnjxUNM+pDo=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.20 051/105] powerpc/8xx: fix setting of pagetable
- for Abatron BDI debug tool.
-Date: Tue, 12 Feb 2019 21:32:42 -0500
-Message-Id: <20190213023336.19019-51-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 43/83] powerpc/8xx: fix setting of pagetable for
+ Abatron BDI debug tool.
+Date: Tue, 12 Feb 2019 21:36:21 -0500
+Message-Id: <20190213023701.20286-43-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190213023336.19019-1-sashal@kernel.org>
-References: <20190213023336.19019-1-sashal@kernel.org>
+In-Reply-To: <20190213023701.20286-1-sashal@kernel.org>
+References: <20190213023701.20286-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -96,10 +96,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3b67b9533c82..438512759e82 100644
+index 81d4574d1f37..9fd2ff28b8ff 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -927,11 +927,12 @@ start_here:
+@@ -919,11 +919,12 @@ start_here:
  
  	/* set up the PTE pointers for the Abatron bdiGDB.
  	*/
