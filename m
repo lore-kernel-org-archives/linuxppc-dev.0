@@ -2,54 +2,79 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FB5FC0044B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:37:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6870C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 21:21:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C485321872
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:37:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C485321872
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id D87772147C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 21:21:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=paul-moore-com.20150623.gappssmtp.com header.i=@paul-moore-com.20150623.gappssmtp.com header.b="d+n2M3g2"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D87772147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440BCn4Q4xzDqQ6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 07:37:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440CBv68SgzDqW2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:21:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ spf=none (mailfrom) smtp.mailfrom=paul-moore.com
+ (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
+ envelope-from=paul@paul-moore.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=paul-moore.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=paul-moore-com.20150623.gappssmtp.com
+ header.i=@paul-moore-com.20150623.gappssmtp.com header.b="d+n2M3g2"; 
+ dkim-atps=neutral
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
+ [IPv6:2a00:1450:4864:20::141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440B6G5DjHzDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 07:32:38 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id A878A85376;
- Wed, 13 Feb 2019 20:32:35 +0000 (UTC)
-Received: from llong.com (ovpn-125-158.rdu2.redhat.com [10.10.125.158])
- by smtp.corp.redhat.com (Postfix) with ESMTP id EE9581000239;
- Wed, 13 Feb 2019 20:32:30 +0000 (UTC)
-From: Waiman Long <longman@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v3 2/2] locking/rwsem: Optimize down_read_trylock()
-Date: Wed, 13 Feb 2019 15:32:12 -0500
-Message-Id: <1550089932-6888-3-git-send-email-longman@redhat.com>
-In-Reply-To: <1550089932-6888-1-git-send-email-longman@redhat.com>
-References: <1550089932-6888-1-git-send-email-longman@redhat.com>
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.25]); Wed, 13 Feb 2019 20:32:36 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440C904lW1zDqTf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 08:20:00 +1100 (AEDT)
+Received: by mail-lf1-x141.google.com with SMTP id f5so2881516lfc.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 13:20:00 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=paul-moore-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=7qaVEjCmoRfosICdejMJpPumW2wAFBZnk9qdCZVNez4=;
+ b=d+n2M3g2Ddc4KAgqfKPHGpRWbp2/O5V4O7E4MU+tm+LYnqPeoZZGF46GLJZ6a2Z6pC
+ PtQ0Rd8vK6M7ZaMB/Gv1sExbbyKXGtDfyZRvpHSY4m87ld2maDYtv7hTM5BGnvNmotje
+ 8coXPH9O18jU8OvuJVywIzRtoU+H3envB/p8jmOBnbwVWzAOQLQv6yVLz78irv2Apae5
+ kfO3RThs9kPoEg6dc6SmKqilhhUOaMIn4xcUFkLffpzayYEdY7bqHd7YiRXjTze0TGo1
+ +HXMbzxk+XmVC+d8XKL9z7nPJsyRZvH9jvpwO73esv8HIPx81vO7rw8bOo4MgF9AxPXl
+ BI5Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=7qaVEjCmoRfosICdejMJpPumW2wAFBZnk9qdCZVNez4=;
+ b=l/+CUT/YDXRZWsAtwZm0LglxPPemcDW4MesO9HHfzT9r8m06fEDCy3lJVQXmBLCNxm
+ DWWtCD/+35FwxLtMilpyfekF1QqwmnulRqnCBv80gHE5hdQw/izbj7qXObRy9aaczxvy
+ QktZLd+AOZpQyqN7VVsQSOPPf6bcSlew1PEvwmW8nvV33LoOpg0/kmEfJbolXyQ51OrX
+ OZYsyFuw6o6hyiITLL/BBHFwcwt9IohHiw7/mnBzjQQUb/2pzTi7kkoCZhuMSr1Xg0uF
+ kIHEHMStEm3TdLwWJB5/T+kdfjbVHqAd9WUkPP65DZtheJ1Mz4mYJk3I9eNxvT81AV4t
+ 4B8g==
+X-Gm-Message-State: AHQUAub9qhWMQ6kGFbZTekcltRYdUqYiK44Hxc9jSVo/a3V/kh3moiWU
+ e2sch/v4SLlfktMyqA5xs5gp9Yk5EeYpVP7snazK
+X-Google-Smtp-Source: AHgI3Ibv18osK6j86M7eWFAowOkAWT4CL+2fsH0v8fKrN30duK12IfSLVbV5RVEAovVsKUXxh1o84aGkBuqb3kp+SnI=
+X-Received: by 2002:a19:ee13:: with SMTP id g19mr128421lfb.72.1550092797379;
+ Wed, 13 Feb 2019 13:19:57 -0800 (PST)
+MIME-Version: 1.0
+References: <df04c747-58c1-4757-b0ef-1ccea745defb@oracle.com>
+ <89f699ca-e307-0714-2fdb-37b5307e1195@oracle.com>
+In-Reply-To: <89f699ca-e307-0714-2fdb-37b5307e1195@oracle.com>
+From: Paul Moore <paul@paul-moore.com>
+Date: Wed, 13 Feb 2019 16:19:46 -0500
+Message-ID: <CAHC9VhSAj6nKzO+y9r9NDVdez8G157rpYxRqBUCcTBypbOj1YA@mail.gmail.com>
+Subject: Re: [QUESTION] powerpc, libseccomp, and spu
+To: Tom Hromatka <tom.hromatka@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,119 +86,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Borislav Petkov <bp@alien8.de>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Waiman Long <longman@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, Dhaval Giani <dhaval.giani@oracle.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Modify __down_read_trylock() to optimize for an unlocked rwsem and make
-it generate slightly better code.
+On Tue, Feb 12, 2019 at 9:50 AM Tom Hromatka <tom.hromatka@oracle.com> wrote:
+> On 2/11/19 11:54 AM, Tom Hromatka wrote:
+> > PowerPC experts,
+> >
+> > Paul Moore and I are working on the v2.4 release of libseccomp,
+> > and as part of this work I need to update the syscall table for
+> > each architecture.
+> >
+> > I have incorporated the new ppc syscall.tbl into libseccomp, but
+> > I am not familiar with the value of "spu" in the ABI column.  For
+> > example:
+> >
+> > 22    32    umount                sys_oldumount
+> > 22    64    umount                sys_ni_syscall
+> > 22    spu    umount                sys_ni_syscall
+> >
+> > In libseccomp, we maintain a 32-bit ppc syscall table and a 64-bit
+> > ppc syscall table.  Do we also need to add a "spu" ppc syscall
+> > table?  Some clarification on the syscalls marked "spu" and "nospu"
+> > would be greatly appreciated.
+>
+> Thanks for the awesome responses, Ben and Michael.  I'll definitely
+> get Paul's input as well, but it sounds reasonable to exclude SPUs
+> from the newest libseccomp release.
 
-Before this patch, down_read_trylock:
+Based on this thread, I don't think we need to worry about "spu" at
+this point in time.  Thanks everyone.
 
-   0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
-   0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
-   0x000000000000000b <+11>:    mov    %rdx,%rax
-   0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
-   0x0000000000000013 <+19>:    cmp    %rax,%rdx
-   0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
-   0x0000000000000018 <+24>:    mov    (%rdi),%rdx
-   0x000000000000001b <+27>:    test   %rdx,%rdx
-   0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
-   0x0000000000000020 <+32>:    xor    %eax,%eax
-   0x0000000000000022 <+34>:    retq
-   0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
-   0x000000000000002c <+44>:    or     $0x3,%rax
-   0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
-   0x0000000000000034 <+52>:    mov    $0x1,%eax
-   0x0000000000000039 <+57>:    retq
+> Michael's recommendation to replace "nospu" with common" and ignore
+> "spu" entirely has allowed ppc and ppc64 to pass all of our internal
+> checks.
+>
+> Thanks again!
+>
+> Tom
 
-After patch, down_read_trylock:
-
-   0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:	xor    %eax,%eax
-   0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
-   0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
-   0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
-   0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
-   0x000000000000001b <+27>:	or     $0x3,%rax
-   0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
-   0x0000000000000023 <+35>:	mov    $0x1,%eax
-   0x0000000000000028 <+40>:	retq
-   0x0000000000000029 <+41>:	test   %rax,%rax
-   0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
-   0x000000000000002e <+46>:	xor    %eax,%eax
-   0x0000000000000030 <+48>:	retq
-
-By using a rwsem microbenchmark, the down_read_trylock() rate (with a
-load of 10 to lengthen the lock critical section) on a x86-64 system
-before and after the patch were:
-
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           14,496          14,716
-        2            8,644           8,453
-	4            6,799           6,983
-	8            5,664           7,190
-
-On a ARM64 system, the performance results were:
-
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           23,676          24,488
-        2            7,697           9,502
-        4            4,945           3,440
-        8            2,641           1,603
-
-For the uncontended case (1 thread), the new down_read_trylock() is a
-little bit faster. For the contended cases, the new down_read_trylock()
-perform pretty well in x86-64, but performance degrades at high
-contention level on ARM64.
-
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- kernel/locking/rwsem.h | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
-index 067e265..e0bcc11 100644
---- a/kernel/locking/rwsem.h
-+++ b/kernel/locking/rwsem.h
-@@ -175,14 +175,17 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
- 
- static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
--	long tmp;
-+	/*
-+	 * Optimize for the case when the rwsem is not locked at all.
-+	 */
-+	long tmp = RWSEM_UNLOCKED_VALUE;
- 
--	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
--		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
--				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
-+	do {
-+		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-+					tmp + RWSEM_ACTIVE_READ_BIAS)) {
- 			return 1;
- 		}
--	}
-+	} while (tmp >= 0);
- 	return 0;
- }
- 
 -- 
-1.8.3.1
-
+paul moore
+www.paul-moore.com
