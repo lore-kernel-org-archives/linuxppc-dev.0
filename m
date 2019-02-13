@@ -2,89 +2,62 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D7DCC282CE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58D77C282CE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:06:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C6B9B21902
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:04:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="AwWM04jo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C6B9B21902
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id D86A3218D3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:06:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D86A3218D3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4409V12kSTzDqW8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 07:04:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4409WY6gYpzDqWr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 07:06:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::143; helo=mail-lf1-x143.google.com;
- envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="AwWM04jo"; dkim-atps=neutral
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com
- [IPv6:2a00:1450:4864:20::143])
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4409SJ5xXBzDqPC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 07:03:12 +1100 (AEDT)
-Received: by mail-lf1-x143.google.com with SMTP id f5so2726732lfc.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 12:03:12 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=linux-foundation.org; s=google;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=e28LJ4tt7oVJKO7CgbJcVFBqC5tv55Rtb2nhIFWhcsA=;
- b=AwWM04joRrT5vs+hjoL9MmG7srLew3Te9ugMC75SXqOI/2uV0za5cgm9bc8pb8XXGn
- se+TPfIJUY4NYMOtH8GC9BwVPJFWIuFFqH0OPPPOg2Y/B3SCjVdMR3D9A7rLFl1GaaPs
- yUQL8R/8syuf+rS2mMXEgR8kDwmOiG+bDS59I=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=e28LJ4tt7oVJKO7CgbJcVFBqC5tv55Rtb2nhIFWhcsA=;
- b=OOuaTHF7nzzkrePxhG9IJ1wDAGvDEBvF4+W56ihGSmQBlGwuOZ/rildrpIM4EOfVAO
- MZziQxd0nt84++GvlCBkns7oQVBP1IJ7B+A9XGFHoanC5/vPK+olJylhLw/9lx/sf7UT
- YVwjhTMYNtOqlqdVALrI7TwR5wtaYW6f9I0ief3+u1iAcI9zZUfi+6Bk/3ZaNId85vly
- 2YHXx7+zXig4R6JDvTNCqJRx9/3l0vkFPfeqCD25jPe3qTKlAPibC03sQSnll32WFUeO
- lIwLNl4RzaKsdIZSwz9A1ezU6LCT72hmAjQ959HjnHo0l7pTDocsR38x9jgJG6IHgWC2
- qJrw==
-X-Gm-Message-State: AHQUAubLI7fukiGsGM2WJn7EqL5d6f5AOwXOUok1vAOBXGkz6LEamIPx
- 7aAuSKANVLRXzPH4Px9gHn1sDwi7fx8=
-X-Google-Smtp-Source: AHgI3IZg7+D4GY7XTbxvXaFU1dmA/JhxXWaRPCSyQYRRegc60R6aJJjEm2urqZi8/qsQ6Jhdd8zXSw==
-X-Received: by 2002:ac2:562b:: with SMTP id b11mr1384505lff.85.1550088188491; 
- Wed, 13 Feb 2019 12:03:08 -0800 (PST)
-Received: from mail-lj1-f181.google.com (mail-lj1-f181.google.com.
- [209.85.208.181])
- by smtp.gmail.com with ESMTPSA id v11sm45441lfb.46.2019.02.13.12.03.08
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 13 Feb 2019 12:03:08 -0800 (PST)
-Received: by mail-lj1-f181.google.com with SMTP id z20so2113208ljj.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 12:03:08 -0800 (PST)
-X-Received: by 2002:a2e:89d9:: with SMTP id c25mr1404666ljk.105.1550087814152; 
- Wed, 13 Feb 2019 11:56:54 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4409Sr2mf0zDqSV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 07:03:38 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
+ [10.5.11.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 76DA6C0669DD;
+ Wed, 13 Feb 2019 20:03:34 +0000 (UTC)
+Received: from w520.home (ovpn-116-24.phx2.redhat.com [10.3.116.24])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 570CB5D6B3;
+ Wed, 13 Feb 2019 20:03:31 +0000 (UTC)
+Date: Wed, 13 Feb 2019 13:03:30 -0700
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Daniel Jordan <daniel.m.jordan@oracle.com>
+Subject: Re: [PATCH 1/5] vfio/type1: use pinned_vm instead of locked_vm to
+ account pinned pages
+Message-ID: <20190213130330.76ef1987@w520.home>
+In-Reply-To: <20190213002650.kav7xc4r2xs5f3ef@ca-dmjordan1.us.oracle.com>
+References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+ <20190211224437.25267-2-daniel.m.jordan@oracle.com>
+ <20190211225620.GO24692@ziepe.ca>
+ <20190211231152.qflff6g2asmkb6hr@ca-dmjordan1.us.oracle.com>
+ <20190212114110.17bc8a14@w520.home>
+ <20190213002650.kav7xc4r2xs5f3ef@ca-dmjordan1.us.oracle.com>
 MIME-Version: 1.0
-References: <1549566446-27967-1-git-send-email-longman@redhat.com>
- <20190213091936.GA22829@shao2-debian>
-In-Reply-To: <20190213091936.GA22829@shao2-debian>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 13 Feb 2019 11:56:38 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
-Message-ID: <CAHk-=wiF2qv4TdKOTaTYeMnmsn4h6z9ot+MRj1=s7dm5y1FUwQ@mail.gmail.com>
-Subject: Re: [PATCH-tip 00/22] locking/rwsem: Rework rwsem-xadd & enable new
- rwsem features
-To: Chen Rong <rong.a.chen@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.32]); Wed, 13 Feb 2019 20:03:35 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,48 +69,86 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, linux-hexagon@vger.kernel.org,
- the arch/x86 maintainers <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- "IngoMolnar@shao2-debian" <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Waiman Long <longman@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>
+Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, linux-mm@kvack.org,
+ aik@ozlabs.ru, linux-fpga@vger.kernel.org, atull@kernel.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Jason Gunthorpe <jgg@ziepe.ca>, peterz@infradead.org, mdf@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, cl@linux.com,
+ hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Ok, those test robot reports are hard to read, but trying to distill it dow=
-n:
+On Tue, 12 Feb 2019 19:26:50 -0500
+Daniel Jordan <daniel.m.jordan@oracle.com> wrote:
 
-On Wed, Feb 13, 2019 at 1:19 AM Chen Rong <rong.a.chen@intel.com> wrote:
->
->          %stddev     %change         %stddev
->              \          |                \
->     196250 =C2=B1  8%     -64.1%      70494        will-it-scale.per_thre=
-ad_ops
+> On Tue, Feb 12, 2019 at 11:41:10AM -0700, Alex Williamson wrote:
+> > Daniel Jordan <daniel.m.jordan@oracle.com> wrote:  
+> > > On Mon, Feb 11, 2019 at 03:56:20PM -0700, Jason Gunthorpe wrote:  
+> > > > I haven't looked at this super closely, but how does this stuff work?
+> > > > 
+> > > > do_mlock doesn't touch pinned_vm, and this doesn't touch locked_vm...
+> > > > 
+> > > > Shouldn't all this be 'if (locked_vm + pinned_vm < RLIMIT_MEMLOCK)' ?
+> > > >
+> > > > Otherwise MEMLOCK is really doubled..    
+> > > 
+> > > So this has been a problem for some time, but it's not as easy as adding them
+> > > together, see [1][2] for a start.
+> > > 
+> > > The locked_vm/pinned_vm issue definitely needs fixing, but all this series is
+> > > trying to do is account to the right counter.  
+> 
+> Thanks for taking a look, Alex.
+> 
+> > This still makes me nervous because we have userspace dependencies on
+> > setting process locked memory.  
+> 
+> Could you please expand on this?  Trying to get more context.
 
-That's the original 64% regression..
+VFIO is a userspace driver interface and the pinned/locked page
+accounting we're doing here is trying to prevent a user from exceeding
+their locked memory limits.  Thus a VM management tool or unprivileged
+userspace driver needs to have appropriate locked memory limits
+configured for their use case.  Currently we do not have a unified
+accounting scheme, so if a page is mlock'd by the user and also mapped
+through VFIO for DMA, it's accounted twice, these both increment
+locked_vm and userspace needs to manage that.  If pinned memory
+and locked memory are now two separate buckets and we're only comparing
+one of them against the locked memory limit, then it seems we have
+effectively doubled the user's locked memory for this use case, as
+Jason questioned.  The user could mlock one page and DMA map another,
+they're both "locked", but now they only take one slot in each bucket.
 
-And then with the patch set:
+If we continue forward with using a separate bucket here, userspace
+could infer that accounting is unified and lower the user's locked
+memory limit, or exploit the gap that their effective limit might
+actually exceed system memory.  In the former case, if we do eventually
+correct to compare the total of the combined buckets against the user's
+locked memory limits, we'll break users that have adapted their locked
+memory limits to meet the apparent needs.  In the latter case, the
+inconsistent accounting is potentially an attack vector.
 
->          %stddev      change         %stddev
->              \          |                \
->      71190             180%     199232 =C2=B1  4%  will-it-scale.per_thre=
-ad_ops
+> > There's a user visible difference if we
+> > account for them in the same bucket vs separate.  Perhaps we're
+> > counting in the wrong bucket now, but if we "fix" that and userspace
+> > adapts, how do we ever go back to accounting both mlocked and pinned
+> > memory combined against rlimit?  Thanks,  
+> 
+> PeterZ posted an RFC that addresses this point[1].  It kept pinned_vm and
+> locked_vm accounting separate, but allowed the two to be added safely to be
+> compared against RLIMIT_MEMLOCK.
 
-looks like it's back up where it used to be.
+Unless I'm incorrect in the concerns above, I don't see how we can
+convert vfio before this occurs.
+ 
+> Anyway, until some solution is agreed on, are there objections to converting
+> locked_vm to an atomic, to avoid user-visible changes, instead of switching
+> locked_vm users to pinned_vm?
 
-So I guess we have numbers for the regression now. Thanks.
+Seems that as long as we have separate buckets that are compared
+individually to rlimit that we've got problems, it's just a matter of
+where they're exposed based on which bucket is used for which
+interface.  Thanks,
 
-And that closes my biggest question for the new model, and with the
-new organization that gets ird of the arch-specific asm separately
-first and makes it a bit more legible that way, I guess I'll just Ack
-the whole series.
-
-             Linus
+Alex
