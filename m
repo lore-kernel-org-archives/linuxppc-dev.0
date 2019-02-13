@@ -2,68 +2,70 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CBC5C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 09:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AC6DC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 10:34:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24194222BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 09:44:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24194222BA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id AE53D2190A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 10:34:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="c23Q5Ecp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE53D2190A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 43zvkv1d2gzDqVh
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 20:44:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 43zwqv26tKzDqVd
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 21:34:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.221.66; helo=mail-wr1-f66.google.com;
- envelope-from=mstsxfx@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=infradead.org
+ (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-wr1-f66.google.com (mail-wr1-f66.google.com
- [209.85.221.66])
+ dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=infradead.org header.i=@infradead.org
+ header.b="c23Q5Ecp"; dkim-atps=neutral
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43zvjC0QXjzDq8D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 20:43:26 +1100 (AEDT)
-Received: by mail-wr1-f66.google.com with SMTP id q1so1683402wrp.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 01:43:26 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Kk/GG3OgbzX8YIM46cZBNoZxrXJT1E5EGBKwMDd7vXI=;
- b=YDu8H8BagU48wafGcwJSiJd69aJDdrl//U0b3Ew6wCtn+FKbkaMUOPV2x7UGX7XUfu
- McSIVP41yrycUxPPv+ngLyd9J/dHXKG6gN6WpEG5u8aV/7dOOw4xSZRR5RNaAbrvFGq/
- BcJrfKZgwoqCmVoe6Aa9URcKcHDnJWKUyW8sgpb410XCsi7fO9HimQ/wL+BOH4213Exw
- YsuG6ZpaPgiM/D8YiTHUmU5dTK0F/6YwNDkpvaBdB+2+Yq1j6plfba0AzQMqZkuMaVwV
- PSdo6o4q23PiEziC1JNd+rRxv1OTxR2dTAXVPx1c7Fc9wtSSJiUcxqlZaNLmW5Q0YGNa
- H0Bg==
-X-Gm-Message-State: AHQUAuaaNETB0Cxt5F3aGFujMhnXUquyvqkZqBLWB+lgP8nhkQizo3GS
- FOb+ttj74PuH/n6iA4jYQ+o=
-X-Google-Smtp-Source: AHgI3IZGZGyJI5vbywvzsWNw+C5pG4oYQrFxR54toXy/PK1qWoOPyoC6Bgzg4NOhsQ5CAtgQdn/loQ==
-X-Received: by 2002:a5d:4b07:: with SMTP id v7mr6179697wrq.281.1550051004381; 
- Wed, 13 Feb 2019 01:43:24 -0800 (PST)
-Received: from tiehlicka.suse.cz (ip-37-188-151-205.eurotel.cz.
- [37.188.151.205])
- by smtp.gmail.com with ESMTPSA id x21sm6111396wmi.28.2019.02.13.01.43.22
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 13 Feb 2019 01:43:23 -0800 (PST)
-From: Michal Hocko <mhocko@kernel.org>
-To: <linux-mm@kvack.org>
-Subject: [PATCH v3 2/2] mm: be more verbose about zonelist initialization
-Date: Wed, 13 Feb 2019 10:43:15 +0100
-Message-Id: <20190213094315.3504-1-mhocko@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190212095343.23315-3-mhocko@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43zwp7096czDqSk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 21:32:46 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
+ :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+ List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+ bh=GdwIZ75A3b6/46RR+VJh6VgKTuumQfgVmxslX6VcVTE=; b=c23Q5EcpRVyBBdSUtk3FUPPsN
+ 2vulLg55mfkyKpYAubwYA53+JnAZ0pLFuQ9PfGchMBDd7pqTjLuMOav/br0DpMmo8gF5G+elcn8Us
+ LFxFGZ5ENk+c07rMcHVa7uSsghjSD6FviO//iI0n1utVtGTSZlmTGd13l2R3JjFA2k3rJSJmTi5hp
+ Pym2LoAmTPFYtR5ulo3a6i/JQjxE0g31mu8BHsb9853zBz5igkiJOwt61Eewp1gppTsE8Vchp9Ssl
+ tXxARSAQCeh98pf1FAvR0biIxXEU6T8eupdPN4NCwczUi2AkquknB9MiyeJqtzUxQ1CyGFuMay9z9
+ 1t4j8xy1w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100]
+ helo=hirez.programming.kicks-ass.net)
+ by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1gtrqD-000809-Lp; Wed, 13 Feb 2019 10:32:33 +0000
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+ id 0D06720D0C1E6; Wed, 13 Feb 2019 11:32:31 +0100 (CET)
+Date: Wed, 13 Feb 2019 11:32:31 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v3 2/2] mm: be more verbose about zonelist initialization
+Message-ID: <20190213103231.GN32494@hirez.programming.kicks-ass.net>
 References: <20190212095343.23315-3-mhocko@kernel.org>
+ <20190213094315.3504-1-mhocko@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190213094315.3504-1-mhocko@kernel.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,54 +78,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
+ Dave Hansen <dave.hansen@intel.com>, x86@kernel.org,
  LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
- Dave Hansen <dave.hansen@intel.com>, Michal Hocko <mhocko@suse.com>,
+ linux-mm@kvack.org, Michal Hocko <mhocko@suse.com>,
  Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michal Hocko <mhocko@suse.com>
+On Wed, Feb 13, 2019 at 10:43:15AM +0100, Michal Hocko wrote:
+> @@ -5259,6 +5261,11 @@ static void build_zonelists(pg_data_t *pgdat)
+>  
+>  	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
+>  	build_thisnode_zonelists(pgdat);
+> +
+> +	pr_info("node[%d] zonelist: ", pgdat->node_id);
+> +	for_each_zone_zonelist(zone, z, &pgdat->node_zonelists[ZONELIST_FALLBACK], MAX_NR_ZONES-1)
+> +		pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
+> +	pr_cont("\n");
+>  }
 
-We have seen several bugs where zonelists have not been initialized
-properly and it is not really straightforward to track those bugs down.
-One way to help a bit at least is to dump zonelists of each node when
-they are (re)initialized.
+Have you ran this by the SGI and other stupid large machine vendors?
+Traditionally they tend to want to remove such things instead of adding
+them.
 
-Signed-off-by: Michal Hocko <mhocko@suse.com>
----
-
-Sorry for spamming. I have screwed up ammending the previous version.
-
- mm/page_alloc.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 2e097f336126..52e54d16662a 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -5234,6 +5234,8 @@ static void build_zonelists(pg_data_t *pgdat)
- 	int node, load, nr_nodes = 0;
- 	nodemask_t used_mask;
- 	int local_node, prev_node;
-+	struct zone *zone;
-+	struct zoneref *z;
- 
- 	/* NUMA-aware ordering of nodes */
- 	local_node = pgdat->node_id;
-@@ -5259,6 +5261,11 @@ static void build_zonelists(pg_data_t *pgdat)
- 
- 	build_zonelists_in_node_order(pgdat, node_order, nr_nodes);
- 	build_thisnode_zonelists(pgdat);
-+
-+	pr_info("node[%d] zonelist: ", pgdat->node_id);
-+	for_each_zone_zonelist(zone, z, &pgdat->node_zonelists[ZONELIST_FALLBACK], MAX_NR_ZONES-1)
-+		pr_cont("%d:%s ", zone_to_nid(zone), zone->name);
-+	pr_cont("\n");
- }
- 
- #ifdef CONFIG_HAVE_MEMORYLESS_NODES
--- 
-2.20.1
 
