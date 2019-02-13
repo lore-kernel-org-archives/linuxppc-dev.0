@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB977C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:21:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 849F6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:23:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 278F3222A4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:21:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 278F3222A4
+	by mail.kernel.org (Postfix) with ESMTPS id 065F3218AC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 23:23:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 065F3218AC
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440FsD0SnmzDqLc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:21:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440Ftv11DNzDqGG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:23:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
  (client-ip=134.134.136.65; helo=mga03.intel.com;
@@ -28,17 +28,17 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440FVV759XzDqVm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:05:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440FVX2j3CzDqVP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:05:24 +1100 (AEDT)
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga001.jf.intel.com ([10.7.209.18])
  by orsmga103.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 13 Feb 2019 15:05:17 -0800
+ 13 Feb 2019 15:05:23 -0800
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.58,366,1544515200"; d="scan'208";a="138415583"
+X-IronPort-AV: E=Sophos;i="5.58,366,1544515200"; d="scan'208";a="138415605"
 Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by orsmga001.jf.intel.com with ESMTP; 13 Feb 2019 15:05:13 -0800
+ by orsmga001.jf.intel.com with ESMTP; 13 Feb 2019 15:05:21 -0800
 From: ira.weiny@intel.com
 To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
  kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -51,10 +51,10 @@ To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org,
  devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org,
  rds-devel@oss.oracle.com
-Subject: [PATCH V2 1/7] mm/gup: Replace get_user_pages_longterm() with
- FOLL_LONGTERM
-Date: Wed, 13 Feb 2019 15:04:49 -0800
-Message-Id: <20190213230455.5605-2-ira.weiny@intel.com>
+Subject: [PATCH V2 3/7] mm/gup: Change GUP fast to use flags rather than a
+ write 'bool'
+Date: Wed, 13 Feb 2019 15:04:51 -0800
+Message-Id: <20190213230455.5605-4-ira.weiny@intel.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190213230455.5605-1-ira.weiny@intel.com>
 References: <20190211201643.7599-1-ira.weiny@intel.com>
@@ -106,337 +106,728 @@ Sender: "Linuxppc-dev"
 
 From: Ira Weiny <ira.weiny@intel.com>
 
-Rather than have a separate get_user_pages_longterm() call,
-introduce FOLL_LONGTERM and change the longterm callers to use
-it.
+To facilitate additional options to get_user_pages_fast() change the
+singular write parameter to be gup_flags.
 
-This patch does not change any functionality.
+This patch does not change any functionality.  New functionality will
+follow in subsequent patches.
 
-FOLL_LONGTERM can only be supported with get_user_pages() as it
-requires vmas to determine if DAX is in use.
+Some of the get_user_pages_fast() call sites were unchanged because they
+already passed FOLL_WRITE or 0 for the write parameter.
 
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/infiniband/core/umem.c             |   5 +-
- drivers/infiniband/hw/qib/qib_user_pages.c |   8 +-
- drivers/infiniband/hw/usnic/usnic_uiom.c   |   9 +-
- drivers/media/v4l2-core/videobuf-dma-sg.c  |   6 +-
- drivers/vfio/vfio_iommu_type1.c            |   3 +-
- include/linux/mm.h                         |  13 +-
- mm/gup.c                                   | 138 ++++++++++++---------
- mm/gup_benchmark.c                         |   5 +-
- 8 files changed, 101 insertions(+), 86 deletions(-)
+ arch/mips/mm/gup.c                         | 11 ++++++-----
+ arch/powerpc/kvm/book3s_64_mmu_hv.c        |  4 ++--
+ arch/powerpc/kvm/e500_mmu.c                |  2 +-
+ arch/powerpc/mm/mmu_context_iommu.c        |  4 ++--
+ arch/s390/kvm/interrupt.c                  |  2 +-
+ arch/s390/mm/gup.c                         | 12 ++++++------
+ arch/sh/mm/gup.c                           | 11 ++++++-----
+ arch/sparc/mm/gup.c                        |  9 +++++----
+ arch/x86/kvm/paging_tmpl.h                 |  2 +-
+ arch/x86/kvm/svm.c                         |  2 +-
+ drivers/fpga/dfl-afu-dma-region.c          |  2 +-
+ drivers/gpu/drm/via/via_dmablit.c          |  3 ++-
+ drivers/infiniband/hw/hfi1/user_pages.c    |  3 ++-
+ drivers/misc/genwqe/card_utils.c           |  2 +-
+ drivers/misc/vmw_vmci/vmci_host.c          |  2 +-
+ drivers/misc/vmw_vmci/vmci_queue_pair.c    |  6 ++++--
+ drivers/platform/goldfish/goldfish_pipe.c  |  3 ++-
+ drivers/rapidio/devices/rio_mport_cdev.c   |  4 +++-
+ drivers/sbus/char/oradax.c                 |  2 +-
+ drivers/scsi/st.c                          |  3 ++-
+ drivers/staging/gasket/gasket_page_table.c |  4 ++--
+ drivers/tee/tee_shm.c                      |  2 +-
+ drivers/vfio/vfio_iommu_spapr_tce.c        |  3 ++-
+ drivers/vhost/vhost.c                      |  2 +-
+ drivers/video/fbdev/pvr2fb.c               |  2 +-
+ drivers/virt/fsl_hypervisor.c              |  2 +-
+ drivers/xen/gntdev.c                       |  2 +-
+ fs/orangefs/orangefs-bufmap.c              |  2 +-
+ include/linux/mm.h                         |  4 ++--
+ kernel/futex.c                             |  2 +-
+ lib/iov_iter.c                             |  7 +++++--
+ mm/gup.c                                   | 10 +++++-----
+ mm/util.c                                  |  8 ++++----
+ net/ceph/pagevec.c                         |  2 +-
+ net/rds/info.c                             |  2 +-
+ net/rds/rdma.c                             |  3 ++-
+ 36 files changed, 81 insertions(+), 65 deletions(-)
 
-diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
-index b69d3efa8712..120a40df91b4 100644
---- a/drivers/infiniband/core/umem.c
-+++ b/drivers/infiniband/core/umem.c
-@@ -185,10 +185,11 @@ struct ib_umem *ib_umem_get(struct ib_udata *udata, unsigned long addr,
+diff --git a/arch/mips/mm/gup.c b/arch/mips/mm/gup.c
+index 0d14e0d8eacf..4c2b4483683c 100644
+--- a/arch/mips/mm/gup.c
++++ b/arch/mips/mm/gup.c
+@@ -235,7 +235,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * get_user_pages_fast() - pin user pages in memory
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to
++ * @gup_flags:	flags modifying pin behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long.
+  *
+@@ -247,8 +247,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * requested. If nr_pages is 0 or negative, returns 0. If no pages
+  * were pinned, returns -errno.
+  */
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages)
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr, len, end;
+@@ -273,7 +273,8 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none(pgd))
+ 			goto slow;
+-		if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
++		if (!gup_pud_range(pgd, addr, next, gup_flags & FOLL_WRITE,
++				   pages, &nr))
+ 			goto slow;
+ 	} while (pgdp++, addr = next, addr != end);
+ 	local_irq_enable();
+@@ -289,7 +290,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	pages += nr;
  
- 	while (npages) {
- 		down_read(&mm->mmap_sem);
--		ret = get_user_pages_longterm(cur_base,
-+		ret = get_user_pages(cur_base,
- 				     min_t(unsigned long, npages,
- 					   PAGE_SIZE / sizeof (struct page *)),
--				     gup_flags, page_list, vma_list);
-+				     gup_flags | FOLL_LONGTERM,
-+				     page_list, vma_list);
- 		if (ret < 0) {
- 			up_read(&mm->mmap_sem);
- 			goto umem_release;
-diff --git a/drivers/infiniband/hw/qib/qib_user_pages.c b/drivers/infiniband/hw/qib/qib_user_pages.c
-index ef8bcf366ddc..1b9368261035 100644
---- a/drivers/infiniband/hw/qib/qib_user_pages.c
-+++ b/drivers/infiniband/hw/qib/qib_user_pages.c
-@@ -114,10 +114,10 @@ int qib_get_user_pages(unsigned long start_page, size_t num_pages,
+ 	ret = get_user_pages_unlocked(start, (end - start) >> PAGE_SHIFT,
+-				      pages, write ? FOLL_WRITE : 0);
++				      pages, gup_flags);
  
- 	down_read(&current->mm->mmap_sem);
- 	for (got = 0; got < num_pages; got += ret) {
--		ret = get_user_pages_longterm(start_page + got * PAGE_SIZE,
--					      num_pages - got,
--					      FOLL_WRITE | FOLL_FORCE,
--					      p + got, NULL);
-+		ret = get_user_pages(start_page + got * PAGE_SIZE,
-+				     num_pages - got,
-+				     FOLL_LONGTERM | FOLL_WRITE | FOLL_FORCE,
-+				     p + got, NULL);
- 		if (ret < 0) {
- 			up_read(&current->mm->mmap_sem);
- 			goto bail_release;
-diff --git a/drivers/infiniband/hw/usnic/usnic_uiom.c b/drivers/infiniband/hw/usnic/usnic_uiom.c
-index 06862a6af185..1d9a182ac163 100644
---- a/drivers/infiniband/hw/usnic/usnic_uiom.c
-+++ b/drivers/infiniband/hw/usnic/usnic_uiom.c
-@@ -143,10 +143,11 @@ static int usnic_uiom_get_pages(unsigned long addr, size_t size, int writable,
- 	ret = 0;
+ 	/* Have to be a bit careful with return values */
+ 	if (nr > 0) {
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index bd2dcfbf00cd..8fcb0a921e46 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -582,7 +582,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	/* If writing != 0, then the HPTE must allow writing, if we get here */
+ 	write_ok = writing;
+ 	hva = gfn_to_hva_memslot(memslot, gfn);
+-	npages = get_user_pages_fast(hva, 1, writing, pages);
++	npages = get_user_pages_fast(hva, 1, writing ? FOLL_WRITE : 0, pages);
+ 	if (npages < 1) {
+ 		/* Check if it's an I/O mapping */
+ 		down_read(&current->mm->mmap_sem);
+@@ -1175,7 +1175,7 @@ void *kvmppc_pin_guest_page(struct kvm *kvm, unsigned long gpa,
+ 	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID))
+ 		goto err;
+ 	hva = gfn_to_hva_memslot(memslot, gfn);
+-	npages = get_user_pages_fast(hva, 1, 1, pages);
++	npages = get_user_pages_fast(hva, 1, FOLL_WRITE, pages);
+ 	if (npages < 1)
+ 		goto err;
+ 	page = pages[0];
+diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+index 24296f4cadc6..e0af53fd78c5 100644
+--- a/arch/powerpc/kvm/e500_mmu.c
++++ b/arch/powerpc/kvm/e500_mmu.c
+@@ -783,7 +783,7 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	if (!pages)
+ 		return -ENOMEM;
  
- 	while (npages) {
--		ret = get_user_pages_longterm(cur_base,
--					min_t(unsigned long, npages,
--					PAGE_SIZE / sizeof(struct page *)),
--					gup_flags, page_list, NULL);
-+		ret = get_user_pages(cur_base,
-+				     min_t(unsigned long, npages,
-+				     PAGE_SIZE / sizeof(struct page *)),
-+				     gup_flags | FOLL_LONGTERM,
-+				     page_list, NULL);
+-	ret = get_user_pages_fast(cfg->array, num_pages, 1, pages);
++	ret = get_user_pages_fast(cfg->array, num_pages, FOLL_WRITE, pages);
+ 	if (ret < 0)
+ 		goto free_pages;
  
- 		if (ret < 0)
- 			goto out;
-diff --git a/drivers/media/v4l2-core/videobuf-dma-sg.c b/drivers/media/v4l2-core/videobuf-dma-sg.c
-index 08929c087e27..870a2a526e0b 100644
---- a/drivers/media/v4l2-core/videobuf-dma-sg.c
-+++ b/drivers/media/v4l2-core/videobuf-dma-sg.c
-@@ -186,12 +186,12 @@ static int videobuf_dma_init_user_locked(struct videobuf_dmabuf *dma,
- 	dprintk(1, "init user [0x%lx+0x%lx => %d pages]\n",
- 		data, size, dma->nr_pages);
- 
--	err = get_user_pages_longterm(data & PAGE_MASK, dma->nr_pages,
--			     flags, dma->pages, NULL);
-+	err = get_user_pages(data & PAGE_MASK, dma->nr_pages,
-+			     flags | FOLL_LONGTERM, dma->pages, NULL);
- 
- 	if (err != dma->nr_pages) {
- 		dma->nr_pages = (err >= 0) ? err : 0;
--		dprintk(1, "get_user_pages_longterm: err=%d [%d]\n", err,
-+		dprintk(1, "get_user_pages: err=%d [%d]\n", err,
- 			dma->nr_pages);
- 		return err < 0 ? err : -EINVAL;
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index a712a650a8b6..acb0990c8364 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -190,7 +190,7 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+ 	for (i = 0; i < entries; ++i) {
+ 		cur_ua = ua + (i << PAGE_SHIFT);
+ 		if (1 != get_user_pages_fast(cur_ua,
+-					1/* pages */, 1/* iswrite */, &page)) {
++					1/* pages */, FOLL_WRITE, &page)) {
+ 			ret = -EFAULT;
+ 			for (j = 0; j < i; ++j)
+ 				put_page(pfn_to_page(mem->hpas[j] >>
+@@ -209,7 +209,7 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+ 			if (mm_iommu_move_page_from_cma(page))
+ 				goto populate;
+ 			if (1 != get_user_pages_fast(cur_ua,
+-						1/* pages */, 1/* iswrite */,
++						1/* pages */, FOLL_WRITE,
+ 						&page)) {
+ 				ret = -EFAULT;
+ 				for (j = 0; j < i; ++j)
+diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
+index fcb55b02990e..69d9366b966c 100644
+--- a/arch/s390/kvm/interrupt.c
++++ b/arch/s390/kvm/interrupt.c
+@@ -2278,7 +2278,7 @@ static int kvm_s390_adapter_map(struct kvm *kvm, unsigned int id, __u64 addr)
+ 		ret = -EFAULT;
+ 		goto out;
  	}
-diff --git a/drivers/vfio/vfio_iommu_type1.c b/drivers/vfio/vfio_iommu_type1.c
-index 73652e21efec..1500bd0bb6da 100644
---- a/drivers/vfio/vfio_iommu_type1.c
-+++ b/drivers/vfio/vfio_iommu_type1.c
-@@ -351,7 +351,8 @@ static int vaddr_get_pfn(struct mm_struct *mm, unsigned long vaddr,
+-	ret = get_user_pages_fast(map->addr, 1, 1, &map->page);
++	ret = get_user_pages_fast(map->addr, 1, FOLL_WRITE, &map->page);
+ 	if (ret < 0)
+ 		goto out;
+ 	BUG_ON(ret != 1);
+diff --git a/arch/s390/mm/gup.c b/arch/s390/mm/gup.c
+index 2809d11c7a28..0a6faf3d9960 100644
+--- a/arch/s390/mm/gup.c
++++ b/arch/s390/mm/gup.c
+@@ -265,7 +265,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * get_user_pages_fast() - pin user pages in memory
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to
++ * @gup_flags:	flags modifying pin behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long.
+  *
+@@ -277,22 +277,22 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * requested. If nr_pages is 0 or negative, returns 0. If no pages
+  * were pinned, returns -errno.
+  */
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages)
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages)
+ {
+ 	int nr, ret;
  
- 	down_read(&mm->mmap_sem);
- 	if (mm == current->mm) {
--		ret = get_user_pages_longterm(vaddr, 1, flags, page, vmas);
-+		ret = get_user_pages(vaddr, 1, flags | FOLL_LONGTERM, page,
-+				     vmas);
- 	} else {
- 		ret = get_user_pages_remote(NULL, mm, vaddr, 1, flags, page,
- 					    vmas, NULL);
+ 	might_sleep();
+ 	start &= PAGE_MASK;
+-	nr = __get_user_pages_fast(start, nr_pages, write, pages);
++	nr = __get_user_pages_fast(start, nr_pages, gup_flags & FOLL_WRITE,
++				   pages);
+ 	if (nr == nr_pages)
+ 		return nr;
+ 
+ 	/* Try to get the remaining pages with get_user_pages */
+ 	start += nr << PAGE_SHIFT;
+ 	pages += nr;
+-	ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
+-				      write ? FOLL_WRITE : 0);
++	ret = get_user_pages_unlocked(start, nr_pages - nr, pages, gup_flags);
+ 	/* Have to be a bit careful with return values */
+ 	if (nr > 0)
+ 		ret = (ret < 0) ? nr : ret + nr;
+diff --git a/arch/sh/mm/gup.c b/arch/sh/mm/gup.c
+index 3e27f6d1f1ec..277c882f7489 100644
+--- a/arch/sh/mm/gup.c
++++ b/arch/sh/mm/gup.c
+@@ -204,7 +204,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * get_user_pages_fast() - pin user pages in memory
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to
++ * @gup_flags:	flags modifying pin behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long.
+  *
+@@ -216,8 +216,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * requested. If nr_pages is 0 or negative, returns 0. If no pages
+  * were pinned, returns -errno.
+  */
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages)
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr, len, end;
+@@ -241,7 +241,8 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none(pgd))
+ 			goto slow;
+-		if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
++		if (!gup_pud_range(pgd, addr, next, gup_flags & FOLL_WRITE,
++				   pages, &nr))
+ 			goto slow;
+ 	} while (pgdp++, addr = next, addr != end);
+ 	local_irq_enable();
+@@ -261,7 +262,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 		ret = get_user_pages_unlocked(start,
+ 			(end - start) >> PAGE_SHIFT, pages,
+-			write ? FOLL_WRITE : 0);
++			gup_flags);
+ 
+ 		/* Have to be a bit careful with return values */
+ 		if (nr > 0) {
+diff --git a/arch/sparc/mm/gup.c b/arch/sparc/mm/gup.c
+index aee6dba83d0e..1e770a517d4a 100644
+--- a/arch/sparc/mm/gup.c
++++ b/arch/sparc/mm/gup.c
+@@ -245,8 +245,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 	return nr;
+ }
+ 
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages)
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages)
+ {
+ 	struct mm_struct *mm = current->mm;
+ 	unsigned long addr, len, end;
+@@ -303,7 +303,8 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 		next = pgd_addr_end(addr, end);
+ 		if (pgd_none(pgd))
+ 			goto slow;
+-		if (!gup_pud_range(pgd, addr, next, write, pages, &nr))
++		if (!gup_pud_range(pgd, addr, next, gup_flags & FOLL_WRITE,
++				   pages, &nr))
+ 			goto slow;
+ 	} while (pgdp++, addr = next, addr != end);
+ 
+@@ -324,7 +325,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 		ret = get_user_pages_unlocked(start,
+ 			(end - start) >> PAGE_SHIFT, pages,
+-			write ? FOLL_WRITE : 0);
++			gup_flags);
+ 
+ 		/* Have to be a bit careful with return values */
+ 		if (nr > 0) {
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 6bdca39829bc..08715034e315 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -140,7 +140,7 @@ static int FNAME(cmpxchg_gpte)(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
+ 	pt_element_t *table;
+ 	struct page *page;
+ 
+-	npages = get_user_pages_fast((unsigned long)ptep_user, 1, 1, &page);
++	npages = get_user_pages_fast((unsigned long)ptep_user, 1, FOLL_WRITE, &page);
+ 	/* Check if the user is doing something meaningless. */
+ 	if (unlikely(npages != 1))
+ 		return -EFAULT;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index f13a3a24d360..173596a020cb 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1803,7 +1803,7 @@ static struct page **sev_pin_memory(struct kvm *kvm, unsigned long uaddr,
+ 		return NULL;
+ 
+ 	/* Pin the user virtual address. */
+-	npinned = get_user_pages_fast(uaddr, npages, write ? FOLL_WRITE : 0, pages);
++	npinned = get_user_pages_fast(uaddr, npages, FOLL_WRITE, pages);
+ 	if (npinned != npages) {
+ 		pr_err("SEV: Failure locking %lu pages.\n", npages);
+ 		goto err;
+diff --git a/drivers/fpga/dfl-afu-dma-region.c b/drivers/fpga/dfl-afu-dma-region.c
+index e18a786fc943..c438722bf4e1 100644
+--- a/drivers/fpga/dfl-afu-dma-region.c
++++ b/drivers/fpga/dfl-afu-dma-region.c
+@@ -102,7 +102,7 @@ static int afu_dma_pin_pages(struct dfl_feature_platform_data *pdata,
+ 		goto unlock_vm;
+ 	}
+ 
+-	pinned = get_user_pages_fast(region->user_addr, npages, 1,
++	pinned = get_user_pages_fast(region->user_addr, npages, FOLL_WRITE,
+ 				     region->pages);
+ 	if (pinned < 0) {
+ 		ret = pinned;
+diff --git a/drivers/gpu/drm/via/via_dmablit.c b/drivers/gpu/drm/via/via_dmablit.c
+index 345bda4494e1..0c8b09602910 100644
+--- a/drivers/gpu/drm/via/via_dmablit.c
++++ b/drivers/gpu/drm/via/via_dmablit.c
+@@ -239,7 +239,8 @@ via_lock_all_dma_pages(drm_via_sg_info_t *vsg,  drm_via_dmablit_t *xfer)
+ 	if (NULL == vsg->pages)
+ 		return -ENOMEM;
+ 	ret = get_user_pages_fast((unsigned long)xfer->mem_addr,
+-			vsg->num_pages, vsg->direction == DMA_FROM_DEVICE,
++			vsg->num_pages,
++			vsg->direction == DMA_FROM_DEVICE ? FOLL_WRITE : 0,
+ 			vsg->pages);
+ 	if (ret != vsg->num_pages) {
+ 		if (ret < 0)
+diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
+index 24b592c6522e..78ccacaf97d0 100644
+--- a/drivers/infiniband/hw/hfi1/user_pages.c
++++ b/drivers/infiniband/hw/hfi1/user_pages.c
+@@ -105,7 +105,8 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
+ {
+ 	int ret;
+ 
+-	ret = get_user_pages_fast(vaddr, npages, writable, pages);
++	ret = get_user_pages_fast(vaddr, npages, writable ? FOLL_WRITE : 0,
++				  pages);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/drivers/misc/genwqe/card_utils.c b/drivers/misc/genwqe/card_utils.c
+index 25265fd0fd6e..89cff9d1012b 100644
+--- a/drivers/misc/genwqe/card_utils.c
++++ b/drivers/misc/genwqe/card_utils.c
+@@ -603,7 +603,7 @@ int genwqe_user_vmap(struct genwqe_dev *cd, struct dma_mapping *m, void *uaddr,
+ 	/* pin user pages in memory */
+ 	rc = get_user_pages_fast(data & PAGE_MASK, /* page aligned addr */
+ 				 m->nr_pages,
+-				 m->write,		/* readable/writable */
++				 m->write ? FOLL_WRITE : 0,	/* readable/writable */
+ 				 m->page_list);	/* ptrs to pages */
+ 	if (rc < 0)
+ 		goto fail_get_user_pages;
+diff --git a/drivers/misc/vmw_vmci/vmci_host.c b/drivers/misc/vmw_vmci/vmci_host.c
+index 997f92543dd4..422d08da3244 100644
+--- a/drivers/misc/vmw_vmci/vmci_host.c
++++ b/drivers/misc/vmw_vmci/vmci_host.c
+@@ -242,7 +242,7 @@ static int vmci_host_setup_notify(struct vmci_ctx *context,
+ 	/*
+ 	 * Lock physical page backing a given user VA.
+ 	 */
+-	retval = get_user_pages_fast(uva, 1, 1, &context->notify_page);
++	retval = get_user_pages_fast(uva, 1, FOLL_WRITE, &context->notify_page);
+ 	if (retval != 1) {
+ 		context->notify_page = NULL;
+ 		return VMCI_ERROR_GENERIC;
+diff --git a/drivers/misc/vmw_vmci/vmci_queue_pair.c b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+index 264f4ed8eef2..c5396ee32e51 100644
+--- a/drivers/misc/vmw_vmci/vmci_queue_pair.c
++++ b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+@@ -666,7 +666,8 @@ static int qp_host_get_user_memory(u64 produce_uva,
+ 	int err = VMCI_SUCCESS;
+ 
+ 	retval = get_user_pages_fast((uintptr_t) produce_uva,
+-				     produce_q->kernel_if->num_pages, 1,
++				     produce_q->kernel_if->num_pages,
++				     FOLL_WRITE,
+ 				     produce_q->kernel_if->u.h.header_page);
+ 	if (retval < (int)produce_q->kernel_if->num_pages) {
+ 		pr_debug("get_user_pages_fast(produce) failed (retval=%d)",
+@@ -678,7 +679,8 @@ static int qp_host_get_user_memory(u64 produce_uva,
+ 	}
+ 
+ 	retval = get_user_pages_fast((uintptr_t) consume_uva,
+-				     consume_q->kernel_if->num_pages, 1,
++				     consume_q->kernel_if->num_pages,
++				     FOLL_WRITE,
+ 				     consume_q->kernel_if->u.h.header_page);
+ 	if (retval < (int)consume_q->kernel_if->num_pages) {
+ 		pr_debug("get_user_pages_fast(consume) failed (retval=%d)",
+diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
+index 321bc673c417..cef0133aa47a 100644
+--- a/drivers/platform/goldfish/goldfish_pipe.c
++++ b/drivers/platform/goldfish/goldfish_pipe.c
+@@ -274,7 +274,8 @@ static int pin_user_pages(unsigned long first_page,
+ 		*iter_last_page_size = last_page_size;
+ 	}
+ 
+-	ret = get_user_pages_fast(first_page, requested_pages, !is_write,
++	ret = get_user_pages_fast(first_page, requested_pages,
++				  !is_write ? FOLL_WRITE : 0,
+ 				  pages);
+ 	if (ret <= 0)
+ 		return -EFAULT;
+diff --git a/drivers/rapidio/devices/rio_mport_cdev.c b/drivers/rapidio/devices/rio_mport_cdev.c
+index cbe467ff1aba..f681b3e9e970 100644
+--- a/drivers/rapidio/devices/rio_mport_cdev.c
++++ b/drivers/rapidio/devices/rio_mport_cdev.c
+@@ -868,7 +868,9 @@ rio_dma_transfer(struct file *filp, u32 transfer_mode,
+ 
+ 		pinned = get_user_pages_fast(
+ 				(unsigned long)xfer->loc_addr & PAGE_MASK,
+-				nr_pages, dir == DMA_FROM_DEVICE, page_list);
++				nr_pages,
++				dir == DMA_FROM_DEVICE ? FOLL_WRITE : 0,
++				page_list);
+ 
+ 		if (pinned != nr_pages) {
+ 			if (pinned < 0) {
+diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
+index 6516bc3cb58b..790aa148670d 100644
+--- a/drivers/sbus/char/oradax.c
++++ b/drivers/sbus/char/oradax.c
+@@ -437,7 +437,7 @@ static int dax_lock_page(void *va, struct page **p)
+ 
+ 	dax_dbg("uva %p", va);
+ 
+-	ret = get_user_pages_fast((unsigned long)va, 1, 1, p);
++	ret = get_user_pages_fast((unsigned long)va, 1, FOLL_WRITE, p);
+ 	if (ret == 1) {
+ 		dax_dbg("locked page %p, for VA %p", *p, va);
+ 		return 0;
+diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
+index 7ff22d3f03e3..871b25914c07 100644
+--- a/drivers/scsi/st.c
++++ b/drivers/scsi/st.c
+@@ -4918,7 +4918,8 @@ static int sgl_map_user_pages(struct st_buffer *STbp,
+ 
+         /* Try to fault in all of the necessary pages */
+         /* rw==READ means read from drive, write into memory area */
+-	res = get_user_pages_fast(uaddr, nr_pages, rw == READ, pages);
++	res = get_user_pages_fast(uaddr, nr_pages, rw == READ ? FOLL_WRITE : 0,
++				  pages);
+ 
+ 	/* Errors and no page mapped should return here */
+ 	if (res < nr_pages)
+diff --git a/drivers/staging/gasket/gasket_page_table.c b/drivers/staging/gasket/gasket_page_table.c
+index 26755d9ca41d..f67fdf1d3817 100644
+--- a/drivers/staging/gasket/gasket_page_table.c
++++ b/drivers/staging/gasket/gasket_page_table.c
+@@ -486,8 +486,8 @@ static int gasket_perform_mapping(struct gasket_page_table *pg_tbl,
+ 			ptes[i].dma_addr = pg_tbl->coherent_pages[0].paddr +
+ 					   off + i * PAGE_SIZE;
+ 		} else {
+-			ret = get_user_pages_fast(page_addr - offset, 1, 1,
+-						  &page);
++			ret = get_user_pages_fast(page_addr - offset, 1,
++						  FOLL_WRITE, &page);
+ 
+ 			if (ret <= 0) {
+ 				dev_err(pg_tbl->device,
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 0b9ab1d0dd45..49fd7312e2aa 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -273,7 +273,7 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
+ 		goto err;
+ 	}
+ 
+-	rc = get_user_pages_fast(start, num_pages, 1, shm->pages);
++	rc = get_user_pages_fast(start, num_pages, FOLL_WRITE, shm->pages);
+ 	if (rc > 0)
+ 		shm->num_pages = rc;
+ 	if (rc != num_pages) {
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index c424913324e3..a4b10bb4086b 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -532,7 +532,8 @@ static int tce_iommu_use_page(unsigned long tce, unsigned long *hpa)
+ 	enum dma_data_direction direction = iommu_tce_direction(tce);
+ 
+ 	if (get_user_pages_fast(tce & PAGE_MASK, 1,
+-			direction != DMA_TO_DEVICE, &page) != 1)
++			direction != DMA_TO_DEVICE ? FOLL_WRITE : 0,
++			&page) != 1)
+ 		return -EFAULT;
+ 
+ 	*hpa = __pa((unsigned long) page_address(page));
+diff --git a/drivers/vhost/vhost.c b/drivers/vhost/vhost.c
+index 24a129fcdd61..72685b1659ff 100644
+--- a/drivers/vhost/vhost.c
++++ b/drivers/vhost/vhost.c
+@@ -1700,7 +1700,7 @@ static int set_bit_to_user(int nr, void __user *addr)
+ 	int bit = nr + (log % PAGE_SIZE) * 8;
+ 	int r;
+ 
+-	r = get_user_pages_fast(log, 1, 1, &page);
++	r = get_user_pages_fast(log, 1, FOLL_WRITE, &page);
+ 	if (r < 0)
+ 		return r;
+ 	BUG_ON(r != 1);
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 8a53d1de611d..41390c8e0f67 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -686,7 +686,7 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+ 	if (!pages)
+ 		return -ENOMEM;
+ 
+-	ret = get_user_pages_fast((unsigned long)buf, nr_pages, true, pages);
++	ret = get_user_pages_fast((unsigned long)buf, nr_pages, FOLL_WRITE, pages);
+ 	if (ret < nr_pages) {
+ 		nr_pages = ret;
+ 		ret = -EINVAL;
+diff --git a/drivers/virt/fsl_hypervisor.c b/drivers/virt/fsl_hypervisor.c
+index 8ba726e600e9..6446bcab4185 100644
+--- a/drivers/virt/fsl_hypervisor.c
++++ b/drivers/virt/fsl_hypervisor.c
+@@ -244,7 +244,7 @@ static long ioctl_memcpy(struct fsl_hv_ioctl_memcpy __user *p)
+ 
+ 	/* Get the physical addresses of the source buffer */
+ 	num_pinned = get_user_pages_fast(param.local_vaddr - lb_offset,
+-		num_pages, param.source != -1, pages);
++		num_pages, param.source != -1 ? FOLL_WRITE : 0, pages);
+ 
+ 	if (num_pinned != num_pages) {
+ 		/* get_user_pages() failed */
+diff --git a/drivers/xen/gntdev.c b/drivers/xen/gntdev.c
+index 5efc5eee9544..7b47f1e6aab4 100644
+--- a/drivers/xen/gntdev.c
++++ b/drivers/xen/gntdev.c
+@@ -852,7 +852,7 @@ static int gntdev_get_page(struct gntdev_copy_batch *batch, void __user *virt,
+ 	unsigned long xen_pfn;
+ 	int ret;
+ 
+-	ret = get_user_pages_fast(addr, 1, writeable, &page);
++	ret = get_user_pages_fast(addr, 1, writeable ? FOLL_WRITE : 0, &page);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/fs/orangefs/orangefs-bufmap.c b/fs/orangefs/orangefs-bufmap.c
+index 443bcd8c3c19..5a7c4fda682f 100644
+--- a/fs/orangefs/orangefs-bufmap.c
++++ b/fs/orangefs/orangefs-bufmap.c
+@@ -269,7 +269,7 @@ orangefs_bufmap_map(struct orangefs_bufmap *bufmap,
+ 
+ 	/* map the pages */
+ 	ret = get_user_pages_fast((unsigned long)user_desc->ptr,
+-			     bufmap->page_count, 1, bufmap->page_array);
++			     bufmap->page_count, FOLL_WRITE, bufmap->page_array);
+ 
+ 	if (ret < 0)
+ 		return ret;
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 80bb6408fe73..05a105d9d4c3 100644
+index 05a105d9d4c3..8e1f3cd7482a 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -1536,18 +1536,6 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
- 		    unsigned int gup_flags, struct page **pages, int *locked);
+@@ -1537,8 +1537,8 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
  long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
  		    struct page **pages, unsigned int gup_flags);
--#ifdef CONFIG_FS_DAX
--long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
--			    unsigned int gup_flags, struct page **pages,
--			    struct vm_area_struct **vmas);
--#else
--static inline long get_user_pages_longterm(unsigned long start,
--		unsigned long nr_pages, unsigned int gup_flags,
--		struct page **pages, struct vm_area_struct **vmas)
--{
--	return get_user_pages(start, nr_pages, gup_flags, pages, vmas);
--}
--#endif /* CONFIG_FS_DAX */
  
- int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			struct page **pages);
-@@ -2615,6 +2603,7 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
- #define FOLL_REMOTE	0x2000	/* we are working on non-current tsk/mm */
- #define FOLL_COW	0x4000	/* internal GUP flag */
- #define FOLL_ANON	0x8000	/* don't do file mappings */
-+#define FOLL_LONGTERM	0x10000	/* mapping is intended for a long term pin */
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages);
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages);
  
- static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
- {
+ /* Container for pinned pfns / pages */
+ struct frame_vector {
+diff --git a/kernel/futex.c b/kernel/futex.c
+index fdd312da0992..e10209946f8b 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -546,7 +546,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, enum futex_a
+ 	if (unlikely(should_fail_futex(fshared)))
+ 		return -EFAULT;
+ 
+-	err = get_user_pages_fast(address, 1, 1, &page);
++	err = get_user_pages_fast(address, 1, FOLL_WRITE, &page);
+ 	/*
+ 	 * If write access is not required (eg. FUTEX_WAIT), try
+ 	 * and get read-only access.
+diff --git a/lib/iov_iter.c b/lib/iov_iter.c
+index be4bd627caf0..6dbae0692719 100644
+--- a/lib/iov_iter.c
++++ b/lib/iov_iter.c
+@@ -1280,7 +1280,9 @@ ssize_t iov_iter_get_pages(struct iov_iter *i,
+ 			len = maxpages * PAGE_SIZE;
+ 		addr &= ~(PAGE_SIZE - 1);
+ 		n = DIV_ROUND_UP(len, PAGE_SIZE);
+-		res = get_user_pages_fast(addr, n, iov_iter_rw(i) != WRITE, pages);
++		res = get_user_pages_fast(addr, n,
++				iov_iter_rw(i) != WRITE ?  FOLL_WRITE : 0,
++				pages);
+ 		if (unlikely(res < 0))
+ 			return res;
+ 		return (res == n ? len : res * PAGE_SIZE) - *start;
+@@ -1361,7 +1363,8 @@ ssize_t iov_iter_get_pages_alloc(struct iov_iter *i,
+ 		p = get_pages_array(n);
+ 		if (!p)
+ 			return -ENOMEM;
+-		res = get_user_pages_fast(addr, n, iov_iter_rw(i) != WRITE, p);
++		res = get_user_pages_fast(addr, n,
++				iov_iter_rw(i) != WRITE ?  FOLL_WRITE : 0, p);
+ 		if (unlikely(res < 0)) {
+ 			kvfree(p);
+ 			return res;
 diff --git a/mm/gup.c b/mm/gup.c
-index b63e88eca31b..ee96eaff118c 100644
+index 681388236106..6f32d36b3c5b 100644
 --- a/mm/gup.c
 +++ b/mm/gup.c
-@@ -1109,87 +1109,109 @@ long get_user_pages_remote(struct task_struct *tsk, struct mm_struct *mm,
- }
- EXPORT_SYMBOL(get_user_pages_remote);
- 
--/*
-- * This is the same as get_user_pages_remote(), just with a
-- * less-flexible calling convention where we assume that the task
-- * and mm being operated on are the current task's and don't allow
-- * passing of a locked parameter.  We also obviously don't pass
-- * FOLL_REMOTE in here.
-- */
--long get_user_pages(unsigned long start, unsigned long nr_pages,
--		unsigned int gup_flags, struct page **pages,
--		struct vm_area_struct **vmas)
--{
--	return __get_user_pages_locked(current, current->mm, start, nr_pages,
--				       pages, vmas, NULL,
--				       gup_flags | FOLL_TOUCH);
--}
--EXPORT_SYMBOL(get_user_pages);
--
- #ifdef CONFIG_FS_DAX
- /*
-- * This is the same as get_user_pages() in that it assumes we are
-- * operating on the current task's mm, but it goes further to validate
-- * that the vmas associated with the address range are suitable for
-- * longterm elevated page reference counts. For example, filesystem-dax
-- * mappings are subject to the lifetime enforced by the filesystem and
-- * we need guarantees that longterm users like RDMA and V4L2 only
-- * establish mappings that have a kernel enforced revocation mechanism.
-+ * __gup_longterm_locked() is a wrapper for __get_uer_pages_locked which
-+ * allows us to process the FOLL_LONGTERM flag if present.
-+ *
-+ * __gup_longterm_locked() validates that the vmas associated with the address
-+ * range are suitable for longterm elevated page reference counts. For example,
-+ * filesystem-dax mappings are subject to the lifetime enforced by the
-+ * filesystem and we need guarantees that longterm users like RDMA and V4L2
-+ * only establish mappings that have a kernel enforced revocation mechanism.
+@@ -1863,7 +1863,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * get_user_pages_fast() - pin user pages in memory
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to
++ * @gup_flags:	flags modifying pin behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long.
   *
-  * "longterm" == userspace controlled elevated page count lifetime.
-  * Contrast this to iov_iter_get_pages() usages which are transient.
+@@ -1875,8 +1875,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+  * requested. If nr_pages is 0 or negative, returns 0. If no pages
+  * were pinned, returns -errno.
   */
--long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
--		unsigned int gup_flags, struct page **pages,
--		struct vm_area_struct **vmas_arg)
-+static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
-+						  struct mm_struct *mm,
-+						  unsigned long start,
-+						  unsigned long nr_pages,
-+						  struct page **pages,
-+						  struct vm_area_struct **vmas,
-+						  unsigned int flags)
+-int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+-			struct page **pages)
++int get_user_pages_fast(unsigned long start, int nr_pages,
++			unsigned int gup_flags, struct page **pages)
  {
--	struct vm_area_struct **vmas = vmas_arg;
-+	struct vm_area_struct **vmas_tmp = vmas;
- 	struct vm_area_struct *vma_prev = NULL;
- 	long rc, i;
+ 	unsigned long addr, len, end;
+ 	int nr = 0, ret = 0;
+@@ -1894,7 +1894,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
  
--	if (!pages)
--		return -EINVAL;
--
--	if (!vmas) {
--		vmas = kcalloc(nr_pages, sizeof(struct vm_area_struct *),
--			       GFP_KERNEL);
--		if (!vmas)
--			return -ENOMEM;
-+	if (flags & FOLL_LONGTERM) {
-+		if (!pages)
-+			return -EINVAL;
-+
-+		if (!vmas_tmp) {
-+			vmas_tmp = kcalloc(nr_pages,
-+					   sizeof(struct vm_area_struct *),
-+					   GFP_KERNEL);
-+			if (!vmas_tmp)
-+				return -ENOMEM;
-+		}
+ 	if (gup_fast_permitted(start, nr_pages)) {
+ 		local_irq_disable();
+-		gup_pgd_range(addr, end, write ? FOLL_WRITE : 0, pages, &nr);
++		gup_pgd_range(addr, end, gup_flags, pages, &nr);
+ 		local_irq_enable();
+ 		ret = nr;
  	}
+@@ -1905,7 +1905,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 		pages += nr;
  
--	rc = get_user_pages(start, nr_pages, gup_flags, pages, vmas);
-+	rc = __get_user_pages_locked(tsk, mm, start, nr_pages, pages,
-+				     vmas_tmp, NULL, flags);
+ 		ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
+-				write ? FOLL_WRITE : 0);
++					      gup_flags);
  
--	for (i = 0; i < rc; i++) {
--		struct vm_area_struct *vma = vmas[i];
-+	if (flags & FOLL_LONGTERM) {
-+		for (i = 0; i < rc; i++) {
-+			struct vm_area_struct *vma = vmas_tmp[i];
- 
--		if (vma == vma_prev)
--			continue;
-+			if (vma == vma_prev)
-+				continue;
- 
--		vma_prev = vma;
-+			vma_prev = vma;
- 
--		if (vma_is_fsdax(vma))
--			break;
--	}
-+			if (vma_is_fsdax(vma))
-+				break;
-+		}
- 
--	/*
--	 * Either get_user_pages() failed, or the vma validation
--	 * succeeded, in either case we don't need to put_page() before
--	 * returning.
--	 */
--	if (i >= rc)
--		goto out;
-+		/*
-+		 * Either get_user_pages() failed, or the vma validation
-+		 * succeeded, in either case we don't need to put_page() before
-+		 * returning.
-+		 */
-+		if (i >= rc)
-+			goto out;
- 
--	for (i = 0; i < rc; i++)
--		put_page(pages[i]);
--	rc = -EOPNOTSUPP;
-+		for (i = 0; i < rc; i++)
-+			put_page(pages[i]);
-+		rc = -EOPNOTSUPP;
- out:
--	if (vmas != vmas_arg)
--		kfree(vmas);
-+		if (vmas_tmp != vmas)
-+			kfree(vmas_tmp);
-+	}
-+
- 	return rc;
+ 		/* Have to be a bit careful with return values */
+ 		if (nr > 0) {
+diff --git a/mm/util.c b/mm/util.c
+index 1ea055138043..01ffe145c62b 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -306,7 +306,7 @@ EXPORT_SYMBOL_GPL(__get_user_pages_fast);
+  * get_user_pages_fast() - pin user pages in memory
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to
++ * @gup_flags:	flags modifying pin behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long.
+  *
+@@ -327,10 +327,10 @@ EXPORT_SYMBOL_GPL(__get_user_pages_fast);
+  * get_user_pages_fast simply falls back to get_user_pages.
+  */
+ int __weak get_user_pages_fast(unsigned long start,
+-				int nr_pages, int write, struct page **pages)
++				int nr_pages, unsigned int gup_flags,
++				struct page **pages)
+ {
+-	return get_user_pages_unlocked(start, nr_pages, pages,
+-				       write ? FOLL_WRITE : 0);
++	return get_user_pages_unlocked(start, nr_pages, pages, gup_flags);
  }
--EXPORT_SYMBOL(get_user_pages_longterm);
-+#else /* !CONFIG_FS_DAX */
-+static __always_inline long __gup_longterm_locked(struct task_struct *tsk,
-+						  struct mm_struct *mm,
-+						  unsigned long start,
-+						  unsigned long nr_pages,
-+						  struct page **pages,
-+						  struct vm_area_struct **vmas,
-+						  unsigned int flags)
-+{
-+	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
-+				       NULL, flags);
-+}
- #endif /* CONFIG_FS_DAX */
+ EXPORT_SYMBOL_GPL(get_user_pages_fast);
  
-+/*
-+ * This is the same as get_user_pages_remote(), just with a
-+ * less-flexible calling convention where we assume that the task
-+ * and mm being operated on are the current task's and don't allow
-+ * passing of a locked parameter.  We also obviously don't pass
-+ * FOLL_REMOTE in here.
-+ */
-+long get_user_pages(unsigned long start, unsigned long nr_pages,
-+		unsigned int gup_flags, struct page **pages,
-+		struct vm_area_struct **vmas)
-+{
-+	return __gup_longterm_locked(current, current->mm, start, nr_pages,
-+				     pages, vmas, gup_flags | FOLL_TOUCH);
-+}
-+EXPORT_SYMBOL(get_user_pages);
-+
- /**
-  * populate_vma_page_range() -  populate a range of pages in the vma.
-  * @vma:   target vma
-diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-index 5b42d3d4b60a..c898e2e0d1e4 100644
---- a/mm/gup_benchmark.c
-+++ b/mm/gup_benchmark.c
-@@ -54,8 +54,9 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
- 						 pages + i);
+diff --git a/net/ceph/pagevec.c b/net/ceph/pagevec.c
+index d3736f5bffec..74cafc0142ea 100644
+--- a/net/ceph/pagevec.c
++++ b/net/ceph/pagevec.c
+@@ -27,7 +27,7 @@ struct page **ceph_get_direct_page_vector(const void __user *data,
+ 	while (got < num_pages) {
+ 		rc = get_user_pages_fast(
+ 		    (unsigned long)data + ((unsigned long)got * PAGE_SIZE),
+-		    num_pages - got, write_page, pages + got);
++		    num_pages - got, write_page ? FOLL_WRITE : 0, pages + got);
+ 		if (rc < 0)
  			break;
- 		case GUP_LONGTERM_BENCHMARK:
--			nr = get_user_pages_longterm(addr, nr, gup->flags & 1,
--						     pages + i, NULL);
-+			nr = get_user_pages(addr, nr,
-+					    (gup->flags & 1) | FOLL_LONGTERM,
-+					    pages + i, NULL);
- 			break;
- 		case GUP_BENCHMARK:
- 			nr = get_user_pages(addr, nr, gup->flags & 1, pages + i,
+ 		BUG_ON(rc == 0);
+diff --git a/net/rds/info.c b/net/rds/info.c
+index e367a97a18c8..03f6fd56d237 100644
+--- a/net/rds/info.c
++++ b/net/rds/info.c
+@@ -193,7 +193,7 @@ int rds_info_getsockopt(struct socket *sock, int optname, char __user *optval,
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
+-	ret = get_user_pages_fast(start, nr_pages, 1, pages);
++	ret = get_user_pages_fast(start, nr_pages, FOLL_WRITE, pages);
+ 	if (ret != nr_pages) {
+ 		if (ret > 0)
+ 			nr_pages = ret;
+diff --git a/net/rds/rdma.c b/net/rds/rdma.c
+index 182ab8430594..b340ed4fc43a 100644
+--- a/net/rds/rdma.c
++++ b/net/rds/rdma.c
+@@ -158,7 +158,8 @@ static int rds_pin_pages(unsigned long user_addr, unsigned int nr_pages,
+ {
+ 	int ret;
+ 
+-	ret = get_user_pages_fast(user_addr, nr_pages, write, pages);
++	ret = get_user_pages_fast(user_addr, nr_pages, write ? FOLL_WRITE : 0,
++				  pages);
+ 
+ 	if (ret >= 0 && ret < nr_pages) {
+ 		while (ret--)
 -- 
 2.20.1
 
