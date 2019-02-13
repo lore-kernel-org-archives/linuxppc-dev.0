@@ -2,81 +2,102 @@ Return-Path: <SRS0=t5Ns=QU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NORMAL_HTTP_TO_IP,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C1F3C282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 16:09:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAE00C282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 16:16:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E6F0B218D3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 16:09:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Q9hEMKYZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E6F0B218D3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 2E4E621902
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 16:16:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2E4E621902
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4404GT6kf2zDqRf
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 03:09:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4404Qg0wjRzDqSJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 03:16:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.43; helo=mga05.intel.com;
+ envelope-from=dave.hansen@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Q9hEMKYZ"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4404C54QyMzDqGv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 03:06:25 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4404C05JsFz9vKHt;
- Wed, 13 Feb 2019 17:06:20 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Q9hEMKYZ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id yCGx1A9PKAZ7; Wed, 13 Feb 2019 17:06:20 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4404C04HFpz9vKHr;
- Wed, 13 Feb 2019 17:06:20 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550073980; bh=YENrTdZmjRUQzznsCocFVOEf27q2NU6laX+CVp49Qwk=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Q9hEMKYZFJIIe5jotB1jmSVsne04ZjiZcngjYsaJc/vpgUnqwSwS705Mn8qcAJyBn
- WxRVjYKA9ULNkwORGKyBQH822F7gV9YMge/4nadzf3gKd2QPcpicTjYjML/ifux6pH
- 1vYOxJvKL6J6NKJjIy4e5uvLS553mtgDvgIbC8mc=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 289568B876;
- Wed, 13 Feb 2019 17:06:22 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HM3eYe_1KKhk; Wed, 13 Feb 2019 17:06:22 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0340F8B756;
- Wed, 13 Feb 2019 17:06:22 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id EAAA769D7C; Wed, 13 Feb 2019 16:06:21 +0000 (UTC)
-Message-Id: <c1fee958acabcfadcab6cb2c07f04fd395583e88.1550073540.git.christophe.leroy@c-s.fr>
-In-Reply-To: <21f171c0cbd460905a134ce9b9afc2ecb5277269.1550073540.git.christophe.leroy@c-s.fr>
-References: <21f171c0cbd460905a134ce9b9afc2ecb5277269.1550073540.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 2/2] powerpc/8xx: Map 32Mb of RAM at init.
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 13 Feb 2019 16:06:21 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4404Ns3W7FzDqP3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 03:14:51 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+ by fmsmga105.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 13 Feb 2019 08:14:49 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.58,366,1544515200"; d="scan'208";a="143951793"
+Received: from pmmonter-mobl.amr.corp.intel.com (HELO [10.254.87.236])
+ ([10.254.87.236])
+ by fmsmga004.fm.intel.com with ESMTP; 13 Feb 2019 08:14:49 -0800
+Subject: Re: [PATCH v3 2/2] mm: be more verbose about zonelist initialization
+To: Michal Hocko <mhocko@kernel.org>, linux-mm@kvack.org
+References: <20190212095343.23315-3-mhocko@kernel.org>
+ <20190213094315.3504-1-mhocko@kernel.org>
+From: Dave Hansen <dave.hansen@intel.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=dave.hansen@intel.com; keydata=
+ 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
+Message-ID: <1433a7e9-87b2-7e8d-a87d-dcffe486635c@intel.com>
+Date: Wed, 13 Feb 2019 08:14:50 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
+MIME-Version: 1.0
+In-Reply-To: <20190213094315.3504-1-mhocko@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,151 +109,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
+ Michal Hocko <mhocko@suse.com>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the time being, initial MMU setup allows 24 Mbytes
-of DATA and 8 Mbytes of code.
+On 2/13/19 1:43 AM, Michal Hocko wrote:
+> 
+> We have seen several bugs where zonelists have not been initialized
+> properly and it is not really straightforward to track those bugs down.
+> One way to help a bit at least is to dump zonelists of each node when
+> they are (re)initialized.
 
-Some debug setup like CONFIG_KASAN generate huge
-kernels with text size over the 8M limit and data over the
-24 Mbytes limit.
+Were you thinking of boot-time bugs and crashes, or just stuff going
+wonky after boot?
 
-Here is an 8xx kernel compiled with CONFIG_KASAN_INLINE for
-one of my boards:
-
-[root@po16846vm linux-powerpc]# size -x vmlinux
-   text	   data	    bss	    dec	    hex	filename
-0x111019c	0x41b0d4	0x490de0	26984528	19bc050	vmlinux
-
-This patch maps up to 32 Mbytes code based on _einittext symbol
-and allows 32 Mbytes of memory instead of 24.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v3: Maps 32M of both data and text.
-
- v2: Using IS_ENABLED() instead of #ifdef in 8xx_mmu.c
-
- arch/powerpc/kernel/head_8xx.S | 51 +++++++++++++++++++++++++-----------------
- arch/powerpc/mm/8xx_mmu.c      |  7 ++++--
- 2 files changed, 36 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 20cc816b3508..fe2857ef0309 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -337,8 +337,8 @@ InstructionTLBMiss:
- 	rlwinm	r10, r10, 16, 0xfff8
- 	cmpli	cr0, r10, PAGE_OFFSET@h
- #ifndef CONFIG_PIN_TLB_TEXT
--	/* It is assumed that kernel code fits into the first 8M page */
--0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x0800000)@h
-+	/* It is assumed that kernel code fits into the first 32M */
-+0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x2000000)@h
- 	patch_site	0b, patch__itlbmiss_linmem_top
- #endif
- #endif
-@@ -434,7 +434,7 @@ DataStoreTLBMiss:
- #ifndef CONFIG_PIN_TLB_IMMR
- 	cmpli	cr6, r10, VIRT_IMMR_BASE@h
- #endif
--0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x1800000)@h
-+0:	cmpli	cr7, r10, (PAGE_OFFSET + 0x2000000)@h
- 	patch_site	0b, patch__dtlbmiss_linmem_top
- 
- 	mfspr	r10, SPRN_M_TWB	/* Get level 1 table */
-@@ -886,28 +886,11 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10	/* remove PINNED DTLB entries */
- 
- 	tlbia			/* Invalidate all TLB entries */
--#ifdef CONFIG_PIN_TLB_TEXT
--	lis	r8, MI_RSV4I@h
--	ori	r8, r8, 0x1c00
--
--	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
--#endif
--
- #ifdef CONFIG_PIN_TLB_DATA
- 	oris	r10, r10, MD_RSV4I@h
- 	mtspr	SPRN_MD_CTR, r10	/* Set data TLB control */
- #endif
- 
--	/* Now map the lower 8 Meg into the ITLB. */
--	lis	r8, KERNELBASE@h	/* Create vaddr for TLB */
--	ori	r8, r8, MI_EVALID	/* Mark it valid */
--	mtspr	SPRN_MI_EPN, r8
--	li	r8, MI_PS8MEG /* Set 8M byte page */
--	ori	r8, r8, MI_SVALID	/* Make it valid */
--	mtspr	SPRN_MI_TWC, r8
--	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
--	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
--
- 	lis	r8, MI_APG_INIT@h	/* Set protection modes */
- 	ori	r8, r8, MI_APG_INIT@l
- 	mtspr	SPRN_MI_AP, r8
-@@ -937,6 +920,34 @@ initial_mmu:
- 	mtspr	SPRN_MD_RPN, r8
- #endif
- 
-+	/* Now map the lower RAM (up to 32 Mbytes) into the ITLB. */
-+#ifdef CONFIG_PIN_TLB_TEXT
-+	lis	r8, MI_RSV4I@h
-+	ori	r8, r8, 0x1c00
-+#endif
-+	li	r9, 4				/* up to 4 pages of 8M */
-+	mtctr	r9
-+	lis	r9, KERNELBASE@h		/* Create vaddr for TLB */
-+	li	r10, MI_PS8MEG | MI_SVALID	/* Set 8M byte page */
-+	li	r11, MI_BOOTINIT		/* Create RPN for address 0 */
-+	lis	r12, _einittext@h
-+	ori	r12, r12, _einittext@l
-+1:
-+#ifdef CONFIG_PIN_TLB_TEXT
-+	mtspr	SPRN_MI_CTR, r8	/* Set instruction MMU control */
-+	addi	r8, r8, 0x100
-+#endif
-+
-+	ori	r0, r9, MI_EVALID		/* Mark it valid */
-+	mtspr	SPRN_MI_EPN, r0
-+	mtspr	SPRN_MI_TWC, r10
-+	mtspr	SPRN_MI_RPN, r11		/* Store TLB entry */
-+	addis	r9, r9, 0x80
-+	addis	r11, r11, 0x80
-+
-+	cmpl	cr0, r9, r12
-+	bdnzf	gt, 1b
-+
- 	/* Since the cache is enabled according to the information we
- 	 * just loaded into the TLB, invalidate and enable the caches here.
- 	 * We should probably check/set other modes....later.
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 92b677faea8c..50c8cd8d3cb9 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -112,6 +112,9 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
- 			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top, 0);
- 	} else {
- 		mapped = top & ~(LARGE_PAGE_SIZE_8M - 1);
-+		if (!IS_ENABLED(CONFIG_PIN_TLB_TEXT))
-+			mmu_patch_cmp_limit(&patch__itlbmiss_linmem_top,
-+					    _ALIGN(__pa(_einittext), 8 << 20));
- 	}
- 
- 	mmu_patch_cmp_limit(&patch__dtlbmiss_linmem_top, mapped);
-@@ -140,8 +143,8 @@ void __init setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	 */
- 	BUG_ON(first_memblock_base != 0);
- 
--	/* 8xx can only access 24MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
-+	/* 8xx can only access 32MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x02000000));
- }
- 
- /*
--- 
-2.13.3
-
+We don't have the zonelists dumped in /proc anywhere, do we?  Would that
+help?
