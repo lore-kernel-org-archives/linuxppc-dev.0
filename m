@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7C7DC282C2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:49:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ED91AC282C2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:52:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A9112086C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:49:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 6AE9B2086C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Feb 2019 17:52:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dybDH4+q"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A9112086C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ROZVdleA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AE9B2086C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4406VQ1PdyzDqSl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 04:49:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4406Yf3R0xzDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 04:52:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
  smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
  helo=bombadil.infradead.org;
@@ -31,34 +31,34 @@ Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=lst.de
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="dybDH4+q"; dkim-atps=neutral
+ header.b="ROZVdleA"; dkim-atps=neutral
 Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hc70q6zDqQC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4406Hh49NnzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 04:40:32 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
  d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
  MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender
  :Reply-To:Content-Type:Content-ID:Content-Description:Resent-Date:Resent-From
  :Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
  List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=XMTme1/aRHBU3E1NpydVyNxz2LU2eqHpXSq4PFlUCf8=; b=dybDH4+q+XTWQP0qDHT6N+gCjB
- Kz/WwxMNo5zsLwsDehzYqWMI7NTCRNaP3alTgdZSuDitAMhZ11DPpVZ3RRJofKnk06LcV/Fcxyi5l
- n6TzH5Ccq6XEyyigy2g4z27z6eLqONgLNAMNTcEKnRu1UjGj99ZlUsUoIWwRrLu3RtKaG8nwvCqJ5
- OUMqgeqxqGkeqBykgx3MInSDP3HC3caM6+1COwU9tGsHg071Ipae3sp4qP82hbeNih5s0izX7pQGy
- oh+I63aNZ/qNC6Ayglo4/sIeNmLF/ypVqShOJMnWnMROYKH5E4h4Pal25u8QcAEaAhsragUKhy3O6
- jjBIQLVQ==;
+ bh=swF8qlGZkl3spkz33kkN5J+FtRx16GdsdMWegrGAgGs=; b=ROZVdleA/2uFaFwRinmRXQDhi0
+ hKrtMF7CMyBePl4vWbrQ/h/YI2my3rKPXBffA3fWVFY5kV/f3sxMvJReo6hU0JgbWsqpNKJSyReCt
+ 4LpDmQaW9V5pTpw08ffPebaSdi4rHZaMtbcgoy76JoLjlDkcgmzkJ7y8i4QAanF4MsOdij0ogBqSn
+ Ps3fXVYyAzNVei+hJRzH7Mwc93npiUpya2hkvoPzzeBH3H+EXYY3wOYp4TvuAzsyEq2k5C27bIg9O
+ jJIimqgkjHo+/i72rS7LDuiK9cZIDyffm20LscFLgb3t9rEwQhNtv8bDiZAVidWSIS1m9CQrY1j2x
+ GDcpKoAQ==;
 Received: from 089144210182.atnat0019.highway.a1.net ([89.144.210.182]
  helo=localhost)
  by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1gtyWH-0008Ed-Bj; Wed, 13 Feb 2019 17:40:26 +0000
+ id 1gtyWK-0008G6-JF; Wed, 13 Feb 2019 17:40:29 +0000
 From: Christoph Hellwig <hch@lst.de>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH 04/11] tracing: consolidate the STACKTRACE_SUPPORT symbol
-Date: Wed, 13 Feb 2019 18:39:58 +0100
-Message-Id: <20190213174005.28785-5-hch@lst.de>
+Subject: [PATCH 05/11] tracing: consolidate the TRACE_IRQFLAGS_SUPPORT symbol
+Date: Wed, 13 Feb 2019 18:39:59 +0100
+Message-Id: <20190213174005.28785-6-hch@lst.de>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190213174005.28785-1-hch@lst.de>
 References: <20190213174005.28785-1-hch@lst.de>
@@ -89,468 +89,495 @@ select if it supported.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/arc/Kconfig        | 6 ++----
- arch/arm/Kconfig        | 5 +----
- arch/arm64/Kconfig      | 4 +---
- arch/hexagon/Kconfig    | 5 +----
- arch/ia64/Kconfig       | 4 +---
- arch/microblaze/Kconfig | 4 +---
- arch/mips/Kconfig       | 5 +----
- arch/nds32/Kconfig      | 4 +---
- arch/openrisc/Kconfig   | 4 +---
- arch/parisc/Kconfig     | 4 +---
- arch/powerpc/Kconfig    | 5 +----
- arch/riscv/Kconfig      | 4 +---
- arch/s390/Kconfig       | 4 +---
- arch/sh/Kconfig         | 4 +---
- arch/sparc/Kconfig      | 5 +----
- arch/um/Kconfig         | 7 ++-----
- arch/unicore32/Kconfig  | 4 +---
- arch/x86/Kconfig        | 4 +---
- arch/xtensa/Kconfig     | 4 +---
- kernel/trace/Kconfig    | 3 +++
- 20 files changed, 24 insertions(+), 65 deletions(-)
+ arch/arc/Kconfig              | 4 +---
+ arch/arm/Kconfig              | 5 +----
+ arch/arm64/Kconfig            | 4 +---
+ arch/csky/Kconfig             | 4 +---
+ arch/hexagon/Kconfig          | 4 +---
+ arch/microblaze/Kconfig       | 1 +
+ arch/microblaze/Kconfig.debug | 2 --
+ arch/mips/Kconfig             | 1 +
+ arch/mips/Kconfig.debug       | 4 ----
+ arch/nds32/Kconfig            | 4 +---
+ arch/nios2/Kconfig            | 4 +---
+ arch/nios2/Kconfig.debug      | 3 ---
+ arch/openrisc/Kconfig         | 4 +---
+ arch/parisc/Kconfig           | 1 +
+ arch/parisc/Kconfig.debug     | 2 --
+ arch/powerpc/Kconfig          | 5 +----
+ arch/riscv/Kconfig            | 4 +---
+ arch/s390/Kconfig             | 1 +
+ arch/s390/Kconfig.debug       | 3 ---
+ arch/sh/Kconfig               | 1 +
+ arch/sh/Kconfig.debug         | 3 ---
+ arch/sparc/Kconfig            | 1 +
+ arch/sparc/Kconfig.debug      | 4 ----
+ arch/um/Kconfig               | 5 +----
+ arch/x86/Kconfig              | 1 +
+ arch/x86/Kconfig.debug        | 3 ---
+ arch/xtensa/Kconfig           | 4 +---
+ kernel/trace/Kconfig          | 3 +++
+ 28 files changed, 22 insertions(+), 63 deletions(-)
 
 diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index c0dd229af534..e8e3776fc5fa 100644
+index e8e3776fc5fa..065fbd55dcc4 100644
 --- a/arch/arc/Kconfig
 +++ b/arch/arc/Kconfig
-@@ -47,6 +47,8 @@ config ARC
- 	select OF_RESERVED_MEM
- 	select PCI_SYSCALL if PCI
+@@ -49,13 +49,11 @@ config ARC
  	select PERF_USE_VMALLOC if ARC_CACHE_VIPT_ALIASING
-+	select STACKTRACE_SUPPORT
-+	select STACKTRACE
+ 	select STACKTRACE_SUPPORT
+ 	select STACKTRACE
++	select TRACE_IRQFLAGS_SUPPORT
  
  config ARCH_HAS_CACHE_LINE_SIZE
  	def_bool y
-@@ -81,10 +83,6 @@ config GENERIC_CALIBRATE_DELAY
- config GENERIC_HWEIGHT
- 	def_bool y
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
--	select STACKTRACE
--
- config HAVE_ARCH_TRANSPARENT_HUGEPAGE
- 	def_bool y
- 	depends on ARC_MMU_V4
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 1ed4c0560b50..68a891f3ffa0 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -109,6 +109,7 @@ config ARM
- 	select REFCOUNT_FULL
- 	select RTC_LIB
- 	select RWSEM_XCHGADD_ALGORITHM
-+	select STACKTRACE_SUPPORT
- 	select SYS_SUPPORTS_APM_EMULATION
- 	# Above selects are sorted alphabetically; please add new ones
- 	# according to that.  Thanks.
-@@ -165,10 +166,6 @@ config NO_IOPORT_MAP
- config SBUS
- 	bool
- 
--config STACKTRACE_SUPPORT
--	bool
--	default y
 -
  config LOCKDEP_SUPPORT
+ 	def_bool y
+ 
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 68a891f3ffa0..1995e1b24506 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -111,6 +111,7 @@ config ARM
+ 	select RWSEM_XCHGADD_ALGORITHM
+ 	select STACKTRACE_SUPPORT
+ 	select SYS_SUPPORTS_APM_EMULATION
++	select TRACE_IRQFLAGS_SUPPORT if !CPU_V7M
+ 	# Above selects are sorted alphabetically; please add new ones
+ 	# according to that.  Thanks.
+ 	help
+@@ -170,10 +171,6 @@ config LOCKDEP_SUPPORT
  	bool
  	default y
+ 
+-config TRACE_IRQFLAGS_SUPPORT
+-	bool
+-	default !CPU_V7M
+-
+ config ARCH_HAS_ILOG2_U32
+ 	bool
+ 
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 2f8da4e18a1e..a6a0bb868369 100644
+index a6a0bb868369..ecbe481ce064 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -172,6 +172,7 @@ config ARM64
- 	select REFCOUNT_FULL
- 	select RWSEM_XCHGADD_ALGORITHM
- 	select SPARSE_IRQ
-+	select STACKTRACE_SUPPORT
+@@ -176,6 +176,7 @@ config ARM64
  	select SWIOTLB
  	select SYSCTL_EXCEPTION_TRACE
  	select THREAD_INFO_IN_TASK
-@@ -226,9 +227,6 @@ config ARCH_MMAP_RND_COMPAT_BITS_MAX
- config NO_IOPORT_MAP
- 	def_bool y if !PCI
++	select TRACE_IRQFLAGS_SUPPORT
+ 	help
+ 	  ARM 64-bit (AArch64) Linux support.
  
--config STACKTRACE_SUPPORT
--	def_bool y
--
- config ILLEGAL_POINTER_VALUE
- 	hex
- 	default 0xdead000000000000
-diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
-index 49f364ea18d4..615693b62ea0 100644
---- a/arch/hexagon/Kconfig
-+++ b/arch/hexagon/Kconfig
-@@ -26,6 +26,7 @@ config HEXAGON
- 	select NO_IOPORT_MAP
- 	select GENERIC_IOMAP
- 	select GENERIC_SMP_IDLE_THREAD
-+	select STACKTRACE
- 	select STACKTRACE_SUPPORT
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_CLOCKEVENTS_BROADCAST
-@@ -68,10 +69,6 @@ config GENERIC_IRQ_PROBE
- config GENERIC_HWEIGHT
+@@ -234,9 +235,6 @@ config ILLEGAL_POINTER_VALUE
+ config LOCKDEP_SUPPORT
  	def_bool y
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
--	select STACKTRACE
 -
  config GENERIC_BUG
  	def_bool y
  	depends on BUG
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 99a629f05de4..8c14b669d194 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -54,6 +54,7 @@ config IA64
- 	select NEED_DMA_MAP_STATE
- 	select NEED_SG_DMA_LENGTH
- 	select RWSEM_XCHGADD_ALGORITHM
-+	select STACKTRACE_SUPPORT
- 	default y
- 	help
- 	  The Itanium Processor Family is Intel's 64-bit successor to
-@@ -78,9 +79,6 @@ config MMU
- 	bool
- 	default y
+diff --git a/arch/csky/Kconfig b/arch/csky/Kconfig
+index 90279a11fcf7..3c3de7ac95bf 100644
+--- a/arch/csky/Kconfig
++++ b/arch/csky/Kconfig
+@@ -46,6 +46,7 @@ config CSKY
+ 	select PERF_USE_VMALLOC if CPU_CK610
+ 	select RTC_LIB
+ 	select TIMER_OF
++	select TRACE_IRQFLAGS_SUPPORT
+ 	select USB_ARCH_HAS_EHCI
+ 	select USB_ARCH_HAS_OHCI
  
--config STACKTRACE_SUPPORT
+@@ -99,9 +100,6 @@ config STACKTRACE_SUPPORT
+ config TIME_LOW_RES
+ 	def_bool y
+ 
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
 -
- config GENERIC_LOCKBREAK
- 	def_bool n
+ config CPU_TLB_SIZE
+ 	int
+ 	default "128"	if (CPU_CK610 || CPU_CK807 || CPU_CK810)
+diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
+index 615693b62ea0..b6c3111ec5f9 100644
+--- a/arch/hexagon/Kconfig
++++ b/arch/hexagon/Kconfig
+@@ -33,6 +33,7 @@ config HEXAGON
+ 	select MODULES_USE_ELF_RELA
+ 	select GENERIC_CPU_DEVICES
+ 	select RWSEM_XCHGADD_ALGORITHM
++	select TRACE_IRQFLAGS_SUPPORT
+ 	---help---
+ 	  Qualcomm Hexagon is a processor architecture designed for high
+ 	  performance and low power across a wide variety of applications.
+@@ -54,9 +55,6 @@ config EARLY_PRINTK
+ config MMU
+ 	def_bool y
  
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index d459c70d9a66..ecccf8651caa 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -37,6 +37,7 @@ config MICROBLAZE
- 	select OF_EARLY_FLATTREE
- 	select PCI_DOMAINS_GENERIC if PCI
- 	select PCI_SYSCALL if PCI
-+	select STACKTRACE_SUPPORT
- 	select TRACING_SUPPORT
- 	select VIRT_TO_BUS
- 	select CPU_NO_EFFICIENT_FFS
-@@ -75,9 +76,6 @@ config GENERIC_CALIBRATE_DELAY
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool y
+-
  config GENERIC_CSUM
  	def_bool y
  
--config STACKTRACE_SUPPORT
--	def_bool y
--
- config LOCKDEP_SUPPORT
- 	def_bool y
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index ecccf8651caa..238f8b410331 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -38,6 +38,7 @@ config MICROBLAZE
+ 	select PCI_DOMAINS_GENERIC if PCI
+ 	select PCI_SYSCALL if PCI
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
+ 	select TRACING_SUPPORT
+ 	select VIRT_TO_BUS
+ 	select CPU_NO_EFFICIENT_FFS
+diff --git a/arch/microblaze/Kconfig.debug b/arch/microblaze/Kconfig.debug
+index dc2e3c45e8a2..617df4f48a5d 100644
+--- a/arch/microblaze/Kconfig.debug
++++ b/arch/microblaze/Kconfig.debug
+@@ -1,5 +1,3 @@
+ # For a description of the syntax of this configuration file,
+ # see Documentation/kbuild/kconfig-language.txt.
  
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool y
 diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 6ad1882a8db9..0645e7b96493 100644
+index 0645e7b96493..d1c89635a459 100644
 --- a/arch/mips/Kconfig
 +++ b/arch/mips/Kconfig
-@@ -80,6 +80,7 @@ config MIPS
- 	select MODULES_USE_ELF_REL if MODULES
- 	select PERF_USE_VMALLOC
+@@ -82,6 +82,7 @@ config MIPS
  	select RTC_LIB
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
  	select SYSCTL_EXCEPTION_TRACE
++	select TRACE_IRQFLAGS_SUPPORT
  	select VIRT_TO_BUS
  
-@@ -3053,10 +3054,6 @@ config LOCKDEP_SUPPORT
- 	bool
- 	default y
+ menu "Machine selection"
+diff --git a/arch/mips/Kconfig.debug b/arch/mips/Kconfig.debug
+index 0c86b2a2adfc..7727b30a42df 100644
+--- a/arch/mips/Kconfig.debug
++++ b/arch/mips/Kconfig.debug
+@@ -1,9 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	bool
 -	default y
 -
- config HAVE_LATENCYTOP_SUPPORT
- 	bool
- 	default y
+ config EARLY_PRINTK
+ 	bool "Early printk" if EXPERT
+ 	depends on SYS_HAS_EARLY_PRINTK
 diff --git a/arch/nds32/Kconfig b/arch/nds32/Kconfig
-index 6a3c53d05dcd..65a506fe25a9 100644
+index 65a506fe25a9..ca62d4f97acb 100644
 --- a/arch/nds32/Kconfig
 +++ b/arch/nds32/Kconfig
-@@ -38,6 +38,7 @@ config NDS32
- 	select OF_EARLY_FLATTREE
- 	select NO_IOPORT_MAP
+@@ -40,6 +40,7 @@ config NDS32
  	select RTC_LIB
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
  	select THREAD_INFO_IN_TASK
++	select TRACE_IRQFLAGS_SUPPORT
  	select HAVE_FUNCTION_TRACER
  	select HAVE_FUNCTION_GRAPH_TRACER
-@@ -62,9 +63,6 @@ config GENERIC_LOCKBREAK
- config TRACE_IRQFLAGS_SUPPORT
- 	def_bool y
+ 	select HAVE_FTRACE_MCOUNT_RECORD
+@@ -60,9 +61,6 @@ config GENERIC_LOCKBREAK
+         def_bool y
+ 	depends on PREEMPT
  
--config STACKTRACE_SUPPORT
--        def_bool y
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool y
 -
  config FIX_EARLYCON_MEM
  	def_bool y
  
+diff --git a/arch/nios2/Kconfig b/arch/nios2/Kconfig
+index 715e6c09b4a5..3b50689007f5 100644
+--- a/arch/nios2/Kconfig
++++ b/arch/nios2/Kconfig
+@@ -20,6 +20,7 @@ config NIOS2
+ 	select OF_EARLY_FLATTREE
+ 	select SOC_BUS
+ 	select SPARSE_IRQ
++	select TRACE_IRQFLAGS_SUPPORT
+ 	select USB_ARCH_HAS_HCD if USB_SUPPORT
+ 	select CPU_NO_EFFICIENT_FFS
+ 	select ARCH_DISCARD_MEMBLOCK
+@@ -39,9 +40,6 @@ config NO_IOPORT_MAP
+ config FPU
+ 	def_bool n
+ 
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool n
+-
+ menu "Kernel features"
+ 
+ source "kernel/Kconfig.hz"
+diff --git a/arch/nios2/Kconfig.debug b/arch/nios2/Kconfig.debug
+index f1da8a7b17ff..a8bc06e96ef5 100644
+--- a/arch/nios2/Kconfig.debug
++++ b/arch/nios2/Kconfig.debug
+@@ -1,8 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool y
+-
+ config EARLY_PRINTK
+ 	bool "Activate early kernel debugging"
+ 	default y
 diff --git a/arch/openrisc/Kconfig b/arch/openrisc/Kconfig
-index 9f51da5e4f57..addbe1d0dee6 100644
+index addbe1d0dee6..514787c0c469 100644
 --- a/arch/openrisc/Kconfig
 +++ b/arch/openrisc/Kconfig
-@@ -35,6 +35,7 @@ config OPENRISC
- 	select OMPIC if SMP
+@@ -36,6 +36,7 @@ config OPENRISC
  	select ARCH_WANT_FRAME_POINTERS
  	select GENERIC_IRQ_MULTI_HANDLER
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  
  config CPU_BIG_ENDIAN
  	def_bool y
-@@ -56,9 +57,6 @@ config TRACE_IRQFLAGS_SUPPORT
- config GENERIC_CSUM
-         def_bool y
+@@ -49,9 +50,6 @@ config GENERIC_HWEIGHT
+ config NO_IOPORT_MAP
+ 	def_bool y
  
--config STACKTRACE_SUPPORT
--	def_bool y
+-config TRACE_IRQFLAGS_SUPPORT
+-        def_bool y
 -
- config LOCKDEP_SUPPORT
- 	def_bool  y
- 
+ # For now, use generic checksum functions
+ #These can be reimplemented in assembly later if so inclined
+ config GENERIC_CSUM
 diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-index 8efbeeafb68e..9288ff6af559 100644
+index 9288ff6af559..845067133dc2 100644
 --- a/arch/parisc/Kconfig
 +++ b/arch/parisc/Kconfig
-@@ -53,6 +53,7 @@ config PARISC
- 	select CPU_NO_EFFICIENT_FFS
+@@ -54,6 +54,7 @@ config PARISC
  	select NEED_DMA_MAP_STATE
  	select NEED_SG_DMA_LENGTH
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  
  	help
  	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
-@@ -104,9 +105,6 @@ config TIME_LOW_RES
- config PM
- 	bool
+diff --git a/arch/parisc/Kconfig.debug b/arch/parisc/Kconfig.debug
+index 1478ded0e247..d1558d84eeae 100644
+--- a/arch/parisc/Kconfig.debug
++++ b/arch/parisc/Kconfig.debug
+@@ -1,4 +1,2 @@
+ # SPDX-License-Identifier: GPL-2.0
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
--
- config ISA_DMA_API
- 	bool
- 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2c3ccffbb2ec..45d0d69237b1 100644
+index 45d0d69237b1..1156021fd4a8 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
 @@ -91,10 +91,6 @@ config PPC_WATCHDOG
  	  seleted via the generic lockup detector menu which is why we
  	  have no standalone config option for it here.
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	bool
 -	default y
 -
- config TRACE_IRQFLAGS_SUPPORT
+ config LOCKDEP_SUPPORT
  	bool
  	default y
-@@ -234,6 +230,7 @@ config PPC
- 	select RTC_LIB
- 	select RWSEM_XCHGADD_ALGORITHM
+@@ -232,6 +228,7 @@ config PPC
  	select SPARSE_IRQ
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
  	select SYSCTL_EXCEPTION_TRACE
++	select TRACE_IRQFLAGS_SUPPORT
  	select VIRT_TO_BUS			if !PPC64
  	#
+ 	# Please keep this list sorted alphabetically.
 diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index fa251310c48c..f0e87594fc9b 100644
+index f0e87594fc9b..a6d914631d47 100644
 --- a/arch/riscv/Kconfig
 +++ b/arch/riscv/Kconfig
-@@ -47,6 +47,7 @@ config RISCV
- 	select PCI_DOMAINS_GENERIC if PCI
+@@ -48,6 +48,7 @@ config RISCV
  	select PCI_MSI if PCI
  	select RISCV_TIMER
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  	select GENERIC_IRQ_MULTI_HANDLER
  	select ARCH_HAS_PTE_SPECIAL
  
-@@ -63,9 +64,6 @@ config PAGE_OFFSET
+@@ -64,9 +65,6 @@ config PAGE_OFFSET
  	default 0xffffffff80000000 if 64BIT && MAXPHYSMEM_2GB
  	default 0xffffffe000000000 if 64BIT && MAXPHYSMEM_128GB
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
 -
- config TRACE_IRQFLAGS_SUPPORT
+ config GENERIC_BUG
  	def_bool y
- 
+ 	depends on BUG
 diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 7f547d4d835f..fde5d60aab7e 100644
+index fde5d60aab7e..662acc163019 100644
 --- a/arch/s390/Kconfig
 +++ b/arch/s390/Kconfig
-@@ -11,9 +11,6 @@ config CPU_BIG_ENDIAN
- config LOCKDEP_SUPPORT
- 	def_bool y
- 
--config STACKTRACE_SUPPORT
--	def_bool y
--
- config ARCH_HAS_ILOG2_U32
- 	def_bool n
- 
-@@ -177,6 +174,7 @@ config S390
- 	select PCI_MSI			if PCI
- 	select RWSEM_XCHGADD_ALGORITHM
- 	select SPARSE_IRQ
-+	select STACKTRACE_SUPPORT
+@@ -177,6 +177,7 @@ config S390
+ 	select STACKTRACE_SUPPORT
  	select SYSCTL_EXCEPTION_TRACE
  	select THREAD_INFO_IN_TASK
++	select TRACE_IRQFLAGS_SUPPORT
  	select TTY
+ 	select VIRT_CPU_ACCOUNTING
+ 	select ARCH_HAS_SCALED_CPUTIME
+diff --git a/arch/s390/Kconfig.debug b/arch/s390/Kconfig.debug
+index 190527560b2c..1cae0977b3eb 100644
+--- a/arch/s390/Kconfig.debug
++++ b/arch/s390/Kconfig.debug
+@@ -1,8 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-config TRACE_IRQFLAGS_SUPPORT
+-	def_bool y
+-
+ config S390_PTDUMP
+ 	bool "Export kernel pagetable layout to userspace via debugfs"
+ 	depends on DEBUG_KERNEL
 diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 4f8c7472079b..e77d3befa52a 100644
+index e77d3befa52a..840c33df6f0e 100644
 --- a/arch/sh/Kconfig
 +++ b/arch/sh/Kconfig
-@@ -49,6 +49,7 @@ config SUPERH
- 	select OLD_SIGSUSPEND
+@@ -50,6 +50,7 @@ config SUPERH
  	select OLD_SIGACTION
  	select PCI_DOMAINS if PCI
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  	select HAVE_ARCH_AUDITSYSCALL
  	select HAVE_FUTEX_CMPXCHG if FUTEX
  	select HAVE_NMI
-@@ -126,9 +127,6 @@ config SYS_SUPPORTS_SMP
- config SYS_SUPPORTS_NUMA
- 	bool
+diff --git a/arch/sh/Kconfig.debug b/arch/sh/Kconfig.debug
+index 010b6c33bbba..4eabecb62329 100644
+--- a/arch/sh/Kconfig.debug
++++ b/arch/sh/Kconfig.debug
+@@ -1,8 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
 -
- config LOCKDEP_SUPPORT
- 	def_bool y
- 
+ config SH_STANDARD_BIOS
+ 	bool "Use LinuxSH standard BIOS"
+ 	depends on SUPERH32
 diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 60c90e59eb3c..85c4447fce00 100644
+index 85c4447fce00..4f8c3f9dd2c6 100644
 --- a/arch/sparc/Kconfig
 +++ b/arch/sparc/Kconfig
-@@ -91,6 +91,7 @@ config SPARC64
- 	select ARCH_HAS_PTE_SPECIAL
- 	select PCI_DOMAINS if PCI
- 	select RWSEM_XCHGADD_ALGORITHM
-+	select STACKTRACE_SUPPORT
+@@ -46,6 +46,7 @@ config SPARC
+ 	select LOCKDEP_SMALL if LOCKDEP
+ 	select NEED_DMA_MAP_STATE
+ 	select NEED_SG_DMA_LENGTH
++	select TRACE_IRQFLAGS_SUPPORT
  
- config ARCH_DEFCONFIG
- 	string
-@@ -107,10 +108,6 @@ config ARCH_ATU
- 	bool
- 	default y if SPARC64
+ config SPARC32
+ 	def_bool !64BIT
+diff --git a/arch/sparc/Kconfig.debug b/arch/sparc/Kconfig.debug
+index 50a918d496c8..6b2bec1888b3 100644
+--- a/arch/sparc/Kconfig.debug
++++ b/arch/sparc/Kconfig.debug
+@@ -1,9 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	bool
--	default y if SPARC64
+-	default y
 -
- config LOCKDEP_SUPPORT
- 	bool
- 	default y if SPARC64
+ config DEBUG_DCFLUSH
+ 	bool "D-cache flush debugging"
+ 	depends on SPARC64 && DEBUG_KERNEL
 diff --git a/arch/um/Kconfig b/arch/um/Kconfig
-index ec9711d068b7..a88ad4c0c3b4 100644
+index a88ad4c0c3b4..f1b7bf7cc66e 100644
 --- a/arch/um/Kconfig
 +++ b/arch/um/Kconfig
-@@ -17,6 +17,8 @@ config UML
- 	select GENERIC_CPU_DEVICES
- 	select GENERIC_CLOCKEVENTS
+@@ -19,6 +19,7 @@ config UML
  	select HAVE_GCC_PLUGINS
-+	select STACKTRACE
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  	select TTY # Needed for line.c
  
  config MMU
-@@ -40,11 +42,6 @@ config LOCKDEP_SUPPORT
+@@ -34,10 +35,6 @@ config ISA
+ config SBUS
  	bool
- 	default y
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	bool
 -	default y
--	select STACKTRACE
--
- config GENERIC_CALIBRATE_DELAY
- 	bool
- 	default y
-diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
-index e080087f0762..d7dccc247301 100644
---- a/arch/unicore32/Kconfig
-+++ b/arch/unicore32/Kconfig
-@@ -20,6 +20,7 @@ config UNICORE32
- 	select GENERIC_IOMAP
- 	select MODULES_USE_ELF_REL
- 	select NEED_DMA_MAP_STATE
-+	select STACKTRACE_SUPPORT
- 	help
- 	  UniCore-32 is 32-bit Instruction Set Architecture,
- 	  including a series of low-power-consumption RISC chip
-@@ -32,9 +33,6 @@ config GENERIC_CSUM
- config NO_IOPORT_MAP
- 	bool
- 
--config STACKTRACE_SUPPORT
--	def_bool y
 -
  config LOCKDEP_SUPPORT
- 	def_bool y
- 
+ 	bool
+ 	default y
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 3c98f3f78631..c5f92cfd5d85 100644
+index c5f92cfd5d85..a53d7a4ffd09 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -206,6 +206,7 @@ config X86
- 	select SPARSE_IRQ
- 	select SRCU
- 	select SYSCTL_EXCEPTION_TRACE
-+	select STACKTRACE_SUPPORT
+@@ -210,6 +210,7 @@ config X86
  	select THREAD_INFO_IN_TASK
  	select USER_STACKTRACE_SUPPORT
  	select VIRT_TO_BUS
-@@ -228,9 +229,6 @@ config ARCH_DEFCONFIG
- config LOCKDEP_SUPPORT
- 	def_bool y
++	select TRACE_IRQFLAGS_SUPPORT
+ 	select X86_FEATURE_NAMES		if PROC_FS
  
--config STACKTRACE_SUPPORT
+ config INSTRUCTION_DECODER
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 0723dff17e6c..bca2566ef208 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -1,8 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
 -
- config MMU
- 	def_bool y
+ config EARLY_PRINTK_USB
+ 	bool
  
 diff --git a/arch/xtensa/Kconfig b/arch/xtensa/Kconfig
-index ddd3b02191a6..51cdd270a44d 100644
+index 51cdd270a44d..2c4bb92df487 100644
 --- a/arch/xtensa/Kconfig
 +++ b/arch/xtensa/Kconfig
-@@ -35,6 +35,7 @@ config XTENSA
- 	select MODULES_USE_ELF_RELA
+@@ -36,6 +36,7 @@ config XTENSA
  	select PERF_USE_VMALLOC
  	select RWSEM_XCHGADD_ALGORITHM
-+	select STACKTRACE_SUPPORT
+ 	select STACKTRACE_SUPPORT
++	select TRACE_IRQFLAGS_SUPPORT
  	select VIRT_TO_BUS
  	help
  	  Xtensa processors are 32-bit RISC machines designed by Tensilica
-@@ -63,9 +64,6 @@ config HZ
+@@ -64,9 +65,6 @@ config HZ
  config LOCKDEP_SUPPORT
  	def_bool y
  
--config STACKTRACE_SUPPORT
+-config TRACE_IRQFLAGS_SUPPORT
 -	def_bool y
 -
- config TRACE_IRQFLAGS_SUPPORT
- 	def_bool y
+ config MMU
+ 	def_bool n
  
 diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index fa8b1fe824f3..80291d016e21 100644
+index 80291d016e21..a349e02e587b 100644
 --- a/kernel/trace/Kconfig
 +++ b/kernel/trace/Kconfig
-@@ -3,6 +3,9 @@
- #  select HAVE_FUNCTION_TRACER:
- #
+@@ -9,6 +9,9 @@ config STACKTRACE_SUPPORT
+ config USER_STACKTRACE_SUPPORT
+ 	bool
  
-+config STACKTRACE_SUPPORT
++config TRACE_IRQFLAGS_SUPPORT
 +	bool
 +
- config USER_STACKTRACE_SUPPORT
+ config NOP_TRACER
  	bool
  
 -- 
