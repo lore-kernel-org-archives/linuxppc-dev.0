@@ -2,92 +2,58 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 752F0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:14:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAB7FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:26:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 723C02229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:14:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="hA9VncW7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 723C02229F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	by mail.kernel.org (Postfix) with ESMTPS id 2F8082080A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:26:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F8082080A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=bluematt.me
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440nfM4JP5zDqZS
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 07:14:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440nx70K8szDqY4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 07:26:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=bluematt.me
+ (client-ip=192.241.179.72; helo=mail.bluematt.me;
+ envelope-from=kernel@bluematt.me; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="hA9VncW7"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ dmarc=none (p=none dis=none) header.from=bluematt.me
+X-Greylist: delayed 434 seconds by postgrey-1.36 at bilbo;
+ Fri, 15 Feb 2019 07:25:08 AEDT
+Received: from mail.bluematt.me (mail.bluematt.me [192.241.179.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440ncj1nq5zDqTj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 07:12:35 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id h1so3637728pfo.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 12:12:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=ccxzyt/RMKZ2OOmgM+tFIm3eRFm02Zizg0pcCDEvEpA=;
- b=hA9VncW7abr9v+2utX/VkY1ZMwjjXa+hwVTodjREfjCiB0K7/Kc1hdBbZP6VIclrft
- XOlV/kBSodmvMnJmU6S+VCif2RbCUEwe4jiK021/ptlayI1p9QvtTplnf6hXcgW17wb+
- QnehE0OatJE+W6+9FVvKXjsQS9WlMlC81CJMTIZkDJ4RfuKrLjfzhp/2YUPNRFY/w0Lc
- aUTkEhbENTvNIWFJCqAuRCY2ROYZ4dZzB+xqdPWBbhLmA24jTl0pTqeeCY5bZatXCoQw
- abmHXi9B7hQUHXsFEubY8QrdE6yffwStU9kEa6Ykk1vfsXxhwe1xCEIBVbJx8CT9RHfQ
- tu1g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=ccxzyt/RMKZ2OOmgM+tFIm3eRFm02Zizg0pcCDEvEpA=;
- b=oGAqZE9qEOvPr8IVrYmji+J2DKEui/eqVXYNNiZO3NZ9PuvpPyLoQqFbXy6VBOOFr4
- +6VgbAX6nejnQ1B8xq/l5rRSSARiCO8dV8/UWuPB/pgaJw9etClcoeoNjCjRuEn6Bb+v
- ++EEHcpgN0uWHUKYpEyTU3dZS/BmiEDOBayedhk+S7zQkx70zw3ces6XLdzeE8XrRuay
- 8rwmHmd3byeJLzCkafj0qBBkeOO7/layxPTEsD6yvfTWAA8IsLZ6IPJK6KtcXx0MmPvj
- e8RQ/v7PkHR3Kq64fRmdV9tee77/99wObbS/159fz+2RsKELn2L6z9xjmg+P0LFk3a0n
- QudQ==
-X-Gm-Message-State: AHQUAuaz/ic1Xc72WlmvDihmIuWs/m6pmQ8Huiohq7R+Ij5qlOabMu3c
- qjiN7NVCq1eJrbC0CGC3cFVsHw==
-X-Google-Smtp-Source: AHgI3IZWZ0MGPLsLn4wrH2r78+5Tb6L2fudxI7tZh+KJRQfM13M8w4S/vvhozZ+3+r9nH+nNGegkWw==
-X-Received: by 2002:a62:a1a:: with SMTP id s26mr5944270pfi.31.1550175153085;
- Thu, 14 Feb 2019 12:12:33 -0800 (PST)
-Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
- by smtp.gmail.com with ESMTPSA id
- q21sm8921770pfq.138.2019.02.14.12.12.32
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 14 Feb 2019 12:12:32 -0800 (PST)
-Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
- (envelope-from <jgg@ziepe.ca>)
- id 1guNN1-0007Ay-MB; Thu, 14 Feb 2019 13:12:31 -0700
-Date: Thu, 14 Feb 2019 13:12:31 -0700
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Ira Weiny <ira.weiny@intel.com>
-Subject: Re: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned
- pages
-Message-ID: <20190214201231.GC1739@ziepe.ca>
-References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
- <20190211225447.GN24692@ziepe.ca>
- <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
- <20190214060006.GE24692@ziepe.ca>
- <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440nv86XXKzDqTf
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 07:25:08 +1100 (AEDT)
+Received: from [192.168.0.100] (unknown [69.202.205.58])
+ by mail.bluematt.me (Postfix) with ESMTPSA id E3B16139579;
+ Thu, 14 Feb 2019 20:17:49 +0000 (UTC)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (1.0)
+Subject: Re: [Bug 202149] New: NULL Pointer Dereference in __split_huge_pmd on
+ PPC64LE
+From: Matt Corallo <kernel@bluematt.me>
+X-Mailer: iPhone Mail (16D57)
+In-Reply-To: <87bm4achnu.fsf@linux.ibm.com>
+Date: Thu, 14 Feb 2019 15:17:48 -0500
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <CCDBD6B9-31CD-4B94-AA8F-9BEF1C133AED@bluematt.me>
+References: <bug-202149-27@https.bugzilla.kernel.org/>
+ <20190104170459.c8c7fa57ba9bc8a69dee5666@linux-foundation.org>
+ <87ef9nk4cj.fsf@linux.ibm.com>
+ <ed4bea40-cf9e-89a1-f99a-3dbd6249847f@bluematt.me>
+ <8736q2jbhr.fsf@linux.ibm.com>
+ <A61367CF-277E-4E74-8A9D-C94C5E53817B@bluematt.me>
+ <87bm4achnu.fsf@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,49 +65,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
- aik@ozlabs.ru, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
- linux-mm@kvack.org, alex.williamson@redhat.com, mdf@kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, cl@linux.com,
- hao.wu@intel.com
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+ bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 11:33:53AM -0800, Ira Weiny wrote:
+Hey, sorry for the delay on this. I had some apparently-unrelated hangs that=
+ I believe were due to mpt3sas instability, and at the risk of speaking too s=
+oon for a bug I couldn't reliably reproduce, this patch appears to have reso=
+lved it, thanks!
 
-> > I think it had to do with double accounting pinned and mlocked pages
-> > and thus delivering a lower than expected limit to userspace.
-> > 
-> > vfio has this bug, RDMA does not. RDMA has a bug where it can
-> > overallocate locked memory, vfio doesn't.
-> 
-> Wouldn't vfio also be able to overallocate if the user had RDMA pinned pages?
+> On Jan 21, 2019, at 07:35, Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> w=
+rote:
+>=20
+>=20
+> Can you test this patch?
+>=20
+> =46rom e511e79af9a314854848ea8fda9dfa6d7e07c5e4 Mon Sep 17 00:00:00 2001
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+> Date: Mon, 21 Jan 2019 16:43:17 +0530
+> Subject: [PATCH] arch/powerpc/radix: Fix kernel crash with mremap
+>=20
+> With support for split pmd lock, we use pmd page pmd_huge_pte pointer to s=
+tore
+> the deposited page table. In those config when we move page tables we need=
+ to
+> make sure we move the depoisted page table to the right pmd page. Otherwis=
+e this
+> can result in crash when we withdraw of deposited page table because we ca=
+n find
+> the pmd_huge_pte NULL.
+>=20
+> c0000000004a1230 __split_huge_pmd+0x1070/0x1940
+> c0000000004a0ff4 __split_huge_pmd+0xe34/0x1940 (unreliable)
+> c0000000004a4000 vma_adjust_trans_huge+0x110/0x1c0
+> c00000000042fe04 __vma_adjust+0x2b4/0x9b0
+> c0000000004316e8 __split_vma+0x1b8/0x280
+> c00000000043192c __do_munmap+0x13c/0x550
+> c000000000439390 sys_mremap+0x220/0x7e0
+> c00000000000b488 system_call+0x5c/0x70
+>=20
+> Fixes: 675d995297d4 ("powerpc/book3s64: Enable split pmd ptlock.")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+> arch/powerpc/include/asm/book3s/64/pgtable.h | 2 --
+> 1 file changed, 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/i=
+nclude/asm/book3s/64/pgtable.h
+> index 92eaea164700..86e62384256d 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -1262,8 +1262,6 @@ static inline int pmd_move_must_withdraw(struct spin=
+lock *new_pmd_ptl,
+>                     struct spinlock *old_pmd_ptl,
+>                     struct vm_area_struct *vma)
+> {
+> -    if (radix_enabled())
+> -        return false;
+>    /*
+>     * Archs like ppc64 use pgtable to store per pmd
+>     * specific information. So when we switch the pmd,
+> --=20
+> 2.20.1
+>=20
 
-Yes
- 
-> I think the problem is that if the user calls mlock on a large range then both
-> vfio and RDMA could potentially overallocate even with this fix.  This was your
-> initial email to Daniel, I think...  And Alex's concern.
-
-Here are the possibilities
-- mlock and pin on the same pages - RDMA respects the limit, VFIO halfs it.
-- mlock and pin on different pages - RDMA doubles the limit, VFIO
-  respects it
-- VFIO and RDMA in the same process, the limit is halfed or doubled, depending.
-
-IHMO we should make VFIO & RDMA the same, and then decide what to do
-about case #2.
-
-> > Really unclear how to fix this. The pinned/locked split with two
-> > buckets may be the right way.
-> 
-> Are you suggesting that we have 2 user limits?
-
-This is what RDMA has done since CL's patch.
-
-It is very hard to fix as you need to track how many pages are mlocked
-*AND* pinned.
-
-Jason
