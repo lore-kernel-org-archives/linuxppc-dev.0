@@ -2,85 +2,105 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C01EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 22:07:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD03FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 22:08:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A03FF21B1C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 22:07:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="by+RQE9d"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A03FF21B1C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id 634BA21B1C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 22:08:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 634BA21B1C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440r8k3R2LzDqHq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 09:07:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440rBc6N7fzDq75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 09:08:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="by+RQE9d"; 
- dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440r6D0GBpzDqW8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 09:04:51 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id z15so3790646pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 14:04:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=jNfgh+9+YqcTyUUN3F+4itRdgED5I5t+gHKZm0Ithlg=;
- b=by+RQE9djOdkQTvUfaHBLlnbqrT/tF8UkToE9czLWfOdsXjvuwtTiV5ebN3QwcgDRT
- ikxza+nJAtJVjIs2KGZmQsr744zER9SgEJsGRMpwvyGhe2X09/DkdGxvzbRJumn5Ljlu
- obbVrLjFR40S8/UxWF4vKykw7MbL2NPIKoSNM=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=jNfgh+9+YqcTyUUN3F+4itRdgED5I5t+gHKZm0Ithlg=;
- b=AnCwjtHoUgicc54fyMr/Qa91qLdKPwSg3PWq8R1vC0EGz2WpgZ7slyP+U/E0rgD8Xl
- BbDhj+nvihO2LtxfKjFnOxLNQ2+zcnN5ovSG7K05HoZ9b9iFrlUKeGOB04QzrT41s8Rw
- yNn58HVU91d7I2blMNNSFZY6KWN7R5n0STyFJtLW0sPfXNWQJv3XVE2SRksDCSfQ01H8
- 9EWpnx5K0C00SLcYH6Dk/kRgzhKu50/CrOyuHojvyacBbIrOzIoeUUtBL50DRUw8EggK
- WirrgNFDvzw5BGUUaHM6qL3pAVfci8inWAWjFCnWFbVaMxZ651LQ4ZO8I2/t2ULG16QG
- pm5w==
-X-Gm-Message-State: AHQUAubpKTsjObT36drVs/OyeVe2cV/46q/5XkGe5oJcSg33VkLbtF3a
- N1cxwE0Qm8fDocrcVnEXth9ejQ==
-X-Google-Smtp-Source: AHgI3Ibqzq/9tfj8ZMoXiYgaOrrP3vxTONIeTm2uqSXgv1OQIeAR2N68APHAXyBBDRIlj0lFU3ukHA==
-X-Received: by 2002:a62:fb07:: with SMTP id x7mr6346509pfm.71.1550181889455;
- Thu, 14 Feb 2019 14:04:49 -0800 (PST)
-Received: from localhost (124-171-165-212.dyn.iinet.net.au. [124.171.165.212])
- by smtp.gmail.com with ESMTPSA id
- r80sm5177609pfa.111.2019.02.14.14.04.47
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 14 Feb 2019 14:04:47 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
-Subject: Re: [PATCH v5 3/3] powerpc/32: Add KASAN support
-In-Reply-To: <3429fe33b68206ecc2a725a740937bbaef2d1ac8.1549935251.git.christophe.leroy@c-s.fr>
-References: <cover.1549935247.git.christophe.leroy@c-s.fr>
- <3429fe33b68206ecc2a725a740937bbaef2d1ac8.1549935251.git.christophe.leroy@c-s.fr>
-Date: Fri, 15 Feb 2019 09:04:44 +1100
-Message-ID: <8736oq3u2r.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440r732B7fzDqWj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 09:05:34 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
+ [10.5.11.12])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id C965FC079C4C;
+ Thu, 14 Feb 2019 22:05:31 +0000 (UTC)
+Received: from llong.remote.csb (dhcp-17-59.bos.redhat.com [10.18.17.59])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id E104860BEC;
+ Thu, 14 Feb 2019 22:05:27 +0000 (UTC)
+Subject: Re: [PATCH v4 0/3] locking/rwsem: Rwsem rearchitecture part 0
+To: Peter Zijlstra <peterz@infradead.org>
+References: <1550095217-12047-1-git-send-email-longman@redhat.com>
+ <20190214103715.GI32494@hirez.programming.kicks-ass.net>
+From: Waiman Long <longman@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ weim8xU=
+Organization: Red Hat
+Message-ID: <5c373ba6-419e-c4d5-965f-a566a6182b28@redhat.com>
+Date: Thu, 14 Feb 2019 17:05:27 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20190214103715.GI32494@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.32]); Thu, 14 Feb 2019 22:05:32 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,426 +112,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-mips@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-
-> --- a/arch/powerpc/include/asm/string.h
-> +++ b/arch/powerpc/include/asm/string.h
-> @@ -27,6 +27,20 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
->  extern void * memchr(const void *,int,__kernel_size_t);
->  extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
->  
-> +void *__memset(void *s, int c, __kernel_size_t count);
-> +void *__memcpy(void *to, const void *from, __kernel_size_t n);
-> +void *__memmove(void *to, const void *from, __kernel_size_t n);
-> +
-> +#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
-> +/*
-> + * For files that are not instrumented (e.g. mm/slub.c) we
-> + * should use not instrumented version of mem* functions.
-> + */
-> +#define memcpy(dst, src, len) __memcpy(dst, src, len)
-> +#define memmove(dst, src, len) __memmove(dst, src, len)
-> +#define memset(s, c, n) __memset(s, c, n)
-> +#endif
-> +
-
-I'm finding that I miss tests like 'kasan test: kasan_memcmp
-out-of-bounds in memcmp' because the uninstrumented asm version is used
-instead of an instrumented C version. I ended up guarding the relevant
-__HAVE_ARCH_x symbols behind a #ifndef CONFIG_KASAN and only exporting
-the arch versions if we're not compiled with KASAN.
-
-I find I need to guard and unexport strncpy, strncmp, memchr and
-memcmp. Do you need to do this on 32bit as well, or are those tests
-passing anyway for some reason?
-
-Regards,
-Daniel
-
-
->  #ifdef CONFIG_PPC64
->  #define __HAVE_ARCH_MEMSET32
->  #define __HAVE_ARCH_MEMSET64
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 879b36602748..fc4c42262694 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -16,8 +16,9 @@ CFLAGS_prom_init.o      += -fPIC
->  CFLAGS_btext.o		+= -fPIC
->  endif
->  
-> -CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
-> -CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
-> +CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
->  CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->  CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->  
-> @@ -31,6 +32,10 @@ CFLAGS_REMOVE_btext.o = $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_prom.o = $(CC_FLAGS_FTRACE)
->  endif
->  
-> +KASAN_SANITIZE_early_32.o := n
-> +KASAN_SANITIZE_cputable.o := n
-> +KASAN_SANITIZE_prom_init.o := n
-> +
->  obj-y				:= cputable.o ptrace.o syscalls.o \
->  				   irq.o align.o signal_32.o pmc.o vdso.o \
->  				   process.o systbl.o idle.o \
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 9ffc72ded73a..846fb30b1190 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -783,5 +783,9 @@ int main(void)
->  	DEFINE(VIRT_IMMR_BASE, (u64)__fix_to_virt(FIX_IMMR_BASE));
->  #endif
->  
-> +#ifdef CONFIG_KASAN
-> +	DEFINE(KASAN_SHADOW_OFFSET, KASAN_SHADOW_OFFSET);
-> +#endif
-> +
->  	return 0;
->  }
-> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-> index 05b08db3901d..0ec9dec06bc2 100644
-> --- a/arch/powerpc/kernel/head_32.S
-> +++ b/arch/powerpc/kernel/head_32.S
-> @@ -962,6 +962,9 @@ start_here:
->   * Do early platform-specific initialization,
->   * and set up the MMU.
->   */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->  	li	r3,0
->  	mr	r4,r31
->  	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-> index b19d78410511..5d6ff8fa7e2b 100644
-> --- a/arch/powerpc/kernel/head_40x.S
-> +++ b/arch/powerpc/kernel/head_40x.S
-> @@ -848,6 +848,9 @@ start_here:
->  /*
->   * Decide what sort of machine this is and initialize the MMU.
->   */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->  	li	r3,0
->  	mr	r4,r31
->  	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-> index bf23c19c92d6..7ca14dff6192 100644
-> --- a/arch/powerpc/kernel/head_44x.S
-> +++ b/arch/powerpc/kernel/head_44x.S
-> @@ -203,6 +203,9 @@ _ENTRY(_start);
->  /*
->   * Decide what sort of machine this is and initialize the MMU.
->   */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->  	li	r3,0
->  	mr	r4,r31
->  	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index 0fea10491f3a..6a644ea2e6b6 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -823,6 +823,9 @@ start_here:
->  /*
->   * Decide what sort of machine this is and initialize the MMU.
->   */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->  	li	r3,0
->  	mr	r4,r31
->  	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> index 2386ce2a9c6e..4f4585a68850 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -274,6 +274,9 @@ set_ivor:
->  /*
->   * Decide what sort of machine this is and initialize the MMU.
->   */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->  	mr	r3,r30
->  	mr	r4,r31
->  	bl	machine_init
-> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-> index 667df97d2595..da6bb16e0876 100644
-> --- a/arch/powerpc/kernel/prom_init_check.sh
-> +++ b/arch/powerpc/kernel/prom_init_check.sh
-> @@ -16,8 +16,16 @@
->  # If you really need to reference something from prom_init.o add
->  # it to the list below:
->  
-> +grep CONFIG_KASAN=y .config >/dev/null
-> +if [ $? -eq 0 ]
-> +then
-> +	MEMFCT="__memcpy __memset"
-> +else
-> +	MEMFCT="memcpy memset"
-> +fi
-> +
->  WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
-> -_end enter_prom memcpy memset reloc_offset __secondary_hold
-> +_end enter_prom $MEMFCT reloc_offset __secondary_hold
->  __secondary_hold_acknowledge __secondary_hold_spinloop __start
->  strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
->  reloc_got2 kernstart_addr memstart_addr linux_banner _stext
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index ca00fbb97cf8..16ff1ea66805 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -978,6 +978,8 @@ void __init setup_arch(char **cmdline_p)
->  
->  	paging_init();
->  
-> +	kasan_init();
-> +
->  	/* Initialize the MMU context management stuff. */
->  	mmu_context_init();
->  
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index 3bf9fc6fd36c..ce8d4a9f810a 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -8,6 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->  CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
->  
-> +KASAN_SANITIZE_code-patching.o := n
-> +KASAN_SANITIZE_feature-fixups.o := n
-> +
-> +ifdef CONFIG_KASAN
-> +CFLAGS_code-patching.o += -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_feature-fixups.o += -DDISABLE_BRANCH_PROFILING
-> +endif
-> +
->  obj-y += string.o alloc.o code-patching.o feature-fixups.o
->  
->  obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o strlen_32.o
-> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-> index ba66846fe973..4d8a1c73b4cf 100644
-> --- a/arch/powerpc/lib/copy_32.S
-> +++ b/arch/powerpc/lib/copy_32.S
-> @@ -91,7 +91,8 @@ EXPORT_SYMBOL(memset16)
->   * We therefore skip the optimised bloc that uses dcbz. This jump is
->   * replaced by a nop once cache is active. This is done in machine_init()
->   */
-> -_GLOBAL(memset)
-> +_GLOBAL(__memset)
-> +KASAN_OVERRIDE(memset, __memset)
->  	cmplwi	0,r5,4
->  	blt	7f
->  
-> @@ -163,12 +164,14 @@ EXPORT_SYMBOL(memset)
->   * We therefore jump to generic_memcpy which doesn't use dcbz. This jump is
->   * replaced by a nop once cache is active. This is done in machine_init()
->   */
-> -_GLOBAL(memmove)
-> +_GLOBAL(__memmove)
-> +KASAN_OVERRIDE(memmove, __memmove)
->  	cmplw	0,r3,r4
->  	bgt	backwards_memcpy
->  	/* fall through */
->  
-> -_GLOBAL(memcpy)
-> +_GLOBAL(__memcpy)
-> +KASAN_OVERRIDE(memcpy, __memcpy)
->  1:	b	generic_memcpy
->  	patch_site	1b, patch__memcpy_nocache
->  
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index f965fc33a8b7..d6b76f25f6de 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -7,6 +7,8 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->  
->  CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
->  
-> +KASAN_SANITIZE_kasan_init.o := n
-> +
->  obj-y				:= fault.o mem.o pgtable.o mmap.o \
->  				   init_$(BITS).o pgtable_$(BITS).o \
->  				   init-common.o mmu_context.o drmem.o
-> @@ -55,3 +57,4 @@ obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
->  endif
->  obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
->  obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
-> +obj-$(CONFIG_KASAN)		+= kasan_init.o
-> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
-> index 6aa41669ac1a..c862b48118f1 100644
-> --- a/arch/powerpc/mm/dump_linuxpagetables.c
-> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
-> @@ -94,6 +94,10 @@ static struct addr_marker address_markers[] = {
->  	{ 0,	"Consistent mem start" },
->  	{ 0,	"Consistent mem end" },
->  #endif
-> +#ifdef CONFIG_KASAN
-> +	{ 0,	"kasan shadow mem start" },
-> +	{ 0,	"kasan shadow mem end" },
-> +#endif
->  #ifdef CONFIG_HIGHMEM
->  	{ 0,	"Highmem PTEs start" },
->  	{ 0,	"Highmem PTEs end" },
-> @@ -310,6 +314,10 @@ static void populate_markers(void)
->  	address_markers[i++].start_address = IOREMAP_TOP +
->  					     CONFIG_CONSISTENT_SIZE;
->  #endif
-> +#ifdef CONFIG_KASAN
-> +	address_markers[i++].start_address = KASAN_SHADOW_START;
-> +	address_markers[i++].start_address = KASAN_SHADOW_END;
-> +#endif
->  #ifdef CONFIG_HIGHMEM
->  	address_markers[i++].start_address = PKMAP_BASE;
->  	address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
-> diff --git a/arch/powerpc/mm/kasan_init.c b/arch/powerpc/mm/kasan_init.c
-> new file mode 100644
-> index 000000000000..bd8e0a263e12
-> --- /dev/null
-> +++ b/arch/powerpc/mm/kasan_init.c
-> @@ -0,0 +1,114 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#define DISABLE_BRANCH_PROFILING
-> +
-> +#include <linux/kasan.h>
-> +#include <linux/printk.h>
-> +#include <linux/memblock.h>
-> +#include <linux/sched/task.h>
-> +#include <asm/pgalloc.h>
-> +
-> +void __init kasan_early_init(void)
-> +{
-> +	unsigned long addr = KASAN_SHADOW_START;
-> +	unsigned long end = KASAN_SHADOW_END;
-> +	unsigned long next;
-> +	pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
-> +	int i;
-> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
-> +
-> +	BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
-> +
-> +	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
-> +		panic("KASAN not supported with Hash MMU\n");
-> +
-> +	for (i = 0; i < PTRS_PER_PTE; i++)
-> +		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-> +			     kasan_early_shadow_pte + i,
-> +			     pfn_pte(PHYS_PFN(pa), PAGE_KERNEL), 0);
-> +
-> +	do {
-> +		next = pgd_addr_end(addr, end);
-> +		pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_pte);
-> +	} while (pmd++, addr = next, addr != end);
-> +}
-> +
-> +static void __init kasan_init_region(struct memblock_region *reg)
-> +{
-> +	void *start = __va(reg->base);
-> +	void *end = __va(reg->base + reg->size);
-> +	unsigned long k_start, k_end, k_cur, k_next;
-> +	pmd_t *pmd;
-> +	void *block;
-> +
-> +	if (start >= end)
-> +		return;
-> +
-> +	k_start = (unsigned long)kasan_mem_to_shadow(start);
-> +	k_end = (unsigned long)kasan_mem_to_shadow(end);
-> +	pmd = pmd_offset(pud_offset(pgd_offset_k(k_start), k_start), k_start);
-> +
-> +	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
-> +		k_next = pgd_addr_end(k_cur, k_end);
-> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte) {
-> +			pte_t *new = pte_alloc_one_kernel(&init_mm);
-> +
-> +			if (!new)
-> +				panic("kasan: pte_alloc_one_kernel() failed");
-> +			memcpy(new, kasan_early_shadow_pte, PTE_TABLE_SIZE);
-> +			pmd_populate_kernel(&init_mm, pmd, new);
-> +		}
-> +	};
-> +
-> +	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-> +	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-> +		void *va = block ? block + k_cur - k_start :
-> +				   memblock_alloc(PAGE_SIZE, PAGE_SIZE);
-> +		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
-> +
-> +		if (!va)
-> +			panic("kasan: memblock_alloc() failed");
-> +		pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-> +		pte_update(pte_offset_kernel(pmd, k_cur), ~0, pte_val(pte));
-> +	}
-> +	flush_tlb_kernel_range(k_start, k_end);
-> +}
-> +
-> +static void __init kasan_remap_early_shadow_ro(void)
-> +{
-> +	unsigned long k_cur;
-> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
-> +	int i;
-> +
-> +	for (i = 0; i < PTRS_PER_PTE; i++)
-> +		ptep_set_wrprotect(&init_mm, 0, kasan_early_shadow_pte + i);
-> +
-> +	for (k_cur = PAGE_OFFSET & PAGE_MASK; k_cur; k_cur += PAGE_SIZE) {
-> +		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-> +		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
-> +
-> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)
-> +			continue;
-> +		if ((pte_val(*ptep) & PAGE_MASK) != pa)
-> +			continue;
-> +
-> +		ptep_set_wrprotect(&init_mm, k_cur, ptep);
-> +	}
-> +	flush_tlb_mm(&init_mm);
-> +}
-> +
-> +void __init kasan_init(void)
-> +{
-> +	struct memblock_region *reg;
-> +
-> +	for_each_memblock(memory, reg)
-> +		kasan_init_region(reg);
-> +
-> +	kasan_remap_early_shadow_ro();
-> +
-> +	clear_page(kasan_early_shadow_page);
-> +
-> +	/* At this point kasan is fully initialized. Enable error messages */
-> +	init_task.kasan_depth = 0;
-> +	pr_info("KASAN init done\n");
-> +}
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 81f251fc4169..1bb055775e60 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -336,6 +336,10 @@ void __init mem_init(void)
->  	pr_info("  * 0x%08lx..0x%08lx  : highmem PTEs\n",
->  		PKMAP_BASE, PKMAP_ADDR(LAST_PKMAP));
->  #endif /* CONFIG_HIGHMEM */
-> +#ifdef CONFIG_KASAN
-> +	pr_info("  * 0x%08lx..0x%08lx  : kasan shadow mem\n",
-> +		KASAN_SHADOW_START, KASAN_SHADOW_END);
-> +#endif
->  #ifdef CONFIG_NOT_COHERENT_CACHE
->  	pr_info("  * 0x%08lx..0x%08lx  : consistent mem\n",
->  		IOREMAP_TOP, IOREMAP_TOP + CONFIG_CONSISTENT_SIZE);
-> -- 
-> 2.13.3
+T24gMDIvMTQvMjAxOSAwNTozNyBBTSwgUGV0ZXIgWmlqbHN0cmEgd3JvdGU6Cj4gT24gV2Vk
+LCBGZWIgMTMsIDIwMTkgYXQgMDU6MDA6MTRQTSAtMDUwMCwgV2FpbWFuIExvbmcgd3JvdGU6
+Cj4+IHY0Ogo+PiAgLSBSZW1vdmUgcndzZW0tc3BpbmxvY2suYyBhbmQgbWFrZSBhbGwgYXJj
+aHMgdXNlIHJ3c2VtLXhhZGQuYy4KPj4KPj4gdjM6Cj4+ICAtIE9wdGltaXplIF9fZG93bl9y
+ZWFkX3RyeWxvY2soKSBmb3IgdGhlIHVuY29udGVuZGVkIGNhc2UgYXMgc3VnZ2VzdGVkCj4+
+ICAgIGJ5IExpbnVzLgo+Pgo+PiB2MjoKPj4gIC0gQWRkIHBhdGNoIDIgdG8gb3B0aW1pemUg
+X19kb3duX3JlYWRfdHJ5bG9jaygpIGFzIHN1Z2dlc3RlZCBieSBQZXRlclouCj4+ICAtIFVw
+ZGF0ZSBwZXJmb3JtYW5jZSB0ZXN0IGRhdGEgaW4gcGF0Y2ggMS4KPj4KPj4gVGhlIGdvYWwg
+b2YgdGhpcyBwYXRjaHNldCBpcyB0byByZW1vdmUgdGhlIGFyY2hpdGVjdHVyZSBzcGVjaWZp
+YyBmaWxlcwo+PiBmb3IgcndzZW0teGFkZCB0byBtYWtlIGl0IGVhc2VyIHRvIGFkZCBlbmhh
+bmNlbWVudHMgaW4gdGhlIGxhdGVyIHJ3c2VtCj4+IHBhdGNoZXMuIEl0IGFsc28gcmVtb3Zl
+cyB0aGUgbGVnYWN5IHJ3c2VtLXNwaW5sb2NrLmMgZmlsZSBhbmQgbWFrZSBhbGwKPj4gdGhl
+IGFyY2hpdGVjdHVyZXMgdXNlIG9uZSBzaW5nbGUgaW1wbGVtZW50YXRpb24gb2YgcndzZW0g
+LSByd3NlbS14YWRkLmMuCj4+Cj4+IFdhaW1hbiBMb25nICgzKToKPj4gICBsb2NraW5nL3J3
+c2VtOiBSZW1vdmUgYXJjaCBzcGVjaWZpYyByd3NlbSBmaWxlcwo+PiAgIGxvY2tpbmcvcndz
+ZW06IFJlbW92ZSByd3NlbS1zcGlubG9jay5jICYgdXNlIHJ3c2VtLXhhZGQuYyBmb3IgYWxs
+Cj4+ICAgICBhcmNocwo+PiAgIGxvY2tpbmcvcndzZW06IE9wdGltaXplIGRvd25fcmVhZF90
+cnlsb2NrKCkKPiBBY2tlZC1ieTogUGV0ZXIgWmlqbHN0cmEgKEludGVsKSA8cGV0ZXJ6QGlu
+ZnJhZGVhZC5vcmc+Cj4KPiB3aXRoIHRoZSBjYXZlYXQgdGhhdCBJJ20gaGFwcHkgdG8gZXhj
+aGFuZ2UgcGF0Y2ggMyBiYWNrIHRvIG15IGVhcmxpZXIKPiBzdWdnZXN0aW9uIGluIGNhc2Ug
+V2lsbCBleHBlc3NlcyBjb25jZXJucyB3cnQgdGhlIEFSTTY0IHBlcmZvcm1hbmNlIG9mCj4g
+TGludXMnIHN1Z2dlc3Rpb24uCgpJIGluc2VydGVkIGEgZmV3IGxvY2sgZXZlbnQgY291bnRl
+cnMgaW50byB0aGUgcndzZW0gdHJ5bG9jayBjb2RlOgoKc3RhdGljIGlubGluZSBpbnQgX19k
+b3duX3JlYWRfdHJ5bG9jayhzdHJ1Y3Qgcndfc2VtYXBob3JlICpzZW0pCnsKwqDCoMKgwqDC
+oMKgwqAgLyoKwqDCoMKgwqDCoMKgwqDCoCAqIE9wdGltaXplIGZvciB0aGUgY2FzZSB3aGVu
+IHRoZSByd3NlbSBpcyBub3QgbG9ja2VkIGF0IGFsbC4KwqDCoMKgwqDCoMKgwqDCoCAqLwrC
+oMKgwqDCoMKgwqDCoCBsb25nIHRtcCA9IFJXU0VNX1VOTE9DS0VEX1ZBTFVFOwoKwqDCoMKg
+wqDCoMKgwqAgbG9ja2V2ZW50X2luYyhyd3NlbV9ydHJ5bG9jayk7CsKgwqDCoMKgwqDCoMKg
+IGRvIHsKwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgIGlmIChhdG9taWNfbG9uZ190
+cnlfY21weGNoZ19hY3F1aXJlKCZzZW0tPmNvdW50LCAmdG1wLArCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqAgdG1wICsgUldTRU1fQUNUSVZFX1JFQURfQklBUykpIHsKwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCByd3NlbV9zZXRfcmVhZGVyX293
+bmVkKHNlbSk7CsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqAgcmV0dXJuIDE7CsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoCB9CsKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoCBsb2NrZXZlbnRfaW5jKHJ3c2VtX3J0cnlsb2NrX3Jl
+dHJ5KTsKwqDCoMKgwqDCoMKgwqAgfSB3aGlsZSAodG1wID49IDApOwrCoMKgwqDCoMKgwqDC
+oCBsb2NrZXZlbnRfaW5jKHJ3c2VtX3J0cnlsb2NrX2ZhaWwpOwrCoMKgwqDCoMKgwqDCoCBy
+ZXR1cm4gMDsKfQoKc3RhdGljIGlubGluZSBpbnQgX19kb3duX3dyaXRlX3RyeWxvY2soc3Ry
+dWN0IHJ3X3NlbWFwaG9yZSAqc2VtKQp7CsKgwqDCoMKgwqDCoMKgIGxvbmcgdG1wOwoKwqDC
+oMKgwqDCoMKgwqAgbG9ja2V2ZW50X2luYyhyd3NlbV93dHJ5bG9jayk7CsKgwqDCoMKgwqDC
+oMKgIHRtcCA9IGF0b21pY19sb25nX2NtcHhjaGdfYWNxdWlyZSgmc2VtLT5jb3VudCwgUldT
+RU1fVU5MT0NLRURfVkFMVUUsCsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoCBSV1NFTV9BQ1RJVkVfV1JJVEVfQklBUyk7CsKgwqDCoMKgwqDCoMKgIGlmICh0
+bXAgPT0gUldTRU1fVU5MT0NLRURfVkFMVUUpIHsKwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgIHJ3c2VtX3NldF9vd25lcihzZW0pOwrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqAgcmV0dXJuIHRydWU7CsKgwqDCoMKgwqDCoMKgIH0KwqDCoMKgwqDCoMKgwqAgbG9j
+a2V2ZW50X2luYyhyd3NlbV93dHJ5bG9ja19mYWlsKTsKwqDCoMKgwqDCoMKgwqAgcmV0dXJu
+IGZhbHNlOwp9CgpJIGJvb3RlZCB0aGUgbmV3IGtlcm5lbCBvbiBhIDQtc29ja2V0IDU2LWNv
+cmUgMTEyLXRocmVhZCBCcm9hZHdlbGwKc3lzdGVtLiBUaGUgY291bnRlciB2YWx1ZXMKCjEp
+IEFmdGVyIGJvb3R1cDoKCnJ3c2VtX3J0cnlsb2NrPTc4NDAyOQpyd3NlbV9ydHJ5bG9ja19m
+YWlsPTU5CnJ3c2VtX3J0cnlsb2NrX3JldHJ5PTM5NApyd3NlbV93dHJ5bG9jaz0xODI4NApy
+d3NlbV93dHJ5bG9ja19mYWlsPTIzMAoKMikgQWZ0ZXIgcGFyYWxsZWwga2VybmVsIGJ1aWxk
+ICgtajExMik6Cgpyd3NlbV9ydHJ5bG9jaz0zMzg2Njc1NTkKcndzZW1fcnRyeWxvY2tfZmFp
+bD0xOApyd3NlbV9ydHJ5bG9ja19yZXRyeT01MQpyd3NlbV93dHJ5bG9jaz0xNzAxNjMzMgpy
+d3NlbV93dHJ5bG9ja19mYWlsPTk4MDU4CgpBdCBsZWFzdCBmb3IgdGhlc2UgdHdvIHVzZSBj
+YXNlcywgdHJ5LWZvci1vd25lcnNoaXAgYXMgc3VnZ2VzdGVkIGJ5CkxpbnVzIGlzIHRoZSBy
+aWdodCBjaG9pY2UuCgpDaGVlcnMsCkxvbmdtYW4KCg==
