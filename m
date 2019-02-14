@@ -2,108 +2,104 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFF19C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:26:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0029AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:56:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2AE21222DA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:26:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2AE21222DA
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3636E2229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:56:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="q+rEtKcM"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3636E2229F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440jwr6zbfzDqVh
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:26:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440kb36JGLzDqXd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:55:59 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440kY675mHzDqW7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 04:54:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="q+rEtKcM"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 440kY65wK4z8smg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 04:54:18 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 440kY65MfCz9sDX; Fri, 15 Feb 2019 04:54:18 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="q+rEtKcM"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440jv05qT0zDqR6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 04:24:44 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 6CBF9C057842;
- Thu, 14 Feb 2019 17:24:42 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-59.bos.redhat.com [10.18.17.59])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 67F225D6B3;
- Thu, 14 Feb 2019 17:24:41 +0000 (UTC)
-Subject: Re: [PATCH 03/11] kernel/locks: consolidate RWSEM_GENERIC_* options
-To: Christoph Hellwig <hch@lst.de>
-References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-4-hch@lst.de>
- <CAMuHMdW4C1McxL-e7ZSiSOiiE5D=xbBK8FZOwuJ1w0kK3CR1Hg@mail.gmail.com>
- <d9aeeedd-ce72-f58f-d858-3e340c073414@redhat.com>
- <20190214170440.GB32441@lst.de>
-From: Waiman Long <longman@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <ac30d526-eb58-a95a-0e7f-e9da5f5cd64a@redhat.com>
-Date: Thu, 14 Feb 2019 12:24:41 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by ozlabs.org (Postfix) with ESMTPS id 440kY56Wpyz9s7h
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2019 04:54:16 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 440kXx2H1kzB09bQ;
+ Thu, 14 Feb 2019 18:54:09 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=q+rEtKcM; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id bqCcek1q4wi2; Thu, 14 Feb 2019 18:54:09 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 440kXx14vhzB09bD;
+ Thu, 14 Feb 2019 18:54:09 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550166849; bh=n4ah+6usBXKSbEgbYvfJ5SUUImHMaBPqx/WpOhU8AFw=;
+ h=Subject:From:To:References:Date:In-Reply-To:From;
+ b=q+rEtKcM0w2Hlt+gkBk8l0+s/2QBRbslxJRdpLlWLO9ehiSWJ0lc1Bm5kDAnhahDv
+ FBKTh8HGhB+YSQmxmmOwSI/INEako+OgCjEvCsgDskhL2qaqanwaRs866mLkVTih/5
+ KLl5+Xn683h8oEg7WBOItfmMv6thltZCdRqhb6NE=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CEC038B8AE;
+ Thu, 14 Feb 2019 18:54:10 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id PEDbG7a8xIbg; Thu, 14 Feb 2019 18:54:10 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 56B538B8AA;
+ Thu, 14 Feb 2019 18:54:10 +0100 (CET)
+Subject: Re: Kernel panic when loading the IDE controller driver
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: sgosavi1 <Sachin.Gosavi@emerson.com>, linuxppc-dev@ozlabs.org,
+ Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>
+References: <1550055691105-0.post@n7.nabble.com>
+ <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
+ <1550060685213-0.post@n7.nabble.com>
+ <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
+ <1550062386389-0.post@n7.nabble.com>
+ <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+Message-ID: <40b6281d-3aed-bff1-79fc-09a293d37b7f@c-s.fr>
+Date: Thu, 14 Feb 2019 18:54:10 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-In-Reply-To: <20190214170440.GB32441@lst.de>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Thu, 14 Feb 2019 17:24:42 +0000 (UTC)
+In-Reply-To: <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -115,22 +111,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-riscv@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/14/2019 12:04 PM, Christoph Hellwig wrote:
-> On Thu, Feb 14, 2019 at 10:26:52AM -0500, Waiman Long wrote:
->> Would you mind dropping just patch 3 from your series?
-> Sure, we can just drop this patch.
 
-Thanks,
-Longman
 
+Le 13/02/2019 à 16:27, Christophe Leroy a écrit :
+> 
+> 
+> Le 13/02/2019 à 13:53, sgosavi1 a écrit :
+>>> Why using 4.15.13 which is obsolete instead of using one of the Long
+>>> Term Support versions which are still maintained, like 4.14 or 4.19 ?
+>>> (see the complete list at https://www.kernel.org/category/releases.html)
+>>
+>> Well, when I started this task 4.15.13 was probably the latest stable
+>> release and hence we decided to port this version. In the older 
+>> kernel, we
+>> have the m8260_setup.c source file for our board where the function
+>> "io_block_mapping" was used to configure the non-standard IO port address
+>> starting at 0xe0000000 location. This address was passed as the base 
+>> address
+>> followed by control address and IRQ number to the ide-core.ko module. 
+>> In the
+>> new kernel we do not have an option to send these addresses and IRQ 
+>> numbers
+>> as arguments to the driver. Instead the ide-generic.c source file in 
+>> the new
+>> kernel uses the standard IO port values and IRQ values. I modified the 
+>> code
+>> in the above file to used the addresses and IRQ number we used in the 
+>> past.
+>> Also, added code in the "MMU_init" function call available under
+>> arch/PowerPC/init_32.c to setup the IO port address range by adding the
+>> "io_block_mapping" call and the required IO port address range.
+>>
+>> Is there anything else that needs to be added or how can we configure the
+>> desired IO address range in the new kernel?
+>>
+> 
+> Maybe look around 
+> https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=9a0e77f28b50128df0c9e26ae489e44e29a7270a 
+> 
+> 
+> Also look at ide_platform.c. I imagine there must be some way to set it 
+> up in your device tree.
+> 
+> Maybe Bartlomiej Zolnierkiewicz can help ?
+> 
+> Christophe
+
+Le 14/02/2019 à 09:17, sgosavi1 a écrit :>> Maybe look around
+ >
+ > I have gone through this before and also tried the pata_platform 
+driver but
+ > no success yet. I haven't found any example that passes the IO ports 
+and IRQ
+ > information through the device tree to the driver code.
+ >
+ > Thanks,
+ > Sachin.
+
+
+Maybe someone from the IDE SUBSYSTEM would be able to help better ?
+
+Entire thread at 
+http://linuxppc.10917.n7.nabble.com/Kernel-panic-when-loading-the-IDE-controller-driver-td150020.html#none
+
+Christophe
