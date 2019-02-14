@@ -2,84 +2,68 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3686C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57A18C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 09:53:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DD96C2229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:27:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="VhubYzw9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DD96C2229F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 980B5222A4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 09:53:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 980B5222A4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440TzY63VRzDqN9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:27:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440Wtl0TL2zDqVf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:53:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=vbabka@suse.cz;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="VhubYzw9"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Txr6XMqzDqLx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:26:24 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 440Txl2cQsz9tykV;
- Thu, 14 Feb 2019 09:26:19 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=VhubYzw9; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Qw9cU7uYJVyD; Thu, 14 Feb 2019 09:26:19 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 440Txl1TDkz9tykT;
- Thu, 14 Feb 2019 09:26:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550132779; bh=UGOe1QWxBfW7ndQ+5pJ1730NUq1Y6MJhDOUpYpQMxe0=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=VhubYzw92naM79UL/+0hi+1+NEcvnnU3bQRHgsGDBfIqBacAR7/iK9YAL6AcenuJf
- YEkGq9lsGySsSDJasFWezq6po3hyapKUbVThJHkW8IFFpesSPbZsm1lzhHw1avf6wq
- MI0quGZdL2izttXopZLDeuWbOD0y9bNCjy7DyziQ=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 173748B87D;
- Thu, 14 Feb 2019 09:26:20 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 590FFlPJ2vnd; Thu, 14 Feb 2019 09:26:20 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 79F0F8B756;
- Thu, 14 Feb 2019 09:26:19 +0100 (CET)
-Subject: Re: [PATCH 01/11] powerpc: remove dead ifdefs in <asm/checksum.h>
-To: Christoph Hellwig <hch@lst.de>,
- Masahiro Yamada <yamada.masahiro@socionext.com>
-References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-2-hch@lst.de>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e7a2efe3-f56c-7dfd-6613-dc9229556673@c-s.fr>
-Date: Thu, 14 Feb 2019 09:26:19 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440Wrs07PwzDqQv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 20:52:11 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 2349EADF1;
+ Thu, 14 Feb 2019 09:52:08 +0000 (UTC)
+Subject: Re: [PATCH v2] hugetlb: allow to free gigantic pages regardless of
+ the configuration
+To: Dave Hansen <dave.hansen@intel.com>, Alexandre Ghiti <alex@ghiti.fr>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+References: <20190213192610.17265-1-alex@ghiti.fr>
+ <d367b5c7-eb05-6d0b-f9bf-5b3fc3f392a9@intel.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Openpgp: preference=signencrypt
+Message-ID: <bcffa37e-22cd-f0d7-ee85-769c0d54520a@suse.cz>
+Date: Thu, 14 Feb 2019 10:52:06 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190213174005.28785-2-hch@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <d367b5c7-eb05-6d0b-f9bf-5b3fc3f392a9@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,60 +75,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 13/02/2019 à 18:39, Christoph Hellwig a écrit :
-> __KERNEL__ is never not defined for non-uapi headers, and GENERIC_CSUM
-> isn't ever set for powerpc either.
-
-GENERIC_CSUM was abandonned by commit d4fde568a34a ("powerpc/64: Use 
-optimized checksum routines on little-endian")
-
-Could you also remove the 'config GENERIC_CSUM' item in 
-arch/powerpc/Kconfig ?
-
-Christophe
-
+On 2/13/19 8:30 PM, Dave Hansen wrote:
+>> -#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
+>> +#ifdef CONFIG_COMPACTION_CORE
+>>  static __init int gigantic_pages_init(void)
+>>  {
+>>  	/* With compaction or CMA we can allocate gigantic pages at runtime */
+>> diff --git a/fs/Kconfig b/fs/Kconfig
+>> index ac474a61be37..8fecd3ea5563 100644
+>> --- a/fs/Kconfig
+>> +++ b/fs/Kconfig
+>> @@ -207,8 +207,9 @@ config HUGETLB_PAGE
+>>  config MEMFD_CREATE
+>>  	def_bool TMPFS || HUGETLBFS
+>>  
+>> -config ARCH_HAS_GIGANTIC_PAGE
+>> +config COMPACTION_CORE
+>>  	bool
+>> +	default y if (MEMORY_ISOLATION && MIGRATION) || CMA
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->   arch/powerpc/include/asm/checksum.h | 8 +-------
->   1 file changed, 1 insertion(+), 7 deletions(-)
+> This takes a hard dependency (#if) and turns it into a Kconfig *default*
+> that can be overridden.  That seems like trouble.
 > 
-> diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-> index a78a57e5058d..37c309500260 100644
-> --- a/arch/powerpc/include/asm/checksum.h
-> +++ b/arch/powerpc/include/asm/checksum.h
-> @@ -1,6 +1,5 @@
->   #ifndef _ASM_POWERPC_CHECKSUM_H
->   #define _ASM_POWERPC_CHECKSUM_H
-> -#ifdef __KERNEL__
->   
->   /*
->    * This program is free software; you can redistribute it and/or
-> @@ -9,9 +8,6 @@
->    * 2 of the License, or (at your option) any later version.
->    */
->   
-> -#ifdef CONFIG_GENERIC_CSUM
-> -#include <asm-generic/checksum.h>
-> -#else
->   #include <linux/bitops.h>
->   #include <linux/in6.h>
->   /*
-> @@ -217,6 +213,4 @@ __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
->   			const struct in6_addr *daddr,
->   			__u32 len, __u8 proto, __wsum sum);
->   
-> -#endif
-> -#endif /* __KERNEL__ */
-> -#endif
-> +#endif /* _ASM_POWERPC_CHECKSUM_H */
+> Shouldn't it be:
 > 
+> config COMPACTION_CORE
+> 	def_bool y
+> 	depends on (MEMORY_ISOLATION && MIGRATION) || CMA
+
+Agreed. Also I noticed that it now depends on MIGRATION instead of
+COMPACTION. That intention is correct IMHO, but will fail to
+compile/link when both COMPACTION and CMA are disabled, and would need
+more changes in mm/internal.h and mm/compaction.c (possibly just
+replacing CMA in all "if defined CONFIG_COMPACTION || defined
+CONFIG_CMA" instances with COMPACTION_CORE, but there might be more
+problems, wanna try? :)
+
+Also, I realized that COMPACTION_CORE is a wrong name, sorry about that.
+What the config really provides is alloc_contig_range(), so it should be
+named either CONFIG_CMA_CORE (as it provides contiguous memory
+allocation, but not the related reservation and accounting), or
+something like CONFIG_CONTIG_ALLOC. I would also move it from fs/Kconfig
+to mm/Kconfig.
+
+Thanks!
