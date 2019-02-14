@@ -2,63 +2,63 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11BB1C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:17:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53DA5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 88C462229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:17:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88C462229F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	by mail.kernel.org (Postfix) with ESMTPS id EC2BA2229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:19:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EC2BA2229F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=emerson.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440TlW5WCSzDqKg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:17:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.222.66; helo=mail-ua1-f66.google.com;
- envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-m68k.org
-Received: from mail-ua1-f66.google.com (mail-ua1-f66.google.com
- [209.85.222.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 440Tnx6cWNzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:19:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Tfw1N5RzDqGG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:13:28 +1100 (AEDT)
-Received: by mail-ua1-f66.google.com with SMTP id j3so1744142uap.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:13:27 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=oDHSHKTHIgYnWNuqdjR3jG49iOOy8VGtWQxLsAaEpHQ=;
- b=aUgUc1Kp94deQHHeC4y7HgN/EhRjUD7Lk4Md/fNWUbQah17gPnDRhUIu6lgyIqbzDx
- CajLYPBLX970+93w4IxUpANJ1P0TyWdrHZ69t2MCyS8G/SmN0jVWHO3K5ZtOvpOrdUOD
- jT61vshz3jhD4cqi0GRyxnGNjnCy+/gkADSJN48QuOSr5ACsQXDscTsd2vLW+ybKEcKw
- Bp11Iq6QjyPrB02HGNQoAqNx2BaiDBNL+aWiTtzij6Zv0kSqjQ0RWQP+7oWMoHil8H1W
- 3+OW+rxwa8SrsoQ8vU4CmXQY7pA4B4Ym31AHEAy6uglMbCKip4pBimTi3Lr3JgZG0u3Y
- J+RA==
-X-Gm-Message-State: AHQUAubzzgjoWR/FbTQbbGQ2kLtLBGR3xLa4MJ9Jj/EcWPu0j4LI/2iB
- sBwqvEQZ5pjSE2VyhipOz1sNPz2AWUE+h+f/tEU=
-X-Google-Smtp-Source: AHgI3IaE7cLxRKK27MHaxfzygEbpt/ImKUPXYqD0AR24BwNoDeuAjGZAMxX2/11NraL7sUOPNQIVEL+mp2wcl+dGTyg=
-X-Received: by 2002:a9f:2726:: with SMTP id a35mr1290069uaa.75.1550132006060; 
- Thu, 14 Feb 2019 00:13:26 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440TlH2QbNzDqLZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:17:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 440TlH0KSVz8sX5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:17:15 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 440TlG6F9xz9sMr; Thu, 14 Feb 2019 19:17:14 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=softfail (mailfrom) smtp.mailfrom=emerson.com
+ (client-ip=162.253.133.57; helo=n7.nabble.com;
+ envelope-from=sachin.gosavi@emerson.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
+ by ozlabs.org (Postfix) with ESMTP id 440TlG3wbHz9sMp
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2019 19:17:12 +1100 (AEDT)
+Received: from n7.nabble.com (localhost [127.0.0.1])
+ by n7.nabble.com (Postfix) with ESMTP id 179729BA4E49
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Feb 2019 01:17:11 -0700 (MST)
+Date: Thu, 14 Feb 2019 01:17:11 -0700 (MST)
+From: sgosavi1 <Sachin.Gosavi@emerson.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1550132231035-0.post@n7.nabble.com>
+In-Reply-To: <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+References: <1550055691105-0.post@n7.nabble.com>
+ <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
+ <1550060685213-0.post@n7.nabble.com>
+ <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
+ <1550062386389-0.post@n7.nabble.com>
+ <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+Subject: Re: Kernel panic when loading the IDE controller driver
 MIME-Version: 1.0
-References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-11-hch@lst.de>
-In-Reply-To: <20190213174005.28785-11-hch@lst.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 14 Feb 2019 09:13:13 +0100
-Message-ID: <CAMuHMdXPF4ohqzEnT_rnwKWi6r13cDMTtEinh-TpZ6YpSaQ=WA@mail.gmail.com>
-Subject: Re: [PATCH 10/11] lib: consolidate the GENERIC_HWEIGHT symbol
-To: Christoph Hellwig <hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,32 +70,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-xtensa@linux-xtensa.org, linux-s390 <linux-s390@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-riscv@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 3:11 AM Christoph Hellwig <hch@lst.de> wrote:
-> Introduce a new ARCH_HAS_HWEIGHT symbol for alpha and ia64, and just
-> default to the generic version otherwise.
->
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Maybe look around 
+> https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?
+> id=9a0e77f28b50128df0c9e26ae489e44e29a7270a
 
->  arch/m68k/Kconfig       | 4 ----
+>Also look at ide_platform.c. I imagine there must be some way to set it 
+>up in your device tree.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+I have gone through this before and also tried the pata_platform driver but
+no success yet. I haven't found any example that passes the IO ports and IRQ
+information through the device tree to the driver code.
 
-Gr{oetje,eeting}s,
+Thanks,
+Sachin.
 
-                        Geert
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--
+Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
