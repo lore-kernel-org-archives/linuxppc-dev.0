@@ -3,60 +3,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F947C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 08F67C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:14:04 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9297C2229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:12:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9297C2229F
+	by mail.kernel.org (Postfix) with ESMTPS id 816D52229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:14:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 816D52229F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440TdV4VjfzDqBg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:12:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440TgY4ClLzDqKt
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:14:01 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.217.68; helo=mail-vs1-f68.google.com;
+ (client-ip=209.85.217.65; helo=mail-vs1-f65.google.com;
  envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-m68k.org
-Received: from mail-vs1-f68.google.com (mail-vs1-f68.google.com
- [209.85.217.68])
+Received: from mail-vs1-f65.google.com (mail-vs1-f65.google.com
+ [209.85.217.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440TbS6YWVzDqTf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:10:28 +1100 (AEDT)
-Received: by mail-vs1-f68.google.com with SMTP id z18so3113838vso.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:10:28 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440TcZ399mzDqSj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:11:26 +1100 (AEDT)
+Received: by mail-vs1-f65.google.com with SMTP id u13so2148040vsk.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:11:26 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=s7mH6uc/WErzysdhYHrwGn+Za9Ii5z+9SMgUHEvVd2c=;
- b=W2SimnFu/g2di8kyH7th4RPXWfWTcq0UH8CUDb8iZJRN3xYo+9OocA6iUz71MCv5d2
- IAKnv/T+jrBNXWBe+VKNSI/q7pJT2a3UgNO9Fdi/gp/7qE32AE3i+6NhHUQEwMIB+ofA
- ruYgyhSWMbOmtm/bflkVNX/70KxPJ60gWQ+pk+uL4w1QxzVoK+VjxhiyjcHNC4HwKWSf
- DFCzfjqkcpTG9xbc2D7n4JGPDNQsRg+S3ahVY342L5Gcvlw2tsCtYKYiS8fNHEP8lI9B
- awH3buISoSbPIzuWSWQ2Q0A2q3zmMVE4Yp4L5olyZfXP6myEOIenxrkKswZ55Bn7rT33
- jX9g==
-X-Gm-Message-State: AHQUAuaCMhZMGMZLsfbLQ/D42o0pv5U9xS7qjoNms513pb8yTXQX5h86
- 5odDHZICBxJQYm45kQHgaPl5OtdMhZCT/buyQJY=
-X-Google-Smtp-Source: AHgI3IainHdtNgPKfyU8YjSDdQ+iRTA5h4usd5PDFEqXOlRT2t4Q7Q4DByDOzAkMWCZQ41k3lVfXLhI1reoT4R3LmvA=
-X-Received: by 2002:a67:f43:: with SMTP id 64mr1331176vsp.166.1550131826029;
- Thu, 14 Feb 2019 00:10:26 -0800 (PST)
+ bh=4a3D100K5NwmmTPJJ0s35hte8UB4taiTrnr7PheOHpw=;
+ b=AdCLHwE6haGLiCnkdts9alkfR8lf1Bf6foTyhwfjjlUOxT2J13drBffadhtDA86nLh
+ gyx6875lFxMvoMq/kdUgXT3IRDxw7DtI5tPTzibROEptWK2UJtwcdiEmQLFvEFo6u2Ra
+ ZtkBqF+vJwV4q5ljvA0T4rB563uiA71PIXDE+pERxihGFaO9KtrIfvMSibIJndzbQNKj
+ ePUBeGgV+RFy/h+JR56Ou/Va043/IKtAAS0b5LijdfSEzF0FNpzYrY/VxwiemV6ClB2j
+ mnizXi1geNVPuEmPSBxFvWF9vlD5nynulRCoVdYFUSUMwgEJM1XO7Vw7fwVy9Gz+c7RW
+ radA==
+X-Gm-Message-State: AHQUAuYnOBTSqelveJeLVzEnykt04eLkheIdSqZykfLhYs/SqUeejLsx
+ CoCi6cmZDoeWYVKGKUrCLpIGaJiiVYqPFT6h0sI=
+X-Google-Smtp-Source: AHgI3IbxtQI24QYjPRnNrEhWZ+8rGpNy2/UZnWXN5HqiJOduvEND65+eZoiExYXcsXnh4oeImmJLyQnV8CZhtYrIpSc=
+X-Received: by 2002:a67:541:: with SMTP id 62mr1260865vsf.11.1550131883912;
+ Thu, 14 Feb 2019 00:11:23 -0800 (PST)
 MIME-Version: 1.0
 References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-4-hch@lst.de>
-In-Reply-To: <20190213174005.28785-4-hch@lst.de>
+ <20190213174005.28785-8-hch@lst.de>
+In-Reply-To: <20190213174005.28785-8-hch@lst.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 14 Feb 2019 09:10:14 +0100
-Message-ID: <CAMuHMdWRPm0_u2EX5OXeraZdKL602RJvbO5aKm09Sf-HKMGzjg@mail.gmail.com>
-Subject: Re: [PATCH 03/11] kernel/locks: consolidate RWSEM_GENERIC_* options
+Date: Thu, 14 Feb 2019 09:11:12 +0100
+Message-ID: <CAMuHMdWDBaz1hLxmeGa7k3mzt-8GAoGVEQVSfeVX2CCpqrY-KA@mail.gmail.com>
+Subject: Re: [PATCH 07/11] init: consolidate the GENERIC_CALIBRATE_DELAY symbol
 To: Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,15 +79,15 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 12:08 AM Christoph Hellwig <hch@lst.de> wrote:
-> Introduce one central definition of RWSEM_XCHGADD_ALGORITHM and
-> RWSEM_GENERIC_SPINLOCK in kernel/Kconfig.locks and let architectures
-> select RWSEM_XCHGADD_ALGORITHM if they want it, otherwise default to
-> the spinlock version.
+On Thu, Feb 14, 2019 at 3:25 AM Christoph Hellwig <hch@lst.de> wrote:
+> Add one definition to init/Kconfig and let the architectures select it
+> if supported.  The only complication is xtensa, where it is a user
+> visible option - we introduce a xtensa-specific symbol instead to work
+> around this.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
->  arch/m68k/Kconfig       | 7 -------
+>  arch/m68k/Kconfig       | 5 +----
 
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
