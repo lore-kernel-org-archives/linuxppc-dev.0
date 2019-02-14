@@ -2,106 +2,64 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA60BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 18:37:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2EADC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:33:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D7EA21B68
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 18:37:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D7EA21B68
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id A60AA222D4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:33:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A60AA222D4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440lVv0jmmzDqXJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:37:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440ml93CK0zDqWS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 06:33:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
+ [217.70.183.197])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440lSr5zkHzDqQf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 05:35:40 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
- [10.5.11.22])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 4A647E6A63;
- Thu, 14 Feb 2019 18:35:38 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-59.bos.redhat.com [10.18.17.59])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 1308210001BC;
- Thu, 14 Feb 2019 18:35:22 +0000 (UTC)
-Subject: Re: [PATCH v3 2/2] locking/rwsem: Optimize down_read_trylock()
-To: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>
-References: <1550089932-6888-1-git-send-email-longman@redhat.com>
- <1550089932-6888-3-git-send-email-longman@redhat.com>
- <20190214103333.GH32494@hirez.programming.kicks-ass.net>
- <20190214180239.GI2475@fuggles.cambridge.arm.com>
-From: Waiman Long <longman@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <ffbd2cab-1cfd-334a-b462-2bd7986dc3b0@redhat.com>
-Date: Thu, 14 Feb 2019 13:35:22 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440mj04FMvzDqNP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 06:31:13 +1100 (AEDT)
+X-Originating-IP: 79.86.19.127
+Received: from alex.numericable.fr (127.19.86.79.rev.sfr.net [79.86.19.127])
+ (Authenticated sender: alex@ghiti.fr)
+ by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id BD1741C0009;
+ Thu, 14 Feb 2019 19:31:02 +0000 (UTC)
+From: Alexandre Ghiti <alex@ghiti.fr>
+To: Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH v3] hugetlb: allow to free gigantic pages regardless of the
+ configuration
+Date: Thu, 14 Feb 2019 14:31:00 -0500
+Message-Id: <20190214193100.3529-1-alex@ghiti.fr>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <20190214180239.GI2475@fuggles.cambridge.arm.com>
-Content-Type: multipart/mixed; boundary="------------C468376F409BFB477E60571A"
-Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.38]); Thu, 14 Feb 2019 18:35:38 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,301 +71,378 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a multi-part message in MIME format.
---------------C468376F409BFB477E60571A
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On systems without CMA or (MEMORY_ISOLATION && COMPACTION) activated but
+that support gigantic pages, boottime reserved gigantic pages can not be
+freed at all. This patch simply enables the possibility to hand back
+those pages to memory allocator.
 
-On 02/14/2019 01:02 PM, Will Deacon wrote:
-> On Thu, Feb 14, 2019 at 11:33:33AM +0100, Peter Zijlstra wrote:
->> On Wed, Feb 13, 2019 at 03:32:12PM -0500, Waiman Long wrote:
->>> Modify __down_read_trylock() to optimize for an unlocked rwsem and ma=
-ke
->>> it generate slightly better code.
->>>
->>> Before this patch, down_read_trylock:
->>>
->>>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
->>>    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
->>>    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
->>>    0x000000000000000b <+11>:    mov    %rdx,%rax
->>>    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
->>>    0x0000000000000013 <+19>:    cmp    %rax,%rdx
->>>    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
->>>    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
->>>    0x000000000000001b <+27>:    test   %rdx,%rdx
->>>    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
->>>    0x0000000000000020 <+32>:    xor    %eax,%eax
->>>    0x0000000000000022 <+34>:    retq
->>>    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
->>>    0x000000000000002c <+44>:    or     $0x3,%rax
->>>    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
->>>    0x0000000000000034 <+52>:    mov    $0x1,%eax
->>>    0x0000000000000039 <+57>:    retq
->>>
->>> After patch, down_read_trylock:
->>>
->>>    0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
->>>    0x0000000000000005 <+5>:	xor    %eax,%eax
->>>    0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
->>>    0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
->>>    0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
->>>    0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
->>>    0x000000000000001b <+27>:	or     $0x3,%rax
->>>    0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
->>>    0x0000000000000023 <+35>:	mov    $0x1,%eax
->>>    0x0000000000000028 <+40>:	retq
->>>    0x0000000000000029 <+41>:	test   %rax,%rax
->>>    0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
->>>    0x000000000000002e <+46>:	xor    %eax,%eax
->>>    0x0000000000000030 <+48>:	retq
->>>
->>> By using a rwsem microbenchmark, the down_read_trylock() rate (with a=
+This patch also renames:
 
->>> load of 10 to lengthen the lock critical section) on a x86-64 system
->>> before and after the patch were:
->>>
->>>                  Before Patch    After Patch
->>>    # of Threads     rlock           rlock
->>>    ------------     -----           -----
->>>         1           14,496          14,716
->>>         2            8,644           8,453
->>> 	4            6,799           6,983
->>> 	8            5,664           7,190
->>>
->>> On a ARM64 system, the performance results were:
->>>
->>>                  Before Patch    After Patch
->>>    # of Threads     rlock           rlock
->>>    ------------     -----           -----
->>>         1           23,676          24,488
->>>         2            7,697           9,502
->>>         4            4,945           3,440
->>>         8            2,641           1,603
->> Urgh, yes LL/SC is the obvious exception that can actually do better
->> here :/
->>
->> Will, what say you?
-> What machine were these numbers generated on and is it using LL/SC or L=
-SE
-> atomics for arm64? If you stick the microbenchmark somewhere, I can go =
-play
-> with a broader variety of h/w.
->
-> Will
+- the triplet CMA or (MEMORY_ISOLATION && COMPACTION) into CONTIG_ALLOC,
+and gets rid of all use of it in architecture specific code (and then
+removes ARCH_HAS_GIGANTIC_PAGE config).
+- gigantic_page_supported to make it more accurate: this value being false
+does not mean that the system cannot use gigantic pages, it just means that
+runtime allocation of gigantic pages is not supported, one can still
+allocate boottime gigantic pages if the architecture supports it.
 
-The machine is a 2-socket Cavium ThunderX2 99xx system with 64 cores and
-256 threads. I was just using threads from the first socket for this
-test. The microbenchmark that I used is attached. I used the command
-"./run-locktest -ltryrwsem -r100 -i-10 -c10 -n<threads>" to generate the
-locking rates.
+Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+---
 
-The lscpu flags were:
+Changes in v3 as suggested by Vlastimil Babka and Dave Hansen:
+- config definition was wrong and is now in mm/Kconfig
+- COMPACTION_CORE was renamed in CONTIG_ALLOC
 
-fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics cpuid asimdrdm
+Changes in v2 as suggested by Vlastimil Babka:
+- Get rid of ARCH_HAS_GIGANTIC_PAGE
+- Get rid of architecture specific gigantic_page_supported
+- Factorize CMA or (MEMORY_ISOLATION && COMPACTION) into COMPACTION_CORE
 
-Cheers,
-Longman
+Compiles on all arches and validated on riscv
 
+ arch/arm64/Kconfig                           |  1 -
+ arch/arm64/include/asm/hugetlb.h             |  4 --
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ----
+ arch/powerpc/platforms/Kconfig.cputype       |  1 -
+ arch/s390/Kconfig                            |  1 -
+ arch/s390/include/asm/hugetlb.h              |  3 --
+ arch/x86/Kconfig                             |  1 -
+ arch/x86/include/asm/hugetlb.h               |  4 --
+ arch/x86/mm/hugetlbpage.c                    |  2 +-
+ fs/Kconfig                                   |  3 --
+ include/linux/gfp.h                          |  4 +-
+ mm/Kconfig                                   |  5 +++
+ mm/hugetlb.c                                 | 44 +++++++++++---------
+ mm/page_alloc.c                              |  7 ++--
+ 14 files changed, 35 insertions(+), 52 deletions(-)
 
---------------C468376F409BFB477E60571A
-Content-Type: application/gzip;
- name="locktest.tar.gz"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="locktest.tar.gz"
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index a4168d366127..6c778046b9f7 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -18,7 +18,6 @@ config ARM64
+ 	select ARCH_HAS_FAST_MULTIPLIER
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+-	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+ 	select ARCH_HAS_KCOV
+ 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+ 	select ARCH_HAS_PTE_SPECIAL
+diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+index fb6609875455..59893e766824 100644
+--- a/arch/arm64/include/asm/hugetlb.h
++++ b/arch/arm64/include/asm/hugetlb.h
+@@ -65,8 +65,4 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
+ 
+ #include <asm-generic/hugetlb.h>
+ 
+-#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+-static inline bool gigantic_page_supported(void) { return true; }
+-#endif
+-
+ #endif /* __ASM_HUGETLB_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index 5b0177733994..d04a0bcc2f1c 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -32,13 +32,6 @@ static inline int hstate_get_psize(struct hstate *hstate)
+ 	}
+ }
+ 
+-#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+-static inline bool gigantic_page_supported(void)
+-{
+-	return true;
+-}
+-#endif
+-
+ /* hugepd entry valid bit */
+ #define HUGEPD_VAL_BITS		(0x8000000000000000UL)
+ 
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 8c7464c3f27f..3e629dfb5efa 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -319,7 +319,6 @@ config ARCH_ENABLE_SPLIT_PMD_PTLOCK
+ config PPC_RADIX_MMU
+ 	bool "Radix MMU Support"
+ 	depends on PPC_BOOK3S_64
+-	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+ 	default y
+ 	help
+ 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index ed554b09eb3f..556860f290e9 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -69,7 +69,6 @@ config S390
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+-	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+ 	select ARCH_HAS_KCOV
+ 	select ARCH_HAS_PTE_SPECIAL
+ 	select ARCH_HAS_SET_MEMORY
+diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
+index 2d1afa58a4b6..bd191560efcf 100644
+--- a/arch/s390/include/asm/hugetlb.h
++++ b/arch/s390/include/asm/hugetlb.h
+@@ -116,7 +116,4 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
+ 	return pte_modify(pte, newprot);
+ }
+ 
+-#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+-static inline bool gigantic_page_supported(void) { return true; }
+-#endif
+ #endif /* _ASM_S390_HUGETLB_H */
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 68261430fe6e..2fd983e2b2f6 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -23,7 +23,6 @@ config X86_64
+ 	def_bool y
+ 	depends on 64BIT
+ 	# Options that are inherently 64-bit kernel only:
+-	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
+ 	select ARCH_SUPPORTS_INT128
+ 	select ARCH_USE_CMPXCHG_LOCKREF
+ 	select HAVE_ARCH_SOFT_DIRTY
+diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
+index 7469d321f072..f65cfb48cfdd 100644
+--- a/arch/x86/include/asm/hugetlb.h
++++ b/arch/x86/include/asm/hugetlb.h
+@@ -17,8 +17,4 @@ static inline void arch_clear_hugepage_flags(struct page *page)
+ {
+ }
+ 
+-#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+-static inline bool gigantic_page_supported(void) { return true; }
+-#endif
+-
+ #endif /* _ASM_X86_HUGETLB_H */
+diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+index 92e4c4b85bba..fab095362c50 100644
+--- a/arch/x86/mm/hugetlbpage.c
++++ b/arch/x86/mm/hugetlbpage.c
+@@ -203,7 +203,7 @@ static __init int setup_hugepagesz(char *opt)
+ }
+ __setup("hugepagesz=", setup_hugepagesz);
+ 
+-#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
++#ifdef CONFIG_CONTIG_ALLOC
+ static __init int gigantic_pages_init(void)
+ {
+ 	/* With compaction or CMA we can allocate gigantic pages at runtime */
+diff --git a/fs/Kconfig b/fs/Kconfig
+index ac474a61be37..e76ebc71af7b 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -207,9 +207,6 @@ config HUGETLB_PAGE
+ config MEMFD_CREATE
+ 	def_bool TMPFS || HUGETLBFS
+ 
+-config ARCH_HAS_GIGANTIC_PAGE
+-	bool
+-
+ source "fs/configfs/Kconfig"
+ source "fs/efivarfs/Kconfig"
+ 
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index 5f5e25fd6149..58ea44bf75de 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -585,12 +585,12 @@ static inline bool pm_suspended_storage(void)
+ }
+ #endif /* CONFIG_PM_SLEEP */
+ 
+-#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
++#ifdef CONFIG_CONTIG_ALLOC
+ /* The below functions must be run on a range from a single zone. */
+ extern int alloc_contig_range(unsigned long start, unsigned long end,
+ 			      unsigned migratetype, gfp_t gfp_mask);
+-extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
+ #endif
++extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
+ 
+ #ifdef CONFIG_CMA
+ /* CMA stuff */
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 25c71eb8a7db..138a8df9b813 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -252,12 +252,17 @@ config MIGRATION
+ 	  pages as migration can relocate pages to satisfy a huge page
+ 	  allocation instead of reclaiming.
+ 
++
+ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+ 	bool
+ 
+ config ARCH_ENABLE_THP_MIGRATION
+ 	bool
+ 
++config CONTIG_ALLOC
++	def_bool y
++	depends on (MEMORY_ISOLATION && COMPACTION) || CMA
++
+ config PHYS_ADDR_T_64BIT
+ 	def_bool 64BIT
+ 
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index afef61656c1e..e686c92212e9 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1035,7 +1035,6 @@ static int hstate_next_node_to_free(struct hstate *h, nodemask_t *nodes_allowed)
+ 		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
+ 		nr_nodes--)
+ 
+-#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+ static void destroy_compound_gigantic_page(struct page *page,
+ 					unsigned int order)
+ {
+@@ -1058,6 +1057,12 @@ static void free_gigantic_page(struct page *page, unsigned int order)
+ 	free_contig_range(page_to_pfn(page), 1 << order);
+ }
+ 
++static inline bool gigantic_page_runtime_allocation_supported(void)
++{
++	return IS_ENABLED(CONFIG_CONTIG_ALLOC);
++}
++
++#ifdef CONFIG_CONTIG_ALLOC
+ static int __alloc_gigantic_page(unsigned long start_pfn,
+ 				unsigned long nr_pages, gfp_t gfp_mask)
+ {
+@@ -1143,22 +1148,15 @@ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
+ static void prep_new_huge_page(struct hstate *h, struct page *page, int nid);
+ static void prep_compound_gigantic_page(struct page *page, unsigned int order);
+ 
+-#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
+-static inline bool gigantic_page_supported(void) { return false; }
++#else /* !CONFIG_CONTIG_ALLOC */
+ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
+ 		int nid, nodemask_t *nodemask) { return NULL; }
+-static inline void free_gigantic_page(struct page *page, unsigned int order) { }
+-static inline void destroy_compound_gigantic_page(struct page *page,
+-						unsigned int order) { }
+ #endif
+ 
+ static void update_and_free_page(struct hstate *h, struct page *page)
+ {
+ 	int i;
+ 
+-	if (hstate_is_gigantic(h) && !gigantic_page_supported())
+-		return;
+-
+ 	h->nr_huge_pages--;
+ 	h->nr_huge_pages_node[page_to_nid(page)]--;
+ 	for (i = 0; i < pages_per_huge_page(h); i++) {
+@@ -2276,13 +2274,20 @@ static int adjust_pool_surplus(struct hstate *h, nodemask_t *nodes_allowed,
+ }
+ 
+ #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
+-static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
++static int set_max_huge_pages(struct hstate *h, unsigned long count,
+ 						nodemask_t *nodes_allowed)
+ {
+ 	unsigned long min_count, ret;
+ 
+-	if (hstate_is_gigantic(h) && !gigantic_page_supported())
+-		return h->max_huge_pages;
++	if (hstate_is_gigantic(h) &&
++		!gigantic_page_runtime_allocation_supported()) {
++		spin_lock(&hugetlb_lock);
++		if (count > persistent_huge_pages(h)) {
++			spin_unlock(&hugetlb_lock);
++			return -EINVAL;
++		}
++		goto decrease_pool;
++	}
+ 
+ 	/*
+ 	 * Increase the pool size
+@@ -2322,6 +2327,7 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+ 			goto out;
+ 	}
+ 
++decrease_pool:
+ 	/*
+ 	 * Decrease the pool size
+ 	 * First return free pages to the buddy allocator (being careful
+@@ -2350,9 +2356,10 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
+ 			break;
+ 	}
+ out:
+-	ret = persistent_huge_pages(h);
++	h->max_huge_pages = persistent_huge_pages(h);
+ 	spin_unlock(&hugetlb_lock);
+-	return ret;
++
++	return 0;
+ }
+ 
+ #define HSTATE_ATTR_RO(_name) \
+@@ -2404,11 +2411,6 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+ 	int err;
+ 	NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | __GFP_NORETRY);
+ 
+-	if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
+-		err = -EINVAL;
+-		goto out;
+-	}
+-
+ 	if (nid == NUMA_NO_NODE) {
+ 		/*
+ 		 * global hstate attribute
+@@ -2428,7 +2430,9 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+ 	} else
+ 		nodes_allowed = &node_states[N_MEMORY];
+ 
+-	h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
++	err = set_max_huge_pages(h, count, nodes_allowed);
++	if (err)
++		goto out;
+ 
+ 	if (nodes_allowed != &node_states[N_MEMORY])
+ 		NODEMASK_FREE(nodes_allowed);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 35fdde041f5c..8ce96c59e446 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -8024,8 +8024,7 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
+ 	return true;
+ }
+ 
+-#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
+-
++#ifdef CONFIG_CONTIG_ALLOC
+ static unsigned long pfn_max_align_down(unsigned long pfn)
+ {
+ 	return pfn & ~(max_t(unsigned long, MAX_ORDER_NR_PAGES,
+@@ -8235,8 +8234,9 @@ int alloc_contig_range(unsigned long start, unsigned long end,
+ 				pfn_max_align_up(end), migratetype);
+ 	return ret;
+ }
++#endif
+ 
+-void free_contig_range(unsigned long pfn, unsigned nr_pages)
++void free_contig_range(unsigned long pfn, unsigned int nr_pages)
+ {
+ 	unsigned int count = 0;
+ 
+@@ -8248,7 +8248,6 @@ void free_contig_range(unsigned long pfn, unsigned nr_pages)
+ 	}
+ 	WARN(count != 0, "%d pages are still in use!\n", count);
+ }
+-#endif
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+-- 
+2.20.1
 
-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
-rvxFngDIAAA=
---------------C468376F409BFB477E60571A--
