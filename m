@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61335C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:15:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11BB1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:17:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E00672229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:15:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E00672229F
+	by mail.kernel.org (Postfix) with ESMTPS id 88C462229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:17:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 88C462229F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Tjc0WK1zDqLV
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:15:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440TlW5WCSzDqKg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:17:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=209.85.222.66; helo=mail-ua1-f66.google.com;
@@ -29,34 +29,34 @@ Received: from mail-ua1-f66.google.com (mail-ua1-f66.google.com
  [209.85.222.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Tdd2QZVzDqV1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:12:21 +1100 (AEDT)
-Received: by mail-ua1-f66.google.com with SMTP id z24so1721168ual.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:12:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440Tfw1N5RzDqGG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:13:28 +1100 (AEDT)
+Received: by mail-ua1-f66.google.com with SMTP id j3so1744142uap.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:13:27 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=gyhVZT2cvH02qo+0nGpWrG/zXh7SGwoDkx6XeIiXPzo=;
- b=DtTAm2ATbj7w/bLHeCj/SAFybVeFPqtvLtflGyhcUoBSSBm/74u86S1pgDfiIOMSsc
- 55zZxOw1RFLt714mOwuuPu5D4W6POTX/eGkVL6NRrN1j5jOjtILvelbGqrM5z3O/sQ4X
- cNWI23fwlYQyLZX9NPTiUVjCq1h1dUfJ9HGss6VeAxhgrcJUkty6q9Y25wHzHp/26Fkf
- lFldRiHQpPPIRTntDXJ+nIdLkkxg5fki8KjmY1jUYMLsuKeeLeiytVjxg9frVTDZ6qz+
- vPZoAA0rZaBQBm9mHBKUiSl9JQT7C4018BNuqObrIxFUF2tXrelyKTtMI6K7NHvP2/Dh
- z5KA==
-X-Gm-Message-State: AHQUAuYNO4eHFEGhs10KhJHLcAoUB9qhbs8e6d5uJ6NApe/it8Wvw2y2
- LpVdS2KST31ZK26GxvY1DyPlVb6FwHWerk+PCcc=
-X-Google-Smtp-Source: AHgI3IZarNBxgZqVSOHbG6fu5WSACF5VlsCI/qxhQmwcEzw1zAysB+AexGAtBhb6oMJQSg01PbRqjo2LsHbPzEA6iy4=
-X-Received: by 2002:ab0:210e:: with SMTP id d14mr1341942ual.20.1550131938902; 
- Thu, 14 Feb 2019 00:12:18 -0800 (PST)
+ bh=oDHSHKTHIgYnWNuqdjR3jG49iOOy8VGtWQxLsAaEpHQ=;
+ b=aUgUc1Kp94deQHHeC4y7HgN/EhRjUD7Lk4Md/fNWUbQah17gPnDRhUIu6lgyIqbzDx
+ CajLYPBLX970+93w4IxUpANJ1P0TyWdrHZ69t2MCyS8G/SmN0jVWHO3K5ZtOvpOrdUOD
+ jT61vshz3jhD4cqi0GRyxnGNjnCy+/gkADSJN48QuOSr5ACsQXDscTsd2vLW+ybKEcKw
+ Bp11Iq6QjyPrB02HGNQoAqNx2BaiDBNL+aWiTtzij6Zv0kSqjQ0RWQP+7oWMoHil8H1W
+ 3+OW+rxwa8SrsoQ8vU4CmXQY7pA4B4Ym31AHEAy6uglMbCKip4pBimTi3Lr3JgZG0u3Y
+ J+RA==
+X-Gm-Message-State: AHQUAubzzgjoWR/FbTQbbGQ2kLtLBGR3xLa4MJ9Jj/EcWPu0j4LI/2iB
+ sBwqvEQZ5pjSE2VyhipOz1sNPz2AWUE+h+f/tEU=
+X-Google-Smtp-Source: AHgI3IaE7cLxRKK27MHaxfzygEbpt/ImKUPXYqD0AR24BwNoDeuAjGZAMxX2/11NraL7sUOPNQIVEL+mp2wcl+dGTyg=
+X-Received: by 2002:a9f:2726:: with SMTP id a35mr1290069uaa.75.1550132006060; 
+ Thu, 14 Feb 2019 00:13:26 -0800 (PST)
 MIME-Version: 1.0
 References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-10-hch@lst.de>
-In-Reply-To: <20190213174005.28785-10-hch@lst.de>
+ <20190213174005.28785-11-hch@lst.de>
+In-Reply-To: <20190213174005.28785-11-hch@lst.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 14 Feb 2019 09:12:07 +0100
-Message-ID: <CAMuHMdUX=dq49b08UUxkLCn+HikUBOEs29314fYbwregfrSEqg@mail.gmail.com>
-Subject: Re: [PATCH 09/11] lib: consolidate the GENERIC_CSUM symbol
+Date: Thu, 14 Feb 2019 09:13:13 +0100
+Message-ID: <CAMuHMdXPF4ohqzEnT_rnwKWi6r13cDMTtEinh-TpZ6YpSaQ=WA@mail.gmail.com>
+Subject: Re: [PATCH 10/11] lib: consolidate the GENERIC_HWEIGHT symbol
 To: Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -79,13 +79,13 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 3:25 AM Christoph Hellwig <hch@lst.de> wrote:
-> Add one definition to lib/Kconfig and let the architectures
-> select if it supported.
+On Thu, Feb 14, 2019 at 3:11 AM Christoph Hellwig <hch@lst.de> wrote:
+> Introduce a new ARCH_HAS_HWEIGHT symbol for alpha and ia64, and just
+> default to the generic version otherwise.
 >
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
->  arch/m68k/Kconfig       | 3 ---
+>  arch/m68k/Kconfig       | 4 ----
 
 Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
