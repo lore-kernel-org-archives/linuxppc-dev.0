@@ -2,23 +2,23 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC9ADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:35:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25596C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:42:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 32DF9222DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:35:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32DF9222DD
+	by mail.kernel.org (Postfix) with ESMTPS id 9F143222DD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:42:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F143222DD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440hnx4fFHzDqc1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 03:35:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440hyB0071zDqKM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 03:42:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com;
@@ -28,22 +28,21 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440hkx0JtZzDqWp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 03:32:41 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440hw72cVHzDqDt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 03:40:39 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
+ [10.5.11.11])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id C790AC04BD22;
- Thu, 14 Feb 2019 16:32:38 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id 084F3E6A9D;
+ Thu, 14 Feb 2019 16:40:37 +0000 (UTC)
 Received: from [10.36.112.66] (ovpn-112-66.ams2.redhat.com [10.36.112.66])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 9722B5ED5B;
- Thu, 14 Feb 2019 16:32:19 +0000 (UTC)
-Subject: Re: [PATCH V2 3/10] KVM/MMU: Add last_level in the struct
- mmu_spte_page
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 074FC600C4;
+ Thu, 14 Feb 2019 16:40:25 +0000 (UTC)
+Subject: Re: [PATCH V2 00/10] X86/KVM/Hyper-V: Add HV ept tlb range list flush
+ support in KVM
 To: lantianyu1986@gmail.com
 References: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
- <20190202013825.51261-4-Tianyu.Lan@microsoft.com>
 From: Paolo Bonzini <pbonzini@redhat.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=pbonzini@redhat.com; prefer-encrypt=mutual; keydata=
@@ -101,18 +100,18 @@ Autocrypt: addr=pbonzini@redhat.com; prefer-encrypt=mutual; keydata=
  DduC0U3xYkfbGAUvbxeepjgzp0uEnBXfPTy09JGpgWbg0w91GyfT/ujKaGd4vxG2Ei+MMNDm
  S1SMx7wu0evvQ5kT9NPzyq8R2GIhVSiAd2jioGuTjX6AZCFv3ToO53DliFMkVTecLptsXaes
  uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <572a6ce3-23f6-7b16-a070-4d4a81ee4335@redhat.com>
-Date: Thu, 14 Feb 2019 17:32:17 +0100
+Message-ID: <3bcfedac-3054-7d5e-24b6-5c98d8171514@redhat.com>
+Date: Thu, 14 Feb 2019 17:40:20 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190202013825.51261-4-Tianyu.Lan@microsoft.com>
+In-Reply-To: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Thu, 14 Feb 2019 16:32:39 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.38]); Thu, 14 Feb 2019 16:40:37 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -124,52 +123,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, catalin.marinas@arm.com,
- will.deacon@arm.com, christoffer.dall@arm.com, hpa@zytor.com,
- kys@microsoft.com, kvmarm@lists.cs.columbia.edu, x86@kernel.org,
- linux@armlinux.org.uk, michael.h.kelley@microsoft.com, mingo@redhat.com,
- jhogan@kernel.org, linux-mips@vger.kernel.org,
- Lan Tianyu <Tianyu.Lan@microsoft.com>, marc.zyngier@arm.com,
- kvm-ppc@vger.kernel.org, bp@alien8.de, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, paul.burton@mips.com, vkuznets@redhat.com,
+Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, will.deacon@arm.com,
+ christoffer.dall@arm.com, hpa@zytor.com, kys@microsoft.com,
+ kvmarm@lists.cs.columbia.edu, sashal@kernel.org, sthemmin@microsoft.com,
+ x86@kernel.org, linux@armlinux.org.uk, michael.h.kelley@microsoft.com,
+ mingo@redhat.com, catalin.marinas@arm.com, jhogan@kernel.org,
+ linux-mips@vger.kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>,
+ marc.zyngier@arm.com, haiyangz@microsoft.com, kvm-ppc@vger.kernel.org,
+ bp@alien8.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, ralf@linux-mips.org, paul.burton@mips.com,
+ devel@linuxdriverproject.org, vkuznets@redhat.com,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 On 02/02/19 02:38, lantianyu1986@gmail.com wrote:
-> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-> index ce770b446238..70cafd3f95ab 100644
-> --- a/arch/x86/kvm/mmu.c
-> +++ b/arch/x86/kvm/mmu.c
-> @@ -2918,6 +2918,9 @@ static int set_spte(struct kvm_vcpu *vcpu, u64 *sptep,
->  
->  	if (level > PT_PAGE_TABLE_LEVEL)
->  		spte |= PT_PAGE_SIZE_MASK;
-> +
-> +	sp->last_level = is_last_spte(spte, level);
+> From: Lan Tianyu <Tianyu.Lan@microsoft.com>
+> 
+> This patchset is to introduce hv ept tlb range list flush function
+> support in the KVM MMU component. Flushing ept tlbs of several address
+> range can be done via single hypercall and new list flush function is
+> used in the kvm_mmu_commit_zap_page() and FNAME(sync_page). This patchset
+> also adds more hv ept tlb range flush support in more KVM MMU function.
+> 
+> Change since v1:
+>        1) Make flush list as a hlist instead of list in order to 
+>        keep struct kvm_mmu_page size.
+>        2) Add last_level flag in the struct kvm_mmu_page instead
+>        of spte pointer
+>        3) Move tlb flush from kvm_mmu_notifier_clear_flush_young() to kvm_age_hva()
+>        4) Use range flush in the kvm_vm_ioctl_get/clear_dirty_log()
 
-Wait, I wasn't thinking straight.  If a struct kvm_mmu_page exists, it
-is never the last level.  Page table entries for the last level do not
-have a struct kvm_mmu_page.
+Looks good except for the confusion on sp->last_level (which was mostly
+mine---sorry about that).  I think it can still make 5.1.
 
-Therefore you don't need the flag after all.  I suspect your
-calculations in patch 2 are off by one, and you actually need
-
-	hlist_for_each_entry(sp, range->flush_list, flush_link) {
-		int pages = KVM_PAGES_PER_HPAGE(sp->role.level + 1);
-		...
-	}
-
-For example, if sp->role.level is 1 then the struct kvm_mmu_page is for
-a page containing PTEs and covers an area of 2 MiB.
-
-Thanks,
+However, note that I've never received "KVM/MMU: Use tlb range flush  in
+the kvm_age_hva()".
 
 Paolo
-
->  	if (tdp_enabled)
->  		spte |= kvm_x86_ops->get_mt_mask(vcpu, gfn,
->  			kvm_is_mmio_pfn(pfn));
-
