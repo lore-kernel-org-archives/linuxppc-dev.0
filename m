@@ -6,65 +6,64 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F8AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:35:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 140C0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:39:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A6392229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:35:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7B9D62085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:39:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="bSpx1tff"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A6392229F
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="fx1rpYHB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B9D62085A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Xpp3LGkzDqVd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 21:35:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440XvC2QTnzDqWG
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 21:39:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
+ (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
  envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="bSpx1tff"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ header.b="fx1rpYHB"; dkim-atps=neutral
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Xmn0zr7zDqVM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 21:33:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440XsP47bLzDqVM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 21:37:45 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+ d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+ References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
  Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
  Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
  List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=vDu94xn1oAM+sMbizgi+8P4bASl0cSHLy/8cGHt1spU=; b=bSpx1tffFFjQ9XwCly5V2uy4l
- OurixB2Qe39xoEcivRbLI3UxKpTc+00+w5+01aU9ifKS9RKoyRoQIPHDpROL4xqW7+P4/kHwWGfQ+
- hmLlI3Luim8bpDRlNPI7solsQ21Q6LGuqzjbWj3Ybb22aGzkBKrGiQGijzMYNe8pT8Dt0afUuwryr
- mamxbtcd7/ujoShuZ6Uvb5LBEBdwbWifNfrUoGg8pa5W9BWCtUHvqz1uLRsy279KcvEuW8CZDl2YW
- HlJ7+fJ/drKoaDw6HFZawRWWy4hT9BYYC8vGxn2pXM+Qb4wPUsJ1PsoGHHuqpIGASa2ogGT+juR0o
- 35gHo1c+w==;
+ bh=7yZM4QttJ1fb4ZQ7Mabo7VnLkRDJj+lx0G2X8XXS/q0=; b=fx1rpYHBqJrLjmSSs1gePTKzK
+ Ni/DauvFgKLMitkNhK5aW9m4wpH6Xo6Rn7SO+LZool3ojYYBe0dsltLVAgUPMw9zlAWx39NxZLo3n
+ e7DTq12YagL1S9+b1JtJSmTbkuZ8pcAUfrr6AY/BHVxNPrLBYwQWW8NdefDr6gS8H9Lxxkbitnu0Q
+ VupOqNRJPsPjHUuNI2y93XB8buCKOfO0sxZXubBWy8FtYbq0u2cn9KdQp9/Ttih4UzYwFrsFhla9R
+ iOdEi8vQQJ+6bmKp3FVg9Z+ptgbw3Znx9sxvKOfICpLgcc4ogCklFEcHlZZiG0A4rWpwJEP7Iq8N6
+ uxvBePSeQ==;
 Received: from j217100.upc-j.chello.nl ([24.132.217.100]
  helo=hirez.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1guEKk-0004r6-UD; Thu, 14 Feb 2019 10:33:35 +0000
+ by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
+ id 1guEOK-00014P-W4; Thu, 14 Feb 2019 10:37:17 +0000
 Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 6F3DE20298375; Thu, 14 Feb 2019 11:33:33 +0100 (CET)
-Date: Thu, 14 Feb 2019 11:33:33 +0100
+ id BFC8020298375; Thu, 14 Feb 2019 11:37:15 +0100 (CET)
+Date: Thu, 14 Feb 2019 11:37:15 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v3 2/2] locking/rwsem: Optimize down_read_trylock()
-Message-ID: <20190214103333.GH32494@hirez.programming.kicks-ass.net>
-References: <1550089932-6888-1-git-send-email-longman@redhat.com>
- <1550089932-6888-3-git-send-email-longman@redhat.com>
+Subject: Re: [PATCH v4 0/3] locking/rwsem: Rwsem rearchitecture part 0
+Message-ID: <20190214103715.GI32494@hirez.programming.kicks-ass.net>
+References: <1550095217-12047-1-git-send-email-longman@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1550089932-6888-3-git-send-email-longman@redhat.com>
+In-Reply-To: <1550095217-12047-1-git-send-email-longman@redhat.com>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,85 +76,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-sh@vger.kernel.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-mips@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 03:32:12PM -0500, Waiman Long wrote:
-> Modify __down_read_trylock() to optimize for an unlocked rwsem and make
-> it generate slightly better code.
+On Wed, Feb 13, 2019 at 05:00:14PM -0500, Waiman Long wrote:
+> v4:
+>  - Remove rwsem-spinlock.c and make all archs use rwsem-xadd.c.
 > 
-> Before this patch, down_read_trylock:
+> v3:
+>  - Optimize __down_read_trylock() for the uncontended case as suggested
+>    by Linus.
 > 
->    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
->    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
->    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
->    0x000000000000000b <+11>:    mov    %rdx,%rax
->    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
->    0x0000000000000013 <+19>:    cmp    %rax,%rdx
->    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
->    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
->    0x000000000000001b <+27>:    test   %rdx,%rdx
->    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
->    0x0000000000000020 <+32>:    xor    %eax,%eax
->    0x0000000000000022 <+34>:    retq
->    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
->    0x000000000000002c <+44>:    or     $0x3,%rax
->    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
->    0x0000000000000034 <+52>:    mov    $0x1,%eax
->    0x0000000000000039 <+57>:    retq
+> v2:
+>  - Add patch 2 to optimize __down_read_trylock() as suggested by PeterZ.
+>  - Update performance test data in patch 1.
 > 
-> After patch, down_read_trylock:
+> The goal of this patchset is to remove the architecture specific files
+> for rwsem-xadd to make it easer to add enhancements in the later rwsem
+> patches. It also removes the legacy rwsem-spinlock.c file and make all
+> the architectures use one single implementation of rwsem - rwsem-xadd.c.
 > 
->    0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
->    0x0000000000000005 <+5>:	xor    %eax,%eax
->    0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
->    0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
->    0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
->    0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
->    0x000000000000001b <+27>:	or     $0x3,%rax
->    0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
->    0x0000000000000023 <+35>:	mov    $0x1,%eax
->    0x0000000000000028 <+40>:	retq
->    0x0000000000000029 <+41>:	test   %rax,%rax
->    0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
->    0x000000000000002e <+46>:	xor    %eax,%eax
->    0x0000000000000030 <+48>:	retq
-> 
-> By using a rwsem microbenchmark, the down_read_trylock() rate (with a
-> load of 10 to lengthen the lock critical section) on a x86-64 system
-> before and after the patch were:
-> 
->                  Before Patch    After Patch
->    # of Threads     rlock           rlock
->    ------------     -----           -----
->         1           14,496          14,716
->         2            8,644           8,453
-> 	4            6,799           6,983
-> 	8            5,664           7,190
-> 
-> On a ARM64 system, the performance results were:
-> 
->                  Before Patch    After Patch
->    # of Threads     rlock           rlock
->    ------------     -----           -----
->         1           23,676          24,488
->         2            7,697           9,502
->         4            4,945           3,440
->         8            2,641           1,603
+> Waiman Long (3):
+>   locking/rwsem: Remove arch specific rwsem files
+>   locking/rwsem: Remove rwsem-spinlock.c & use rwsem-xadd.c for all
+>     archs
+>   locking/rwsem: Optimize down_read_trylock()
 
-Urgh, yes LL/SC is the obvious exception that can actually do better
-here :/
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
-Will, what say you?
+with the caveat that I'm happy to exchange patch 3 back to my earlier
+suggestion in case Will expesses concerns wrt the ARM64 performance of
+Linus' suggestion.
