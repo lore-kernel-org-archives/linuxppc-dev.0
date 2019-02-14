@@ -2,93 +2,63 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C30EC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 06:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F947C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:12:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BEC1F2229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 06:47:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEC1F2229F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9297C2229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 08:12:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9297C2229F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Rlw2d5pzDqTv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:47:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440TdV4VjfzDqBg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:12:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.217.68; helo=mail-vs1-f68.google.com;
+ envelope-from=geert.uytterhoeven@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-vs1-f68.google.com (mail-vs1-f68.google.com
+ [209.85.217.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Rjv1zHdzDqF6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 17:45:55 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1E6XvQq132080
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 01:45:52 -0500
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qn25n3sd6-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 01:45:52 -0500
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 14 Feb 2019 06:45:51 -0000
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e36.co.us.ibm.com (192.168.1.136) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 14 Feb 2019 06:45:47 -0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1E6jk4c12845098
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 14 Feb 2019 06:45:46 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C4C637805C;
- Thu, 14 Feb 2019 06:45:46 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 464817805F;
- Thu, 14 Feb 2019 06:45:44 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.48.88])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
- Thu, 14 Feb 2019 06:45:43 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH] powerpc/book3s: Remove a few page table update interfaces.
-Date: Thu, 14 Feb 2019 12:15:40 +0530
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440TbS6YWVzDqTf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 19:10:28 +1100 (AEDT)
+Received: by mail-vs1-f68.google.com with SMTP id z18so3113838vso.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:10:28 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=s7mH6uc/WErzysdhYHrwGn+Za9Ii5z+9SMgUHEvVd2c=;
+ b=W2SimnFu/g2di8kyH7th4RPXWfWTcq0UH8CUDb8iZJRN3xYo+9OocA6iUz71MCv5d2
+ IAKnv/T+jrBNXWBe+VKNSI/q7pJT2a3UgNO9Fdi/gp/7qE32AE3i+6NhHUQEwMIB+ofA
+ ruYgyhSWMbOmtm/bflkVNX/70KxPJ60gWQ+pk+uL4w1QxzVoK+VjxhiyjcHNC4HwKWSf
+ DFCzfjqkcpTG9xbc2D7n4JGPDNQsRg+S3ahVY342L5Gcvlw2tsCtYKYiS8fNHEP8lI9B
+ awH3buISoSbPIzuWSWQ2Q0A2q3zmMVE4Yp4L5olyZfXP6myEOIenxrkKswZ55Bn7rT33
+ jX9g==
+X-Gm-Message-State: AHQUAuaCMhZMGMZLsfbLQ/D42o0pv5U9xS7qjoNms513pb8yTXQX5h86
+ 5odDHZICBxJQYm45kQHgaPl5OtdMhZCT/buyQJY=
+X-Google-Smtp-Source: AHgI3IainHdtNgPKfyU8YjSDdQ+iRTA5h4usd5PDFEqXOlRT2t4Q7Q4DByDOzAkMWCZQ41k3lVfXLhI1reoT4R3LmvA=
+X-Received: by 2002:a67:f43:: with SMTP id 64mr1331176vsp.166.1550131826029;
+ Thu, 14 Feb 2019 00:10:26 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19021406-0020-0000-0000-00000EBB9553
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010593; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000279; SDB=6.01160806; UDB=6.00605883; IPR=6.00941363; 
- MB=3.00025575; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-14 06:45:49
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021406-0021-0000-0000-000064CAE238
-Message-Id: <20190214064540.26597-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-14_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902140050
+References: <20190213174005.28785-1-hch@lst.de>
+ <20190213174005.28785-4-hch@lst.de>
+In-Reply-To: <20190213174005.28785-4-hch@lst.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 14 Feb 2019 09:10:14 +0100
+Message-ID: <CAMuHMdWRPm0_u2EX5OXeraZdKL602RJvbO5aKm09Sf-HKMGzjg@mail.gmail.com>
+Subject: Re: [PATCH 03/11] kernel/locks: consolidate RWSEM_GENERIC_* options
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,102 +70,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-xtensa@linux-xtensa.org, linux-s390 <linux-s390@vger.kernel.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linux-riscv@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When updating page tables, we need to make sure we fill the page table
-entry valid bit. We should be using page table populate interface for
-updating the table entries. The page table 'set' interface allows
-updating the raw value of page table entry. This can result in
-updating the entry wrongly. Remove the 'set' interface so that we avoid
-its future usage.
+On Thu, Feb 14, 2019 at 12:08 AM Christoph Hellwig <hch@lst.de> wrote:
+> Introduce one central definition of RWSEM_XCHGADD_ALGORITHM and
+> RWSEM_GENERIC_SPINLOCK in kernel/Kconfig.locks and let architectures
+> select RWSEM_XCHGADD_ALGORITHM if they want it, otherwise default to
+> the spinlock version.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgalloc.h |  8 ++++----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 14 --------------
- 2 files changed, 4 insertions(+), 18 deletions(-)
+>  arch/m68k/Kconfig       | 7 -------
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 9c1173283b96..138bc2ecc0c4 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -111,7 +111,7 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- 
- static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
- {
--	pgd_set(pgd, __pgtable_ptr_val(pud) | PGD_VAL_BITS);
-+	*pgd =  __pgd(__pgtable_ptr_val(pud) | PGD_VAL_BITS);
- }
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
-@@ -138,7 +138,7 @@ static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- 
- static inline void pud_populate(struct mm_struct *mm, pud_t *pud, pmd_t *pmd)
- {
--	pud_set(pud, __pgtable_ptr_val(pmd) | PUD_VAL_BITS);
-+	*pud = __pud(__pgtable_ptr_val(pmd) | PUD_VAL_BITS);
- }
- 
- static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
-@@ -176,13 +176,13 @@ static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
- static inline void pmd_populate_kernel(struct mm_struct *mm, pmd_t *pmd,
- 				       pte_t *pte)
- {
--	pmd_set(pmd, __pgtable_ptr_val(pte) | PMD_VAL_BITS);
-+	*pmd = __pmd(__pgtable_ptr_val(pte) | PMD_VAL_BITS);
- }
- 
- static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
- 				pgtable_t pte_page)
- {
--	pmd_set(pmd, __pgtable_ptr_val(pte_page) | PMD_VAL_BITS);
-+	*pmd = __pmd(__pgtable_ptr_val(pte_page) | PMD_VAL_BITS);
- }
- 
- static inline pgtable_t pmd_pgtable(pmd_t pmd)
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index dc71e2b92003..a24e00fb7fa7 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -853,11 +853,6 @@ static inline bool pte_ci(pte_t pte)
- 	return false;
- }
- 
--static inline void pmd_set(pmd_t *pmdp, unsigned long val)
--{
--	*pmdp = __pmd(val);
--}
--
- static inline void pmd_clear(pmd_t *pmdp)
- {
- 	*pmdp = __pmd(0);
-@@ -889,11 +884,6 @@ static inline int pmd_bad(pmd_t pmd)
- 	return hash__pmd_bad(pmd);
- }
- 
--static inline void pud_set(pud_t *pudp, unsigned long val)
--{
--	*pudp = __pud(val);
--}
--
- static inline void pud_clear(pud_t *pudp)
- {
- 	*pudp = __pud(0);
-@@ -936,10 +926,6 @@ static inline bool pud_access_permitted(pud_t pud, bool write)
- }
- 
- #define pgd_write(pgd)		pte_write(pgd_pte(pgd))
--static inline void pgd_set(pgd_t *pgdp, unsigned long val)
--{
--	*pgdp = __pgd(val);
--}
- 
- static inline void pgd_clear(pgd_t *pgdp)
- {
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.20.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
