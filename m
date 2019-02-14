@@ -2,106 +2,122 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87424C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 15:28:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D3C8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 15:58:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0AAEC2229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 15:28:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0AAEC2229F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id BC30A222DB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 15:58:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BC30A222DB
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440gK46pfpzDqY4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 02:28:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440gz55mSqzDqY6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 02:58:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440gH54bTDzDqTf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 02:26:57 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx05.intmail.prod.int.phx2.redhat.com
- [10.5.11.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 032E42D806;
- Thu, 14 Feb 2019 15:26:55 +0000 (UTC)
-Received: from llong.remote.csb (dhcp-17-59.bos.redhat.com [10.18.17.59])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 2FE5B5D70D;
- Thu, 14 Feb 2019 15:26:53 +0000 (UTC)
-Subject: Re: [PATCH 03/11] kernel/locks: consolidate RWSEM_GENERIC_* options
-To: Christoph Hellwig <hch@lst.de>
-References: <20190213174005.28785-1-hch@lst.de>
- <20190213174005.28785-4-hch@lst.de>
- <CAMuHMdW4C1McxL-e7ZSiSOiiE5D=xbBK8FZOwuJ1w0kK3CR1Hg@mail.gmail.com>
-From: Waiman Long <longman@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440gxK0HZkzDqRF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 02:56:36 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1EFhdjh056961
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:56:34 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qnavqawmj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 10:56:34 -0500
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 14 Feb 2019 15:56:33 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 14 Feb 2019 15:56:29 -0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1EFuSIQ23003214
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 14 Feb 2019 15:56:28 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 178C9B205F;
+ Thu, 14 Feb 2019 15:56:28 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9C2B6B2068;
+ Thu, 14 Feb 2019 15:56:26 +0000 (GMT)
+Received: from oc8380061452.ibm.com (unknown [9.85.169.191])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Feb 2019 15:56:26 +0000 (GMT)
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH v04] powerpc/numa: Perform full re-add of CPU for PRRN/VPHN
+ topology update
 Openpgp: preference=signencrypt
-Autocrypt: addr=longman@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- weim8xU=
-Organization: Red Hat
-Message-ID: <d9aeeedd-ce72-f58f-d858-3e340c073414@redhat.com>
-Date: Thu, 14 Feb 2019 10:26:52 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.9.1
+Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
+ mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
+ lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
+ DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
+ t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
+ AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
+ AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
+ AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
+ CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
+ 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
+ QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
+ AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
+ oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
+ ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
+ DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
+ 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
+ 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
+ qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
+ GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
+ efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
+ ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
+ yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
+ IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
+ 53/hcWvxHVs=
+Organization: IBM Linux Technology Center
+Date: Thu, 14 Feb 2019 09:56:26 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-In-Reply-To: <CAMuHMdW4C1McxL-e7ZSiSOiiE5D=xbBK8FZOwuJ1w0kK3CR1Hg@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
 Content-Language: en-US
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.15
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.30]); Thu, 14 Feb 2019 15:26:55 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19021415-0064-0000-0000-000003A8C4FC
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010595; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000279; SDB=6.01160990; UDB=6.00605993; IPR=6.00941546; 
+ MB=3.00025583; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-14 15:56:32
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021415-0065-0000-0000-00003C6A25AC
+Message-Id: <d8b67f9d-77d0-2be3-15bc-c7f11bc519f7@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-14_07:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902140109
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,37 +129,282 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-riscv@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Rob Herring <robh@kernel.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Juliet Kim <minkim@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Lynch <nathanl@linux.vnet.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Guenter Roeck <linux@roeck-us.net>, Corentin Labbe <clabbe@baylibre.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/14/2019 05:52 AM, Geert Uytterhoeven wrote:
-> On Thu, Feb 14, 2019 at 12:08 AM Christoph Hellwig <hch@lst.de> wrote:
->> Introduce one central definition of RWSEM_XCHGADD_ALGORITHM and
->> RWSEM_GENERIC_SPINLOCK in kernel/Kconfig.locks and let architectures
->> select RWSEM_XCHGADD_ALGORITHM if they want it, otherwise default to
->> the spinlock version.
->>
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> Note that this conflicts with "[PATCH v4 2/3] locking/rwsem: Remove
-> rwsem-spinlock.c & use rwsem-xadd.c for all archs"
-> https://lore.kernel.org/lkml/1550095217-12047-3-git-send-email-longman@redhat.com/
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-Christoph,
+To: linuxppc-dev@lists.ozlabs.org
+To: linux-kernel@vger.kernel.org
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Paul Mackerras <paulus@samba.org>
+Michael Ellerman <mpe@ellerman.id.au>
+Nathan Lynch <nathanl@linux.vnet.ibm.com>
+Corentin Labbe <clabbe@baylibre.com>
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Guenter Roeck <linux@roeck-us.net>
+Michael Bringmann <mwb@linux.vnet.ibm.com>
+"Oliver O'Halloran" <oohall@gmail.com>
+Russell Currey <ruscur@russell.cc>
+Haren Myneni <haren@us.ibm.com>
+Al Viro <viro@zeniv.linux.org.uk>
+Kees Cook <keescook@chromium.org>
+Nicholas Piggin <npiggin@gmail.com>
+Rob Herring <robh@kernel.org>
+Juliet Kim <minkim@us.ibm.com>
+Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: 2018-11-05 16:14:12 -0600
+Subject: [PATCH v04] powerpc/numa: Perform full re-add of CPU for PRRN/VPHN topology update
 
-Would you mind dropping just patch 3 from your series?
+On pseries systems, performing changes to a partition's affinity
+can result in altering the nodes a CPU is assigned to the
+current system.  For example, some systems are subject to resource
+balancing operations by the operator or control software.  In such
+environments, system CPUs may be in node 1 and 3 at boot, and be
+moved to nodes 2, 3, and 5, for better performance.
 
-Thanks,
-Longman
+The current implementation attempts to recognize such changes within
+the powerpc-specific version of arch_update_cpu_topology to modify a
+range of system data structures directly.  However, some scheduler
+data structures may be inaccessible, or the timing of a node change
+may still lead to corruption or error in other modules (e.g. user
+space) which do not receive notification of these changes.
+
+This patch modifies the PRRN/VPHN topology update worker function to
+recognize an affinity change for a CPU, and to perform a full DLPAR
+remove and add of the CPU instead of dynamically changing its node
+to resolve this issue.
+
+[Based upon patch submission:
+Subject: [PATCH] powerpc/pseries: Perform full re-add of CPU for topology update post-migration
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue Oct 30 05:43:36 AEDT 2018
+]
+
+[Replace patch submission:
+Subject: [PATCH] powerpc/topology: Update numa mask when cpu node mapping changes
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Date: Wed Oct 10 15:24:46 AEDT 2018
+]
+
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+Changes in v04:
+  -- Revise tests in topology_timer_fn to check vphn_enabled before prrn_enabled
+  -- Remove unnecessary changes to numa_update_cpu_topology
+Changes in v03:
+  -- Fixed under-scheduling of topo updates.
+Changes in v02:
+  -- Reuse more of the previous implementation to reduce patch size
+  -- Replace former calls to numa_update_cpu_topology(false) by
+     topology_schedule_update
+  -- Make sure that we report topology changes back through
+     arch_update_cpu_topology
+  -- Fix problem observed in powerpc next kernel with updating
+     cpu_associativity_changes_mask in timer_topology_fn when both
+     prrn_enabled and vphn_enabled, and many extra CPUs are possible,
+     but not installed.
+  -- Fix problem with updating cpu_associativity_changes_mask when
+     VPHN associativity information does not arrive until after first
+     call to update topology occurs.
+---
+ arch/powerpc/include/asm/topology.h |    7 +----
+ arch/powerpc/kernel/rtasd.c         |    2 +
+ arch/powerpc/mm/numa.c              |   47 +++++++++++++++++++++++------------
+ 3 files changed, 34 insertions(+), 22 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index f85e2b01c3df..79505c371fd5 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -42,7 +42,7 @@ extern void __init dump_numa_cpu_topology(void);
+ 
+ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+-extern int numa_update_cpu_topology(bool cpus_locked);
++extern void topology_schedule_update(void);
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+ {
+@@ -77,10 +77,7 @@ static inline void sysfs_remove_device_from_node(struct device *dev,
+ {
+ }
+ 
+-static inline int numa_update_cpu_topology(bool cpus_locked)
+-{
+-	return 0;
+-}
++static inline void topology_schedule_update(void) {}
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node) {}
+ 
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 8a1746d755c9..b1828de7ab78 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -285,7 +285,7 @@ static void handle_prrn_event(s32 scope)
+ 	 * the RTAS event.
+ 	 */
+ 	pseries_devicetree_update(-scope);
+-	numa_update_cpu_topology(false);
++	topology_schedule_update();
+ }
+ 
+ static void handle_rtas_event(const struct rtas_error_log *log)
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index b5d1c45c1475..eb63479f09d7 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1077,6 +1077,8 @@ static int prrn_enabled;
+ static void reset_topology_timer(void);
+ static int topology_timer_secs = 1;
+ static int topology_inited;
++static int topology_update_in_progress;
++static int topology_changed;
+ 
+ /*
+  * Change polling interval for associativity changes.
+@@ -1297,9 +1299,9 @@ static int update_lookup_table(void *data)
+  * Update the node maps and sysfs entries for each cpu whose home node
+  * has changed. Returns 1 when the topology has changed, and 0 otherwise.
+  *
+- * cpus_locked says whether we already hold cpu_hotplug_lock.
++ * readd_cpus: Also readd any CPUs that have changed affinity
+  */
+-int numa_update_cpu_topology(bool cpus_locked)
++static int numa_update_cpu_topology(bool readd_cpus)
+ {
+ 	unsigned int cpu, sibling, changed = 0;
+ 	struct topology_update_data *updates, *ud;
+@@ -1307,7 +1309,8 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	struct device *dev;
+ 	int weight, new_nid, i = 0;
+ 
+-	if (!prrn_enabled && !vphn_enabled && topology_inited)
++	if ((!prrn_enabled && !vphn_enabled && topology_inited) ||
++		topology_update_in_progress)
+ 		return 0;
+ 
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+@@ -1318,6 +1321,8 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	if (!updates)
+ 		return 0;
+ 
++	topology_update_in_progress = 1;
++
+ 	cpumask_clear(&updated_cpus);
+ 
+ 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
+@@ -1339,16 +1344,21 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 
+ 		new_nid = find_and_online_cpu_nid(cpu);
+ 
+-		if (new_nid == numa_cpu_lookup_table[cpu]) {
++		if ((new_nid == numa_cpu_lookup_table[cpu]) ||
++			!cpu_present(cpu)) {
+ 			cpumask_andnot(&cpu_associativity_changes_mask,
+ 					&cpu_associativity_changes_mask,
+ 					cpu_sibling_mask(cpu));
+-			dbg("Assoc chg gives same node %d for cpu%d\n",
++			if (cpu_present(cpu))
++				dbg("Assoc chg gives same node %d for cpu%d\n",
+ 					new_nid, cpu);
+ 			cpu = cpu_last_thread_sibling(cpu);
+ 			continue;
+ 		}
+ 
++		if (readd_cpus)
++			dlpar_cpu_readd(cpu);
++
+ 		for_each_cpu(sibling, cpu_sibling_mask(cpu)) {
+ 			ud = &updates[i++];
+ 			ud->next = &updates[i];
+@@ -1390,7 +1400,7 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	if (!cpumask_weight(&updated_cpus))
+ 		goto out;
+ 
+-	if (cpus_locked)
++	if (!readd_cpus)
+ 		stop_machine_cpuslocked(update_cpu_topology, &updates[0],
+ 					&updated_cpus);
+ 	else
+@@ -1401,9 +1411,9 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	 * offline CPUs. It is best to perform this update from the stop-
+ 	 * machine context.
+ 	 */
+-	if (cpus_locked)
++	if (!readd_cpus)
+ 		stop_machine_cpuslocked(update_lookup_table, &updates[0],
+-					cpumask_of(raw_smp_processor_id()));
++			     cpumask_of(raw_smp_processor_id()));
+ 	else
+ 		stop_machine(update_lookup_table, &updates[0],
+ 			     cpumask_of(raw_smp_processor_id()));
+@@ -1420,35 +1430,40 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	}
+ 
+ out:
++	topology_update_in_progress = 0;
+ 	kfree(updates);
+ 	return changed;
+ }
+ 
+ int arch_update_cpu_topology(void)
+ {
+-	return numa_update_cpu_topology(true);
++	return numa_update_cpu_topology(false);
+ }
+ 
+ static void topology_work_fn(struct work_struct *work)
+ {
+-	rebuild_sched_domains();
++	lock_device_hotplug();
++	if (numa_update_cpu_topology(true))
++		rebuild_sched_domains();
++	unlock_device_hotplug();
+ }
+ static DECLARE_WORK(topology_work, topology_work_fn);
+ 
+-static void topology_schedule_update(void)
++void topology_schedule_update(void)
+ {
+-	schedule_work(&topology_work);
++	if (!topology_update_in_progress)
++		schedule_work(&topology_work);
+ }
+ 
+ static void topology_timer_fn(struct timer_list *unused)
+ {
+-	if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
+-		topology_schedule_update();
+-	else if (vphn_enabled) {
++	if (vphn_enabled) {
+ 		if (update_cpu_associativity_changes_mask() > 0)
+ 			topology_schedule_update();
+ 		reset_topology_timer();
+ 	}
++	else if (prrn_enabled && cpumask_weight(&cpu_associativity_changes_mask))
++		topology_schedule_update();
+ }
+ static struct timer_list topology_timer;
+ 
+@@ -1553,7 +1568,7 @@ void __init shared_proc_topology_init(void)
+ 	if (lppaca_shared_proc(get_lppaca())) {
+ 		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+ 			    nr_cpumask_bits);
+-		numa_update_cpu_topology(false);
++		topology_schedule_update();
+ 	}
+ }
+ 
 
