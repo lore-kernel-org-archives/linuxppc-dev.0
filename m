@@ -2,116 +2,69 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25596C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:42:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E374AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:52:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9F143222DD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:42:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F143222DD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id CEB0A21928
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:52:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CEB0A21928
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440hyB0071zDqKM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 03:42:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440j9z4lGNzDqYB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 03:52:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=pbonzini@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.58.226; helo=3.mo2.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440hw72cVHzDqDt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 03:40:39 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 084F3E6A9D;
- Thu, 14 Feb 2019 16:40:37 +0000 (UTC)
-Received: from [10.36.112.66] (ovpn-112-66.ams2.redhat.com [10.36.112.66])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 074FC600C4;
- Thu, 14 Feb 2019 16:40:25 +0000 (UTC)
-Subject: Re: [PATCH V2 00/10] X86/KVM/Hyper-V: Add HV ept tlb range list flush
- support in KVM
-To: lantianyu1986@gmail.com
-References: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=pbonzini@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <3bcfedac-3054-7d5e-24b6-5c98d8171514@redhat.com>
-Date: Thu, 14 Feb 2019 17:40:20 +0100
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 3.mo2.mail-out.ovh.net (3.mo2.mail-out.ovh.net [46.105.58.226])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440j7Z5rL2zDqNv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 03:50:31 +1100 (AEDT)
+Received: from player732.ha.ovh.net (unknown [10.109.159.73])
+ by mo2.mail-out.ovh.net (Postfix) with ESMTP id 646B918485D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 17:50:27 +0100 (CET)
+Received: from kaod.org (lfbn-1-10603-25.w90-89.abo.wanadoo.fr [90.89.194.25])
+ (Authenticated sender: clg@kaod.org)
+ by player732.ha.ovh.net (Postfix) with ESMTPSA id DB5D529C7EE2;
+ Thu, 14 Feb 2019 16:50:19 +0000 (UTC)
+Subject: Re: [PATCH 15/19] KVM: PPC: Book3S HV: add get/set accessors for the
+ source configuration
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190107184331.8429-16-clg@kaod.org>
+ <20190204052148.GH1927@umbus.fritz.box>
+ <02ee0470-3c6a-5c5c-a903-44e172ce1ed5@kaod.org>
+ <20190205053233.GG22661@umbus.fritz.box>
+ <c0faf4dd-7af1-d97a-f8f1-838fcf412ab8@kaod.org>
+ <20190206012329.GQ22661@umbus.fritz.box>
+ <20190206012447.GR22661@umbus.fritz.box>
+ <1d92005a-c12d-1a55-d01b-98eded13629c@kaod.org>
+ <20190207024855.GZ22661@umbus.fritz.box>
+ <9f03f232-1c47-6e27-6d79-3bcc900fe943@kaod.org>
+ <20190208051543.GE2688@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <d549f598-2821-0f40-b060-35a7323569ae@kaod.org>
+Date: Thu, 14 Feb 2019 17:50:19 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190202013825.51261-1-Tianyu.Lan@microsoft.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20190208051543.GE2688@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.38]); Thu, 14 Feb 2019 16:40:37 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 11264347094730247047
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedtledrleeggdeiiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,42 +76,174 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, will.deacon@arm.com,
- christoffer.dall@arm.com, hpa@zytor.com, kys@microsoft.com,
- kvmarm@lists.cs.columbia.edu, sashal@kernel.org, sthemmin@microsoft.com,
- x86@kernel.org, linux@armlinux.org.uk, michael.h.kelley@microsoft.com,
- mingo@redhat.com, catalin.marinas@arm.com, jhogan@kernel.org,
- linux-mips@vger.kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>,
- marc.zyngier@arm.com, haiyangz@microsoft.com, kvm-ppc@vger.kernel.org,
- bp@alien8.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, paul.burton@mips.com,
- devel@linuxdriverproject.org, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 02/02/19 02:38, lantianyu1986@gmail.com wrote:
-> From: Lan Tianyu <Tianyu.Lan@microsoft.com>
+On 2/8/19 6:15 AM, David Gibson wrote:
+> On Thu, Feb 07, 2019 at 10:13:48AM +0100, Cédric Le Goater wrote:
+>> On 2/7/19 3:48 AM, David Gibson wrote:
+>>> On Wed, Feb 06, 2019 at 08:07:36AM +0100, Cédric Le Goater wrote:
+>>>> On 2/6/19 2:24 AM, David Gibson wrote:
+>>>>> On Wed, Feb 06, 2019 at 12:23:29PM +1100, David Gibson wrote:
+>>>>>> On Tue, Feb 05, 2019 at 02:03:11PM +0100, Cédric Le Goater wrote:
+>>>>>>> On 2/5/19 6:32 AM, David Gibson wrote:
+>>>>>>>> On Mon, Feb 04, 2019 at 05:07:28PM +0100, Cédric Le Goater wrote:
+>>>>>>>>> On 2/4/19 6:21 AM, David Gibson wrote:
+>>>>>>>>>> On Mon, Jan 07, 2019 at 07:43:27PM +0100, Cédric Le Goater wrote:
+>>>>>>>>>>> Theses are use to capure the XIVE EAS table of the KVM device, the
+>>>>>>>>>>> configuration of the source targets.
+>>>>>>>>>>>
+>>>>>>>>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>>>>>>>>> ---
+>>>>>>>>>>>  arch/powerpc/include/uapi/asm/kvm.h   | 11 ++++
+>>>>>>>>>>>  arch/powerpc/kvm/book3s_xive_native.c | 87 +++++++++++++++++++++++++++
+>>>>>>>>>>>  2 files changed, 98 insertions(+)
+>>>>>>>>>>>
+>>>>>>>>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>>>>>> index 1a8740629acf..faf024f39858 100644
+>>>>>>>>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>>>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>>>>>>> @@ -683,9 +683,20 @@ struct kvm_ppc_cpu_char {
+>>>>>>>>>>>  #define   KVM_DEV_XIVE_SAVE_EQ_PAGES	4
+>>>>>>>>>>>  #define KVM_DEV_XIVE_GRP_SOURCES	2	/* 64-bit source attributes */
+>>>>>>>>>>>  #define KVM_DEV_XIVE_GRP_SYNC		3	/* 64-bit source attributes */
+>>>>>>>>>>> +#define KVM_DEV_XIVE_GRP_EAS		4	/* 64-bit eas attributes */
+>>>>>>>>>>>  
+>>>>>>>>>>>  /* Layout of 64-bit XIVE source attribute values */
+>>>>>>>>>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+>>>>>>>>>>>  #define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
+>>>>>>>>>>>  
+>>>>>>>>>>> +/* Layout of 64-bit eas attribute values */
+>>>>>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_SHIFT	0
+>>>>>>>>>>> +#define KVM_XIVE_EAS_PRIORITY_MASK	0x7
+>>>>>>>>>>> +#define KVM_XIVE_EAS_SERVER_SHIFT	3
+>>>>>>>>>>> +#define KVM_XIVE_EAS_SERVER_MASK	0xfffffff8ULL
+>>>>>>>>>>> +#define KVM_XIVE_EAS_MASK_SHIFT		32
+>>>>>>>>>>> +#define KVM_XIVE_EAS_MASK_MASK		0x100000000ULL
+>>>>>>>>>>> +#define KVM_XIVE_EAS_EISN_SHIFT		33
+>>>>>>>>>>> +#define KVM_XIVE_EAS_EISN_MASK		0xfffffffe00000000ULL
+>>>>>>>>>>> +
+>>>>>>>>>>>  #endif /* __LINUX_KVM_POWERPC_H */
+>>>>>>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>>>>>> index f2de1bcf3b35..0468b605baa7 100644
+>>>>>>>>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>>>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>>>>>>> @@ -525,6 +525,88 @@ static int kvmppc_xive_native_sync(struct kvmppc_xive *xive, long irq, u64 addr)
+>>>>>>>>>>>  	return 0;
+>>>>>>>>>>>  }
+>>>>>>>>>>>  
+>>>>>>>>>>> +static int kvmppc_xive_native_set_eas(struct kvmppc_xive *xive, long irq,
+>>>>>>>>>>> +				      u64 addr)
+>>>>>>>>>>
+>>>>>>>>>> I'd prefer to avoid the name "EAS" here.  IIUC these aren't "raw" EAS
+>>>>>>>>>> values, but rather essentially the "source config" in the terminology
+>>>>>>>>>> of the PAPR hcalls.  Which, yes, is basically implemented by setting
+>>>>>>>>>> the EAS, but since it's the PAPR architected state that we need to
+>>>>>>>>>> preserve across migration, I'd prefer to stick as close as we can to
+>>>>>>>>>> the PAPR terminology.
+>>>>>>>>>
+>>>>>>>>> But we don't have an equivalent name in the PAPR specs for the tuple 
+>>>>>>>>> (prio, server). We could use the generic 'target' name may be ? even 
+>>>>>>>>> if this is usually referring to a CPU number.
+>>>>>>>>
+>>>>>>>> Um.. what?  That's about terminology for one of the fields in this
+>>>>>>>> thing, not about the name for the thing itself.
+>>>>>>>>
+>>>>>>>>> Or, IVE (Interrupt Vector Entry) ? which makes some sense. 
+>>>>>>>>> This is was the former name in HW. I think we recycle it for KVM.
+>>>>>>>>
+>>>>>>>> That's a terrible idea, which will make a confusing situation even
+>>>>>>>> more confusing.
+>>>>>>>
+>>>>>>> Let's use SOURCE_CONFIG and QUEUE_CONFIG. The KVM ioctls are very 
+>>>>>>> similar to the hcalls anyhow.
+>>>>>>
+>>>>>> Yes, I think that's a good idea.
+>>>>>
+>>>>> Actually... AIUI the SET_CONFIG hcalls shouldn't be a fast path.  
+>>>>
+>>>> No indeed. I have move them to standard hcalls in the current version.
+>>>>
+>>>>> Can
+>>>>> we simplify things further by removing the hcall implementation from
+>>>>> the kernel entirely, and have qemu implement them by basically just
+>>>>> forwarding them to the appropriate SET_CONFIG ioctl()?
+>>>>
+>>>> Yes. I think we could. 
+>>>
+>>> Great!
+>>>
+>>>> The hcalls H_INT_SET_SOURCE_CONFIG and H_INT_SET_QUEUE_CONFIG and 
+>>>> the KVM ioctls to set the EQ and the SOURCE configuration have a 
+>>>> lot in common. I need to look at how we can plug the KVM ioctl in 
+>>>> the hcalls under QEMU.
+>>>>
+>>>> We will have to convert the returned error to respect the PAPR 
+>>>> specs or have the ioctls return H_* errors.
+>>>
+>>> I don't think returning H_* values from a kernel call is a good idea.
+>>> Converting errors is kinda ugly, but I still think it's the better
+>>> option.  Note that we already have something like this for the HPT
+>>> resizing hcalls.
+>>
+>> ok.
+>>  
+>>>> Let's dig that idea. If we choose that path, QEMU will have an 
+>>>> up-to-date EAT and so we won't need to synchronize its state anymore 
+>>>> for migration.
+>>>
+>>> I guess so, though I don't see that as essential.
+>>>
+>>>> H_INT_GET_SOURCE_CONFIG can be implemented in QEMU without any KVM 
+>>>> ioctl.
+>>>>
+>>>> H_INT_GET_QUEUE_INFO could be implemented in QEMU. I need to check 
+>>>> how we return the address of the END ESB in sPAPR. We haven't paid 
+>>>> much attention to these pages because they are not used under Linux
+>>>> and today the address is returned by OPAL. 
+>>>>
+>>>> H_INT_GET_QUEUE_CONFIG is a little more problematic because we need
+>>>> to query into the XIVE HW the EQ index and toggle bit. OPAL support
+>>>> is required for that. But we could reduce the KVM support to the 
+>>>> ioctl querying these EQ information.
+>>>
+>>> Right, and we'd need an ioctl() like that for migration anyway, yes?
+>>
+>> Yes. it is the same need.
+>>
+>>>> H_INT_ESB could be entirely done under QEMU.
+>>>
+>>> This one can actually happen on fairly hot paths, so I think doing
+>>> that in qemu probably isn't a good idea.
+>>
+>> I agree It would nice to have some performance.
+>>
+>> This hcall is used when LSIs are involved, which is not really a common 
+>> configuration. There are no OPAL calls involved. And we are duplicating 
+>> code at the KVM level to retrigger the interrupt when the level is still
+>> asserted.
+>>
+>> I will benchmark the two options before making a choice.
 > 
-> This patchset is to introduce hv ept tlb range list flush function
-> support in the KVM MMU component. Flushing ept tlbs of several address
-> range can be done via single hypercall and new list flush function is
-> used in the kvm_mmu_commit_zap_page() and FNAME(sync_page). This patchset
-> also adds more hv ept tlb range flush support in more KVM MMU function.
-> 
-> Change since v1:
->        1) Make flush list as a hlist instead of list in order to 
->        keep struct kvm_mmu_page size.
->        2) Add last_level flag in the struct kvm_mmu_page instead
->        of spte pointer
->        3) Move tlb flush from kvm_mmu_notifier_clear_flush_young() to kvm_age_hva()
->        4) Use range flush in the kvm_vm_ioctl_get/clear_dirty_log()
+> Ok.
+ 
 
-Looks good except for the confusion on sp->last_level (which was mostly
-mine---sorry about that).  I think it can still make 5.1.
+Here are some iperf results for a 4 vCPUs guest running a 5.0.0 kernel
+on a small initrd image. I didn't do any kind of tuning like CPU pinning. 
+So these are really rough figures :   
 
-However, note that I've never received "KVM/MMU: Use tlb range flush  in
-the kvm_age_hva()".
 
-Paolo
+  kernel irqchip            OFF      ON    ON (*)
+
+  rtl8139  (LSI)           1.19    1.24   1.23    Gbits/sec
+  VIRTIO                  31.80   42.30    --     Gbits/sec
+
+
+There is not much benefit in handling the H_INT_ESB hcall under KVM it seems. 
+I think we can leave it under QEMU.  
+
+
+C.
