@@ -2,69 +2,71 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 140C0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:39:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BAABC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:51:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7B9D62085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:39:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="fx1rpYHB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B9D62085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id C0F11222A4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 10:51:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0F11222A4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440XvC2QTnzDqWG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 21:39:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440Y952ptlzDq6X
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 21:51:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.183.201; helo=relay8-d.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="fx1rpYHB"; dkim-atps=neutral
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+X-Greylist: delayed 55381 seconds by postgrey-1.36 at bilbo;
+ Thu, 14 Feb 2019 21:49:32 AEDT
+Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net
+ [217.70.183.201])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440XsP47bLzDqVM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 21:37:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=7yZM4QttJ1fb4ZQ7Mabo7VnLkRDJj+lx0G2X8XXS/q0=; b=fx1rpYHBqJrLjmSSs1gePTKzK
- Ni/DauvFgKLMitkNhK5aW9m4wpH6Xo6Rn7SO+LZool3ojYYBe0dsltLVAgUPMw9zlAWx39NxZLo3n
- e7DTq12YagL1S9+b1JtJSmTbkuZ8pcAUfrr6AY/BHVxNPrLBYwQWW8NdefDr6gS8H9Lxxkbitnu0Q
- VupOqNRJPsPjHUuNI2y93XB8buCKOfO0sxZXubBWy8FtYbq0u2cn9KdQp9/Ttih4UzYwFrsFhla9R
- iOdEi8vQQJ+6bmKp3FVg9Z+ptgbw3Znx9sxvKOfICpLgcc4ogCklFEcHlZZiG0A4rWpwJEP7Iq8N6
- uxvBePSeQ==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1guEOK-00014P-W4; Thu, 14 Feb 2019 10:37:17 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id BFC8020298375; Thu, 14 Feb 2019 11:37:15 +0100 (CET)
-Date: Thu, 14 Feb 2019 11:37:15 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v4 0/3] locking/rwsem: Rwsem rearchitecture part 0
-Message-ID: <20190214103715.GI32494@hirez.programming.kicks-ass.net>
-References: <1550095217-12047-1-git-send-email-longman@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440Y705hzRzDqVF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 21:49:30 +1100 (AEDT)
+X-Originating-IP: 81.250.144.103
+Received: from [10.30.1.20] (lneuilly-657-1-5-103.w81-250.abo.wanadoo.fr
+ [81.250.144.103]) (Authenticated sender: alex@ghiti.fr)
+ by relay8-d.mail.gandi.net (Postfix) with ESMTPSA id 066C61BF221;
+ Thu, 14 Feb 2019 10:49:19 +0000 (UTC)
+Subject: Re: [PATCH v2] hugetlb: allow to free gigantic pages regardless of
+ the configuration
+To: Dave Hansen <dave.hansen@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+References: <20190213192610.17265-1-alex@ghiti.fr>
+ <d367b5c7-eb05-6d0b-f9bf-5b3fc3f392a9@intel.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Message-ID: <a60ed0fd-2f2c-4789-aca0-ecf37885fb93@ghiti.fr>
+Date: Thu, 14 Feb 2019 11:49:19 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.5.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1550095217-12047-1-git-send-email-longman@redhat.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <d367b5c7-eb05-6d0b-f9bf-5b3fc3f392a9@intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,50 +78,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-mips@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 05:00:14PM -0500, Waiman Long wrote:
-> v4:
->  - Remove rwsem-spinlock.c and make all archs use rwsem-xadd.c.
-> 
-> v3:
->  - Optimize __down_read_trylock() for the uncontended case as suggested
->    by Linus.
-> 
-> v2:
->  - Add patch 2 to optimize __down_read_trylock() as suggested by PeterZ.
->  - Update performance test data in patch 1.
-> 
-> The goal of this patchset is to remove the architecture specific files
-> for rwsem-xadd to make it easer to add enhancements in the later rwsem
-> patches. It also removes the legacy rwsem-spinlock.c file and make all
-> the architectures use one single implementation of rwsem - rwsem-xadd.c.
-> 
-> Waiman Long (3):
->   locking/rwsem: Remove arch specific rwsem files
->   locking/rwsem: Remove rwsem-spinlock.c & use rwsem-xadd.c for all
->     archs
->   locking/rwsem: Optimize down_read_trylock()
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+On 02/13/2019 08:30 PM, Dave Hansen wrote:
+>> -#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
+>> +#ifdef CONFIG_COMPACTION_CORE
+>>   static __init int gigantic_pages_init(void)
+>>   {
+>>   	/* With compaction or CMA we can allocate gigantic pages at runtime */
+>> diff --git a/fs/Kconfig b/fs/Kconfig
+>> index ac474a61be37..8fecd3ea5563 100644
+>> --- a/fs/Kconfig
+>> +++ b/fs/Kconfig
+>> @@ -207,8 +207,9 @@ config HUGETLB_PAGE
+>>   config MEMFD_CREATE
+>>   	def_bool TMPFS || HUGETLBFS
+>>   
+>> -config ARCH_HAS_GIGANTIC_PAGE
+>> +config COMPACTION_CORE
+>>   	bool
+>> +	default y if (MEMORY_ISOLATION && MIGRATION) || CMA
+> This takes a hard dependency (#if) and turns it into a Kconfig *default*
+> that can be overridden.  That seems like trouble.
+>
+> Shouldn't it be:
+>
+> config COMPACTION_CORE
+> 	def_bool y
+> 	depends on (MEMORY_ISOLATION && MIGRATION) || CMA
+>
+> ?
 
-with the caveat that I'm happy to exchange patch 3 back to my earlier
-suggestion in case Will expesses concerns wrt the ARM64 performance of
-Linus' suggestion.
+Thanks for that,
+
+Alex
