@@ -2,73 +2,57 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED39DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 11:14:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0640C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 13:09:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 32087222B6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 11:14:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="aXK6FgEj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 32087222B6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id D241620835
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 13:09:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D241620835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=collabora.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Yh81WkPzDqXM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 22:14:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440cCv1TnqzDqY2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 00:08:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=collabora.com
+ (client-ip=2a00:1098:0:82:1000:25:2eeb:e3e3; helo=bhuna.collabora.co.uk;
+ envelope-from=boris.brezillon@collabora.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="aXK6FgEj"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=pass (p=none dis=none) header.from=collabora.com
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk
+ [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440YdR019TzDqRS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 22:12:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=RGD/5MGOpZ+sFP4R8UzfseaMWuC+CODQr7wgC7RV1xU=; b=aXK6FgEjxQe4HE+pqXtNxte1s
- e1KXKHwIkueTFj7AL/+JldbMVhvx6dLSMCbckz6qEQUZ2Xj4sNYSt/Xc8mMP4ae/GvMWNheET4lEq
- WpByu3FunDFSksawPP1YKZz06spM0alNJGxCZtwoAcAaCTS1QPF/mH7XwCJpC3IgoyV/ZiJ/JWLLm
- nldVSTsoIlsYCW3voFKdiu5idA2iMfnY6BnYzmHNbqkTqiCiEB9L0C4xt2WS+UrXFNU5M8XgqWkrV
- MBhZ30zYcnlsc9GwO9Yoh3BbSE51bib0igHJ3kupqom97wzlqhnDWWtj5QruePCversvPk04l1mYH
- Qw8efa4qw==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1guEw9-0001pc-2H; Thu, 14 Feb 2019 11:12:13 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 7B5AD20298565; Thu, 14 Feb 2019 12:12:11 +0100 (CET)
-Date: Thu, 14 Feb 2019 12:12:11 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v4 2/3] locking/rwsem: Remove rwsem-spinlock.c & use
- rwsem-xadd.c for all archs
-Message-ID: <20190214111211.GL32494@hirez.programming.kicks-ass.net>
-References: <1550095217-12047-1-git-send-email-longman@redhat.com>
- <1550095217-12047-3-git-send-email-longman@redhat.com>
- <CAMuHMdVe9J4LmbLz8nHsW2JSVt8EQHTKswtc+-53pD-DBxgwSw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440c6c5B1SzDqW2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:04:24 +1100 (AEDT)
+Received: from localhost.localdomain (unknown
+ [IPv6:2a01:e0a:2c:6930:5cf4:84a1:2763:fe0d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested) (Authenticated sender: bbrezillon)
+ by bhuna.collabora.co.uk (Postfix) with ESMTPSA id A4959278FE6;
+ Thu, 14 Feb 2019 13:04:15 +0000 (GMT)
+From: Boris Brezillon <boris.brezillon@collabora.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Alban Bedel <albeu@free.fr>, linuxppc-dev@lists.ozlabs.org,
+ Boris Brezillon <boris.brezillon@collabora.com>,
+ linux-mtd@lists.infradead.org
+Subject: Re: [v3,2/2] drivers/mtd: Fix device registration error
+Date: Thu, 14 Feb 2019 14:04:12 +0100
+Message-Id: <20190214130412.30059-1-boris.brezillon@collabora.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190211133338.30399-2-aneesh.kumar@linux.ibm.com>
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdVe9J4LmbLz8nHsW2JSVt8EQHTKswtc+-53pD-DBxgwSw@mail.gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-linux-mtd-patch-notification: thanks
+X-linux-mtd-patch-commit: 3e35730dd7540bad2d4e002703996391d9be49a0
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,57 +64,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, Will Deacon <will.deacon@arm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux <sparclinux@vger.kernel.org>,
- linux-riscv@lists.infradead.org, Christoph Hellwig <hch@lst.de>,
- Linux-Arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- linux-c6x-dev@linux-c6x.org,
- "open list:QUALCOMM HEXAGON..." <linux-hexagon@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Waiman Long <longman@redhat.com>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Openrisc <openrisc@lists.librecores.org>, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- Parisc List <linux-parisc@vger.kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-mips@vger.kernel.org,
- alpha <linux-alpha@vger.kernel.org>, nios2-dev@lists.rocketboards.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Tim Chen <tim.c.chen@linux.intel.com>
+Cc: Boris Brezillon <bbrezillon@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 11:54:47AM +0100, Geert Uytterhoeven wrote:
-> On Wed, Feb 13, 2019 at 11:01 PM Waiman Long <longman@redhat.com> wrote:
-> > Currently, we have two different implementation of rwsem:
-> >  1) CONFIG_RWSEM_GENERIC_SPINLOCK (rwsem-spinlock.c)
-> >  2) CONFIG_RWSEM_XCHGADD_ALGORITHM (rwsem-xadd.c)
-> >
-> > As we are going to use a single generic implementation for rwsem-xadd.c
-> > and no architecture-specific code will be needed, there is no point
-> > in keeping two different implementations of rwsem. In most cases, the
-> > performance of rwsem-spinlock.c will be worse. It also doesn't get all
-> > the performance tuning and optimizations that had been implemented in
-> > rwsem-xadd.c over the years.
-> >
-> > For simplication, we are going to remove rwsem-spinlock.c and make all
-> > architectures use a single implementation of rwsem - rwsem-xadd.c.
-> >
-> > All references to RWSEM_GENERIC_SPINLOCK and RWSEM_XCHGADD_ALGORITHM
-> > in the code are removed.
-> >
-> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Waiman Long <longman@redhat.com>
-> 
-> Note that this conflicts with "[PATCH 03/11] kernel/locks: consolidate
-> RWSEM_GENERIC_* options"
-> https://lore.kernel.org/lkml/20190213174005.28785-4-hch@lst.de/
+From: Boris Brezillon <bbrezillon@kernel.org>
 
-*sigh*.. of that never was Cc'ed to locking people :/
+On Mon, 2019-02-11 at 13:33:38 UTC, "Aneesh Kumar K.V" wrote:
+> This change helps me to get multiple mtd device registered. Without this
+> I get
+> 
+> sysfs: cannot create duplicate filename '/bus/nvmem/devices/flash0'
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 5.0.0-rc2-00557-g1ef20ef21f22 #13
+> Call Trace:
+> [c0000000b38e3220] [c000000000b58fe4] dump_stack+0xe8/0x164 (unreliable)
+> [c0000000b38e3270] [c0000000004cf074] sysfs_warn_dup+0x84/0xb0
+> [c0000000b38e32f0] [c0000000004cf6c4] sysfs_do_create_link_sd.isra.0+0x114/0x150
+> [c0000000b38e3340] [c000000000726a84] bus_add_device+0x94/0x1e0
+> [c0000000b38e33c0] [c0000000007218f0] device_add+0x4d0/0x830
+> [c0000000b38e3480] [c0000000009d54a8] nvmem_register.part.2+0x1c8/0xb30
+> [c0000000b38e3560] [c000000000834530] mtd_nvmem_add+0x90/0x120
+> [c0000000b38e3650] [c000000000835bc8] add_mtd_device+0x198/0x4e0
+> [c0000000b38e36f0] [c00000000083619c] mtd_device_parse_register+0x11c/0x280
+> [c0000000b38e3780] [c000000000840830] powernv_flash_probe+0x180/0x250
+> [c0000000b38e3820] [c00000000072c120] platform_drv_probe+0x60/0xf0
+> [c0000000b38e38a0] [c0000000007283c8] really_probe+0x138/0x4d0
+> [c0000000b38e3930] [c000000000728acc] driver_probe_device+0x13c/0x1b0
+> [c0000000b38e39b0] [c000000000728c7c] __driver_attach+0x13c/0x1c0
+> [c0000000b38e3a30] [c000000000725130] bus_for_each_dev+0xa0/0x120
+> [c0000000b38e3a90] [c000000000727b2c] driver_attach+0x2c/0x40
+> [c0000000b38e3ab0] [c0000000007270f8] bus_add_driver+0x228/0x360
+> [c0000000b38e3b40] [c00000000072a2e0] driver_register+0x90/0x1a0
+> [c0000000b38e3bb0] [c00000000072c020] __platform_driver_register+0x50/0x70
+> [c0000000b38e3bd0] [c00000000105c984] powernv_flash_driver_init+0x24/0x38
+> [c0000000b38e3bf0] [c000000000010904] do_one_initcall+0x84/0x464
+> [c0000000b38e3cd0] [c000000001004548] kernel_init_freeable+0x530/0x634
+> [c0000000b38e3db0] [c000000000011154] kernel_init+0x1c/0x168
+> [c0000000b38e3e20] [c00000000000bed4] ret_from_kernel_thread+0x5c/0x68
+> mtd mtd1: Failed to register NVMEM device
+> 
+> With the change we now have
+> 
+> root@(none):/sys/bus/nvmem/devices# ls -al
+> total 0
+> drwxr-xr-x 2 root root 0 Feb  6 20:49 .
+> drwxr-xr-x 4 root root 0 Feb  6 20:49 ..
+> lrwxrwxrwx 1 root root 0 Feb  6 20:49 flash@0 -> ../../../devices/platform/ibm,opal:flash@0/mtd/mtd0/flash@0
+> lrwxrwxrwx 1 root root 0 Feb  6 20:49 flash@1 -> ../../../devices/platform/ibm,opal:flash@1/mtd/mtd1/flash@1
+> 
+> Fixes: acfe63ec1c59 ("mtd: Convert to using %pOFn instead of device_node.name")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+
+Applied to http://git.infradead.org/linux-mtd.git mtd/fixes, thanks.
+
+Boris
