@@ -2,93 +2,90 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB1CFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 05:16:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A7FBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 06:02:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DAD01222CC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 05:16:43 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DAD01222CC
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C04F921934
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 06:02:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="AqFGGKQk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C04F921934
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440Pkx4D9FzDqSk
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 16:16:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440QlD26yrzDqW7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 17:02:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="AqFGGKQk"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440Phq2MYzzDqRs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 16:14:51 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1E5DsQq066219
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:14:49 -0500
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qn1vsgayu-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 00:14:48 -0500
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Thu, 14 Feb 2019 05:14:47 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 14 Feb 2019 05:14:45 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1E5EixC61997170
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 14 Feb 2019 05:14:44 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6C92942045;
- Thu, 14 Feb 2019 05:14:44 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1A8A742041;
- Thu, 14 Feb 2019 05:14:44 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 14 Feb 2019 05:14:44 +0000 (GMT)
-Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id C2163A0104;
- Thu, 14 Feb 2019 16:14:42 +1100 (AEDT)
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/1] powerpc/64: Adjust order in pcibios_init()
-Date: Thu, 14 Feb 2019 16:14:42 +1100
-X-Mailer: git-send-email 2.19.0.2.gcad72f5712
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440Qj72yWfzDqTv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 17:00:10 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id y1so2458333pgk.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Feb 2019 22:00:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=EyhZ0LXI8S6DO+1lKPJ+3xCo7Hi2M9DApl/OXP8GRG0=;
+ b=AqFGGKQkWIE4m9oWUPQKPfYDWffEV3DD3kw2gte/hIVc+ZOI2ALww287MyZktoOcDi
+ CbpDfqNDDxjQTYKo+HSL1jPCcxgIu0tlHCqsVDa+M5KY9ZBsLFTmv/t2wqc5kisOEAq3
+ Ey9IsWcwZPCXnG/nVFmz7GUhhGKdm8IWeTP2Dk0HwbmuU3cqx7K5BZzuoEE5qUenFwFw
+ FhXuEgKL+2MrnrRuMG0A1nR+NYB/69dpYPvc7V/phtqqydIA5J2EkPID7AxDk9lsLjAP
+ NbaOeXfbMwnJ+uPtI2ATX/eErFA+0vBz71ipAT/cQzRY+HNlZcQmNhta5uk0wuPGbr4p
+ 3GKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=EyhZ0LXI8S6DO+1lKPJ+3xCo7Hi2M9DApl/OXP8GRG0=;
+ b=rqN9ZUxhcCyXhYnlw/jKdcjMttov6hlfTfsWNUFhMTm19FZeDmmEHiszYKOERHSq08
+ +5YjL7zIBwD+gj8h/a2KRAL2j+YJbpDacR26gpJvD0V/zVKL39nCE9Wi581KUXCtV+bX
+ mMWUfxWHXigc4Hgpa1goytjH7gzH2Su2+xbQ26Gf59Fk+gjrcyPd6nbfOd1RIAdUJKJB
+ xdo5OmODVRvG6dL4A+X6IMcMEQsA7nqDf0o+ijPzXEPgaVG3v/jkvEKcP1oCbWWRinlT
+ VJiS+mOhD6JwdVZY1m4tyFCkLvvja5xUfafiZIIU4fNvYBku1beRMQHqc5B2WC/WBow8
+ 9p4g==
+X-Gm-Message-State: AHQUAubyeooaM1fH+SZNOjgfZ0indYsOIOMyMmDyfjz7NQp5AXvErBOR
+ +i34AeL9bK2naODLjUlz9TyGeA==
+X-Google-Smtp-Source: AHgI3IZsTuAr/2agKNUI6fHNmik1DYYjhaWBR5rn+7baCxky03ZS5RyeSxDZdNqDP/QzwRlb2m6TAA==
+X-Received: by 2002:a62:9f1a:: with SMTP id g26mr2297647pfe.123.1550124008008; 
+ Wed, 13 Feb 2019 22:00:08 -0800 (PST)
+Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
+ by smtp.gmail.com with ESMTPSA id
+ z127sm2288820pfb.80.2019.02.13.22.00.07
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 13 Feb 2019 22:00:07 -0800 (PST)
+Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
+ (envelope-from <jgg@ziepe.ca>)
+ id 1guA46-00040P-Jk; Wed, 13 Feb 2019 23:00:06 -0700
+Date: Wed, 13 Feb 2019 23:00:06 -0700
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Ira Weiny <ira.weiny@intel.com>
+Subject: Re: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned
+ pages
+Message-ID: <20190214060006.GE24692@ziepe.ca>
+References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
+ <20190211225447.GN24692@ziepe.ca>
+ <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19021405-0028-0000-0000-000003485D16
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021405-0029-0000-0000-000024068730
-Message-Id: <f232553753fe148118646c9013a3d962c19b58ec.1550121250.git.sbobroff@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-14_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902140038
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,72 +97,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oohall@gmail.com
+Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
+ aik@ozlabs.ru, linux-fpga@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ linux-mm@kvack.org, alex.williamson@redhat.com, mdf@kernel.org,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, cl@linux.com,
+ hao.wu@intel.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The pcibios_init() function for 64 bit PowerPC currently calls
-pci_bus_add_devices() before pcibios_resource_survey(), which seems
-incorrect because it adds devices and attempts to bind their drivers
-before allocating their resources (although no problems seem to be
-apparent).
+On Wed, Feb 13, 2019 at 05:53:14PM -0800, Ira Weiny wrote:
+> On Mon, Feb 11, 2019 at 03:54:47PM -0700, Jason Gunthorpe wrote:
+> > On Mon, Feb 11, 2019 at 05:44:32PM -0500, Daniel Jordan wrote:
+> > 
+> > > All five of these places, and probably some of Davidlohr's conversions,
+> > > probably want to be collapsed into a common helper in the core mm for
+> > > accounting pinned pages.  I tried, and there are several details that
+> > > likely need discussion, so this can be done as a follow-on.
+> > 
+> > I've wondered the same..
+> 
+> I'm really thinking this would be a nice way to ensure it gets cleaned up and
+> does not happen again.
+> 
+> Also, by moving it to the core we could better manage any user visible changes.
+> 
+> From a high level, pinned is a subset of locked so it seems like we need a 2
+> sets of helpers.
+> 
+> try_increment_locked_vm(...)
+> decrement_locked_vm(...)
+> 
+> try_increment_pinned_vm(...)
+> decrement_pinned_vm(...)
+> 
+> Where try_increment_pinned_vm() also increments locked_vm...  Of course this
+> may end up reverting the improvement of Davidlohr  Bueso's atomic work...  :-(
+> 
+> Furthermore it would seem better (although I don't know if at all possible) if
+> this were accounted for in core calls which tracked them based on how the pages
+> are being used so that drivers can't call try_increment_locked_vm() and then
+> pin the pages...  Thus getting the account wrong vs what actually happened.
+> 
+> And then in the end we can go back to locked_vm being the value checked against
+> RLIMIT_MEMLOCK.
 
-So move the call to pci_bus_add_devices() to after
-pcibios_resource_survey().
+Someone would need to understand the bug that was fixed by splitting
+them. 
 
-This will also allow the ppc_md.pcibios_bus_add_device() hooks to
-perform actions that depend on PCI resources, both during rescanning
-(where this is already the case) and at boot time, which should
-support improvements and refactoring.
+I think it had to do with double accounting pinned and mlocked pages
+and thus delivering a lower than expected limit to userspace.
 
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
----
-Hi everyone,
+vfio has this bug, RDMA does not. RDMA has a bug where it can
+overallocate locked memory, vfio doesn't.
 
-I've tested this on a P9 for both the host and a KVM guest, and the change
-hasn't caused any differences in PCI resource assignments or the general boot
-messages.
+Really unclear how to fix this. The pinned/locked split with two
+buckets may be the right way.
 
-I've also had a go at inspecting most of the code used by pci_bus_add_devices()
-and pcibios_resource_survey() and it doesn't look like there are going to be
-any changes in behaviour caused by reordering.  It might be worth mentioning
-that the hotplug path (see pcibios_finish_adding_to_bus()) already does
-resource allocation before calling pci_bus_add_devices().
-
-However, it would be great if someone could test this change on some older
-hardware or comment on wether we should make the same change on 32 bit machines.
-
-Cheers,
-Sam.
-
- arch/powerpc/kernel/pci_64.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 9d8c10d55407..1ce28888dbdb 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -58,14 +58,16 @@ static int __init pcibios_init(void)
- 	pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
- 
- 	/* Scan all of the recorded PCI controllers.  */
--	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
- 		pcibios_scan_phb(hose);
--		pci_bus_add_devices(hose->bus);
--	}
- 
- 	/* Call common code to handle resource allocation */
- 	pcibios_resource_survey();
- 
-+	/* Add devices. */
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
-+		pci_bus_add_devices(hose->bus);
-+
- 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
- 
- 	return 0;
--- 
-2.19.0.2.gcad72f5712
-
+Jason
