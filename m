@@ -2,59 +2,92 @@ Return-Path: <SRS0=RHZ4=QV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D1D3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 752F0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:14:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D45C42229F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 19:41:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D45C42229F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 723C02229F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Feb 2019 20:14:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ziepe.ca header.i=@ziepe.ca header.b="hA9VncW7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 723C02229F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440mx036R5zDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 06:41:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 440nfM4JP5zDqZS
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 07:14:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.136; helo=mga12.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ziepe.ca
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=jgg@ziepe.ca; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ dmarc=none (p=none dis=none) header.from=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ziepe.ca header.i=@ziepe.ca header.b="hA9VncW7"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440mmN6k8xzDqWF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 06:34:09 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
- by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 14 Feb 2019 11:34:00 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.58,369,1544515200"; d="scan'208";a="116276999"
-Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by orsmga006.jf.intel.com with ESMTP; 14 Feb 2019 11:33:59 -0800
-Date: Thu, 14 Feb 2019 11:33:53 -0800
-From: Ira Weiny <ira.weiny@intel.com>
-To: Jason Gunthorpe <jgg@ziepe.ca>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440ncj1nq5zDqTj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 07:12:35 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id h1so3637728pfo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 12:12:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ziepe.ca; s=google;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=ccxzyt/RMKZ2OOmgM+tFIm3eRFm02Zizg0pcCDEvEpA=;
+ b=hA9VncW7abr9v+2utX/VkY1ZMwjjXa+hwVTodjREfjCiB0K7/Kc1hdBbZP6VIclrft
+ XOlV/kBSodmvMnJmU6S+VCif2RbCUEwe4jiK021/ptlayI1p9QvtTplnf6hXcgW17wb+
+ QnehE0OatJE+W6+9FVvKXjsQS9WlMlC81CJMTIZkDJ4RfuKrLjfzhp/2YUPNRFY/w0Lc
+ aUTkEhbENTvNIWFJCqAuRCY2ROYZ4dZzB+xqdPWBbhLmA24jTl0pTqeeCY5bZatXCoQw
+ abmHXi9B7hQUHXsFEubY8QrdE6yffwStU9kEa6Ykk1vfsXxhwe1xCEIBVbJx8CT9RHfQ
+ tu1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=ccxzyt/RMKZ2OOmgM+tFIm3eRFm02Zizg0pcCDEvEpA=;
+ b=oGAqZE9qEOvPr8IVrYmji+J2DKEui/eqVXYNNiZO3NZ9PuvpPyLoQqFbXy6VBOOFr4
+ +6VgbAX6nejnQ1B8xq/l5rRSSARiCO8dV8/UWuPB/pgaJw9etClcoeoNjCjRuEn6Bb+v
+ ++EEHcpgN0uWHUKYpEyTU3dZS/BmiEDOBayedhk+S7zQkx70zw3ces6XLdzeE8XrRuay
+ 8rwmHmd3byeJLzCkafj0qBBkeOO7/layxPTEsD6yvfTWAA8IsLZ6IPJK6KtcXx0MmPvj
+ e8RQ/v7PkHR3Kq64fRmdV9tee77/99wObbS/159fz+2RsKELn2L6z9xjmg+P0LFk3a0n
+ QudQ==
+X-Gm-Message-State: AHQUAuaz/ic1Xc72WlmvDihmIuWs/m6pmQ8Huiohq7R+Ij5qlOabMu3c
+ qjiN7NVCq1eJrbC0CGC3cFVsHw==
+X-Google-Smtp-Source: AHgI3IZWZ0MGPLsLn4wrH2r78+5Tb6L2fudxI7tZh+KJRQfM13M8w4S/vvhozZ+3+r9nH+nNGegkWw==
+X-Received: by 2002:a62:a1a:: with SMTP id s26mr5944270pfi.31.1550175153085;
+ Thu, 14 Feb 2019 12:12:33 -0800 (PST)
+Received: from ziepe.ca (S010614cc2056d97f.ed.shawcable.net. [174.3.196.123])
+ by smtp.gmail.com with ESMTPSA id
+ q21sm8921770pfq.138.2019.02.14.12.12.32
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 14 Feb 2019 12:12:32 -0800 (PST)
+Received: from jgg by mlx.ziepe.ca with local (Exim 4.90_1)
+ (envelope-from <jgg@ziepe.ca>)
+ id 1guNN1-0007Ay-MB; Thu, 14 Feb 2019 13:12:31 -0700
+Date: Thu, 14 Feb 2019 13:12:31 -0700
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Ira Weiny <ira.weiny@intel.com>
 Subject: Re: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned
  pages
-Message-ID: <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
+Message-ID: <20190214201231.GC1739@ziepe.ca>
 References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
  <20190211225447.GN24692@ziepe.ca>
  <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
  <20190214060006.GE24692@ziepe.ca>
+ <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190214060006.GE24692@ziepe.ca>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+In-Reply-To: <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,88 +109,39 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 11:00:06PM -0700, Jason Gunthorpe wrote:
-> On Wed, Feb 13, 2019 at 05:53:14PM -0800, Ira Weiny wrote:
-> > On Mon, Feb 11, 2019 at 03:54:47PM -0700, Jason Gunthorpe wrote:
-> > > On Mon, Feb 11, 2019 at 05:44:32PM -0500, Daniel Jordan wrote:
-> > > 
-> > > > All five of these places, and probably some of Davidlohr's conversions,
-> > > > probably want to be collapsed into a common helper in the core mm for
-> > > > accounting pinned pages.  I tried, and there are several details that
-> > > > likely need discussion, so this can be done as a follow-on.
-> > > 
-> > > I've wondered the same..
+On Thu, Feb 14, 2019 at 11:33:53AM -0800, Ira Weiny wrote:
+
+> > I think it had to do with double accounting pinned and mlocked pages
+> > and thus delivering a lower than expected limit to userspace.
 > > 
-> > I'm really thinking this would be a nice way to ensure it gets cleaned up and
-> > does not happen again.
-> > 
-> > Also, by moving it to the core we could better manage any user visible changes.
-> > 
-> > From a high level, pinned is a subset of locked so it seems like we need a 2
-> > sets of helpers.
-> > 
-> > try_increment_locked_vm(...)
-> > decrement_locked_vm(...)
-> > 
-> > try_increment_pinned_vm(...)
-> > decrement_pinned_vm(...)
-> > 
-> > Where try_increment_pinned_vm() also increments locked_vm...  Of course this
-> > may end up reverting the improvement of Davidlohr  Bueso's atomic work...  :-(
-> > 
-> > Furthermore it would seem better (although I don't know if at all possible) if
-> > this were accounted for in core calls which tracked them based on how the pages
-> > are being used so that drivers can't call try_increment_locked_vm() and then
-> > pin the pages...  Thus getting the account wrong vs what actually happened.
-> > 
-> > And then in the end we can go back to locked_vm being the value checked against
-> > RLIMIT_MEMLOCK.
+> > vfio has this bug, RDMA does not. RDMA has a bug where it can
+> > overallocate locked memory, vfio doesn't.
 > 
-> Someone would need to understand the bug that was fixed by splitting
-> them. 
->
+> Wouldn't vfio also be able to overallocate if the user had RDMA pinned pages?
 
-My suggestion above assumes that splitting them is required/correct.  To be
-fair I've not dug into if this is true or not, but I trust Christopher.
+Yes
+ 
+> I think the problem is that if the user calls mlock on a large range then both
+> vfio and RDMA could potentially overallocate even with this fix.  This was your
+> initial email to Daniel, I think...  And Alex's concern.
 
-What I have found is this commit:
+Here are the possibilities
+- mlock and pin on the same pages - RDMA respects the limit, VFIO halfs it.
+- mlock and pin on different pages - RDMA doubles the limit, VFIO
+  respects it
+- VFIO and RDMA in the same process, the limit is halfed or doubled, depending.
 
-bc3e53f682d9 mm: distinguish between mlocked and pinned pages
+IHMO we should make VFIO & RDMA the same, and then decide what to do
+about case #2.
 
-I think that commit introduced the bug (for IB) which at the time may have been
-"ok" because many users of IB at the time were HPC/MPI users and I don't think
-MPI does a lot of _separate_ mlock operations so the count of locked_vm was
-probably negligible.  Alternatively, the clusters I've worked on in the past
-had compute nodes set with RLIMIT_MEMLOCK to 'unlimited' whilst running MPI
-applications on compute nodes of a cluster...  :-/
-
-I think what Christopher did was probably ok for the internal tracking but we
-_should_ have had something which summed the 2 for RLIMIT_MEMLOCK checking at
-that time to be 100% correct?  Christopher do you remember why you did not do
-that?
-
-[1] http://lkml.kernel.org/r/20130524140114.GK23650@twins.programming.kicks-ass.net
-
+> > Really unclear how to fix this. The pinned/locked split with two
+> > buckets may be the right way.
 > 
-> I think it had to do with double accounting pinned and mlocked pages
-> and thus delivering a lower than expected limit to userspace.
-> 
-> vfio has this bug, RDMA does not. RDMA has a bug where it can
-> overallocate locked memory, vfio doesn't.
+> Are you suggesting that we have 2 user limits?
 
-Wouldn't vfio also be able to overallocate if the user had RDMA pinned pages?
+This is what RDMA has done since CL's patch.
 
-I think the problem is that if the user calls mlock on a large range then both
-vfio and RDMA could potentially overallocate even with this fix.  This was your
-initial email to Daniel, I think...  And Alex's concern.
+It is very hard to fix as you need to track how many pages are mlocked
+*AND* pinned.
 
-> 
-> Really unclear how to fix this. The pinned/locked split with two
-> buckets may be the right way.
-
-Are you suggesting that we have 2 user limits?
-
-Ira
-
-> 
-> Jason
+Jason
