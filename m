@@ -2,56 +2,77 @@ Return-Path: <SRS0=eC6l=QW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3FAEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:00:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3ACC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:12:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E08E021A80
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:00:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E08E021A80
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 08AE021A80
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:12:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LB/0vDPW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08AE021A80
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440zzz5nrTzDqcg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 14:59:59 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4410Fz6JjvzDqcD
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 15:12:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="LB/0vDPW"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440zyD2NvhzDqc5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 14:58:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 440zyC4WM0z9sPT;
- Fri, 15 Feb 2019 14:58:27 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Matt Corallo <kernel@bluematt.me>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [Bug 202149] New: NULL Pointer Dereference in __split_huge_pmd on
- PPC64LE
-In-Reply-To: <CCDBD6B9-31CD-4B94-AA8F-9BEF1C133AED@bluematt.me>
-References: <bug-202149-27@https.bugzilla.kernel.org/>
- <20190104170459.c8c7fa57ba9bc8a69dee5666@linux-foundation.org>
- <87ef9nk4cj.fsf@linux.ibm.com>
- <ed4bea40-cf9e-89a1-f99a-3dbd6249847f@bluematt.me>
- <8736q2jbhr.fsf@linux.ibm.com>
- <A61367CF-277E-4E74-8A9D-C94C5E53817B@bluematt.me>
- <87bm4achnu.fsf@linux.ibm.com>
- <CCDBD6B9-31CD-4B94-AA8F-9BEF1C133AED@bluematt.me>
-Date: Fri, 15 Feb 2019 14:58:25 +1100
-Message-ID: <87va1ld7oe.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4410D24Fd2zDqcF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 15:10:26 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id g6so4175958pfh.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 20:10:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=WmGbMniKCgUsrxyyJwK4gUwIV2Lp6eqak7RPGGw1vkc=;
+ b=LB/0vDPW3mIBUwAuxXZ/CgFpn9R/Xt/v2bJDRW/2ALuxTPzn6qrSpx16ijBGYX1Bct
+ aUxQ8G1MO0Efs3QjuwSM59VzL8TMbQuhOgJoCQp6TXFbw21yFQ1E7Xx40jEtRI/mZkZh
+ jfb2+G+ft6KhZM1Rk+VrTNv+78g+40Z0KGrB4unCWDb9feNmucjy/6mrjZ366QT4VJ2Y
+ rfm3kwZQ2BhoL7Th+aqqpwL3sBgA603GJuICUCe4VGRoYoJ0BrWR9Bb58RsTHb67CgNv
+ PRShTGaZwFKHcCmRnK76MVtH/ZkexIM3cD+agiWb7Fo0EX1AWuP1Z0xVABKtpzBMNbjh
+ cARQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=WmGbMniKCgUsrxyyJwK4gUwIV2Lp6eqak7RPGGw1vkc=;
+ b=li8778X9LxoGQ0ssdN4RLXcbeheUTv99XfwA9WNzzR/CYa4YErvjyhkAAJOtac/qGh
+ EXwdfAkGzKy9AgXadqx4kez1SA8Riy8ZL2KIiSfLxBS0aE9OML7DmaZslftafD4TGKe+
+ Wza6U/gpTJiryAPNlH3pJz6bXQ0bluh3l5AKpOHQorUh8hf8PdbtnEBr44m6Cfmn45GB
+ 6a3KIVyqtxmyC2c8fWgI/pcHBMvDWxlpQhr6rlJvjJH9A/eybGc5kNksAx952wrXtEZ+
+ KywTYLdtSd5+4LF9YLfTcbVoKOW3Swp8Em5auK4MKklzA+puujV5sIHMRF1EoAybTp4m
+ SnUQ==
+X-Gm-Message-State: AHQUAuZcoKLuKRBlGiBRBPlKdggpAuYubSQsOJRAdvEKq4p6VoQppuLL
+ FvPY+4YTcx41B79zu5jYfC4=
+X-Google-Smtp-Source: AHgI3IabauFapV4yiDX0/GrikfoNH7r7KVHLYrRaspd6HMXryW+mGjdIxweOCDlkLp03Vl+UZ7d4Zw==
+X-Received: by 2002:aa7:85cc:: with SMTP id z12mr7843671pfn.196.1550203824493; 
+ Thu, 14 Feb 2019 20:10:24 -0800 (PST)
+Received: from surajjs2.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id t65sm8413310pfi.117.2019.02.14.20.10.21
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 14 Feb 2019 20:10:23 -0800 (PST)
+From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Book3S: Add KVM stat num_[2M/1G]_pages
+Date: Fri, 15 Feb 2019 15:10:04 +1100
+Message-Id: <20190215041004.10575-1-sjitindarsingh@gmail.com>
+X-Mailer: git-send-email 2.13.6
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,73 +84,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
- bugzilla-daemon@bugzilla.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Matt Corallo <kernel@bluematt.me> writes:
-> Hey, sorry for the delay on this. I had some apparently-unrelated
-> hangs that I believe were due to mpt3sas instability, and at the risk
-> of speaking too soon for a bug I couldn't reliably reproduce, this
-> patch appears to have resolved it, thanks!
+This adds an entry to the kvm_stats_debugfs directory which provides the
+number of large (2M or 1G) pages which have been used to setup the guest
+mappings.
 
-Thanks.
+Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+---
+ arch/powerpc/include/asm/kvm_host.h    |  2 ++
+ arch/powerpc/kvm/book3s.c              |  3 +++
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 15 ++++++++++++++-
+ 3 files changed, 19 insertions(+), 1 deletion(-)
 
-For the archives it went upstream in a slightly different form as:
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 0f98f00da2ea..cbb090010312 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -99,6 +99,8 @@ struct kvm_nested_guest;
+ 
+ struct kvm_vm_stat {
+ 	ulong remote_tlb_flush;
++	ulong num_2M_pages;
++	ulong num_1G_pages;
+ };
+ 
+ struct kvm_vcpu_stat {
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index bd1a677dd9e4..3cc5215bdb2e 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -39,6 +39,7 @@
+ #include "book3s.h"
+ #include "trace.h"
+ 
++#define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
+ #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
+ 
+ /* #define EXIT_DEBUG */
+@@ -71,6 +72,8 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ "pthru_all",       VCPU_STAT(pthru_all) },
+ 	{ "pthru_host",      VCPU_STAT(pthru_host) },
+ 	{ "pthru_bad_aff",   VCPU_STAT(pthru_bad_aff) },
++	{ "num_2M_pages",    VM_STAT(num_2M_pages) },
++	{ "num_1G_pages",    VM_STAT(num_1G_pages) },
+ 	{ NULL }
+ };
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 1b821c6efdef..f55ef071883f 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -403,8 +403,13 @@ void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
+ 		if (!memslot)
+ 			return;
+ 	}
+-	if (shift)
++	if (shift) { /* 1GB or 2MB page */
+ 		page_size = 1ul << shift;
++		if (shift == PMD_SHIFT)
++			kvm->stat.num_2M_pages--;
++		else if (shift == PUD_SHIFT)
++			kvm->stat.num_1G_pages--;
++	}
+ 
+ 	gpa &= ~(page_size - 1);
+ 	hpa = old & PTE_RPN_MASK;
+@@ -878,6 +883,14 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 		put_page(page);
+ 	}
+ 
++	/* Increment number of large pages if we (successfully) inserted one */
++	if (!ret) {
++		if (level == 1)
++			kvm->stat.num_2M_pages++;
++		else if (level == 2)
++			kvm->stat.num_1G_pages++;
++	}
++
+ 	return ret;
+ }
+ 
+-- 
+2.13.6
 
-  579b9239c1f3 ("powerpc/radix: Fix kernel crash with mremap()")
-
-  https://git.kernel.org/torvalds/c/579b9239c1f3
-
-
-cheers
-
->> On Jan 21, 2019, at 07:35, Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> wrote:
->> 
->> 
->> Can you test this patch?
->> 
->> From e511e79af9a314854848ea8fda9dfa6d7e07c5e4 Mon Sep 17 00:00:00 2001
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
->> Date: Mon, 21 Jan 2019 16:43:17 +0530
->> Subject: [PATCH] arch/powerpc/radix: Fix kernel crash with mremap
->> 
->> With support for split pmd lock, we use pmd page pmd_huge_pte pointer to store
->> the deposited page table. In those config when we move page tables we need to
->> make sure we move the depoisted page table to the right pmd page. Otherwise this
->> can result in crash when we withdraw of deposited page table because we can find
->> the pmd_huge_pte NULL.
->> 
->> c0000000004a1230 __split_huge_pmd+0x1070/0x1940
->> c0000000004a0ff4 __split_huge_pmd+0xe34/0x1940 (unreliable)
->> c0000000004a4000 vma_adjust_trans_huge+0x110/0x1c0
->> c00000000042fe04 __vma_adjust+0x2b4/0x9b0
->> c0000000004316e8 __split_vma+0x1b8/0x280
->> c00000000043192c __do_munmap+0x13c/0x550
->> c000000000439390 sys_mremap+0x220/0x7e0
->> c00000000000b488 system_call+0x5c/0x70
->> 
->> Fixes: 675d995297d4 ("powerpc/book3s64: Enable split pmd ptlock.")
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> ---
->> arch/powerpc/include/asm/book3s/64/pgtable.h | 2 --
->> 1 file changed, 2 deletions(-)
->> 
->> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> index 92eaea164700..86e62384256d 100644
->> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
->> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
->> @@ -1262,8 +1262,6 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
->>                     struct spinlock *old_pmd_ptl,
->>                     struct vm_area_struct *vma)
->> {
->> -    if (radix_enabled())
->> -        return false;
->>    /*
->>     * Archs like ppc64 use pgtable to store per pmd
->>     * specific information. So when we switch the pmd,
->> -- 
->> 2.20.1
->> 
