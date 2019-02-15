@@ -2,62 +2,64 @@ Return-Path: <SRS0=eC6l=QW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3375DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:02:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 672DEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:29:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CCDB21A80
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:02:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CCDB21A80
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
+	by mail.kernel.org (Postfix) with ESMTPS id BAA592177B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:29:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BAA592177B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=emerson.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4419MM6kNJzDqQt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 22:02:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.210.67; helo=mail-ot1-f67.google.com;
- envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=debian.org
-Received: from mail-ot1-f67.google.com (mail-ot1-f67.google.com
- [209.85.210.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 4419yh6956zDqhF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 22:29:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4419Jx5M2czDqdv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 22:00:17 +1100 (AEDT)
-Received: by mail-ot1-f67.google.com with SMTP id m1so15851801otf.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 03:00:17 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=VJ1w0R223NOFMFs8jprELV7OmTbW2Ho0cuabQNPRrxs=;
- b=KcoBuXOxi9jRLOlhRmqjQchRRVCKFCa3+4HhQEX1HScGMtUqzU9l5seBp7YOOol39Y
- iwLGX/AtyfqjtYjnKGp1D7cvY2TCu42yyFvKbPAntzG/FPI1aMzo5teT7o8phkWGLs48
- O9FZCQW3Jkk9ADo8PiQ6fic3vuMYrNzbiRlYPFFo9iSM6CTZ9Qo1ngx3InRzgvurGJ9X
- 2TlON9jwPC4oQLrWmwl1jPvFYg+IJOPq14Skaj8Bp/2spMBI09ab6xwAcwNt7U/qG5du
- NZzojxX15Yw4hb64sdTxPy4bFdJUCHEUDKFfHHs67EZLrmZ9MtzidHZoQ9eUeTuxJzn2
- SzvQ==
-X-Gm-Message-State: AHQUAubPIY0TC3BsXPegwI0ZZlly3x5haJsa3Ptsw8WMqnAhJplAscc6
- 7y7jdXFo0y+ckm6TEziL5On42kHEbNyg/8yOBEU=
-X-Google-Smtp-Source: AHgI3IYbfrX7AIolW1V7LYuCoKrAWyKC2jau6gRe6jftYyoteJKqHvv9ysv43HkUNysa0i4dhW/Ns56Ri67xY1q9ZKk=
-X-Received: by 2002:a9d:6acc:: with SMTP id m12mr5051127otq.300.1550228415864; 
- Fri, 15 Feb 2019 03:00:15 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4419wt6D5LzDqbW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 22:27:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4419wt4wMgz8sxp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 22:27:58 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 4419wt4B1Kz9s7h; Fri, 15 Feb 2019 22:27:58 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=softfail (mailfrom) smtp.mailfrom=emerson.com
+ (client-ip=162.253.133.57; helo=n7.nabble.com;
+ envelope-from=sachin.gosavi@emerson.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
+ by ozlabs.org (Postfix) with ESMTP id 4419wt0GQ8z9s7T
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2019 22:27:56 +1100 (AEDT)
+Received: from n7.nabble.com (localhost [127.0.0.1])
+ by n7.nabble.com (Postfix) with ESMTP id D6DE59C0F9EC
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2019 04:27:53 -0700 (MST)
+Date: Fri, 15 Feb 2019 04:27:53 -0700 (MST)
+From: sgosavi1 <Sachin.Gosavi@emerson.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1550230073842-0.post@n7.nabble.com>
+In-Reply-To: <20190214191443.5f64bb56@kitsune.suse.cz>
+References: <1550055691105-0.post@n7.nabble.com>
+ <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
+ <1550060685213-0.post@n7.nabble.com>
+ <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
+ <1550062386389-0.post@n7.nabble.com>
+ <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+ <1550132231035-0.post@n7.nabble.com>
+ <20190214191443.5f64bb56@kitsune.suse.cz>
+Subject: Re: Kernel panic when loading the IDE controller driver
 MIME-Version: 1.0
-References: <1550223519-18290-1-git-send-email-yamada.masahiro@socionext.com>
-In-Reply-To: <1550223519-18290-1-git-send-email-yamada.masahiro@socionext.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 15 Feb 2019 12:00:04 +0100
-Message-ID: <CA+7wUswJ5+nb3OdZYrx6++batRMUcnje3jLTgdN4zAQo=--xBg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: use $(origin ARCH) to select KBUILD_DEFCONFIG
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,81 +71,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Feb 15, 2019 at 10:41 AM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
->
-> I often test all Kconfig commands for all architectures. To ease my
-> workflow, I want 'make defconfig' at least working without any cross
-> compiler.
->
-> Currently, arch/powerpc/Makefile checks CROSS_COMPILE to decide the
-> default defconfig source.
->
-> If CROSS_COMPILE is unset, it is likely to be the native build, so
-> 'uname -m' is useful to choose the defconfig. If CROSS_COMPILE is set,
-> the user is cross-building (i.e. 'uname -m' is probably x86_64), so
-> it falls back to ppc64_defconfig. Yup, make sense.
->
-> However, I want to run 'make ARCH=* defconfig' without setting
-> CROSS_COMPILE for each architecture.
->
-> My suggestion is to check $(origin ARCH).
->
-> When you cross-compile the kernel, you need to set ARCH from your
-> environment or from the command line.
->
-> For the native build, you do not need to set ARCH. The default in
-> the top Makefile is used:
->
->   ARCH            ?= $(SUBARCH)
->
-> Hence, $(origin ARCH) returns 'file'.
->
-> Before this commit, 'make ARCH=powerpc defconfig' failed:
+Hi,
 
-In case you have not seen it, please check:
+> Hopefully there are examples of passing these values through ACPI.
 
-http://patchwork.ozlabs.org/patch/1037835/
 
->   $ make ARCH=powerpc defconfig
->   *** Default configuration is based on target 'x86_64_defconfig'
->   ***
->   *** Can't find default configuration "arch/powerpc/configs/x86_64_defconfig"!
->   ***
->
-> After this commit, it will succeed:
->
->   $ make ARCH=powerpc defconfig
->   *** Default configuration is based on 'ppc64_defconfig'
->   #
->   # configuration written to .config
->   #
->
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
->
->  arch/powerpc/Makefile | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index ac03334..f989979 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -34,7 +34,7 @@ ifdef CONFIG_PPC_BOOK3S_32
->  KBUILD_CFLAGS          += -mcpu=powerpc
->  endif
->
-> -ifeq ($(CROSS_COMPILE),)
-> +ifeq ($(origin ARCH), file)
->  KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
->  else
->  KBUILD_DEFCONFIG := ppc64_defconfig
-> --
-> 2.7.4
->
+Are you suggesting here to look at the ide-acpi.c sourc file available as
+part of the driver code? In my original post I mentioned that I have
+modified the ide-generic.c source file to use the IO port addresses and IRQ
+number that we used in the older kernel. Also, added code in the kernel
+under arch/PowerPC/mm/init_32.c source to configure the addresses required
+by the driver as IO ports. But the error I am getting still continues to
+suggest that probably the required address range is still setup by the
+kernel as IO ports. 
+
+
+How can we configure a set of virtual address as IO ports in the kernel
+version 4.15.13?
+
+
+Sachin 
+
+
+
+--
+Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
