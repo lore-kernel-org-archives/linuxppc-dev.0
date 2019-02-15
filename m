@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63CC0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 00:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54DCCC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 00:52:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BCD121B68
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 00:49:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C68E321B18
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 00:52:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="MViW6LJ9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BCD121B68
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="ImlXfKB8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C68E321B18
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 440vmQ42WyzDqXJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:49:42 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 440vqQ6jxjzDqSV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 11:52:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 440vhk05yZzDqWc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 11:46:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 440vhp1JFpzDqWc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 11:46:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="MViW6LJ9"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ImlXfKB8"; 
  dkim-atps=neutral
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 440vhh6TzWz8t4q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 11:46:28 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 440vhn3NdGz8wK2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 11:46:33 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 440vhh36Llz9sDX; Fri, 15 Feb 2019 11:46:28 +1100 (AEDT)
+ id 440vhn0LmQz9sDr; Fri, 15 Feb 2019 11:46:33 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=acme@kernel.org;
@@ -44,31 +44,31 @@ Authentication-Results: ozlabs.org;
 Authentication-Results: ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="MViW6LJ9"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="ImlXfKB8"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 440vhg4B8dz9sCh
- for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2019 11:46:27 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 440vhm2SCMz9sCh
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Feb 2019 11:46:32 +1100 (AEDT)
 Received: from quaco.ghostprotocols.net (unknown [189.40.103.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9B06B21B68;
- Fri, 15 Feb 2019 00:46:21 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 73F122229F;
+ Fri, 15 Feb 2019 00:46:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1550191585;
- bh=dmukjeg1onhPeDjjsIYAGaDE8bvPbIfeWOm+zJP9K10=;
+ s=default; t=1550191590;
+ bh=U3TR8FMMKi9lZC0wt0uXODPU6GeGNgS99tYX9lLwb7o=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=MViW6LJ9yz6jNhbT4cEjtEJq1sS0C8peN25Rvfb3vMGVskPvvvJ3UVzw8uNeHPSQW
- e/kcfbi8OOW1FTC8nGyclV62HlonAEEM/kK0uptpViYyMZXgRwOSgfjJ24DHM9Ccel
- lHiZm21sjPTOGpvMzs2yl7tDpcvHpJAX+I4+viDk=
+ b=ImlXfKB8Cx1SEad3PYzQlB8sqcJSuka1uzhqtqbI/m6Tkhl5BKWR9yLMxqHggpmdb
+ jUzqigWKvAkEfMKOe/bWU1NDkEaAOeXB6PV67UlUl2uWURbfRpFBzBzlqrD97ntwrB
+ 5Li75A7m+9ORGP4QaQr8nzMynWGsaC+Y+Xui7mvE=
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 08/43] perf vendor events power9: Cpi_breakdown &
- estimated_dcache_miss_cpi metrics
-Date: Thu, 14 Feb 2019 21:45:04 -0300
-Message-Id: <20190215004539.23571-9-acme@kernel.org>
+Subject: [PATCH 09/43] perf vendor events power9: Dl1_reloads,
+ instruction_misses, l[23]_stats & pteg_reloads metrics
+Date: Thu, 14 Feb 2019 21:45:05 -0300
+Message-Id: <20190215004539.23571-10-acme@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190215004539.23571-1-acme@kernel.org>
 References: <20190215004539.23571-1-acme@kernel.org>
@@ -107,8 +107,13 @@ available on the "IBM Portal for OpenPOWER"
 https://www-355.ibm.com/systems/power/openpower/posting.xhtml?postingId=4948CDE1963C9BCA852582F800718190
 
 This patch is for metric groups:
-- cpi_breakdown
-- estimated_dcache_miss_cpi
+- dl1_reloads_percent_per_inst
+- dl1_reloads_percent_per_ref
+- instruction_misses_percent_per_inst
+- l2_stats
+- l3_stats
+- pteg_reloads_percent_per_inst
+- pteg_reloads_percent_per_ref
 
 Signed-off-by: Paul Clarke <pc@us.ibm.com>
 Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>
@@ -118,596 +123,689 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
-Link: http://lkml.kernel.org/r/20190209181429.23950-2-pc@us.ibm.com
+Link: http://lkml.kernel.org/r/20190209181429.23950-3-pc@us.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- .../arch/powerpc/power9/metrics.json          | 577 ++++++++++++++++++
- 1 file changed, 577 insertions(+)
- create mode 100644 tools/perf/pmu-events/arch/powerpc/power9/metrics.json
+ .../arch/powerpc/power9/metrics.json          | 660 ++++++++++++++++++
+ 1 file changed, 660 insertions(+)
 
 diff --git a/tools/perf/pmu-events/arch/powerpc/power9/metrics.json b/tools/perf/pmu-events/arch/powerpc/power9/metrics.json
-new file mode 100644
-index 000000000000..cd46ebb8da6a
---- /dev/null
+index cd46ebb8da6a..166f95518c45 100644
+--- a/tools/perf/pmu-events/arch/powerpc/power9/metrics.json
 +++ b/tools/perf/pmu-events/arch/powerpc/power9/metrics.json
-@@ -0,0 +1,577 @@
-+[
+@@ -484,6 +484,210 @@
+         "MetricGroup": "cpi_breakdown",
+         "MetricName": "vfxu_stall_cpi"
+     },
 +    {
-+        "BriefDescription": "Completion stall due to a Branch Unit",
-+        "MetricExpr": "PM_CMPLU_STALL_BRU/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "bru_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from Distant L2 or L3 (Modified) per Inst",
++        "MetricExpr": "PM_DATA_FROM_DL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_dl2l3_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was routed to the crypto execution pipe and was waiting to finish",
-+        "MetricExpr": "PM_CMPLU_STALL_CRYPTO/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "crypto_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from Distant L2 or L3 (Shared) per Inst",
++        "MetricExpr": "PM_DATA_FROM_DL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_dl2l3_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load that missed the L1 and was waiting for the data to return from the nest",
-+        "MetricExpr": "PM_CMPLU_STALL_DCACHE_MISS/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dcache_miss_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from Distant Memory per Inst",
++        "MetricExpr": "PM_DATA_FROM_DMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_dmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a multi-cycle instruction issued to the Decimal Floating Point execution pipe and waiting to finish.",
-+        "MetricExpr": "PM_CMPLU_STALL_DFLONG/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dflong_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L2, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_L21_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l21_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Stalls due to short latency decimal floating ops.",
-+        "MetricExpr": "(PM_CMPLU_STALL_DFU - PM_CMPLU_STALL_DFLONG)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dfu_other_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L2, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_L21_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l21_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was issued to the Decimal Floating Point execution pipe and waiting to finish.",
-+        "MetricExpr": "PM_CMPLU_STALL_DFU/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dfu_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from L2 per Inst",
++        "MetricExpr": "PM_DATA_FROM_L2MISS * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l2_miss_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by Dcache miss which resolved off node memory/cache",
-+        "MetricExpr": "(PM_CMPLU_STALL_DMISS_L3MISS - PM_CMPLU_STALL_DMISS_L21_L31 - PM_CMPLU_STALL_DMISS_LMEM - PM_CMPLU_STALL_DMISS_REMOTE)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_distant_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from L2 per Inst",
++        "MetricExpr": "PM_DATA_FROM_L2 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l2_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by Dcache miss which resolved on chip ( excluding local L2/L3)",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_L21_L31/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_l21_l31_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3 M state, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_L31_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l31_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to cache miss that resolves in the L2 or L3 with a conflict",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_L2L3_CONFLICT/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_l2l3_conflict_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3 S tate, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_L31_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l31_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to cache miss that resolves in the L2 or L3 without conflict",
-+        "MetricExpr": "(PM_CMPLU_STALL_DMISS_L2L3 - PM_CMPLU_STALL_DMISS_L2L3_CONFLICT)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_l2l3_noconflict_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads that came from the L3 and were brought into the L3 by a prefetch, per instruction completed",
++        "MetricExpr": "PM_DATA_FROM_L3_MEPF * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l3_mepf_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by Dcache miss which resolved in L2/L3",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_L2L3/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_l2l3_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from L3 per Inst",
++        "MetricExpr": "PM_DATA_FROM_L3MISS * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l3_miss_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to cache miss resolving missed the L3",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_L3MISS/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_l3miss_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from L3 per Inst",
++        "MetricExpr": "PM_DATA_FROM_L3 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_l3_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to cache miss that resolves in local memory",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_LMEM/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_lmem_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from Local Memory per Inst",
++        "MetricExpr": "PM_DATA_FROM_LMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_lmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by Dcache miss which resolved outside of local memory",
-+        "MetricExpr": "(PM_CMPLU_STALL_DMISS_L3MISS - PM_CMPLU_STALL_DMISS_L21_L31 - PM_CMPLU_STALL_DMISS_LMEM)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_non_local_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_RL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_rl2l3_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by Dcache miss which resolved from remote chip (cache or memory)",
-+        "MetricExpr": "PM_CMPLU_STALL_DMISS_REMOTE/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dmiss_remote_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3, other core per Inst",
++        "MetricExpr": "PM_DATA_FROM_RL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_rl2l3_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Stalls due to short latency double precision ops.",
-+        "MetricExpr": "(PM_CMPLU_STALL_DP - PM_CMPLU_STALL_DPLONG)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dp_other_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from Remote Memory per Inst",
++        "MetricExpr": "PM_DATA_FROM_RMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "dl1_reload_from_rmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a scalar instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format.",
-+        "MetricExpr": "PM_CMPLU_STALL_DP/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dp_stall_cpi"
++        "BriefDescription": "Percentage of L1 demand load misses per run instruction",
++        "MetricExpr": "PM_LD_MISS_L1 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "dl1_reloads_percent_per_inst",
++        "MetricName": "l1_ld_miss_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a scalar multi-cycle instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format.",
-+        "MetricExpr": "PM_CMPLU_STALL_DPLONG/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "dplong_stall_cpi"
++        "BriefDescription": "% of DL1 misses that result in a cache reload",
++        "MetricExpr": "PM_L1_DCACHE_RELOAD_VALID * 100 / PM_LD_MISS_L1",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_miss_reloads_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction is an EIEIO waiting for response from L2",
-+        "MetricExpr": "PM_CMPLU_STALL_EIEIO/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "eieio_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Distant L2 or L3 (Modified)",
++        "MetricExpr": "PM_DATA_FROM_DL2L3_MOD * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_dl2l3_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the next to finish instruction suffered an ERAT miss and the EMQ was full",
-+        "MetricExpr": "PM_CMPLU_STALL_EMQ_FULL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "emq_full_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Distant L2 or L3 (Shared)",
++        "MetricExpr": "PM_DATA_FROM_DL2L3_SHR * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_dl2l3_shr_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_ERAT_MISS + PM_CMPLU_STALL_EMQ_FULL)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "emq_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Distant Memory",
++        "MetricExpr": "PM_DATA_FROM_DMEM * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_dmem_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load or store that suffered a translation miss",
-+        "MetricExpr": "PM_CMPLU_STALL_ERAT_MISS/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "erat_miss_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L2, other core",
++        "MetricExpr": "PM_DATA_FROM_L21_MOD * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l21_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "Cycles in which the NTC instruction is not allowed to complete because it was interrupted by ANY exception, which has to be serviced before the instruction can complete",
-+        "MetricExpr": "PM_CMPLU_STALL_EXCEPTION/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "exception_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L2, other core",
++        "MetricExpr": "PM_DATA_FROM_L21_SHR * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l21_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to execution units for other reasons.",
-+        "MetricExpr": "(PM_CMPLU_STALL_EXEC_UNIT - PM_CMPLU_STALL_FXU - PM_CMPLU_STALL_DP - PM_CMPLU_STALL_DFU - PM_CMPLU_STALL_PM - PM_CMPLU_STALL_CRYPTO - PM_CMPLU_STALL_VFXU - PM_CMPLU_STALL_VDP)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "exec_unit_other_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from sources beyond the local L2",
++        "MetricExpr": "PM_DATA_FROM_L2MISS * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l2_miss_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to execution units (FXU/VSU/CRU)",
-+        "MetricExpr": "PM_CMPLU_STALL_EXEC_UNIT/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "exec_unit_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from L2",
++        "MetricExpr": "PM_DATA_FROM_L2 * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l2_percent"
 +    },
 +    {
-+        "BriefDescription": "Cycles in which the NTC instruction is not allowed to complete because any of the 4 threads in the same core suffered a flush, which blocks completion",
-+        "MetricExpr": "PM_CMPLU_STALL_FLUSH_ANY_THREAD/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "flush_any_thread_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3, other core",
++        "MetricExpr": "PM_DATA_FROM_L31_MOD * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l31_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to a long latency scalar fixed point instruction (division, square root)",
-+        "MetricExpr": "PM_CMPLU_STALL_FXLONG/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "fxlong_stall_cpi"
++        "BriefDescription": "% of DL1 reloads from Private L3, other core",
++        "MetricExpr": "PM_DATA_FROM_L31_SHR * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l31_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "Stalls due to short latency integer ops",
-+        "MetricExpr": "(PM_CMPLU_STALL_FXU - PM_CMPLU_STALL_FXLONG)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "fxu_other_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads that came from L3 and were brought into the L3 by a prefetch",
++        "MetricExpr": "PM_DATA_FROM_L3_MEPF * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l3_mepf_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall due to a scalar fixed point or CR instruction in the execution pipeline. These instructions get routed to the ALU, ALU2, and DIV pipes",
-+        "MetricExpr": "PM_CMPLU_STALL_FXU/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "fxu_stall_cpi"
++        "BriefDescription": "% of DL1 Reloads from sources beyond the local L3",
++        "MetricExpr": "PM_DATA_FROM_L3MISS * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l3_miss_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_NTC_ISSUE_HELD_DARQ_FULL + PM_NTC_ISSUE_HELD_ARB + PM_NTC_ISSUE_HELD_OTHER)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "issue_hold_cpi"
++        "BriefDescription": "% of DL1 Reloads from L3",
++        "MetricExpr": "PM_DATA_FROM_L3 * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_l3_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a larx waiting to be satisfied",
-+        "MetricExpr": "PM_CMPLU_STALL_LARX/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "larx_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Local Memory",
++        "MetricExpr": "PM_DATA_FROM_LMEM * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_lmem_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load that hit on an older store and it was waiting for store data",
-+        "MetricExpr": "PM_CMPLU_STALL_LHS/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lhs_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Remote L2 or L3 (Modified)",
++        "MetricExpr": "PM_DATA_FROM_RL2L3_MOD * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_rl2l3_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load that missed in the L1 and the LMQ was unable to accept this load miss request because it was full",
-+        "MetricExpr": "PM_CMPLU_STALL_LMQ_FULL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lmq_full_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Remote L2 or L3 (Shared)",
++        "MetricExpr": "PM_DATA_FROM_RL2L3_SHR * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_rl2l3_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load instruction with all its dependencies satisfied just going through the LSU pipe to finish",
-+        "MetricExpr": "PM_CMPLU_STALL_LOAD_FINISH/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "load_finish_stall_cpi"
++        "BriefDescription": "% of DL1 dL1_Reloads from Remote Memory",
++        "MetricExpr": "PM_DATA_FROM_RMEM * 100 / PM_L1_DCACHE_RELOAD_VALID",
++        "MetricGroup": "dl1_reloads_percent_per_ref",
++        "MetricName": "dl1_reload_from_rmem_percent"
 +    },
+     {
+         "BriefDescription": "estimate of dl2l3 distant MOD miss rates with measured DL2L3 MOD latency as a %of dcache miss cpi",
+         "MetricExpr": "PM_DATA_FROM_DL2L3_MOD * PM_MRK_DATA_FROM_DL2L3_MOD_CYC / PM_MRK_DATA_FROM_DL2L3_MOD / PM_CMPLU_STALL_DCACHE_MISS *100",
+@@ -573,5 +777,461 @@
+         "MetricExpr": "PM_DATA_FROM_RMEM * PM_MRK_DATA_FROM_RMEM_CYC / PM_MRK_DATA_FROM_RMEM / PM_CMPLU_STALL_DCACHE_MISS *100",
+         "MetricGroup": "estimated_dcache_miss_cpi",
+         "MetricName": "rmem_cpi_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Distant L2 or L3 (Modified) per Inst",
++        "MetricExpr": "PM_INST_FROM_DL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_dl2l3_mod_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Distant L2 or L3 (Shared) per Inst",
++        "MetricExpr": "PM_INST_FROM_DL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_dl2l3_shr_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Distant L4 per Inst",
++        "MetricExpr": "PM_INST_FROM_DL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_dl4_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Distant Memory per Inst",
++        "MetricExpr": "PM_INST_FROM_DMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_dmem_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Private L2, other core per Inst",
++        "MetricExpr": "PM_INST_FROM_L21_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l21_mod_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Private L2, other core per Inst",
++        "MetricExpr": "PM_INST_FROM_L21_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l21_shr_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from L2 per Inst",
++        "MetricExpr": "PM_INST_FROM_L2 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l2_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Private L3, other core per Inst",
++        "MetricExpr": "PM_INST_FROM_L31_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l31_mod_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Private L3 other core per Inst",
++        "MetricExpr": "PM_INST_FROM_L31_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l31_shr_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from L3 per Inst",
++        "MetricExpr": "PM_INST_FROM_L3 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_l3_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Local L4 per Inst",
++        "MetricExpr": "PM_INST_FROM_LL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_ll4_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Local Memory per Inst",
++        "MetricExpr": "PM_INST_FROM_LMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_lmem_rate_percent"
++    },
++    {
++        "BriefDescription": "% of ICache reloads from Remote L2 or L3 (Modified) per Inst",
++        "MetricExpr": "PM_INST_FROM_RL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_rl2l3_mod_rate_percent"
++    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load that was held in LSAQ because the LRQ was full",
-+        "MetricExpr": "PM_CMPLU_STALL_LRQ_FULL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lrq_full_stall_cpi"
++        "BriefDescription": "% of ICache reloads from Remote L2 or L3 (Shared) per Inst",
++        "MetricExpr": "PM_INST_FROM_RL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_rl2l3_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall due to LRQ miscellaneous reasons, lost arbitration to LMQ slot, bank collisions, set prediction cleanup, set prediction multihit and others",
-+        "MetricExpr": "PM_CMPLU_STALL_LRQ_OTHER/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lrq_other_stall_cpi"
++        "BriefDescription": "% of ICache reloads from Remote L4 per Inst",
++        "MetricExpr": "PM_INST_FROM_RL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_rl4_rate_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_LMQ_FULL + PM_CMPLU_STALL_ST_FWD + PM_CMPLU_STALL_LHS + PM_CMPLU_STALL_LSU_MFSPR + PM_CMPLU_STALL_LARX + PM_CMPLU_STALL_LRQ_OTHER)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lrq_stall_cpi"
++        "BriefDescription": "% of ICache reloads from Remote Memory per Inst",
++        "MetricExpr": "PM_INST_FROM_RMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "inst_from_rmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a load or store that was held in LSAQ because an older instruction from SRQ or LRQ won arbitration to the LSU pipe when this instruction tried to launch",
-+        "MetricExpr": "PM_CMPLU_STALL_LSAQ_ARB/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsaq_arb_stall_cpi"
++        "BriefDescription": "Instruction Cache Miss Rate (Per run Instruction)(%)",
++        "MetricExpr": "PM_L1_ICACHE_MISS * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "instruction_misses_percent_per_inst",
++        "MetricName": "l1_inst_miss_rate_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_LRQ_FULL + PM_CMPLU_STALL_SRQ_FULL + PM_CMPLU_STALL_LSAQ_ARB)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsaq_stall_cpi"
++        "BriefDescription": "%L2 Modified CO  Cache read Utilization (4 pclks per disp attempt)",
++        "MetricExpr": "((PM_L2_CASTOUT_MOD/2)*4)/ PM_RUN_CYC * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_co_m_rd_util"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was an LSU op (other than a load or a store) with all its dependencies met and just going through the LSU pipe to finish",
-+        "MetricExpr": "PM_CMPLU_STALL_LSU_FIN/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsu_fin_stall_cpi"
++        "BriefDescription": "L2  dcache invalidates per run inst  (per core)",
++        "MetricExpr": "(PM_L2_DC_INV / 2) / PM_RUN_INST_CMPL * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_dc_inv_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall of one cycle because the LSU requested to flush the next iop in the sequence. It takes 1 cycle for the ISU to process this request before the LSU instruction is allowed to complete",
-+        "MetricExpr": "PM_CMPLU_STALL_LSU_FLUSH_NEXT/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsu_flush_next_stall_cpi"
++        "BriefDescription": "Demand load misses as a % of L2 LD dispatches (per thread)",
++        "MetricExpr": "PM_L1_DCACHE_RELOAD_VALID / (PM_L2_LD / 2) * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_dem_ld_disp_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a mfspr instruction targeting an LSU SPR and it was waiting for the register data to be returned",
-+        "MetricExpr": "PM_CMPLU_STALL_LSU_MFSPR/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsu_mfspr_stall_cpi"
++        "BriefDescription": "L2  Icache invalidates per run inst  (per core)",
++        "MetricExpr": "(PM_L2_IC_INV / 2) / PM_RUN_INST_CMPL * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ic_inv_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion LSU stall for other reasons",
-+        "MetricExpr": "(PM_CMPLU_STALL_LSU - PM_CMPLU_STALL_LSU_FIN - PM_CMPLU_STALL_STORE_FINISH - PM_CMPLU_STALL_STORE_DATA - PM_CMPLU_STALL_EIEIO - PM_CMPLU_STALL_STCX - PM_CMPLU_STALL_SLB - PM_CMPLU_STALL_TEND - PM_CMPLU_STALL_PASTE - PM_CMPLU_STALL_TLBIE - PM_CMPLU_STALL_STORE_PIPE_ARB - PM_CMPLU_STALL_STORE_FIN_ARB - PM_CMPLU_STALL_LOAD_FINISH + PM_CMPLU_STALL_DCACHE_MISS - PM_CMPLU_STALL_LMQ_FULL - PM_CMPLU_STALL_ST_FWD - PM_CMPLU_STALL_LHS - PM_CMPLU_STALL_LSU_MFSPR - PM_CMPLU_STALL_LARX - PM_CMPLU_STALL_LRQ_OTHER + PM_CMPLU_STALL_ERAT_MISS + PM_CMPLU_STALL_EMQ_FULL - PM_CMPLU_STALL_LRQ_FULL - PM_CMPLU_STALL_SRQ_FULL - PM_CMPLU_STALL_LSAQ_ARB) / PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsu_other_stall_cpi"
++        "BriefDescription": "L2  Inst misses  as a % of total L2  Inst dispatches (per thread)",
++        "MetricExpr": "PM_L2_INST_MISS /  PM_L2_INST * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_inst_miss_ratio_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall by LSU instruction",
-+        "MetricExpr": "PM_CMPLU_STALL_LSU/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "lsu_stall_cpi"
++        "BriefDescription": "Average number of cycles between L2 Load hits",
++        "MetricExpr": "(PM_L2_LD_HIT / PM_RUN_CYC) / 2",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ld_hit_frequency"
 +    },
 +    {
-+        "BriefDescription": "Completion stall because the ISU is updating the register and notifying the Effective Address Table (EAT)",
-+        "MetricExpr": "PM_CMPLU_STALL_MTFPSCR/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "mtfpscr_stall_cpi"
++        "BriefDescription": "Average number of cycles between L2 Load misses",
++        "MetricExpr": "(PM_L2_LD_MISS / PM_RUN_CYC) / 2",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ld_miss_frequency"
 +    },
 +    {
-+        "BriefDescription": "Completion stall because the ISU is updating the TEXASR to keep track of the nested tbegin. This is a short delay, and it includes ROT",
-+        "MetricExpr": "PM_CMPLU_STALL_NESTED_TBEGIN/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "nested_tbegin_stall_cpi"
++        "BriefDescription": "L2 Load misses  as a % of total L2 Load dispatches (per thread)",
++        "MetricExpr": "PM_L2_LD_MISS / PM_L2_LD * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ld_miss_ratio_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall because the ISU is updating the TEXASR to keep track of the nested tend and decrement the TEXASR nested level. This is a short delay",
-+        "MetricExpr": "PM_CMPLU_STALL_NESTED_TEND/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "nested_tend_stall_cpi"
++        "BriefDescription": "% L2 load disp attempts Cache read Utilization (4 pclks per disp attempt)",
++        "MetricExpr": "((PM_L2_RCLD_DISP/2)*4)/ PM_RUN_CYC * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ld_rd_util"
 +    },
 +    {
-+        "BriefDescription": "Number of cycles the ICT has no itags assigned to this thread",
-+        "MetricExpr": "PM_ICT_NOSLOT_CYC/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "nothing_dispatched_cpi"
++        "BriefDescription": "L2 load misses that require a cache write (4 pclks per disp attempt) % of pclks",
++        "MetricExpr": "((( PM_L2_LD_DISP - PM_L2_LD_HIT)/2)*4)/ PM_RUN_CYC * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_ldmiss_wr_util"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was one that must finish at dispatch.",
-+        "MetricExpr": "PM_CMPLU_STALL_NTC_DISP_FIN/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_disp_fin_stall_cpi"
++        "BriefDescription": "L2  local pump prediction success",
++        "MetricExpr": "PM_L2_LOC_GUESS_CORRECT / (PM_L2_LOC_GUESS_CORRECT + PM_L2_LOC_GUESS_WRONG) * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_local_pred_correct_percent"
 +    },
 +    {
-+        "BriefDescription": "Cycles in which the oldest instruction in the pipeline (NTC) finishes. This event is used to account for cycles in which work is being completed in the CPI stack",
-+        "MetricExpr": "PM_NTC_FIN/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_fin_cpi"
++        "BriefDescription": "L2 COs that were in M,Me,Mu state as a % of all L2 COs",
++        "MetricExpr": "PM_L2_CASTOUT_MOD / (PM_L2_CASTOUT_MOD + PM_L2_CASTOUT_SHR) * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_mod_co_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to ntc flush",
-+        "MetricExpr": "PM_CMPLU_STALL_NTC_FLUSH/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_flush_stall_cpi"
++        "BriefDescription": "% of L2 Load RC dispatch atampts that failed  because of address collisions and cclass conflicts",
++        "MetricExpr": "(PM_L2_RCLD_DISP_FAIL_ADDR )/ PM_L2_RCLD_DISP * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_rc_ld_disp_addr_fail_percent"
 +    },
 +    {
-+        "BriefDescription": "The NTC instruction is being held at dispatch because it lost arbitration onto the issue pipe to another instruction (from the same thread or a different thread)",
-+        "MetricExpr": "PM_NTC_ISSUE_HELD_ARB/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_issue_held_arb_cpi"
++        "BriefDescription": "% of L2 Load RC dispatch attempts that failed",
++        "MetricExpr": "(PM_L2_RCLD_DISP_FAIL_ADDR + PM_L2_RCLD_DISP_FAIL_OTHER)/ PM_L2_RCLD_DISP * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_rc_ld_disp_fail_percent"
 +    },
 +    {
-+        "BriefDescription": "The NTC instruction is being held at dispatch because there are no slots in the DARQ for it",
-+        "MetricExpr": "PM_NTC_ISSUE_HELD_DARQ_FULL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_issue_held_darq_full_cpi"
++        "BriefDescription": "% of L2 Store RC dispatch atampts that failed  because of address collisions and cclass conflicts",
++        "MetricExpr": "PM_L2_RCST_DISP_FAIL_ADDR / PM_L2_RCST_DISP * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_rc_st_disp_addr_fail_percent"
 +    },
 +    {
-+        "BriefDescription": "The NTC instruction is being held at dispatch during regular pipeline cycles, or because the VSU is busy with multi-cycle instructions, or because of a write-back collision with VSU",
-+        "MetricExpr": "PM_NTC_ISSUE_HELD_OTHER/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "ntc_issue_held_other_cpi"
++        "BriefDescription": "% of L2 Store RC dispatch attempts that failed",
++        "MetricExpr": "(PM_L2_RCST_DISP_FAIL_ADDR + PM_L2_RCST_DISP_FAIL_OTHER)/ PM_L2_RCST_DISP * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_rc_st_disp_fail_percent"
 +    },
 +    {
-+        "BriefDescription": "Cycles unaccounted for.",
-+        "MetricExpr": "(PM_RUN_CYC - PM_1PLUS_PPC_CMPL - PM_CMPLU_STALL_THRD - PM_CMPLU_STALL - PM_ICT_NOSLOT_CYC)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "other_cpi"
++        "BriefDescription": "L2 Cache Read Utilization (per core)",
++        "MetricExpr": "(((PM_L2_RCLD_DISP/2)*4)/ PM_RUN_CYC * 100) + (((PM_L2_RCST_DISP/2)*4)/PM_RUN_CYC * 100) + (((PM_L2_CASTOUT_MOD/2)*4)/PM_RUN_CYC * 100)",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_rd_util_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall for other reasons",
-+        "MetricExpr": "PM_CMPLU_STALL - PM_CMPLU_STALL_NTC_DISP_FIN - PM_CMPLU_STALL_NTC_FLUSH - PM_CMPLU_STALL_LSU - PM_CMPLU_STALL_EXEC_UNIT - PM_CMPLU_STALL_BRU)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "other_stall_cpi"
++        "BriefDescription": "L2 COs that were in  T,Te,Si,S  state as a % of all L2 COs",
++        "MetricExpr": "PM_L2_CASTOUT_SHR / (PM_L2_CASTOUT_MOD + PM_L2_CASTOUT_SHR) * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_shr_co_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a paste waiting for response from L2",
-+        "MetricExpr": "PM_CMPLU_STALL_PASTE/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "paste_stall_cpi"
++        "BriefDescription": "L2  Store misses  as a % of total L2  Store dispatches (per thread)",
++        "MetricExpr": "PM_L2_ST_MISS / PM_L2_ST * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_st_miss_ratio_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was issued to the Permute execution pipe and waiting to finish.",
-+        "MetricExpr": "PM_CMPLU_STALL_PM/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "pm_stall_cpi"
++        "BriefDescription": "% L2 store disp attempts Cache read Utilization (4 pclks per disp attempt)",
++        "MetricExpr": "((PM_L2_RCST_DISP/2)*4) / PM_RUN_CYC * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_st_rd_util"
 +    },
 +    {
-+        "BriefDescription": "Run cycles per run instruction",
-+        "MetricExpr": "PM_RUN_CYC / PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "run_cpi"
++        "BriefDescription": "L2 stores that require a cache write (4 pclks per disp attempt) % of pclks",
++        "MetricExpr": "((PM_L2_ST_DISP/2)*4) / PM_RUN_CYC * 100",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_st_wr_util"
 +    },
 +    {
-+        "BriefDescription": "Run_cycles",
-+        "MetricExpr": "PM_RUN_CYC/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "run_cyc_cpi"
++        "BriefDescription": "L2 Cache Write Utilization (per core)",
++        "MetricExpr": "((((PM_L2_LD_DISP - PM_L2_LD_HIT)/2)*4) / PM_RUN_CYC * 100) + (((PM_L2_ST_DISP/2)*4) / PM_RUN_CYC * 100)",
++        "MetricGroup": "l2_stats",
++        "MetricName": "l2_wr_util_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_FXU + PM_CMPLU_STALL_DP + PM_CMPLU_STALL_DFU + PM_CMPLU_STALL_PM + PM_CMPLU_STALL_CRYPTO)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "scalar_stall_cpi"
++        "BriefDescription": "Average number of cycles between L3 Load hits",
++        "MetricExpr": "(PM_L3_LD_HIT / PM_RUN_CYC) / 2",
++        "MetricGroup": "l3_stats",
++        "MetricName": "l3_ld_hit_frequency"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was awaiting L2 response for an SLB",
-+        "MetricExpr": "PM_CMPLU_STALL_SLB/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "slb_stall_cpi"
++        "BriefDescription": "Average number of cycles between L3 Load misses",
++        "MetricExpr": "(PM_L3_LD_MISS / PM_RUN_CYC) / 2",
++        "MetricGroup": "l3_stats",
++        "MetricName": "l3_ld_miss_frequency"
 +    },
 +    {
-+        "BriefDescription": "Finish stall while waiting for the non-speculative finish of either a stcx waiting for its result or a load waiting for non-critical sectors of data and ECC",
-+        "MetricExpr": "PM_CMPLU_STALL_SPEC_FINISH/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "spec_finish_stall_cpi"
++        "BriefDescription": "Average number of Write-in machines used.  1 of 8 WI machines is sampled every L3 cycle",
++        "MetricExpr": "(PM_L3_WI_USAGE / PM_RUN_CYC) * 8",
++        "MetricGroup": "l3_stats",
++        "MetricName": "l3_wi_usage"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a store that was held in LSAQ because the SRQ was full",
-+        "MetricExpr": "PM_CMPLU_STALL_SRQ_FULL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "srq_full_stall_cpi"
++        "BriefDescription": "DERAT Miss Rate (per run  instruction)(%)",
++        "MetricExpr": "PM_LSU_DERAT_MISS * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "derat_miss_rate_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_STORE_DATA + PM_CMPLU_STALL_EIEIO + PM_CMPLU_STALL_STCX + PM_CMPLU_STALL_SLB + PM_CMPLU_STALL_TEND + PM_CMPLU_STALL_PASTE + PM_CMPLU_STALL_TLBIE + PM_CMPLU_STALL_STORE_PIPE_ARB + PM_CMPLU_STALL_STORE_FIN_ARB)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "srq_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Distant L2 or L3 (Modified) per inst",
++        "MetricExpr": "PM_DPTEG_FROM_DL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_dl2l3_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to store forward",
-+        "MetricExpr": "PM_CMPLU_STALL_ST_FWD/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "st_fwd_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Distant L2 or L3 (Shared) per inst",
++        "MetricExpr": "PM_DPTEG_FROM_DL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_dl2l3_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Nothing completed and ICT not empty",
-+        "MetricExpr": "PM_CMPLU_STALL/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Distant L4 per inst",
++        "MetricExpr": "PM_DPTEG_FROM_DL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_dl4_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a stcx waiting for response from L2",
-+        "MetricExpr": "PM_CMPLU_STALL_STCX/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "stcx_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Distant Memory per inst",
++        "MetricExpr": "PM_DPTEG_FROM_DMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_dmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the next to finish instruction was a store waiting on data",
-+        "MetricExpr": "PM_CMPLU_STALL_STORE_DATA/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "store_data_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Private L2, other core per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L21_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l21_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a store waiting for a slot in the store finish pipe. This means the instruction is ready to finish but there are instructions ahead of it, using the finish pipe",
-+        "MetricExpr": "PM_CMPLU_STALL_STORE_FIN_ARB/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "store_fin_arb_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Private L2, other core per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L21_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l21_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a store with all its dependencies met, just waiting to go through the LSU pipe to finish",
-+        "MetricExpr": "PM_CMPLU_STALL_STORE_FINISH/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "store_finish_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from L2 per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L2 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l2_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a store waiting for the next relaunch opportunity after an internal reject. This means the instruction is ready to relaunch and tried once but lost arbitration",
-+        "MetricExpr": "PM_CMPLU_STALL_STORE_PIPE_ARB/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "store_pipe_arb_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Private L3, other core per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L31_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l31_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a tend instruction awaiting response from L2",
-+        "MetricExpr": "PM_CMPLU_STALL_TEND/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "tend_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Private L3, other core per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L31_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l31_shr_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion Stalled because the thread was blocked",
-+        "MetricExpr": "PM_CMPLU_STALL_THRD/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "thread_block_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from L3 per inst",
++        "MetricExpr": "PM_DPTEG_FROM_L3 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_l3_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a tlbie waiting for response from L2",
-+        "MetricExpr": "PM_CMPLU_STALL_TLBIE/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "tlbie_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Local L4 per inst",
++        "MetricExpr": "PM_DPTEG_FROM_LL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_ll4_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Vector stalls due to small latency double precision ops",
-+        "MetricExpr": "(PM_CMPLU_STALL_VDP - PM_CMPLU_STALL_VDPLONG)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vdp_other_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Local Memory per inst",
++        "MetricExpr": "PM_DPTEG_FROM_LMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_lmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a vector instruction issued to the Double Precision execution pipe and waiting to finish.",
-+        "MetricExpr": "PM_CMPLU_STALL_VDP/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vdp_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Remote L2 or L3 (Modified) per inst",
++        "MetricExpr": "PM_DPTEG_FROM_RL2L3_MOD * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_rl2l3_mod_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall because the NTF instruction was a scalar multi-cycle instruction issued to the Double Precision execution pipe and waiting to finish. Includes binary floating point instructions in 32 and 64 bit binary floating point format.",
-+        "MetricExpr": "PM_CMPLU_STALL_VDPLONG/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vdplong_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Remote L2 or L3 (Shared) per inst",
++        "MetricExpr": "PM_DPTEG_FROM_RL2L3_SHR * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_rl2l3_shr_rate_percent"
 +    },
 +    {
-+        "MetricExpr": "(PM_CMPLU_STALL_VFXU + PM_CMPLU_STALL_VDP)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vector_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Remote L4 per inst",
++        "MetricExpr": "PM_DPTEG_FROM_RL4 * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_rl4_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Completion stall due to a long latency vector fixed point instruction (division, square root)",
-+        "MetricExpr": "PM_CMPLU_STALL_VFXLONG/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vfxlong_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Remote Memory per inst",
++        "MetricExpr": "PM_DPTEG_FROM_RMEM * 100 / PM_RUN_INST_CMPL",
++        "MetricGroup": "pteg_reloads_percent_per_inst",
++        "MetricName": "pteg_from_rmem_rate_percent"
 +    },
 +    {
-+        "BriefDescription": "Vector stalls due to small latency integer ops",
-+        "MetricExpr": "(PM_CMPLU_STALL_VFXU - PM_CMPLU_STALL_VFXLONG)/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vfxu_other_stall_cpi"
++        "BriefDescription": "% of DERAT misses that result in an ERAT reload",
++        "MetricExpr": "PM_DTLB_MISS * 100 / PM_LSU_DERAT_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "derat_miss_reload_percent"
 +    },
 +    {
-+        "BriefDescription": "Finish stall due to a vector fixed point instruction in the execution pipeline. These instructions get routed to the ALU, ALU2, and DIV pipes",
-+        "MetricExpr": "PM_CMPLU_STALL_VFXU/PM_RUN_INST_CMPL",
-+        "MetricGroup": "cpi_breakdown",
-+        "MetricName": "vfxu_stall_cpi"
++        "BriefDescription": "% of DERAT reloads from Distant L2 or L3 (Modified)",
++        "MetricExpr": "PM_DPTEG_FROM_DL2L3_MOD * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_dl2l3_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl2l3 distant MOD miss rates with measured DL2L3 MOD latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_DL2L3_MOD * PM_MRK_DATA_FROM_DL2L3_MOD_CYC / PM_MRK_DATA_FROM_DL2L3_MOD / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "dl2l3_mod_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Distant L2 or L3 (Shared)",
++        "MetricExpr": "PM_DPTEG_FROM_DL2L3_SHR * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_dl2l3_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl2l3 distant SHR miss rates with measured DL2L3 SHR latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_DL2L3_SHR * PM_MRK_DATA_FROM_DL2L3_SHR_CYC / PM_MRK_DATA_FROM_DL2L3_SHR / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "dl2l3_shr_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Distant L4",
++        "MetricExpr": "PM_DPTEG_FROM_DL4 * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_dl4_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of distant L4 miss rates with measured DL4 latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_DL4 * PM_MRK_DATA_FROM_DL4_CYC / PM_MRK_DATA_FROM_DL4 / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "dl4_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Distant Memory",
++        "MetricExpr": "PM_DPTEG_FROM_DMEM * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_dmem_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of distant memory miss rates with measured DMEM latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_DMEM * PM_MRK_DATA_FROM_DMEM_CYC / PM_MRK_DATA_FROM_DMEM / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "dmem_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Private L2, other core",
++        "MetricExpr": "PM_DPTEG_FROM_L21_MOD * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l21_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl21 MOD miss rates with measured L21 MOD latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L21_MOD * PM_MRK_DATA_FROM_L21_MOD_CYC / PM_MRK_DATA_FROM_L21_MOD / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l21_mod_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Private L2, other core",
++        "MetricExpr": "PM_DPTEG_FROM_L21_SHR * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l21_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl21 SHR miss rates with measured L21 SHR latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L21_SHR * PM_MRK_DATA_FROM_L21_SHR_CYC / PM_MRK_DATA_FROM_L21_SHR / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l21_shr_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from L2",
++        "MetricExpr": "PM_DPTEG_FROM_L2 * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l2_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl2 miss rates with measured L2 latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L2 * PM_MRK_DATA_FROM_L2_CYC / PM_MRK_DATA_FROM_L2 / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l2_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Private L3, other core",
++        "MetricExpr": "PM_DPTEG_FROM_L31_MOD * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l31_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl31 MOD miss rates with measured L31 MOD latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L31_MOD * PM_MRK_DATA_FROM_L31_MOD_CYC / PM_MRK_DATA_FROM_L31_MOD / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l31_mod_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Private L3, other core",
++        "MetricExpr": "PM_DPTEG_FROM_L31_SHR * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l31_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl31 SHR miss rates with measured L31 SHR latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L31_SHR * PM_MRK_DATA_FROM_L31_SHR_CYC / PM_MRK_DATA_FROM_L31_SHR / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l31_shr_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from L3",
++        "MetricExpr": "PM_DPTEG_FROM_L3 * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_l3_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl3 miss rates with measured L3 latency as a % of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_L3 * PM_MRK_DATA_FROM_L3_CYC / PM_MRK_DATA_FROM_L3 / PM_CMPLU_STALL_DCACHE_MISS * 100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "l3_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Local L4",
++        "MetricExpr": "PM_DPTEG_FROM_LL4 * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_ll4_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of Local memory miss rates with measured LMEM latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_LMEM * PM_MRK_DATA_FROM_LMEM_CYC / PM_MRK_DATA_FROM_LMEM / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "lmem_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Local Memory",
++        "MetricExpr": "PM_DPTEG_FROM_LMEM * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_lmem_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl2l3 remote MOD miss rates with measured RL2L3 MOD latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_RL2L3_MOD * PM_MRK_DATA_FROM_RL2L3_MOD_CYC / PM_MRK_DATA_FROM_RL2L3_MOD / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "rl2l3_mod_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Remote L2 or L3 (Modified)",
++        "MetricExpr": "PM_DPTEG_FROM_RL2L3_MOD * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_rl2l3_mod_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of dl2l3 shared miss rates with measured RL2L3 SHR latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_RL2L3_SHR * PM_MRK_DATA_FROM_RL2L3_SHR_CYC / PM_MRK_DATA_FROM_RL2L3_SHR / PM_CMPLU_STALL_DCACHE_MISS * 100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "rl2l3_shr_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Remote L2 or L3 (Shared)",
++        "MetricExpr": "PM_DPTEG_FROM_RL2L3_SHR * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_rl2l3_shr_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of remote L4 miss rates with measured RL4 latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_RL4 * PM_MRK_DATA_FROM_RL4_CYC / PM_MRK_DATA_FROM_RL4 / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "rl4_cpi_percent"
++        "BriefDescription": "% of DERAT reloads from Remote L4",
++        "MetricExpr": "PM_DPTEG_FROM_RL4 * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_rl4_percent"
 +    },
 +    {
-+        "BriefDescription": "estimate of remote memory miss rates with measured RMEM latency as a %of dcache miss cpi",
-+        "MetricExpr": "PM_DATA_FROM_RMEM * PM_MRK_DATA_FROM_RMEM_CYC / PM_MRK_DATA_FROM_RMEM / PM_CMPLU_STALL_DCACHE_MISS *100",
-+        "MetricGroup": "estimated_dcache_miss_cpi",
-+        "MetricName": "rmem_cpi_percent"
-+    }
-+]
++        "BriefDescription": "% of DERAT reloads from Remote Memory",
++        "MetricExpr": "PM_DPTEG_FROM_RMEM * 100 / PM_DTLB_MISS",
++        "MetricGroup": "pteg_reloads_percent_per_ref",
++        "MetricName": "pteg_from_rmem_percent"
+     }
+ ]
 -- 
 2.19.1
 
