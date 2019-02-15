@@ -2,90 +2,74 @@ Return-Path: <SRS0=eC6l=QW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73ED8C10F02
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 08:43:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7920C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 08:45:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B1F69222DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 08:43:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 371022147C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 08:45:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pKBz2/3t"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B1F69222DD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="r/G/c1Qj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 371022147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4416GV57FLzDqfc
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 19:42:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4416K72dttzDqdw
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 19:45:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.80; helo=conssluserg-01.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pKBz2/3t"; 
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="r/G/c1Qj"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
+ [210.131.2.80])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4416Dh0vhMzDqSj
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 19:41:23 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4416Db1fGPz9v0N9;
- Fri, 15 Feb 2019 09:41:19 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=pKBz2/3t; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 3HD4heEMXDFX; Fri, 15 Feb 2019 09:41:19 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4416Db0PlDz9v0N7;
- Fri, 15 Feb 2019 09:41:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550220079; bh=bvvWeQXbeVOmP2RoOlaiBQ0N7R7aDnT6BVTKaC+FPCA=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=pKBz2/3txpu0uzpCwEhAOarsqdQw27zpTvVeE/wtUxKVj00iEBvoMIlKYg7rM+PQ1
- NY8+1FJQ7nboSsk0Xb0sH1HzXVSGq7WPLEHsNXziuzGYeMliXgnw/KbScd+OPMhQv2
- xfFfDZhxI2b4a5++Cb44W8al/OWTxQtzD7OaEy6Y=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 15C878B8C1;
- Fri, 15 Feb 2019 09:41:20 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HaUQ8kQJ_PVv; Fri, 15 Feb 2019 09:41:19 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D8A018B8B5;
- Fri, 15 Feb 2019 09:41:19 +0100 (CET)
-Subject: Re: [PATCH v5 3/3] powerpc/32: Add KASAN support
-To: Daniel Axtens <dja@axtens.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
-References: <cover.1549935247.git.christophe.leroy@c-s.fr>
- <3429fe33b68206ecc2a725a740937bbaef2d1ac8.1549935251.git.christophe.leroy@c-s.fr>
- <8736oq3u2r.fsf@dja-thinkpad.axtens.net>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <b5db7714-51e3-785c-34ca-6c358661c9e8@c-s.fr>
-Date: Fri, 15 Feb 2019 09:41:19 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4416H61NqVzDqT6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 19:43:29 +1100 (AEDT)
+Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com
+ [209.85.221.170]) (authenticated)
+ by conssluserg-01.nifty.com with ESMTP id x1F8h2A8031301
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 17:43:03 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-01.nifty.com x1F8h2A8031301
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1550220183;
+ bh=ipwSqGKOtUHrs33U6yO/OuzKAUWDmn9Er4eFuQ213OY=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=r/G/c1QjnEcKDOxcndklNUbzkPiWtjsSbxgkEJ5xCNVkeX4P2KgnfHMInSbRR3lm5
+ aAqJ3tzTmmbbGnWbuYFqTKyWcNWeneBxGFpbqqXR7+aum1qTdHkM2s4LUZl5oYEjvn
+ T1DN9rwPJBquAbBPYuagGLoaWgQ+SKYPoz8jF56yNKMiRUevGmgImo36p6h6C9DS/B
+ qa1Ky8H4/1zbvcAb7pDHueVkenmzjKI2gEOS7uzRfxbS7fy4otG9BY+FkkwErRUc68
+ md+TwLZuLDcyQw4JKbeozXTSkB8OXaZmDRz6ANlprYiFWFw4eTuffn6VDkVSahW9LB
+ 0xta5NWD51prA==
+X-Nifty-SrcIP: [209.85.221.170]
+Received: by mail-vk1-f170.google.com with SMTP id b6so956037vkf.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:43:03 -0800 (PST)
+X-Gm-Message-State: AHQUAuaGJbsKwS1AXbzGeEBV09HPYwvKlkN+JKJ1B41jyIRrJg3MeEi/
+ dk9RuHGrj8psj4WKuGACfDEV8XWL1/CDhkmGdyg=
+X-Google-Smtp-Source: AHgI3IYjWlycwOqTadsN4vWgeiW+eLZwajnwdi0xsiNH8+3caYRm3HAPLl12jEJEPXCeo/0gyPelxImT0q2cWCrC3NU=
+X-Received: by 2002:a1f:1ac3:: with SMTP id a186mr4404252vka.34.1550220182039; 
+ Fri, 15 Feb 2019 00:43:02 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <8736oq3u2r.fsf@dja-thinkpad.axtens.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+References: <20190213174005.28785-1-hch@lst.de>
+ <20190213174005.28785-9-hch@lst.de>
+In-Reply-To: <20190213174005.28785-9-hch@lst.de>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Fri, 15 Feb 2019 17:42:25 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASycJG=26WUPwJsMwYPhj26YFhj+NH5jNcMGx3PQ-miTQ@mail.gmail.com>
+Message-ID: <CAK7LNASycJG=26WUPwJsMwYPhj26YFhj+NH5jNcMGx3PQ-miTQ@mail.gmail.com>
+Subject: Re: [PATCH 08/11] lib: consolidate the GENERIC_BUG symbol
+To: Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,486 +81,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: linux-xtensa@linux-xtensa.org,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-riscv@lists.infradead.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, Feb 14, 2019 at 2:40 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> And just let the architectures that want it select the symbol.
+> Same for GENERIC_BUG_RELATIVE_POINTERS.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
 
-Le 14/02/2019 à 23:04, Daniel Axtens a écrit :
-> Hi Christophe,
-> 
->> --- a/arch/powerpc/include/asm/string.h
->> +++ b/arch/powerpc/include/asm/string.h
->> @@ -27,6 +27,20 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
->>   extern void * memchr(const void *,int,__kernel_size_t);
->>   extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
->>   
->> +void *__memset(void *s, int c, __kernel_size_t count);
->> +void *__memcpy(void *to, const void *from, __kernel_size_t n);
->> +void *__memmove(void *to, const void *from, __kernel_size_t n);
->> +
->> +#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
->> +/*
->> + * For files that are not instrumented (e.g. mm/slub.c) we
->> + * should use not instrumented version of mem* functions.
->> + */
->> +#define memcpy(dst, src, len) __memcpy(dst, src, len)
->> +#define memmove(dst, src, len) __memmove(dst, src, len)
->> +#define memset(s, c, n) __memset(s, c, n)
->> +#endif
->> +
-> 
-> I'm finding that I miss tests like 'kasan test: kasan_memcmp
-> out-of-bounds in memcmp' because the uninstrumented asm version is used
-> instead of an instrumented C version. I ended up guarding the relevant
-> __HAVE_ARCH_x symbols behind a #ifndef CONFIG_KASAN and only exporting
-> the arch versions if we're not compiled with KASAN.
-> 
-> I find I need to guard and unexport strncpy, strncmp, memchr and
-> memcmp. Do you need to do this on 32bit as well, or are those tests
-> passing anyway for some reason?
+This slightly changes the behavior of GENERIC_BUG_RELATIVE_POINTERS
+for arm64, riscv, x86.
+Previously, GENERIC_BUG_RELATIVE_POINTERS was enabled only when BUG=y.
 
-Indeed, I didn't try the KASAN test module recently, because my configs 
-don't have CONFIG_MODULE by default.
 
-Trying to test it now, I am discovering that module loading oopses with 
-latest version of my series, I need to figure out exactly why. Here 
-below the oops by modprobing test_module (the one supposed to just say 
-hello to the world).
+Having said that, this is not a big deal.
+When CONFIG_GENERIC_BUG=n, CONFIG_GENERIC_BUG_RELATIVE_POINTERS
+is actually don't care.
 
-What we see is an access to the RO kasan zero area.
 
-The shadow mem is 0xf7c00000..0xffc00000
-Linear kernel memory is shadowed by 0xf7c00000-0xf8bfffff
-0xf8c00000-0xffc00000 is shadowed read only by the kasan zero page.
 
-Why is kasan trying to access that ? Isn't kasan supposed to not check 
-stuff in vmalloc area ?
+If you change this,
+could you add some comments in commit description?
 
-[  189.087499] BUG: Unable to handle kernel data access at 0xf8eb7818
-[  189.093455] Faulting instruction address: 0xc001ab60
-[  189.098383] Oops: Kernel access of bad area, sig: 11 [#1]
-[  189.103732] BE PAGE_SIZE=16K PREEMPT CMPC885
-[  189.111414] Modules linked in: test_module(+)
-[  189.115817] CPU: 0 PID: 514 Comm: modprobe Not tainted 
-5.0.0-rc5-s3k-dev-00645-g1dd3acf23952 #1016
-[  189.124627] NIP:  c001ab60 LR: c0194fe8 CTR: 00000003
-[  189.129641] REGS: c5645b90 TRAP: 0300   Not tainted 
-(5.0.0-rc5-s3k-dev-00645-g1dd3acf23952)
-[  189.137924] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 44002884  XER: 00000000
-[  189.144571] DAR: f8eb7818 DSISR: 8a000000
-[  189.144571] GPR00: c0196620 c5645c40 c5aac000 f8eb7818 00000000 
-00000003 f8eb7817 c01950d0
-[  189.144571] GPR08: c00c2720 c95bc010 00000000 c95bc1a0 c01965ec 
-100d7b30 c0802b80 c5ae0308
-[  189.144571] GPR16: c5990480 00000124 0000000f c00bcf7c c5ae0324 
-c95bc32c 000006b8 00000001
-[  189.144571] GPR24: c95bc364 c95bc360 c95bc2c0 c95bc1a0 00000002 
-00000000 00000018 f8eb781b
-[  189.182611] NIP [c001ab60] __memset+0xb4/0xc0
-[  189.186922] LR [c0194fe8] kasan_unpoison_shadow+0x34/0x54
-[  189.192136] Call Trace:
-[  189.194682] [c5645c50] [c0196620] __asan_register_globals+0x34/0x74
-[  189.200900] [c5645c70] [c00c27a4] do_init_module+0xbc/0x5a4
-[  189.206392] [c5645ca0] [c00c0d08] load_module+0x2b5c/0x3194
-[  189.211901] [c5645e70] [c00c14c8] sys_init_module+0x188/0x1bc
-[  189.217572] [c5645f40] [c001311c] ret_from_syscall+0x0/0x38
-[  189.223049] --- interrupt: c01 at 0xfda2b50
-[  189.223049]     LR = 0x10014b18
-[  189.230175] Instruction dump:
-[  189.233117] 4200fffc 70a50003 4d820020 7ca903a6 38c60003 9c860001 
-4200fffc 4e800020
-[  189.240859] 2c050000 4d820020 7ca903a6 38c3ffff <9c860001> 4200fffc 
-4e800020 7c032040
-[  189.248809] ---[ end trace 45cbb1b3215e5959 ]---
 
-Christophe
+> ---
 
-> 
-> Regards,
-> Daniel
-> 
-> 
->>   #ifdef CONFIG_PPC64
->>   #define __HAVE_ARCH_MEMSET32
->>   #define __HAVE_ARCH_MEMSET64
->> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
->> index 879b36602748..fc4c42262694 100644
->> --- a/arch/powerpc/kernel/Makefile
->> +++ b/arch/powerpc/kernel/Makefile
->> @@ -16,8 +16,9 @@ CFLAGS_prom_init.o      += -fPIC
->>   CFLAGS_btext.o		+= -fPIC
->>   endif
->>   
->> -CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->> -CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->> +CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
->> +CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
->> +CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
->>   CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->>   CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->>   
->> @@ -31,6 +32,10 @@ CFLAGS_REMOVE_btext.o = $(CC_FLAGS_FTRACE)
->>   CFLAGS_REMOVE_prom.o = $(CC_FLAGS_FTRACE)
->>   endif
->>   
->> +KASAN_SANITIZE_early_32.o := n
->> +KASAN_SANITIZE_cputable.o := n
->> +KASAN_SANITIZE_prom_init.o := n
->> +
->>   obj-y				:= cputable.o ptrace.o syscalls.o \
->>   				   irq.o align.o signal_32.o pmc.o vdso.o \
->>   				   process.o systbl.o idle.o \
->> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
->> index 9ffc72ded73a..846fb30b1190 100644
->> --- a/arch/powerpc/kernel/asm-offsets.c
->> +++ b/arch/powerpc/kernel/asm-offsets.c
->> @@ -783,5 +783,9 @@ int main(void)
->>   	DEFINE(VIRT_IMMR_BASE, (u64)__fix_to_virt(FIX_IMMR_BASE));
->>   #endif
->>   
->> +#ifdef CONFIG_KASAN
->> +	DEFINE(KASAN_SHADOW_OFFSET, KASAN_SHADOW_OFFSET);
->> +#endif
->> +
->>   	return 0;
->>   }
->> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
->> index 05b08db3901d..0ec9dec06bc2 100644
->> --- a/arch/powerpc/kernel/head_32.S
->> +++ b/arch/powerpc/kernel/head_32.S
->> @@ -962,6 +962,9 @@ start_here:
->>    * Do early platform-specific initialization,
->>    * and set up the MMU.
->>    */
->> +#ifdef CONFIG_KASAN
->> +	bl	kasan_early_init
->> +#endif
->>   	li	r3,0
->>   	mr	r4,r31
->>   	bl	machine_init
->> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
->> index b19d78410511..5d6ff8fa7e2b 100644
->> --- a/arch/powerpc/kernel/head_40x.S
->> +++ b/arch/powerpc/kernel/head_40x.S
->> @@ -848,6 +848,9 @@ start_here:
->>   /*
->>    * Decide what sort of machine this is and initialize the MMU.
->>    */
->> +#ifdef CONFIG_KASAN
->> +	bl	kasan_early_init
->> +#endif
->>   	li	r3,0
->>   	mr	r4,r31
->>   	bl	machine_init
->> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
->> index bf23c19c92d6..7ca14dff6192 100644
->> --- a/arch/powerpc/kernel/head_44x.S
->> +++ b/arch/powerpc/kernel/head_44x.S
->> @@ -203,6 +203,9 @@ _ENTRY(_start);
->>   /*
->>    * Decide what sort of machine this is and initialize the MMU.
->>    */
->> +#ifdef CONFIG_KASAN
->> +	bl	kasan_early_init
->> +#endif
->>   	li	r3,0
->>   	mr	r4,r31
->>   	bl	machine_init
->> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
->> index 0fea10491f3a..6a644ea2e6b6 100644
->> --- a/arch/powerpc/kernel/head_8xx.S
->> +++ b/arch/powerpc/kernel/head_8xx.S
->> @@ -823,6 +823,9 @@ start_here:
->>   /*
->>    * Decide what sort of machine this is and initialize the MMU.
->>    */
->> +#ifdef CONFIG_KASAN
->> +	bl	kasan_early_init
->> +#endif
->>   	li	r3,0
->>   	mr	r4,r31
->>   	bl	machine_init
->> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
->> index 2386ce2a9c6e..4f4585a68850 100644
->> --- a/arch/powerpc/kernel/head_fsl_booke.S
->> +++ b/arch/powerpc/kernel/head_fsl_booke.S
->> @@ -274,6 +274,9 @@ set_ivor:
->>   /*
->>    * Decide what sort of machine this is and initialize the MMU.
->>    */
->> +#ifdef CONFIG_KASAN
->> +	bl	kasan_early_init
->> +#endif
->>   	mr	r3,r30
->>   	mr	r4,r31
->>   	bl	machine_init
->> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
->> index 667df97d2595..da6bb16e0876 100644
->> --- a/arch/powerpc/kernel/prom_init_check.sh
->> +++ b/arch/powerpc/kernel/prom_init_check.sh
->> @@ -16,8 +16,16 @@
->>   # If you really need to reference something from prom_init.o add
->>   # it to the list below:
->>   
->> +grep CONFIG_KASAN=y .config >/dev/null
->> +if [ $? -eq 0 ]
->> +then
->> +	MEMFCT="__memcpy __memset"
->> +else
->> +	MEMFCT="memcpy memset"
->> +fi
->> +
->>   WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
->> -_end enter_prom memcpy memset reloc_offset __secondary_hold
->> +_end enter_prom $MEMFCT reloc_offset __secondary_hold
->>   __secondary_hold_acknowledge __secondary_hold_spinloop __start
->>   strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
->>   reloc_got2 kernstart_addr memstart_addr linux_banner _stext
->> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
->> index ca00fbb97cf8..16ff1ea66805 100644
->> --- a/arch/powerpc/kernel/setup-common.c
->> +++ b/arch/powerpc/kernel/setup-common.c
->> @@ -978,6 +978,8 @@ void __init setup_arch(char **cmdline_p)
->>   
->>   	paging_init();
->>   
->> +	kasan_init();
->> +
->>   	/* Initialize the MMU context management stuff. */
->>   	mmu_context_init();
->>   
->> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
->> index 3bf9fc6fd36c..ce8d4a9f810a 100644
->> --- a/arch/powerpc/lib/Makefile
->> +++ b/arch/powerpc/lib/Makefile
->> @@ -8,6 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->>   CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
->>   CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
->>   
->> +KASAN_SANITIZE_code-patching.o := n
->> +KASAN_SANITIZE_feature-fixups.o := n
->> +
->> +ifdef CONFIG_KASAN
->> +CFLAGS_code-patching.o += -DDISABLE_BRANCH_PROFILING
->> +CFLAGS_feature-fixups.o += -DDISABLE_BRANCH_PROFILING
->> +endif
->> +
->>   obj-y += string.o alloc.o code-patching.o feature-fixups.o
->>   
->>   obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o strlen_32.o
->> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
->> index ba66846fe973..4d8a1c73b4cf 100644
->> --- a/arch/powerpc/lib/copy_32.S
->> +++ b/arch/powerpc/lib/copy_32.S
->> @@ -91,7 +91,8 @@ EXPORT_SYMBOL(memset16)
->>    * We therefore skip the optimised bloc that uses dcbz. This jump is
->>    * replaced by a nop once cache is active. This is done in machine_init()
->>    */
->> -_GLOBAL(memset)
->> +_GLOBAL(__memset)
->> +KASAN_OVERRIDE(memset, __memset)
->>   	cmplwi	0,r5,4
->>   	blt	7f
->>   
->> @@ -163,12 +164,14 @@ EXPORT_SYMBOL(memset)
->>    * We therefore jump to generic_memcpy which doesn't use dcbz. This jump is
->>    * replaced by a nop once cache is active. This is done in machine_init()
->>    */
->> -_GLOBAL(memmove)
->> +_GLOBAL(__memmove)
->> +KASAN_OVERRIDE(memmove, __memmove)
->>   	cmplw	0,r3,r4
->>   	bgt	backwards_memcpy
->>   	/* fall through */
->>   
->> -_GLOBAL(memcpy)
->> +_GLOBAL(__memcpy)
->> +KASAN_OVERRIDE(memcpy, __memcpy)
->>   1:	b	generic_memcpy
->>   	patch_site	1b, patch__memcpy_nocache
->>   
->> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
->> index f965fc33a8b7..d6b76f25f6de 100644
->> --- a/arch/powerpc/mm/Makefile
->> +++ b/arch/powerpc/mm/Makefile
->> @@ -7,6 +7,8 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->>   
->>   CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
->>   
->> +KASAN_SANITIZE_kasan_init.o := n
->> +
->>   obj-y				:= fault.o mem.o pgtable.o mmap.o \
->>   				   init_$(BITS).o pgtable_$(BITS).o \
->>   				   init-common.o mmu_context.o drmem.o
->> @@ -55,3 +57,4 @@ obj-$(CONFIG_PPC_BOOK3S_64)	+= dump_linuxpagetables-book3s64.o
->>   endif
->>   obj-$(CONFIG_PPC_HTDUMP)	+= dump_hashpagetable.o
->>   obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
->> +obj-$(CONFIG_KASAN)		+= kasan_init.o
->> diff --git a/arch/powerpc/mm/dump_linuxpagetables.c b/arch/powerpc/mm/dump_linuxpagetables.c
->> index 6aa41669ac1a..c862b48118f1 100644
->> --- a/arch/powerpc/mm/dump_linuxpagetables.c
->> +++ b/arch/powerpc/mm/dump_linuxpagetables.c
->> @@ -94,6 +94,10 @@ static struct addr_marker address_markers[] = {
->>   	{ 0,	"Consistent mem start" },
->>   	{ 0,	"Consistent mem end" },
->>   #endif
->> +#ifdef CONFIG_KASAN
->> +	{ 0,	"kasan shadow mem start" },
->> +	{ 0,	"kasan shadow mem end" },
->> +#endif
->>   #ifdef CONFIG_HIGHMEM
->>   	{ 0,	"Highmem PTEs start" },
->>   	{ 0,	"Highmem PTEs end" },
->> @@ -310,6 +314,10 @@ static void populate_markers(void)
->>   	address_markers[i++].start_address = IOREMAP_TOP +
->>   					     CONFIG_CONSISTENT_SIZE;
->>   #endif
->> +#ifdef CONFIG_KASAN
->> +	address_markers[i++].start_address = KASAN_SHADOW_START;
->> +	address_markers[i++].start_address = KASAN_SHADOW_END;
->> +#endif
->>   #ifdef CONFIG_HIGHMEM
->>   	address_markers[i++].start_address = PKMAP_BASE;
->>   	address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
->> diff --git a/arch/powerpc/mm/kasan_init.c b/arch/powerpc/mm/kasan_init.c
->> new file mode 100644
->> index 000000000000..bd8e0a263e12
->> --- /dev/null
->> +++ b/arch/powerpc/mm/kasan_init.c
->> @@ -0,0 +1,114 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +
->> +#define DISABLE_BRANCH_PROFILING
->> +
->> +#include <linux/kasan.h>
->> +#include <linux/printk.h>
->> +#include <linux/memblock.h>
->> +#include <linux/sched/task.h>
->> +#include <asm/pgalloc.h>
->> +
->> +void __init kasan_early_init(void)
->> +{
->> +	unsigned long addr = KASAN_SHADOW_START;
->> +	unsigned long end = KASAN_SHADOW_END;
->> +	unsigned long next;
->> +	pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
->> +	int i;
->> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
->> +
->> +	BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
->> +
->> +	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
->> +		panic("KASAN not supported with Hash MMU\n");
->> +
->> +	for (i = 0; i < PTRS_PER_PTE; i++)
->> +		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
->> +			     kasan_early_shadow_pte + i,
->> +			     pfn_pte(PHYS_PFN(pa), PAGE_KERNEL), 0);
->> +
->> +	do {
->> +		next = pgd_addr_end(addr, end);
->> +		pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_pte);
->> +	} while (pmd++, addr = next, addr != end);
->> +}
->> +
->> +static void __init kasan_init_region(struct memblock_region *reg)
->> +{
->> +	void *start = __va(reg->base);
->> +	void *end = __va(reg->base + reg->size);
->> +	unsigned long k_start, k_end, k_cur, k_next;
->> +	pmd_t *pmd;
->> +	void *block;
->> +
->> +	if (start >= end)
->> +		return;
->> +
->> +	k_start = (unsigned long)kasan_mem_to_shadow(start);
->> +	k_end = (unsigned long)kasan_mem_to_shadow(end);
->> +	pmd = pmd_offset(pud_offset(pgd_offset_k(k_start), k_start), k_start);
->> +
->> +	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
->> +		k_next = pgd_addr_end(k_cur, k_end);
->> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte) {
->> +			pte_t *new = pte_alloc_one_kernel(&init_mm);
->> +
->> +			if (!new)
->> +				panic("kasan: pte_alloc_one_kernel() failed");
->> +			memcpy(new, kasan_early_shadow_pte, PTE_TABLE_SIZE);
->> +			pmd_populate_kernel(&init_mm, pmd, new);
->> +		}
->> +	};
->> +
->> +	block = memblock_alloc(k_end - k_start, PAGE_SIZE);
->> +	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
->> +		void *va = block ? block + k_cur - k_start :
->> +				   memblock_alloc(PAGE_SIZE, PAGE_SIZE);
->> +		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
->> +
->> +		if (!va)
->> +			panic("kasan: memblock_alloc() failed");
->> +		pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
->> +		pte_update(pte_offset_kernel(pmd, k_cur), ~0, pte_val(pte));
->> +	}
->> +	flush_tlb_kernel_range(k_start, k_end);
->> +}
->> +
->> +static void __init kasan_remap_early_shadow_ro(void)
->> +{
->> +	unsigned long k_cur;
->> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
->> +	int i;
->> +
->> +	for (i = 0; i < PTRS_PER_PTE; i++)
->> +		ptep_set_wrprotect(&init_mm, 0, kasan_early_shadow_pte + i);
->> +
->> +	for (k_cur = PAGE_OFFSET & PAGE_MASK; k_cur; k_cur += PAGE_SIZE) {
->> +		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
->> +		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
->> +
->> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)
->> +			continue;
->> +		if ((pte_val(*ptep) & PAGE_MASK) != pa)
->> +			continue;
->> +
->> +		ptep_set_wrprotect(&init_mm, k_cur, ptep);
->> +	}
->> +	flush_tlb_mm(&init_mm);
->> +}
->> +
->> +void __init kasan_init(void)
->> +{
->> +	struct memblock_region *reg;
->> +
->> +	for_each_memblock(memory, reg)
->> +		kasan_init_region(reg);
->> +
->> +	kasan_remap_early_shadow_ro();
->> +
->> +	clear_page(kasan_early_shadow_page);
->> +
->> +	/* At this point kasan is fully initialized. Enable error messages */
->> +	init_task.kasan_depth = 0;
->> +	pr_info("KASAN init done\n");
->> +}
->> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
->> index 81f251fc4169..1bb055775e60 100644
->> --- a/arch/powerpc/mm/mem.c
->> +++ b/arch/powerpc/mm/mem.c
->> @@ -336,6 +336,10 @@ void __init mem_init(void)
->>   	pr_info("  * 0x%08lx..0x%08lx  : highmem PTEs\n",
->>   		PKMAP_BASE, PKMAP_ADDR(LAST_PKMAP));
->>   #endif /* CONFIG_HIGHMEM */
->> +#ifdef CONFIG_KASAN
->> +	pr_info("  * 0x%08lx..0x%08lx  : kasan shadow mem\n",
->> +		KASAN_SHADOW_START, KASAN_SHADOW_END);
->> +#endif
->>   #ifdef CONFIG_NOT_COHERENT_CACHE
->>   	pr_info("  * 0x%08lx..0x%08lx  : consistent mem\n",
->>   		IOREMAP_TOP, IOREMAP_TOP + CONFIG_CONSISTENT_SIZE);
->> -- 
->> 2.13.3
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index c39dac831f08..913b2ca7ec22 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -85,6 +85,8 @@ config ARM64
+>         select FRAME_POINTER
+>         select GENERIC_ALLOCATOR
+>         select GENERIC_ARCH_TOPOLOGY
+> +       select GENERIC_BUG if BUG
+> +       select GENERIC_BUG_RELATIVE_POINTERS
+
+Precisely,
+
+          select GENERIC_BUG_RELATIVE_POINTERS if BUG
+
+
+
+
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 732614eb3683..c410ed896567 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -19,6 +19,8 @@ config RISCV
+>         select ARCH_WANT_FRAME_POINTERS
+>         select CLONE_BACKWARDS
+>         select COMMON_CLK
+> +       select GENERIC_BUG if BUG
+> +       select GENERIC_BUG_RELATIVE_POINTERS if 64BIT
+
+Precisely,
+
+          select GENERIC_BUG_RELATIVE_POINTERS if 64BIT && BUG
+
+
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index 15ccdd04814e..2a5c12be633e 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -17,12 +17,6 @@ config ARCH_HAS_ILOG2_U64
+>  config GENERIC_HWEIGHT
+>         def_bool y
+>
+> -config GENERIC_BUG
+> -       def_bool y if BUG
+> -
+> -config GENERIC_BUG_RELATIVE_POINTERS
+> -       def_bool y
+> -
+
+
+Hmm, s390 enables GENERIC_BUG_RELATIVE_POINTERS
+irrespective of BUG...
+
+
+
+
+
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 1bd4f19b6b28..f4cb31174e1b 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -91,6 +91,8 @@ config X86
+>         select DCACHE_WORD_ACCESS
+>         select EDAC_ATOMIC_SCRUB
+>         select EDAC_SUPPORT
+> +       select GENERIC_BUG                      if BUG
+> +       select GENERIC_BUG_RELATIVE_POINTERS    if X86_64
+
+Precisely,
+
+          select GENERIC_BUG_RELATIVE_POINTERS    if X86_64 && BUG
+
+
+
+
+
+
+--
+Best Regards
+Masahiro Yamada
