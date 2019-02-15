@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D26CDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 18:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A329C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 18:42:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5D8D8206C0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 18:37:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D8D8206C0
+	by mail.kernel.org (Postfix) with ESMTPS id B56C82082F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 18:42:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B56C82082F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 441MRy0xvvzDqhn
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Feb 2019 05:37:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 441MZS43XyzDqgs
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Feb 2019 05:42:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,30 +26,26 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 441MPt2rRpzDqQF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2019 05:35:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 441MXd4fqVzDqPk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2019 05:41:04 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BBBB4A78;
- Fri, 15 Feb 2019 10:35:11 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8F399A78;
+ Fri, 15 Feb 2019 10:41:03 -0800 (PST)
 Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
  [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3A8543F589;
- Fri, 15 Feb 2019 10:35:08 -0800 (PST)
-Date: Fri, 15 Feb 2019 18:35:05 +0000
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 937D53F589;
+ Fri, 15 Feb 2019 10:40:58 -0800 (PST)
+Date: Fri, 15 Feb 2019 18:40:56 +0000
 From: Will Deacon <will.deacon@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v3 2/2] locking/rwsem: Optimize down_read_trylock()
-Message-ID: <20190215183505.GB15084@fuggles.cambridge.arm.com>
-References: <1550089932-6888-1-git-send-email-longman@redhat.com>
- <1550089932-6888-3-git-send-email-longman@redhat.com>
- <20190214103333.GH32494@hirez.programming.kicks-ass.net>
- <9e01d4ef-56df-7af8-a0f5-b49644e298bf@redhat.com>
- <CAHk-=whKmuranma_HUOKBbDJHGmdWZr9MYW-+cmGzsOiJ2N1Sg@mail.gmail.com>
- <CAHk-=wi03J1jurebJNHPxGCVss7ARAN+2JuVthEGoEx=qkT4dQ@mail.gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v4 0/3] locking/rwsem: Rwsem rearchitecture part 0
+Message-ID: <20190215184056.GC15084@fuggles.cambridge.arm.com>
+References: <1550095217-12047-1-git-send-email-longman@redhat.com>
+ <20190214103715.GI32494@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAHk-=wi03J1jurebJNHPxGCVss7ARAN+2JuVthEGoEx=qkT4dQ@mail.gmail.com>
+In-Reply-To: <20190214103715.GI32494@hirez.programming.kicks-ass.net>
 User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -62,58 +58,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, linux-xtensa@linux-xtensa.org,
- Davidlohr Bueso <dave@stgolabs.net>, linux-ia64@vger.kernel.org,
- Tim Chen <tim.c.chen@linux.intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, linux-hexagon@vger.kernel.org,
- the arch/x86 maintainers <x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
- sparclinux@vger.kernel.org, Waiman Long <longman@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Davidlohr Bueso <dave@stgolabs.net>, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Waiman Long <longman@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 14, 2019 at 10:09:44AM -0800, Linus Torvalds wrote:
-> On Thu, Feb 14, 2019 at 9:51 AM Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> >
-> > The arm64 numbers scaled horribly even before, and that's because
-> > there is too much ping-pong, and it's probably because there is no
-> > "stickiness" to the cacheline to the core, and thus adding the extra
-> > loop can make the ping-pong issue even worse because now there is more
-> > of it.
+On Thu, Feb 14, 2019 at 11:37:15AM +0100, Peter Zijlstra wrote:
+> On Wed, Feb 13, 2019 at 05:00:14PM -0500, Waiman Long wrote:
+> > v4:
+> >  - Remove rwsem-spinlock.c and make all archs use rwsem-xadd.c.
+> > 
+> > v3:
+> >  - Optimize __down_read_trylock() for the uncontended case as suggested
+> >    by Linus.
+> > 
+> > v2:
+> >  - Add patch 2 to optimize __down_read_trylock() as suggested by PeterZ.
+> >  - Update performance test data in patch 1.
+> > 
+> > The goal of this patchset is to remove the architecture specific files
+> > for rwsem-xadd to make it easer to add enhancements in the later rwsem
+> > patches. It also removes the legacy rwsem-spinlock.c file and make all
+> > the architectures use one single implementation of rwsem - rwsem-xadd.c.
+> > 
+> > Waiman Long (3):
+> >   locking/rwsem: Remove arch specific rwsem files
+> >   locking/rwsem: Remove rwsem-spinlock.c & use rwsem-xadd.c for all
+> >     archs
+> >   locking/rwsem: Optimize down_read_trylock()
 > 
-> Actually, if it's using the ll/sc, then I don't see why arm64 should
-> even change. It doesn't really even change the pattern: the initial
-> load of the value is just replaced with a "ll" that gets a non-zero
-> value, and then we re-try without even doing the "sc" part.
-
-So our cmpxchg() has a prefetch-with-intent-to-modify instruction before the
-'ll' part, which will attempt to grab the line unique the first time round.
-The 'll' also has acquire semantics, so there's the chance for the
-micro-architecture to handle that badly too.
-
-I think that the problem with the proposed changed change is that whenever a
-reader tries to acquire an rwsem that is already held for read, it will
-always fail the first cmpxchg(), so in this situation the read path is
-considerably slower than before.
-
-> End result: exact same "load once, then do ll/sc to update". Just
-> using a slightly different instruction pattern.
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 > 
-> But maybe "ll" does something different to the cacheline than a regular "ld"?
-> 
-> Alternatively, the machine you used is using LSE, and the "swp" thing
-> has some horrid behavior when it fails.
+> with the caveat that I'm happy to exchange patch 3 back to my earlier
+> suggestion in case Will expesses concerns wrt the ARM64 performance of
+> Linus' suggestion.
 
-Depending on where the data is, the LSE instructions may execute outside of
-the CPU (e.g. in a cache controller) and so could add latency to a failing
-CAS.
+Right, the current proposal doesn't work well for us, unfortunately. Which
+was your earlier suggestion?
 
 Will
