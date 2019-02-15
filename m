@@ -2,77 +2,98 @@ Return-Path: <SRS0=eC6l=QW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A3ACC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:12:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D578CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:12:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08AE021A80
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 04:12:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LB/0vDPW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08AE021A80
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1B6602192D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:12:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1B6602192D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4410Fz6JjvzDqcD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 15:12:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4411bP6dH2zDqdh
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 16:12:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=sjitindarsingh@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="LB/0vDPW"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4410D24Fd2zDqcF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 15:10:26 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id g6so4175958pfh.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Feb 2019 20:10:26 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id;
- bh=WmGbMniKCgUsrxyyJwK4gUwIV2Lp6eqak7RPGGw1vkc=;
- b=LB/0vDPW3mIBUwAuxXZ/CgFpn9R/Xt/v2bJDRW/2ALuxTPzn6qrSpx16ijBGYX1Bct
- aUxQ8G1MO0Efs3QjuwSM59VzL8TMbQuhOgJoCQp6TXFbw21yFQ1E7Xx40jEtRI/mZkZh
- jfb2+G+ft6KhZM1Rk+VrTNv+78g+40Z0KGrB4unCWDb9feNmucjy/6mrjZ366QT4VJ2Y
- rfm3kwZQ2BhoL7Th+aqqpwL3sBgA603GJuICUCe4VGRoYoJ0BrWR9Bb58RsTHb67CgNv
- PRShTGaZwFKHcCmRnK76MVtH/ZkexIM3cD+agiWb7Fo0EX1AWuP1Z0xVABKtpzBMNbjh
- cARQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=WmGbMniKCgUsrxyyJwK4gUwIV2Lp6eqak7RPGGw1vkc=;
- b=li8778X9LxoGQ0ssdN4RLXcbeheUTv99XfwA9WNzzR/CYa4YErvjyhkAAJOtac/qGh
- EXwdfAkGzKy9AgXadqx4kez1SA8Riy8ZL2KIiSfLxBS0aE9OML7DmaZslftafD4TGKe+
- Wza6U/gpTJiryAPNlH3pJz6bXQ0bluh3l5AKpOHQorUh8hf8PdbtnEBr44m6Cfmn45GB
- 6a3KIVyqtxmyC2c8fWgI/pcHBMvDWxlpQhr6rlJvjJH9A/eybGc5kNksAx952wrXtEZ+
- KywTYLdtSd5+4LF9YLfTcbVoKOW3Swp8Em5auK4MKklzA+puujV5sIHMRF1EoAybTp4m
- SnUQ==
-X-Gm-Message-State: AHQUAuZcoKLuKRBlGiBRBPlKdggpAuYubSQsOJRAdvEKq4p6VoQppuLL
- FvPY+4YTcx41B79zu5jYfC4=
-X-Google-Smtp-Source: AHgI3IabauFapV4yiDX0/GrikfoNH7r7KVHLYrRaspd6HMXryW+mGjdIxweOCDlkLp03Vl+UZ7d4Zw==
-X-Received: by 2002:aa7:85cc:: with SMTP id z12mr7843671pfn.196.1550203824493; 
- Thu, 14 Feb 2019 20:10:24 -0800 (PST)
-Received: from surajjs2.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id t65sm8413310pfi.117.2019.02.14.20.10.21
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 14 Feb 2019 20:10:23 -0800 (PST)
-From: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Book3S: Add KVM stat num_[2M/1G]_pages
-Date: Fri, 15 Feb 2019 15:10:04 +1100
-Message-Id: <20190215041004.10575-1-sjitindarsingh@gmail.com>
-X-Mailer: git-send-email 2.13.6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4411Yh3pg2zDqPQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 16:10:47 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1F597rJ016598
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:10:45 -0500
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qnj2gw6uc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:10:45 -0500
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Fri, 15 Feb 2019 05:10:43 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 15 Feb 2019 05:10:41 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1F5Aepd55836862
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 15 Feb 2019 05:10:40 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F1798A405B;
+ Fri, 15 Feb 2019 05:10:39 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 5CAE0A4057;
+ Fri, 15 Feb 2019 05:10:39 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 15 Feb 2019 05:10:39 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id EF806A016E;
+ Fri, 15 Feb 2019 16:10:37 +1100 (AEDT)
+Date: Fri, 15 Feb 2019 16:10:36 +1100
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Subject: Re: [PATCH v2 1/7] powerpc/eeh: Use debugfs_create_u32 for
+ eeh_max_freezes
+References: <20190215004817.19961-1-oohall@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <20190215004817.19961-1-oohall@gmail.com>
+User-Agent: Mutt/1.9.3 (2018-01-21)
+X-TM-AS-GCONF: 00
+x-cbid: 19021505-0016-0000-0000-00000256B232
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021505-0017-0000-0000-000032B0E592
+Message-Id: <20190215051036.GA8338@tungsten.ozlabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-15_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902150037
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,91 +105,115 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Suraj Jitindar Singh <sjitindarsingh@gmail.com>, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds an entry to the kvm_stats_debugfs directory which provides the
-number of large (2M or 1G) pages which have been used to setup the guest
-mappings.
 
-Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
----
- arch/powerpc/include/asm/kvm_host.h    |  2 ++
- arch/powerpc/kvm/book3s.c              |  3 +++
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 15 ++++++++++++++-
- 3 files changed, 19 insertions(+), 1 deletion(-)
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 0f98f00da2ea..cbb090010312 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -99,6 +99,8 @@ struct kvm_nested_guest;
- 
- struct kvm_vm_stat {
- 	ulong remote_tlb_flush;
-+	ulong num_2M_pages;
-+	ulong num_1G_pages;
- };
- 
- struct kvm_vcpu_stat {
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index bd1a677dd9e4..3cc5215bdb2e 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -39,6 +39,7 @@
- #include "book3s.h"
- #include "trace.h"
- 
-+#define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
- #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
- 
- /* #define EXIT_DEBUG */
-@@ -71,6 +72,8 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ "pthru_all",       VCPU_STAT(pthru_all) },
- 	{ "pthru_host",      VCPU_STAT(pthru_host) },
- 	{ "pthru_bad_aff",   VCPU_STAT(pthru_bad_aff) },
-+	{ "num_2M_pages",    VM_STAT(num_2M_pages) },
-+	{ "num_1G_pages",    VM_STAT(num_1G_pages) },
- 	{ NULL }
- };
- 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 1b821c6efdef..f55ef071883f 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -403,8 +403,13 @@ void kvmppc_unmap_pte(struct kvm *kvm, pte_t *pte, unsigned long gpa,
- 		if (!memslot)
- 			return;
- 	}
--	if (shift)
-+	if (shift) { /* 1GB or 2MB page */
- 		page_size = 1ul << shift;
-+		if (shift == PMD_SHIFT)
-+			kvm->stat.num_2M_pages--;
-+		else if (shift == PUD_SHIFT)
-+			kvm->stat.num_1G_pages--;
-+	}
- 
- 	gpa &= ~(page_size - 1);
- 	hpa = old & PTE_RPN_MASK;
-@@ -878,6 +883,14 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
- 		put_page(page);
- 	}
- 
-+	/* Increment number of large pages if we (successfully) inserted one */
-+	if (!ret) {
-+		if (level == 1)
-+			kvm->stat.num_2M_pages++;
-+		else if (level == 2)
-+			kvm->stat.num_1G_pages++;
-+	}
-+
- 	return ret;
- }
- 
--- 
-2.13.6
+On Fri, Feb 15, 2019 at 11:48:11AM +1100, Oliver O'Halloran wrote:
+> There's no need to the custom getter/setter functions so we should remove
+> them in favour of using the generic one. While we're here, change the type
+> of eeh_max_freeze to u32 and print the value in decimal rather than
+> hex because printing it in hex makes no sense.
+>=20
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+
+Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
+
+> ---
+> v2: Replaced uint32_t with u32.
+> ---
+>  arch/powerpc/include/asm/eeh.h |  2 +-
+>  arch/powerpc/kernel/eeh.c      | 21 +++------------------
+>  2 files changed, 4 insertions(+), 19 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/ee=
+h.h
+> index 8b596d096ebe..2daecd677855 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -219,7 +219,7 @@ struct eeh_ops {
+>  };
+> =20
+>  extern int eeh_subsystem_flags;
+> -extern int eeh_max_freezes;
+> +extern u32 eeh_max_freezes;
+>  extern struct eeh_ops *eeh_ops;
+>  extern raw_spinlock_t confirm_error_lock;
+> =20
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index ae05203eb4de..d021f5abeec5 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -109,7 +109,7 @@ EXPORT_SYMBOL(eeh_subsystem_flags);
+>   * frozen count in last hour exceeds this limit, the PE will
+>   * be forced to be offline permanently.
+>   */
+> -int eeh_max_freezes =3D 5;
+> +u32 eeh_max_freezes =3D 5;
+> =20
+>  /* Platform dependent EEH operations */
+>  struct eeh_ops *eeh_ops =3D NULL;
+> @@ -1796,22 +1796,8 @@ static int eeh_enable_dbgfs_get(void *data, u64 *v=
+al)
+>  	return 0;
+>  }
+> =20
+> -static int eeh_freeze_dbgfs_set(void *data, u64 val)
+> -{
+> -	eeh_max_freezes =3D val;
+> -	return 0;
+> -}
+> -
+> -static int eeh_freeze_dbgfs_get(void *data, u64 *val)
+> -{
+> -	*val =3D eeh_max_freezes;
+> -	return 0;
+> -}
+> -
+>  DEFINE_DEBUGFS_ATTRIBUTE(eeh_enable_dbgfs_ops, eeh_enable_dbgfs_get,
+>  			 eeh_enable_dbgfs_set, "0x%llx\n");
+> -DEFINE_DEBUGFS_ATTRIBUTE(eeh_freeze_dbgfs_ops, eeh_freeze_dbgfs_get,
+> -			 eeh_freeze_dbgfs_set, "0x%llx\n");
+>  #endif
+> =20
+>  static int __init eeh_init_proc(void)
+> @@ -1822,9 +1808,8 @@ static int __init eeh_init_proc(void)
+>  		debugfs_create_file_unsafe("eeh_enable", 0600,
+>  					   powerpc_debugfs_root, NULL,
+>  					   &eeh_enable_dbgfs_ops);
+> -		debugfs_create_file_unsafe("eeh_max_freezes", 0600,
+> -					   powerpc_debugfs_root, NULL,
+> -					   &eeh_freeze_dbgfs_ops);
+> +		debugfs_create_u32("eeh_max_freezes", 0600,
+> +				powerpc_debugfs_root, &eeh_max_freezes);
+>  #endif
+>  	}
+> =20
+> --=20
+> 2.20.1
+>=20
+
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlxmScIACgkQMX8w6AQl
+/iJCmgf/ZepaNPmmn3TidcltdCsuz1G5OCJcv5jXsd3rOzirZqmsWIvwuJKrM8HU
+/YrkJLmd1flth35T9fPK3Zhzmm2ilo53ckPv7iswJ/lBeIEPMT8zqnMn10/z9yEU
+KRin5apAjC5vwXarUXqxU52JDMqCMfh3iARKeLlte8DdQQyCB0G3jZ7R/x3bnBDC
+3ysi68+WeViWF7aSPBWGjaP+yLOut43+xeemSWbr5hvV03VVe83vVSEv8YyfTD/p
+3pkSzPWV+yp5U1sgfdJxz7LYoe94dywO3bhm9h3Y91b1b+Zd5xJPC01hm0iSgOSo
+e/+/vE6ZbeqqiXqXE/SrP4K5sMQFpw==
+=akte
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
 
