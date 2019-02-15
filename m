@@ -2,69 +2,84 @@ Return-Path: <SRS0=eC6l=QW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D528BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 15:28:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DBABC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 16:43:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 48FF92192D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 15:28:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2C26C2192B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 16:43:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=amazonses.com header.i=@amazonses.com header.b="KSNOoqqs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48FF92192D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux.com
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wmvKt3GF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C26C2192B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 441HGn20jYzDqgr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Feb 2019 02:28:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 441JxB671czDqhK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Feb 2019 03:43:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=amazonses.com
- (client-ip=54.240.9.37; helo=a9-37.smtp-out.amazonses.com;
- envelope-from=01000168f1c4718d-91714478-72d3-47cd-ae36-2d781947ebde-000000@amazonses.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.com
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amazonses.com header.i=@amazonses.com
- header.b="KSNOoqqs"; dkim-atps=neutral
-Received: from a9-37.smtp-out.amazonses.com (a9-37.smtp-out.amazonses.com
- [54.240.9.37])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="wmvKt3GF"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 441HDY1kkWzDqc6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2019 02:26:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/simple;
- s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1550244409;
- h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:MIME-Version:Content-Type:Feedback-ID;
- bh=ph+Ox1e7xNScZGS+VdWAQM0Ff/E6RjNkQYhIunoJh5I=;
- b=KSNOoqqsLE+r8KYX2OGbVKpGlhsa+Ylr4yLduMXvPZjEz1KtCJCrXjbXi05MCABz
- GfKhX70kQFfDTpoB3XA0etFSJKc3qzbKiYMlp8/e0SZ/sM66h8/4m0+1mqYIrp4Ss5v
- X7EU6bVAeo2r2h9wXORmJ3AkbZYhtBwR8GhooEac=
-Date: Fri, 15 Feb 2019 15:26:49 +0000
-From: Christopher Lameter <cl@linux.com>
-X-X-Sender: cl@nuc-kabylake
-To: Jason Gunthorpe <jgg@ziepe.ca>
-Subject: Re: [PATCH 0/5] use pinned_vm instead of locked_vm to account pinned
- pages
-In-Reply-To: <20190214221629.GD1739@ziepe.ca>
-Message-ID: <01000168f1c4718d-91714478-72d3-47cd-ae36-2d781947ebde-000000@email.amazonses.com>
-References: <20190211224437.25267-1-daniel.m.jordan@oracle.com>
- <20190211225447.GN24692@ziepe.ca>
- <20190214015314.GB1151@iweiny-DESK2.sc.intel.com>
- <20190214060006.GE24692@ziepe.ca>
- <20190214193352.GA7512@iweiny-DESK2.sc.intel.com>
- <20190214201231.GC1739@ziepe.ca>
- <20190214214650.GB7512@iweiny-DESK2.sc.intel.com>
- <20190214221629.GD1739@ziepe.ca>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 441JvS41XjzDqVY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Feb 2019 03:42:10 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 441JvK1bZvz9vKJL;
+ Fri, 15 Feb 2019 17:42:05 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=wmvKt3GF; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id wFruSF5h5nEE; Fri, 15 Feb 2019 17:42:05 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 441JvK0Rw0z9vKJ2;
+ Fri, 15 Feb 2019 17:42:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550248925; bh=N0GxXZAZjf/t+PyaEvFZaigQA7Fxeh5/5I55hnizrJg=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=wmvKt3GFIFKFS+jMrFvJkzSVRKeRdJkCwXdBPkrVlpgmr4ggQGD8RxdI/38e5qER0
+ uvINDKKrWS1ZjWwMEG+G1i8ScifxM3dugJc8Wxw9puzwcw8ndmgTq90HdRl7VE2GGv
+ YU+hzWZPMNHGWiYId7l/OM0/om5ML51K8piSSx8s=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 919868B915;
+ Fri, 15 Feb 2019 17:42:06 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id Pk0ElruzQP_P; Fri, 15 Feb 2019 17:42:06 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 601C78B90C;
+ Fri, 15 Feb 2019 17:42:06 +0100 (CET)
+Subject: Re: [RFC PATCH 0/5] powerpc: KASAN for 64-bit Book3E
+To: Daniel Axtens <dja@axtens.net>, aneesh.kumar@linux.ibm.com,
+ bsingharora@gmail.com
+References: <20190215000441.14323-1-dja@axtens.net>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <1509a715-ed76-5a67-2987-fbeac60ca7ac@c-s.fr>
+Date: Fri, 15 Feb 2019 16:39:43 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.7.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-SES-Outgoing: 2019.02.15-54.240.9.37
-Feedback-ID: 1.us-east-1.fQZZZ0Xtj2+TD7V5apTT/NrT6QKuPgzCT/IC7XYgDKI=:AmazonSES
+In-Reply-To: <20190215000441.14323-1-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,56 +91,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: dave@stgolabs.net, jack@suse.cz, kvm@vger.kernel.org, atull@kernel.org,
- aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, linux-fpga@vger.kernel.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Daniel Jordan <daniel.m.jordan@oracle.com>, linux-mm@kvack.org,
- alex.williamson@redhat.com, mdf@kernel.org, akpm@linux-foundation.org,
- Ira Weiny <ira.weiny@intel.com>, hao.wu@intel.com
+Cc: linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Feb 2019, Jason Gunthorpe wrote:
 
-> On Thu, Feb 14, 2019 at 01:46:51PM -0800, Ira Weiny wrote:
->
-> > > > > Really unclear how to fix this. The pinned/locked split with two
-> > > > > buckets may be the right way.
-> > > >
-> > > > Are you suggesting that we have 2 user limits?
-> > >
-> > > This is what RDMA has done since CL's patch.
-> >
-> > I don't understand?  What is the other _user_ limit (other than
-> > RLIMIT_MEMLOCK)?
->
-> With todays implementation RLIMIT_MEMLOCK covers two user limits,
-> total number of pinned pages and total number of mlocked pages. The
-> two are different buckets and not summed.
 
-Applications were failing at some point because they were effectively
-summed up. If you mlocked/pinned a dataset of more than half the memory of
-a system then things would get really weird.
+On 02/15/2019 12:04 AM, Daniel Axtens wrote:
+> Building on the work of Christophe, Aneesh and Balbir, I've ported
+> KASAN to the e6500, a 64-bit Book3E processor which doesn't have a
+> hashed page table. It applies on top of Christophe's series, v5.
+> 
+> It requires some changes to the KASAN core - please let me know if
+> these are problematic and we see if an alternative approach is
+> possible.
+> 
+> The KASAN shadow area is mapped into vmemmap space:
+> 0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
+> To do this we require that vmemmap be disabled. (This is the default
+> in the kernel config that QorIQ provides for the machine in their
+> SDK anyway - they use flat memory.)
+> 
+> Only outline instrumentation is supported and only KASAN_MINIMAL works.
+> Only the kernel linear mapping (0xc000...) is checked. The vmalloc and
+> ioremap areas (also in 0x800...) are all mapped to a zero page. As
+> with the Book3S hash series, this requires overriding the memory <->
+> shadow mapping.
+> 
+> Also, as with both previous 64-bit series, early instrumentation is not
+> supported.
+> 
+> KVM, kexec and xmon have not been tested.
+> 
+> Thanks to those who have done the heavy lifting over the past several years:
+>   - Christophe's 32 bit series: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-February/185379.html
+>   - Aneesh's Book3S hash series: https://lwn.net/Articles/655642/
+>   - Balbir's Book3S radix series: https://patchwork.ozlabs.org/patch/795211/
+> 
+> While useful if you have an Book3E device, this is mostly intended
+> as a warm-up exercise for reviving Aneesh's series for book3s hash.
+> In particular, changes to the kasan core are going to be required
+> for hash and radix as well.
+> 
+> Regards,
+> Daniel
 
-Also there is the possibility of even more duplication because pages can
-be pinned by multiple kernel subsystems. So you could get more than
-doubling of the number.
+Hi Daniel,
 
-The sane thing was to account them separately so that mlocking and
-pinning worked without apps failing and then wait for another genius
-to find out how to improve the situation by getting the pinned page mess
-under control.
+I'll look into your series in more details later, for now I just want to 
+let you know that I get a build failure:
 
-It is not even advisable to check pinned pages against any limit because
-pages can be pinned by multiple subsystems.
+   LD      vmlinux.o
+lib/string.o: In function `memcmp':
+/root/linux-powerpc/lib/string.c:857: multiple definition of `memcmp'
+arch/powerpc/lib/memcmp_32.o:/root/linux-powerpc/arch/powerpc/lib/memcmp_32.S:16: 
+first defined here
 
-The main problem here is that we only have a refcount to indicate pinning
-and no way to clearly distinguish long term from short pins. In order to
-really fix this issue we would need to have a list of subsystems that have
-taken long term pins on a page. But doing so would waste a lot of memory
-and cause a significant performance regression.
 
-And the discussions here seem to be meandering around these issues.
-Nothing really that convinces me that we have a clean solution at hand.
+Christophe
 
+> 
+> Daniel Axtens (5):
+>    kasan: do not open-code addr_has_shadow
+>    kasan: allow architectures to manage the memory-to-shadow mapping
+>    kasan: allow architectures to provide an outline readiness check
+>    powerpc: move KASAN into its own subdirectory
+>    powerpc: KASAN for 64bit Book3E
+> 
+>   arch/powerpc/Kconfig                          |  1 +
+>   arch/powerpc/Makefile                         |  2 +
+>   arch/powerpc/include/asm/kasan.h              | 77 +++++++++++++++++--
+>   arch/powerpc/include/asm/ppc_asm.h            |  7 ++
+>   arch/powerpc/include/asm/string.h             |  7 +-
+>   arch/powerpc/lib/mem_64.S                     |  6 +-
+>   arch/powerpc/lib/memcmp_64.S                  |  5 +-
+>   arch/powerpc/lib/memcpy_64.S                  |  3 +-
+>   arch/powerpc/lib/string.S                     | 15 ++--
+>   arch/powerpc/mm/Makefile                      |  4 +-
+>   arch/powerpc/mm/kasan/Makefile                |  6 ++
+>   .../{kasan_init.c => kasan/kasan_init_32.c}   |  0
+>   arch/powerpc/mm/kasan/kasan_init_book3e_64.c  | 53 +++++++++++++
+>   arch/powerpc/purgatory/Makefile               |  3 +
+>   arch/powerpc/xmon/Makefile                    |  1 +
+>   include/linux/kasan.h                         |  6 ++
+>   mm/kasan/generic.c                            |  5 +-
+>   mm/kasan/generic_report.c                     |  2 +-
+>   mm/kasan/kasan.h                              |  6 +-
+>   mm/kasan/report.c                             |  6 +-
+>   mm/kasan/tags.c                               |  3 +-
+>   21 files changed, 188 insertions(+), 30 deletions(-)
+>   create mode 100644 arch/powerpc/mm/kasan/Makefile
+>   rename arch/powerpc/mm/{kasan_init.c => kasan/kasan_init_32.c} (100%)
+>   create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
+> 
