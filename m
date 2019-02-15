@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA388C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:14:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 16B70C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:15:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6AC4F206DD
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:14:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6AC4F206DD
+	by mail.kernel.org (Postfix) with ESMTPS id 848572192D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 05:15:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 848572192D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4411dM3bMwzDqW7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 16:13:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4411gV3TQlzDqcN
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Feb 2019 16:15:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,64 +29,64 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4411ZP36kpzDqcG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 16:11:25 +1100 (AEDT)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1F59177122978
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:11:22 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qnpqy8ur8-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4411bw4VsvzDqdW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 16:12:44 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1F58t6t131850
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:12:42 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qnn8sv8e2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:11:22 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Feb 2019 00:12:42 -0500
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Fri, 15 Feb 2019 05:11:21 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Fri, 15 Feb 2019 05:12:40 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 15 Feb 2019 05:11:19 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1F5BI003670282
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 15 Feb 2019 05:11:18 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1369FAE04D;
- Fri, 15 Feb 2019 05:11:18 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B70A4AE051;
- Fri, 15 Feb 2019 05:11:17 +0000 (GMT)
+ Fri, 15 Feb 2019 05:12:39 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1F5Ccq955967942
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 15 Feb 2019 05:12:38 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0A18DA4064;
+ Fri, 15 Feb 2019 05:12:38 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6A0C0A4054;
+ Fri, 15 Feb 2019 05:12:37 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 15 Feb 2019 05:11:17 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 15 Feb 2019 05:12:37 +0000 (GMT)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 80799A016E;
- Fri, 15 Feb 2019 16:11:16 +1100 (AEDT)
-Date: Fri, 15 Feb 2019 16:11:15 +1100
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 36E1FA016E;
+ Fri, 15 Feb 2019 16:12:36 +1100 (AEDT)
+Date: Fri, 15 Feb 2019 16:12:35 +1100
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: "Oliver O'Halloran" <oohall@gmail.com>
-Subject: Re: [PATCH v2 2/7] powerpc/eeh_cache: Add pr_debug() prints for
- insert/remove
+Subject: Re: [PATCH v2 3/7] powerpc/eeh_cache: Add a way to dump the EEH
+ address cache
 References: <20190215004817.19961-1-oohall@gmail.com>
- <20190215004817.19961-2-oohall@gmail.com>
+ <20190215004817.19961-3-oohall@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
+ protocol="application/pgp-signature"; boundary="LwW0XdcUbUexiWVK"
 Content-Disposition: inline
-In-Reply-To: <20190215004817.19961-2-oohall@gmail.com>
+In-Reply-To: <20190215004817.19961-3-oohall@gmail.com>
 User-Agent: Mutt/1.9.3 (2018-01-21)
 X-TM-AS-GCONF: 00
-x-cbid: 19021505-0012-0000-0000-000002F5F838
+x-cbid: 19021505-0028-0000-0000-00000348CF24
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021505-0013-0000-0000-0000212D77BE
-Message-Id: <20190215051114.GB8338@tungsten.ozlabs.ibm.com>
+x-cbparentid: 19021505-0029-0000-0000-00002406FD4E
+Message-Id: <20190215051234.GC8338@tungsten.ozlabs.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-15_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -112,73 +112,127 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---TRYliJ5NKNqkz5bu
+--LwW0XdcUbUexiWVK
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 15, 2019 at 11:48:12AM +1100, Oliver O'Halloran wrote:
-> The EEH address cache is used to map a physical MMIO address back to a PCI
-> device. It's useful to know when it's being manipulated, but currently th=
-is
-> requires recompiling with #define DEBUG set. This is pointless since we
-> have dynamic_debug nowdays, so remove the #ifdef guard and add a pr_debug=
-()
-> for the remove case too.
+On Fri, Feb 15, 2019 at 11:48:13AM +1100, Oliver O'Halloran wrote:
+> Adds a debugfs file that can be read to view the contents of the EEH
+> address cache. This is pretty similar to the existing
+> eeh_addr_cache_print() function, but that function is intended to debug
+> issues inside of the kernel since it's #ifdef`ed out by default, and writ=
+es
+> into the kernel log.
 >=20
 > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
 
 Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
 > ---
->  arch/powerpc/kernel/eeh_cache.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> v2: Added missing #endif
+>     Replaced while loop with a for
+> ---
+>  arch/powerpc/include/asm/eeh.h  |  3 +++
+>  arch/powerpc/kernel/eeh.c       |  1 +
+>  arch/powerpc/kernel/eeh_cache.c | 30 ++++++++++++++++++++++++++----
+>  3 files changed, 30 insertions(+), 4 deletions(-)
 >=20
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/ee=
+h.h
+> index 2daecd677855..478f199d5663 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -460,6 +460,9 @@ static inline void eeh_readsl(const volatile void __i=
+omem *addr, void * buf,
+>  		eeh_check_failure(addr);
+>  }
+> =20
+> +
+> +void eeh_cache_debugfs_init(void);
+> +
+>  #endif /* CONFIG_PPC64 */
+>  #endif /* __KERNEL__ */
+>  #endif /* _POWERPC_EEH_H */
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index d021f5abeec5..82d22c671c0e 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1810,6 +1810,7 @@ static int __init eeh_init_proc(void)
+>  					   &eeh_enable_dbgfs_ops);
+>  		debugfs_create_u32("eeh_max_freezes", 0600,
+>  				powerpc_debugfs_root, &eeh_max_freezes);
+> +		eeh_cache_debugfs_init();
+>  #endif
+>  	}
+> =20
 > diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_ca=
 che.c
-> index 201943d54a6e..b2c320e0fcef 100644
+> index b2c320e0fcef..5c5697cced41 100644
 > --- a/arch/powerpc/kernel/eeh_cache.c
 > +++ b/arch/powerpc/kernel/eeh_cache.c
-> @@ -157,10 +157,8 @@ eeh_addr_cache_insert(struct pci_dev *dev, resource_=
-size_t alo,
->  	piar->pcidev =3D dev;
->  	piar->flags =3D flags;
+> @@ -26,6 +26,7 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/atomic.h>
+>  #include <asm/pci-bridge.h>
+> +#include <asm/debugfs.h>
+>  #include <asm/ppc-pci.h>
+> =20
+> =20
+> @@ -298,9 +299,30 @@ void eeh_addr_cache_build(void)
+>  		eeh_addr_cache_insert_dev(dev);
+>  		eeh_sysfs_add_device(dev);
+>  	}
+> +}
 > =20
 > -#ifdef DEBUG
->  	pr_debug("PIAR: insert range=3D[%pap:%pap] dev=3D%s\n",
->  		 &alo, &ahi, pci_name(dev));
+> -	/* Verify tree built up above, echo back the list of addrs. */
+> -	eeh_addr_cache_print(&pci_io_addr_cache_root);
 > -#endif
-> =20
->  	rb_link_node(&piar->rb_node, parent, p);
->  	rb_insert_color(&piar->rb_node, &pci_io_addr_cache_root.rb_root);
-> @@ -240,6 +238,8 @@ static inline void __eeh_addr_cache_rmv_dev(struct pc=
-i_dev *dev)
->  		piar =3D rb_entry(n, struct pci_io_addr_range, rb_node);
-> =20
->  		if (piar->pcidev =3D=3D dev) {
-> +			pr_debug("PIAR: remove range=3D[%pap:%pap] dev=3D%s\n",
-> +				 &piar->addr_lo, &piar->addr_hi, pci_name(dev));
->  			rb_erase(n, &pci_io_addr_cache_root.rb_root);
->  			kfree(piar);
->  			goto restart;
+> +static int eeh_addr_cache_show(struct seq_file *s, void *v)
+> +{
+> +	struct pci_io_addr_range *piar;
+> +	struct rb_node *n;
+> +
+> +	spin_lock(&pci_io_addr_cache_root.piar_lock);
+> +	for (n =3D rb_first(&pci_io_addr_cache_root.rb_root); n; n =3D rb_next(=
+n)) {
+> +		piar =3D rb_entry(n, struct pci_io_addr_range, rb_node);
+> +
+> +		seq_printf(s, "%s addr range [%pap-%pap]: %s\n",
+> +		       (piar->flags & IORESOURCE_IO) ? "i/o" : "mem",
+> +		       &piar->addr_lo, &piar->addr_hi, pci_name(piar->pcidev));
+> +	}
+> +	spin_unlock(&pci_io_addr_cache_root.piar_lock);
+> +
+> +	return 0;
+> +}
+> +DEFINE_SHOW_ATTRIBUTE(eeh_addr_cache);
+> +
+> +void eeh_cache_debugfs_init(void)
+> +{
+> +	debugfs_create_file_unsafe("eeh_address_cache", 0400,
+> +			powerpc_debugfs_root, NULL,
+> +			&eeh_addr_cache_fops);
+>  }
 > --=20
 > 2.20.1
 >=20
 
---TRYliJ5NKNqkz5bu
+--LwW0XdcUbUexiWVK
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlxmSfIACgkQMX8w6AQl
-/iIIeAf/ZTDDLhkAibJjwf5YOcfcwcQyzlRgun7CV5v+uy67ABrPLQgQBBbin4dL
-997GFTnY8FiL5/dnHp3KBm1BSr8KoOTan+8hYuvuyZWQ9HrRDPnJn2TITWpMqhzQ
-7mkLu21RbGXUdU8NzhLEHdXvh9eGwMg+lMbeay3EBtCZLE594IYChYJXWdrTkbrW
-LrNu48iXc0yy+VQ7L4gnnat2cGCA0nV9CksRwXy7hfvdkyMzHt8e6G2ph5RCJExi
-FAIf92tV2cMt8W9dgVrA0IuQq77dFUNJMIgjV6lsSeC1WZLfguiCTZxS0oLp8E0J
-wE0QRFJEl25depA5nEZ3VAAWQvHPZQ==
-=v9wp
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlxmSkIACgkQMX8w6AQl
+/iLOvAf/cmvoSKp7mLWZFxE7609xaclxfN9nqrsLrlyL++E0bi2SE/0ArGqVwpzy
+tJnNVIX5OkMW8SGRSKVyw192vQ/PfRkqtlwYJ308kkXdn0GvZabZVNqSW+t28eFN
+fj5n+AqN2HSDXKof1hb+hQ7YZnZ4l6SuMi5TXkwX1w23kUhFKlNwsTMjUINEScdJ
+W+JGOCcJt9YZF3Ml9Wizxv7N+LM+oQYP/yesC+yPHMDBwN6JvA5ZLuMTBXQbEO0V
+g1sOUWlqDMXABPfI3yDrckyspusa9U+8NMkTjGkPNkdcDr4ckweVXjdvNZebM/LS
+HfUYkltmXrHTVyfzmPQn310NjQ9KJg==
+=C2jl
 -----END PGP SIGNATURE-----
 
---TRYliJ5NKNqkz5bu--
+--LwW0XdcUbUexiWVK--
 
