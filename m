@@ -2,69 +2,92 @@ Return-Path: <SRS0=hR0M=QY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF7ABC43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 17:08:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5544C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 19:13:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 151EA21934
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 17:08:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 151EA21934
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 0563B2186A
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 19:13:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0563B2186A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 442YNb64NLzDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 04:08:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 442c9B0jMMzDqLd
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 06:13:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
- [217.70.183.199])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=akshay.adiga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 442YLm5mqKzDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2019 04:06:37 +1100 (AEDT)
-X-Originating-IP: 79.86.19.127
-Received: from [192.168.0.11] (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id A9E19FF802;
- Sun, 17 Feb 2019 17:06:26 +0000 (UTC)
-From: Alex Ghiti <alex@ghiti.fr>
-Subject: Re: [PATCH v3] hugetlb: allow to free gigantic pages regardless of
- the configuration
-To: Dave Hansen <dave.hansen@intel.com>, Vlastimil Babka <vbabka@suse.cz>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Mike Kravetz <mike.kravetz@oracle.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-References: <20190214193100.3529-1-alex@ghiti.fr>
- <c6d9be5f-3b3a-c95b-0045-9f98ea52a5c4@intel.com>
-Message-ID: <37046a52-a0eb-cb1a-0a72-601cdee45917@ghiti.fr>
-Date: Sun, 17 Feb 2019 12:06:26 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 442c7T5bCtzDqKN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2019 06:12:02 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1HJ9IRr173518
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2019 14:11:59 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qqcm79d1s-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2019 14:11:59 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Sun, 17 Feb 2019 19:11:57 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 17 Feb 2019 19:11:55 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1HJBsvx19398776
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Sun, 17 Feb 2019 19:11:54 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 15471A4053;
+ Sun, 17 Feb 2019 19:11:54 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 07F01A4051;
+ Sun, 17 Feb 2019 19:11:52 +0000 (GMT)
+Received: from aks.ibm (unknown [9.85.68.185])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Sun, 17 Feb 2019 19:11:51 +0000 (GMT)
+Date: Mon, 18 Feb 2019 00:41:49 +0530
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Subject: Re: [PATCH] cpufreq: powernv: fix missing check of return value in
+ init_powernv_pstates()
+References: <20190216170623.12634-1-tiny.windzz@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <c6d9be5f-3b3a-c95b-0045-9f98ea52a5c4@intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: sv-FI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190216170623.12634-1-tiny.windzz@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 19021719-0020-0000-0000-00000317CFBB
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021719-0021-0000-0000-000021690B64
+Message-Id: <20190217190155.GA25556@aks.ibm>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-17_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902170148
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,220 +99,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/15/19 12:34 PM, Dave Hansen wrote:
->> -#if (defined(CONFIG_MEMORY_ISOLATION) && defined(CONFIG_COMPACTION)) || defined(CONFIG_CMA)
->> +#ifdef CONFIG_CONTIG_ALLOC
->>   /* The below functions must be run on a range from a single zone. */
->>   extern int alloc_contig_range(unsigned long start, unsigned long end,
->>   			      unsigned migratetype, gfp_t gfp_mask);
->> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
->>   #endif
->> +extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
-> There's a lot of stuff going on in this patch.  Adding/removing config
-> options.  Please get rid of these superfluous changes or at least break
-> them out.
-
-
-I agree that this patch does a lot of things. I am going at least to 
-split it
-into 2 separate patches, one suggested-by Vlastimil regarding the renaming
-of MEMORY_ISOLATION && COMPACTION || CMA, and another that indeed
-does what was primarily intended.
-
-
->>   #ifdef CONFIG_CMA
->>   /* CMA stuff */
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index 25c71eb8a7db..138a8df9b813 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -252,12 +252,17 @@ config MIGRATION
->>   	  pages as migration can relocate pages to satisfy a huge page
->>   	  allocation instead of reclaiming.
->>   
->> +
->>   config ARCH_ENABLE_HUGEPAGE_MIGRATION
->>   	bool
-> Like this. :)
-
-
-My apologies for that.
-
-
->>   config ARCH_ENABLE_THP_MIGRATION
->>   	bool
->>   
->> +config CONTIG_ALLOC
->> +	def_bool y
->> +	depends on (MEMORY_ISOLATION && COMPACTION) || CMA
->> +
->>   config PHYS_ADDR_T_64BIT
->>   	def_bool 64BIT
-> Please think carefully though the Kconfig dependencies.  'select' is
-> *not* the same as 'depends on'.
->
-> This replaces a bunch of arch-specific "select ARCH_HAS_GIGANTIC_PAGE"
-> with a 'depends on'.  I *think* that ends up being OK, but it absolutely
-> needs to be addressed in the changelog about why *you* think it is OK
-> and why it doesn't change the functionality of any of the patched
-> architetures.
-
-
-Ok.
-
-
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index afef61656c1e..e686c92212e9 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -1035,7 +1035,6 @@ static int hstate_next_node_to_free(struct hstate *h, nodemask_t *nodes_allowed)
->>   		((node = hstate_next_node_to_free(hs, mask)) || 1);	\
->>   		nr_nodes--)
->>   
->> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
->>   static void destroy_compound_gigantic_page(struct page *page,
->>   					unsigned int order)
->>   {
-> Whats the result of this #ifdef removal?  A universally larger kernel
-> even for architectures that do not support runtime gigantic page
-> alloc/free?  That doesn't seem like a good thing.
-
-
-Ok, I agree, now that we removed the "wrong" definition of 
-ARCH_HAS_GIGANTIC_PAGE,
-we can actually use this define for architectures to show they support 
-gigantic pages
-and avoid the problem you mention. Thanks.
-
-
->> @@ -1058,6 +1057,12 @@ static void free_gigantic_page(struct page *page, unsigned int order)
->>   	free_contig_range(page_to_pfn(page), 1 << order);
->>   }
->>   
->> +static inline bool gigantic_page_runtime_allocation_supported(void)
->> +{
->> +	return IS_ENABLED(CONFIG_CONTIG_ALLOC);
->> +}
-> Why bother having this function?  Why don't the callers just check the
-> config option directly?
-
-
-Ok, this function is only used once in set_max_huge_pages where you
-mention the need for a comment, so I can get rid of it. Thanks.
-
-
->> +#ifdef CONFIG_CONTIG_ALLOC
->>   static int __alloc_gigantic_page(unsigned long start_pfn,
->>   				unsigned long nr_pages, gfp_t gfp_mask)
->>   {
->> @@ -1143,22 +1148,15 @@ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
->>   static void prep_new_huge_page(struct hstate *h, struct page *page, int nid);
->>   static void prep_compound_gigantic_page(struct page *page, unsigned int order);
->>   
->> -#else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
->> -static inline bool gigantic_page_supported(void) { return false; }
->> +#else /* !CONFIG_CONTIG_ALLOC */
->>   static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
->>   		int nid, nodemask_t *nodemask) { return NULL; }
->> -static inline void free_gigantic_page(struct page *page, unsigned int order) { }
->> -static inline void destroy_compound_gigantic_page(struct page *page,
->> -						unsigned int order) { }
->>   #endif
->>   
->>   static void update_and_free_page(struct hstate *h, struct page *page)
->>   {
->>   	int i;
->>   
->> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
->> -		return;
-> I don't get the point of removing this check.  Logically, this reads as
-> checking if the architecture supports gigantic hstates and has nothing
-> to do with allocation.
-
-I think this check was wrong from the beginning: gigantic_page_supported()
-was only checking (MEMORY_ISOLATION && COMPACTION) || CMA, which has
-nothing to do with the capability to free gigantic pages.
-
-But then I went through all the architectures to see if removing this 
-test could
-affect any of them. And I noticed that if an architecture supports gigantic
-page without advertising it with ARCH_HAS_GIGANTIC_PAGE, then it would
-decrement the number of free huge page but would not actually free the 
-pages.
-
-I found at least 2 archs that have gigantic pages, but do not allow
-runtime allocation nor freeing of those pages because they do not define
-the (wrong) ARCH_HAS_GIGANTIC_PAGE:
-
-- ia64 has HPAGE_SHIFT_DEFAULT = 28, with PAGE_SHIFT = 14
-- sh has max HPAGE_SHIFT = 29 and max PAGE_SHIFT = 16
-
-with default MAX_ORDER = 11, both architectures support gigantic pages.
-
-So I'm going to propose a patch that selects the (right) 
-ARCH_HAS_GIGANTIC_PAGE
-for those archs, because I think they should be able to free their boottime
-gigantic pages.
-
-Regarding this check, we can either remove it if we are sure that
-every architecture that has gigantic pages selects ARCH_HAS_GIGANTIC_PAGE,
-or leaving it in case some future archs forget to select it.
-
-I'd rather patch all archs so that they can at least free gigantic pages and
-then remove the test since hstate_is_gigantic would imply 
-gigantic_page_supported.
-I will propose something like that if you agree.
-
-
->>   	h->nr_huge_pages--;
->>   	h->nr_huge_pages_node[page_to_nid(page)]--;
->>   	for (i = 0; i < pages_per_huge_page(h); i++) {
->> @@ -2276,13 +2274,20 @@ static int adjust_pool_surplus(struct hstate *h, nodemask_t *nodes_allowed,
->>   }
->>   
->>   #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
->> -static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
->> +static int set_max_huge_pages(struct hstate *h, unsigned long count,
->>   						nodemask_t *nodes_allowed)
->>   {
->>   	unsigned long min_count, ret;
->>   
->> -	if (hstate_is_gigantic(h) && !gigantic_page_supported())
->> -		return h->max_huge_pages;
->> +	if (hstate_is_gigantic(h) &&
->> +		!gigantic_page_runtime_allocation_supported()) {
-> The indentation here is wrong and reduces readability.  Needs to be like
-> this:
->
-> 	if (hstate_is_gigantic(h) &&
-> 	    !gigantic_page_runtime_allocation_supported()) {
-
-
-This will disappear with your previous remark, thanks.
-
-
->> +		spin_lock(&hugetlb_lock);
->> +		if (count > persistent_huge_pages(h)) {
->> +			spin_unlock(&hugetlb_lock);
->> +			return -EINVAL;
->> +		}
->> +		goto decrease_pool;
->> +	}
-> Needs comments.
->
-> 	/* Gigantic pages can be freed but not allocated */
->
-> or something.
->
-
-Ok, I agree, I'll add that and another sentence regarding the removal
-of gigantic_page_runtime_allocation_supported.
-
-Thank you Dave for your comments !
-
-Alex
+On Sat, Feb 16, 2019 at 12:06:23PM -0500, Yangtao Li wrote:
+> kmalloc() could fail, so insert a check of its return value. And
+> if it fails, returns -ENOMEM.
+> 
+> And remove (struct pstate_idx_revmap_data *) to fix coccinelle WARNING
+> by the way.
+> 
+> WARNING: casting value returned by memory allocation function to (struct
+> pstate_idx_revmap_data *) is useless.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+Looks good to me. Thanks for fixing this.
 
