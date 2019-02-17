@@ -2,45 +2,45 @@ Return-Path: <SRS0=hR0M=QY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B3E5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 08:22:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A483FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 08:23:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5E3932192D
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 08:22:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5E3932192D
+	by mail.kernel.org (Postfix) with ESMTPS id 29D8A2192D
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 08:23:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 29D8A2192D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 442Kjq0x9KzDqNF
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 19:22:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 442KlS1kGbzDq5n
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Feb 2019 19:23:48 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 442Kh34ckYzDq5n
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2019 19:20:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 442Khx5G7dzDqP2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Feb 2019 19:21:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 442Kh31Mqjz9sD4;
- Sun, 17 Feb 2019 19:20:51 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.0-5 tag
-Date: Sun, 17 Feb 2019 19:20:50 +1100
-Message-ID: <87k1hyddwd.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Received: by ozlabs.org (Postfix)
+ id 442Khx3RjLz9sD4; Sun, 17 Feb 2019 19:21:37 +1100 (AEDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 442Khx2lFLz9sDX; Sun, 17 Feb 2019 19:21:37 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: a58007621be33e9f7c7bed5d5ff8ecb914e1044a
+X-Patchwork-Hint: ignore
+In-Reply-To: <20190214062339.7139-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: powerpc/64s: Fix possible corruption on big endian due to
+ pgd/pud_present()
+Message-Id: <442Khx2lFLz9sDX@ozlabs.org>
+Date: Sun, 17 Feb 2019 19:21:37 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,59 +52,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, jack@suse.cz, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, erhard_f@mailbox.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Thu, 2019-02-14 at 06:23:39 UTC, Michael Ellerman wrote:
+> In v4.20 we changed our pgd/pud_present() to check for _PAGE_PRESENT
+> rather than just checking that the value is non-zero, e.g.:
+> 
+>   static inline int pgd_present(pgd_t pgd)
+>   {
+>  -       return !pgd_none(pgd);
+>  +       return (pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+>   }
+> 
+> Unfortunately this is broken on big endian, as the result of the
+> bitwise && is truncated to int, which is always zero because
+> _PAGE_PRESENT is 0x8000000000000000ul. This means pgd_present() and
+> pud_present() are always false at compile time, and the compiler
+> elides the subsequent code.
+> 
+> Remarkably with that bug present we are still able to boot and run
+> with few noticeable effects. However under some work loads we are able
+> to trigger a warning in the ext4 code:
+> 
+>   WARNING: CPU: 11 PID: 29593 at fs/ext4/inode.c:3927 .ext4_set_page_dirty+0x70/0xb0
+>   CPU: 11 PID: 29593 Comm: debugedit Not tainted 4.20.0-rc1 #1
+>   ...
+>   NIP .ext4_set_page_dirty+0x70/0xb0
+>   LR  .set_page_dirty+0xa0/0x150
+>   Call Trace:
+>    .set_page_dirty+0xa0/0x150
+>    .unmap_page_range+0xbf0/0xe10
+>    .unmap_vmas+0x84/0x130
+>    .unmap_region+0xe8/0x190
+>    .__do_munmap+0x2f0/0x510
+>    .__vm_munmap+0x80/0x110
+>    .__se_sys_munmap+0x14/0x30
+>    system_call+0x5c/0x70
+> 
+> The fix is simple, we need to convert the result of the bitwise && to
+> an int before returning it.
+> 
+> Thanks to Jan Kara and Aneesh for help with debugging.
+> 
+> Fixes: da7ad366b497 ("powerpc/mm/book3s: Update pmd_present to look at _PAGE_PRESENT bit")
+> Cc: stable@vger.kernel.org # v4.20+
+> Reported-by: Erhard F. <erhard_f@mailbox.org>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Hi Linus,
+Applied to powerpc fixes.
 
-Please pull one more powerpc fix for 5.0:
+https://git.kernel.org/powerpc/c/a58007621be33e9f7c7bed5d5ff8ecb9
 
-The following changes since commit 5a3840a470c41ec0b85cd36ca80370330656b163:
-
-  powerpc/papr_scm: Use the correct bind address (2019-02-01 10:13:51 +1100)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.0-5
-
-for you to fetch changes up to a58007621be33e9f7c7bed5d5ff8ecb914e1044a:
-
-  powerpc/64s: Fix possible corruption on big endian due to pgd/pud_present() (2019-02-17 15:24:45 +1100)
-
-- ------------------------------------------------------------------
-powerpc fixes for 5.0 #5
-
-Just one fix, for pgd/pud_present() which were broken on big endian since v4.20,
-leading to possible data corruption.
-
-Thanks to:
-  Aneesh Kumar K.V., Erhard F., Jan Kara.
-
-- ------------------------------------------------------------------
-Michael Ellerman (1):
-      powerpc/64s: Fix possible corruption on big endian due to pgd/pud_present()
-
-
- arch/powerpc/include/asm/book3s/64/pgtable.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBAgAGBQJcaRiIAAoJEFHr6jzI4aWA6rYQAKQQGiQAWrbGlP65hMGjx++c
-6YTsHnR88NpvWc0hGp9Pa8w/JCHBVWY1rlkrm/WfmerGb9y2vHR7HrwMVwA3Sw4Y
-tTzYO4zUPtRghdcSQhLLKmkfxFtX6w/ZrLcBDwcQkhUhNKGxEptgIaJZFwJmdpfv
-2eAbq+inaNwDK5IVjANOxniwUmRYCcj5HhmnBiK46zrQ5q6S/0Z77CvZri4OxrlX
-ywyH9RjqTTqqfUe0abAt3C0/7SKjzjZeHOOGHeGb314+70zCYfT781IlCaII6d3J
-sOP4WnXGXX4pKVuDqu6BzaRf/sJBppiyHe4+iWE4FGKFUT1AUU18wausYmIeJcE/
-P4FzEMWk9dOJEOJ4/XKbvrpWmpOiUl9w1jY/PVNh1QWyrzk1NVr+jhhNTjgvX6lj
-9SVrYuhl57Ops5nqv3b6we+WbnG9Irfy+LqopJUePyUrdq/OljrRGp21WiLF1GYI
-fzYszqvv8+iES+F4sgocpgf0nt2M3YSu+f5HdHJ8Q2RwbeScZz24IVSV7N4/ko3e
-aGG8PL8dhddu5jFxOWEKWesv5w4RaxPpnMqz+VolDoP21+p6nZvx2QsxtVwk0V/R
-WXMV7iEMZpjJK+KvKN1dKDKVX+sf5XcMa2fbCZ2LiXEnj5esF3EL2YABuSUOapm3
-i04uXRAf2lxI5mEXPxK7
-=PcTT
------END PGP SIGNATURE-----
+cheers
