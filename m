@@ -2,55 +2,55 @@ Return-Path: <SRS0=Hg4A=QZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78071C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:22:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AF2EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:28:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B29BD2176F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:22:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B29BD2176F
+	by mail.kernel.org (Postfix) with ESMTPS id E94F52147A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:28:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E94F52147A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4434L75570zDqJX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 00:22:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4434S34qLCzDqHF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 00:28:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.190; helo=huawei.com;
- envelope-from=yuehaibing@huawei.com; receiver=<UNKNOWN>)
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4434JK4tC1zDqDT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 00:21:20 +1100 (AEDT)
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.58])
- by Forcepoint Email with ESMTP id E44F4920536E909093C9;
- Mon, 18 Feb 2019 21:21:15 +0800 (CST)
-Received: from [127.0.0.1] (10.177.31.96) by DGGEMS408-HUB.china.huawei.com
- (10.3.19.208) with Microsoft SMTP Server id 14.3.408.0; Mon, 18 Feb 2019
- 21:21:12 +0800
-Subject: Re: [PATCH -next] powerpc/pseries: Fix platform_no_drv_owner.cocci
- warnings
-To: Julia Lawall <julia.lawall@lip6.fr>
-References: <20190218125930.87548-1-yuehaibing@huawei.com>
- <alpine.DEB.2.20.1902181353150.3532@hadrien>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4434Q04l0lzDqGk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 00:26:16 +1100 (AEDT)
+Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
+ by Forcepoint Email with ESMTP id 58B63557D8B01959C193;
+ Mon, 18 Feb 2019 21:26:12 +0800 (CST)
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
+ 14.3.408.0; Mon, 18 Feb 2019 21:26:05 +0800
 From: YueHaibing <yuehaibing@huawei.com>
-Message-ID: <88ec8c6a-68ac-a96c-0a82-b2537fc699f2@huawei.com>
-Date: Mon, 18 Feb 2019 21:21:11 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101
- Thunderbird/45.2.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Oliver O'Halloran
+ <oohall@gmail.com>, Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH v2 -next] powerpc/pseries: Fix platform_no_drv_owner.cocci
+ warnings
+Date: Mon, 18 Feb 2019 13:39:50 +0000
+Message-ID: <20190218133950.95225-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190218125930.87548-1-yuehaibing@huawei.com>
+References: <20190218125930.87548-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.20.1902181353150.3532@hadrien>
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.177.31.96]
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: [10.175.113.25]
 X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -63,59 +63,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- Oliver O'Halloran <oohall@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+ YueHaibing <yuehaibing@huawei.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2019/2/18 20:53, Julia Lawall wrote:
-> 
-> 
-> On Mon, 18 Feb 2019, YueHaibing wrote:
-> 
->> Remove .owner field if calls are used which set it automatically
->> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
->>
->> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
->> ---
->>  arch/powerpc/platforms/pseries/papr_scm.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
->> index bba281b1fe1b..e3f5c1a01950 100644
->> --- a/arch/powerpc/platforms/pseries/papr_scm.c
->> +++ b/arch/powerpc/platforms/pseries/papr_scm.c
->> @@ -21,6 +21,7 @@
->>  	 (1ul << ND_CMD_GET_CONFIG_DATA) | \
->>  	 (1ul << ND_CMD_SET_CONFIG_DATA))
->>
->> +
-> 
-> No need to add a blank line.
+Remove .owner field if calls are used which set it automatically
+Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
 
-Yes, will fix it.
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ arch/powerpc/platforms/pseries/papr_scm.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-> 
-> julia
-> 
->>  struct papr_scm_priv {
->>  	struct platform_device *pdev;
->>  	struct device_node *dn;
->> @@ -358,7 +359,6 @@ static struct platform_driver papr_scm_driver = {
->>  	.remove = papr_scm_remove,
->>  	.driver = {
->>  		.name = "papr_scm",
->> -		.owner = THIS_MODULE,
->>  		.of_match_table = papr_scm_match,
->>  	},
->>  };
->>
->>
->>
->>
-> 
-> .
-> 
+diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
+index bba281b1fe1b..679bf2420bc1 100644
+--- a/arch/powerpc/platforms/pseries/papr_scm.c
++++ b/arch/powerpc/platforms/pseries/papr_scm.c
+@@ -358,7 +358,6 @@ static struct platform_driver papr_scm_driver = {
+ 	.remove = papr_scm_remove,
+ 	.driver = {
+ 		.name = "papr_scm",
+-		.owner = THIS_MODULE,
+ 		.of_match_table = papr_scm_match,
+ 	},
+ };
+
+
 
