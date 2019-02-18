@@ -2,64 +2,84 @@ Return-Path: <SRS0=Hg4A=QZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C030BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 18:55:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EB28C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 19:27:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C2E42177E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 18:55:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8F34F2177E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 19:27:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="eAq5EE7n"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C2E42177E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="HVdr+8PU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8F34F2177E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443Ck56zrHzDqGv
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 05:55:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443DQt2ygyzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 06:27:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="eAq5EE7n"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="HVdr+8PU"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443Cfb3G3yzDqJN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 05:52:39 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=FZw/nIU94/BV3+eC5ofCCRLmhZpkDi3wgLtrY44XoZg=; b=eAq5EE7nZDud
- dmbtKTP1W+FrhG20c9ohfE4oa6bD5yAHrN0JBTwxHx97nBtVmTi8AO2UD3Jnx1H+yKXBpuz+imKw1
- 4lnCgsi4vhARZYile/e2oR305VU0eIZu+Sc0shpsvE9qN/5URKsDTvyntOjdl65QmG6Xy7sQFHVHP
- yuFVA=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gvo1q-0001jC-MV; Mon, 18 Feb 2019 18:52:34 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 163961128008; Mon, 18 Feb 2019 18:52:34 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Applied "ASoC: fsl_spdif: fix sysclk_df type" to the asoc tree
-In-Reply-To: <1550503474-18865-1-git-send-email-viorel.suman@nxp.com>
-X-Patchwork-Hint: ignore
-Message-Id: <20190218185234.163961128008@debutante.sirena.org.uk>
-Date: Mon, 18 Feb 2019 18:52:34 +0000 (GMT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443DPD1hPtzDq74
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 06:26:07 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 443DP80q29z9v1rk;
+ Mon, 18 Feb 2019 20:26:04 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=HVdr+8PU; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Ak9huYj6gqbH; Mon, 18 Feb 2019 20:26:04 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 443DP76sLSz9v1rj;
+ Mon, 18 Feb 2019 20:26:03 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550517964; bh=oqYF+VQgq6CeMG9HNoNtGtYjxBFVbq3zUnM5MNh5dNY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=HVdr+8PUXpxR/phvoceFQjDZlKIlLV3OyDT8H/B7o6XG8WInLrfp2WfBECmKwf+SA
+ 2O2dG5WmeF9Kxh9iy7OP72wknEh2uhJJ+YY0/M0IBZoT+KPYTHqFe0KD2akA0OQLiC
+ GQ2hgpzsbr7cL9NESGnOCbRioAwH+JXLHcksN/Hg=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F120F8B7DA;
+ Mon, 18 Feb 2019 20:26:03 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ZNNFoPYs4ngz; Mon, 18 Feb 2019 20:26:03 +0100 (CET)
+Received: from PO15451 (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 659298B7D8;
+ Mon, 18 Feb 2019 20:26:03 +0100 (CET)
+Subject: Re: [RFC PATCH 5/5] powerpc: KASAN for 64bit Book3E
+To: Daniel Axtens <dja@axtens.net>, aneesh.kumar@linux.ibm.com,
+ bsingharora@gmail.com
+References: <20190215000441.14323-1-dja@axtens.net>
+ <20190215000441.14323-6-dja@axtens.net>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <e0373aa9-5035-3d32-2422-a08e52d2a4fb@c-s.fr>
+Date: Mon, 18 Feb 2019 20:26:03 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
+MIME-Version: 1.0
+In-Reply-To: <20190215000441.14323-6-dja@axtens.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,94 +91,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Viorel Suman <viorel.suman@gmail.com>, alsa-devel@alsa-project.org,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Takashi Iwai <tiwai@suse.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
- Fabio Estevam <festevam@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
 
-   ASoC: fsl_spdif: fix sysclk_df type
 
-has been applied to the asoc tree at
+Le 15/02/2019 à 01:04, Daniel Axtens a écrit :
+> Wire up KASAN. Only outline instrumentation is supported.
+> 
+> The KASAN shadow area is mapped into vmemmap space:
+> 0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
+> To do this we require that vmemmap be disabled. (This is the default
+> in the kernel config that QorIQ provides for the machine in their
+> SDK anyway - they use flat memory.)
+> 
+> Only the kernel linear mapping (0xc000...) is checked. The vmalloc and
+> ioremap areas (also in 0x800...) are all mapped to a zero page. As
+> with the Book3S hash series, this requires overriding the memory <->
+> shadow mapping.
+> 
+> Also, as with both previous 64-bit series, early instrumentation is not
+> supported.  It would allow us to drop the check_return_arch_not_ready()
+> hook in the KASAN core, but it's tricky to get it set up early enough:
+> we need it setup before the first call to instrumented code like printk().
+> Perhaps in the future.
+> 
+> Only KASAN_MINIMAL works.
+> 
+> Lightly tested on e6500. KVM, kexec and xmon have not been tested.
+> 
+> The test_kasan module fires warnings as expected, except for the
+> following tests:
+> 
+>   - Expected/by design:
+> kasan test: memcg_accounted_kmem_cache allocate memcg accounted object
+> 
+>   - Due to only supporting KASAN_MINIMAL:
+> kasan test: kasan_stack_oob out-of-bounds on stack
+> kasan test: kasan_global_oob out-of-bounds global variable
+> kasan test: kasan_alloca_oob_left out-of-bounds to left on alloca
+> kasan test: kasan_alloca_oob_right out-of-bounds to right on alloca
+> kasan test: use_after_scope_test use-after-scope on int
+> kasan test: use_after_scope_test use-after-scope on array
+> 
+> Thanks to those who have done the heavy lifting over the past several years:
+>   - Christophe's 32 bit series: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-February/185379.html
+>   - Aneesh's Book3S hash series: https://lwn.net/Articles/655642/
+>   - Balbir's Book3S radix series: https://patchwork.ozlabs.org/patch/795211/
+> 
+> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
+> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Cc: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> 
+> ---
+> 
+> While useful if you have a book3e device, this is mostly intended
+> as a warm-up exercise for reviving Aneesh's series for book3s hash.
+> In particular, changes to the kasan core are going to be required
+> for hash and radix as well.
+> ---
+>   arch/powerpc/Kconfig                         |  1 +
+>   arch/powerpc/Makefile                        |  2 +
+>   arch/powerpc/include/asm/kasan.h             | 77 ++++++++++++++++++--
+>   arch/powerpc/include/asm/ppc_asm.h           |  7 ++
+>   arch/powerpc/include/asm/string.h            |  7 +-
+>   arch/powerpc/lib/mem_64.S                    |  6 +-
+>   arch/powerpc/lib/memcmp_64.S                 |  5 +-
+>   arch/powerpc/lib/memcpy_64.S                 |  3 +-
+>   arch/powerpc/lib/string.S                    | 15 ++--
+>   arch/powerpc/mm/Makefile                     |  2 +
+>   arch/powerpc/mm/kasan/Makefile               |  1 +
+>   arch/powerpc/mm/kasan/kasan_init_book3e_64.c | 53 ++++++++++++++
+>   arch/powerpc/purgatory/Makefile              |  3 +
+>   arch/powerpc/xmon/Makefile                   |  1 +
+>   14 files changed, 164 insertions(+), 19 deletions(-)
+>   create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+[snip]
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+> diff --git a/arch/powerpc/mm/kasan/kasan_init_book3e_64.c b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
+> new file mode 100644
+> index 000000000000..93b9afcf1020
+> --- /dev/null
+> +++ b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
+> @@ -0,0 +1,53 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +
+> +#define DISABLE_BRANCH_PROFILING
+> +
+> +#include <linux/kasan.h>
+> +#include <linux/printk.h>
+> +#include <linux/memblock.h>
+> +#include <linux/sched/task.h>
+> +#include <asm/pgalloc.h>
+> +
+> +DEFINE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
+> +EXPORT_SYMBOL(powerpc_kasan_enabled_key);
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+Why does this symbol need to be exported ?
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
-From 2231609a2c0a4807c017822ecb5834bbb7f59fb9 Mon Sep 17 00:00:00 2001
-From: Viorel Suman <viorel.suman@nxp.com>
-Date: Mon, 18 Feb 2019 15:25:00 +0000
-Subject: [PATCH] ASoC: fsl_spdif: fix sysclk_df type
-
-According to RM SPDIF STC SYSCLK_DF field is 9-bit wide, values
-being in 0..511 range. Use a proper type to handle sysclk_df.
-
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_spdif.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index a26686e7281c..4842e6df9a2d 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -96,7 +96,7 @@ struct fsl_spdif_priv {
- 	bool dpll_locked;
- 	u32 txrate[SPDIF_TXRATE_MAX];
- 	u8 txclk_df[SPDIF_TXRATE_MAX];
--	u8 sysclk_df[SPDIF_TXRATE_MAX];
-+	u16 sysclk_df[SPDIF_TXRATE_MAX];
- 	u8 txclk_src[SPDIF_TXRATE_MAX];
- 	u8 rxclk_src;
- 	struct clk *txclk[SPDIF_TXRATE_MAX];
-@@ -376,7 +376,8 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
- 	struct platform_device *pdev = spdif_priv->pdev;
- 	unsigned long csfs = 0;
- 	u32 stc, mask, rate;
--	u8 clk, txclk_df, sysclk_df;
-+	u16 sysclk_df;
-+	u8 clk, txclk_df;
- 	int ret;
- 
- 	switch (sample_rate) {
-@@ -1109,8 +1110,9 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
- 	static const u32 rate[] = { 32000, 44100, 48000, 96000, 192000 };
- 	bool is_sysclk = clk_is_match(clk, spdif_priv->sysclk);
- 	u64 rate_ideal, rate_actual, sub;
--	u32 sysclk_dfmin, sysclk_dfmax;
--	u32 txclk_df, sysclk_df, arate;
-+	u32 arate;
-+	u16 sysclk_dfmin, sysclk_dfmax, sysclk_df;
-+	u8 txclk_df;
- 
- 	/* The sysclk has an extra divisor [2, 512] */
- 	sysclk_dfmin = is_sysclk ? 2 : 1;
--- 
-2.20.1
+Christophe
 
