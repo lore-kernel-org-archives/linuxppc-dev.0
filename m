@@ -2,56 +2,68 @@ Return-Path: <SRS0=Hg4A=QZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AF2EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5615FC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 14:07:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E94F52147A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 13:28:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E94F52147A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7457621916
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 14:07:39 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="tcTecG8v"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7457621916
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4434S34qLCzDqHF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 00:28:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4435Kj22yCzDqBG
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 01:07:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=huawei.com
- (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=7u7d=qz=linuxfoundation.org=gregkh@kernel.org;
  receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=huawei.com
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="tcTecG8v"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4434Q04l0lzDqGk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 00:26:16 +1100 (AEDT)
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
- by Forcepoint Email with ESMTP id 58B63557D8B01959C193;
- Mon, 18 Feb 2019 21:26:12 +0800 (CST)
-Received: from localhost.localdomain.localdomain (10.175.113.25) by
- DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.408.0; Mon, 18 Feb 2019 21:26:05 +0800
-From: YueHaibing <yuehaibing@huawei.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Oliver O'Halloran
- <oohall@gmail.com>, Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH v2 -next] powerpc/pseries: Fix platform_no_drv_owner.cocci
- warnings
-Date: Mon, 18 Feb 2019 13:39:50 +0000
-Message-ID: <20190218133950.95225-1-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4435Fh6nlVzDq67
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 01:04:08 +1100 (AEDT)
+Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 700A42070B;
+ Mon, 18 Feb 2019 14:04:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1550498646;
+ bh=fr6cLjHdbLMxd3XI+oLfNpBtB5NBvpRBNr4CzyK+Hds=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=tcTecG8vQ5eiUUQIWPubTM/cl70NA+L70csuXdwmeH0ntuaiCbmBgfoZzTfsYUR3f
+ /2N5ATiw3ls7lnICmCz/Q926rsggcUqAtGFbNUwzdRXNT23JG5yMYEmjYeysp1Nf5M
+ V57jzaZBgkzG+8ZpSUz8dAma+CschHI29GRzg5Iw=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4.4 068/143] block/swim3: Fix -EBUSY error when re-opening
+ device after unmount
+Date: Mon, 18 Feb 2019 14:43:16 +0100
+Message-Id: <20190218133531.584709330@linuxfoundation.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190218125930.87548-1-yuehaibing@huawei.com>
-References: <20190218125930.87548-1-yuehaibing@huawei.com>
+In-Reply-To: <20190218133529.099444112@linuxfoundation.org>
+References: <20190218133529.099444112@linuxfoundation.org>
+User-Agent: quilt/0.65
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.175.113.25]
-X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,32 +75,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- YueHaibing <yuehaibing@huawei.com>, linux-kernel@vger.kernel.org
+Cc: Jens Axboe <axboe@kernel.dk>, Sasha Levin <sashal@kernel.org>,
+ Stan Johnson <userm57@yahoo.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Finn Thain <fthain@telegraphics.com.au>, stable@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Remove .owner field if calls are used which set it automatically
-Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+------------------
+
+[ Upstream commit 296dcc40f2f2e402facf7cd26cf3f2c8f4b17d47 ]
+
+When the block device is opened with FMODE_EXCL, ref_count is set to -1.
+This value doesn't get reset when the device is closed which means the
+device cannot be opened again. Fix this by checking for refcount <= 0
+in the release method.
+
+Reported-and-tested-by: Stan Johnson <userm57@yahoo.com>
+Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/pseries/papr_scm.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/block/swim3.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/papr_scm.c b/arch/powerpc/platforms/pseries/papr_scm.c
-index bba281b1fe1b..679bf2420bc1 100644
---- a/arch/powerpc/platforms/pseries/papr_scm.c
-+++ b/arch/powerpc/platforms/pseries/papr_scm.c
-@@ -358,7 +358,6 @@ static struct platform_driver papr_scm_driver = {
- 	.remove = papr_scm_remove,
- 	.driver = {
- 		.name = "papr_scm",
--		.owner = THIS_MODULE,
- 		.of_match_table = papr_scm_match,
- 	},
- };
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index c264f2d284a7..2e0a9e2531cb 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -1027,7 +1027,11 @@ static void floppy_release(struct gendisk *disk, fmode_t mode)
+ 	struct swim3 __iomem *sw = fs->swim3;
+ 
+ 	mutex_lock(&swim3_mutex);
+-	if (fs->ref_count > 0 && --fs->ref_count == 0) {
++	if (fs->ref_count > 0)
++		--fs->ref_count;
++	else if (fs->ref_count == -1)
++		fs->ref_count = 0;
++	if (fs->ref_count == 0) {
+ 		swim3_action(fs, MOTOR_OFF);
+ 		out_8(&sw->control_bic, 0xff);
+ 		swim3_select(fs, RELAX);
+-- 
+2.19.1
 
 
 
