@@ -2,123 +2,125 @@ Return-Path: <SRS0=Hg4A=QZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNWANTED_LANGUAGE_BODY,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 563B7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 15:26:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78798C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 17:11:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 420FA217F5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 15:26:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="RC4/vMbc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 420FA217F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id BB7262146F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Feb 2019 17:11:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB7262146F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44375C1SYyzDqKX
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 02:26:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4439Pr6MTXzDqK9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 04:11:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.3.56; helo=eur03-am5-obe.outbound.protection.outlook.com;
- envelope-from=viorel.suman@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="RC4/vMbc"; 
- dkim-atps=neutral
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30056.outbound.protection.outlook.com [40.107.3.56])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4437391XCRzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 02:25:06 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qWKPaf2jF/kciS0KBtUJjSvvYpofoLLLsHtskMy7AOY=;
- b=RC4/vMbcRM0b7BUF+Cbfq/s0S5xBpm5WfH6KVOiVBV5OdpkI4b6kEl3KO1kaQqwXwbWuo52weKhiaLGMEbR6UfOfPFo0RPduUE0t9lUBpg0LfRGC92xit3ktU8Wkw+6psL9rY7m9b0RmJfKiSDW7K02BE9IM+7BBqYmKbfM7X6U=
-Received: from AM6PR04MB4693.eurprd04.prod.outlook.com (20.177.33.222) by
- AM6PR04MB4533.eurprd04.prod.outlook.com (20.177.38.21) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1622.19; Mon, 18 Feb 2019 15:25:00 +0000
-Received: from AM6PR04MB4693.eurprd04.prod.outlook.com
- ([fe80::78b6:cae3:86df:a936]) by AM6PR04MB4693.eurprd04.prod.outlook.com
- ([fe80::78b6:cae3:86df:a936%4]) with mapi id 15.20.1622.018; Mon, 18 Feb 2019
- 15:25:00 +0000
-From: Viorel Suman <viorel.suman@nxp.com>
-To: Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH] ASoC: fsl_spdif: fix sysclk_df type
-Thread-Topic: [PATCH] ASoC: fsl_spdif: fix sysclk_df type
-Thread-Index: AQHUx54cV0e+cjZqWUucEsNTrxgp8Q==
-Date: Mon, 18 Feb 2019 15:25:00 +0000
-Message-ID: <1550503474-18865-1-git-send-email-viorel.suman@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: AM5P189CA0013.EURP189.PROD.OUTLOOK.COM
- (2603:10a6:206:15::26) To AM6PR04MB4693.eurprd04.prod.outlook.com
- (2603:10a6:20b:7::30)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=viorel.suman@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 2.7.4
-x-originating-ip: [95.76.156.53]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: cfca4032-1908-4cac-ef41-08d695b53f1a
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600110)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:AM6PR04MB4533; 
-x-ms-traffictypediagnostic: AM6PR04MB4533:
-x-microsoft-exchange-diagnostics: =?iso-8859-1?Q?1; AM6PR04MB4533;
- 23:0tKOhhWx3KQ6/7xkBy7/0F4KkCr4NS10Ca646U1?=
- =?iso-8859-1?Q?5yq53MEi5VmPQuDYFrx4jAu1TyNAse6he3rAsnU/1JtUL53mfbz6h/jtMK?=
- =?iso-8859-1?Q?7IbWmLS48taqS2cJOloqFmGxkUeKOV2Zs4TroQsqPPQHIpagBD2nTa9zm+?=
- =?iso-8859-1?Q?peDiuz1o2KhKYksq3F3CshbOOMxCnbICwcf8zwn0IcDwUTKp0IWRtCOzNo?=
- =?iso-8859-1?Q?EMZMR+vBfLwVMaBJ+npvtYI/Ovepgy2UAw5ePnkFs7s7byBqtGollY0Jl3?=
- =?iso-8859-1?Q?BYmvXtfWFTldtNvO7b58Ri6j/MmiTuqFAW/XQPZmZomXkN/0TVDb6zx9CW?=
- =?iso-8859-1?Q?KoeMmUUQuZUOaE6tY+2EKYxQjbQiOH0fVnhzfKWxf7zelS/bEzLaqIRMsy?=
- =?iso-8859-1?Q?M+FQCyiHw0XX5ArA77tGJf4jBH6Awi4o0ZXKCBn7CEjlywogDemE9exjNx?=
- =?iso-8859-1?Q?wnn5WIUOn7K/oZwqs/ugqUXho7BnCRtK0JPIE9Y4yMwkfBrXfMSUNwWRRc?=
- =?iso-8859-1?Q?alUzs1kx74/SvrpGMjO0R2CCL51NKd2cuvzzp/m1TUTbNv2uMU2r8w8gby?=
- =?iso-8859-1?Q?aqBS3/C+pyXyvGAq4vuuV5eaQl7B5r6zi/3FHbuQ/9XCNdz3sPnmgABoz6?=
- =?iso-8859-1?Q?xRZfImu4Fe5TCwyqIE0GbkIWS78rohQ/HVRzjNAWTjgmjmGz/TlG2RNzGQ?=
- =?iso-8859-1?Q?/tX7WFxsIIfxU6rOYtOUsB9euaj11ycN2vM8TD+FO6dbULqxGg+xnhmxgw?=
- =?iso-8859-1?Q?+hWUdZcNPsmMM0Z4scrUOq/cN+5WTr5mqg4JCLCNOLp/XBYqF2Qyyjy9Bq?=
- =?iso-8859-1?Q?KD/tUVtfnNTnwVc6NFl1XKpw5cO+R8qP8bdtPYc04lpDQy8Shq7ZBxpBJl?=
- =?iso-8859-1?Q?bPD/5z1YYc7nwx5e120duV3FVcAiFEdmrb70aAB8b7eoBrAdyfozP5zbyD?=
- =?iso-8859-1?Q?NvWQG6p/103/DRSrpjEIqTghnyBAxd2iVQSwRpY+rtuYhnLv+QHHTikbVc?=
- =?iso-8859-1?Q?uotneF6nQm+4zfwjCiNH7MlLULjMbC0yWnZ2bOCLLwtxU4TwgMgnq2DOSD?=
- =?iso-8859-1?Q?GqlY2MrhpoFBb5VIMzze7t3Bp6ZWKyy+nGbpHqCqMSPBT1UVkQKcp05Dcw?=
- =?iso-8859-1?Q?xTbxoG7vrvqnPz9s/i2M6Frj8PBFilmY1Y8HZm61IxGay6zMQXXKR7nur0?=
- =?iso-8859-1?Q?KiEAdHMF+Bc93Oss6ytkOGN77MGJFLI+61hMhIQgDpEqdIMn6oEy0I=3D?=
-x-microsoft-antispam-prvs: <AM6PR04MB45339DD53A092195E207E88C92630@AM6PR04MB4533.eurprd04.prod.outlook.com>
-x-forefront-prvs: 09525C61DB
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(39860400002)(136003)(346002)(376002)(366004)(396003)(189003)(199004)(6512007)(2616005)(5660300002)(8676002)(36756003)(26005)(81156014)(7416002)(8936002)(81166006)(86362001)(25786009)(7736002)(4326008)(2906002)(305945005)(476003)(486006)(97736004)(53936002)(14444005)(110136005)(50226002)(256004)(6436002)(66066001)(99286004)(68736007)(6486002)(52116002)(186003)(6506007)(71200400001)(54906003)(386003)(478600001)(14454004)(44832011)(316002)(106356001)(105586002)(6116002)(3846002)(102836004)(71190400001);
- DIR:OUT; SFP:1101; SCL:1; SRVR:AM6PR04MB4533;
- H:AM6PR04MB4693.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: pSxKWc02S85XakGHFhnFONMpx+PbALMoLXwW4+rworsWz8OiQcIURnjH5L9l8c5/NEJDQxsbPm/cELca2Xr13Bcp8FnOmq8zNIui9skybTpQb7Hc9YB2sNv9JeeHdjNqCq8TJHY9Kbu9Lan7UrM48yBaGYyF8KCC+zi3K4hsyyjz3EshssQF4Qmj8WIvKsKrW3KdVXItAAEXy45BCzKxJ+Hix8w+cPFTs2SYnRIa4CYRErGmn6zE4WGS4i1eaYW3KAz/yq2bjWv0ttCg4YGmy5bGMS+9NtBsszX/vBGwdsBn2USPm++Jbn7xh9Br4Qz/DCD6C07lwCUmygNHzascBTgd8MVWrgidZ6OXiDTpykfPf4UyZVCdNEZB5TOpao32Urnqct0BChTK980+yh1Y+IGIPk1xI30/ZkCzBczQ6uU=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4439N02GhZzDqFt
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 04:09:51 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1IH9NgG102235
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2019 12:09:49 -0500
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qqwmnbet3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2019 12:09:49 -0500
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 18 Feb 2019 17:09:48 -0000
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 18 Feb 2019 17:09:47 -0000
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1IH9kro32768060
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 18 Feb 2019 17:09:46 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B26667805E;
+ Mon, 18 Feb 2019 17:09:46 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7D1407805F;
+ Mon, 18 Feb 2019 17:09:46 +0000 (GMT)
+Received: from oc8380061452.ibm.com (unknown [9.53.179.224])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Mon, 18 Feb 2019 17:09:46 +0000 (GMT)
+Subject: Re: [PATCH v04] powerpc/numa: Perform full re-add of CPU for
+ PRRN/VPHN topology update
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
+References: <d8b67f9d-77d0-2be3-15bc-c7f11bc519f7@linux.vnet.ibm.com>
+ <20190218114917.5ab865c4@naga> <20190218151527.41dc36ab@naga.suse.cz>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
+ mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
+ lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
+ DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
+ t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
+ AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
+ AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
+ AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
+ CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
+ 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
+ QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
+ AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
+ oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
+ ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
+ DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
+ 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
+ 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
+ qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
+ GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
+ efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
+ ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
+ yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
+ IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
+ 53/hcWvxHVs=
+Organization: IBM Linux Technology Center
+Date: Mon, 18 Feb 2019 11:09:46 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cfca4032-1908-4cac-ef41-08d695b53f1a
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Feb 2019 15:24:59.2557 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM6PR04MB4533
+In-Reply-To: <20190218151527.41dc36ab@naga.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19021817-0004-0000-0000-000014E3B884
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010620; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01162914; UDB=6.00607159; IPR=6.00943491; 
+ MB=3.00025639; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-18 17:09:48
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021817-0005-0000-0000-00008AA48658
+Message-Id: <cbecb0f0-a60d-3978-f705-646a0467c368@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-18_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902180128
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -130,61 +132,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Viorel Suman <viorel.suman@gmail.com>, Mark Brown <broonie@kernel.org>,
- dl-linux-imx <linux-imx@nxp.com>, Jaroslav Kysela <perex@perex.cz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-According to RM SPDIF STC SYSCLK_DF field is 9-bit wide, values
-being in 0..511 range. Use a proper type to handle sysclk_df.
 
-Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
----
- sound/soc/fsl/fsl_spdif.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index a26686e..4842e6d 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -96,7 +96,7 @@ struct fsl_spdif_priv {
- 	bool dpll_locked;
- 	u32 txrate[SPDIF_TXRATE_MAX];
- 	u8 txclk_df[SPDIF_TXRATE_MAX];
--	u8 sysclk_df[SPDIF_TXRATE_MAX];
-+	u16 sysclk_df[SPDIF_TXRATE_MAX];
- 	u8 txclk_src[SPDIF_TXRATE_MAX];
- 	u8 rxclk_src;
- 	struct clk *txclk[SPDIF_TXRATE_MAX];
-@@ -376,7 +376,8 @@ static int spdif_set_sample_rate(struct snd_pcm_substre=
-am *substream,
- 	struct platform_device *pdev =3D spdif_priv->pdev;
- 	unsigned long csfs =3D 0;
- 	u32 stc, mask, rate;
--	u8 clk, txclk_df, sysclk_df;
-+	u16 sysclk_df;
-+	u8 clk, txclk_df;
- 	int ret;
-=20
- 	switch (sample_rate) {
-@@ -1109,8 +1110,9 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_pr=
-iv *spdif_priv,
- 	static const u32 rate[] =3D { 32000, 44100, 48000, 96000, 192000 };
- 	bool is_sysclk =3D clk_is_match(clk, spdif_priv->sysclk);
- 	u64 rate_ideal, rate_actual, sub;
--	u32 sysclk_dfmin, sysclk_dfmax;
--	u32 txclk_df, sysclk_df, arate;
-+	u32 arate;
-+	u16 sysclk_dfmin, sysclk_dfmax, sysclk_df;
-+	u8 txclk_df;
-=20
- 	/* The sysclk has an extra divisor [2, 512] */
- 	sysclk_dfmin =3D is_sysclk ? 2 : 1;
---=20
-2.7.4
+On 2/18/19 8:15 AM, Michal Suchánek wrote:
+> On Mon, 18 Feb 2019 11:49:17 +0100
+> Michal Suchánek <msuchanek@suse.de> wrote:
+> 
+> Nevermind
+> 
+> Looks like some version of the patch is queued in powerpc/next already.
+
+Might you be referring to,
+[PATCH] powerpc/pseries: Perform full re-add of CPU for topology update post-migration
+aka
+81b6132 powerpc/pseries: Perform full re-add of CPU for topology update post-mig
+in the powerpc-next tree?
+
+That is for the case of device-tree changes observed after a migration.
+This patch builds upon it for CPU affinity changes observed via PRRN/VPHN events.
+
+> 
+> Thanks
+> 
+> Michal
+
+Thanks.
+
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
 
