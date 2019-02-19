@@ -2,51 +2,64 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40921C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:29:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71A8AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:49:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 61B95206DD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:29:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 61B95206DD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AB98121479
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:49:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="bOA/4/ce"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB98121479
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443dmg0mhMzDqJ3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 22:29:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443fD057fpzDqHd
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 22:49:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=lorenzo.pieralisi@arm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 443dkh1Kd3zDqGN
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 22:27:36 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 91998A78;
- Tue, 19 Feb 2019 03:27:30 -0800 (PST)
-Received: from e107981-ln.cambridge.arm.com (e107981-ln.cambridge.arm.com
- [10.1.197.40])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 333B33F720;
- Tue, 19 Feb 2019 03:27:27 -0800 (PST)
-Date: Tue, 19 Feb 2019 11:27:21 +0000
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-To: Xiaowei Bao <xiaowei.bao@nxp.com>
-Subject: Re: [PATCHv6 3/4] pci: layerscape: Add the EP mode support.
-Message-ID: <20190219112721.GA15442@e107981-ln.cambridge.arm.com>
-References: <20190122063328.25228-1-xiaowei.bao@nxp.com>
- <20190122063328.25228-3-xiaowei.bao@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190122063328.25228-3-xiaowei.bao@nxp.com>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="bOA/4/ce"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443f9P6DYDzDqHP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 22:47:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
+ Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
+ List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
+ List-Archive; bh=p6Aw3NNnIP4LVC4pA028r3wni+o8p3Cvh5fLFCzuJ30=; b=bOA/4/ceuqQU
+ Rfdb/bld6SF7EiZKo+AeHLjK5xHq3RCK0Ypxh7Z7S5OboGqjgNoth4JDFeN8fdoGlwwkkh+hrNt91
+ 2/t+mXbqq8kSKuta0H0A5YURmnTY8fwDkYuIx0X4eE5U8hyxetSAJwSaFlzbGnp3NhInCBvVwDhmo
+ 7Q4XQ=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=debutante.sirena.org.uk)
+ by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1gw3rg-0008ST-Tq; Tue, 19 Feb 2019 11:47:08 +0000
+Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
+ id 7EC7E11284A6; Tue, 19 Feb 2019 11:47:08 +0000 (GMT)
+From: Mark Brown <broonie@kernel.org>
+To: Wen Yang <yellowriver2010@hotmail.com>
+Subject: Applied "SoC: imx-sgtl5000: add missing put_device()" to the asoc tree
+In-Reply-To: <HK0PR02MB3634C18C42652DC3A2893043B2630@HK0PR02MB3634.apcprd02.prod.outlook.com>
+X-Patchwork-Hint: ignore
+Message-Id: <20190219114708.7EC7E11284A6@debutante.sirena.org.uk>
+Date: Tue, 19 Feb 2019 11:47:08 +0000 (GMT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,226 +71,99 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mark.rutland@arm.com, roy.zang@nxp.com, arnd@arndb.de,
- devicetree@vger.kernel.org, gregkh@linuxfoundation.org,
- kstewart@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, kishon@ti.com,
- minghuan.Lian@nxp.com, robh+dt@kernel.org, cyrille.pitchen@free-electrons.com,
- linux-arm-kernel@lists.infradead.org, pombredanne@nexb.com,
- bhelgaas@google.com, leoyang.li@nxp.com, shawnguo@kernel.org,
- shawn.lin@rock-chips.com, mingkai.hu@nxp.com
+Cc: alsa-devel@alsa-project.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Jaroslav@sirena.org.uk, Mark Brown <broonie@kernel.org>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Fabio Estevam <festevam@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Jan 22, 2019 at 02:33:27PM +0800, Xiaowei Bao wrote:
-> Add the PCIe EP mode support for layerscape platform.
-> 
-> Signed-off-by: Xiaowei Bao <xiaowei.bao@nxp.com>
-> Reviewed-by: Minghuan Lian <minghuan.lian@nxp.com>
-> Reviewed-by: Zhiqiang Hou <zhiqiang.hou@nxp.com>
-> Reviewed-by: Kishon Vijay Abraham I <kishon@ti.com>
-> ---
-> depends on: https://patchwork.kernel.org/project/linux-pci/list/?series=66177
-> 
-> v2:
->  - remove the EP mode check function.
-> v3:
->  - modif the return value when enter default case.
-> v4:
->  - no change.
-> v5:
->  - no change.
-> v6:
->  - modify the code base on the submit patch of the EP framework.
+The patch
 
-Can I apply this series to my pci/endpoint branch (where I queued
-Kishon's EP features rework patches) ? Can you check please ?
+   SoC: imx-sgtl5000: add missing put_device()
+
+has been applied to the asoc tree at
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
 
 Thanks,
-Lorenzo
+Mark
 
->  drivers/pci/controller/dwc/Makefile            |    2 +-
->  drivers/pci/controller/dwc/pci-layerscape-ep.c |  157 ++++++++++++++++++++++++
->  2 files changed, 158 insertions(+), 1 deletions(-)
->  create mode 100644 drivers/pci/controller/dwc/pci-layerscape-ep.c
-> 
-> diff --git a/drivers/pci/controller/dwc/Makefile b/drivers/pci/controller/dwc/Makefile
-> index 7bcdcdf..b5f3b83 100644
-> --- a/drivers/pci/controller/dwc/Makefile
-> +++ b/drivers/pci/controller/dwc/Makefile
-> @@ -8,7 +8,7 @@ obj-$(CONFIG_PCI_EXYNOS) += pci-exynos.o
->  obj-$(CONFIG_PCI_IMX6) += pci-imx6.o
->  obj-$(CONFIG_PCIE_SPEAR13XX) += pcie-spear13xx.o
->  obj-$(CONFIG_PCI_KEYSTONE) += pci-keystone.o
-> -obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o
-> +obj-$(CONFIG_PCI_LAYERSCAPE) += pci-layerscape.o pci-layerscape-ep.o
->  obj-$(CONFIG_PCIE_QCOM) += pcie-qcom.o
->  obj-$(CONFIG_PCIE_ARMADA_8K) += pcie-armada8k.o
->  obj-$(CONFIG_PCIE_ARTPEC6) += pcie-artpec6.o
-> diff --git a/drivers/pci/controller/dwc/pci-layerscape-ep.c b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> new file mode 100644
-> index 0000000..ddc2dbb
-> --- /dev/null
-> +++ b/drivers/pci/controller/dwc/pci-layerscape-ep.c
-> @@ -0,0 +1,157 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * PCIe controller EP driver for Freescale Layerscape SoCs
-> + *
-> + * Copyright (C) 2018 NXP Semiconductor.
-> + *
-> + * Author: Xiaowei Bao <xiaowei.bao@nxp.com>
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/of_pci.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/of_address.h>
-> +#include <linux/pci.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/resource.h>
-> +
-> +#include "pcie-designware.h"
-> +
-> +#define PCIE_DBI2_OFFSET		0x1000	/* DBI2 base address*/
-> +
-> +struct ls_pcie_ep {
-> +	struct dw_pcie		*pci;
-> +};
-> +
-> +#define to_ls_pcie_ep(x)	dev_get_drvdata((x)->dev)
-> +
-> +static int ls_pcie_establish_link(struct dw_pcie *pci)
-> +{
-> +	return 0;
-> +}
-> +
-> +static const struct dw_pcie_ops ls_pcie_ep_ops = {
-> +	.start_link = ls_pcie_establish_link,
-> +};
-> +
-> +static const struct of_device_id ls_pcie_ep_of_match[] = {
-> +	{ .compatible = "fsl,ls-pcie-ep",},
-> +	{ },
-> +};
-> +
-> +static const struct pci_epc_features ls_pcie_epc_features = {
-> +	.linkup_notifier = false,
-> +	.msi_capable = true,
-> +	.msix_capable = false,
-> +};
-> +
-> +static const struct pci_epc_features*
-> +ls_pcie_ep_get_features(struct dw_pcie_ep *ep)
-> +{
-> +	return &ls_pcie_epc_features;
-> +}
-> +
-> +static void ls_pcie_ep_init(struct dw_pcie_ep *ep)
-> +{
-> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> +	struct pci_epc *epc = ep->epc;
-> +	enum pci_barno bar;
-> +
-> +	for (bar = BAR_0; bar <= BAR_5; bar++)
-> +		dw_pcie_ep_reset_bar(pci, bar);
-> +}
-> +
-> +static int ls_pcie_ep_raise_irq(struct dw_pcie_ep *ep, u8 func_no,
-> +				  enum pci_epc_irq_type type, u16 interrupt_num)
-> +{
-> +	struct dw_pcie *pci = to_dw_pcie_from_ep(ep);
-> +
-> +	switch (type) {
-> +	case PCI_EPC_IRQ_LEGACY:
-> +		return dw_pcie_ep_raise_legacy_irq(ep, func_no);
-> +	case PCI_EPC_IRQ_MSI:
-> +		return dw_pcie_ep_raise_msi_irq(ep, func_no, interrupt_num);
-> +	case PCI_EPC_IRQ_MSIX:
-> +		return dw_pcie_ep_raise_msix_irq(ep, func_no, interrupt_num);
-> +	default:
-> +		dev_err(pci->dev, "UNKNOWN IRQ type\n");
-> +		return -EINVAL;
-> +	}
-> +}
-> +
-> +static struct dw_pcie_ep_ops pcie_ep_ops = {
-> +	.ep_init = ls_pcie_ep_init,
-> +	.raise_irq = ls_pcie_ep_raise_irq,
-> +	.get_features = ls_pcie_ep_get_features,
-> +};
-> +
-> +static int __init ls_add_pcie_ep(struct ls_pcie_ep *pcie,
-> +					struct platform_device *pdev)
-> +{
-> +	struct dw_pcie *pci = pcie->pci;
-> +	struct device *dev = pci->dev;
-> +	struct dw_pcie_ep *ep;
-> +	struct resource *res;
-> +	int ret;
-> +
-> +	ep = &pci->ep;
-> +	ep->ops = &pcie_ep_ops;
-> +
-> +	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "addr_space");
-> +	if (!res)
-> +		return -EINVAL;
-> +
-> +	ep->phys_base = res->start;
-> +	ep->addr_size = resource_size(res);
-> +
-> +	ret = dw_pcie_ep_init(ep);
-> +	if (ret) {
-> +		dev_err(dev, "failed to initialize endpoint\n");
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init ls_pcie_ep_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct dw_pcie *pci;
-> +	struct ls_pcie_ep *pcie;
-> +	struct resource *dbi_base;
-> +	int ret;
-> +
-> +	pcie = devm_kzalloc(dev, sizeof(*pcie), GFP_KERNEL);
-> +	if (!pcie)
-> +		return -ENOMEM;
-> +
-> +	pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-> +	if (!pci)
-> +		return -ENOMEM;
-> +
-> +	dbi_base = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-> +	pci->dbi_base = devm_pci_remap_cfg_resource(dev, dbi_base);
-> +	if (IS_ERR(pci->dbi_base))
-> +		return PTR_ERR(pci->dbi_base);
-> +
-> +	pci->dbi_base2 = pci->dbi_base + PCIE_DBI2_OFFSET;
-> +	pci->dev = dev;
-> +	pci->ops = &ls_pcie_ep_ops;
-> +	pcie->pci = pci;
-> +
-> +	platform_set_drvdata(pdev, pcie);
-> +
-> +	ret = ls_add_pcie_ep(pcie, pdev);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver ls_pcie_ep_driver = {
-> +	.driver = {
-> +		.name = "layerscape-pcie-ep",
-> +		.of_match_table = ls_pcie_ep_of_match,
-> +		.suppress_bind_attrs = true,
-> +	},
-> +};
-> +builtin_platform_driver_probe(ls_pcie_ep_driver, ls_pcie_ep_probe);
-> -- 
-> 1.7.1
-> 
+From 8fa857da9744f513036df1c43ab57f338941ae7d Mon Sep 17 00:00:00 2001
+From: Wen Yang <yellowriver2010@hotmail.com>
+Date: Mon, 18 Feb 2019 15:13:47 +0000
+Subject: [PATCH] SoC: imx-sgtl5000: add missing put_device()
+
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
+
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index b6cb80480b60..bf8597f57dce 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -108,6 +108,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
+ 	}
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_dbg(&pdev->dev, "failed to find codec platform device\n");
+-- 
+2.20.1
+
