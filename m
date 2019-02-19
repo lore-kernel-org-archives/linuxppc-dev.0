@@ -2,90 +2,89 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E4B3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:02:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65018C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:58:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CF01D21848
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:02:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="exD3mkrQ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CF01D21848
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id AE77121903
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:58:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE77121903
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443WsD5MV4zDqLL
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 18:02:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443Y4p51vpzDqKt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 18:58:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
+ (client-ip=82.165.15.123; helo=s16892447.onlinehome-server.info;
+ envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="exD3mkrQ"; 
- dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=ilande.co.uk
+Received: from s16892447.onlinehome-server.info (chuckie.co.uk [82.165.15.123])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443WqG0ZsLzDqF0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 18:01:13 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id w7so9649070pgp.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Feb 2019 23:01:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=X16hCAq2fEPXNIGVXcCcH3umZsrh2FSl2ZbjpApM4P8=;
- b=exD3mkrQLAIhH2LMiLD+GRPj7GYVzRNI9dE2JCT16jJ69y9Xtx2Knq3eS2FIulanX6
- SGJ8LaJF1iMLwuTHJ+heKXzUZWDLWEIkkbalAYIxQtpPf/RTNcO2RYsEU6gIMamjOtcq
- VwVWJ9c69yum9Skt0Bex4XGLU1YulPayQtQwfw4BBl0Y6XlU0thGA7qRMQqLIDV7pBUs
- 9neNVmh3ZImPS9h6YgcAtwTduxK9S0gOVNeIsQ6t0jU2hW7WQj3tLinlQGM2zmI8cY6G
- W7Sd6sMAIjH8320vYrYSnSXWzSLum4K5rTLm56x0ZfKd8J0tqWHl+k2aMmElcl5sbepc
- lB9Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=X16hCAq2fEPXNIGVXcCcH3umZsrh2FSl2ZbjpApM4P8=;
- b=uVcaXwSRQSk7OxZ2aUut2Bj2YfRYk7zHPa8pe+XCTP/k7so3ieq+EK3dvEPlw1jmDi
- 6TbAmFzYmLraK/jlNYiAeuVXF4Yr0pqZ+a0f2RhG9/XG4kgefOW1RAZ+qDIK0NXvkOZZ
- ueG2Kc3GMQydbqf4Uhbxnw8EXvx+fkGYCTbfuxxxg8qdig5POeelYpM314TsVXk2Tn+0
- 930kvS4RfXmoxfWEOFU5I8VMv06QU3Oln+rRFRkCP+sy4dVOwcqoL7WP4lW4JPZWS8xR
- MPGO/c46T2tCir02y9jgcEPeJo5xydA10Zzco9irsaEB5oIkTuNjwEV+jZTzYsRDyDUF
- M01w==
-X-Gm-Message-State: AHQUAuZFp6dQE6CL139HQG98GUXnzDHOMy061tHLHSATLuA5wNhe69kN
- rTeFn92hnQjPtkPbj1feOnc=
-X-Google-Smtp-Source: AHgI3IbPSeIfH+YldDFCeJMO3ebXwQgkRiuPjnDPkFSQ1Dzxr3udvV8gTJeD/KweXNlHJiFIsRY4ZQ==
-X-Received: by 2002:a63:1cd:: with SMTP id 196mr22691740pgb.58.1550559672029; 
- Mon, 18 Feb 2019 23:01:12 -0800 (PST)
-Received: from localhost ([61.69.157.156])
- by smtp.gmail.com with ESMTPSA id y20sm27732217pfd.161.2019.02.18.23.01.10
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 18 Feb 2019 23:01:11 -0800 (PST)
-Date: Tue, 19 Feb 2019 17:01:05 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [RFC PATCH 2/2] powerpc/mm/hash64: Map all the kernel mapping in
- the same 0xc range
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org, Daniel Axtens
- <dja@axtens.net>, mpe@ellerman.id.au, paulus@samba.org
-References: <20190217051609.24140-1-aneesh.kumar@linux.ibm.com>
- <20190217051609.24140-2-aneesh.kumar@linux.ibm.com>
- <1550555813.fmra4d124d.astroid@bobo.none>
- <61b935a8-6fb2-e1ec-15cb-fbe4f293fe80@linux.ibm.com>
-In-Reply-To: <61b935a8-6fb2-e1ec-15cb-fbe4f293fe80@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443Y2q0G7BzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 18:56:16 +1100 (AEDT)
+Received: from host86-186-67-148.range86-186.btcentralplus.com
+ ([86.186.67.148] helo=[192.168.1.65])
+ by s16892447.onlinehome-server.info with esmtpsa
+ (TLS1.0:RSA_AES_128_CBC_SHA1:16) (Exim 4.76)
+ (envelope-from <mark.cave-ayland@ilande.co.uk>)
+ id 1gw0GI-0003da-Kd; Tue, 19 Feb 2019 07:56:19 +0000
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
+References: <20190208143319.11980-1-mark.cave-ayland@ilande.co.uk>
+ <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
+ <2ed8efb9-5cd4-31bf-6c7b-501b9d1925e6@ilande.co.uk>
+ <87pnrobe9m.fsf@concordia.ellerman.id.au>
+From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+Openpgp: preference=signencrypt
+Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
+ mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
+ 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
+ E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
+ PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
+ PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
+ AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
+ OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
+ NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
+ mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
+ z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
+ T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
+ DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
+ y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
+ 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
+ 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
+ YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
+ Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
+ BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
+ opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
+ NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
+ Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
+ KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
+ imgcU9TTGC5qd9g=
+Message-ID: <6839dfd8-f316-d98a-2ae9-279de956ce28@ilande.co.uk>
+Date: Tue, 19 Feb 2019 07:55:55 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1550559594.nl4vxs2jg6.astroid@bobo.none>
+In-Reply-To: <87pnrobe9m.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Language: en-GB
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 86.186.67.148
+X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
+Subject: Re: [PATCH] powerpc: fix 32-bit KVM-PR lockup and panic with MacOS
+ guest
+X-SA-Exim-Version: 4.2.1 (built Sun, 08 Jan 2012 02:45:44 +0000)
+X-SA-Exim-Scanned: Yes (on s16892447.onlinehome-server.info)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,29 +96,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Aneesh Kumar K.V's on February 19, 2019 4:00 pm:
-> On 2/19/19 11:28 AM, Nicholas Piggin wrote:
->> Aneesh Kumar K.V's on February 17, 2019 3:16 pm:
->>> This patch maps vmap, IO and vmemap regions in the 0xc address range
->>> instead of the current 0xd and 0xf range. This brings the mapping close=
-r
->>> to radix translation mode.
->>=20
->> What was the reason for that address layout in the first place?
->>=20
->=20
-> To bring in closer to radix translation mode and it should also help=20
-> with KASAN implementation.
+On 19/02/2019 04:20, Michael Ellerman wrote:
 
-No I mean the old implementation. Your change seems fine, it would just
-be good to know what the downside (if any) is from changing. Maybe it=20
-was just to make debugging slightly simpler?
+Hi Michael,
 
-Thanks,
-Nick
-=
+> Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk> writes:
+>> On 08/02/2019 14:45, Christophe Leroy wrote:
+>>
+>>> Le 08/02/2019 à 15:33, Mark Cave-Ayland a écrit :
+>>>> Commit 8792468da5e1 "powerpc: Add the ability to save FPU without giving it up"
+>>>
+>>> Expected format for the above is:
+>>>
+>>> Commit 123456789abc ("text")
+>>
+>> Hi Christophe,
+>>
+>> Apologies - I'm fairly new at submitting kernel patches, but I can re-send it in the
+>> correct format later if required.
+>>
+>>>> unexpectedly removed the MSR_FE0 and MSR_FE1 bits from the bitmask used to
+>>>> update the MSR of the previous thread in __giveup_fpu() causing a KVM-PR MacOS
+>>>> guest to lockup and panic the kernel.
+> 
+> Which kernel is panicking? The guest or the host?
+
+It's the host kernel. As long as you occasionally tap a few keys to keep the screen
+blanking disabled then you can see the panic on the physical console.
+
+I've uploaded a photo I took during the bisection containing the panic when booting
+MacOS X 10.2 under qemu-system-ppc to
+https://www.ilande.co.uk/tmp/qemu/macmini-kvm.jpg in case you find it useful.
+
+Given that it's really easy to recreate, let me know if you want me to do a git
+pull/rebuild and/or if you need any debugging information as it's easy for me to
+reproduce.
+
+>>>> Reinstate these bits to the MSR bitmask to enable MacOS guests to run under
+>>>> 32-bit KVM-PR once again without issue.
+>>>>
+>>>> Signed-off-by: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+>>>
+>>> Should include a Fixes: and a Cc to stable ?
+>>>
+>>> Fixes: 8792468da5e1 ("powerpc: Add the ability to save FPU without giving it up")
+>>> Cc: stable@vger.kernel.org
+>>
+>> Indeed, but there are still some questions to be asked here:
+>>
+>> 1) Why were these bits removed from the original bitmask in the first place without
+>> it being documented in the commit message?
+> 
+> It was almost certainly an accident.
+
+Heh, okay :)
+
+>> 2) Is this the right fix? I'm told that MacOS guests already run without this patch
+>> on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
+>> bug elsewhere in the 32-bit powerpc code.
+> 
+> That's slightly worrying. It's hard to say without more detail on why
+> the guest is crashing.
+> 
+> I think your patch looks OK based just on the fact that it restores the
+> previous behaviour, so I'll pick it up and pass it through my usual
+> testing. If nothing breaks I'll merge it.
+
+That would be great! Does it need a CC to stable too? It would be great if this would
+get picked up in the next set of Debian ports kernels, for example.
+
+
+ATB,
+
+Mark.
