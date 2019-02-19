@@ -2,23 +2,23 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65018C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39A45C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 08:17:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AE77121903
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 07:58:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE77121903
+	by mail.kernel.org (Postfix) with ESMTPS id 7789F2077B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 08:17:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7789F2077B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443Y4p51vpzDqKt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 18:58:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443YWf0nmKzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 19:17:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
  (client-ip=82.165.15.123; helo=s16892447.onlinehome-server.info;
@@ -28,22 +28,25 @@ Authentication-Results: lists.ozlabs.org;
 Received: from s16892447.onlinehome-server.info (chuckie.co.uk [82.165.15.123])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443Y2q0G7BzDqJ7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 18:56:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443YTK6wnqzDq78
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 19:15:48 +1100 (AEDT)
 Received: from host86-186-67-148.range86-186.btcentralplus.com
  ([86.186.67.148] helo=[192.168.1.65])
  by s16892447.onlinehome-server.info with esmtpsa
  (TLS1.0:RSA_AES_128_CBC_SHA1:16) (Exim 4.76)
  (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1gw0GI-0003da-Kd; Tue, 19 Feb 2019 07:56:19 +0000
+ id 1gw0ZJ-0003ii-FT; Tue, 19 Feb 2019 08:15:58 +0000
 To: Michael Ellerman <mpe@ellerman.id.au>,
- Christophe Leroy <christophe.leroy@c-s.fr>, benh@kernel.crashing.org,
- paulus@samba.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, paulus@samba.org,
+ npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
 References: <20190208143319.11980-1-mark.cave-ayland@ilande.co.uk>
  <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
  <2ed8efb9-5cd4-31bf-6c7b-501b9d1925e6@ilande.co.uk>
- <87pnrobe9m.fsf@concordia.ellerman.id.au>
+ <c2d6938902656f2829be8077c656cee9235c21b1.camel@kernel.crashing.org>
+ <46205b6a-7671-5d90-9507-b5b20045b99d@ilande.co.uk>
+ <87mumsbcnl.fsf@concordia.ellerman.id.au>
 From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
 Openpgp: preference=signencrypt
 Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
@@ -70,12 +73,12 @@ Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
  Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
  KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
  imgcU9TTGC5qd9g=
-Message-ID: <6839dfd8-f316-d98a-2ae9-279de956ce28@ilande.co.uk>
-Date: Tue, 19 Feb 2019 07:55:55 +0000
+Message-ID: <86f4b1df-78c7-ae1b-1144-554860903077@ilande.co.uk>
+Date: Tue, 19 Feb 2019 08:15:36 +0000
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <87pnrobe9m.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87mumsbcnl.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-GB
 Content-Transfer-Encoding: 8bit
@@ -100,74 +103,59 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 19/02/2019 04:20, Michael Ellerman wrote:
-
-Hi Michael,
+On 19/02/2019 04:55, Michael Ellerman wrote:
 
 > Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk> writes:
->> On 08/02/2019 14:45, Christophe Leroy wrote:
+>> On 11/02/2019 00:30, Benjamin Herrenschmidt wrote:
 >>
->>> Le 08/02/2019 à 15:33, Mark Cave-Ayland a écrit :
->>>> Commit 8792468da5e1 "powerpc: Add the ability to save FPU without giving it up"
->>>
->>> Expected format for the above is:
->>>
->>> Commit 123456789abc ("text")
->>
->> Hi Christophe,
->>
->> Apologies - I'm fairly new at submitting kernel patches, but I can re-send it in the
->> correct format later if required.
->>
->>>> unexpectedly removed the MSR_FE0 and MSR_FE1 bits from the bitmask used to
->>>> update the MSR of the previous thread in __giveup_fpu() causing a KVM-PR MacOS
->>>> guest to lockup and panic the kernel.
-> 
-> Which kernel is panicking? The guest or the host?
-
-It's the host kernel. As long as you occasionally tap a few keys to keep the screen
-blanking disabled then you can see the panic on the physical console.
-
-I've uploaded a photo I took during the bisection containing the panic when booting
-MacOS X 10.2 under qemu-system-ppc to
-https://www.ilande.co.uk/tmp/qemu/macmini-kvm.jpg in case you find it useful.
-
-Given that it's really easy to recreate, let me know if you want me to do a git
-pull/rebuild and/or if you need any debugging information as it's easy for me to
-reproduce.
-
->>>> Reinstate these bits to the MSR bitmask to enable MacOS guests to run under
->>>> 32-bit KVM-PR once again without issue.
+>>> On Fri, 2019-02-08 at 14:51 +0000, Mark Cave-Ayland wrote:
 >>>>
->>>> Signed-off-by: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+>>>> Indeed, but there are still some questions to be asked here:
+>>>>
+>>>> 1) Why were these bits removed from the original bitmask in the first place without
+>>>> it being documented in the commit message?
+>>>>
+>>>> 2) Is this the right fix? I'm told that MacOS guests already run without this patch
+>>>> on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
+>>>> bug elsewhere in the 32-bit powerpc code.
+>>>>
+>>>>
+>>>> If you think that these points don't matter, then I'm happy to resubmit the patch
+>>>> as-is based upon your comments above.
 >>>
->>> Should include a Fixes: and a Cc to stable ?
->>>
->>> Fixes: 8792468da5e1 ("powerpc: Add the ability to save FPU without giving it up")
->>> Cc: stable@vger.kernel.org
+>>> We should write a test case to verify that FE0/FE1 are properly
+>>> preserved/context-switched etc... I bet if we accidentally wiped them,
+>>> we wouldn't notice 99.9% of the time.
 >>
->> Indeed, but there are still some questions to be asked here:
+>> Right I guess it's more likely to cause in issue in the KVM PR case because the guest
+>> can alter the flags in a way that doesn't go through the normal process switch mechanism.
 >>
->> 1) Why were these bits removed from the original bitmask in the first place without
->> it being documented in the commit message?
+>> The original patchset at
+>> https://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg98326.html does include
+>> some tests in the first few patches, but AFAICT they are concerned with the contents
+>> of the FP registers rather than the related MSRs.
 > 
-> It was almost certainly an accident.
-
-Heh, okay :)
-
->> 2) Is this the right fix? I'm told that MacOS guests already run without this patch
->> on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
->> bug elsewhere in the 32-bit powerpc code.
+> fpu_preempt.c should be able to be adapted to also check the MSR bits.
 > 
-> That's slightly worrying. It's hard to say without more detail on why
-> the guest is crashing.
+>> Who is the right person to ask about fixing issues related to context switching with
+>> KVM PR?
 > 
-> I think your patch looks OK based just on the fact that it restores the
-> previous behaviour, so I'll pick it up and pass it through my usual
-> testing. If nothing breaks I'll merge it.
+> KVM PR doesn't really have a maintainer TBH. Feel like volunteering? :)
 
-That would be great! Does it need a CC to stable too? It would be great if this would
-get picked up in the next set of Debian ports kernels, for example.
+Well I only have a 32-bit Mac Mini here which I'm using to help flush out bugs in
+QEMU's emulation, so I can keep an occasional eye on the 32-bit side of things but as
+it's a hobby project time is quite limited.
+
+As/when time allows I'd be interested to figure out what MacOS 9 does that causes KVM
+PR to bail, and if it's possible to run KVM PR on an SMP kernel but certainly I'd
+need some help from the very knowledgable people on these lists.
+
+>> I did add the original author's email address to my first few emails but have
+>> had no response back :/
+> 
+> Cyril who wrote the original FPU patch has moved on to other things.
+
+Ah okay then.
 
 
 ATB,
