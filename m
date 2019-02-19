@@ -2,86 +2,98 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADDD2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 19:03:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 147BBC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 20:05:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 27A3B2147C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 19:03:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OpCPBdYp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27A3B2147C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 73C0521738
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 20:05:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73C0521738
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443qrF0gQkzDqK3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 06:03:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443sCz0VwvzDqKW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 07:05:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="OpCPBdYp"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443qpJ02wXzDqFm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 06:01:27 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id r124so10561910pgr.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 11:01:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=9dqjN7Y98iax4DhXzFYlyCN9SeqrXCABc0VZJksvSrg=;
- b=OpCPBdYpV/MVzsOY/FJDzxu9itQFe/UOGjHD0ybqauWRJ1hDHVwxDvYU5l8xnRmvrr
- wunWiqX/3I0WN7fmLSbQHw8awF74Xhoq6kEJUh4dGQ6kKPe1kjZcw6wTtCE9oJtAFS0/
- GzMX0H5Omog4gvlMzHpydKSRMSu9KXt8CtbG9xdEB9uSSL8G7mTda/RHoxCNH4/jiUQL
- gAshgwbpcZG3qWfxPFtz79hCV6EzVKNDBEe2DA+OkExRFGPzGYn0wfZc9HD/6PcBWXP2
- A9aSRX20CFArm15E++f8Ovr0U3m2KJll4f8WfmlL5bk+VgTpxwCifTmhptUJr6M16YL3
- y9Dw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=9dqjN7Y98iax4DhXzFYlyCN9SeqrXCABc0VZJksvSrg=;
- b=Z4XAZcFEMElxmZtDX8lfp/ommtYOTNa/KXeFhI7vBhLhjEjgyPCDrGpjj3r79JeAEy
- mbEElS9lVBCtnRADfelyfloLX8miNvE6vFbIEV+bSrSfzDrB2YXcQKVeIknvrVxoC1+m
- ThOfc9x+72/XHxdn4VMWDdW0dQZ9Bzuoo5O/hnsOi4r7Qe08BFTCDtfSIcNLUAWdfXHs
- D3vHECkheP+ZF/rQimphArwl4rCb8Lsi+ErBj/XFd7mgqtiuaS1PXAYe5MDdvwm62t3j
- 68PQMeuDKVuoryeuUXQ3JkhagIY7Awc2bFs69/KQsI8fBho7kXY/pYAacGstPzcEXkWg
- 8lzg==
-X-Gm-Message-State: AHQUAuajMqRpv1n1Vt+EWbVMLoefwpfuSVf2npGINe1tZj4Wk9ZZvbnf
- 3Co+8UA2Y+a2Ga7Wqk70V18=
-X-Google-Smtp-Source: AHgI3IYqYw9XQFEL1T9dxKHLkN7bHPB12de5CGE6uR/8W+tHvImJqcLEcShlhwebSAROw/U/X1Qszg==
-X-Received: by 2002:aa7:92da:: with SMTP id k26mr16119756pfa.216.1550602885893; 
- Tue, 19 Feb 2019 11:01:25 -0800 (PST)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id h3sm2004611pgv.38.2019.02.19.11.01.24
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 19 Feb 2019 11:01:25 -0800 (PST)
-Date: Tue, 19 Feb 2019 11:01:22 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Viorel Suman <viorel.suman@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_spdif: fix sysclk_df type
-Message-ID: <20190219190121.GB13373@Asurada-Nvidia.nvidia.com>
-References: <1550503474-18865-1-git-send-email-viorel.suman@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443s9j3bFvzDqH6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 07:03:21 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1JJx5DL055210
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 15:03:18 -0500
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qrr1qhc4h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 15:03:18 -0500
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 19 Feb 2019 20:03:17 -0000
+Received: from b01cxnp22034.gho.pok.ibm.com (9.57.198.24)
+ by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 19 Feb 2019 20:03:13 -0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1JK3CQ519005648
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 19 Feb 2019 20:03:12 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9458AB2068;
+ Tue, 19 Feb 2019 20:03:12 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3A6FFB2065;
+ Tue, 19 Feb 2019 20:03:11 +0000 (GMT)
+Received: from oc6857751186.ibm.com (unknown [9.80.225.63])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Tue, 19 Feb 2019 20:03:11 +0000 (GMT)
+Subject: Re: [PATCH] powerpc/pseries: Fix dn reference error in
+ dlpar_cpu_remove_by_index
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org
+References: <cc20c5cc-cf8e-d125-cac9-5d1b938a1d86@linux.vnet.ibm.com>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Tue, 19 Feb 2019 12:03:10 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1550503474-18865-1-git-send-email-viorel.suman@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <cc20c5cc-cf8e-d125-cac9-5d1b938a1d86@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19021920-2213-0000-0000-000003546BFC
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010627; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01163442; UDB=6.00607479; IPR=6.00944025; 
+ MB=3.00025659; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-19 20:03:15
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19021920-2214-0000-0000-00005D68C804
+Message-Id: <a7986146-f09d-6d40-63f9-8e7307fc2609@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-19_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 mlxscore=0 lowpriorityscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902190140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,65 +105,72 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Viorel Suman <viorel.suman@gmail.com>,
- Mark Brown <broonie@kernel.org>, dl-linux-imx <linux-imx@nxp.com>,
- Fabio Estevam <festevam@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Nathan Lynch <nathanl@linux.vnet.ibm.com>,
+ "Juliet M. Kim" <minkim@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 18, 2019 at 03:25:00PM +0000, Viorel Suman wrote:
-> According to RM SPDIF STC SYSCLK_DF field is 9-bit wide, values
-> being in 0..511 range. Use a proper type to handle sysclk_df.
+On 02/19/2019 07:46 AM, Michael Bringmann wrote:
+> powerpc/pseries: Fix dn reference error in dlpar_cpu_remove_by_index()
 > 
-> Signed-off-by: Viorel Suman <viorel.suman@nxp.com>
+> A reference to the device node of the CPU to be removed is released
+> upon successful removal of the associated CPU device.  If the call
+> to remove the CPU device fails, dlpar_cpu_remove_by_index() still
+> frees the reference and this leads to miscomparisons and/or
+> addressing errors later on.
+> 
+> This problem may be observed when trying to DLPAR 'hot-remove' a CPU
+> from a system that has only a single CPU.  The operation will fail
+> because there is no other CPU to which the kernel operations may be
+> migrated, but the refcount will still be decremented.
+> 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> 
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index 97feb6e..9537bb9 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -635,7 +635,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>  	}
+> 
+>  	rc = dlpar_cpu_remove(dn, drc_index);
+> -	of_node_put(dn);
+> +	if (!rc)
+> +		of_node_put(dn);
+>  	return rc;
+>  }
+> 
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+NACK!
 
-> ---
->  sound/soc/fsl/fsl_spdif.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-> index a26686e..4842e6d 100644
-> --- a/sound/soc/fsl/fsl_spdif.c
-> +++ b/sound/soc/fsl/fsl_spdif.c
-> @@ -96,7 +96,7 @@ struct fsl_spdif_priv {
->  	bool dpll_locked;
->  	u32 txrate[SPDIF_TXRATE_MAX];
->  	u8 txclk_df[SPDIF_TXRATE_MAX];
-> -	u8 sysclk_df[SPDIF_TXRATE_MAX];
-> +	u16 sysclk_df[SPDIF_TXRATE_MAX];
->  	u8 txclk_src[SPDIF_TXRATE_MAX];
->  	u8 rxclk_src;
->  	struct clk *txclk[SPDIF_TXRATE_MAX];
-> @@ -376,7 +376,8 @@ static int spdif_set_sample_rate(struct snd_pcm_substream *substream,
->  	struct platform_device *pdev = spdif_priv->pdev;
->  	unsigned long csfs = 0;
->  	u32 stc, mask, rate;
-> -	u8 clk, txclk_df, sysclk_df;
-> +	u16 sysclk_df;
-> +	u8 clk, txclk_df;
->  	int ret;
->  
->  	switch (sample_rate) {
-> @@ -1109,8 +1110,9 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
->  	static const u32 rate[] = { 32000, 44100, 48000, 96000, 192000 };
->  	bool is_sysclk = clk_is_match(clk, spdif_priv->sysclk);
->  	u64 rate_ideal, rate_actual, sub;
-> -	u32 sysclk_dfmin, sysclk_dfmax;
-> -	u32 txclk_df, sysclk_df, arate;
-> +	u32 arate;
-> +	u16 sysclk_dfmin, sysclk_dfmax, sysclk_df;
-> +	u8 txclk_df;
->  
->  	/* The sysclk has an extra divisor [2, 512] */
->  	sysclk_dfmin = is_sysclk ? 2 : 1;
-> -- 
-> 2.7.4
-> 
+The logic here is wrong. Here is the full function.
+
+static int dlpar_cpu_remove_by_index(u32 drc_index)
+{
+        struct device_node *dn;
+        int rc;
+
+        dn = cpu_drc_index_to_dn(drc_index);
+        if (!dn) {
+                pr_warn("Cannot find CPU (drc index %x) to remove\n",
+                        drc_index);
+                return -ENODEV;
+        }
+
+        rc = dlpar_cpu_remove(dn, drc_index);
+        of_node_put(dn);
+        return rc;
+}
+
+The call to cpu_drc_index_to_dn() returns a device_node with the reference count
+incremented. So, regardless of the success or failure of the call to
+dlpar_cpu_remove() you need to release that reference.
+
+If there is a reference counting issue it is somewhere else.
+
+-Tyrel
+
