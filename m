@@ -2,50 +2,49 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC527C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:07:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9518FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:16:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5A0E32146E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:07:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5A0E32146E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1415221773
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:16:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1415221773
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443jGb3g1mzDqGx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:07:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=canonical.com
- (client-ip=91.189.89.112; helo=youngberry.canonical.com;
- envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=canonical.com
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 443jTG3mlTzDqLx
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:16:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443jDg5gWBzDqGN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 01:05:22 +1100 (AEDT)
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
- by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
- (Exim 4.76) (envelope-from <colin.king@canonical.com>)
- id 1gw61O-0003DW-88; Tue, 19 Feb 2019 14:05:18 +0000
-From: Colin King <colin.king@canonical.com>
-To: Roy Pledge <Roy.Pledge@nxp.com>, Li Yang <leoyang.li@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH][next] soc: fsl: dpio: fix memory leak of a struct qbman on
- error exit path
-Date: Tue, 19 Feb 2019 14:05:17 +0000
-Message-Id: <20190219140517.10709-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443jR96JqGzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 443jR94Xd8z9sDL; Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 443jR92l0zz9s5c;
+ Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Make PPC_64K_PAGES depend on only 44x or
+ PPC_BOOK3S_64
+In-Reply-To: <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
+References: <20190208123416.1051-1-mpe@ellerman.id.au>
+ <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
+Date: Wed, 20 Feb 2019 01:14:25 +1100
+Message-ID: <87h8czc1by.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,34 +56,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: oss@buserror.net, aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-Currently the error check for a null reg leaks a struct qbman
-that was allocated earlier. Fix this by kfree'ing p on the error exit
-path.
+> On 02/08/2019 12:34 PM, Michael Ellerman wrote:
+>> In commit 7820856a4fcd ("powerpc/mm/book3e/64: Remove unsupported
+>> 64Kpage size from 64bit booke") we dropped the 64K page size support
+>> from the 64-bit nohash (Book3E) code.
+>> 
+>> But we didn't update the dependencies of the PPC_64K_PAGES option,
+>> meaning a randconfig can still trigger this code and cause a build
+>> breakage, eg:
+>>    arch/powerpc/include/asm/nohash/64/pgtable.h:14:2: error: #error "Page size not supported"
+>>    arch/powerpc/include/asm/nohash/mmu-book3e.h:275:2: error: #error Unsupported page size
+>> 
+>> So remove PPC_BOOK3E_64 from the dependencies. This also means we
+>> don't need to worry about PPC_FSL_BOOK3E, because that was just trying
+>> to prevent the PPC_BOOK3E_64=y && PPC_FSL_BOOK3E=y case.
+>
+> Does it means some cleanup could be done, for instance:
+>
+> arch/powerpc/include/asm/nohash/64/pgalloc.h:#ifndef CONFIG_PPC_64K_PAGES
+> arch/powerpc/include/asm/nohash/64/pgalloc.h:#endif /* 
+> CONFIG_PPC_64K_PAGES */
+> arch/powerpc/include/asm/nohash/64/pgtable.h:#ifdef CONFIG_PPC_64K_PAGES
+> arch/powerpc/include/asm/nohash/64/slice.h:#ifdef CONFIG_PPC_64K_PAGES
+> arch/powerpc/include/asm/nohash/64/slice.h:#else /* CONFIG_PPC_64K_PAGES */
+> arch/powerpc/include/asm/nohash/64/slice.h:#endif /* 
+> !CONFIG_PPC_64K_PAGES */
+> arch/powerpc/include/asm/nohash/pte-book3e.h:#ifdef CONFIG_PPC_64K_PAGES
+>
+> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
+> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
+> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
+> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
+> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/soc/fsl/dpio/qbman-portal.c | 1 +
- 1 file changed, 1 insertion(+)
+Probably.
 
-diff --git a/drivers/soc/fsl/dpio/qbman-portal.c b/drivers/soc/fsl/dpio/qbman-portal.c
-index 0bddb85c0ae5..5a73397ae79e 100644
---- a/drivers/soc/fsl/dpio/qbman-portal.c
-+++ b/drivers/soc/fsl/dpio/qbman-portal.c
-@@ -180,6 +180,7 @@ struct qbman_swp *qbman_swp_init(const struct qbman_swp_desc *d)
- 	reg = qbman_read_register(p, QBMAN_CINH_SWP_CFG);
- 	if (!reg) {
- 		pr_err("qbman: the portal is not enabled!\n");
-+		kfree(p);
- 		return NULL;
- 	}
- 
--- 
-2.20.1
+Some of the FSL chips do support 64K pages at least according to some
+datasheets. I don't know what would be required to get it working, or if
+it even works in practice.
 
+So it would be nice to get 64K working on those chips, but probably no
+one has time or motivation to do it. In which case yeah all that code
+should be removed.
+
+cheers
