@@ -2,122 +2,82 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AAD0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 15:48:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84172C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 17:24:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7C96B21479
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 15:48:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7C96B21479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C39662083B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 17:24:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="QDqw8lsp"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C39662083B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443lWV2FnMzDqJs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 02:48:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443nfv1Z3VzDqK6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 04:24:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mwb@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="QDqw8lsp"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443lTl1WBGzDqDY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 02:46:51 +1100 (AEDT)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1JFcmdP094432
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 10:46:49 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qrkyrtqre-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 10:46:48 -0500
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 19 Feb 2019 15:46:47 -0000
-Received: from b03cxnp07029.gho.boulder.ibm.com (9.17.130.16)
- by e35.co.us.ibm.com (192.168.1.135) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 19 Feb 2019 15:46:44 -0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1JFkhLv28967000
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Tue, 19 Feb 2019 15:46:43 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BD149BE059;
- Tue, 19 Feb 2019 15:46:43 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2AA88BE04F;
- Tue, 19 Feb 2019 15:46:43 +0000 (GMT)
-Received: from oc8380061452.ibm.com (unknown [9.53.179.224])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Tue, 19 Feb 2019 15:46:43 +0000 (GMT)
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/pseries: Fix dn reference error in
- dlpar_cpu_remove_by_index
-Openpgp: preference=signencrypt
-Autocrypt: addr=mwb@linux.vnet.ibm.com; prefer-encrypt=mutual; keydata=
- mQENBFcY7GcBCADzw3en+yzo9ASFGCfldVkIg95SAMPK0myXp2XJYET3zT45uBsX/uj9/2nA
- lBmXXeOSXnPfJ9V3vtiwcfATnWIsVt3tL6n1kqikzH9nXNxZT7MU/7gqzWZngMAWh/GJ9qyg
- DTOZdjsvdUNUWxtiLvBo7y+reA4HjlQhwhYxxvCpXBeRoF0qDWfQ8DkneemqINzDZPwSQ7zY
- t4F5iyN1I9GC5RNK8Y6jiKmm6bDkrrbtXPOtzXKs0J0FqWEIab/u3BDrRP3STDVPdXqViHua
- AjEzthQbGZm0VCxI4a7XjMi99g614/qDcXZCs00GLZ/VYIE8hB9C5Q+l66S60PLjRrxnABEB
- AAG0LU1pY2hhZWwgVy4gQnJpbmdtYW5uIDxtd2JAbGludXgudm5ldC5pYm0uY29tPokBOAQT
- AQIAIgUCVxjsZwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQSEdag3dpuTI0NAf8
- CKYTDKQLgOSjVrU2L5rM4lXaJRmQV6oidD3vIhKSnWRvPq9C29ifRG6ri20prTHAlc0vycgm
- 41HHg0y2vsGgNXGTWC2ObemoZBI7mySXe/7Tq5mD/semGzOp0YWZ7teqrkiSR8Bw0p+LdE7K
- QmT7tpjjvuhrtQ3RRojUYcuy1nWUsc4D+2cxsnZslsx84FUKxPbLagDgZmgBhUw/sUi40s6S
- AkdViVCVS0WANddLIpG0cfdsV0kCae/XdjK3mRK6drFKv1z+QFjvOhc8QIkkxFD0da9w3tJj
- oqnqHFV5gLcHO6/wizPx/NV90y6RngeBORkQiRFWxTXS4Oj9GVI/UrkBDQRXGOxnAQgAmJ5Y
- ikTWrMWPfiveUacETyEhWVl7u8UhZcx3yy2te8O0ay7t9fYcZgIEfQPPVVus89acIXlG3wYL
- DDPvb21OprLxi+ZJ2a0S5we+LcSWN1jByxJlbWBq+/LcMtGAOhNLpysY1gD0Y4UW/eKS+TFZ
- 562qKC3k1dBvnV9JXCgeS1taYFxRdVAn+2DwK3nuyG/DDq/XgJ5BtmyC3MMx8CiW3POj+O+l
- 6SedIeAfZlZ7/xhijx82g93h07VavUQRwMZgZFsqmuxBxVGiav2HB+dNvs3PFB087Pvc9OHe
- qhajPWOP/gNLMmvBvknn1NToM9a8/E8rzcIZXoYs4RggRRYh6wARAQABiQEfBBgBAgAJBQJX
- GOxnAhsMAAoJEEhHWoN3abky+RUH/jE08/r5QzaNKYeVhu0uVbgXu5fsxqr2cAxhf+KuwT3T
- efhEP2alarxzUZdEh4MsG6c+X2NYLbD3cryiXxVx/7kSAJEFQJfA5P06g8NLR25Qpq9BLsN7
- ++dxQ+CLKzSEb1X24hYAJZpOhS8ev3ii+M/XIo+olDBKuTaTgB6elrg3CaxUsVgLBJ+jbRkW
- yQe2S5f/Ja1ThDpSSLLWLiLK/z7+gaqwhnwjQ8Z8Y9D2itJQcj4itHilwImsqwLG7SxzC0NX
- IQ5KaAFYdRcOgwR8VhhkOIVd70ObSZU+E4pTET1WDz4o65xZ89yfose1No0+r5ht/xWOOrh8
- 53/hcWvxHVs=
-Organization: IBM Linux Technology Center
-Date: Tue, 19 Feb 2019 09:46:42 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.0
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19021915-0012-0000-0000-0000170D32BE
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010626; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01163357; UDB=6.00607428; IPR=6.00943939; 
- MB=3.00025659; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-19 15:46:46
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19021915-0013-0000-0000-0000564264E7
-Message-Id: <cc20c5cc-cf8e-d125-cac9-5d1b938a1d86@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-19_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902190116
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443ncx0BV9zDqFs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 04:23:11 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 443ncn3pcGz9v4wg;
+ Tue, 19 Feb 2019 18:23:05 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=QDqw8lsp; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id 29MNh-RSs4TH; Tue, 19 Feb 2019 18:23:05 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 443ncn25p7z9v4wf;
+ Tue, 19 Feb 2019 18:23:05 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550596985; bh=16mOsQibzOyuKGmlufxdiVA6zEatWjg8A75/MDif08w=;
+ h=From:Subject:To:Cc:Date:From;
+ b=QDqw8lspfArU8pC6Zsu6V60jBblcrtfo1iG1+2NlOLuNtQTgR8aOlUWSvXB03S4hU
+ gTY9fNshHtqw+378+7NQvD/fcPzzOdtD2gSl26Ys9jtiUdO7xLDFkHwIE5HJfKlWEx
+ odOIlDHrl6sUnLVra2hedOP2WelQgsj7/EsEIjqo=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E29858B7FE;
+ Tue, 19 Feb 2019 18:23:06 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id o-2HJ7YHlKai; Tue, 19 Feb 2019 18:23:06 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 94FB78B7F9;
+ Tue, 19 Feb 2019 18:23:06 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 5FAF96E81D; Tue, 19 Feb 2019 17:23:06 +0000 (UTC)
+Message-Id: <cover.1550596242.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v6 0/6] KASAN for powerpc/32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
+Date: Tue, 19 Feb 2019 17:23:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -129,44 +89,100 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rob Herring <robh@kernel.org>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Nathan Lynch <nathanl@linux.vnet.ibm.com>,
- "Juliet M. Kim" <minkim@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-powerpc/pseries: Fix dn reference error in dlpar_cpu_remove_by_index()
+This serie adds KASAN support to powerpc/32
 
-A reference to the device node of the CPU to be removed is released
-upon successful removal of the associated CPU device.  If the call
-to remove the CPU device fails, dlpar_cpu_remove_by_index() still
-frees the reference and this leads to miscomparisons and/or
-addressing errors later on.
+Tested on nohash/32 (8xx) and book3s/32 (mpc832x ie 603).
+Boot tested on qemu mac99
 
-This problem may be observed when trying to DLPAR 'hot-remove' a CPU
-from a system that has only a single CPU.  The operation will fail
-because there is no other CPU to which the kernel operations may be
-migrated, but the refcount will still be decremented.
+Changes in v6:
+- Fixed oops on module loading (due to access to RO shadow zero area).
+- Added support for hash book3s/32, thanks to Daniel's patch to differ KASAN activation.
+- Reworked handling of optimised string functions (dedicated patch for it)
+- Reordered some files to ease adding of book3e/64 support.
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Changes in v5:
+- Added KASAN_SHADOW_OFFSET in Makefile, otherwise we fallback to KASAN_MINIMAL
+and some stuff like stack instrumentation is not performed
+- Moved calls to kasan_early_init() in head.S because stack instrumentation
+in machine_init was performed before the call to kasan_early_init()
+- Mapping kasan_early_shadow_page RW in kasan_early_init() and
+remaping RO later in kasan_init()
+- Allocating a big memblock() for shadow area, falling back to PAGE_SIZE blocks in case of failure.
 
+Changes in v4:
+- Comments from Andrey (DISABLE_BRANCH_PROFILING, Activation of reports)
+- Proper initialisation of shadow area in kasan_init()
+- Panic in case Hash table is required.
+- Added comments in patch one to explain why *t = *s becomes memcpy(t, s, ...)
+- Call of kasan_init_tags()
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 97feb6e..9537bb9 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -635,7 +635,8 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
- 	}
- 
- 	rc = dlpar_cpu_remove(dn, drc_index);
--	of_node_put(dn);
-+	if (!rc)
-+		of_node_put(dn);
- 	return rc;
- }
- 
+Changes in v3:
+- Removed the printk() in kasan_early_init() to avoid build failure (see https://github.com/linuxppc/issues/issues/218)
+- Added necessary changes in asm/book3s/32/pgtable.h to get it work on powerpc 603 family
+- Added a few KASAN_SANITIZE_xxx.o := n to successfully boot on powerpc 603 family
+
+Changes in v2:
+- Rebased.
+- Using __set_pte_at() to build the early table.
+- Worked around and got rid of the patch adding asm/page.h in asm/pgtable-types.h
+    ==> might be fixed independently but not needed for this serie.
+
+For book3s/32 we have to stick to KASAN_MINIMAL because Hash table
+management is not active early enough at the time being.
+
+Christophe Leroy (6):
+  powerpc/mm: prepare kernel for KAsan on PPC32
+  powerpc/32: Move early_init() in a separate file
+  powerpc: prepare string/mem functions for KASAN
+  powerpc/32: Add KASAN support
+  kasan: allow architectures to provide an outline readiness check
+  powerpc/32: enable CONFIG_KASAN for book3s hash
+
+ arch/powerpc/Kconfig                          |   1 +
+ arch/powerpc/Makefile                         |   9 ++
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |   2 +
+ arch/powerpc/include/asm/highmem.h            |  10 +-
+ arch/powerpc/include/asm/kasan.h              |  51 ++++++++
+ arch/powerpc/include/asm/nohash/32/pgtable.h  |   2 +
+ arch/powerpc/include/asm/setup.h              |   5 +
+ arch/powerpc/include/asm/string.h             |  26 +++-
+ arch/powerpc/kernel/Makefile                  |  11 +-
+ arch/powerpc/kernel/asm-offsets.c             |   4 +
+ arch/powerpc/kernel/cputable.c                |  13 +-
+ arch/powerpc/kernel/early_32.c                |  36 ++++++
+ arch/powerpc/kernel/head_32.S                 |   3 +
+ arch/powerpc/kernel/head_40x.S                |   3 +
+ arch/powerpc/kernel/head_44x.S                |   3 +
+ arch/powerpc/kernel/head_8xx.S                |   3 +
+ arch/powerpc/kernel/head_fsl_booke.S          |   3 +
+ arch/powerpc/kernel/prom_init_check.sh        |  10 +-
+ arch/powerpc/kernel/setup-common.c            |   2 +
+ arch/powerpc/kernel/setup_32.c                |  28 -----
+ arch/powerpc/lib/Makefile                     |  16 ++-
+ arch/powerpc/lib/copy_32.S                    |  13 +-
+ arch/powerpc/lib/mem_64.S                     |   8 +-
+ arch/powerpc/lib/memcpy_64.S                  |   4 +-
+ arch/powerpc/mm/Makefile                      |   1 +
+ arch/powerpc/mm/kasan/Makefile                |   5 +
+ arch/powerpc/mm/kasan/kasan_init_32.c         | 170 ++++++++++++++++++++++++++
+ arch/powerpc/mm/mem.c                         |   4 +
+ arch/powerpc/mm/ptdump/dump_linuxpagetables.c |   8 ++
+ arch/powerpc/purgatory/Makefile               |   3 +
+ arch/powerpc/xmon/Makefile                    |   1 +
+ include/linux/kasan.h                         |   4 +
+ mm/kasan/generic.c                            |   3 +
+ 33 files changed, 412 insertions(+), 53 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kasan.h
+ create mode 100644 arch/powerpc/kernel/early_32.c
+ create mode 100644 arch/powerpc/mm/kasan/Makefile
+ create mode 100644 arch/powerpc/mm/kasan/kasan_init_32.c
+
+-- 
+2.13.3
 
