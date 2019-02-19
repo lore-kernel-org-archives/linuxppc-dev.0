@@ -2,49 +2,52 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9518FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:16:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F382C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:23:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1415221773
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:16:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1415221773
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E86CD21773
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 14:23:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E86CD21773
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=canonical.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443jTG3mlTzDqLx
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:16:18 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443jdK5vLKzDqHJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:23:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=canonical.com
+ (client-ip=91.189.89.112; helo=youngberry.canonical.com;
+ envelope-from=colin.king@canonical.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=canonical.com
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443jR96JqGzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 443jR94Xd8z9sDL; Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 443jR92l0zz9s5c;
- Wed, 20 Feb 2019 01:14:29 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Make PPC_64K_PAGES depend on only 44x or
- PPC_BOOK3S_64
-In-Reply-To: <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
-References: <20190208123416.1051-1-mpe@ellerman.id.au>
- <2fc1837d-af23-751c-d9af-0d0888b26ab4@c-s.fr>
-Date: Wed, 20 Feb 2019 01:14:25 +1100
-Message-ID: <87h8czc1by.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443jbB5qX9zDqCF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 01:21:26 +1100 (AEDT)
+Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
+ by youngberry.canonical.com with esmtpsa (TLS1.0:RSA_AES_256_CBC_SHA1:32)
+ (Exim 4.76) (envelope-from <colin.king@canonical.com>)
+ id 1gw6Gu-0004nc-IN; Tue, 19 Feb 2019 14:21:20 +0000
+From: Colin King <colin.king@canonical.com>
+To: Yangbo Lu <yangbo.lu@nxp.com>, Claudiu Manoil <claudiu.manoil@nxp.com>,
+ "David S . Miller" <davem@davemloft.net>,
+ Richard Cochran <richardcochran@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: [PATCH][next] ptp_qoriq: don't pass a large struct by value but
+ instead pass it by reference
+Date: Tue, 19 Feb 2019 14:21:20 +0000
+Message-Id: <20190219142120.11347-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,60 +59,89 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: oss@buserror.net, aneesh.kumar@linux.vnet.ibm.com
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+From: Colin Ian King <colin.king@canonical.com>
 
-> On 02/08/2019 12:34 PM, Michael Ellerman wrote:
->> In commit 7820856a4fcd ("powerpc/mm/book3e/64: Remove unsupported
->> 64Kpage size from 64bit booke") we dropped the 64K page size support
->> from the 64-bit nohash (Book3E) code.
->> 
->> But we didn't update the dependencies of the PPC_64K_PAGES option,
->> meaning a randconfig can still trigger this code and cause a build
->> breakage, eg:
->>    arch/powerpc/include/asm/nohash/64/pgtable.h:14:2: error: #error "Page size not supported"
->>    arch/powerpc/include/asm/nohash/mmu-book3e.h:275:2: error: #error Unsupported page size
->> 
->> So remove PPC_BOOK3E_64 from the dependencies. This also means we
->> don't need to worry about PPC_FSL_BOOK3E, because that was just trying
->> to prevent the PPC_BOOK3E_64=y && PPC_FSL_BOOK3E=y case.
->
-> Does it means some cleanup could be done, for instance:
->
-> arch/powerpc/include/asm/nohash/64/pgalloc.h:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/pgalloc.h:#endif /* 
-> CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/64/pgtable.h:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/slice.h:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/include/asm/nohash/64/slice.h:#else /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/64/slice.h:#endif /* 
-> !CONFIG_PPC_64K_PAGES */
-> arch/powerpc/include/asm/nohash/pte-book3e.h:#ifdef CONFIG_PPC_64K_PAGES
->
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#endif /* CONFIG_PPC_64K_PAGES */
-> arch/powerpc/mm/tlb_low_64e.S:#ifndef CONFIG_PPC_64K_PAGES
-> arch/powerpc/mm/tlb_low_64e.S:#ifdef CONFIG_PPC_64K_PAGES
+Passing the struct ptp_clock_info caps by parameter is passing over 130 bytes
+of data by value on the stack. Optimize this by passing it by reference instead.
+Also shinks the object code size:
 
-Probably.
+Before:
+   text	   data	    bss	    dec	    hex	filename
+  12596	   2160	     64	  14820	   39e4	drivers/ptp/ptp_qoriq.o
 
-Some of the FSL chips do support 64K pages at least according to some
-datasheets. I don't know what would be required to get it working, or if
-it even works in practice.
+After:
+   text	   data	    bss	    dec	    hex	filename
+  12567	   2160	     64	  14791	   39c7	drivers/ptp/ptp_qoriq.o
 
-So it would be nice to get 64K working on those chips, but probably no
-one has time or motivation to do it. In which case yeah all that code
-should be removed.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/freescale/enetc/enetc_ptp.c | 2 +-
+ drivers/ptp/ptp_qoriq.c                          | 6 +++---
+ include/linux/fsl/ptp_qoriq.h                    | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
-cheers
+diff --git a/drivers/net/ethernet/freescale/enetc/enetc_ptp.c b/drivers/net/ethernet/freescale/enetc/enetc_ptp.c
+index dc2f58a7c9e5..8c1497e7d9c5 100644
+--- a/drivers/net/ethernet/freescale/enetc/enetc_ptp.c
++++ b/drivers/net/ethernet/freescale/enetc/enetc_ptp.c
+@@ -92,7 +92,7 @@ static int enetc_ptp_probe(struct pci_dev *pdev,
+ 
+ 	ptp_qoriq->dev = &pdev->dev;
+ 
+-	err = ptp_qoriq_init(ptp_qoriq, base, enetc_ptp_caps);
++	err = ptp_qoriq_init(ptp_qoriq, base, &enetc_ptp_caps);
+ 	if (err)
+ 		goto err_no_clock;
+ 
+diff --git a/drivers/ptp/ptp_qoriq.c b/drivers/ptp/ptp_qoriq.c
+index 42d3654f77f0..53775362aac6 100644
+--- a/drivers/ptp/ptp_qoriq.c
++++ b/drivers/ptp/ptp_qoriq.c
+@@ -459,7 +459,7 @@ static int ptp_qoriq_auto_config(struct ptp_qoriq *ptp_qoriq,
+ }
+ 
+ int ptp_qoriq_init(struct ptp_qoriq *ptp_qoriq, void __iomem *base,
+-		   const struct ptp_clock_info caps)
++		   const struct ptp_clock_info *caps)
+ {
+ 	struct device_node *node = ptp_qoriq->dev->of_node;
+ 	struct ptp_qoriq_registers *regs;
+@@ -468,7 +468,7 @@ int ptp_qoriq_init(struct ptp_qoriq *ptp_qoriq, void __iomem *base,
+ 	u32 tmr_ctrl;
+ 
+ 	ptp_qoriq->base = base;
+-	ptp_qoriq->caps = caps;
++	ptp_qoriq->caps = *caps;
+ 
+ 	if (of_property_read_u32(node, "fsl,cksel", &ptp_qoriq->cksel))
+ 		ptp_qoriq->cksel = DEFAULT_CKSEL;
+@@ -605,7 +605,7 @@ static int ptp_qoriq_probe(struct platform_device *dev)
+ 		goto no_ioremap;
+ 	}
+ 
+-	err = ptp_qoriq_init(ptp_qoriq, base, ptp_qoriq_caps);
++	err = ptp_qoriq_init(ptp_qoriq, base, &ptp_qoriq_caps);
+ 	if (err)
+ 		goto no_clock;
+ 
+diff --git a/include/linux/fsl/ptp_qoriq.h b/include/linux/fsl/ptp_qoriq.h
+index f127adb71041..992bf9fa1729 100644
+--- a/include/linux/fsl/ptp_qoriq.h
++++ b/include/linux/fsl/ptp_qoriq.h
+@@ -183,7 +183,7 @@ static inline void qoriq_write_le(unsigned __iomem *addr, u32 val)
+ 
+ irqreturn_t ptp_qoriq_isr(int irq, void *priv);
+ int ptp_qoriq_init(struct ptp_qoriq *ptp_qoriq, void __iomem *base,
+-		   const struct ptp_clock_info caps);
++		   const struct ptp_clock_info *caps);
+ void ptp_qoriq_free(struct ptp_qoriq *ptp_qoriq);
+ int ptp_qoriq_adjfine(struct ptp_clock_info *ptp, long scaled_ppm);
+ int ptp_qoriq_adjtime(struct ptp_clock_info *ptp, s64 delta);
+-- 
+2.20.1
+
