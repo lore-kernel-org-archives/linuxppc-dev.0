@@ -2,58 +2,82 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DECA5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 21:48:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85EFAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 21:57:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 17606208E4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 21:48:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 17606208E4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 019882147A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 21:57:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=sifive.com header.i=@sifive.com header.b="FlgxZkii"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 019882147A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=sifive.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443vWN46GrzDqLF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 08:48:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443vjj074DzDqCc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 08:57:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=alex.williamson@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=sifive.com
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=palmer@sifive.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=sifive.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=sifive.com header.i=@sifive.com header.b="FlgxZkii"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443vTQ3G0qzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 08:47:05 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 562A5C0799B6;
- Tue, 19 Feb 2019 21:47:02 +0000 (UTC)
-Received: from w520.home (ovpn-116-24.phx2.redhat.com [10.3.116.24])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 83A2E61B8C;
- Tue, 19 Feb 2019 21:47:01 +0000 (UTC)
-Date: Tue, 19 Feb 2019 14:47:00 -0700
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] vfio/spapr_tce: Skip unsetting already unset table
-Message-ID: <20190219144700.6b79fa2f@w520.home>
-In-Reply-To: <b127a58c-bcc8-f720-b393-d60b210627e2@ozlabs.ru>
-References: <20190211074917.125723-1-aik@ozlabs.ru>
- <20190212135242.78b988d0@w520.home>
- <b127a58c-bcc8-f720-b393-d60b210627e2@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.31]); Tue, 19 Feb 2019 21:47:02 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443vgn6bXTzDq9H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 08:56:02 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id g6so10826673pfh.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 13:56:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sifive.com; s=google;
+ h=date:subject:in-reply-to:cc:from:to:message-id:mime-version
+ :content-transfer-encoding;
+ bh=zwftrmOanSdXzGc8vLBd3uz4NYesZr6TcF6+HO5ue/8=;
+ b=FlgxZkii1ql/ihK9/mTDXJZxMuqUGxQwjTuD6Js76dnbctgvl2vSAe73VTxWX0xlb7
+ BKd877LCMLLdk6LW8f4WKDe/gS9oAlDjgZYEe1IMhhBkQXAL3XEUweP90fm9CSEfFhzZ
+ BCv/zekDCVH2tH45qJ0Dmo3Lo8Q17+hY7POGQaiA9MhIacwSqf8DXZxWUGDzGrCo7n4P
+ TdJEoZjKEOWaP6NY6P5BVye0gnsh9Hwh8MNOS0MNih3UBfYeTrenAdbJzcn6HJIrgM9Q
+ fKIG8nwg8X6c+GdKIPT7yl4iXDtkQAxswC5ygIPe8949hzgOefWv54XIb1CmDmkhQUkx
+ Ss9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:subject:in-reply-to:cc:from:to:message-id
+ :mime-version:content-transfer-encoding;
+ bh=zwftrmOanSdXzGc8vLBd3uz4NYesZr6TcF6+HO5ue/8=;
+ b=d2UN/bmDxnFjWsuDlv+OSCEZiwY1cymwQMrhkhfsOay3HKz4VZLPeV4c2g9ZKIj2nl
+ qBZRzURG6q1ZB6n66zzvz0VPw/QxPi9THNYJIYHnH5yQs/Hv5/l8CvoR6lIP0w5NxeHS
+ HIIhz12Ymcn5klz2S41UGhOqBFUeqrogDWIJK+kGes7gM3DIrAF8TgZ+a1tSKuWLaYxm
+ asqirGRVxz0ReDqZ8OYVnJrTc02ipDru80p2w9Klnk9N3oiv8HztwscNU2zoCdcZh8gm
+ Wx9tQaduQOuHyjzDnETZThc0RRvqbFoDbSyNgiMZpXWBU6SWLVP7ayAJwEX3NqH+oOvj
+ kDgw==
+X-Gm-Message-State: AHQUAuZtcdXTjhNGtrAhb/ZwY41bWmsVbI79HxgRySXlWwH8lsBGpQH2
+ RI6j3ET5mFMGy9qDRdUnekudQQ==
+X-Google-Smtp-Source: AHgI3IbO71j/yAEHBSC/UTbub00j189AuzZZ0wQvGAVS08M3quqG9okfN46WWJ73A48emt4TkHOIYg==
+X-Received: by 2002:a63:5b1c:: with SMTP id p28mr25442696pgb.73.1550613359530; 
+ Tue, 19 Feb 2019 13:55:59 -0800 (PST)
+Received: from localhost ([12.206.222.5])
+ by smtp.gmail.com with ESMTPSA id u2sm21380550pfh.134.2019.02.19.13.55.58
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 19 Feb 2019 13:55:58 -0800 (PST)
+Date: Tue, 19 Feb 2019 13:55:58 -0800 (PST)
+X-Google-Original-Date: Tue, 19 Feb 2019 13:55:45 PST (-0800)
+Subject: Re: [PATCH 02/11] riscv: remove the HAVE_KPROBES option
+In-Reply-To: <20190219151759.GD4121@lst.de>
+From: Palmer Dabbelt <palmer@sifive.com>
+To: Christoph Hellwig <hch@lst.de>
+Message-ID: <mhng-a73ea6c9-683c-4ee0-991e-24a6608b6887@palmer-si-x1c4>
+Mime-Version: 1.0 (MHng)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,81 +89,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linux-s390@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-kernel@vger.kernel.org,
+ yamada.masahiro@socionext.com, linux-riscv@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 13 Feb 2019 11:18:21 +1100
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On Tue, 19 Feb 2019 07:17:59 PST (-0800), Christoph Hellwig wrote:
+> On Fri, Feb 15, 2019 at 06:32:07PM +0900, Masahiro Yamada wrote:
+>> On Thu, Feb 14, 2019 at 2:40 AM Christoph Hellwig <hch@lst.de> wrote:
+>> >
+>> > HAVE_KPROBES is defined genericly in arch/Kconfig and architectures
+>> > should just select it if supported.
+>> >
+>> > Signed-off-by: Christoph Hellwig <hch@lst.de>
+>>
+>> Do you want this patch picked up by me?
+>>
+>> Or, by Palmer?
+>
+> Given that I don't think I'll have the rest of this series respun in time
+> for this merge window:  Palmer, can you pick it up?
 
-> On 13/02/2019 07:52, Alex Williamson wrote:
-> > On Mon, 11 Feb 2019 18:49:17 +1100
-> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >   
-> >> VFIO TCE IOMMU v2 owns IOMMU tables so when detach a IOMMU group from
-> >> a container, we need to unset those from a group so we call unset_window()
-> >> so do we unconditionally. We also unset tables when removing a DMA window  
-> > 
-> > Patch looks ok, but this first sentence trails off into a bit of a word
-> > salad.  Care to refine a bit?  Thanks,  
-> 
-> Fair comment, sorry for the salad. How about this?
-> 
-> ===
-> VFIO TCE IOMMU v2 owns IOMMU tables. When we detach an IOMMU group from
-> a container, we need to unset these tables from the group which we do by
-> calling unset_window(). We also unset tables when removing a DMA window
-> via the VFIO_IOMMU_SPAPR_TCE_REMOVE ioctl.
-> ===
-
-
-Applied to vfio next branch with updated commit log and David's R-b.
-Thanks,
-
-Alex
-
-> >   
-> >> via the VFIO_IOMMU_SPAPR_TCE_REMOVE ioctl.
-> >>
-> >> The window removal checks if the table actually exists (hidden inside
-> >> tce_iommu_find_table()) but the group detaching does not so the user
-> >> may see duplicating messages:
-> >> pci 0009:03     : [PE# fd] Removing DMA window #0
-> >> pci 0009:03     : [PE# fd] Removing DMA window #1
-> >> pci 0009:03     : [PE# fd] Removing DMA window #0
-> >> pci 0009:03     : [PE# fd] Removing DMA window #1
-> >>
-> >> At the moment this is not a problem as the second invocation
-> >> of unset_window() writes zeroes to the HW registers again and exits early
-> >> as there is no table.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >>
-> >> When doing VFIO PCI hot unplug, first we remove the DMA window and
-> >> set container->tables[num] - this is a first couple of messages.
-> >> Then we detach the group and then we see another couple of the same
-> >> messages which confused myself.
-> >> ---
-> >>  drivers/vfio/vfio_iommu_spapr_tce.c | 3 ++-
-> >>  1 file changed, 2 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> index c424913..8dbb270 100644
-> >> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >> @@ -1235,7 +1235,8 @@ static void tce_iommu_release_ownership_ddw(struct tce_container *container,
-> >>  	}
-> >>  
-> >>  	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i)
-> >> -		table_group->ops->unset_window(table_group, i);
-> >> +		if (container->tables[i])
-> >> +			table_group->ops->unset_window(table_group, i);
-> >>  
-> >>  	table_group->ops->release_ownership(table_group);
-> >>  }  
-> >   
-> 
-
+It's on my for-next.
