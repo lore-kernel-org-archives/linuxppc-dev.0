@@ -2,64 +2,106 @@ Return-Path: <SRS0=lgwO=Q2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71A8AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:49:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CCD6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 12:04:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AB98121479
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 11:49:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8C2A82089F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 12:04:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="bOA/4/ce"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AB98121479
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iU/xVmig"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8C2A82089F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443fD057fpzDqHd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 22:49:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443fXy5kMVzDqLV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Feb 2019 23:04:18 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443fTZ6HT0zDqF0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 23:01:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="bOA/4/ce"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="iU/xVmig"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 443fTZ3l2Qz8sxp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 23:01:22 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 443fTZ2n4jz9sDb; Tue, 19 Feb 2019 23:01:22 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=bsingharora@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="iU/xVmig"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443f9P6DYDzDqHP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 22:47:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
- Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
- List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
- List-Archive; bh=p6Aw3NNnIP4LVC4pA028r3wni+o8p3Cvh5fLFCzuJ30=; b=bOA/4/ceuqQU
- Rfdb/bld6SF7EiZKo+AeHLjK5xHq3RCK0Ypxh7Z7S5OboGqjgNoth4JDFeN8fdoGlwwkkh+hrNt91
- 2/t+mXbqq8kSKuta0H0A5YURmnTY8fwDkYuIx0X4eE5U8hyxetSAJwSaFlzbGnp3NhInCBvVwDhmo
- 7Q4XQ=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gw3rg-0008ST-Tq; Tue, 19 Feb 2019 11:47:08 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id 7EC7E11284A6; Tue, 19 Feb 2019 11:47:08 +0000 (GMT)
-From: Mark Brown <broonie@kernel.org>
-To: Wen Yang <yellowriver2010@hotmail.com>
-Subject: Applied "SoC: imx-sgtl5000: add missing put_device()" to the asoc tree
-In-Reply-To: <HK0PR02MB3634C18C42652DC3A2893043B2630@HK0PR02MB3634.apcprd02.prod.outlook.com>
-X-Patchwork-Hint: ignore
-Message-Id: <20190219114708.7EC7E11284A6@debutante.sirena.org.uk>
-Date: Tue, 19 Feb 2019 11:47:08 +0000 (GMT)
+ by ozlabs.org (Postfix) with ESMTPS id 443fTY5gGjz9sD4
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2019 23:01:21 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id i130so10061316pgd.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 Feb 2019 04:01:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=/LG/yEoER1LLbq1ZVxXJDkWgtoKcYvIkZiPzXMpJeVo=;
+ b=iU/xVmigyl6P6JQ+57cD4HVDHnGSrProH0Bj7J/IpfGxTbo5jggrj2JEO3KEx0vnOA
+ 0U6lLcIN6jAKKai0MyqAA4vC3XPyGqdpr1dCMD0QHOYR6Ea6W9d8LCK6jdp6+YOJmnol
+ sJPlA8QkFRIoZ3qaWBBHgf+fikdu8LMUkeB+fCYhd+SzBE0sDcrS+B7mpWE6tBcXvyiz
+ NwPKXPltrdr05Or1JEujlgMfwxABSEVs7WRYJj4lOJ4v2npwW26pe+mGH7cMYhK7+Dbg
+ G2yqOxYMRwm8uHIS2zFIdMNg1ov5kgoTBobqduB/kY/KKStgWeNih+p8NCLASz91DtQ1
+ h0vQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=/LG/yEoER1LLbq1ZVxXJDkWgtoKcYvIkZiPzXMpJeVo=;
+ b=OtvGQCRIKEoxmAh3Rlj6wXnvSFIxcouYQqdXi9GakU+Uny/m5ax7uPbrdTEZQanYqH
+ NW5a7D5NvIxqmc8jW1XeVe3NGwfPQe13VO/9ZTSIy7AXfTbsK4AeoqPz8uU+tUiHv9dj
+ jy3Rn00/QdbB+gpp9vEY5O2jpTu/iwASOlD+aJGgW0UUnNl5GwzdhfaK1HVyOTR2JOdB
+ /zlAXseJRPxQMhPyRRqPdrrVnUflgOqUlSdWpS8ujpSZWjb5lxr9Fbv5yvKRg4PcJY2S
+ fmhL2AQnffjO4p/l6FB8/TImFBaApwDO18DYDC9z2jyF1MsA0CKvthsNdSvdz7g4TLnx
+ z0/w==
+X-Gm-Message-State: AHQUAuZbODkIpQT5l6VIhSNVanXZZYhmQ5ptbFUu4xmOwecPjrHPS8BU
+ DuFyEvBcKSqrzbIag+ywWOo=
+X-Google-Smtp-Source: AHgI3IZIhLtBpykbTg6j8A/bl1aKD6Q13H0vmWwXiKvP/FU0TZwarjAbPGHY9e/NaBzjEBvj6uDodA==
+X-Received: by 2002:a63:6605:: with SMTP id a5mr2454975pgc.372.1550577678304; 
+ Tue, 19 Feb 2019 04:01:18 -0800 (PST)
+Received: from localhost ([203.219.252.113])
+ by smtp.gmail.com with ESMTPSA id o2sm20849302pgq.29.2019.02.19.04.01.16
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 19 Feb 2019 04:01:17 -0800 (PST)
+Date: Tue, 19 Feb 2019 23:01:14 +1100
+From: Balbir Singh <bsingharora@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Fix possible corruption on big endian due
+ to pgd/pud_present()
+Message-ID: <20190219120114.GK31125@350D>
+References: <20190214062339.7139-1-mpe@ellerman.id.au>
+ <20190216105511.GA31125@350D>
+ <20190216142206.GE14180@gate.crashing.org>
+ <20190217062333.GC31125@350D>
+ <87ef86dd9v.fsf@concordia.ellerman.id.au>
+ <20190217215556.GH31125@350D>
+ <87imxhrkdt.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87imxhrkdt.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,99 +113,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alsa-devel@alsa-project.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>,
- Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Kysela <perex@perex.cz>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Jaroslav@sirena.org.uk, Mark Brown <broonie@kernel.org>,
- NXP Linux Team <linux-imx@nxp.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Fabio Estevam <festevam@gmail.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: erhard_f@mailbox.org, jack@suse.cz, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The patch
+On Mon, Feb 18, 2019 at 11:49:18AM +1100, Michael Ellerman wrote:
+> Balbir Singh <bsingharora@gmail.com> writes:
+> > On Sun, Feb 17, 2019 at 07:34:20PM +1100, Michael Ellerman wrote:
+> >> Balbir Singh <bsingharora@gmail.com> writes:
+> >> > On Sat, Feb 16, 2019 at 08:22:12AM -0600, Segher Boessenkool wrote:
+> >> >> On Sat, Feb 16, 2019 at 09:55:11PM +1100, Balbir Singh wrote:
+> >> >> > On Thu, Feb 14, 2019 at 05:23:39PM +1100, Michael Ellerman wrote:
+> >> >> > > In v4.20 we changed our pgd/pud_present() to check for _PAGE_PRESENT
+> >> >> > > rather than just checking that the value is non-zero, e.g.:
+> >> >> > > 
+> >> >> > >   static inline int pgd_present(pgd_t pgd)
+> >> >> > >   {
+> >> >> > >  -       return !pgd_none(pgd);
+> >> >> > >  +       return (pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+> >> >> > >   }
+> >> >> > > 
+> >> >> > > Unfortunately this is broken on big endian, as the result of the
+> >> >> > > bitwise && is truncated to int, which is always zero because
+> >> >> 
+> >> >> (Bitwise "&" of course).
+> >> >> 
+> >> >> > Not sure why that should happen, why is the result an int? What
+> >> >> > causes the casting of pgd_t & be64 to be truncated to an int.
+> >> >> 
+> >> >> Yes, it's not obvious as written...  It's simply that the return type of
+> >> >> pgd_present is int.  So it is truncated _after_ the bitwise and.
+> >> >>
+> >> >
+> >> > Thanks, I am surprised the compiler does not complain about the truncation
+> >> > of bits. I wonder if we are missing -Wconversion
+> >> 
+> >> Good luck with that :)
+> >> 
+> >> What I should start doing is building with it enabled and then comparing
+> >> the output before and after commits to make sure we're not introducing
+> >> new cases.
+> >
+> > Fair enough, my point was that the compiler can help out. I'll see what
+> > -Wconversion finds on my local build :)
+> 
+> I get about 43MB of warnings here :)
+>
 
-   SoC: imx-sgtl5000: add missing put_device()
+I got about 181M with a failed build :(, but the warnings pointed to some cases
+that can be a good project for cleanup
 
-has been applied to the asoc tree at
+For example
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+1. 
+static inline long regs_return_value(struct pt_regs *regs)
+{
+        if (is_syscall_success(regs))
+                return regs->gpr[3];
+        else
+                return -regs->gpr[3];
+}
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
+In the case of is_syscall_success() returning false, we should ensure that
+regs->gpr[3] is negative and capped within a certain limit, but it might
+be an expensive check
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+2.
+static inline void mark_hpte_slot_valid(unsigned char *hpte_slot_array,
+                                        unsigned int index, unsigned int hidx)
+{
+        hpte_slot_array[index] = (hidx << 1) | 0x1;
+}
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+hidx is 3 bits, but the argument is unsigned int. The caller probably does a
+hidx & 0x7, but it's not clear from the code
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
+3. hash__pmd_bad (pmd_bad) and hash__pud_bad (pud_bad) have issues similar to what was found,
+but since the the page table indices are below 32, the macros are safe :)
 
-Thanks,
-Mark
+And a few more, but I am not sure why I spent time looking at possible issues,
+may be I am being stupid or overly pessimistic :)
 
-From 8fa857da9744f513036df1c43ab57f338941ae7d Mon Sep 17 00:00:00 2001
-From: Wen Yang <yellowriver2010@hotmail.com>
-Date: Mon, 18 Feb 2019 15:13:47 +0000
-Subject: [PATCH] SoC: imx-sgtl5000: add missing put_device()
+Balbir
 
-The of_find_device_by_node() takes a reference to the underlying device
-structure, we should release that reference.
-
-Detected by coccinelle with the following warnings:
-./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
-call of_find_device_by_node on line 105, but without a corresponding
-object release within this function.
-./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
-call of_find_device_by_node on line 105, but without a corresponding
-object release within this function.
-
-Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
-Cc: Timur Tabi <timur@kernel.org>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Xiubo Li <Xiubo.Lee@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
-Cc: Takashi Iwai <tiwai@suse.com>
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
-Cc: NXP Linux Team <linux-imx@nxp.com>
-Cc: alsa-devel@alsa-project.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/imx-sgtl5000.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
-index b6cb80480b60..bf8597f57dce 100644
---- a/sound/soc/fsl/imx-sgtl5000.c
-+++ b/sound/soc/fsl/imx-sgtl5000.c
-@@ -108,6 +108,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
- 		ret = -EPROBE_DEFER;
- 		goto fail;
- 	}
-+	put_device(&ssi_pdev->dev);
- 	codec_dev = of_find_i2c_device_by_node(codec_np);
- 	if (!codec_dev) {
- 		dev_dbg(&pdev->dev, "failed to find codec platform device\n");
--- 
-2.20.1
 
