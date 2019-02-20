@@ -2,100 +2,92 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B282C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 04:49:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37168C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 05:02:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 77DC32147A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 04:49:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 77DC32147A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A4D7020C01
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 05:01:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="xJkzQlH7";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="tsJzWWFT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4D7020C01
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4444rV37zlzDqGl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 15:49:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444579170TzDq9V
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 16:01:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=russell.cc
+ (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
+ envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=russell.cc
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="xJkzQlH7"; 
+ dkim=pass (2048-bit key;
+ unprotected) header.d=messagingengine.com header.i=@messagingengine.com
+ header.b="tsJzWWFT"; dkim-atps=neutral
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4444pp215szDq6Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 15:47:45 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1K4cejH047092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 23:47:43 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qrx6qbmea-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Feb 2019 23:47:42 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 20 Feb 2019 04:47:41 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 20 Feb 2019 04:47:39 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1K4lcnZ27394274
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 20 Feb 2019 04:47:38 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7D166AE055;
- Wed, 20 Feb 2019 04:47:38 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 2CDA2AE053;
- Wed, 20 Feb 2019 04:47:38 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 20 Feb 2019 04:47:38 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ED854A018C;
- Wed, 20 Feb 2019 15:47:34 +1100 (AEDT)
-Subject: Re: [PATCH v2 2/2] powerpc: Enable kcov
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org
-References: <20190211002002.26038-1-andrew.donnellan@au1.ibm.com>
- <20190211002002.26038-2-andrew.donnellan@au1.ibm.com>
- <87o9772ih2.fsf@dja-thinkpad.axtens.net>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 20 Feb 2019 15:47:27 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44455B52QyzDqFv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 16:00:14 +1100 (AEDT)
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+ by mailout.nyi.internal (Postfix) with ESMTP id 4D9E7233C4;
+ Wed, 20 Feb 2019 00:00:12 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Wed, 20 Feb 2019 00:00:12 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
+ from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding; s=fm1; bh=gXgDkeEPFTzcMfvLfLYt94lqv/
+ ebH4YktjB+j4Q04Ko=; b=xJkzQlH7nvzSCSeet0ixwbSKF3bLH4+pvWeKA7wz1Z
+ Z0U2OaLLllif1s/HDFo5sMC5NbxNCx+bLipO1EcYWJXeVvhnxz85U+QpKdeLtwYO
+ 0eepetBR3GlD5iS0QWG5kFXWnP8t5+S+3zPmKVho0oxfpi1qRUIXzbgxljFRql9S
+ UGPaeU8vieQoUpOovTYNOFq3k27c0q70ebNdJSaYSKmOhKPKetRbAaKXcdP2HiBT
+ iM6SCsOryf/nqsQbkMTRUH+jwHvKj0jgu3vJvDSWr1mftZAYfX0Z6th/6P3nFXUx
+ u2lUYuX4s6aNrJ82aizkmFpCX3Xnsm4oV/wUGpNpH/8w==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+ messagingengine.com; h=cc:content-transfer-encoding:date:from
+ :message-id:mime-version:subject:to:x-me-proxy:x-me-proxy
+ :x-me-sender:x-me-sender:x-sasl-enc; s=fm2; bh=gXgDkeEPFTzcMfvLf
+ LYt94lqv/ebH4YktjB+j4Q04Ko=; b=tsJzWWFTgG4CXrHfgU/ZjKvN3JJ6dJe3P
+ Z+2LI1qRznkbsIgI+AlAQUWCOhWNAMb1FvVkEg/FvkbYKfcNG95JlSY6jrwQtHG+
+ TxMfaxWK19gCi/rGb7vV4oLxQjroXCjRcyDf6z3f98pnAnkRcDOSjk1v1yVpnzvG
+ ANUlUvJ3ITSfZ603Fj9Jo5+y8rBDOVA5JsfMD/pU4qrjLWxDfdR/AuJzb93mpgJY
+ HfHeeP4tCnZDZScJzqkXsoFAX0pxrpJXmzoUJQnZ8E0ln6hdOCZerlBgcIA2ajS0
+ CdEaBkQReKYL4rkJhOgG61seMGzP4YQgiDgVfgqhLVPXxch1STLpg==
+X-ME-Sender: <xms:295sXDhpIZANJDzMRSoocwHTyVVWF0WkMyrdJA6hWv7-WZbtINeiMA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedutddrtdehgdektdculddtuddrgedtledrtddtmd
+ cutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthen
+ uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefhvf
+ fufffkofgggfestdekredtredttdenucfhrhhomheptfhushhsvghllhcuvehurhhrvgih
+ uceorhhushgtuhhrsehruhhsshgvlhhlrdgttgeqnecuffhomhgrihhnpehrmhhhrghnug
+ hlvghrshdrshgsnecukfhppeduvddvrdelledrkedvrddutdenucfrrghrrghmpehmrghi
+ lhhfrhhomheprhhushgtuhhrsehruhhsshgvlhhlrdgttgenucevlhhushhtvghrufhiii
+ gvpedt
+X-ME-Proxy: <xmx:295sXEq-kGcEV6YXFBGr7UHFAZVU1NUe8AI0Wo6hD0GeZJnxmRxVpQ>
+ <xmx:295sXLMYYHdLwPLEEhlsEyQtJx1aUfxaBde_wNW71AJ7yZx40mGung>
+ <xmx:295sXKZk_HwXpBTpsfd5UdbiTtovKEazbt9hxkGAYOp1vyn8tmB20A>
+ <xmx:3N5sXMLlobptOOSRVLHrfVYuz8RGShlVlJGwnlUw606rnvtfvihlgg>
+Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
+ by mail.messagingengine.com (Postfix) with ESMTPA id 70366E45E2;
+ Wed, 20 Feb 2019 00:00:07 -0500 (EST)
+From: Russell Currey <ruscur@russell.cc>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] powerpc/kvm: Save and restore AMR instead of zeroing
+Date: Wed, 20 Feb 2019 15:59:58 +1100
+Message-Id: <20190220045958.14966-1-ruscur@russell.cc>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <87o9772ih2.fsf@dja-thinkpad.axtens.net>
-Content-Language: en-AU
-X-TM-AS-GCONF: 00
-x-cbid: 19022004-0008-0000-0000-000002C28AA6
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022004-0009-0000-0000-0000222EBEF6
-Message-Id: <0c122e1d-8f7f-cd5e-b7e5-5b859c2df4c5@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-20_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=603 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902200031
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,65 +99,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: syzkaller@googlegroups.com, npiggin@gmail.com, dvyukov@google.com
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ Russell Currey <ruscur@russell.cc>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 20/2/19 3:26 pm, Daniel Axtens wrote:
-> I needed the following diff to get this booting on a T4240RDB:
-> 
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 961f44eabb65..fbe9894d6305 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -3,6 +3,10 @@
->   # Makefile for the linux kernel.
->   #
->   
-> +KCOV_INSTRUMENT_cputable.o := n
-> +KCOV_INSTRUMENT_setup_64.o := n
-> +KCOV_INSTRUMENT_paca.o := n
-> +
->   CFLAGS_ptrace.o                += -DUTS_MACHINE='"$(UTS_MACHINE)"'
->   
->   # Disable clang warning for using setjmp without setjmp.h header
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index f965fc33a8b7..0140e7e12c29 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -5,6 +5,9 @@
->   
->   ccflags-$(CONFIG_PPC64)        := $(NO_MINIMAL_TOC)
->   
-> +KCOV_INSTRUMENT_tlb_nohash.o := n
-> +KCOV_INSTRUMENT_fsl_booke_mmu.o := n
-> +
->   CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
->   
->   obj-y                          := fault.o mem.o pgtable.o mmap.o \
-> 
-> 
-> The change to kernel/ is required to get the kernel to even begin to
-> boot, and the change to mm/ is required to successfully set up SMP. I'm
-> not sure preciesly why they cause issues.
+Using the hash MMU on P7+, the AMR is used for pkeys.  It's important
+that the host and guest never end up with each other's AMR value, since
+this could disrupt operations and break things.
 
-Thanks for testing this - I'll roll this into v3.
+The AMR gets correctly restored on context switch, however before this
+happens (i.e. in a program like qemu) having the host value of the AMR
+be zero would interfere with that program using pkeys.
 
-> 
-> I was then able to run kcovtrace and the results seem to make sense. >
-> Perhaps in the future some further stuff should be trimmed down to make
-> the coverage results less noisy (restore_math is probably not telling us
-> anything interesting, for example), but certainly this is a great start.
+In addition, the AMR on Radix can control kernel access to userspace
+data, which you wouldn't want to be zeroed.
 
-I think syzkaller (as the main kcov consumer) can probably cope...
+So, just save and restore it like the other registers that get saved and
+restored.
 
-> 
-> With those changes,
-> Tested-by: Daniel Axtens <dja@axtens.net> # e6500
+Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
+Cc: <stable@vger.kernel.org> # v4.16+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
+---
+I'm not entirely sure the stack frame numbers are correct, I've tested it
+and it works but it'd be good if someone could double check this.
 
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 9b8d50a7cbaf..6291751c4ad9 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -47,7 +47,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ #define NAPPING_NOVCPU	2
+ 
+ /* Stack frame offsets for kvmppc_hv_entry */
+-#define SFS			208
++#define SFS			224		/* must be divisible by 16 */
+ #define STACK_SLOT_TRAP		(SFS-4)
+ #define STACK_SLOT_SHORT_PATH	(SFS-8)
+ #define STACK_SLOT_TID		(SFS-16)
+@@ -58,8 +58,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ #define STACK_SLOT_DAWR		(SFS-56)
+ #define STACK_SLOT_DAWRX	(SFS-64)
+ #define STACK_SLOT_HFSCR	(SFS-72)
++#define STACK_SLOT_AMR		(SFS-80)
+ /* the following is used by the P9 short path */
+-#define STACK_SLOT_NVGPRS	(SFS-152)	/* 18 gprs */
++#define STACK_SLOT_NVGPRS	(SFS-160)	/* 18 gprs */
+ 
+ /*
+  * Call kvmppc_hv_entry in real mode.
+@@ -743,6 +744,9 @@ BEGIN_FTR_SECTION
+ 	std	r7, STACK_SLOT_DAWRX(r1)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 
++	mfspr	r5, SPRN_AMR
++	std	r5, STACK_SLOT_AMR(r1)
++
+ BEGIN_FTR_SECTION
+ 	/* Set partition DABR */
+ 	/* Do this before re-enabling PMU to avoid P7 DABR corruption bug */
+@@ -1640,13 +1644,14 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 8:
+ 
+-	/* Save and reset AMR and UAMOR before turning on the MMU */
++	/* Save and restore/reset AMR and UAMOR before turning on the MMU */
+ 	mfspr	r5,SPRN_AMR
+ 	mfspr	r6,SPRN_UAMOR
+ 	std	r5,VCPU_AMR(r9)
+ 	std	r6,VCPU_UAMOR(r9)
++	ld	r5,STACK_SLOT_AMR(r1)
+ 	li	r6,0
+-	mtspr	SPRN_AMR,r6
++	mtspr	SPRN_AMR, r5
+ 	mtspr	SPRN_UAMOR, r6
+ 
+ 	/* Switch DSCR back to host value */
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.20.1
 
