@@ -3,51 +3,71 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD5D8C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52863C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:54:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3350A2146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:50:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3350A2146E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D0D8D2147C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:54:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D0D8D2147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444LBX1tW6zDqMp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:50:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 444L7V13mwzDqJ8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:48:05 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C2FA15AB;
- Wed, 20 Feb 2019 06:48:04 -0800 (PST)
-Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
- [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 312643F5C1;
- Wed, 20 Feb 2019 06:47:59 -0800 (PST)
-Date: Wed, 20 Feb 2019 14:47:56 +0000
-From: Will Deacon <will.deacon@arm.com>
-To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v4 2/3] locking/rwsem: Remove rwsem-spinlock.c & use
- rwsem-xadd.c for all archs
-Message-ID: <20190220144756.GK7523@fuggles.cambridge.arm.com>
-References: <1550095217-12047-1-git-send-email-longman@redhat.com>
- <1550095217-12047-3-git-send-email-longman@redhat.com>
-MIME-Version: 1.0
+	by lists.ozlabs.org (Postfix) with ESMTP id 444LGR6tqnzDqLh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:54:07 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444LDR3Z9nzDq5x
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:52:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 444LDR2Pj9z8t8q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:52:23 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 444LDR22mqz9s9L; Thu, 21 Feb 2019 01:52:23 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 444LDQ3YT0z9s70
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 01:52:22 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x1KEpYL4023289;
+ Wed, 20 Feb 2019 08:51:34 -0600
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x1KEpPRx023288;
+ Wed, 20 Feb 2019 08:51:25 -0600
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Wed, 20 Feb 2019 08:51:25 -0600
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/64s: Fix possible corruption on big endian due to
+ pgd/pud_present()
+Message-ID: <20190220145112.GW14180@gate.crashing.org>
+References: <20190214062339.7139-1-mpe@ellerman.id.au>
+ <20190216105511.GA31125@350D> <20190216142206.GE14180@gate.crashing.org>
+ <20190217062333.GC31125@350D> <87ef86dd9v.fsf@concordia.ellerman.id.au>
+ <20190217215556.GH31125@350D> <87imxhrkdt.fsf@concordia.ellerman.id.au>
+ <20190219201539.GT14180@gate.crashing.org>
+ <87sgwi7lo1.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1550095217-12047-3-git-send-email-longman@redhat.com>
-User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
+In-Reply-To: <87sgwi7lo1.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -59,85 +79,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, linux-mips@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
- linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
- openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: erhard_f@mailbox.org, jack@suse.cz, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 05:00:16PM -0500, Waiman Long wrote:
-> Currently, we have two different implementation of rwsem:
->  1) CONFIG_RWSEM_GENERIC_SPINLOCK (rwsem-spinlock.c)
->  2) CONFIG_RWSEM_XCHGADD_ALGORITHM (rwsem-xadd.c)
+On Wed, Feb 20, 2019 at 10:18:38PM +1100, Michael Ellerman wrote:
+> Segher Boessenkool <segher@kernel.crashing.org> writes:
+> > On Mon, Feb 18, 2019 at 11:49:18AM +1100, Michael Ellerman wrote:
+> >> Balbir Singh <bsingharora@gmail.com> writes:
+> >> > Fair enough, my point was that the compiler can help out. I'll see what
+> >> > -Wconversion finds on my local build :)
+> >> 
+> >> I get about 43MB of warnings here :)
+> >
+> > Yes, -Wconversion complains about a lot of things that are idiomatic C.
+> > There is a reason -Wconversion is not in -Wall or -Wextra.
 > 
-> As we are going to use a single generic implementation for rwsem-xadd.c
-> and no architecture-specific code will be needed, there is no point
-> in keeping two different implementations of rwsem. In most cases, the
-> performance of rwsem-spinlock.c will be worse. It also doesn't get all
-> the performance tuning and optimizations that had been implemented in
-> rwsem-xadd.c over the years.
+> Actually a lot of those go away when I add -Wno-sign-conversion.
 > 
-> For simplication, we are going to remove rwsem-spinlock.c and make all
-> architectures use a single implementation of rwsem - rwsem-xadd.c.
+> And what's left seems mostly reasonable, they all indicate the
+> possibility of a bug I think.
 > 
-> All references to RWSEM_GENERIC_SPINLOCK and RWSEM_XCHGADD_ALGORITHM
-> in the code are removed.
+> In fact this works and would have caught the bug:
 > 
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Waiman Long <longman@redhat.com>
-> ---
->  arch/alpha/Kconfig              |   7 -
->  arch/arc/Kconfig                |   3 -
->  arch/arm/Kconfig                |   4 -
->  arch/arm64/Kconfig              |   3 -
->  arch/c6x/Kconfig                |   3 -
->  arch/csky/Kconfig               |   3 -
->  arch/h8300/Kconfig              |   3 -
->  arch/hexagon/Kconfig            |   6 -
->  arch/ia64/Kconfig               |   4 -
->  arch/m68k/Kconfig               |   7 -
->  arch/microblaze/Kconfig         |   6 -
->  arch/mips/Kconfig               |   7 -
->  arch/nds32/Kconfig              |   3 -
->  arch/nios2/Kconfig              |   3 -
->  arch/openrisc/Kconfig           |   6 -
->  arch/parisc/Kconfig             |   6 -
->  arch/powerpc/Kconfig            |   7 -
->  arch/riscv/Kconfig              |   3 -
->  arch/s390/Kconfig               |   6 -
->  arch/sh/Kconfig                 |   6 -
->  arch/sparc/Kconfig              |   8 -
->  arch/unicore32/Kconfig          |   6 -
->  arch/x86/Kconfig                |   3 -
->  arch/x86/um/Kconfig             |   6 -
->  arch/xtensa/Kconfig             |   3 -
->  include/linux/rwsem-spinlock.h  |  47 ------
->  include/linux/rwsem.h           |   5 -
->  kernel/Kconfig.locks            |   2 +-
->  kernel/locking/Makefile         |   4 +-
->  kernel/locking/rwsem-spinlock.c | 339 ----------------------------------------
->  kernel/locking/rwsem.h          |   3 -
->  31 files changed, 2 insertions(+), 520 deletions(-)
->  delete mode 100644 include/linux/rwsem-spinlock.h
->  delete mode 100644 kernel/locking/rwsem-spinlock.c
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> index d8c8d7c9df15..3114e3f368e2 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+> @@ -904,7 +904,12 @@ static inline int pud_none(pud_t pud)
+>  
+>  static inline int pud_present(pud_t pud)
+>  {
+> +	__diag_push();
+> +	__diag_warn(GCC, 8, "-Wconversion", "ulong -> int");
+> +
+>  	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
+> +
+> +	__diag_pop();
+>  }
+>  
+>  extern struct page *pud_page(pud_t pud);
+> 
+> 
+> 
+> Obviously we're not going to instrument every function like that. But we
+> could start instrumenting particular files.
 
-Another nice cleanup, and it looks like the optimistic spinning in the xadd
-implementation is predicated on ARCH_SUPPORTS_ATOMIC_RMW, so we're all good
-there too.
+So you want to instrument the functions that you know are buggy, using some
+weird incantations to catch only those errors you already know about?
 
-Acked-by: Will Deacon <will.deacon@arm.com>
+(I am worried this does not scale, in many dimensions).
 
-Will
+
+Segher
