@@ -2,52 +2,52 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D6423C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 12:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E61CFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 12:50:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C68D20C01
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 12:44:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C68D20C01
+	by mail.kernel.org (Postfix) with ESMTPS id 95C2820C01
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 12:50:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 95C2820C01
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444HNb5pktzDqKP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 23:44:15 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 444HWn4ynYzDqJ8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 23:50:29 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444HKB3tV3zDqGB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 23:41:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444HTJ3TrlzDqGB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 23:48:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 444HK94H47z9s70;
- Wed, 20 Feb 2019 23:41:17 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 444HTH2lyTz9s70;
+ Wed, 20 Feb 2019 23:48:19 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
- Christophe Leroy <christophe.leroy@c-s.fr>, benh@kernel.crashing.org,
- paulus@samba.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH] powerpc: fix 32-bit KVM-PR lockup and panic with MacOS
- guest
-In-Reply-To: <6839dfd8-f316-d98a-2ae9-279de956ce28@ilande.co.uk>
-References: <20190208143319.11980-1-mark.cave-ayland@ilande.co.uk>
- <41b02fb0-cdc6-6de0-d8fc-44d3d0a8ad70@c-s.fr>
- <2ed8efb9-5cd4-31bf-6c7b-501b9d1925e6@ilande.co.uk>
- <87pnrobe9m.fsf@concordia.ellerman.id.au>
- <6839dfd8-f316-d98a-2ae9-279de956ce28@ilande.co.uk>
-Date: Wed, 20 Feb 2019 23:41:17 +1100
-Message-ID: <87pnrm7hua.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ Daniel Axtens <dja@axtens.net>, paulus@samba.org
+Subject: Re: [RFC PATCH 2/2] powerpc/mm/hash64: Map all the kernel mapping in
+ the same 0xc range
+In-Reply-To: <1550559594.nl4vxs2jg6.astroid@bobo.none>
+References: <20190217051609.24140-1-aneesh.kumar@linux.ibm.com>
+ <20190217051609.24140-2-aneesh.kumar@linux.ibm.com>
+ <1550555813.fmra4d124d.astroid@bobo.none>
+ <61b935a8-6fb2-e1ec-15cb-fbe4f293fe80@linux.ibm.com>
+ <1550559594.nl4vxs2jg6.astroid@bobo.none>
+Date: Wed, 20 Feb 2019 23:48:19 +1100
+Message-ID: <87k1hu7hik.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -61,53 +61,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk> writes:
-> On 19/02/2019 04:20, Michael Ellerman wrote:
->> Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk> writes:
->>>>> unexpectedly removed the MSR_FE0 and MSR_FE1 bits from the bitmask used to
->>>>> update the MSR of the previous thread in __giveup_fpu() causing a KVM-PR MacOS
->>>>> guest to lockup and panic the kernel.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> Aneesh Kumar K.V's on February 19, 2019 4:00 pm:
+>> On 2/19/19 11:28 AM, Nicholas Piggin wrote:
+>>> Aneesh Kumar K.V's on February 17, 2019 3:16 pm:
+>>>> This patch maps vmap, IO and vmemap regions in the 0xc address range
+>>>> instead of the current 0xd and 0xf range. This brings the mapping closer
+>>>> to radix translation mode.
+>>> 
+>>> What was the reason for that address layout in the first place?
+>>> 
 >> 
->> Which kernel is panicking? The guest or the host?
+>> To bring in closer to radix translation mode and it should also help 
+>> with KASAN implementation.
 >
-> It's the host kernel. As long as you occasionally tap a few keys to keep the screen
-> blanking disabled then you can see the panic on the physical console.
+> No I mean the old implementation. Your change seems fine, it would just
+> be good to know what the downside (if any) is from changing. Maybe it 
+> was just to make debugging slightly simpler?
 
-Ah crap I assumed you meant the guest kernel.
+I don't know what the reason was for using 0xd to begin with. The
+original ppc64 port already had it.
 
-> I've uploaded a photo I took during the bisection containing the panic when booting
-> MacOS X 10.2 under qemu-system-ppc to
-> https://www.ilande.co.uk/tmp/qemu/macmini-kvm.jpg in case you find it useful.
+Takes a few seconds to load:
+  https://github.com/mpe/linux-fullhistory/commit/c3aa9878533e724f639852c3d951e6a169e04081#diff-0adfdefb64f0f0ef306be06ce7f953ebR173
 
-OK. That's a host crash, but only because init died (systemd). Though
-the reason it died is because we didn't clear FE0/1 properly, so still a
-kernel bug.
+#define PAGE_OFFSET     0xC000000000000000
+#define KERNELBASE      PAGE_OFFSET
+#define VMALLOCBASE     0xD000000000000000
+#define IOREGIONBASE    0xE000000000000000
 
-> Given that it's really easy to recreate, let me know if you want me to do a git
-> pull/rebuild and/or if you need any debugging information as it's easy for me to
-> reproduce.
-
-I think that's OK. It's reasonably clear what's going on.
-
-
->>> 2) Is this the right fix? I'm told that MacOS guests already run without this patch
->>> on a G5 under 64-bit KVM-PR which may suggest that this is a workaround for another
->>> bug elsewhere in the 32-bit powerpc code.
->> 
->> That's slightly worrying. It's hard to say without more detail on why
->> the guest is crashing.
->> 
->> I think your patch looks OK based just on the fact that it restores the
->> previous behaviour, so I'll pick it up and pass it through my usual
->> testing. If nothing breaks I'll merge it.
->
-> That would be great! Does it need a CC to stable too? It would be great if this would
-> get picked up in the next set of Debian ports kernels, for example.
-
-I'll add Cc stable.
 
 cheers
