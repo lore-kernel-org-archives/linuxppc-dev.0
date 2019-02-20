@@ -2,90 +2,104 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6DEFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:06:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 037C3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:08:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EAD420880
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:06:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="jTwYa+Ml"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EAD420880
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8944720880
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:08:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8944720880
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444QXX25fbzDqCG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 05:06:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444QZK57zlzDqDN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 05:08:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="jTwYa+Ml"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444Q6B0jLpzDqN0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:47:14 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 444Q650pGYz9tyhw;
- Wed, 20 Feb 2019 18:47:09 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=jTwYa+Ml; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id K37DnO5MZ8Z4; Wed, 20 Feb 2019 18:47:09 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 444Q646Ytxz9tyhv;
- Wed, 20 Feb 2019 18:47:08 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550684828; bh=YhePyEhYWweeg+j1bbKL60yg1YtrN6i/H6mR4gLzA6Q=;
- h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
- b=jTwYa+MlvLqYUsBE/kbgw3zHP6UlG5inw8RCeaybpxyxCQliqmiHEjA348xWsAY5y
- ifFD/b77eVVERcH4cWMs7+p0SNQ3VjK7Mx8ewyeAhmgpLu54C8wIOIIcfTPa9oxBOt
- /64W8juKOUIc3uvQLVOUPu5rNLKYP0N0fO5EomTY=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 90D938B84F;
- Wed, 20 Feb 2019 18:47:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id in6S7bhICjJv; Wed, 20 Feb 2019 18:47:10 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 5DB7D8B84A;
- Wed, 20 Feb 2019 18:47:10 +0100 (CET)
-Subject: Re: [PATCH v6 4/6] powerpc/32: Add KASAN support
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
- Daniel Axtens <dja@axtens.net>
-References: <cover.1550596242.git.christophe.leroy@c-s.fr>
- <e51647fdac60d523892cd3eab3217c3a4d8d356b.1550596242.git.christophe.leroy@c-s.fr>
-Message-ID: <eda79d75-375b-bf1e-5836-f27a08281ca6@c-s.fr>
-Date: Wed, 20 Feb 2019 18:47:08 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444QKc2qwhzDqLf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:57:08 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 37D3FC0EA42B;
+ Wed, 20 Feb 2019 17:57:06 +0000 (UTC)
+Received: from [10.40.204.241] (ovpn-204-241.brq.redhat.com [10.40.204.241])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 7BF7F1A835;
+ Wed, 20 Feb 2019 17:57:02 +0000 (UTC)
+Subject: Re: [PATCH v2] sched/topology: fix kernel crash when a CPU is
+ hotplugged in a memoryless node
+To: Peter Zijlstra <peterz@infradead.org>
+References: <20190220165520.5241-1-lvivier@redhat.com>
+ <20190220170841.GM32494@hirez.programming.kicks-ass.net>
+From: Laurent Vivier <lvivier@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=lvivier@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <11997145-4718-ed17-6085-54be18bf85ba@redhat.com>
+Date: Wed, 20 Feb 2019 18:57:01 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.0
 MIME-Version: 1.0
-In-Reply-To: <e51647fdac60d523892cd3eab3217c3a4d8d356b.1550596242.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190220170841.GM32494@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.32]); Wed, 20 Feb 2019 17:57:06 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,578 +111,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 20/02/2019 18:08, Peter Zijlstra wrote:
+> On Wed, Feb 20, 2019 at 05:55:20PM +0100, Laurent Vivier wrote:
+>> index 3f35ba1d8fde..372278605f0d 100644
+>> --- a/kernel/sched/topology.c
+>> +++ b/kernel/sched/topology.c
+>> @@ -1651,6 +1651,7 @@ void sched_init_numa(void)
+>>  	 */
+>>  	tl[i++] = (struct sched_domain_topology_level){
+>>  		.mask = sd_numa_mask,
+>> +		.flags = SDTL_OVERLAP,
+> 
+> This makes no sense what so ever. The numa identify node should not have
+> overlap with other domains.
+> 
+> Are you sure this is not because of the utterly broken powerpc nonsense
+> where they move CPUs between nodes?
 
+No, I'm not sure. This why I've Cc: powerpc folks. My conclusion is only
+based on the before/after changes.
 
-Le 19/02/2019 à 18:23, Christophe Leroy a écrit :
-> This patch adds KASAN support for PPC32.
-> 
-> The KASAN shadow area is located between the vmalloc area and the
-> fixmap area.
-> 
-> KASAN_SHADOW_OFFSET is calculated in asm/kasan.h and extracted
-> by Makefile prepare rule via asm-offsets.h
-> 
-> For modules, the shadow area is allocated at module_alloc().
-> 
-> Note that on book3s it will only work on the 603 because the other
-> ones use hash table and can therefore not share a single PTE table
-> covering the entire early KASAN shadow area.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->   arch/powerpc/Kconfig                          |   1 +
->   arch/powerpc/Makefile                         |   7 ++
->   arch/powerpc/include/asm/book3s/32/pgtable.h  |   2 +
->   arch/powerpc/include/asm/highmem.h            |  10 +-
->   arch/powerpc/include/asm/kasan.h              |  23 ++++
->   arch/powerpc/include/asm/nohash/32/pgtable.h  |   2 +
->   arch/powerpc/include/asm/setup.h              |   5 +
->   arch/powerpc/kernel/Makefile                  |   9 +-
->   arch/powerpc/kernel/asm-offsets.c             |   4 +
->   arch/powerpc/kernel/head_32.S                 |   3 +
->   arch/powerpc/kernel/head_40x.S                |   3 +
->   arch/powerpc/kernel/head_44x.S                |   3 +
->   arch/powerpc/kernel/head_8xx.S                |   3 +
->   arch/powerpc/kernel/head_fsl_booke.S          |   3 +
->   arch/powerpc/kernel/setup-common.c            |   2 +
->   arch/powerpc/lib/Makefile                     |   8 ++
->   arch/powerpc/mm/Makefile                      |   1 +
->   arch/powerpc/mm/kasan/Makefile                |   5 +
->   arch/powerpc/mm/kasan/kasan_init_32.c         | 147 ++++++++++++++++++++++++++
->   arch/powerpc/mm/mem.c                         |   4 +
->   arch/powerpc/mm/ptdump/dump_linuxpagetables.c |   8 ++
+I've tested some patches from powerpc ML, but they don't fix this problem:
+  powerpc/numa: Perform full re-add of CPU for PRRN/VPHN topology update
+  powerpc/pseries: Perform full re-add of CPU for topology update
+post-migration
 
-@Daniel (and others), note that to apply properly, this requires my 
-other patch which moves the dumping files in a arch/powerpc/mm/ptdump/ 
-subdir.
+So the only reason I can see to have a corrupted sched_group list is the
+sched_domain_span() fonction doesn't return a correct cpumask for the
+domain once a new CPU is added.
 
-Christophe
-
->   arch/powerpc/purgatory/Makefile               |   3 +
->   arch/powerpc/xmon/Makefile                    |   1 +
->   23 files changed, 253 insertions(+), 4 deletions(-)
->   create mode 100644 arch/powerpc/mm/kasan/Makefile
->   create mode 100644 arch/powerpc/mm/kasan/kasan_init_32.c
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 08908219fba9..850b06def84f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -175,6 +175,7 @@ config PPC
->   	select GENERIC_TIME_VSYSCALL
->   	select HAVE_ARCH_AUDITSYSCALL
->   	select HAVE_ARCH_JUMP_LABEL
-> +	select HAVE_ARCH_KASAN			if PPC32
->   	select HAVE_ARCH_KGDB
->   	select HAVE_ARCH_MMAP_RND_BITS
->   	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index ac033341ed55..f0738099e31e 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -427,6 +427,13 @@ else
->   endif
->   endif
->   
-> +ifdef CONFIG_KASAN
-> +prepare: kasan_prepare
-> +
-> +kasan_prepare: prepare0
-> +       $(eval KASAN_SHADOW_OFFSET = $(shell awk '{if ($$2 == "KASAN_SHADOW_OFFSET") print $$3;}' include/generated/asm-offsets.h))
-> +endif
-> +
->   # Check toolchain versions:
->   # - gcc-4.6 is the minimum kernel-wide version so nothing required.
->   checkbin:
-> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> index 49d76adb9bc5..4543016f80ca 100644
-> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> @@ -141,6 +141,8 @@ static inline bool pte_user(pte_t pte)
->    */
->   #ifdef CONFIG_HIGHMEM
->   #define KVIRT_TOP	PKMAP_BASE
-> +#elif defined(CONFIG_KASAN)
-> +#define KVIRT_TOP	KASAN_SHADOW_START
->   #else
->   #define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
->   #endif
-> diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
-> index a4b65b186ec6..483b90025bef 100644
-> --- a/arch/powerpc/include/asm/highmem.h
-> +++ b/arch/powerpc/include/asm/highmem.h
-> @@ -28,6 +28,7 @@
->   #include <asm/cacheflush.h>
->   #include <asm/page.h>
->   #include <asm/fixmap.h>
-> +#include <asm/kasan.h>
->   
->   extern pte_t *kmap_pte;
->   extern pgprot_t kmap_prot;
-> @@ -50,10 +51,15 @@ extern pte_t *pkmap_page_table;
->   #define PKMAP_ORDER	9
->   #endif
->   #define LAST_PKMAP	(1 << PKMAP_ORDER)
-> +#ifdef CONFIG_KASAN
-> +#define PKMAP_TOP	KASAN_SHADOW_START
-> +#else
-> +#define PKMAP_TOP	FIXADDR_START
-> +#endif
->   #ifndef CONFIG_PPC_4K_PAGES
-> -#define PKMAP_BASE	(FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1))
-> +#define PKMAP_BASE	(PKMAP_TOP - PAGE_SIZE*(LAST_PKMAP + 1))
->   #else
-> -#define PKMAP_BASE	((FIXADDR_START - PAGE_SIZE*(LAST_PKMAP + 1)) & PMD_MASK)
-> +#define PKMAP_BASE	((PKMAP_TOP - PAGE_SIZE*(LAST_PKMAP + 1)) & PMD_MASK)
->   #endif
->   #define LAST_PKMAP_MASK	(LAST_PKMAP-1)
->   #define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
-> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-> index 2efd0e42cfc9..0bc9148f5d87 100644
-> --- a/arch/powerpc/include/asm/kasan.h
-> +++ b/arch/powerpc/include/asm/kasan.h
-> @@ -12,4 +12,27 @@
->   #define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(fn)
->   #endif
->   
-> +#ifndef __ASSEMBLY__
-> +
-> +#include <asm/page.h>
-> +#include <asm/pgtable-types.h>
-> +
-> +#define KASAN_SHADOW_SCALE_SHIFT	3
-> +
-> +#define KASAN_SHADOW_OFFSET	(KASAN_SHADOW_START - \
-> +				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
-> +
-> +#define KASAN_SHADOW_END	(KASAN_SHADOW_START + KASAN_SHADOW_SIZE)
-> +
-> +#include <asm/fixmap.h>
-> +
-> +#define KASAN_SHADOW_START	(ALIGN_DOWN(FIXADDR_START - KASAN_SHADOW_SIZE, \
-> +					    PGDIR_SIZE))
-> +
-> +#define KASAN_SHADOW_SIZE	((~0UL - PAGE_OFFSET + 1) >> KASAN_SHADOW_SCALE_SHIFT)
-> +
-> +void kasan_early_init(void);
-> +void kasan_init(void);
-> +
-> +#endif /* __ASSEMBLY */
->   #endif
-> diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> index bed433358260..b3b52f02be1a 100644
-> --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> @@ -71,6 +71,8 @@ extern int icache_44x_need_flush;
->    */
->   #ifdef CONFIG_HIGHMEM
->   #define KVIRT_TOP	PKMAP_BASE
-> +#elif defined(CONFIG_KASAN)
-> +#define KVIRT_TOP	KASAN_SHADOW_START
->   #else
->   #define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
->   #endif
-> diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-> index 65676e2325b8..da7768aa996a 100644
-> --- a/arch/powerpc/include/asm/setup.h
-> +++ b/arch/powerpc/include/asm/setup.h
-> @@ -74,6 +74,11 @@ static inline void setup_spectre_v2(void) {};
->   #endif
->   void do_btb_flush_fixups(void);
->   
-> +#ifndef CONFIG_KASAN
-> +static inline void kasan_early_init(void) { }
-> +static inline void kasan_init(void) { }
-> +#endif
-> +
->   #endif /* !__ASSEMBLY__ */
->   
->   #endif	/* _ASM_POWERPC_SETUP_H */
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 879b36602748..fc4c42262694 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -16,8 +16,9 @@ CFLAGS_prom_init.o      += -fPIC
->   CFLAGS_btext.o		+= -fPIC
->   endif
->   
-> -CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
-> -CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
-> +CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_cputable.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_prom_init.o += $(DISABLE_LATENT_ENTROPY_PLUGIN) -DDISABLE_BRANCH_PROFILING
->   CFLAGS_btext.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->   CFLAGS_prom.o += $(DISABLE_LATENT_ENTROPY_PLUGIN)
->   
-> @@ -31,6 +32,10 @@ CFLAGS_REMOVE_btext.o = $(CC_FLAGS_FTRACE)
->   CFLAGS_REMOVE_prom.o = $(CC_FLAGS_FTRACE)
->   endif
->   
-> +KASAN_SANITIZE_early_32.o := n
-> +KASAN_SANITIZE_cputable.o := n
-> +KASAN_SANITIZE_prom_init.o := n
-> +
->   obj-y				:= cputable.o ptrace.o syscalls.o \
->   				   irq.o align.o signal_32.o pmc.o vdso.o \
->   				   process.o systbl.o idle.o \
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 9ffc72ded73a..846fb30b1190 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -783,5 +783,9 @@ int main(void)
->   	DEFINE(VIRT_IMMR_BASE, (u64)__fix_to_virt(FIX_IMMR_BASE));
->   #endif
->   
-> +#ifdef CONFIG_KASAN
-> +	DEFINE(KASAN_SHADOW_OFFSET, KASAN_SHADOW_OFFSET);
-> +#endif
-> +
->   	return 0;
->   }
-> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-> index 05b08db3901d..0ec9dec06bc2 100644
-> --- a/arch/powerpc/kernel/head_32.S
-> +++ b/arch/powerpc/kernel/head_32.S
-> @@ -962,6 +962,9 @@ start_here:
->    * Do early platform-specific initialization,
->    * and set up the MMU.
->    */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->   	li	r3,0
->   	mr	r4,r31
->   	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-> index b19d78410511..5d6ff8fa7e2b 100644
-> --- a/arch/powerpc/kernel/head_40x.S
-> +++ b/arch/powerpc/kernel/head_40x.S
-> @@ -848,6 +848,9 @@ start_here:
->   /*
->    * Decide what sort of machine this is and initialize the MMU.
->    */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->   	li	r3,0
->   	mr	r4,r31
->   	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-> index bf23c19c92d6..7ca14dff6192 100644
-> --- a/arch/powerpc/kernel/head_44x.S
-> +++ b/arch/powerpc/kernel/head_44x.S
-> @@ -203,6 +203,9 @@ _ENTRY(_start);
->   /*
->    * Decide what sort of machine this is and initialize the MMU.
->    */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->   	li	r3,0
->   	mr	r4,r31
->   	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-> index fe2857ef0309..88f0cb34cef4 100644
-> --- a/arch/powerpc/kernel/head_8xx.S
-> +++ b/arch/powerpc/kernel/head_8xx.S
-> @@ -823,6 +823,9 @@ start_here:
->   /*
->    * Decide what sort of machine this is and initialize the MMU.
->    */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->   	li	r3,0
->   	mr	r4,r31
->   	bl	machine_init
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> index 2386ce2a9c6e..4f4585a68850 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -274,6 +274,9 @@ set_ivor:
->   /*
->    * Decide what sort of machine this is and initialize the MMU.
->    */
-> +#ifdef CONFIG_KASAN
-> +	bl	kasan_early_init
-> +#endif
->   	mr	r3,r30
->   	mr	r4,r31
->   	bl	machine_init
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index ca00fbb97cf8..16ff1ea66805 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -978,6 +978,8 @@ void __init setup_arch(char **cmdline_p)
->   
->   	paging_init();
->   
-> +	kasan_init();
-> +
->   	/* Initialize the MMU context management stuff. */
->   	mmu_context_init();
->   
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index ee08a7e1bcdf..7efbd5122c74 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -8,6 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->   CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
->   CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
->   
-> +KASAN_SANITIZE_code-patching.o := n
-> +KASAN_SANITIZE_feature-fixups.o := n
-> +
-> +ifdef CONFIG_KASAN
-> +CFLAGS_code-patching.o += -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_feature-fixups.o += -DDISABLE_BRANCH_PROFILING
-> +endif
-> +
->   obj-y += alloc.o code-patching.o feature-fixups.o
->   
->   ifndef CONFIG_KASAN
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index ee1efa3b3382..292b96ce1efc 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -47,3 +47,4 @@ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
->   obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
->   obj-$(CONFIG_PPC_PTDUMP)	+= ptdump/
->   obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
-> +obj-$(CONFIG_KASAN)		+= kasan/
-> diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-> new file mode 100644
-> index 000000000000..6577897673dd
-> --- /dev/null
-> +++ b/arch/powerpc/mm/kasan/Makefile
-> @@ -0,0 +1,5 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +
-> +KASAN_SANITIZE := n
-> +
-> +obj-$(CONFIG_PPC32)           += kasan_init_32.o
-> diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-> new file mode 100644
-> index 000000000000..495c908d6ee6
-> --- /dev/null
-> +++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-> @@ -0,0 +1,147 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#define DISABLE_BRANCH_PROFILING
-> +
-> +#include <linux/kasan.h>
-> +#include <linux/printk.h>
-> +#include <linux/memblock.h>
-> +#include <linux/sched/task.h>
-> +#include <linux/vmalloc.h>
-> +#include <asm/pgalloc.h>
-> +
-> +void __init kasan_early_init(void)
-> +{
-> +	unsigned long addr = KASAN_SHADOW_START;
-> +	unsigned long end = KASAN_SHADOW_END;
-> +	unsigned long next;
-> +	pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
-> +	int i;
-> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
-> +
-> +	BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
-> +
-> +	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
-> +		panic("KASAN not supported with Hash MMU\n");
-> +
-> +	for (i = 0; i < PTRS_PER_PTE; i++)
-> +		__set_pte_at(&init_mm, (unsigned long)kasan_early_shadow_page,
-> +			     kasan_early_shadow_pte + i,
-> +			     pfn_pte(PHYS_PFN(pa), PAGE_KERNEL), 0);
-> +
-> +	do {
-> +		next = pgd_addr_end(addr, end);
-> +		pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_pte);
-> +	} while (pmd++, addr = next, addr != end);
-> +}
-> +
-> +static void __ref *kasan_get_one_page(void)
-> +{
-> +	if (slab_is_available())
-> +		return (void *)__get_free_page(GFP_KERNEL|__GFP_ZERO);
-> +
-> +	return memblock_alloc(PAGE_SIZE, PAGE_SIZE);
-> +}
-> +
-> +static int __ref kasan_init_region(void *start, size_t size)
-> +{
-> +	void *end = start + size;
-> +	unsigned long k_start, k_end, k_cur, k_next;
-> +	pmd_t *pmd;
-> +	void *block = NULL;
-> +
-> +	if (start >= end)
-> +		return 0;
-> +
-> +	k_start = (unsigned long)kasan_mem_to_shadow(start);
-> +	k_end = (unsigned long)kasan_mem_to_shadow(end);
-> +	pmd = pmd_offset(pud_offset(pgd_offset_k(k_start), k_start), k_start);
-> +
-> +	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
-> +		k_next = pgd_addr_end(k_cur, k_end);
-> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte) {
-> +			pte_t *new = pte_alloc_one_kernel(&init_mm);
-> +
-> +			if (!new)
-> +				return -ENOMEM;
-> +			memcpy(new, kasan_early_shadow_pte, PTE_TABLE_SIZE);
-> +			pmd_populate_kernel(&init_mm, pmd, new);
-> +		}
-> +	};
-> +
-> +	if (!slab_is_available())
-> +		block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-> +
-> +	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-> +		void *va = block ? block + k_cur - k_start :
-> +				   kasan_get_one_page();
-> +		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
-> +
-> +		if (!va)
-> +			return -ENOMEM;
-> +
-> +		pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-> +		pte_update(pte_offset_kernel(pmd, k_cur), ~0, pte_val(pte));
-> +	}
-> +	flush_tlb_kernel_range(k_start, k_end);
-> +	return 0;
-> +}
-> +
-> +static void __init kasan_remap_early_shadow_ro(void)
-> +{
-> +	unsigned long k_cur;
-> +	phys_addr_t pa = __pa(kasan_early_shadow_page);
-> +	int i;
-> +
-> +	for (i = 0; i < PTRS_PER_PTE; i++)
-> +		ptep_set_wrprotect(&init_mm, 0, kasan_early_shadow_pte + i);
-> +
-> +	for (k_cur = PAGE_OFFSET & PAGE_MASK; k_cur; k_cur += PAGE_SIZE) {
-> +		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-> +		pte_t *ptep = pte_offset_kernel(pmd, k_cur);
-> +
-> +		if ((void *)pmd_page_vaddr(*pmd) == kasan_early_shadow_pte)
-> +			continue;
-> +		if ((pte_val(*ptep) & PAGE_MASK) != pa)
-> +			continue;
-> +
-> +		ptep_set_wrprotect(&init_mm, k_cur, ptep);
-> +	}
-> +	flush_tlb_mm(&init_mm);
-> +}
-> +
-> +void __init kasan_init(void)
-> +{
-> +	struct memblock_region *reg;
-> +
-> +	for_each_memblock(memory, reg) {
-> +		int ret = kasan_init_region(__va(reg->base), reg->size);
-> +
-> +		if (ret)
-> +			panic("kasan: kasan_init_region() failed");
-> +	}
-> +
-> +	kasan_remap_early_shadow_ro();
-> +
-> +	clear_page(kasan_early_shadow_page);
-> +
-> +	/* At this point kasan is fully initialized. Enable error messages */
-> +	init_task.kasan_depth = 0;
-> +	pr_info("KASAN init done\n");
-> +}
-> +
-> +#ifdef CONFIG_MODULES
-> +void *module_alloc(unsigned long size)
-> +{
-> +	void *base = vmalloc_exec(size);
-> +
-> +	if (!base)
-> +		return NULL;
-> +
-> +	if (!kasan_init_region(base, size))
-> +		return base;
-> +
-> +	vfree(base);
-> +
-> +	return NULL;
-> +}
-> +#endif
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 81f251fc4169..1bb055775e60 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -336,6 +336,10 @@ void __init mem_init(void)
->   	pr_info("  * 0x%08lx..0x%08lx  : highmem PTEs\n",
->   		PKMAP_BASE, PKMAP_ADDR(LAST_PKMAP));
->   #endif /* CONFIG_HIGHMEM */
-> +#ifdef CONFIG_KASAN
-> +	pr_info("  * 0x%08lx..0x%08lx  : kasan shadow mem\n",
-> +		KASAN_SHADOW_START, KASAN_SHADOW_END);
-> +#endif
->   #ifdef CONFIG_NOT_COHERENT_CACHE
->   	pr_info("  * 0x%08lx..0x%08lx  : consistent mem\n",
->   		IOREMAP_TOP, IOREMAP_TOP + CONFIG_CONSISTENT_SIZE);
-> diff --git a/arch/powerpc/mm/ptdump/dump_linuxpagetables.c b/arch/powerpc/mm/ptdump/dump_linuxpagetables.c
-> index b0da447197d4..4a03910974e2 100644
-> --- a/arch/powerpc/mm/ptdump/dump_linuxpagetables.c
-> +++ b/arch/powerpc/mm/ptdump/dump_linuxpagetables.c
-> @@ -94,6 +94,10 @@ static struct addr_marker address_markers[] = {
->   	{ 0,	"Consistent mem start" },
->   	{ 0,	"Consistent mem end" },
->   #endif
-> +#ifdef CONFIG_KASAN
-> +	{ 0,	"kasan shadow mem start" },
-> +	{ 0,	"kasan shadow mem end" },
-> +#endif
->   #ifdef CONFIG_HIGHMEM
->   	{ 0,	"Highmem PTEs start" },
->   	{ 0,	"Highmem PTEs end" },
-> @@ -316,6 +320,10 @@ static void populate_markers(void)
->   	address_markers[i++].start_address = IOREMAP_TOP +
->   					     CONFIG_CONSISTENT_SIZE;
->   #endif
-> +#ifdef CONFIG_KASAN
-> +	address_markers[i++].start_address = KASAN_SHADOW_START;
-> +	address_markers[i++].start_address = KASAN_SHADOW_END;
-> +#endif
->   #ifdef CONFIG_HIGHMEM
->   	address_markers[i++].start_address = PKMAP_BASE;
->   	address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
-> diff --git a/arch/powerpc/purgatory/Makefile b/arch/powerpc/purgatory/Makefile
-> index 4314ba5baf43..7c6d8b14f440 100644
-> --- a/arch/powerpc/purgatory/Makefile
-> +++ b/arch/powerpc/purgatory/Makefile
-> @@ -1,4 +1,7 @@
->   # SPDX-License-Identifier: GPL-2.0
-> +
-> +KASAN_SANITIZE := n
-> +
->   targets += trampoline.o purgatory.ro kexec-purgatory.c
->   
->   LDFLAGS_purgatory.ro := -e purgatory_start -r --no-undefined
-> diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
-> index 878f9c1d3615..064f7062c0a3 100644
-> --- a/arch/powerpc/xmon/Makefile
-> +++ b/arch/powerpc/xmon/Makefile
-> @@ -6,6 +6,7 @@ subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header)
->   
->   GCOV_PROFILE := n
->   UBSAN_SANITIZE := n
-> +KASAN_SANITIZE := n
->   
->   # Disable ftrace for the entire directory
->   ORIG_CFLAGS := $(KBUILD_CFLAGS)
-> 
+Thanks,
+Laurent
