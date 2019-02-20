@@ -2,101 +2,53 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D56A7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 09:44:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63746C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 09:49:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 287782089F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 09:44:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 287782089F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DE8442089F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 09:49:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE8442089F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444CPc2B2gzDqFG
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 20:44:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444CVd50SlzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 20:49:13 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444CMs23VjzDqBN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 20:43:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444CSg1xbfzDqD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 20:47:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 444CMs18k6z8t7s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 20:43:21 +1100 (AEDT)
+ header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 444CMs0hN3z9s7h; Wed, 20 Feb 2019 20:43:21 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 444CMr0NhFz9s5R
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2019 20:43:19 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1K9dfnx013559
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2019 04:43:17 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qs35euewe-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2019 04:43:17 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 20 Feb 2019 09:43:16 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 20 Feb 2019 09:43:13 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1K9hCax23986270
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Feb 2019 09:43:12 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4FE5852050;
- Wed, 20 Feb 2019 09:43:12 +0000 (GMT)
-Received: from in.ibm.com (unknown [9.109.253.165])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 764635204F;
- Wed, 20 Feb 2019 09:43:11 +0000 (GMT)
-Date: Wed, 20 Feb 2019 15:13:07 +0530
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: Simplify machine check handling
-References: <20190220010550.GD5353@blackberry>
+ id 444CSg12k3z9s7h; Wed, 20 Feb 2019 20:47:31 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 444CSc24jVz9s70;
+ Wed, 20 Feb 2019 20:47:25 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrea Parri <andrea.parri@amarulasolutions.com>,
+ Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH v3 1/7] dump_stack: Support adding to the dump stack arch
+ description
+In-Reply-To: <20190219233925.GA5648@andrea>
+References: <20190207124635.3885-1-mpe@ellerman.id.au>
+ <20190211125035.GA1562@andrea>
+ <20190211143859.dd2lkccxod3f2fwn@pathway.suse.cz>
+ <20190219233925.GA5648@andrea>
+Date: Wed, 20 Feb 2019 20:47:25 +1100
+Message-ID: <87va1e7pw2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190220010550.GD5353@blackberry>
-User-Agent: NeoMutt/20180716
-X-TM-AS-GCONF: 00
-x-cbid: 19022009-0016-0000-0000-00000258A0F0
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022009-0017-0000-0000-000032B2E99A
-Message-Id: <20190220094307.6hoaqcxzfoqqys2l@in.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-20_08:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902200070
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,52 +60,176 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: mahesh@linux.vnet.ibm.com
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: linux-arch@vger.kernel.org, sergey.senozhatsky@gmail.com,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ linuxppc-dev@ozlabs.org, tj@kernel.org, akpm@linux-foundation.org,
+ dyoung@redhat.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2019-02-20 12:05:50 Wed, Paul Mackerras wrote:
-> This makes the handling of machine check interrupts that occur inside
-> a guest simpler and more robust, with less done in assembler code and
-> in real mode.
-> 
-> Now, when a machine check occurs inside a guest, we always get the
-> machine check event struct and put a copy in the vcpu struct for the
-> vcpu where the machine check occurred.  We no longer call
-> machine_check_queue_event() from kvmppc_realmode_mc_power7(), because
-> on POWER8, when a vcpu is running on an offline secondary thread and
-> we call machine_check_queue_event(), that calls irq_work_queue(),
-> which doesn't work because the CPU is offline, but instead triggers
-> the WARN_ON(lazy_irq_pending()) in pnv_smp_cpu_kill_self() (which
-> fires again and again because nothing clears the condition).
-> 
-> All that machine_check_queue_event() actually does is to cause the
-> event to be printed to the console.  For a machine check occurring in
-> the guest, we now print the event in kvmppc_handle_exit_hv()
-> instead.
-> 
-> The assembly code at label machine_check_realmode now just calls C
-> code and then continues exiting the guest.  We no longer either
-> synthesize a machine check for the guest in assembly code or return
-> to the guest without a machine check.
-> 
-> The code in kvmppc_handle_exit_hv() is extended to handle the case
-> where the guest is not FWNMI-capable.  In that case we now always
-> synthesize a machine check interrupt for the guest.  Previously, if
-> the host thinks it has recovered the machine check fully, it would
-> return to the guest without any notification that the machine check
-> had occurred.  If the machine check was caused by some action of the
-> guest (such as creating duplicate SLB entries), it is much better to
-> tell the guest that it has caused a problem.  Therefore we now always
-> generate a machine check interrupt for guests that are not
-> FWNMI-capable.
+Andrea Parri <andrea.parri@amarulasolutions.com> writes:
+> On Mon, Feb 11, 2019 at 03:38:59PM +0100, Petr Mladek wrote:
+>> On Mon 2019-02-11 13:50:35, Andrea Parri wrote:
+>> > On Thu, Feb 07, 2019 at 11:46:29PM +1100, Michael Ellerman wrote:
+>> > > Arch code can set a "dump stack arch description string" which is
+>> > > displayed with oops output to describe the hardware platform.
+>> > > 
+>> > > It is useful to initialise this as early as possible, so that an early
+>> > > oops will have the hardware description.
+>> > > 
+>> > > However in practice we discover the hardware platform in stages, so it
+>> > > would be useful to be able to incrementally fill in the hardware
+>> > > description as we discover it.
+>> > > 
+>> > > This patch adds that ability, by creating dump_stack_add_arch_desc().
+>> > > 
+>> > > If there is no existing string it behaves exactly like
+>> > > dump_stack_set_arch_desc(). However if there is an existing string it
+>> > > appends to it, with a leading space.
+>> > > 
+>> > > This makes it easy to call it multiple times from different parts of the
+>> > > code and get a reasonable looking result.
+>> > > 
+>> > > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> > > ---
+>> > >  include/linux/printk.h |  5 ++++
+>> > >  lib/dump_stack.c       | 58 ++++++++++++++++++++++++++++++++++++++++++
+>> > >  2 files changed, 63 insertions(+)
+>> > > 
+>> > > v3: No change, just widened Cc list.
+>> > > 
+>> > > v2: Add a smp_wmb() and comment.
+>> > > 
+>> > > v1 is here for reference https://lore.kernel.org/lkml/1430824337-15339-1-git-send-email-mpe@ellerman.id.au/
+>> > > 
+>> > > I'll take this series via the powerpc tree if no one minds?
+>> > > 
+>> > > 
+>> > > diff --git a/include/linux/printk.h b/include/linux/printk.h
+>> > > index 77740a506ebb..d5fb4f960271 100644
+>> > > --- a/include/linux/printk.h
+>> > > +++ b/include/linux/printk.h
+>> > > @@ -198,6 +198,7 @@ u32 log_buf_len_get(void);
+>> > >  void log_buf_vmcoreinfo_setup(void);
+>> > >  void __init setup_log_buf(int early);
+>> > >  __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...);
+>> > > +__printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...);
+>> > >  void dump_stack_print_info(const char *log_lvl);
+>> > >  void show_regs_print_info(const char *log_lvl);
+>> > >  extern asmlinkage void dump_stack(void) __cold;
+>> > > @@ -256,6 +257,10 @@ static inline __printf(1, 2) void dump_stack_set_arch_desc(const char *fmt, ...)
+>> > >  {
+>> > >  }
+>> > >  
+>> > > +static inline __printf(1, 2) void dump_stack_add_arch_desc(const char *fmt, ...)
+>> > > +{
+>> > > +}
+>> > > +
+>> > >  static inline void dump_stack_print_info(const char *log_lvl)
+>> > >  {
+>> > >  }
+>> > > diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+>> > > index 5cff72f18c4a..69b710ff92b5 100644
+>> > > --- a/lib/dump_stack.c
+>> > > +++ b/lib/dump_stack.c
+>> > > @@ -35,6 +35,64 @@ void __init dump_stack_set_arch_desc(const char *fmt, ...)
+>> > >  	va_end(args);
+>> > >  }
+>> > >  
+>> > > +/**
+>> > > + * dump_stack_add_arch_desc - add arch-specific info to show with task dumps
+>> > > + * @fmt: printf-style format string
+>> > > + * @...: arguments for the format string
+>> > > + *
+>> > > + * See dump_stack_set_arch_desc() for why you'd want to use this.
+>> > > + *
+>> > > + * This version adds to any existing string already created with either
+>> > > + * dump_stack_set_arch_desc() or dump_stack_add_arch_desc(). If there is an
+>> > > + * existing string a space will be prepended to the passed string.
+>> > > + */
+>> > > +void __init dump_stack_add_arch_desc(const char *fmt, ...)
+>> > > +{
+>> > > +	va_list args;
+>> > > +	int pos, len;
+>> > > +	char *p;
+>> > > +
+>> > > +	/*
+>> > > +	 * If there's an existing string we snprintf() past the end of it, and
+>> > > +	 * then turn the terminating NULL of the existing string into a space
+>> > > +	 * to create one string separated by a space.
+>> > > +	 *
+>> > > +	 * If there's no existing string we just snprintf() to the buffer, like
+>> > > +	 * dump_stack_set_arch_desc(), but without calling it because we'd need
+>> > > +	 * a varargs version.
+>> > > +	 */
+>> > > +	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
+>> > > +	pos = len;
+>> > > +
+>> > > +	if (len)
+>> > > +		pos++;
+>> > > +
+>> > > +	if (pos >= sizeof(dump_stack_arch_desc_str))
+>> > > +		return; /* Ran out of space */
+>> > > +
+>> > > +	p = &dump_stack_arch_desc_str[pos];
+>> > > +
+>> > > +	va_start(args, fmt);
+>> > > +	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
+>> > > +	va_end(args);
+>> > > +
+>> > > +	if (len) {
+>> > > +		/*
+>> > > +		 * Order the stores above in vsnprintf() vs the store of the
+>> > > +		 * space below which joins the two strings. Note this doesn't
+>> > > +		 * make the code truly race free because there is no barrier on
+>> > > +		 * the read side. ie. Another CPU might load the uninitialised
+>> > > +		 * tail of the buffer first and then the space below (rather
+>> > > +		 * than the NULL that was there previously), and so print the
+>> > > +		 * uninitialised tail. But the whole string lives in BSS so in
+>> > > +		 * practice it should just see NULLs.
+>> > 
+>> > The comment doesn't say _why_ we need to order these stores: IOW, what
+>> > will or can go wrong without this order?  This isn't clear to me.
+>> >
+>> > Another good practice when adding smp_*-constructs (as discussed, e.g.,
+>> > at KS'18) is to indicate the matching construct/synch. mechanism.
+>> 
+>> Yes, one barrier without a counter-part is suspicious.
+>
+> As is this silence...,
+>
+> Michael, what happened to this patch? did you submit a new version?
 
-Looks good to me.
+No, I'm just busy, it's the merge window next week :)
 
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+I thought the comment was pretty clear, if the stores are observed out
+of order we might print the uninitialised tail.
 
-Thanks,
--Mahesh.
+And the barrier on the read side would need to be in printk somewhere,
+which is obviously unpleasant.
 
+>> If the parallel access is really needed then we could define the
+>> current length as atomic_t and use:
+>> 
+>> 	+ atomic_cmpxchg() to reserve the space for the string
+>> 	+ %*s to limit the printed length
+>> 
+>> In the worst case, we would print an incomplete string.
+>> See below for a sample code.
+>
+> Seems worth exploring, IMO; but I'd like to first hear _clear about
+> the _intended semantics (before digging into alternatives)...
+
+It is not my intention to support concurrent updates of the string. The
+idea is you setup the string early in boot.
+
+The concern with a concurrent reader is simply that the string is dumped
+in the panic path, and you never really know when you're going to panic.
+Even if you only write to the string before doing SMP bringup you might
+still have another CPU go rogue and panic before then.
+
+But I probably should have just not added the barrier, it's over
+paranoid and will almost certainly never matter in practice.
+
+cheers
