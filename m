@@ -2,56 +2,59 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_NEOMUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CDF2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 22:49:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90EB6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 23:57:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EEED2075B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 22:49:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EEED2075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=aixah.de
+	by mail.kernel.org (Postfix) with ESMTPS id C9D0B2087B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 23:57:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="GkjQVI6O"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C9D0B2087B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444Xpr2VzSzDqNT
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 09:49:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=aixah.de
- (client-ip=2a01:488:42:1000:50ed:851d::; helo=wp260.webpack.hosteurope.de;
- envelope-from=aranea@aixah.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=aixah.de
-X-Greylist: delayed 2057 seconds by postgrey-1.36 at bilbo;
- Thu, 21 Feb 2019 09:08:09 AEDT
-Received: from wp260.webpack.hosteurope.de (wp260.webpack.hosteurope.de
- [IPv6:2a01:488:42:1000:50ed:851d::])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 444ZK82FmJzDqNQ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 10:57:16 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444WvF5YvWzDqGl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 09:08:09 +1100 (AEDT)
-Received: from p508bc6f1.dip0.t-ipconnect.de ([80.139.198.241]
- helo=vega.skynet.aixah.de); authenticated
- by wp260.webpack.hosteurope.de running ExIM with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
- id 1gwZUs-00017n-4c; Wed, 20 Feb 2019 22:33:42 +0100
-Received: from vega.skynet.aixah.de (localhost [IPv6:::1])
- by vega.skynet.aixah.de (Postfix) with ESMTP id BA014260020
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 22:33:41 +0100 (CET)
-Date: Wed, 20 Feb 2019 22:33:39 +0100
-From: Luis Ressel <aranea@aixah.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: make modules_prepare doesn't build arch/powerpc/lib/crtsavres.o
-Message-ID: <20190220223339.49b64f7c@vega.skynet.aixah.de>
-X-Mailer: Claws Mail 3.17.2 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444ZHG4jnJzDqMH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 10:55:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="GkjQVI6O"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 444ZHG3CsRz9s8m; Thu, 21 Feb 2019 10:55:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1550706938; bh=Ew7z1PSV//fdA/RV7+MMlBKKAuUhsfKc7yT5IsVq/n8=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=GkjQVI6O7BIhsPtaQ36tkd3DuNmIJw7vHfw+JBxQELYHEz8l9JX/2F4h4X1gy+ejy
+ pWuMwQg1reLb2ldgLQuOBlbmwqr8tUEB1/nslUHRHby49B2L6J+qugYi0TBcD4PNj7
+ qO6T2jVozM1RbyyxILE3gC0/edOfC6K3/VEtvdAOywEes+IvRJ+TsQNPdMYC56e4yJ
+ gQ9mKAzwxvdpo9bWi9Sk0oMCvs0coWNpMMO2hAt7v/Avcajkr1tdVUW0llFeiWw3Fd
+ 21r5pC5uB4QpphRyq5tm0/n31XJem/gYspu+Xw3P+UB0FM5wDYLMe8cn4P9AQ2eLZ+
+ YK40ihj6G/uig==
+Date: Thu, 21 Feb 2019 10:55:30 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Russell Currey <ruscur@russell.cc>
+Subject: Re: [PATCH] powerpc/kvm: Save and restore AMR instead of zeroing
+Message-ID: <20190220235530.pl36pd56hs5rfcup@oak.ozlabs.ibm.com>
+References: <20190220045958.14966-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- boundary="Sig_/6KMX5OcZ60ChaOZJtixBd_/"; protocol="application/pgp-signature"
-X-bounce-key: webpack.hosteurope.de;aranea@aixah.de;1550700489;51a82845;
-X-HE-SMSGID: 1gwZUs-00017n-4c
-X-Mailman-Approved-At: Thu, 21 Feb 2019 09:46:29 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190220045958.14966-1-ruscur@russell.cc>
+User-Agent: NeoMutt/20170113 (1.7.2)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,52 +66,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/6KMX5OcZ60ChaOZJtixBd_/
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Feb 20, 2019 at 03:59:58PM +1100, Russell Currey wrote:
+> Using the hash MMU on P7+, the AMR is used for pkeys.  It's important
 
-Hello,
+This needs a bit of rewording.  The "Using" ... "used" construct is a
+bit confusing on the first read.  Also, there was a processor called
+P7+, but I think you're trying to say P7 and subsequent processors.
 
-as documented in the top-level Makefile, "make modules_prepare" is
-supposed to get a pristine kernel tree into a state that's suitable to
-build out-of-tree modules. However, this is not the case for the
-powerpc arch, since all modules are linked against
-arch/powerpc/lib/crtsavres.o on ppc32 (and ppc64 if binutils is too
-old).
+> that the host and guest never end up with each other's AMR value, since
+> this could disrupt operations and break things.
 
-A similar problem applies to "make clean" -- it is supposed to retain
-all files which are neccessary for module building, but the global
-"find . -name '*.o' -delete" it performs drops crtsavres.o.
+What sort of breakage?  Guest kernel crash?  Host kernel crash?
 
---=20
-Regards,
-Luis Ressel
+> The AMR gets correctly restored on context switch, however before this
+> happens (i.e. in a program like qemu) having the host value of the AMR
+> be zero would interfere with that program using pkeys.
+> 
+> In addition, the AMR on Radix can control kernel access to userspace
+> data, which you wouldn't want to be zeroed.
+> 
+> So, just save and restore it like the other registers that get saved and
+> restored.
+> 
+> Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
+> Cc: <stable@vger.kernel.org> # v4.16+
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+> I'm not entirely sure the stack frame numbers are correct, I've tested it
+> and it works but it'd be good if someone could double check this.
+> 
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index 9b8d50a7cbaf..6291751c4ad9 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -47,7 +47,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+>  #define NAPPING_NOVCPU	2
+>  
+>  /* Stack frame offsets for kvmppc_hv_entry */
+> -#define SFS			208
+> +#define SFS			224		/* must be divisible by 16 */
 
-Please CC me when replying; I'm not subscribed to the kernel MLs.
+I don't think this needs to be increased.  What's happening here is
+that we have a "short path" where most SPRs are saved/loaded/restored
+etc. in C code in book3s_hv.c, and that path uses 144 bytes on the
+stack to save/restore 18 GPR values (r14 - r31).  Your patch needs to
+add code to context-switch AMR in kvmhv_p9_guest_entry() to fix that
+path.
 
---Sig_/6KMX5OcZ60ChaOZJtixBd_/
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+Alternatively there is the slow path where we go to real mode and do
+most of the SPR loading in assembler code.  That path uses the stack
+to store host SPR values in STACK_SLOT_TID, PSSCR, PID, etc.
 
------BEGIN PGP SIGNATURE-----
+>  #define STACK_SLOT_TRAP		(SFS-4)
+>  #define STACK_SLOT_SHORT_PATH	(SFS-8)
+>  #define STACK_SLOT_TID		(SFS-16)
+> @@ -58,8 +58,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+>  #define STACK_SLOT_DAWR		(SFS-56)
+>  #define STACK_SLOT_DAWRX	(SFS-64)
+>  #define STACK_SLOT_HFSCR	(SFS-72)
+> +#define STACK_SLOT_AMR		(SFS-80)
+>  /* the following is used by the P9 short path */
+> -#define STACK_SLOT_NVGPRS	(SFS-152)	/* 18 gprs */
+> +#define STACK_SLOT_NVGPRS	(SFS-160)	/* 18 gprs */
 
-iQIzBAEBCgAdFiEEbPzLt4vriSGj7oj2YKkwapaNrTgFAlxtx7MACgkQYKkwapaN
-rTjRxA/7BgW1BqweXEc/1n/FykGAyrKw4hbJ4DCuUa7ZjFPpmS0KxmlDnhyGbtgv
-rrRwOrefAuk7HsuiJ+YkU8AeCKI6a0UZmDxkytq9bdcxzpVFiBuF3pkMF2MnAere
-vMJyjzMS7myp8VNKVDsdEeidCc4JrGZmP11nz8rH2w5ewSXjGrBQTqv7jW0LM5c5
-nrybadR6FCjXJnUnzC39nz8xYFRhAWTuhhYyinQbudROJq2jHBJOI0QPAaCGsqOu
-Kd/7RXDtc420lOx3JVKwoNdjODH7V/FHgM0sqYv+P74PUGDeSjortxjfjjUAT+3e
-7BiyGKHdO89Z71G9w8dReFOSlObioDDqBspuQng42oYBJIbo07KQrXWIa3jf+Kk4
-mlZ+wVe1v7zOHJMD5nmPHGHOQIvdi4ztryD+wU6Rqb7MlqcJIL4FFTWtqAHC3kMb
-2N6mf22qKDmOUG5fNqF+qKZJAo6O6q69bVLirgxzJ+SdKXV1iDXqqoMKN5dapNJa
-RN2SkaS5qyDDmJnQThOb/DM4bCEiJ0oD0RPx0RTJckozpDDG4Zmy22ZwdmcXJYhj
-GhSv8b9HxIuxv8qPMVqnLdVE1ebVXdBxqSFcPrnMVX+ZQLfc6Q0bNHN5p+xdAhlh
-v9KRNpZzsaXh77o7XYPxjAxQeRao3izCuxv8/HPYafUpV825w6I=
-=mtPM
------END PGP SIGNATURE-----
+I don't see why you need to change this either.
 
---Sig_/6KMX5OcZ60ChaOZJtixBd_/--
+>  
+>  /*
+>   * Call kvmppc_hv_entry in real mode.
+> @@ -743,6 +744,9 @@ BEGIN_FTR_SECTION
+>  	std	r7, STACK_SLOT_DAWRX(r1)
+>  END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>  
+> +	mfspr	r5, SPRN_AMR
+> +	std	r5, STACK_SLOT_AMR(r1)
+> +
+>  BEGIN_FTR_SECTION
+>  	/* Set partition DABR */
+>  	/* Do this before re-enabling PMU to avoid P7 DABR corruption bug */
+> @@ -1640,13 +1644,14 @@ BEGIN_FTR_SECTION
+>  END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+>  8:
+>  
+> -	/* Save and reset AMR and UAMOR before turning on the MMU */
+> +	/* Save and restore/reset AMR and UAMOR before turning on the MMU */
+>  	mfspr	r5,SPRN_AMR
+>  	mfspr	r6,SPRN_UAMOR
+>  	std	r5,VCPU_AMR(r9)
+>  	std	r6,VCPU_UAMOR(r9)
+> +	ld	r5,STACK_SLOT_AMR(r1)
+>  	li	r6,0
+> -	mtspr	SPRN_AMR,r6
+> +	mtspr	SPRN_AMR, r5
+>  	mtspr	SPRN_UAMOR, r6
+>  
+>  	/* Switch DSCR back to host value */
+> -- 
+> 2.20.1
+
+Rest looks fine, but as I said, the patch needs to hit
+kvmhv_p9_guest_entry() also.
+
+Paul.
