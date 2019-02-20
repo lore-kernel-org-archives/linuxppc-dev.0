@@ -2,114 +2,101 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1E56C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 11:29:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1517C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 11:59:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D12420851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 11:29:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id EF66B2083B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 11:59:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="C5I/f3FS";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="L9CT+5HS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D12420851
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="IrEH4N+6";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="k5H+0z6k"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF66B2083B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444Fkp0mYRzDqH3
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 22:29:54 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444FfG3K9YzDqBh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 22:25:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444GP85HN4zDqLc
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 22:59:40 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="C5I/f3FS"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="L9CT+5HS"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 444FfF1cZXz8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 22:25:57 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 444FfF0kBnz9sB8; Wed, 20 Feb 2019 22:25:57 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=russell.cc
  (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
  envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
+Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="C5I/f3FS"; 
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="IrEH4N+6"; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="L9CT+5HS"; dkim-atps=neutral
+ header.b="k5H+0z6k"; dkim-atps=neutral
 Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
  [66.111.4.26])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 444FfD3179z9s9L
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2019 22:25:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444GMP3XG5zDqDV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 22:58:09 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 5A42E2257C;
- Wed, 20 Feb 2019 06:25:54 -0500 (EST)
+ by mailout.nyi.internal (Postfix) with ESMTP id E9B152232B;
+ Wed, 20 Feb 2019 06:58:06 -0500 (EST)
 Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Wed, 20 Feb 2019 06:25:54 -0500
+ by compute6.internal (MEProxy); Wed, 20 Feb 2019 06:58:06 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
  message-id:subject:from:to:cc:date:in-reply-to:references
  :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- LiXXIm4HKfv+P+wGNpJzOqGsJjFpw6ysvjYxYXFVYUY=; b=C5I/f3FSHWR9QQRU
- NE6vKM1jBAuQ9LJlnXujlLTuTcforlXxhTVmPSgKx3roW5HTvUkXkoaMes/l7GRD
- JDF34QUtHye3tpK5ZjatMP7+Cz7dNGAH6lavSR3DYsJU/AN58VNx3z7i66v/Zgwa
- N2ZXN0lLl4ssWD9GlLvCFShOrbP0RSnZB5hfYwPwkJNpTVO1J0maY+le5X2euBcG
- Lr3MWy7pWvqe+hnb+nAaX4pjZGW7rgvfuYD4eEL5ENmRnBf44i4NVu2cIPKfgquO
- fi6XVIKG9ezgcvQm/1Q3KBKhTt1G9zLgMQc3ITYOaXqODu7jDy9JPAptJo+QjrnC
- Q0Sbfg==
+ KOFvQgYgydW7uNPrYrrIxSYhXoUfT4AhZp+Oj4g5A5Y=; b=IrEH4N+6lLMbOOI1
+ rfEdklkKQR4006rMa356cDv5KJU4gMQUi09vTKnXunhaM1KJzzEptfxqYm9/RfSj
+ AX+fAnqo5y/0TG4u3PCLLZUhQDADfkaVHRKEgXfh7l0aIo8zXkksWtM+1xxpbxnv
+ 0GrSzhadoVlyZKJsEVt1z0utHxVmFne4+9E90OeNd/hnrtmHSjyyOY+qakF7Auvw
+ 9PHN+Y9EGCw6hg7AxFOeSPoy5zUOmP/dV/cT6V2ArgPsp7VhtTqwbVA+wEWLyDr0
+ sCx2qUFzZGCSwcFd06vpM4pS4RzgwAd9zM9HFEP92PlnSX2F5xuCMWFIJltWyoF2
+ BnXmyA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:content-type
  :date:from:in-reply-to:message-id:mime-version:references
  :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=LiXXIm4HKfv+P+wGNpJzOqGsJjFpw6ysvjYxYXFVY
- UY=; b=L9CT+5HSyX6ahrNMvy85eKWVIdAcqULIgVP197XiVxyIDe1yESu1VQYvH
- VRW0jXmhLkaNlvyDqEHQj6o+ZGwoeJmafNIaGtkNgmjusTGowUzUejgoy/RVBrqQ
- oNnhQP7d/djRwIjz/0jmjeX5BpCkR6S8KNsakYbt48+zLiBKqB0d/IceQLk5SPGW
- g6D7hCu76cdL5ziM2U/tIGSirv/pxCYPmtRB/9f0/m5mmKPtojkxPZW2f5BUBURk
- gemFzWHsme/k5AQo1uS/twZeYtwymAQNZ/7wOOD/f56avgYJd3gWSLmxh8UNGT34
- 5j6Mh3rgmdBgsCiVsPncNWIboNUSQ==
-X-ME-Sender: <xms:QTltXNJ8VsIY3fQJdFpmjVD4UvA4TqHqzrhP6UFGDeUpyeezpD-EDg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedutddrtdeigddvkeculddtuddrgedtledrtddtmd
+ :x-sasl-enc; s=fm2; bh=KOFvQgYgydW7uNPrYrrIxSYhXoUfT4AhZp+Oj4g5A
+ 5Y=; b=k5H+0z6k/Vo0glWXarJFOLZUcgbitKelE0nApUlCtyWXyl3d12fwV0D8D
+ bVsnpFH5NhGKNUFAkq0NkTyplHKA+7kJ4dSnnfu+rBXaom3Lbwq7jtBXnvorAdGr
+ 7KMVfNV77P1eYhwIQlehcA2QZlN/Onm/5ogq075QbMqiUneD6BrAhmrCAEeWdcaE
+ 2FcxqnIpIudShLkw7bcit3IQ/hlsHiy52Vl8KZTV1f7I/AJrWfaa7pcm7IF9dV+n
+ 4dYx0rdKC7ZTDvLgBu9HnD7kCUQkqz7eqCWNQboMcR7H3cXyYL1a9hNnY5eP2Y9n
+ zUDu+Ric2H96LobZ7gIdRVT7TOY+g==
+X-ME-Sender: <xms:zUBtXHbxNKnkeN4HEjnCIHsxhb5mPdrF87Tib2oGYeZZJ4PqPVwiNA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedutddrtdeigdefgeculddtuddrgedtledrtddtmd
  cutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthen
- uceurghilhhouhhtmecufedttdenucgfrhhlucfvnfffucdlfedtmdenucfjughrpefkuf
- fhvfffjghftggfggfgsehtjeertddtreejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhr
- rhgvhicuoehruhhstghurhesrhhushhsvghllhdrtggtqeenucfkphepuddvuddrgeehrd
- dvudelrdefnecurfgrrhgrmhepmhgrihhlfhhrohhmpehruhhstghurhesrhhushhsvghl
- lhdrtggtnecuvehluhhsthgvrhfuihiivgeptd
-X-ME-Proxy: <xmx:QTltXPHyfx3vjIL4ZZf7AtvIBDxb46Iz9_ncEhqruLlLm4_09sjOxQ>
- <xmx:QTltXC2WWN3oB3e88zSFYec7EA2JKp2SvhovIyfapXpv0HeEHX8KPA>
- <xmx:QTltXPJpCuYnAe4u1aUZ3-PVWm3WBfMCLGFNYB553CIEk7qpaRxwXg>
- <xmx:QjltXFg25fxCYv2okBinvXIlpJglhIwir3hisk34hw6sJljc1WCa8Q>
+ uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+ gfrhhlucfvnfffucdlfedtmdenucfjughrpefkuffhvfffjghftggfggfgsehtkeertddt
+ reejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
+ hsvghllhdrtggtqeenucfkphepuddvuddrgeehrddvudelrdefnecurfgrrhgrmhepmhgr
+ ihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdrtggtnecuvehluhhsthgvrhfuih
+ iivgeptd
+X-ME-Proxy: <xmx:zUBtXG9q00S4UbcZxSBHatMRXzZkFtfWT35NOttHSp1GtLQLZAlSjA>
+ <xmx:zUBtXLIZ1fN8zG_JBqvvtRj1S0BW4TANjvxJDagrTryUhJ2hcLZSag>
+ <xmx:zUBtXHXxIi_MSLHW-o22nvKRo4sVafYhpBDsnR7OZaqij_vzVUE3zA>
+ <xmx:zkBtXHRnt64X0kkFFZZDPiot68ZK4QgwYvSeCoxQJQqObuZd01KHtQ>
 Received: from crackle.ozlabs.ibm.com
  (ppp121-45-219-3.bras1.cbr2.internode.on.net [121.45.219.3])
- by mail.messagingengine.com (Postfix) with ESMTPA id 94C8910310;
- Wed, 20 Feb 2019 06:25:51 -0500 (EST)
-Message-ID: <dd19f66a8cbf31197e3dc2652b5d25e8c50fcfa2.camel@russell.cc>
-Subject: Re: [PATCH] KVM: PPC: Book3S HV: Context switch IAMR on Power9
+ by mail.messagingengine.com (Postfix) with ESMTPA id AC72010319;
+ Wed, 20 Feb 2019 06:58:02 -0500 (EST)
+Message-ID: <f4fc28e2f6807ef0669d1de8a72fcb5f5b5cfc43.camel@russell.cc>
+Subject: Re: [PATCH v2 2/3] powerpc/lib: Refactor __patch_instruction() to
+ use __put_user_asm()
 From: Russell Currey <ruscur@russell.cc>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Date: Wed, 20 Feb 2019 22:25:49 +1100
-In-Reply-To: <20190220085500.29837-1-mpe@ellerman.id.au>
-References: <20190220085500.29837-1-mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 20 Feb 2019 22:57:59 +1100
+In-Reply-To: <5ff8b24e-a748-19d3-8651-b626dd676ea4@c-s.fr>
+References: <20181210070044.27503-1-ruscur@russell.cc>
+ <20181210070044.27503-3-ruscur@russell.cc>
+ <3b213170-9b93-cb71-b0c2-220ea31dbdea@c-s.fr>
+ <5ff8b24e-a748-19d3-8651-b626dd676ea4@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 User-Agent: Evolution 3.30.5 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -121,32 +108,116 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, kvm-ppc@vger.kernel.org
+Cc: mikey@neuling.org, kernel-hardening@lists.openwall.com, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-02-20 at 19:55 +1100, Michael Ellerman wrote:
-> kvmhv_p9_guest_entry() implements a fast-path guest entry for Power9
-> when guest and host are both running with the Radix MMU.
+On Fri, 2019-01-25 at 12:45 +0100, Christophe Leroy wrote:
+> Hi Russel,
 > 
-> Currently in that path we don't save the host AMR (Authority Mask
-> Register) value, and we always restore 0 on return to the host. That
-> is OK at the moment because the AMR is not used for storage keys with
-> the Radix MMU.
+> Le 17/12/2018 à 08:09, Christophe Leroy a écrit :
+> > Hi Russel,
+> > 
+> > Le 10/12/2018 à 08:00, Russell Currey a écrit :
+> > > __patch_instruction() is called in early boot, and uses
+> > > __put_user_size(), which includes the locks and unlocks for KUAP,
+> > > which could either be called too early, or in the Radix case,
+> > > forced to
+> > > use "early_" versions of functions just to safely handle this one
+> > > case.
+> > 
+> > Looking at x86, I see that __put_user_size() doesn't includes the
+> > locks. 
+> > The lock/unlock is do by callers. I'll do the same.
+> > 
+> > 
+> > > __put_user_asm() does not do this, and thus is safe to use both
+> > > in early
+> > > boot, and later on since in this case it should only ever be
+> > > touching
+> > > kernel memory.
+> > > 
+> > > __patch_instruction() was previously refactored to use
+> > > __put_user_size()
+> > > in order to be able to return -EFAULT, which would allow the
+> > > kernel to
+> > > patch instructions in userspace, which should never happen.  This
+> > > has
+> > > the functional change of causing faults on userspace addresses if
+> > > KUAP
+> > > is turned on, which should never happen in practice.
+> > > 
+> > > A future enhancement could be to double check the patch address
+> > > is
+> > > definitely allowed to be tampered with by the kernel.
+> > 
+> > This makes me realise that we are calling lock_user_access() with
+> > kernel 
+> > addresses. That most likely breaks protection on kernel addresses
+> > for 
+> > book3s/32. I'll have to work around it.
+> > 
+> > Another thing I realised also is that get_user() at least is called
+> > in 
+> > some exceptions/trap handlers. Which means it can be called nested
+> > with 
+> > an ongoing user access. It means that get_paca()-
+> > >user_access_allowed 
+> > might be modified during those exceptions/traps.
 > 
-> However we plan to start using the AMR on Radix to prevent the kernel
-> from reading/writing to userspace outside of copy_to/from_user(). In
-> order to make that work we need to save/restore the AMR value.
-> 
-> We only restore the value if it is different from the guest value,
-> which is already in the register when we exit to the host. This
-> should
-> mean we rarely need to actually restore the value when running a
-> modern Linux as a guest, because it will be using the same value as
-> us.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Any comment about that ? Isn't it a problem ?
 
-Tested-by: Russell Currey <ruscur@russell.cc>
+Yes, I think so.  I wonder why I haven't hit this issue, though.  Which
+handlers is this an issue with?
+
+Maybe we could do something like...
+
+unlock_user_access() checks if user access is already unlocked (== 1),
+if so sets user_access_allowed to 2
+
+lock_user_access() sees that user_access_allowed is 2, and knows it's
+nested and sets user_access_allowed back to 1 instead of its usual 0.
+
+...that's pretty gross, though.  It also means that every
+implementation has to figure out how to cope with that.
+
+I've done a lot of testing where a) user access hasn't been left
+unlocked and b) faults haven't happened where they shouldn't, so I
+wonder how I could try and hit such a case.
+
+Could also have a get_user() without locking that's only allowed to be
+used by exception handlers...
+
+I dunno.  Open to better ideas.
+
+- Russell
+> 
+> Christophe
+> 
+> > Christophe
+> > 
+> > > Signed-off-by: Russell Currey <ruscur@russell.cc>
+> > > ---
+> > >   arch/powerpc/lib/code-patching.c | 4 ++--
+> > >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/lib/code-patching.c 
+> > > b/arch/powerpc/lib/code-patching.c
+> > > index 89502cbccb1b..15e8c6339960 100644
+> > > --- a/arch/powerpc/lib/code-patching.c
+> > > +++ b/arch/powerpc/lib/code-patching.c
+> > > @@ -26,9 +26,9 @@
+> > >   static int __patch_instruction(unsigned int *exec_addr,
+> > > unsigned int 
+> > > instr,
+> > >                      unsigned int *patch_addr)
+> > >   {
+> > > -    int err;
+> > > +    int err = 0;
+> > > -    __put_user_size(instr, patch_addr, 4, err);
+> > > +    __put_user_asm(instr, patch_addr, err, "stw");
+> > >       if (err)
+> > >           return err;
+> > > 
 
