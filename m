@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76A14C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:49:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BD5D8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:50:46 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 94CD82146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:49:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 94CD82146E
+	by mail.kernel.org (Postfix) with ESMTPS id 3350A2146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:50:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3350A2146E
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444L8m340ZzDqH6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:49:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444LBX1tW6zDqMp
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:50:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=arm.com
  (client-ip=217.140.101.70; helo=foss.arm.com;
@@ -26,26 +26,27 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=arm.com
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 444L6n0YXszDqGc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:47:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 444L7V13mwzDqJ8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:48:05 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2B34615AB;
- Wed, 20 Feb 2019 06:47:25 -0800 (PST)
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2C2FA15AB;
+ Wed, 20 Feb 2019 06:48:04 -0800 (PST)
 Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
  [10.72.51.249])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2EF1B3F5C1;
- Wed, 20 Feb 2019 06:47:20 -0800 (PST)
-Date: Wed, 20 Feb 2019 14:47:17 +0000
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 312643F5C1;
+ Wed, 20 Feb 2019 06:47:59 -0800 (PST)
+Date: Wed, 20 Feb 2019 14:47:56 +0000
 From: Will Deacon <will.deacon@arm.com>
 To: Waiman Long <longman@redhat.com>
-Subject: Re: [PATCH v4 1/3] locking/rwsem: Remove arch specific rwsem files
-Message-ID: <20190220144717.GI7523@fuggles.cambridge.arm.com>
+Subject: Re: [PATCH v4 2/3] locking/rwsem: Remove rwsem-spinlock.c & use
+ rwsem-xadd.c for all archs
+Message-ID: <20190220144756.GK7523@fuggles.cambridge.arm.com>
 References: <1550095217-12047-1-git-send-email-longman@redhat.com>
- <1550095217-12047-2-git-send-email-longman@redhat.com>
+ <1550095217-12047-3-git-send-email-longman@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1550095217-12047-2-git-send-email-longman@redhat.com>
+In-Reply-To: <1550095217-12047-3-git-send-email-longman@redhat.com>
 User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -77,76 +78,65 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 13, 2019 at 05:00:15PM -0500, Waiman Long wrote:
-> As the generic rwsem-xadd code is using the appropriate acquire and
-> release versions of the atomic operations, the arch specific rwsem.h
-> files will not be that much faster than the generic code as long as the
-> atomic functions are properly implemented. So we can remove those arch
-> specific rwsem.h and stop building asm/rwsem.h to reduce maintenance
-> effort.
+On Wed, Feb 13, 2019 at 05:00:16PM -0500, Waiman Long wrote:
+> Currently, we have two different implementation of rwsem:
+>  1) CONFIG_RWSEM_GENERIC_SPINLOCK (rwsem-spinlock.c)
+>  2) CONFIG_RWSEM_XCHGADD_ALGORITHM (rwsem-xadd.c)
 > 
-> Currently, only x86, alpha and ia64 have implemented architecture
-> specific fast paths. I don't have access to alpha and ia64 systems for
-> testing, but they are legacy systems that are not likely to be updated
-> to the latest kernel anyway.
+> As we are going to use a single generic implementation for rwsem-xadd.c
+> and no architecture-specific code will be needed, there is no point
+> in keeping two different implementations of rwsem. In most cases, the
+> performance of rwsem-spinlock.c will be worse. It also doesn't get all
+> the performance tuning and optimizations that had been implemented in
+> rwsem-xadd.c over the years.
 > 
-> By using a rwsem microbenchmark, the total locking rates on a 4-socket
-> 56-core 112-thread x86-64 system before and after the patch were as
-> follows (mixed means equal # of read and write locks):
+> For simplication, we are going to remove rwsem-spinlock.c and make all
+> architectures use a single implementation of rwsem - rwsem-xadd.c.
 > 
->                       Before Patch              After Patch
->    # of Threads  wlock   rlock   mixed     wlock   rlock   mixed
->    ------------  -----   -----   -----     -----   -----   -----
->         1        29,201  30,143  29,458    28,615  30,172  29,201
->         2         6,807  13,299   1,171     7,725  15,025   1,804
->         4         6,504  12,755   1,520     7,127  14,286   1,345
->         8         6,762  13,412     764     6,826  13,652     726
->        16         6,693  15,408     662     6,599  15,938     626
->        32         6,145  15,286     496     5,549  15,487     511
->        64         5,812  15,495      60     5,858  15,572      60
+> All references to RWSEM_GENERIC_SPINLOCK and RWSEM_XCHGADD_ALGORITHM
+> in the code are removed.
 > 
-> There were some run-to-run variations for the multi-thread tests. For
-> x86-64, using the generic C code fast path seems to be a little bit
-> faster than the assembly version with low lock contention.  Looking at
-> the assembly version of the fast paths, there are assembly to/from C
-> code wrappers that save and restore all the callee-clobbered registers
-> (7 registers on x86-64). The assembly generated from the generic C
-> code doesn't need to do that. That may explain the slight performance
-> gain here.
-> 
-> The generic asm rwsem.h can also be merged into kernel/locking/rwsem.h
-> with no code change as no other code other than those under
-> kernel/locking needs to access the internal rwsem macros and functions.
-> 
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
 > Signed-off-by: Waiman Long <longman@redhat.com>
 > ---
->  MAINTAINERS                     |   1 -
->  arch/alpha/include/asm/rwsem.h  | 211 -----------------------------------
->  arch/arm/include/asm/Kbuild     |   1 -
->  arch/arm64/include/asm/Kbuild   |   1 -
->  arch/hexagon/include/asm/Kbuild |   1 -
->  arch/ia64/include/asm/rwsem.h   | 172 -----------------------------
->  arch/powerpc/include/asm/Kbuild |   1 -
->  arch/s390/include/asm/Kbuild    |   1 -
->  arch/sh/include/asm/Kbuild      |   1 -
->  arch/sparc/include/asm/Kbuild   |   1 -
->  arch/x86/include/asm/rwsem.h    | 237 ----------------------------------------
->  arch/x86/lib/Makefile           |   1 -
->  arch/x86/lib/rwsem.S            | 156 --------------------------
->  arch/x86/um/Makefile            |   1 -
->  arch/xtensa/include/asm/Kbuild  |   1 -
->  include/asm-generic/rwsem.h     | 140 ------------------------
->  include/linux/rwsem.h           |   4 +-
->  kernel/locking/percpu-rwsem.c   |   2 +
->  kernel/locking/rwsem.h          | 130 ++++++++++++++++++++++
->  19 files changed, 133 insertions(+), 930 deletions(-)
->  delete mode 100644 arch/alpha/include/asm/rwsem.h
->  delete mode 100644 arch/ia64/include/asm/rwsem.h
->  delete mode 100644 arch/x86/include/asm/rwsem.h
->  delete mode 100644 arch/x86/lib/rwsem.S
->  delete mode 100644 include/asm-generic/rwsem.h
+>  arch/alpha/Kconfig              |   7 -
+>  arch/arc/Kconfig                |   3 -
+>  arch/arm/Kconfig                |   4 -
+>  arch/arm64/Kconfig              |   3 -
+>  arch/c6x/Kconfig                |   3 -
+>  arch/csky/Kconfig               |   3 -
+>  arch/h8300/Kconfig              |   3 -
+>  arch/hexagon/Kconfig            |   6 -
+>  arch/ia64/Kconfig               |   4 -
+>  arch/m68k/Kconfig               |   7 -
+>  arch/microblaze/Kconfig         |   6 -
+>  arch/mips/Kconfig               |   7 -
+>  arch/nds32/Kconfig              |   3 -
+>  arch/nios2/Kconfig              |   3 -
+>  arch/openrisc/Kconfig           |   6 -
+>  arch/parisc/Kconfig             |   6 -
+>  arch/powerpc/Kconfig            |   7 -
+>  arch/riscv/Kconfig              |   3 -
+>  arch/s390/Kconfig               |   6 -
+>  arch/sh/Kconfig                 |   6 -
+>  arch/sparc/Kconfig              |   8 -
+>  arch/unicore32/Kconfig          |   6 -
+>  arch/x86/Kconfig                |   3 -
+>  arch/x86/um/Kconfig             |   6 -
+>  arch/xtensa/Kconfig             |   3 -
+>  include/linux/rwsem-spinlock.h  |  47 ------
+>  include/linux/rwsem.h           |   5 -
+>  kernel/Kconfig.locks            |   2 +-
+>  kernel/locking/Makefile         |   4 +-
+>  kernel/locking/rwsem-spinlock.c | 339 ----------------------------------------
+>  kernel/locking/rwsem.h          |   3 -
+>  31 files changed, 2 insertions(+), 520 deletions(-)
+>  delete mode 100644 include/linux/rwsem-spinlock.h
+>  delete mode 100644 kernel/locking/rwsem-spinlock.c
 
-Looks like a nice cleanup, thanks:
+Another nice cleanup, and it looks like the optimistic spinning in the xadd
+implementation is predicated on ARCH_SUPPORTS_ATOMIC_RMW, so we're all good
+there too.
 
 Acked-by: Will Deacon <will.deacon@arm.com>
 
