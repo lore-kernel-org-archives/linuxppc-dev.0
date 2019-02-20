@@ -2,102 +2,86 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17BC4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 13:46:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 380BEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:06:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C5CF320880
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 13:46:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 66F762146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 14:06:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=amarulasolutions.com header.i=@amarulasolutions.com header.b="aEhSAnK2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5CF320880
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=amarulasolutions.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="oJ1ysyAB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 66F762146E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444JmZ22YMzDqCD
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 00:46:38 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444JkY19rvzDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 00:44:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=amarulasolutions.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 444KCj01qWzDqDf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:06:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amarulasolutions.com header.i=@amarulasolutions.com
- header.b="aEhSAnK2"; dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 444JkX5gS0z8svg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 00:44:52 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 444JkX5H5gz9s8m; Thu, 21 Feb 2019 00:44:52 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=amarulasolutions.com
- (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
- envelope-from=andrea.parri@amarulasolutions.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=amarulasolutions.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=amarulasolutions.com header.i=@amarulasolutions.com
- header.b="aEhSAnK2"; dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="oJ1ysyAB"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 444JkW1HmCz9s71
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 00:44:49 +1100 (AEDT)
-Received: by mail-wm1-x341.google.com with SMTP id y185so4762226wmd.1
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Feb 2019 05:44:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amarulasolutions.com; s=google;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=1FaPtUN6X+te83Y4+p98tzajqlQXdAj23kTLzAX63ks=;
- b=aEhSAnK2erJmewTp6jhY5vt3e1otxe+TDSaednmw+wKbWFU6CSCseVZiUZStaT05wQ
- INjei/6byZ4kktPiXIQAMYJjO2Pg3VA3v8jYiym3ONacJ/wQmldLb6D6G3qk/mx7UG5l
- Ji5qzk28Ii4g2ZNN3ZcL9sNmc8C6QEi7J4/3o=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=1FaPtUN6X+te83Y4+p98tzajqlQXdAj23kTLzAX63ks=;
- b=s5DqPKbyI//6i9WyvsrD9FWeX6+ewByvPpcxXQD7nza17tKYsCaW4RkFbl4LDW6a+f
- dNM1WL3TZB+Oth8qw4wy5RsvixYfzbMR7NG89HNtSzZuyhJgBn0Jht5dWOrImTRJpt3R
- mYDxbwbw9NcMiHVJ/kZlWyE2mfXTLzEQeY8I2o/sy4Ui6LrjzuthVQ7vMGMgELlSp8uP
- BPAEUVqAeDSrPRh/g9OQyvwmmBbwqMTloEv7k3r/LwnYbQzyiXvt2NRGmu1G4lgtBeh0
- fnP9gK67yOKfBcmydmIGEZS/2F1TN+0SbmrPxjzDYgEUDWazCF49u9H/0CY0f+QqaLck
- UBKw==
-X-Gm-Message-State: AHQUAuYtuiIH4sYx6roJVCx6ulXMiC2/gfmuvTjBS5VdKygdpGkPGOGm
- 7l7unyHGzx/0XxQpUXzlS3OWhA==
-X-Google-Smtp-Source: AHgI3Ib+VhzbpsxEz7b0+CW/QnoGf5OfKkLgeRQbLFBmNobRfDSRT3DYWKeg/wV6buNd7DslpMop0Q==
-X-Received: by 2002:a7b:c3c3:: with SMTP id t3mr6823987wmj.120.1550670286974; 
- Wed, 20 Feb 2019 05:44:46 -0800 (PST)
-Received: from andrea ([89.22.71.151])
- by smtp.gmail.com with ESMTPSA id f4sm13179422wrx.68.2019.02.20.05.44.42
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 20 Feb 2019 05:44:45 -0800 (PST)
-Date: Wed, 20 Feb 2019 14:44:33 +0100
-From: Andrea Parri <andrea.parri@amarulasolutions.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 1/7] dump_stack: Support adding to the dump stack arch
- description
-Message-ID: <20190220134433.GA4932@andrea>
-References: <20190207124635.3885-1-mpe@ellerman.id.au>
- <20190211125035.GA1562@andrea>
- <20190211143859.dd2lkccxod3f2fwn@pathway.suse.cz>
- <20190219233925.GA5648@andrea>
- <87va1e7pw2.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444K554bMqzDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 01:00:57 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 444K4y27Bxz9v1sm;
+ Wed, 20 Feb 2019 15:00:50 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=oJ1ysyAB; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id vsIyKQq7uP3j; Wed, 20 Feb 2019 15:00:50 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 444K4y0wDRz9tytY;
+ Wed, 20 Feb 2019 15:00:50 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550671250; bh=l2Kfp0ntAhfmzSV1LpY3r8+PYSArHohnOEgSuMVpmA4=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=oJ1ysyABl+p02mEI3bIVPajP7S6a2g/5eC0d5JxBoYEY1cTHUPDwYQvF0UTuN43xJ
+ GU1rb55DKciQP5D8kbJokJkMGvbW2/MbisxQPa94h4vIJ6YljJjuHC0bDy2+c4l7tS
+ 4zO7BSxQedOlj+mEAecfq2hsPYkb6JLORWfhxR2k=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7C1958B83A;
+ Wed, 20 Feb 2019 15:00:51 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id GhqVACHw-eFX; Wed, 20 Feb 2019 15:00:51 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 371C78B812;
+ Wed, 20 Feb 2019 15:00:51 +0100 (CET)
+Subject: Re: [PATCH] powerpc: Move page table dump files in a dedicated
+ subdirectory
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+References: <913780421c7b73d731bbbe04c215e29667f7c938.1550492751.git.christophe.leroy@c-s.fr>
+ <87d0nm7f8l.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <0f371616-0ab6-fe96-852a-323159c58572@c-s.fr>
+Date: Wed, 20 Feb 2019 15:00:49 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87va1e7pw2.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <87d0nm7f8l.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -109,84 +93,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch@vger.kernel.org, Petr Mladek <pmladek@suse.com>,
- sergey.senozhatsky@gmail.com, linux-kernel@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org, tj@kernel.org,
- akpm@linux-foundation.org, dyoung@redhat.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-> >> > > +		 * Order the stores above in vsnprintf() vs the store of the
-> >> > > +		 * space below which joins the two strings. Note this doesn't
-> >> > > +		 * make the code truly race free because there is no barrier on
-> >> > > +		 * the read side. ie. Another CPU might load the uninitialised
-> >> > > +		 * tail of the buffer first and then the space below (rather
-> >> > > +		 * than the NULL that was there previously), and so print the
-> >> > > +		 * uninitialised tail. But the whole string lives in BSS so in
-> >> > > +		 * practice it should just see NULLs.
-> >> > 
-> >> > The comment doesn't say _why_ we need to order these stores: IOW, what
-> >> > will or can go wrong without this order?  This isn't clear to me.
-> >> >
-> >> > Another good practice when adding smp_*-constructs (as discussed, e.g.,
-> >> > at KS'18) is to indicate the matching construct/synch. mechanism.
-> >> 
-> >> Yes, one barrier without a counter-part is suspicious.
-> >
-> > As is this silence...,
-> >
-> > Michael, what happened to this patch? did you submit a new version?
+
+
+Le 20/02/2019 à 14:37, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
 > 
-> No, I'm just busy, it's the merge window next week :)
+>> This patch moves the files related to page table dump in a
+>> dedicated subdirectory.
+>>
+>> The purpose is to clean a bit arch/powerpc/mm by regrouping
+>> multiple files handling a dedicated function.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/Kconfig.debug                                   |  4 ----
+>>   arch/powerpc/mm/Makefile                                     | 10 +---------
+>>   arch/powerpc/mm/ptdump/Makefile                              |  9 +++++++++
+>>   arch/powerpc/mm/{ => ptdump}/dump_bats.c                     |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_hashpagetable.c            |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-8xx.c      |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-book3s64.c |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-generic.c  |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables.c          |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables.h          |  0
+>>   arch/powerpc/mm/{ => ptdump}/dump_sr.c                       |  0
+>>   11 files changed, 10 insertions(+), 13 deletions(-)
+>>   create mode 100644 arch/powerpc/mm/ptdump/Makefile
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_bats.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_hashpagetable.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-8xx.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-book3s64.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables-generic.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables.c (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_linuxpagetables.h (100%)
+>>   rename arch/powerpc/mm/{ => ptdump}/dump_sr.c (100%)
+> 
+> I'd like to shorten the file names as well, now that they're namespaced
+> in the ptdump directory, how about:
+> 
+>   arch/powerpc/Kconfig.debug                                             |  4 ----
+>   arch/powerpc/mm/Makefile                                               | 10 +---------
+>   arch/powerpc/mm/{dump_linuxpagetables-8xx.c => ptdump/8xx.c}           |  2 +-
+>   arch/powerpc/mm/ptdump/Makefile                                        |  9 +++++++++
+>   arch/powerpc/mm/{dump_bats.c => ptdump/bats.c}                         |  0
+>   arch/powerpc/mm/{dump_linuxpagetables-book3s64.c => ptdump/book3s64.c} |  2 +-
+>   arch/powerpc/mm/{dump_hashpagetable.c => ptdump/hashpagetable.c}       |  0
+>   arch/powerpc/mm/{dump_linuxpagetables.c => ptdump/ptdump.c}            |  2 +-
+>   arch/powerpc/mm/{dump_linuxpagetables.h => ptdump/ptdump.h}            |  0
+>   arch/powerpc/mm/{dump_sr.c => ptdump/segment_regs.c}                   |  0
+>   arch/powerpc/mm/{dump_linuxpagetables-generic.c => ptdump/shared.c}    |  2 +-
 
-Got it.
+Yes good idea. Do you want a v2 or will you do it ?
 
+Christophe
 
 > 
-> I thought the comment was pretty clear, if the stores are observed out
-> of order we might print the uninitialised tail.
-> 
-> And the barrier on the read side would need to be in printk somewhere,
-> which is obviously unpleasant.
-
-Indeed.
-
-
-> 
-> >> If the parallel access is really needed then we could define the
-> >> current length as atomic_t and use:
-> >> 
-> >> 	+ atomic_cmpxchg() to reserve the space for the string
-> >> 	+ %*s to limit the printed length
-> >> 
-> >> In the worst case, we would print an incomplete string.
-> >> See below for a sample code.
-> >
-> > Seems worth exploring, IMO; but I'd like to first hear _clear about
-> > the _intended semantics (before digging into alternatives)...
-> 
-> It is not my intention to support concurrent updates of the string. The
-> idea is you setup the string early in boot.
-
-Understood, thanks for the clarification.
-
-
-> 
-> The concern with a concurrent reader is simply that the string is dumped
-> in the panic path, and you never really know when you're going to panic.
-> Even if you only write to the string before doing SMP bringup you might
-> still have another CPU go rogue and panic before then.
-> 
-> But I probably should have just not added the barrier, it's over
-> paranoid and will almost certainly never matter in practice.
-
-Oh, well, I can only echo you: if you don't care about the stores being
-_observed_ out of order, you could simply remove the barrier; if you do
-care, then you need "more paranoid" on the readers side.  ;-)
-
-  Andrea
-
-
 > 
 > cheers
+> 
