@@ -2,94 +2,85 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10985C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:00:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 151A3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:02:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8E1D320851
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:00:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E1D320851
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 8ADCA20880
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:02:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="G3bymVEj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8ADCA20880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444QP74kFjzDqN0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 05:00:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444QRD4g2CzDqBN
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 05:02:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="G3bymVEj"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444Ppk698tzDqMK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:33:50 +1100 (AEDT)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1KHXmro170571
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 12:33:48 -0500
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qs9p8ng9s-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 12:33:47 -0500
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 20 Feb 2019 17:33:43 -0000
-Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
- by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 20 Feb 2019 17:33:41 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1KHXebV23330986
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Feb 2019 17:33:40 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 70D97B205F;
- Wed, 20 Feb 2019 17:33:40 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1DC2BB2064;
- Wed, 20 Feb 2019 17:33:38 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.102.2.162])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 20 Feb 2019 17:33:37 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH] powerpc/hugetlb: Don't do runtime allocation of 16G pages in
- LPAR configuration
-Date: Wed, 20 Feb 2019 23:03:35 +0530
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444Pxv5XPXzDqMF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:40:03 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 444Pxp6Wvqz9txwN;
+ Wed, 20 Feb 2019 18:39:58 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=G3bymVEj; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id QStU0W-kmL6O; Wed, 20 Feb 2019 18:39:58 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 444Pxp5HRkz9txwM;
+ Wed, 20 Feb 2019 18:39:58 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550684398; bh=9mRs0YCY5VwvK6zuu98KPe9M3xynokILGcsK+mOkqZw=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=G3bymVEjdnrauFCmW63hvS/c97w+GQ3zErfc5VLzgGwf0yzl97JDmMjtCNo+gYz5p
+ mM+/X1kWcovEg1CG1ylRN2buh+PzYNuCCPFQl24BAVf5YV0jCWYUsVeCSsSLRSYM4P
+ 2S5WtrxyvFBQ3Gi1uxVnu5IJFcdgubPtklsAR2sk=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 65F368B84F;
+ Wed, 20 Feb 2019 18:40:00 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ifBXLgN0UUAU; Wed, 20 Feb 2019 18:40:00 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 37CBF8B84A;
+ Wed, 20 Feb 2019 18:40:00 +0100 (CET)
+Subject: Re: [PATCH 02/10] powerpc/603: Store PGDIR physical address in a SPRG
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ joakim.tjernlund@infinera.com
+References: <cover.1548419273.git.christophe.leroy@c-s.fr>
+ <a805b78bc4c7c24ee061d1578e7ff7bb2746e54a.1548419273.git.christophe.leroy@c-s.fr>
+Message-ID: <06894fe5-bc42-96b1-ecc3-7871422ef4e3@c-s.fr>
+Date: Wed, 20 Feb 2019 18:39:58 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
+In-Reply-To: <a805b78bc4c7c24ee061d1578e7ff7bb2746e54a.1548419273.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19022017-0060-0000-0000-0000030E2227
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010632; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01163871; UDB=6.00607737; IPR=6.00944455; 
- MB=3.00025669; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-20 17:33:43
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022017-0061-0000-0000-0000485D750E
-Message-Id: <20190220173335.13112-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-20_13:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902200124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,57 +92,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We added runtime allocation of 16G pages in
-commit 4ae279c2c96a ("powerpc/mm/hugetlb: Allow runtime allocation of 16G.")
-That was done to enable 16G allocation on PowerNV and KVM config. In case of KVM
-config, we mostly would have the entire guest RAM backed by 16G hugetlb pages for
-this to work. PAPR do support partial backing of guest RAM with hugepages via
-ibm,expected#pages node of memory node in the device tree. This means rest of the
-guest RAM won't be backed by 16G contiguous pages in the host and hence a hash page
-table insertion can fail in such case.
 
-An example error message will look like
 
-hash-mmu: mm: Hashing failure ! EA=0x7efc00000000 access=0x8000000000000006 current=readback
-hash-mmu:     trap=0x300 vsid=0x67af789 ssize=1 base psize=14 psize 14 pte=0xc000000400000386
-readback[12260]: unhandled signal 7 at 00007efc00000000 nip 00000000100012d0 lr 000000001000127c code 2
+Le 25/01/2019 à 13:34, Christophe Leroy a écrit :
+> Use SPRN_SPRG5 to store the current thread PGDIR and
+> avoid reading thread_struct->pgdir at every TLB miss.
 
-This patch address that by preventing runtime allocation of 16G hugepages in
-LPAR config. To allocate 16G hugetlb one need to kernel command line
-hugepagesz=16G hugepages=<number of 16G pages>
+I'll send out v2 with an additional patch getting rid of SPRN_SPRG_RTAS 
+hence freeing SPRN_SPRG2 which I will use here instead of SPRN_SPRG5 so 
+that all 6xx will benefit.
 
-With radix translation mode we don't run into this issue.
+Christophe
 
-Fixes: 4ae279c2c96a ("powerpc/mm/hugetlb: Allow runtime allocation of 16G.")
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 5b0177733994..cd3f2ae0e1e4 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -35,6 +35,13 @@ static inline int hstate_get_psize(struct hstate *hstate)
- #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
- static inline bool gigantic_page_supported(void)
- {
-+	/*
-+	 * We used gigantic page reservation with hypervisor assist in some case.
-+	 * We cannot use runtime allocation of gigantic pages in those platforms
-+	 * This is hash translation mode LPARs.
-+	 */
-+	if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
-+		return false;
- 	return true;
- }
- #endif
--- 
-2.20.1
-
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   arch/powerpc/include/asm/reg.h      |  1 +
+>   arch/powerpc/kernel/cpu_setup_6xx.S |  4 ++++
+>   arch/powerpc/kernel/head_32.S       | 28 ++++++++++++++++------------
+>   3 files changed, 21 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 1c98ef1f2d5b..ba0ab1a1431b 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1169,6 +1169,7 @@
+>   #define SPRN_SPRG_SCRATCH1	SPRN_SPRG1
+>   #define SPRN_SPRG_RTAS		SPRN_SPRG2
+>   #define SPRN_SPRG_603_LRU	SPRN_SPRG4
+> +#define SPRN_SPRG_603_PGDIR	SPRN_SPRG5
+>   #endif
+>   
+>   #ifdef CONFIG_40x
+> diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
+> index 8c069e96c478..4c91d1f640fe 100644
+> --- a/arch/powerpc/kernel/cpu_setup_6xx.S
+> +++ b/arch/powerpc/kernel/cpu_setup_6xx.S
+> @@ -24,6 +24,10 @@ BEGIN_MMU_FTR_SECTION
+>   	li	r10,0
+>   	mtspr	SPRN_SPRG_603_LRU,r10		/* init SW LRU tracking */
+>   END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
+> +	lis	r10, (swapper_pg_dir - PAGE_OFFSET)@h
+> +	ori	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@l
+> +	mtspr	SPRN_SPRG_603_PGDIR, r10
+> +
+>   BEGIN_FTR_SECTION
+>   	bl	__init_fpu_registers
+>   END_FTR_SECTION_IFCLR(CPU_FTR_FPU_UNAVAILABLE)
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+> index c2f564690778..dbd15e03952a 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -502,16 +502,15 @@ InstructionTLBMiss:
+>   	mfspr	r3,SPRN_IMISS
+>   	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+>   	cmplw	0,r1,r3
+> -	mfspr	r2,SPRN_SPRG_THREAD
+> +	mfspr	r2, SPRN_SPRG_603_PGDIR
+>   	li	r1,_PAGE_USER|_PAGE_PRESENT|_PAGE_EXEC /* low addresses tested as user */
+> -	lwz	r2,PGDIR(r2)
+>   	bge-	112f
+>   	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+>   	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+>   	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+>   	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+> -112:	tophys(r2,r2)
+> -	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+> +	tophys(r2,r2)
+> +112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+>   	lwz	r2,0(r2)		/* get pmd entry */
+>   	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+>   	beq-	InstructionAddressInvalid	/* return if no mapping */
+> @@ -576,16 +575,15 @@ DataLoadTLBMiss:
+>   	mfspr	r3,SPRN_DMISS
+>   	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+>   	cmplw	0,r1,r3
+> -	mfspr	r2,SPRN_SPRG_THREAD
+> +	mfspr	r2, SPRN_SPRG_603_PGDIR
+>   	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
+> -	lwz	r2,PGDIR(r2)
+>   	bge-	112f
+>   	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+>   	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+>   	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+>   	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+> -112:	tophys(r2,r2)
+> -	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+> +	tophys(r2,r2)
+> +112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+>   	lwz	r2,0(r2)		/* get pmd entry */
+>   	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+>   	beq-	DataAddressInvalid	/* return if no mapping */
+> @@ -660,16 +658,15 @@ DataStoreTLBMiss:
+>   	mfspr	r3,SPRN_DMISS
+>   	lis	r1,PAGE_OFFSET@h		/* check if kernel address */
+>   	cmplw	0,r1,r3
+> -	mfspr	r2,SPRN_SPRG_THREAD
+> +	mfspr	r2, SPRN_SPRG_603_PGDIR
+>   	li	r1,_PAGE_RW|_PAGE_USER|_PAGE_PRESENT /* access flags */
+> -	lwz	r2,PGDIR(r2)
+>   	bge-	112f
+>   	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+>   	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+>   	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+>   	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+> -112:	tophys(r2,r2)
+> -	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+> +	tophys(r2,r2)
+> +112:	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+>   	lwz	r2,0(r2)		/* get pmd entry */
+>   	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+>   	beq-	DataAddressInvalid	/* return if no mapping */
+> @@ -1030,6 +1027,13 @@ _ENTRY(switch_mmu_context)
+>   	lis	r5, abatron_pteptrs@ha
+>   	stw	r4, abatron_pteptrs@l + 0x4(r5)
+>   #endif
+> +BEGIN_MMU_FTR_SECTION
+> +#ifndef CONFIG_BDI_SWITCH
+> +	lwz	r4, MM_PGD(r4)
+> +#endif
+> +	tophys(r4, r4)
+> +	mtspr	SPRN_SPRG_603_PGDIR, r4
+> +END_MMU_FTR_SECTION_IFCLR(MMU_FTR_HPTE_TABLE)
+>   	li	r4,0
+>   	isync
+>   3:
+> 
