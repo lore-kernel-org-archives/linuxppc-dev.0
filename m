@@ -2,48 +2,60 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AE5EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 00:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67988C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:01:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BD12C2147A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 00:53:55 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BD12C2147A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id C5AE42086C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 01:01:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="h+2qtoNj"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5AE42086C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 443zcy1dDgzDqKr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 11:53:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 443znP58kkzDqL2
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 12:01:13 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443zZc4dYlzDqKr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 11:51:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 443zZc3731z9sDL;
- Wed, 20 Feb 2019 11:51:52 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sandipan Das <sandipan@linux.ibm.com>
-Subject: Re: [PATCH 1/6] powerpc sstep: Add maddhd, maddhdu,
- maddld instruction emulation
-In-Reply-To: <2962112510464de01b24f9e1014909fde3380d52.1535609090.git.sandipan@linux.ibm.com>
-References: <cover.1535609090.git.sandipan@linux.ibm.com>
- <2962112510464de01b24f9e1014909fde3380d52.1535609090.git.sandipan@linux.ibm.com>
-Date: Wed, 20 Feb 2019 11:51:52 +1100
-Message-ID: <871s438eon.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 443zlK6WM5zDq5v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 11:59:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="h+2qtoNj"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 443zlK4CY4z9sDr; Wed, 20 Feb 2019 11:59:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1550624365; bh=ZIMGo/ib2gf/8xFm6867M2UBD+22z3Ri/up2QbZ9Yi0=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=h+2qtoNjhH1XBu460a9b2at7aJDDa2hS+80yA5YFEniLIA9CPbnIKh2NBqsgcR9Jy
+ tJBVlY2Lj1PNsN4OjSyiyb1uB8d5ZwfljFOrcy/ncKfupTYaqi4DdiVEBmu5l/KmHL
+ PBT+B0s6SkmYJF9PHPfKAEdqSCXuJfjjU5Sy9f6Ldwliml6Ni3QPb3YZ30NxcE9RRF
+ xxQNFz+yq2tR1mkL7KGk2wwf5IaZvv3NRHXZtmt8ABnJvj4FWghv/lvy8cjsdU3NXf
+ 77MnVaAHsn+Qmz0fxv4Y+2nHZMt9xPjqor3DnA2mRKWVQ1etmS2lS9MEHFfNLzg8rn
+ xGVKmneQqVl7A==
+Date: Wed, 20 Feb 2019 11:59:22 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v6] powerpc/64s: reimplement book3s idle code in C
+Message-ID: <20190220005922.GC5353@blackberry>
+References: <20181013120409.1993-1-npiggin@gmail.com>
+ <20190217230640.GA922@blackberry>
+ <1550549470.22tqiqz5em.astroid@bobo.none>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1550549470.22tqiqz5em.astroid@bobo.none>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,89 +67,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org, naveen.n.rao@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org, ravi.bangoria@linux.ibm.com
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Sandipan Das <sandipan@linux.ibm.com> writes:
+On Tue, Feb 19, 2019 at 02:13:51PM +1000, Nicholas Piggin wrote:
+> Paul Mackerras's on February 18, 2019 9:06 am:
+> > On Sat, Oct 13, 2018 at 10:04:09PM +1000, Nicholas Piggin wrote:
+> >> Reimplement Book3S idle code in C, moving POWER7/8/9 implementation
+> >> speific HV idle code to the powernv platform code.
+> >> 
+> > 
+> > [...]
+> > 
+> >> @@ -2760,21 +2744,47 @@ BEGIN_FTR_SECTION
+> >>  	li	r4, LPCR_PECE_HVEE@higher
+> >>  	sldi	r4, r4, 32
+> >>  	or	r5, r5, r4
+> >> -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> >> +FTR_SECTION_ELSE
+> >> +	li	r3, PNV_THREAD_NAP
+> >> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+> >>  	mtspr	SPRN_LPCR,r5
+> >>  	isync
+> >> -	li	r0, 0
+> >> -	std	r0, HSTATE_SCRATCH0(r13)
+> >> -	ptesync
+> >> -	ld	r0, HSTATE_SCRATCH0(r13)
+> >> -1:	cmpd	r0, r0
+> >> -	bne	1b
+> >> +
+> >> +	mr	r0, r1
+> >> +	ld	r1, PACAEMERGSP(r13)
+> >> +	subi	r1, r1, STACK_FRAME_OVERHEAD
+> >> +	std	r0, 0(r1)
+> >> +	ld	r0, PACAR1(r13)
+> >> +	std	r0, 8(r1)
+> > 
+> > This bit seems wrong to me.  If this is a secondary thread on POWER8,
+> > we were already on the emergency stack, and now we've reset r1 back to
+> > the top of the emergency stack and we're overwriting it.
+> 
+> I'll have to find some time to take another look at this stuff. The KVM
+> stuff was a bit hasty.
+> 
+> > I wonder why you didn't see secondary threads going off into lala land
+> > in your tests?
+> 
+> It must have been because I wasn't testing the guest SMT properly 
+> because I did get it to break trivially sometime after posting this 
+> patch out. So we were on the emergency stack here, that should make
+> things easier, that may be what's wrong.
 
-> This adds emulation support for the following integer instructions:
->   * Multiply-Add High Doubleword (maddhd)
->   * Multiply-Add High Doubleword Unsigned (maddhdu)
->   * Multiply-Add Low Doubleword (maddld)
+In fact I don't see why you need to load up a new stack here at all;
+you could just use whatever stack we're currently on AFAICS.
 
-This doesn't build with old binutils.
-
-    {standard input}:2089: Error: Unrecognized opcode: `maddld'
-    {standard input}:2104: Error: Unrecognized opcode: `maddhdu'
-    {standard input}:1141: Error: Unrecognized opcode: `maddhd'
-
-
-You'll need to add hand built versions, see ppc-opcode.h for examples.
-
-cheers
-
-> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-> index d81568f783e5..b40ec18515bd 100644
-> --- a/arch/powerpc/lib/sstep.c
-> +++ b/arch/powerpc/lib/sstep.c
-> @@ -1169,7 +1169,7 @@ static nokprobe_inline int trap_compare(long v1, long v2)
->  int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
->  		  unsigned int instr)
->  {
-> -	unsigned int opcode, ra, rb, rd, spr, u;
-> +	unsigned int opcode, ra, rb, rc, rd, spr, u;
->  	unsigned long int imm;
->  	unsigned long int val, val2;
->  	unsigned int mb, me, sh;
-> @@ -1292,6 +1292,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
->  	rd = (instr >> 21) & 0x1f;
->  	ra = (instr >> 16) & 0x1f;
->  	rb = (instr >> 11) & 0x1f;
-> +	rc = (instr >> 6) & 0x1f;
->  
->  	switch (opcode) {
->  #ifdef __powerpc64__
-> @@ -1305,6 +1306,38 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
->  			goto trap;
->  		return 1;
->  
-> +#ifdef __powerpc64__
-> +	case 4:
-> +		if (!cpu_has_feature(CPU_FTR_ARCH_300))
-> +			return -1;
-> +
-> +		switch (instr & 0x3f) {
-> +		case 48:	/* maddhd */
-> +			asm("maddhd %0,%1,%2,%3" : "=r" (op->val) :
-> +			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]),
-> +			    "r" (regs->gpr[rc]));
-> +			goto compute_done;
-> +
-> +		case 49:	/* maddhdu */
-> +			asm("maddhdu %0,%1,%2,%3" : "=r" (op->val) :
-> +			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]),
-> +			    "r" (regs->gpr[rc]));
-> +			goto compute_done;
-> +
-> +		case 51:	/* maddld */
-> +			asm("maddld %0,%1,%2,%3" : "=r" (op->val) :
-> +			    "r" (regs->gpr[ra]), "r" (regs->gpr[rb]),
-> +			    "r" (regs->gpr[rc]));
-> +			goto compute_done;
-> +		}
-> +
-> +		/*
-> +		 * There are other instructions from ISA 3.0 with the same
-> +		 * primary opcode which do not have emulation support yet.
-> +		 */
-> +		return -1;
-> +#endif
-> +
->  	case 7:		/* mulli */
->  		op->val = regs->gpr[ra] * (short) instr;
->  		goto compute_done;
-> -- 
-> 2.14.4
+Paul.
