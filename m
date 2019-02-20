@@ -2,68 +2,92 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2331EC10F0B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 15:22:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BA31C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 15:32:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5FDC82086A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 15:22:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id F0D6E20880
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 15:32:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WIGucUyB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5FDC82086A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WQwoCl9C"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0D6E20880
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444LvQ3K9rzDqLR
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 02:22:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; spf=none (mailfrom)
- smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:e::133;
- helo=bombadil.infradead.org;
- envelope-from=batv+a6035ce01c0cd448ed71+5659+infradead.org+hch@bombadil.srs.infradead.org;
- receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444M720YjPzDqLd
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 02:32:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=infradead.org header.i=@infradead.org
- header.b="WIGucUyB"; dkim-atps=neutral
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WQwoCl9C"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444LsV6YFpzDqGl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 02:21:02 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=EFeifr+GfaKqX300Um+mjNzD3Rm1S0esXSt0B9w2YGY=; b=WIGucUyBjsGVWuL2jvGEP36J7
- wAIM66Nws+XW3bCRdl88lmFalND8Uqloj60hjuL97/UwAqCvwAh/q71HAghQoAiJxUBKDV4NeFs+P
- HVl2PIkFym1snOkp7H0Bh7Iwy3HNth61esVAhkupONHYlLPFOyNBcP6ioDPUrT9m8HmSlz0Cy7brW
- T3CThrxzbkECUC+LLP/75uJ0vWxiD0QDLR28VwL+hwhNu5iUxu99KR6fznvbiQWa2uKqaDKSSWHwd
- 5uLNPR4nLxuoKU8lEnZ+ly+ElHLeYkLQbpv5lMqHn24WHv224i/dDaYfT4EtkA5c0+hIF01oAUZ5T
- N7tedkzRQ==;
-Received: from hch by bombadil.infradead.org with local (Exim 4.90_1 #2 (Red
- Hat Linux)) id 1gwTek-00048O-OH; Wed, 20 Feb 2019 15:19:30 +0000
-Date: Wed, 20 Feb 2019 07:19:30 -0800
-From: Christoph Hellwig <hch@infradead.org>
-To: ira.weiny@intel.com
-Subject: Re: [RESEND PATCH 0/7] Add FOLL_LONGTERM to GUP fast and use it
-Message-ID: <20190220151930.GB11695@infradead.org>
-References: <20190220053040.10831-1-ira.weiny@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444M4c1VCnzDqD1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 02:30:40 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 444M4W1rRLz9tyjQ;
+ Wed, 20 Feb 2019 16:30:35 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=WQwoCl9C; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id INhw8yyY2Q8x; Wed, 20 Feb 2019 16:30:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 444M4V5wvDz9tyjP;
+ Wed, 20 Feb 2019 16:30:34 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550676634; bh=CbyYZSkhkr0KQuv85U/c83GdsR5h9Eq3NrW7FPUmMd0=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=WQwoCl9CxovpyjHCPA5MHfFT/wPjTPSF59RLBUAQiw6JIZUn3+K9gX6dVzHdJcJWp
+ zPhzrD3T/F1+4RbPA7QLYE7vDSYpjq7qVLCgCZV72OioeUx1+hQtCv+5Y+Mo0f3YxC
+ x/0M/RTrPmCMsBXWJ3VmgjJrtbVg048PrRzGhahc=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 585928B844;
+ Wed, 20 Feb 2019 16:30:36 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id p5qwV6hQgB5h; Wed, 20 Feb 2019 16:30:36 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 027A08B812;
+ Wed, 20 Feb 2019 16:30:36 +0100 (CET)
+Subject: Re: [PATCH v2 00/15] powerpc/32s: Use BATs/LTLBs for STRICT_KERNEL_RWX
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ =?UTF-8?Q?Jonathan_Neusch=c3=a4fer?= <j.neuschaefer@gmx.net>
+References: <cover.1547132681.git.christophe.leroy@c-s.fr>
+ <20190113181621.GA22334@latitude>
+ <714e78ba-1e92-a856-3dd6-a1fb96ad3785@c-s.fr>
+ <20190113210227.GB22334@latitude>
+ <334b1b02-b652-499c-904e-09e6f7164b8c@c-s.fr>
+ <20190115003353.GD22334@latitude>
+ <b37e3635-9c69-0cfc-1283-25459b394033@c-s.fr>
+ <87fttuz0d3.fsf@concordia.ellerman.id.au>
+ <8b072209-c845-20f5-8ff1-27ecd67b5c72@c-s.fr>
+ <87ftsi7fwi.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <8345946b-b224-d8cb-5bb9-3e38d9b0ba67@c-s.fr>
+Date: Wed, 20 Feb 2019 16:30:34 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
-User-Agent: Mutt/1.9.2 (2017-12-15)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by
- bombadil.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <87ftsi7fwi.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,48 +99,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fbdev@vger.kernel.org, Michal Hocko <mhocko@suse.com>,
- kvm@vger.kernel.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
- linux-fpga@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, rds-devel@oss.oracle.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-rdma@vger.kernel.org,
- Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>,
- xen-devel@lists.xenproject.org, devel@lists.orangefs.org,
- linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>,
- kvm-ppc@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
- Thomas Gleixner <tglx@linutronix.de>,
- virtualization@lists.linux-foundation.org, linux-scsi@vger.kernel.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 19, 2019 at 09:30:33PM -0800, ira.weiny@intel.com wrote:
-> From: Ira Weiny <ira.weiny@intel.com>
-> 
-> Resending these as I had only 1 minor comment which I believe we have covered
-> in this series.  I was anticipating these going through the mm tree as they
-> depend on a cleanup patch there and the IB changes are very minor.  But they
-> could just as well go through the IB tree.
-> 
-> NOTE: This series depends on my clean up patch to remove the write parameter
-> from gup_fast_permitted()[1]
-> 
-> HFI1, qib, and mthca, use get_user_pages_fast() due to it performance
-> advantages.  These pages can be held for a significant time.  But
-> get_user_pages_fast() does not protect against mapping of FS DAX pages.
 
-This I don't get - if you do lock down long term mappings performance
-of the actual get_user_pages call shouldn't matter to start with.
 
-What do I miss?
+Le 20/02/2019 à 14:23, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> Le 15/01/2019 à 11:22, Michael Ellerman a écrit :
+>>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>>> Le 15/01/2019 à 01:33, Jonathan Neuschäfer a écrit :
+>>> ...
+>>>>>
+>>>>> - patches 7 to 11 fail to build with this error (really a warning, but
+>>>>>      arch/powerpc doesn't allow warnings by default):
+>>>>>
+>>>>> 	  CC      arch/powerpc/mm/ppc_mmu_32.o
+>>>>> 	../arch/powerpc/mm/ppc_mmu_32.c:133:13: error: ‘clearibat’ defined but not used [-Werror=unused-function]
+>>>>> 	 static void clearibat(int index)
+>>>>> 		     ^~~~~~~~~
+>>>>> 	../arch/powerpc/mm/ppc_mmu_32.c:115:13: error: ‘setibat’ defined but not used [-Werror=unused-function]
+>>>>> 	 static void setibat(int index, unsigned long virt, phys_addr_t phys,
+>>>>> 		     ^~~~~~~
+>>>>> 	cc1: all warnings being treated as errors
+>>>>
+>>>> Argh ! I have to squash the patch bringing the new functions with the
+>>>> one using them (patch 12). The result is a big messy patch which is more
+>>>> difficult to review but that's life.
+>>>
+>>> You don't *have* to squash them.
+>>>
+>>> We like to preserve bisectability, but it's not a 100% hard requirement.
+>>>
+>>> Someone trying to bisect through those patches can always turn off
+>>> -Werror with PPC_DISABLE_WERROR. But they probably can just skip them
+>>> because they just add new code that's not called yet.
+>>
+>> Ok thanks for the note.
+>>
+>>>
+>>> So I won't object if you send them as-is.
+>>
+>> Good to know. Anyway I think I will at least re-order so that the patch
+>> using the new functions immediatly follows the one adding the functions.
+>   
+> Based on that I'm expecting a v3 of this series, right?
+
+Right. Coming soon.
+
+Christophe
