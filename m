@@ -2,83 +2,94 @@ Return-Path: <SRS0=+mMX=Q3=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NORMAL_HTTP_TO_IP,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4E33C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 17:57:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10985C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:00:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B94820880
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 17:57:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="vgpHlIZ9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B94820880
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 8E1D320851
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Feb 2019 18:00:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8E1D320851
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444QLW2jrTzDq9W
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 04:57:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444QP74kFjzDqN0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 05:00:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="vgpHlIZ9"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444Pjg0pkPzDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:29:26 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 444PjZ0mSBz9v0w1;
- Wed, 20 Feb 2019 18:29:22 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=vgpHlIZ9; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id f26EWz6d0acN; Wed, 20 Feb 2019 18:29:22 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 444PjY6gjFz9v0vr;
- Wed, 20 Feb 2019 18:29:21 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550683761; bh=QyluC/3wRlKw8Mq1z/4mj/rTBv2DhqiZpxBqmcvCH1s=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=vgpHlIZ9K55GBntCbjW9hsh/IDcPMp4hwlR46/7+sR45ML0frhG2NO2bh6waXTj0/
- d/zeU8nukor2KmwcN3JDCM1TQNgwdgxnyH/dzcSca8kk4TFJ67NeTt/5wGPCm9pOLR
- e+vclm9s9vThN/bSFa8JMA4Yc0XNO/klNochBD1E=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9812E8B84F;
- Wed, 20 Feb 2019 18:29:23 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VHpqc_v3cpwz; Wed, 20 Feb 2019 18:29:23 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
- [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 755FC8B84A;
- Wed, 20 Feb 2019 18:29:23 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 6203C6E85E; Wed, 20 Feb 2019 17:29:23 +0000 (UTC)
-Message-Id: <1b674713d46846cfd884b0dc26898a3dafb32f0d.1550648295.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1550648295.git.christophe.leroy@c-s.fr>
-References: <cover.1550648295.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 16/16] powerpc/kconfig: make _etext and data areas
- alignment configurable on 8xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- j.neuschaefer@gmx.net
-Date: Wed, 20 Feb 2019 17:29:23 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444Ppk698tzDqMK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 04:33:50 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1KHXmro170571
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 12:33:48 -0500
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qs9p8ng9s-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 12:33:47 -0500
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 20 Feb 2019 17:33:43 -0000
+Received: from b01cxnp23032.gho.pok.ibm.com (9.57.198.27)
+ by e12.ny.us.ibm.com (146.89.104.199) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 20 Feb 2019 17:33:41 -0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1KHXebV23330986
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 20 Feb 2019 17:33:40 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 70D97B205F;
+ Wed, 20 Feb 2019 17:33:40 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1DC2BB2064;
+ Wed, 20 Feb 2019 17:33:38 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.102.2.162])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Feb 2019 17:33:37 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Subject: [PATCH] powerpc/hugetlb: Don't do runtime allocation of 16G pages in
+ LPAR configuration
+Date: Wed, 20 Feb 2019 23:03:35 +0530
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19022017-0060-0000-0000-0000030E2227
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010632; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01163871; UDB=6.00607737; IPR=6.00944455; 
+ MB=3.00025669; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-20 17:33:43
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022017-0061-0000-0000-0000485D750E
+Message-Id: <20190220173335.13112-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-20_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902200124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,102 +101,57 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8xx, large pages (512kb or 8M) are used to map kernel linear
-memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-in that case. We make 8M the default for data.
+We added runtime allocation of 16G pages in
+commit 4ae279c2c96a ("powerpc/mm/hugetlb: Allow runtime allocation of 16G.")
+That was done to enable 16G allocation on PowerNV and KVM config. In case of KVM
+config, we mostly would have the entire guest RAM backed by 16G hugetlb pages for
+this to work. PAPR do support partial backing of guest RAM with hugepages via
+ibm,expected#pages node of memory node in the device tree. This means rest of the
+guest RAM won't be backed by 16G contiguous pages in the host and hence a hash page
+table insertion can fail in such case.
 
-This patchs allows the user to do it via Kconfig.
+An example error message will look like
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+hash-mmu: mm: Hashing failure ! EA=0x7efc00000000 access=0x8000000000000006 current=readback
+hash-mmu:     trap=0x300 vsid=0x67af789 ssize=1 base psize=14 psize 14 pte=0xc000000400000386
+readback[12260]: unhandled signal 7 at 00007efc00000000 nip 00000000100012d0 lr 000000001000127c code 2
+
+This patch address that by preventing runtime allocation of 16G hugepages in
+LPAR config. To allocate 16G hugetlb one need to kernel command line
+hugepagesz=16G hugepages=<number of 16G pages>
+
+With radix translation mode we don't run into this issue.
+
+Fixes: 4ae279c2c96a ("powerpc/mm/hugetlb: Allow runtime allocation of 16G.")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/Kconfig           | 18 +++++++++++++++---
- arch/powerpc/kernel/head_8xx.S |  4 ++--
- 2 files changed, 17 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hugetlb.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c4d6c97d7699..cf30a8f522b9 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -726,7 +726,8 @@ config THREAD_SHIFT
- 	  want. Only change this if you know what you are doing.
- 
- config ETEXT_SHIFT_BOOL
--	bool "Set custom etext alignment" if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	bool "Set custom etext alignment" if STRICT_KERNEL_RWX && \
-+					     (PPC_BOOK3S_32 || PPC_8xx)
- 	depends on ADVANCED_OPTIONS
- 	help
- 	  This option allows you to set the kernel end of text alignment. When
-@@ -738,6 +739,7 @@ config ETEXT_SHIFT_BOOL
- config ETEXT_SHIFT
- 	int "_etext shift" if ETEXT_SHIFT_BOOL
- 	range 17 28 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	range 19 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default 17 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
- 	default 19 if STRICT_KERNEL_RWX && PPC_8xx
- 	default PPC_PAGE_SHIFT
-@@ -745,8 +747,13 @@ config ETEXT_SHIFT
- 	  On Book3S 32 (603+), IBATs are used to map kernel text.
- 	  Smaller is the alignment, greater is the number of necessary IBATs.
- 
-+	  On 8xx, large pages (512kb or 8M) are used to map kernel linear
-+	  memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-+	  in that case.
-+
- config DATA_SHIFT_BOOL
--	bool "Set custom data alignment" if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	bool "Set custom data alignment" if STRICT_KERNEL_RWX && \
-+					    (PPC_BOOK3S_32 || PPC_8xx)
- 	depends on ADVANCED_OPTIONS
- 	help
- 	  This option allows you to set the kernel data alignment. When
-@@ -759,13 +766,18 @@ config DATA_SHIFT
- 	int "Data shift" if DATA_SHIFT_BOOL
- 	default 24 if STRICT_KERNEL_RWX && PPC64
- 	range 17 28 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	range 19 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default 22 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
--	default 19 if STRICT_KERNEL_RWX && PPC_8xx
-+	default 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default PPC_PAGE_SHIFT
- 	help
- 	  On Book3S 32 (603+), DBATs are used to map kernel text and rodata RO.
- 	  Smaller is the alignment, greater is the number of necessary DBATs.
- 
-+	  On 8xx, large pages (512kb or 8M) are used to map kernel linear
-+	  memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-+	  in that case.
-+
- config FORCE_MAX_ZONEORDER
- 	int "Maximum zone order"
- 	range 8 9 if PPC64 && PPC_64K_PAGES
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 01ed8f3c95c8..63f1b7eec3f0 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -416,7 +416,7 @@ InstructionTLBMiss:
- #ifndef CONFIG_PIN_TLB_TEXT
- ITLBMissLinear:
- 	mtcr	r11
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_ETEXT_SHIFT < 23
- 	patch_site	0f, patch__itlbmiss_linmem_top8
- 
- 	mfspr	r10, SPRN_SRR0
-@@ -537,7 +537,7 @@ DTLBMissIMMR:
- DTLBMissLinear:
- 	mtcr	r11
- 	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_DATA_SHIFT < 23
- 	patch_site	0f, patch__dtlbmiss_romem_top8
- 
- 0:	subis	r11, r10, (PAGE_OFFSET - 0x80000000)@ha
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index 5b0177733994..cd3f2ae0e1e4 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -35,6 +35,13 @@ static inline int hstate_get_psize(struct hstate *hstate)
+ #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+ static inline bool gigantic_page_supported(void)
+ {
++	/*
++	 * We used gigantic page reservation with hypervisor assist in some case.
++	 * We cannot use runtime allocation of gigantic pages in those platforms
++	 * This is hash translation mode LPARs.
++	 */
++	if (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled())
++		return false;
+ 	return true;
+ }
+ #endif
 -- 
-2.13.3
+2.20.1
 
