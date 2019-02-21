@@ -2,79 +2,89 @@ Return-Path: <SRS0=ZoyS=Q4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 622D9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 00:28:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C096CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:11:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 97CB420665
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 00:28:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2CAD52086C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 01:11:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="pWsD0VdG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 97CB420665
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ir3kaq5O"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2CAD52086C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444b155MYLzDqNd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 11:28:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444byX6lsLzDqMP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 12:11:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::642; helo=mail-pl1-x642.google.com;
+ envelope-from=vilhelm.gray@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="pWsD0VdG"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ir3kaq5O"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com
+ [IPv6:2607:f8b0:4864:20::642])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444ZzM304ZzDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 11:26:55 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id u9so9261180pgo.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 16:26:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=uhRUCA0MmYEEwglDwigd2zJXyv/Fpq3uG3+FonERY40=;
- b=pWsD0VdGkbty8zY6p44MbOC7jp5aCpH/G86GSF9oBw+E+xo0Ffq6oOaXsqurUMBz0O
- pMWuRLOs0czPRnN5PMKSLCdrn91OLrA/BztLScm7ZZMK/t9g2L6TN2D+5tROALrfSnRb
- CRANjVgqLBRb/KJo1jXq8Ggib4Ztzc9tVvU6s=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444bwX12wZzDqML
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 12:09:28 +1100 (AEDT)
+Received: by mail-pl1-x642.google.com with SMTP id m10so3541761plt.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Feb 2019 17:09:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=XazLWlV0OGpxiqeWsTijGEnFhzyXIMqtdbgnm6gIsFM=;
+ b=Ir3kaq5OJ38gwHc9MbQ93aEeS78o9Jb4ne68ygRM17PEd63kJOo+HfHEWvo2v6rFiJ
+ KNYERTWt52IYRarCIpcC1mVk1oyBJSudCfe/mrer7nGIXxOQfMaIBZgPLS5E0qfkrTuR
+ Ufcc+iHE+jP6nCO9LsKxSD5q7SBg9FiHsm2wuwXwH1rl5CqFTnOIsTsRYhJM99KY7ViM
+ RDtd512mwClfGkHF+cFrWtS4roAOGZlMoAUDdXJCtPTQKqqgDUvg55Iz6UpGom9V5/tM
+ rYjA6mpl3jFJNGylRInO0RX6Q8KhsMw2lnhEeJib7zATI8G10gN3XcdVfuDdZ2ooSgqO
+ Krag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=uhRUCA0MmYEEwglDwigd2zJXyv/Fpq3uG3+FonERY40=;
- b=T31b1LUVKKS2bMQvXp+g+rMpP2McFJAama4SimIMsYrS08asjJ31nXF+LShSN6i19M
- 30GhAARTcEqanr2eVZov0sc+4VuDoeHxnF1qBZYoQj1yeYB6VCLyT2XZuvEwS3MJ008o
- 7dy18fl4JaRsxhzCP6DowZ9ni0FNJZxkj9D9QGF0YXM3V38hlft0X/K0HCHW1BoNaP6y
- r2gueNXbmBcypwzzZ4+SY7W0pp9gAF7lnM5P3vEkP1S0WUioBCsIjLQwd+j2H8ZOekmu
- SkqbmEE9q42MsuKDO6+y6DcoVC65qJNaGSxNJC7RjsSnPl9/oWCcNYqjZyS8QCQAlveS
- Vhag==
-X-Gm-Message-State: AHQUAuZgLEcSOzb+h8ZI65I69FVjO920HoOOB01oPkQmvnhYx2+AimTb
- hnIw2n/fHZ6RyWZy8QciT/WsoQ==
-X-Google-Smtp-Source: AHgI3IaS04/eb+mR9xR5310/LeqPinEgijpKKKM1Q7k6rR1Xe8bzPpuO6Hxro02jIjnYI0wJz9C0uw==
-X-Received: by 2002:a63:7341:: with SMTP id d1mr17881039pgn.405.1550708812209; 
- Wed, 20 Feb 2019 16:26:52 -0800 (PST)
-Received: from localhost ([2001:44b8:802:1120:3c28:35e8:eceb:6523])
- by smtp.gmail.com with ESMTPSA id h63sm13590990pfd.148.2019.02.20.16.26.50
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=XazLWlV0OGpxiqeWsTijGEnFhzyXIMqtdbgnm6gIsFM=;
+ b=PXkjwfLF8EsmeDvfYPcgOy/5nV3cWHthIwJXk+GBrPKdfOSS5IvcBhqwxQZrTv6jGY
+ uAAAds+UzOKJB/RLIXzKIqyyyepEkA0hCgx/0eITPB8pe1N7lfPS7GhVmp6kzyvI4zWn
+ d8qFN1DmoHpGDPtPE9ym1B6QYG19dMthjtUQoWM5MwvO+8ZGVUA7nhlqZP6Lb3EDwZsj
+ i6ERAyId/wdNjvYlIme0hWRZbj1n1RcDq1/z0Y03hrVBMaOcB94s9yYUTMGPSDTls9pD
+ aqjPhTGfbreFau5bB23Qt2zlovA5Fna4M4vpkEDmNStDH1aC8A5UVeq7d2fADB90Ejdh
+ PJow==
+X-Gm-Message-State: AHQUAuaz8mbDd3UCvWGQp0zhzdl7BD4YKSBqdMy3JP2oxk1X/uSp5FEW
+ 1pV2YTkpCI5eJs3bUt8zQKY=
+X-Google-Smtp-Source: AHgI3IZYhlTQw7CzP9sWgh7rfxqpLNlgl3p6nVnERXteNg31B4yHe6oKSgrg84EyP7emiFpwT7JXKQ==
+X-Received: by 2002:a17:902:9a95:: with SMTP id
+ w21mr39384222plp.118.1550711366749; 
+ Wed, 20 Feb 2019 17:09:26 -0800 (PST)
+Received: from icarus ([2001:268:c0a3:577d:c70:4af9:86e2:2])
+ by smtp.gmail.com with ESMTPSA id d23sm26808746pfn.180.2019.02.20.17.09.16
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 20 Feb 2019 16:26:50 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/prom_init: add __init markers to all functions
-In-Reply-To: <1550641996-21937-1-git-send-email-yamada.masahiro@socionext.com>
-References: <1550641996-21937-1-git-send-email-yamada.masahiro@socionext.com>
-Date: Thu, 21 Feb 2019 11:26:47 +1100
-Message-ID: <87d0nm9ebc.fsf@linkitivity.dja.id.au>
+ Wed, 20 Feb 2019 17:09:25 -0800 (PST)
+Date: Thu, 21 Feb 2019 10:09:54 +0900
+From: William Breathitt Gray <vilhelm.gray@gmail.com>
+To: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [PATCH 5/8] iio/counter: add FlexTimer Module Quadrature decoder
+ counter driver
+Message-ID: <20190221010931.GA3471@icarus>
+References: <20190218140321.19166-1-patrick.havelange@essensium.com>
+ <20190218140321.19166-5-patrick.havelange@essensium.com>
+ <20190220164154.00547a77@archlinux>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20190220164154.00547a77@archlinux>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,158 +96,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Paul Mackerras <paulus@samba.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Lars-Peter Clausen <lars@metafoo.de>, linux-pwm@vger.kernel.org,
+ linux-iio@vger.kernel.org, Patrick Havelange <patrick.havelange@essensium.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
+ Li Yang <leoyang.li@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Esben Haabendal <esben@haabendal.dk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Masahiro,
+On Wed, Feb 20, 2019 at 04:41:54PM +0000, Jonathan Cameron wrote:
+> On Mon, 18 Feb 2019 15:03:18 +0100
+> Patrick Havelange <patrick.havelange@essensium.com> wrote:
+> 
+> > This driver exposes the counter for the quadrature decoder of the
+> > FlexTimer Module, present in the LS1021A soc.
+> > 
+> > Signed-off-by: Patrick Havelange <patrick.havelange@essensium.com>
+> > Reviewed-by: Esben Haabendal <esben@haabendal.dk>
+> Given you cc'd William, I'm guessing you know about the counter
+> subsystem effort.  I would really rather not take any drivers
+> into IIO if we have any hope of getting that upstreamed soon
+> (which I personally think we do and should!).  The reason is
+> we end up having to maintain old ABI just because someone might be using
+> it and it makes the drivers very messy.
+> 
+> I'll review as is though as may be there are some elements that will
+> cross over.
+> 
+> Comments inline.  William: Looks like a straight forward conversion if
+> it makes sense to get this lined up as part of your initial submission?
+> You have quite a few drivers so I wouldn't have said it needs to be there
+> at the start, but good to have it soon after.
+> 
+> Jonathan
 
-> It is fragile to rely on the compiler's optimization to avoid the
-> section mismatch. Some functions may not be necessarily inlined
-> when the compiler's inlining heuristic changes.
->
-> Add __init markers consistently.
->
+I agree, we should try to merge this as part of Counter subsystem
+introduction rather than as another IIO Counter driver. As we determined
+when adding support for the STM32 timers, the existing IIO Counter API
+is fundamentally unsuitable for representing counter devices. So
+regardless of how a new Counter API is merged, the existing IIO Counter
+API must be deprecated.
 
-Are you doing this with some sort of static analysis, or manually?
+Patrick, I apologize for the confusion this has caused. Would you be
+able to convert this driver to use the proposed Counter subsystem API
+from this patchset that I believe you encountered before:
+https://marc.info/?l=linux-arm-kernel&m=153229982404051
 
-Regards,
-Daniel
+Although it was last updated in October, I believe you should be able to
+rebase that Counter subsystem introduction patchset cleanly on top of
+the IIO tree (if there are any merge conflicts send me an email). Take a
+look at the generic-counter.rst file under the Documentation/driver-api/
+directory for an overview of the API; the counter drivers under the
+drivers/counter/ directory also make good references.
 
-> As for prom_getprop() and prom_getproplen(), they are marked as
-> 'inline', so inlining is guaranteed because PowerPC never enables
-> CONFIG_OPTIMIZE_INLINING. However, it would be better to leave the
-> inlining decision to the compiler. I replaced 'inline' with __init.
-> I added __maybe_unused to prom_getproplen() because it is currently
-> relying on the side-effect of 'inline'; GCC does not report
-> -Wunused-function warnings for functions with 'inline' marker.
->
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
->
-> Changes in v2:
->   - Add __maybe_unsed to prom_getproplen()
->   - Add __init to enter_prom() as well
->
->  arch/powerpc/kernel/prom_init.c | 29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index f33ff41..1bad0ac 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -138,9 +138,9 @@ extern void __start(unsigned long r3, unsigned long r4, unsigned long r5,
->  		    unsigned long r9);
->  
->  #ifdef CONFIG_PPC64
-> -extern int enter_prom(struct prom_args *args, unsigned long entry);
-> +extern int __init enter_prom(struct prom_args *args, unsigned long entry);
->  #else
-> -static inline int enter_prom(struct prom_args *args, unsigned long entry)
-> +static int __init enter_prom(struct prom_args *args, unsigned long entry)
->  {
->  	return ((int (*)(struct prom_args *))entry)(args);
->  }
-> @@ -501,19 +501,20 @@ static int __init prom_next_node(phandle *nodep)
->  	}
->  }
->  
-> -static inline int prom_getprop(phandle node, const char *pname,
-> +static int __init prom_getprop(phandle node, const char *pname,
->  			       void *value, size_t valuelen)
->  {
->  	return call_prom("getprop", 4, 1, node, ADDR(pname),
->  			 (u32)(unsigned long) value, (u32) valuelen);
->  }
->  
-> -static inline int prom_getproplen(phandle node, const char *pname)
-> +static int __init __maybe_unused prom_getproplen(phandle node,
-> +						 const char *pname)
->  {
->  	return call_prom("getproplen", 2, 1, node, ADDR(pname));
->  }
->  
-> -static void add_string(char **str, const char *q)
-> +static void __init add_string(char **str, const char *q)
->  {
->  	char *p = *str;
->  
-> @@ -523,7 +524,7 @@ static void add_string(char **str, const char *q)
->  	*str = p;
->  }
->  
-> -static char *tohex(unsigned int x)
-> +static char __init *tohex(unsigned int x)
->  {
->  	static const char digits[] __initconst = "0123456789abcdef";
->  	static char result[9] __prombss;
-> @@ -570,7 +571,7 @@ static int __init prom_setprop(phandle node, const char *nodename,
->  #define islower(c)	('a' <= (c) && (c) <= 'z')
->  #define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
->  
-> -static unsigned long prom_strtoul(const char *cp, const char **endp)
-> +static unsigned long __init prom_strtoul(const char *cp, const char **endp)
->  {
->  	unsigned long result = 0, base = 10, value;
->  
-> @@ -595,7 +596,7 @@ static unsigned long prom_strtoul(const char *cp, const char **endp)
->  	return result;
->  }
->  
-> -static unsigned long prom_memparse(const char *ptr, const char **retptr)
-> +static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
->  {
->  	unsigned long ret = prom_strtoul(ptr, retptr);
->  	int shift = 0;
-> @@ -2924,7 +2925,7 @@ static void __init fixup_device_tree_pasemi(void)
->  	prom_setprop(iob, name, "device_type", "isa", sizeof("isa"));
->  }
->  #else	/* !CONFIG_PPC_PASEMI_NEMO */
-> -static inline void fixup_device_tree_pasemi(void) { }
-> +static void __init fixup_device_tree_pasemi(void) { }
->  #endif
->  
->  static void __init fixup_device_tree(void)
-> @@ -2986,15 +2987,15 @@ static void __init prom_check_initrd(unsigned long r3, unsigned long r4)
->  
->  #ifdef CONFIG_PPC64
->  #ifdef CONFIG_RELOCATABLE
-> -static void reloc_toc(void)
-> +static void __init reloc_toc(void)
->  {
->  }
->  
-> -static void unreloc_toc(void)
-> +static void __init unreloc_toc(void)
->  {
->  }
->  #else
-> -static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
-> +static void __init __reloc_toc(unsigned long offset, unsigned long nr_entries)
->  {
->  	unsigned long i;
->  	unsigned long *toc_entry;
-> @@ -3008,7 +3009,7 @@ static void __reloc_toc(unsigned long offset, unsigned long nr_entries)
->  	}
->  }
->  
-> -static void reloc_toc(void)
-> +static void __init reloc_toc(void)
->  {
->  	unsigned long offset = reloc_offset();
->  	unsigned long nr_entries =
-> @@ -3019,7 +3020,7 @@ static void reloc_toc(void)
->  	mb();
->  }
->  
-> -static void unreloc_toc(void)
-> +static void __init unreloc_toc(void)
->  {
->  	unsigned long offset = reloc_offset();
->  	unsigned long nr_entries =
-> -- 
-> 2.7.4
+If you have any difficulties understanding the API, or any other
+troubles, don't hesitate to ask. Hopefully, I've made the documentation
+clear enough to make the conversion of this driver quick and easy -- and
+if not, then it's something I need to fix, so let me know. :-)
+
+William Breathitt Gray
