@@ -3,24 +3,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDA49C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 07:43:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22858C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:07:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03F6720651
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 07:43:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3F8022086C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:07:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Kt+bScOe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03F6720651
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="g3hootrR"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F8022086C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444mgb3RLHzDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 18:43:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 444nBq1tYjzDqP7
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:07:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,60 +28,52 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Kt+bScOe"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="g3hootrR"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444mds2Dw1zDqLp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 18:42:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444n7m3M4BzDqNH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 19:04:52 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 444mdm65P2z9tyFM;
- Thu, 21 Feb 2019 08:42:20 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 444n7h1rmjz9vJg2;
+ Thu, 21 Feb 2019 09:04:48 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Kt+bScOe; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=g3hootrR; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id wfcoxRKWw_2l; Thu, 21 Feb 2019 08:42:20 +0100 (CET)
+ with ESMTP id ckGBye0dA1xz; Thu, 21 Feb 2019 09:04:48 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 444mdm4h4Rz9tyF4;
- Thu, 21 Feb 2019 08:42:20 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 444n7h06bQz9vJg1;
+ Thu, 21 Feb 2019 09:04:48 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550734940; bh=lWdc6nz5IJrMOKAwLhVS/NTvPYy+zFyuoVYBhW7fWHo=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=Kt+bScOeGKyudtsvAz0yBm1W41cJqRPY2E1Fv5mKxux175NlucQh0F12Jaml3/fmc
- KjNHAPep1+05SM9YZaUDQrHlAoYbi28fvlewdsxeMA6erFFZvrbImmP8ArErl2xfXO
- 09D3yjqzrQJYyqru8NNXUuNOtKI5boL45NbCBfJM=
+ t=1550736288; bh=fswdFfxNLeZje+Mefe5CPvKUpRrMsJkYWjQMLbBh3XU=;
+ h=From:Subject:To:Cc:Date:From;
+ b=g3hootrRuszjUhJ4ztMYP5/J1VW6aP3847l1+kMKql1coyXn2hm+fB1BbW6f+/GUm
+ J7gp5t1jvVaViIVcTYHPtcjj0EV6z0VQaloiHjU8C+Sd8Y3nXY2vgLcOmkKnLwvT0J
+ MKmwVj+ypL9Vxvaw//0HQiFWshp85tgOjLI1Qz24=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 93E2F8B78F;
- Thu, 21 Feb 2019 08:42:21 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EF7948B78F;
+ Thu, 21 Feb 2019 09:04:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id DO_TCIqwh4DS; Thu, 21 Feb 2019 08:42:21 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 263148B75B;
- Thu, 21 Feb 2019 08:42:21 +0100 (CET)
-Subject: Re: [PATCH v3 00/16] powerpc/32: Use BATs/LTLBs for STRICT_KERNEL_RWX
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, j.neuschaefer@gmx.net
-References: <cover.1550648295.git.christophe.leroy@c-s.fr>
- <87mumpx68h.fsf@concordia.ellerman.id.au>
- <82af8805-3e2a-cfb3-9df6-d883b50ff460@c-s.fr>
+ with ESMTP id GvNplbmqy_-v; Thu, 21 Feb 2019 09:04:48 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id BC6CA8B75B;
+ Thu, 21 Feb 2019 09:04:48 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 80C796E866; Thu, 21 Feb 2019 08:04:48 +0000 (UTC)
+Message-Id: <cover.1550692943.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e46cf0f8-6227-bb9c-b435-c5dbc23ce71c@c-s.fr>
-Date: Thu, 21 Feb 2019 08:42:20 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
-MIME-Version: 1.0
-In-Reply-To: <82af8805-3e2a-cfb3-9df6-d883b50ff460@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v4 00/16] powerpc/32: Use BATs/LTLBs for STRICT_KERNEL_RWX
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
+ j.neuschaefer@gmx.net
+Date: Thu, 21 Feb 2019 08:04:48 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,72 +90,69 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The purpose of this serie is to:
+- use BATs with STRICT_KERNEL_RWX on book3s (See patch 13 for details.)
+- use LTLBs with STRICT_KERNEL_RWX on 8xx (See patch 15 for a few details.)
 
+v4:
+- Fixed mapin_ram() to only map mem below total_lowmem (patch 4)
+- Fixed sparse warning by making __mmu_mapin_ram static (patch 13)
 
-Le 21/02/2019 à 07:31, Christophe Leroy a écrit :
-> 
-> 
-> Le 21/02/2019 à 02:47, Michael Ellerman a écrit :
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>
->>> The purpose of this serie is to:
->>> - use BATs with STRICT_KERNEL_RWX on book3s (See patch 13 for details.)
->>> - use LTLBs with STRICT_KERNEL_RWX on 8xx (See patch 15 for a few 
->>> details.)
->>
->> This doesn't boot qemu-mac99 for me:
->>
->>    spawn ~/src/qemu/ppc-softmmu/qemu-system-ppc -nographic -vga none 
->> -M mac99 -m 1G -kernel build/vmlinux -initrd ppc32-initrd.gz -append 
->> console=ttyPZ0 init=/bin/sh
->>    >> =============================================================
->>    >> OpenBIOS 1.1 [Feb 15 2019 10:05]
->>    >> Configuration device id QEMU version 1 machine id 1
->>    >> CPUs: 1
->>    >> Memory: 1024M
->>    >> UUID: 00000000-0000-0000-0000-000000000000
->>    >> CPU type PowerPC,G4
->>    milliseconds isn't unique.
->>    Welcome to OpenBIOS v1.1 built on Feb 15 2019 10:05
->>    >> [ppc] Kernel already loaded (0x01000000 + 0x00c2c338) (initrd 
->> 0x01d2d000 + 0x007e72f0)
->>    >> [ppc] Kernel command line: console=ttyPZ0 init=/bin/sh
->>    >> switching to new context:
->>    OF stdout device is: /pci@f2000000/mac-io@c/escc@13000/ch-a@13020
->>    Preparing to boot Linux version 
->> 5.0.0-rc2-gcc-8.2.0-00125-g4fcb83ca7936 (michael@ka4) (gcc version 
->> 8.2.0 (Buildroot 2018.11-rc2-00003-ga0787e9)) #724 Thu Feb 21 12:03:14 
->> AEDT 2019
->>    Detected machine type: 00000400
->>    command line:
->>    memory layout at init:
->>      memory_limit : 00000000 (16 MB aligned)
->>      alloc_bottom : 02515000
->>      alloc_top    : 30000000
->>      alloc_top_hi : 40000000
->>      rmo_top      : 30000000
->>      ram_top      : 40000000
->>    copying OF device tree...
->>    Building dt strings...
->>    Building dt structure...
->>    Device tree strings 0x02516000 -> 0x025150a4
->>    Device tree struct  0x02517000 -> 0x3fde7eb0
->>    Quiescing Open Firmware ...
->>    Booting Linux via __start() @ 0x01000000 ...
->>    FAIL! Booting BE pmac32
->>
->>
->> That's pmac32 defconfig ish.
->> I haven't had time to debug it further sorry.
->>
-> 
-> Ok. I boots fine without the '-m 1G'.
-> 
-> I'll find out why.
-> 
+v3:
+- Reordered to avoid build failure due to setibat() not being used for several steps in the serie.
+Now the patch using setibat() is next to the one adding setibat().
+- Fixed mmu_mapin_ram() in patch 3 to return base in all cases, thanks Jonathan for the test
+- Fixed build failure on 8xx when CONFIG_PERF_EVENTS is set due to too many instructions in Exception 0x1200
+- Made 8M alignment for data the default on 8xx when STRICT_KERNEL_RWX is selected.
+- Added patch 1 to not set additionnal bat on the wii when requesting nobats. The only purpose of this patch
+is to be backported, as this function is removed later in the series.
 
-Doesn't boot because it maps memory above total_lowmem.
+v2:
+- Fix patch 2 (was patch 3 in v1) based on feedback from Jonathan.
+- Added support for 8xx with LTLBs.
+- Added systematic population of pagetables for Abatron BDI.
 
-I'll fix it.
+Christophe Leroy (16):
+  powerpc/wii: properly disable use of BATs when requested.
+  powerpc/mm/32: add base address to mmu_mapin_ram()
+  powerpc/mm/32s: rework mmu_mapin_ram()
+  powerpc/mm/32s: use generic mmu_mapin_ram() for all blocks.
+  powerpc/32: always populate page tables for Abatron BDI.
+  powerpc/wii: remove wii_mmu_mapin_mem2()
+  powerpc/mm/32s: use _PAGE_EXEC in setbat()
+  powerpc/32: add helper to write into segment registers
+  powerpc/mmu: add is_strict_kernel_rwx() helper
+  powerpc/kconfig: define PAGE_SHIFT inside Kconfig
+  powerpc/kconfig: define CONFIG_DATA_SHIFT and CONFIG_ETEXT_SHIFT
+  powerpc/mm/32s: add setibat() clearibat() and update_bats()
+  powerpc/mm/32s: Use BATs for STRICT_KERNEL_RWX
+  powerpc/kconfig: make _etext and data areas alignment configurable on
+    Book3s 32
+  powerpc/8xx: don't disable large TLBs with CONFIG_STRICT_KERNEL_RWX
+  powerpc/kconfig: make _etext and data areas alignment configurable on
+    8xx
 
-Christophe
+ arch/powerpc/Kconfig                          |  60 +++++++++
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   2 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |  11 ++
+ arch/powerpc/include/asm/mmu.h                |  11 ++
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   3 +-
+ arch/powerpc/include/asm/page.h               |  13 +-
+ arch/powerpc/include/asm/reg.h                |   5 +
+ arch/powerpc/kernel/head_32.S                 |  35 +++++
+ arch/powerpc/kernel/head_8xx.S                |  54 ++++++--
+ arch/powerpc/kernel/vmlinux.lds.S             |   9 +-
+ arch/powerpc/mm/40x_mmu.c                     |   2 +-
+ arch/powerpc/mm/44x_mmu.c                     |   2 +-
+ arch/powerpc/mm/8xx_mmu.c                     |  33 ++++-
+ arch/powerpc/mm/fsl_booke_mmu.c               |   2 +-
+ arch/powerpc/mm/init_32.c                     |   6 +-
+ arch/powerpc/mm/mmu_decl.h                    |  10 +-
+ arch/powerpc/mm/pgtable_32.c                  |  42 +++---
+ arch/powerpc/mm/ppc_mmu_32.c                  | 180 ++++++++++++++++++++++----
+ arch/powerpc/platforms/embedded6xx/wii.c      |  24 ----
+ 19 files changed, 393 insertions(+), 111 deletions(-)
+
+-- 
+2.13.3
+
