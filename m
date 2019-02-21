@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BBE0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09D1DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:26:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7FF6420836
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:24:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7E66820836
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:26:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XQW+54wH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7FF6420836
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="fShZDxlX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E66820836
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4454DF538MzDqP0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:24:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4454G63v4LzDqNf
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:26:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,55 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="XQW+54wH"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="fShZDxlX"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4453sr0jbwzDqRq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4453ss14B4zDqRw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:49 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4453sn0Jmwz9v6l6;
- Thu, 21 Feb 2019 20:08:45 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4453sp0RDnz9v6l2;
+ Thu, 21 Feb 2019 20:08:46 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=XQW+54wH; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=fShZDxlX; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id iX7qrrwEcELT; Thu, 21 Feb 2019 20:08:44 +0100 (CET)
+ with ESMTP id H2m_M2fMBEZz; Thu, 21 Feb 2019 20:08:45 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4453sm6DlYz9v6l5;
- Thu, 21 Feb 2019 20:08:44 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4453sn6VGYz9v6l1;
+ Thu, 21 Feb 2019 20:08:45 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550776124; bh=ccf0q8MxveX5A/kD+EyhGHMgyOOsoAgRMM6RQCBw488=;
+ t=1550776125; bh=4BFSbPMUv8srPIHFQh77ZJKp9w0Q9MQxtL2VVB5bt/c=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=XQW+54wHmUiaRFKUF+D/fBbwmgxHedz3leUsTByMVqFevpJtMirejjPNwQaUv4KA8
- +uEMhDPz85UgoLjBb8QkAvn4vD1HYVoKMeg0OU04/CWd+ALYzBJtVkoTXWNrXIbm8v
- 2B6cXPGoCwZjzM2yfmfoguApjS2UbJqqO0H5QWc4=
+ b=fShZDxlXXgyaK5YSKPwWYFHEHo/ujA+2e20uoW/LLlEnhqKCtHeTsu9eVQ6etcslq
+ kmY29ElOVE5daHBy+hf4kMxykjDw5piR5sMAzMZsOpYOmVV3LzuN8L1GVdxmhyQXRe
+ 5bWfv3wjUqN6H0MW3wozD+m9mrguefH5F411uqxw=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D88078B852;
- Thu, 21 Feb 2019 20:08:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id E32DA8B86A;
+ Thu, 21 Feb 2019 20:08:45 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 0AQ4MwL2JTi8; Thu, 21 Feb 2019 20:08:44 +0100 (CET)
+ with ESMTP id N9nvQkJzgO0u; Thu, 21 Feb 2019 20:08:45 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AFF668B86B;
- Thu, 21 Feb 2019 20:08:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B70158B852;
+ Thu, 21 Feb 2019 20:08:45 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 88A5D6EF61; Thu, 21 Feb 2019 19:08:44 +0000 (UTC)
-Message-Id: <ea9f411218ba70b2a6b34b335ac6aee6c610d8b8.1550775950.git.christophe.leroy@c-s.fr>
+ id 8DD676EF61; Thu, 21 Feb 2019 19:08:45 +0000 (UTC)
+Message-Id: <0c85871f259073ab3d9db74ef4f0f2cdb36907e3.1550775950.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1550775950.git.christophe.leroy@c-s.fr>
 References: <cover.1550775950.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 08/16] powerpc/32: add helper to write into segment
- registers
+Subject: [PATCH v5 09/16] powerpc/mmu: add is_strict_kernel_rwx() helper
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 21 Feb 2019 19:08:44 +0000 (UTC)
+Date: Thu, 21 Feb 2019 19:08:45 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,30 +92,57 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch add an helper which wraps 'mtsrin' instruction
-to write into segment registers.
+Add a helper to know whether STRICT_KERNEL_RWX is enabled.
+
+This is based on rodata_enabled flag which is defined only
+when CONFIG_STRICT_KERNEL_RWX is selected.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/reg.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/include/asm/mmu.h | 11 +++++++++++
+ arch/powerpc/mm/init_32.c      |  4 +---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1c98ef1f2d5b..a70cbaf5c26f 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1425,6 +1425,11 @@ static inline void msr_check_and_clear(unsigned long bits)
- #define mfsrin(v)	({unsigned int rval; \
- 			asm volatile("mfsrin %0,%1" : "=r" (rval) : "r" (v)); \
- 					rval;})
-+
-+static inline void mtsrin(u32 val, u32 idx)
-+{
-+	asm volatile("mtsrin %0, %1" : : "r" (val), "r" (idx));
-+}
- #endif
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 6d22a8e78fe2..d34ad1657d7b 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -289,6 +289,17 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm, unsigned long address)
+ }
+ #endif /* CONFIG_PPC_MEM_KEYS */
  
- #define proc_trap()	asm volatile("trap")
++#ifdef CONFIG_STRICT_KERNEL_RWX
++static inline bool strict_kernel_rwx_enabled(void)
++{
++	return rodata_enabled;
++}
++#else
++static inline bool strict_kernel_rwx_enabled(void)
++{
++	return false;
++}
++#endif
+ #endif /* !__ASSEMBLY__ */
+ 
+ /* The kernel use the constants below to index in the page sizes array.
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index 3e59e5d64b01..ee5a430b9a18 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -108,12 +108,10 @@ static void __init MMU_setup(void)
+ 		__map_without_bats = 1;
+ 		__map_without_ltlbs = 1;
+ 	}
+-#ifdef CONFIG_STRICT_KERNEL_RWX
+-	if (rodata_enabled) {
++	if (strict_kernel_rwx_enabled()) {
+ 		__map_without_bats = 1;
+ 		__map_without_ltlbs = 1;
+ 	}
+-#endif
+ }
+ 
+ /*
 -- 
 2.13.3
 
