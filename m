@@ -2,51 +2,51 @@ Return-Path: <SRS0=ZoyS=Q4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83601C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 13:53:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D08CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 14:16:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C603A2084F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 13:52:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C603A2084F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id AE9722070B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 14:16:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AE9722070B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444wsP5LLwzDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:52:57 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444wqG06qDzDqQ8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 00:51:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 444wqD2k07z9rxp;
- Fri, 22 Feb 2019 00:51:04 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, j.neuschaefer@gmx.net
-Subject: Re: [PATCH v4 04/16] powerpc/mm/32s: use generic mmu_mapin_ram() for
- all blocks.
-In-Reply-To: <790cf44815f8c56b3c600560bad9139f63be9f68.1550692943.git.christophe.leroy@c-s.fr>
-References: <cover.1550692943.git.christophe.leroy@c-s.fr>
- <790cf44815f8c56b3c600560bad9139f63be9f68.1550692943.git.christophe.leroy@c-s.fr>
-Date: Fri, 22 Feb 2019 00:51:01 +1100
-Message-ID: <87o9755jy2.fsf@concordia.ellerman.id.au>
+	by lists.ozlabs.org (Postfix) with ESMTP id 444xNY4X6hzDqRP
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 01:16:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=will.deacon@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 444xLH5gFzzDq83
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:14:30 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D9B1815AB;
+ Thu, 21 Feb 2019 06:14:28 -0800 (PST)
+Received: from fuggles.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com
+ [10.72.51.249])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 752693F575;
+ Thu, 21 Feb 2019 06:14:23 -0800 (PST)
+Date: Thu, 21 Feb 2019 14:14:20 +0000
+From: Will Deacon <will.deacon@arm.com>
+To: Waiman Long <longman@redhat.com>
+Subject: Re: [PATCH v4 3/3] locking/rwsem: Optimize down_read_trylock()
+Message-ID: <20190221141420.GC12696@fuggles.cambridge.arm.com>
+References: <1550095217-12047-1-git-send-email-longman@redhat.com>
+ <1550095217-12047-4-git-send-email-longman@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1550095217-12047-4-git-send-email-longman@redhat.com>
+User-Agent: Mutt/1.11.1+86 (6f28e57d73f2) ()
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,81 +58,124 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, linux-mips@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, Davidlohr Bueso <dave@stgolabs.net>,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
+ linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-parisc@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-
-> Now that mmu_mapin_ram() is able to handle other blocks
-> than the one starting at 0, the WII can use it for all
-> its blocks.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Wed, Feb 13, 2019 at 05:00:17PM -0500, Waiman Long wrote:
+> Modify __down_read_trylock() to optimize for an unlocked rwsem and make
+> it generate slightly better code.
+> 
+> Before this patch, down_read_trylock:
+> 
+>    0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
+>    0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
+>    0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
+>    0x000000000000000b <+11>:    mov    %rdx,%rax
+>    0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
+>    0x0000000000000013 <+19>:    cmp    %rax,%rdx
+>    0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
+>    0x0000000000000018 <+24>:    mov    (%rdi),%rdx
+>    0x000000000000001b <+27>:    test   %rdx,%rdx
+>    0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
+>    0x0000000000000020 <+32>:    xor    %eax,%eax
+>    0x0000000000000022 <+34>:    retq
+>    0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
+>    0x000000000000002c <+44>:    or     $0x3,%rax
+>    0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
+>    0x0000000000000034 <+52>:    mov    $0x1,%eax
+>    0x0000000000000039 <+57>:    retq
+> 
+> After patch, down_read_trylock:
+> 
+>    0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
+>    0x0000000000000005 <+5>:	xor    %eax,%eax
+>    0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
+>    0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
+>    0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
+>    0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
+>    0x000000000000001b <+27>:	or     $0x3,%rax
+>    0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
+>    0x0000000000000023 <+35>:	mov    $0x1,%eax
+>    0x0000000000000028 <+40>:	retq
+>    0x0000000000000029 <+41>:	test   %rax,%rax
+>    0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
+>    0x000000000000002e <+46>:	xor    %eax,%eax
+>    0x0000000000000030 <+48>:	retq
+> 
+> By using a rwsem microbenchmark, the down_read_trylock() rate (with a
+> load of 10 to lengthen the lock critical section) on a x86-64 system
+> before and after the patch were:
+> 
+>                  Before Patch    After Patch
+>    # of Threads     rlock           rlock
+>    ------------     -----           -----
+>         1           14,496          14,716
+>         2            8,644           8,453
+> 	4            6,799           6,983
+> 	8            5,664           7,190
+> 
+> On a ARM64 system, the performance results were:
+> 
+>                  Before Patch    After Patch
+>    # of Threads     rlock           rlock
+>    ------------     -----           -----
+>         1           23,676          24,488
+>         2            7,697           9,502
+>         4            4,945           3,440
+>         8            2,641           1,603
+> 
+> For the uncontended case (1 thread), the new down_read_trylock() is a
+> little bit faster. For the contended cases, the new down_read_trylock()
+> perform pretty well in x86-64, but performance degrades at high
+> contention level on ARM64.
+> 
+> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Waiman Long <longman@redhat.com>
 > ---
->  arch/powerpc/mm/pgtable_32.c | 27 +++++++++------------------
->  1 file changed, 9 insertions(+), 18 deletions(-)
->
-> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-> index b4858818523f..2bf9bf8867d4 100644
-> --- a/arch/powerpc/mm/pgtable_32.c
-> +++ b/arch/powerpc/mm/pgtable_32.c
-> @@ -254,26 +254,17 @@ static void __init __mapin_ram_chunk(unsigned long =
-offset, unsigned long top)
->=20=20
->  void __init mapin_ram(void)
+>  kernel/locking/rwsem.h | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
+> index 45ee002..1f5775a 100644
+> --- a/kernel/locking/rwsem.h
+> +++ b/kernel/locking/rwsem.h
+> @@ -174,14 +174,17 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
+>  
+>  static inline int __down_read_trylock(struct rw_semaphore *sem)
 >  {
-> -	unsigned long s, top;
-> -
-> -#ifndef CONFIG_WII
-> -	top =3D total_lowmem;
-> -	s =3D mmu_mapin_ram(0, top);
-> -	__mapin_ram_chunk(s, top);
-> -#else
-> -	if (!wii_hole_size) {
-> -		s =3D mmu_mapin_ram(0, total_lowmem);
-> -		__mapin_ram_chunk(s, total_lowmem);
-> -	} else {
-> -		top =3D wii_hole_start;
-> -		s =3D mmu_mapin_ram(0, top);
-> -		__mapin_ram_chunk(s, top);
-> +	struct memblock_region *reg;
-> +
-> +	for_each_memblock(memory, reg) {
-> +		unsigned long base =3D reg->base;
-> +		unsigned long top =3D min(base + reg->size, (unsigned long)total_lowme=
-m);
+> -	long tmp;
+> +	/*
+> +	 * Optimize for the case when the rwsem is not locked at all.
+> +	 */
+> +	long tmp = RWSEM_UNLOCKED_VALUE;
+>  
+> -	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
+> -		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
+> -				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
+> +	do {
+> +		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+> +					tmp + RWSEM_ACTIVE_READ_BIAS)) {
+>  			return 1;
+>  		}
+> -	}
+> +	} while (tmp >= 0);
 
-This gives me:
+Nit: but I guess that should be RWSEM_UNLOCKED_VALUE instead of 0.
 
-In file included from ../arch/powerpc/mm/pgtable_32.c:22:
-../arch/powerpc/mm/pgtable_32.c: In function =E2=80=98mapin_ram=E2=80=99:
-../include/linux/kernel.h:846:29: error: comparison of distinct pointer typ=
-es lacks a cast [-Werror]
-   (!!(sizeof((typeof(x) *)1 =3D=3D (typeof(y) *)1)))
-                             ^~
-../include/linux/kernel.h:860:4: note: in expansion of macro =E2=80=98__typ=
-echeck=E2=80=99
-   (__typecheck(x, y) && __no_side_effects(x, y))
-    ^~~~~~~~~~~
-../include/linux/kernel.h:870:24: note: in expansion of macro =E2=80=98__sa=
-fe_cmp=E2=80=99
-  __builtin_choose_expr(__safe_cmp(x, y), \
-                        ^~~~~~~~~~
-../include/linux/kernel.h:879:19: note: in expansion of macro =E2=80=98__ca=
-reful_cmp=E2=80=99
- #define min(x, y) __careful_cmp(x, y, <)
-                   ^~~~~~~~~~~~~
-../arch/powerpc/mm/pgtable_32.c:261:23: note: in expansion of macro =E2=80=
-=98min=E2=80=99
-   unsigned long top =3D min(base + reg->size, (unsigned long)total_lowmem);
-                       ^~~
-cc1: all warnings being treated as errors
-../scripts/Makefile.build:276: recipe for target 'arch/powerpc/mm/pgtable_3=
-2.o' failed
-
-
-For 44x/bamboo_defconfig.
-
-cheers
+Will
