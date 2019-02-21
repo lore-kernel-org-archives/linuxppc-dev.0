@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01890C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 22:28:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 283A4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 22:29:50 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 739FF20836
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 22:28:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9BC6220836
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 22:29:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="C48jI7pe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 739FF20836
+	dkim=pass (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="SCE35DjS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9BC6220836
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4458Hl3mZgzDqBV
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 09:28:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4458Kl5smPzDqMs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 09:29:47 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4458DT5qlrzDqTC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 09:25:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4458Hd29ZLzDqSj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 09:27:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="C48jI7pe"; dkim-atps=neutral
+ header.b="SCE35DjS"; dkim-atps=neutral
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
  SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 4458DT4BCMz9s6w;
- Fri, 22 Feb 2019 09:25:13 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPSA id 4458Hd05Pbz9s8m;
+ Fri, 22 Feb 2019 09:27:57 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1550787913;
- bh=eAXJr57ufS6P2ldxEApeayAtZo9CDAi9SD3WmE6B3V4=;
+ s=201702; t=1550788077;
+ bh=BwxWgQboLjV5OYmx2QFJypOm12VHnn4vyzoPFS3il7k=;
  h=Date:From:To:Cc:Subject:From;
- b=C48jI7peM0j7sj0JAWVlpboLaEv0JeQB8dLW5JGBIe0p+23BCaNBWaYeK3nibEaTI
- ZMhAt9mjdYqDFrJR73vZghvUIOz44NSFsHNlG7Xt0rF+1vfVLNraxVbgIoXsuFcjXU
- B+7e9FY6qa8doKR7eQGNaIfdihF2lFwAq2go6YwJdJA2SrUW2GcTQfAYgSMtJVkhG8
- CdomUd+Mq46QlbmQbD2nBVS636AiyxUFGHMdEQUvf1eMbqE1IzYr338hIDpaRnkAyp
- jFrZvumJLDlShIgGI0/oh5+x2C3Ftyp+wWiQeoVlzTeqed8EvhdgbjBJ9SMuzldmQy
- JhYrDokk9BYpA==
-Date: Fri, 22 Feb 2019 09:25:13 +1100
+ b=SCE35DjSp0aQlontuJf2DVRTYFBXpLZC1QjJdR6Z8W/nMsdXa2C94dARu6s6qcptc
+ 953xfiDrydkgmnS2fKQobL+R05Hga3HRJqspzyR9O/rRezjmYUSlg5vUFFlxUAGRLu
+ WNYXUQf3yoR1YIUvv8L7CxHuRHF8Ct1wVqsqNABg8qHK/rk5dO+mTsC8+DM8tdTtSU
+ 6mhknrtegfgZ+1+20cs8Zx9jfw64jl8j/oiRO4YmEJeBQU8YdAIPQY1LFT+0gb2fJa
+ TeXs+YgIBRaE7087e1bahwctRMKBO6x7YeXJlIGoT7ojwViEWgEAwPTqxHmST3ROnB
+ zZb4IalxmVYKQ==
+Date: Fri, 22 Feb 2019 09:27:56 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
  <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
  Christoph Hellwig <hch@lst.de>
 Subject: linux-next: manual merge of the powerpc tree with the dma-mapping tree
-Message-ID: <20190222092513.6fc2a708@canb.auug.org.au>
+Message-ID: <20190222092756.242ea484@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/zNp4Tra4Z_ikkK3FNtEyRzz"; protocol="application/pgp-signature"
+ boundary="Sig_/xSTNhqAJGIWR29=5si.DuMS"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,7 +75,7 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/zNp4Tra4Z_ikkK3FNtEyRzz
+--Sig_/xSTNhqAJGIWR29=5si.DuMS
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
@@ -83,68 +83,46 @@ Hi all,
 
 Today's linux-next merge of the powerpc tree got a conflict in:
 
-  kernel/dma/Kconfig
+  arch/powerpc/kernel/dma.c
 
-between commits:
+between commit:
 
-  ff4c25f26a71 ("dma-mapping: improve selection of dma_declare_coherent ava=
-ilability")
+  cfced786969c ("dma-mapping: remove the default map_resource implementatio=
+n")
 
 from the dma-mapping tree and commit:
 
-  11ddce15451e ("dma-mapping, powerpc: simplify the arch dma_set_mask overr=
-ide")
+  68005b67d15a ("powerpc/dma: use the generic direct mapping bypass")
 
 from the powerpc tree.
 
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
+I fixed it up (the latter removed the file, so I did that) and can
+carry the fix as necessary. This is now fixed as far as linux-next is
+concerned, but any non trivial conflicts should be mentioned to your
+upstream maintainer when your tree is submitted for merging.  You may
+also want to consider cooperating with the maintainer of the conflicting
+tree to minimise any particularly complex conflicts.
+
+
 
 --=20
 Cheers,
 Stephen Rothwell
 
-diff --cc kernel/dma/Kconfig
-index 212aac7c675f,0711d18645de..000000000000
---- a/kernel/dma/Kconfig
-+++ b/kernel/dma/Kconfig
-@@@ -16,13 -16,10 +16,16 @@@ config ARCH_DMA_ADDR_T_64BI
-  config ARCH_HAS_DMA_COHERENCE_H
-  	bool
- =20
-+ config ARCH_HAS_DMA_SET_MASK
-+ 	bool
-+=20
- -config HAVE_GENERIC_DMA_COHERENT
- +config DMA_DECLARE_COHERENT
- +	bool
- +
- +config ARCH_HAS_SETUP_DMA_OPS
- +	bool
- +
- +config ARCH_HAS_TEARDOWN_DMA_OPS
-  	bool
- =20
-  config ARCH_HAS_SYNC_DMA_FOR_DEVICE
-
---Sig_/zNp4Tra4Z_ikkK3FNtEyRzz
+--Sig_/xSTNhqAJGIWR29=5si.DuMS
 Content-Type: application/pgp-signature
 Content-Description: OpenPGP digital signature
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxvJUkACgkQAVBC80lX
-0GxiSwf/QpkrhZ2Ci6hLUg8KmKSjZGbd/tA2zE9R7AFWwQhExWsOJ0iHhdHxF2lG
-KzY5YGEURbnEca9Q3pIUg4IUn14Fk97/ZK2S/EClyMku95wszM2eZL3gZOFBM5ZZ
-ByaXE3Z+AUrJhov73SDJrC6Am9akrCR4WERVle66mNZ4GsoGVqOvRmS8R/yxZgC9
-1pVkcru/IMaLW3uq2SlPwadUNcl4nv0rYZKGPUThraKz4zjWgpuEScbvCzvaIeLC
-+IrLVQU+RIqOzWleqUaO0PrV5jevcsvsUl2AoxDEZWN/W/evx7P6+oDy2/J5sRCH
-iyGDSsdCrp4K5fYtdmULWLi59xrBxg==
-=bKYM
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxvJewACgkQAVBC80lX
+0GxbmQf+NAs/oRsBxAr/Ipe9K32wdO4LWuYjEznzPv53Q8YaK5LpmSFM2xqcQGFX
+8b1/POspGA5KmE4Ua8gNILZmF/h61Lu58nusKMdEg1ju7JwDUjCVcBDOcp0GHGbs
+K6u2z7oLeUH4f/g6cVThWziMoKu/8FQOG/weCUbRDZtUpex0Vndt9niCc+59U/ZV
+kUEernFXFCalXFFTBC+tayDLsh/819/Vq0jEcfZ81vPz7ObWC1Utw+6zerctw8hd
+T6N9demZeNtV3SAN+ecnDxx3VmQOWZ/a3x97md86T/CDCGt0BK7hEfoQzwZHsa+f
+b6UDZ33hX5Icsn9SAiAe5eew62doHg==
+=d8NK
 -----END PGP SIGNATURE-----
 
---Sig_/zNp4Tra4Z_ikkK3FNtEyRzz--
+--Sig_/xSTNhqAJGIWR29=5si.DuMS--
