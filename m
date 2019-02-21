@@ -6,32 +6,32 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1591C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 17:50:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E531C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 17:52:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 441C820818
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 17:50:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 441C820818
+	by mail.kernel.org (Postfix) with ESMTPS id 00ED120818
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 17:52:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00ED120818
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44527H2NpdzDqM4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 04:50:19 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44529R0K0vzDqBV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 04:52:11 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4451qM5G8ZzDqQb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:36:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4451qS12qNzDqM6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:36:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4451qM4KpJz8tD8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:36:31 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4451qR3SdHz8vsp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:36:35 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 4451qM34jYz9sCH; Fri, 22 Feb 2019 04:36:31 +1100 (AEDT)
+ id 4451qQ6Ms4z9sCH; Fri, 22 Feb 2019 04:36:34 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -42,43 +42,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4451qL6HWQz9s4Y
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2019 04:36:30 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 4451qN343rz9s4Y
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2019 04:36:32 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1LHZxr0049306
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:36:29 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qt00t1yb6-1
+ x1LHaNiE100043
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:36:30 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qsx54yq4u-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:36:28 -0500
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:36:29 -0500
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Thu, 21 Feb 2019 17:36:27 -0000
+ Thu, 21 Feb 2019 17:36:11 -0000
 Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 21 Feb 2019 17:36:25 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
+ Thu, 21 Feb 2019 17:36:09 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
  by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1LHaN8D25952368
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 21 Feb 2019 17:36:23 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 90B92A404D;
- Thu, 21 Feb 2019 17:36:23 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0FBBEA4055;
- Thu, 21 Feb 2019 17:36:22 +0000 (GMT)
+ x1LHa7QL58589310
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 21 Feb 2019 17:36:08 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D61244C046;
+ Thu, 21 Feb 2019 17:36:07 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6B6CC4C04E;
+ Thu, 21 Feb 2019 17:36:06 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.199.32.125])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 21 Feb 2019 17:36:21 +0000 (GMT)
-Subject: [PATCH 09/18] powernv/fadump: process architected register state
- data provided by firmware
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 21 Feb 2019 17:36:06 +0000 (GMT)
+Subject: [PATCH 07/18] powerpc/fadump: consider reserved ranges while
+ reserving memory
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
@@ -86,18 +86,18 @@ To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Vasant Hegde <hegdevasant@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Stewart Smith <stewart@linux.ibm.com>
-Date: Thu, 21 Feb 2019 23:06:20 +0530
+Date: Thu, 21 Feb 2019 23:06:05 +0530
 In-Reply-To: <155077048463.21014.13936958730316555495.stgit@hbathini.in.ibm.com>
 References: <155077048463.21014.13936958730316555495.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19022117-4275-0000-0000-0000031256F1
+x-cbid: 19022117-0012-0000-0000-000002F890D3
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022117-4276-0000-0000-000038208C07
-Message-Id: <155077058092.21014.13524237224166952622.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19022117-0013-0000-0000-00002130280E
+Message-Id: <155077056536.21014.379253913377369103.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-21_11:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -121,342 +121,227 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Commit 0962e8004e97 ("powerpc/prom: Scan reserved-ranges node for
+memory reservations") enabled support to parse reserved-ranges DT
+node and reserve kernel memory falling in these ranges for F/W
+purposes. Ensure memory in these ranges is not overlapped with
+memory reserved for FADump.
 
-Firmware provides architected register state data at the time of crash.
-Process this data and build CPU notes to append to ELF core.
+Also, use a smaller offset, instead of the size of the memory to
+be reserved, by which to skip memory before making another attempt
+at reserving memory, after the previous attempt to reserve memory
+for FADump failed due to memory holes and/or reserved ranges, to
+reduce the likelihood of memory reservation failure.
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h          |   23 +++
- arch/powerpc/kernel/fadump_internal.h        |    3 
- arch/powerpc/platforms/powernv/opal-fadump.c |  187 ++++++++++++++++++++++++--
- arch/powerpc/platforms/powernv/opal-fadump.h |    4 +
- 4 files changed, 206 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/fadump.c          |  137 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/fadump_internal.h |   11 +++
+ 2 files changed, 145 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 6076e51..f39a2b7 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -976,6 +976,29 @@ struct opal_sg_list {
-  * Firmware-Assisted Dump (FADump)
-  */
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 6ff05046..a4510c91 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -53,6 +53,9 @@ int crash_memory_ranges_size;
+ int crash_mem_ranges;
+ int max_crash_mem_ranges;
  
-+/* FADump thread header for register entries */
-+struct opal_fadump_thread_hdr {
-+	__be32  pir;
-+	/* 0x00 - 0x0F - The corresponding stop state of the core */
-+	u8      core_state;
-+	u8      reserved[3];
++struct fadump_memory_range reserved_ranges[MAX_RESERVED_RANGES];
++int reserved_ranges_cnt;
 +
-+	__be32	offset;	/* Offset to Register Entries array */
-+	__be32	ecnt;	/* Number of entries */
-+	__be32	esize;	/* Alloc size of each array entry in bytes */
-+	__be32	eactsz;	/* Actual size of each array entry in bytes */
-+} __packed;
-+
-+#define OPAL_REG_TYPE_GPR		0
-+#define OPAL_REG_TYPE_SPR		1
-+
-+/* FADump register entry. */
-+struct opal_fadump_reg_entry {
-+	__be32		reg_type;
-+	__be32		reg_num;
-+	__be64		reg_val;
-+};
-+
- /* The maximum number of dump sections supported by OPAL */
- #define OPAL_FADUMP_NR_SECTIONS			64
+ #ifdef CONFIG_CMA
+ static struct cma *fadump_cma;
  
-diff --git a/arch/powerpc/kernel/fadump_internal.h b/arch/powerpc/kernel/fadump_internal.h
-index ff764d4..8d47382 100644
---- a/arch/powerpc/kernel/fadump_internal.h
-+++ b/arch/powerpc/kernel/fadump_internal.h
-@@ -117,6 +117,9 @@ struct fadump_memory_range {
+@@ -116,12 +119,116 @@ int __init fadump_cma_init(void)
+ static int __init fadump_cma_init(void) { return 1; }
+ #endif /* CONFIG_CMA */
  
- /* Firmware-assisted dump configuration details. */
- struct fw_dump {
-+	unsigned long	cpu_state_destination_addr;
-+	unsigned long	cpu_state_data_version;
-+	unsigned long	cpu_state_entry_size;
- 	unsigned long	cpu_state_data_size;
- 	unsigned long	hpte_region_size;
- 	unsigned long	boot_memory_size;
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.c b/arch/powerpc/platforms/powernv/opal-fadump.c
-index 3a83609..1b3a33f 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.c
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.c
-@@ -94,6 +94,12 @@ static void update_fadump_config(struct fw_dump *fadump_conf,
++/*
++ * Sort the reserved ranges in-place and merge adjacent ranges
++ * to minimize the reserved ranges count.
++ */
++static void __init sort_and_merge_reserved_ranges(void)
++{
++	unsigned long long base, size;
++	struct fadump_memory_range tmp_range;
++	int i, j, idx;
++
++	if (!reserved_ranges_cnt)
++		return;
++
++	/* Sort the reserved ranges */
++	for (i = 0; i < reserved_ranges_cnt; i++) {
++		idx = i;
++		for (j = i + 1; j < reserved_ranges_cnt; j++) {
++			if (reserved_ranges[idx].base > reserved_ranges[j].base)
++				idx = j;
++		}
++		if (idx != i) {
++			tmp_range = reserved_ranges[idx];
++			reserved_ranges[idx] = reserved_ranges[i];
++			reserved_ranges[i] = tmp_range;
++		}
++	}
++
++	/* Merge adjacent reserved ranges */
++	idx = 0;
++	for (i = 1; i < reserved_ranges_cnt; i++) {
++		base = reserved_ranges[i-1].base;
++		size = reserved_ranges[i-1].size;
++		if (reserved_ranges[i].base == (base + size))
++			reserved_ranges[idx].size += reserved_ranges[i].size;
++		else {
++			idx++;
++			if (i == idx)
++				continue;
++
++			reserved_ranges[idx] = reserved_ranges[i];
++		}
++	}
++	reserved_ranges_cnt = idx + 1;
++}
++
++static int __init add_reserved_range(unsigned long base,
++				     unsigned long size)
++{
++	int i;
++
++	if (reserved_ranges_cnt == MAX_RESERVED_RANGES) {
++		/* Compact reserved ranges and try again. */
++		sort_and_merge_reserved_ranges();
++		if (reserved_ranges_cnt == MAX_RESERVED_RANGES)
++			return 0;
++	}
++
++	i = reserved_ranges_cnt++;
++	reserved_ranges[i].base = base;
++	reserved_ranges[i].size = size;
++	return 1;
++}
++
++/*
++ * Scan reserved-ranges to consider them while reserving/releasing
++ * memory for FADump.
++ */
++static void __init early_init_dt_scan_reserved_ranges(unsigned long node)
++{
++	int len, ret;
++	unsigned long i;
++	const __be32 *prop;
++
++	/* reserved-ranges already scanned */
++	if (reserved_ranges_cnt != 0)
++		return;
++
++	prop = of_get_flat_dt_prop(node, "reserved-ranges", &len);
++
++	if (!prop)
++		return;
++
++	/*
++	 * Each reserved range is an (address,size) pair, 2 cells each,
++	 * totalling 4 cells per range.
++	 */
++	for (i = 0; i < len / (sizeof(*prop) * 4); i++) {
++		u64 base, size;
++
++		base = of_read_number(prop + (i * 4) + 0, 2);
++		size = of_read_number(prop + (i * 4) + 2, 2);
++
++		if (size) {
++			ret = add_reserved_range(base, size);
++			if (ret == 0)
++				pr_warn("some reserved ranges are ignored!\n");
++		}
++	}
++}
++
+ /* Scan the Firmware Assisted dump configuration details. */
+ int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
+ 				      int depth, void *data)
+ {
+-	if (depth != 1)
++	if (depth != 1) {
++		if (depth == 0)
++			early_init_dt_scan_reserved_ranges(node);
++
+ 		return 0;
++	}
  
- 				last_end = base + size;
- 				j++;
-+			} else if (fdm->section[i].src_type ==
-+				   OPAL_FADUMP_CPU_STATE_DATA) {
-+				fadump_conf->cpu_state_destination_addr =
-+					be64_to_cpu(fdm->section[i].dest_addr);
-+				fadump_conf->cpu_state_data_size =
-+					be64_to_cpu(fdm->section[i].dest_size);
- 			}
- 		}
- 		fadump_conf->rmr_regions_cnt = j;
-@@ -199,6 +205,75 @@ static int opal_invalidate_fadump(struct fw_dump *fadump_conf)
- 	return 0;
+ 	if (strcmp(uname, "rtas") == 0)
+ 		return pseries_dt_scan_fadump(&fw_dump, node);
+@@ -363,6 +470,26 @@ static int __init fadump_get_rmr_regions(void)
+ 	return ret;
  }
  
-+static inline void fadump_set_regval_regnum(struct pt_regs *regs, u32 reg_type,
-+					    u32 reg_num, u64 reg_val)
++static bool overlaps_with_reserved_ranges(ulong base, ulong end)
 +{
-+	if (reg_type == OPAL_REG_TYPE_GPR) {
-+		if (reg_num < 32)
-+			regs->gpr[reg_num] = reg_val;
-+		return;
-+	}
++	int i, ret = 0;
 +
-+	switch (reg_num) {
-+	case 2000:
-+		regs->nip = reg_val;
-+		break;
-+	case 2001:
-+		regs->msr = reg_val;
-+		break;
-+	case 9:
-+		regs->ctr = reg_val;
-+		break;
-+	case 8:
-+		regs->link = reg_val;
-+		break;
-+	case 1:
-+		regs->xer = reg_val;
-+		break;
-+	case 2002:
-+		regs->ccr = reg_val;
-+		break;
-+	case 19:
-+		regs->dar = reg_val;
-+		break;
-+	case 18:
-+		regs->dsisr = reg_val;
-+		break;
-+	}
-+}
++	for (i = 0; i < reserved_ranges_cnt; i++) {
++		ulong rbase = (ulong)reserved_ranges[i].base;
++		ulong rend = rbase + (ulong)reserved_ranges[i].size;
 +
-+static inline void fadump_read_registers(char *bufp, unsigned int regs_cnt,
-+					 unsigned int reg_entry_size,
-+					 struct pt_regs *regs)
-+{
-+	int i;
-+	struct opal_fadump_reg_entry *reg_entry;
++		if (end <= rbase)
++			break;
 +
-+	memset(regs, 0, sizeof(struct pt_regs));
-+
-+	for (i = 0; i < regs_cnt; i++, bufp += reg_entry_size) {
-+		reg_entry = (struct opal_fadump_reg_entry *)bufp;
-+		fadump_set_regval_regnum(regs,
-+					 be32_to_cpu(reg_entry->reg_type),
-+					 be32_to_cpu(reg_entry->reg_num),
-+					 be64_to_cpu(reg_entry->reg_val));
-+	}
-+}
-+
-+static inline bool __init is_thread_core_inactive(u8 core_state)
-+{
-+	bool is_inactive = false;
-+
-+	/*
-+	 * TODO: Check what each state value means and implement accordingly.
-+	 *       Also, make sure F/W is updating this field appropriately.
-+	 */
-+	if (core_state == CORE_STATE_INACTIVE)
-+		is_inactive = true;
-+
-+	return is_inactive;
-+}
-+
- /*
-  * Read CPU state dump data and convert it into ELF notes.
-  *
-@@ -210,8 +285,32 @@ static int __init fadump_build_cpu_notes(struct fw_dump *fadump_conf)
- {
- 	u32 num_cpus, *note_buf;
- 	struct fadump_crash_info_header *fdh = NULL;
-+	struct opal_fadump_thread_hdr *thdr;
-+	unsigned long addr;
-+	u32 thread_pir;
-+	char *bufp;
-+	struct pt_regs regs;
-+	unsigned int size_of_each_thread;
-+	unsigned int regs_offset, regs_cnt, reg_esize;
-+	int i;
-+
-+	size_of_each_thread = fadump_conf->cpu_state_entry_size;
-+	num_cpus = (fadump_conf->cpu_state_data_size / size_of_each_thread);
-+
-+	addr = fadump_conf->cpu_state_destination_addr;
-+	bufp = __va(addr);
-+
-+	/*
-+	 * Offset for register entries, entry size and registers count is
-+	 * duplicated in every thread header in keeping with HDAT format.
-+	 * Use these values from the first thread header.
-+	 */
-+	thdr = (struct opal_fadump_thread_hdr *)bufp;
-+	regs_offset = (offsetof(struct opal_fadump_thread_hdr, offset) +
-+		       be32_to_cpu(thdr->offset));
-+	reg_esize = be32_to_cpu(thdr->esize);
-+	regs_cnt  = be32_to_cpu(thdr->ecnt);
- 
--	num_cpus = 1;
- 	/* Allocate buffer to hold cpu crash notes. */
- 	fadump_conf->cpu_notes_buf_size = num_cpus * sizeof(note_buf_t);
- 	fadump_conf->cpu_notes_buf_size =
-@@ -230,10 +329,53 @@ static int __init fadump_build_cpu_notes(struct fw_dump *fadump_conf)
- 	if (fadump_conf->fadumphdr_addr)
- 		fdh = __va(fadump_conf->fadumphdr_addr);
- 
--	if (fdh && (fdh->crashing_cpu != CPU_UNKNOWN)) {
--		note_buf = fadump_regs_to_elf_notes(note_buf, &(fdh->regs));
--		final_note(note_buf);
-+	pr_debug("--------CPU State Data------------\n");
-+	pr_debug("NumCpus     : %u\n", num_cpus);
-+	pr_debug("\tOffset: %u, Entry size: %u, Cnt: %u\n",
-+		 regs_offset, reg_esize, regs_cnt);
-+
-+	for (i = 0; i < num_cpus; i++, bufp += size_of_each_thread) {
-+		thdr = (struct opal_fadump_thread_hdr *)bufp;
-+
-+		thread_pir = be32_to_cpu(thdr->pir);
-+		pr_debug("%04d) PIR: 0x%x, core state: 0x%02x\n",
-+			 (i + 1), thread_pir, thdr->core_state);
-+
-+		/*
-+		 * Register state data of MAX cores is provided by firmware,
-+		 * but some of this cores may not be active. So, while
-+		 * processing register state data, check core state and
-+		 * skip threads that belong to inactive cores.
-+		 */
-+		if (is_thread_core_inactive(thdr->core_state))
-+			continue;
-+
-+		/*
-+		 * If this is kernel initiated crash, crashing_cpu would be set
-+		 * appropriately and register data of the crashing CPU saved by
-+		 * crashing kernel. Add this saved register data of crashing CPU
-+		 * to elf notes and populate the pt_regs for the remaining CPUs
-+		 * from register state data provided by firmware.
-+		 */
-+		if (fdh && (fdh->crashing_cpu == thread_pir)) {
-+			note_buf = fadump_regs_to_elf_notes(note_buf,
-+							    &fdh->regs);
-+			pr_debug("Crashing CPU PIR: 0x%x - R1 : 0x%lx, NIP : 0x%lx\n",
-+				 fdh->crashing_cpu, fdh->regs.gpr[1],
-+				 fdh->regs.nip);
-+			continue;
++		if ((end > rbase) &&  (base < rend)) {
++			ret = 1;
++			break;
 +		}
-+
-+		fadump_read_registers((bufp + regs_offset), regs_cnt,
-+				      reg_esize, &regs);
-+
-+		note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
-+		pr_debug("CPU PIR: 0x%x - R1 : 0x%lx, NIP : 0x%lx\n",
-+			 thread_pir, regs.gpr[1], regs.nip);
 +	}
-+	final_note(note_buf);
- 
-+	if (fdh) {
- 		pr_debug("Updating elfcore header (%llx) with cpu notes\n",
- 			 fdh->elfcorehdr_addr);
- 		fadump_update_elfcore_header(fadump_conf,
-@@ -258,13 +400,6 @@ static int __init opal_process_fadump(struct fw_dump *fadump_conf)
- 		return -EINVAL;
++
++	return ret;
++}
++
+ /* Preserve everything above the base address */
+ static void __init fadump_reserve_crash_area(unsigned long base)
+ {
+@@ -399,6 +526,9 @@ int __init fadump_reserve_mem(void)
+ 		goto error_out;
  	}
  
--	/*
--	 * TODO: To build cpu notes, find a way to map PIR to logical id.
--	 *       Also, we may need different method for pseries and powernv.
--	 *       The currently booted kernel could have a different PIR to
--	 *       logical id mapping. So, try saving info of previous kernel's
--	 *       paca to get the right PIR to logical id mapping.
--	 */
- 	rc = fadump_build_cpu_notes(fadump_conf);
- 	if (rc)
- 		return rc;
-@@ -319,6 +454,14 @@ static void opal_crash_fadump(struct fadump_crash_info_header *fdh,
- {
- 	int rc;
- 
-+	/*
-+	 * Unlike on pseries platform, logical CPU number is not provided
-+	 * with architected register state data. So, store the crashing
-+	 * CPU's PIR instead to plug the appropriate register data for
-+	 * crashing CPU in the vmcore file.
-+	 */
-+	fdh->crashing_cpu = (u32)mfspr(SPRN_PIR);
-+
- 	rc = opal_cec_reboot2(OPAL_REBOOT_OS_ERROR, msg);
- 	if (rc == OPAL_UNSUPPORTED) {
- 		pr_emerg("Reboot type %d not supported.\n",
-@@ -340,6 +483,7 @@ static struct fadump_ops opal_fadump_ops = {
- int __init opal_dt_scan_fadump(struct fw_dump *fadump_conf, ulong node)
- {
- 	unsigned long dn;
-+	const __be32 *prop;
- 
- 	/*
- 	 * Check if Firmware-Assisted Dump is supported. if yes, check
-@@ -351,6 +495,17 @@ int __init opal_dt_scan_fadump(struct fw_dump *fadump_conf, ulong node)
- 		return 1;
- 	}
- 
-+	prop = of_get_flat_dt_prop(dn, "cpu-data-version", NULL);
-+	if (prop)
-+		fadump_conf->cpu_state_data_version = of_read_number(prop, 1);
-+
-+	if (fadump_conf->cpu_state_data_version != CPU_STATE_DATA_VERSION) {
-+		pr_err("CPU state data format version mismatch!\n");
-+		pr_err("Kernel: %u, OPAL: %lu\n", CPU_STATE_DATA_VERSION,
-+		       fadump_conf->cpu_state_data_version);
-+		return 1;
-+	}
++	/* Compact reserved ranges */
++	sort_and_merge_reserved_ranges();
 +
  	/*
- 	 * Firmware currently supports only 32-bit value for size,
- 	 * align it to 1MB size.
-@@ -365,6 +520,16 @@ int __init opal_dt_scan_fadump(struct fw_dump *fadump_conf, ulong node)
- 		pr_info("Firmware-assisted dump is active.\n");
- 		fadump_conf->dump_active = 1;
- 		update_fadump_config(fadump_conf, (void *)__pa(fdm_active));
-+
-+		/*
-+		 * Doesn't need to populate these fields while registering dump
-+		 * as destination address and size are provided by F/W.
-+		 */
-+		prop = of_get_flat_dt_prop(dn, "cpu-data-size", NULL);
-+		if (prop) {
-+			fadump_conf->cpu_state_entry_size =
-+						of_read_number(prop, 1);
-+		}
- 	}
+ 	 * Initialize boot memory size
+ 	 * If dump is active then we have already calculated the size during
+@@ -474,10 +604,11 @@ int __init fadump_reserve_mem(void)
+ 		 */
+ 		while (base <= (memory_boundary - size)) {
+ 			if (memblock_is_region_memory(base, size) &&
+-			    !memblock_is_region_reserved(base, size))
++			    !memblock_is_region_reserved(base, size) &&
++			    !overlaps_with_reserved_ranges(base, (base+size)))
+ 				break;
  
- 	fadump_conf->ops		= &opal_fadump_ops;
-diff --git a/arch/powerpc/platforms/powernv/opal-fadump.h b/arch/powerpc/platforms/powernv/opal-fadump.h
-index a5eeb2c..80aee2d 100644
---- a/arch/powerpc/platforms/powernv/opal-fadump.h
-+++ b/arch/powerpc/platforms/powernv/opal-fadump.h
-@@ -13,6 +13,8 @@
- #ifndef __PPC64_OPAL_FA_DUMP_H__
- #define __PPC64_OPAL_FA_DUMP_H__
+-			base += size;
++			base += OFFSET_SIZE;
+ 		}
  
-+#define CPU_STATE_DATA_VERSION		1
-+
- #define OPAL_FADUMP_CPU_STATE_DATA	0x0000
- /* OPAL : 0x01 – 0x39 */
- #define OPAL_FADUMP_OPAL_REGION	0x0001
-@@ -37,4 +39,6 @@ enum opal_fadump_section_types {
- #define OPAL_MAX_SECTIONS		(OPAL_SECTIONS + \
- 					 MAX_REAL_MEM_REGIONS - 1)
+ 		if ((base > (memory_boundary - size)) ||
+diff --git a/arch/powerpc/kernel/fadump_internal.h b/arch/powerpc/kernel/fadump_internal.h
+index 8ad98db..ff764d4 100644
+--- a/arch/powerpc/kernel/fadump_internal.h
++++ b/arch/powerpc/kernel/fadump_internal.h
+@@ -101,6 +101,17 @@ struct fadump_memory_range {
+ 	unsigned long long	size;
+ };
  
-+#define CORE_STATE_INACTIVE		(0x0F)
++/*
++ * Amount of memory (1024MB) to skip before making another attempt at
++ * reserving memory (after the previous attempt to reserve memory for
++ * FADump failed due to memory holes and/or reserved ranges) to reduce
++ * the likelihood of memory reservation failure.
++ */
++#define OFFSET_SIZE			0x40000000U
 +
- #endif /* __PPC64_OPAL_FA_DUMP_H__ */
++/* Maximum no. of reserved ranges supported for processing. */
++#define MAX_RESERVED_RANGES		128
++
+ /* Maximum no. of real memory regions supported by the kernel */
+ #define MAX_REAL_MEM_REGIONS		8
+ 
 
