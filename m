@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09AFAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:15:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BC16C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:16:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 731B320836
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:15:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C977520836
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:16:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SNuo5bWH"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 731B320836
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="YpgR+fFi"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C977520836
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4454153tdRzDqSL
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:15:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4454346bh2zDqRs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:16:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,54 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="SNuo5bWH"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="YpgR+fFi"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4453sj6SrXzDqRg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4453sl009xzDqRb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4453sf6C0vz9v6ky;
- Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4453sg6V07z9v6l1;
+ Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=SNuo5bWH; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=YpgR+fFi; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id hCH0I37vhDmp; Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ with ESMTP id AQ17Mn7DmdWP; Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4453sf5503z9v6jt;
- Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4453sg4tRbz9v6jt;
+ Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550776118; bh=hO6puhpqDsuc6RO7pim5hG7ZClWiK5qZt97DmQIG6Gc=;
+ t=1550776119; bh=oJYnubGJxtoq3azbdLhwwK1cIIERr+Sch6LNkaghcgo=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=SNuo5bWHFZyiItS7SRjOHB3wA5WDgqW4B5UiYKndm5m8oSydIoyGBNzvG5elxrro9
- tZypvj5o8itUlNzav+E1Xe0ZeVclHoeDH1FFAPG6D8HkVHievmdFSjakOsOzITjQwj
- 3KBqpoQXtRdxnbtOzcyhiGzbAfXFEDPyhnkQt/Y0=
+ b=YpgR+fFiVi5QOe25ZcuvGuRKrp3ZxO4VEMlnYA/jvazBmpQWCR0lU4VxJMkb4vJgF
+ PXMeXGkwjvZklxAc9DY6zX09qZ/pMspQE7suWAzvvSR6MzgGmpJ4L38rDknphZ07TH
+ LgdX+0NQ61vsLoF83RmjJSA3vwcf9OBdN2WHTUy4=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id AEAB58B86A;
- Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id ABB4D8B86A;
+ Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id tkAe-HiUrj1E; Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ with ESMTP id pkB4qzj_obA4; Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 728C78B852;
- Thu, 21 Feb 2019 20:08:38 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 79F468B852;
+ Thu, 21 Feb 2019 20:08:39 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 556846EF61; Thu, 21 Feb 2019 19:08:38 +0000 (UTC)
-Message-Id: <063865443b7add0f1f0572e751613462e6ebf3e4.1550775950.git.christophe.leroy@c-s.fr>
+ id 5B2D16EF61; Thu, 21 Feb 2019 19:08:39 +0000 (UTC)
+Message-Id: <a9022c58dbf98ca2fb7ab96222799a7f77e5bcd8.1550775950.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1550775950.git.christophe.leroy@c-s.fr>
 References: <cover.1550775950.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 02/16] powerpc/mm/32: add base address to mmu_mapin_ram()
+Subject: [PATCH v5 03/16] powerpc/mm/32s: rework mmu_mapin_ram()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 21 Feb 2019 19:08:38 +0000 (UTC)
+Date: Thu, 21 Feb 2019 19:08:39 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,124 +92,102 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-At the time being, mmu_mapin_ram() always maps RAM from the beginning.
-But some platforms like the WII have to map a second block of RAM.
+This patch reworks mmu_mapin_ram() to be more generic and map as much
+blocks as possible. It now supports blocks not starting at address 0.
 
-This patch adds to mmu_mapin_ram() the base address of the block.
-At the moment, only base address 0 is supported.
+It scans DBATs array to find free ones instead of forcing the use of
+BAT2 and BAT3.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/mm/40x_mmu.c       | 2 +-
- arch/powerpc/mm/44x_mmu.c       | 2 +-
- arch/powerpc/mm/8xx_mmu.c       | 2 +-
- arch/powerpc/mm/fsl_booke_mmu.c | 2 +-
- arch/powerpc/mm/mmu_decl.h      | 2 +-
- arch/powerpc/mm/pgtable_32.c    | 6 +++---
- arch/powerpc/mm/ppc_mmu_32.c    | 2 +-
- 7 files changed, 9 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/ppc_mmu_32.c | 63 ++++++++++++++++++++++++++++----------------
+ 1 file changed, 41 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
-index 61ac468c87c6..b9cf6f8764b0 100644
---- a/arch/powerpc/mm/40x_mmu.c
-+++ b/arch/powerpc/mm/40x_mmu.c
-@@ -93,7 +93,7 @@ void __init MMU_init_hw(void)
- #define LARGE_PAGE_SIZE_16M	(1<<24)
- #define LARGE_PAGE_SIZE_4M	(1<<22)
- 
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- {
- 	unsigned long v, s, mapped;
- 	phys_addr_t p;
-diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c
-index ea2b9af08a48..aad127acdbaa 100644
---- a/arch/powerpc/mm/44x_mmu.c
-+++ b/arch/powerpc/mm/44x_mmu.c
-@@ -170,7 +170,7 @@ void __init MMU_init_hw(void)
- 	flush_instruction_cache();
- }
- 
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- {
- 	unsigned long addr;
- 	unsigned long memstart = memstart_addr & ~(PPC_PIN_SIZE - 1);
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index e2c32bdb6023..46bc26ef71e9 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -99,7 +99,7 @@ static void __init mmu_patch_cmp_limit(s32 *site, unsigned long mapped)
- 	modify_instruction_site(site, 0xffff, (unsigned long)__va(mapped) >> 16);
- }
- 
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- {
- 	unsigned long mapped;
- 
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 080d49b26c3a..210cbc1faf63 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -221,7 +221,7 @@ unsigned long map_mem_in_cams(unsigned long ram, int max_cam_idx, bool dryrun)
- #error "LOWMEM_CAM_NUM must be less than NUM_TLBCAMS"
- #endif
- 
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
- {
- 	return tlbcam_addrs[tlbcam_index - 1].limit - PAGE_OFFSET + 1;
- }
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index c4a717da65eb..61730023dde3 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -130,7 +130,7 @@ extern void wii_memory_fixups(void);
-  */
- #ifdef CONFIG_PPC32
- extern void MMU_init_hw(void);
--extern unsigned long mmu_mapin_ram(unsigned long top);
-+unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
- #endif
- 
- #ifdef CONFIG_PPC_FSL_BOOK3E
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index ded71126ce4c..b4858818523f 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -258,15 +258,15 @@ void __init mapin_ram(void)
- 
- #ifndef CONFIG_WII
- 	top = total_lowmem;
--	s = mmu_mapin_ram(top);
-+	s = mmu_mapin_ram(0, top);
- 	__mapin_ram_chunk(s, top);
- #else
- 	if (!wii_hole_size) {
--		s = mmu_mapin_ram(total_lowmem);
-+		s = mmu_mapin_ram(0, total_lowmem);
- 		__mapin_ram_chunk(s, total_lowmem);
- 	} else {
- 		top = wii_hole_start;
--		s = mmu_mapin_ram(top);
-+		s = mmu_mapin_ram(0, top);
- 		__mapin_ram_chunk(s, top);
- 
- 		top = memblock_end_of_DRAM();
 diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 3f4193201ee7..b260ced065b4 100644
+index b260ced065b4..5fc59b195fef 100644
 --- a/arch/powerpc/mm/ppc_mmu_32.c
 +++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -73,7 +73,7 @@ unsigned long p_block_mapped(phys_addr_t pa)
+@@ -73,39 +73,58 @@ unsigned long p_block_mapped(phys_addr_t pa)
  	return 0;
  }
  
--unsigned long __init mmu_mapin_ram(unsigned long top)
-+unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
++static int find_free_bat(void)
++{
++	int b;
++
++	if (cpu_has_feature(CPU_FTR_601)) {
++		for (b = 0; b < 4; b++) {
++			struct ppc_bat *bat = BATS[b];
++
++			if (!(bat[0].batl & 0x40))
++				return b;
++		}
++	} else {
++		int n = mmu_has_feature(MMU_FTR_USE_HIGH_BATS) ? 8 : 4;
++
++		for (b = 0; b < n; b++) {
++			struct ppc_bat *bat = BATS[b];
++
++			if (!(bat[1].batu & 3))
++				return b;
++		}
++	}
++	return -1;
++}
++
++static unsigned int block_size(unsigned long base, unsigned long top)
++{
++	unsigned int max_size = (cpu_has_feature(CPU_FTR_601) ? 8 : 256) << 20;
++	unsigned int base_shift = (fls(base) - 1) & 31;
++	unsigned int block_shift = (fls(top - base) - 1) & 31;
++
++	return min3(max_size, 1U << base_shift, 1U << block_shift);
++}
++
+ unsigned long __init mmu_mapin_ram(unsigned long base, unsigned long top)
  {
- 	unsigned long tot, bl, done;
- 	unsigned long max_size = (256<<20);
+-	unsigned long tot, bl, done;
+-	unsigned long max_size = (256<<20);
++	int idx;
+ 
+ 	if (__map_without_bats) {
+ 		printk(KERN_DEBUG "RAM mapped without BATs\n");
+-		return 0;
++		return base;
+ 	}
+ 
+-	/* Set up BAT2 and if necessary BAT3 to cover RAM. */
++	while ((idx = find_free_bat()) != -1 && base != top) {
++		unsigned int size = block_size(base, top);
+ 
+-	/* Make sure we don't map a block larger than the
+-	   smallest alignment of the physical address. */
+-	tot = top;
+-	for (bl = 128<<10; bl < max_size; bl <<= 1) {
+-		if (bl * 2 > tot)
++		if (size < 128 << 10)
+ 			break;
++		setbat(idx, PAGE_OFFSET + base, base, size, PAGE_KERNEL_X);
++		base += size;
+ 	}
+ 
+-	setbat(2, PAGE_OFFSET, 0, bl, PAGE_KERNEL_X);
+-	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
+-	if ((done < tot) && !bat_addrs[3].limit) {
+-		/* use BAT3 to cover a bit more */
+-		tot -= done;
+-		for (bl = 128<<10; bl < max_size; bl <<= 1)
+-			if (bl * 2 > tot)
+-				break;
+-		setbat(3, PAGE_OFFSET+done, done, bl, PAGE_KERNEL_X);
+-		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
+-	}
+-
+-	return done;
++	return base;
+ }
+ 
+ /*
 -- 
 2.13.3
 
