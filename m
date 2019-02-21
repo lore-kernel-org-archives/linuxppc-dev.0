@@ -2,82 +2,66 @@ Return-Path: <SRS0=ZoyS=Q4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NORMAL_HTTP_TO_IP,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EA74C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:32:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C89FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:34:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E177D2148D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:32:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Cc1ifYrv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E177D2148D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 1FED420842
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 08:34:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FED420842
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=emerson.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 444nlf0DF3zDq6N
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:32:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Cc1ifYrv"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 444np115dHzDqPg
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:34:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 444n8520CfzDqNX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 19:05:09 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 444n81013rz9vJgM;
- Thu, 21 Feb 2019 09:05:05 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Cc1ifYrv; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id nTZ6cknk-vTc; Thu, 21 Feb 2019 09:05:04 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 444n805hB5z9vJg1;
- Thu, 21 Feb 2019 09:05:04 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550736304; bh=rL9pXcmSwgrYoqpuCBVePWWBEBBeAsu5XVt+dwifPdY=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Cc1ifYrvpL3c0kn0kSoA79Jyi57uI1jvlFRLhoZEnRCSCcEZGZusalbVEgE52t1ME
- x3J+jhIBJzzW8TNCW52VTqCoojh8S7995zF80o6m5bj6dpzhJRSipjdgAeujYZMjxk
- /d1yof4etQizfZuAACnco1ipf2Zk5ErvUV7i8s1Q=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6EFB28B78F;
- Thu, 21 Feb 2019 09:05:05 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 8OxpFHPVPlH5; Thu, 21 Feb 2019 09:05:05 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A1958B75B;
- Thu, 21 Feb 2019 09:05:05 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E72CE6E866; Thu, 21 Feb 2019 08:05:04 +0000 (UTC)
-Message-Id: <0e333d8e1d35eefb125cb9e72f58e0703b10bc1a.1550692943.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1550692943.git.christophe.leroy@c-s.fr>
-References: <cover.1550692943.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 16/16] powerpc/kconfig: make _etext and data areas
- alignment configurable on 8xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- j.neuschaefer@gmx.net
-Date: Thu, 21 Feb 2019 08:05:04 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444nRh5kbQzDqBZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 19:18:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 444nRh2v1Hz8smg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 19:18:40 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 444nRh1XGVz9sBr; Thu, 21 Feb 2019 19:18:40 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=softfail (mailfrom) smtp.mailfrom=emerson.com
+ (client-ip=162.253.133.57; helo=n7.nabble.com;
+ envelope-from=sachin.gosavi@emerson.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=fail (p=none dis=none) header.from=emerson.com
+Received: from n7.nabble.com (n7.nabble.com [162.253.133.57])
+ by ozlabs.org (Postfix) with ESMTP id 444nRg2PWYz9s1b
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 19:18:37 +1100 (AEDT)
+Received: from n7.nabble.com (localhost [127.0.0.1])
+ by n7.nabble.com (Postfix) with ESMTP id E516E9E23078
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 01:18:34 -0700 (MST)
+Date: Thu, 21 Feb 2019 01:18:34 -0700 (MST)
+From: sgosavi1 <Sachin.Gosavi@emerson.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1550737114935-0.post@n7.nabble.com>
+In-Reply-To: <1550230073842-0.post@n7.nabble.com>
+References: <1550055691105-0.post@n7.nabble.com>
+ <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
+ <1550060685213-0.post@n7.nabble.com>
+ <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
+ <1550062386389-0.post@n7.nabble.com>
+ <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+ <1550132231035-0.post@n7.nabble.com>
+ <20190214191443.5f64bb56@kitsune.suse.cz>
+ <1550230073842-0.post@n7.nabble.com>
+Subject: Re: Kernel panic when loading the IDE controller driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,102 +73,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 8xx, large pages (512kb or 8M) are used to map kernel linear
-memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-in that case. We make 8M the default for data.
+Hi All,
 
-This patchs allows the user to do it via Kconfig.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/Kconfig           | 18 +++++++++++++++---
- arch/powerpc/kernel/head_8xx.S |  4 ++--
- 2 files changed, 17 insertions(+), 5 deletions(-)
+I finally got the FLASH controller driver working and it is now successfully
+reporting the presence of 2GB Flash in the board. I used the new "libata"
+driver code present in the new kernel source under drivers/ata/. Also did
+the required additions in the device tree to provide the IO port, IRQ and
+PIO mode details to the driver. 
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 271f13ac23d4..447b86ea4815 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -729,7 +729,8 @@ config THREAD_SHIFT
- 	  want. Only change this if you know what you are doing.
- 
- config ETEXT_SHIFT_BOOL
--	bool "Set custom etext alignment" if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	bool "Set custom etext alignment" if STRICT_KERNEL_RWX && \
-+					     (PPC_BOOK3S_32 || PPC_8xx)
- 	depends on ADVANCED_OPTIONS
- 	help
- 	  This option allows you to set the kernel end of text alignment. When
-@@ -741,6 +742,7 @@ config ETEXT_SHIFT_BOOL
- config ETEXT_SHIFT
- 	int "_etext shift" if ETEXT_SHIFT_BOOL
- 	range 17 28 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	range 19 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default 17 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
- 	default 19 if STRICT_KERNEL_RWX && PPC_8xx
- 	default PPC_PAGE_SHIFT
-@@ -748,8 +750,13 @@ config ETEXT_SHIFT
- 	  On Book3S 32 (603+), IBATs are used to map kernel text.
- 	  Smaller is the alignment, greater is the number of necessary IBATs.
- 
-+	  On 8xx, large pages (512kb or 8M) are used to map kernel linear
-+	  memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-+	  in that case.
-+
- config DATA_SHIFT_BOOL
--	bool "Set custom data alignment" if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	bool "Set custom data alignment" if STRICT_KERNEL_RWX && \
-+					    (PPC_BOOK3S_32 || PPC_8xx)
- 	depends on ADVANCED_OPTIONS
- 	help
- 	  This option allows you to set the kernel data alignment. When
-@@ -762,13 +769,18 @@ config DATA_SHIFT
- 	int "Data shift" if DATA_SHIFT_BOOL
- 	default 24 if STRICT_KERNEL_RWX && PPC64
- 	range 17 28 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
-+	range 19 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default 22 if STRICT_KERNEL_RWX && PPC_BOOK3S_32
--	default 19 if STRICT_KERNEL_RWX && PPC_8xx
-+	default 23 if STRICT_KERNEL_RWX && PPC_8xx
- 	default PPC_PAGE_SHIFT
- 	help
- 	  On Book3S 32 (603+), DBATs are used to map kernel text and rodata RO.
- 	  Smaller is the alignment, greater is the number of necessary DBATs.
- 
-+	  On 8xx, large pages (512kb or 8M) are used to map kernel linear
-+	  memory. Aligning to 8M reduces TLB misses as only 8M pages are used
-+	  in that case.
-+
- config FORCE_MAX_ZONEORDER
- 	int "Maximum zone order"
- 	range 8 9 if PPC64 && PPC_64K_PAGES
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 29c9289bc1d4..b10dc01690fc 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -416,7 +416,7 @@ InstructionTLBMiss:
- #ifndef CONFIG_PIN_TLB_TEXT
- ITLBMissLinear:
- 	mtcr	r11
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_ETEXT_SHIFT < 23
- 	patch_site	0f, patch__itlbmiss_linmem_top8
- 
- 	mfspr	r10, SPRN_SRR0
-@@ -537,7 +537,7 @@ DTLBMissIMMR:
- DTLBMissLinear:
- 	mtcr	r11
- 	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--#ifdef CONFIG_STRICT_KERNEL_RWX
-+#if defined(CONFIG_STRICT_KERNEL_RWX) && CONFIG_DATA_SHIFT < 23
- 	patch_site	0f, patch__dtlbmiss_romem_top8
- 
- 0:	subis	r11, r10, (PAGE_OFFSET - 0x80000000)@ha
--- 
-2.13.3
+However now I am getting the below errors.
 
+
+[    4.200145] scsi host0: pata_of_platform
+[    4.236999] ata1: PATA max PIO4 mmio cmd 0xe0000000 ctl 0xe200000c irq 63
+[    4.439985] ata1.01: ATA-7: 2GB ATA Flash Disk, C A254G4, max UDMA/133
+[    4.463419] ata1.01: 3571344 sectors, multi 0: LBA48
+[    4.483384] ata1.01: configured for PIO
+[    4.512936] scsi 0:0:1:0: Direct-Access     ATA      2GB ATA Flash Di
+54G4 PQ: 0 ANSI: 5
+[    4.555994] sd 0:0:1:0: [sda] 3571344 512-byte logical blocks: (1.83
+GB/1.70 GiB)
+[    4.591975] sd 0:0:1:0: [sda] Write Protect is off
+[    4.611307] sd 0:0:1:0: [sda] Mode Sense: 00 3a 00 00
+[    4.629733] sd 0:0:1:0: [sda] Write cache: disabled, read cache: enabled,
+doesn't support DPO or FUA
+[    4.823702]
+[    4.823702] AT THE START OF CPU_STARTUP_ENTRY FUNCTION
+[    4.823734]
+[    4.823734] *****INSIDE IDLE LOOP********
+[   36.163139] ata1: drained 65536 bytes to clear DRQ
+[   36.185451] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[   36.199598] ata1.01: cmd 20/00:08:00:00:00/00:00:00:00:00/f0 tag 0 pio
+4096 in
+[   36.199598]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[   36.229002] ata1: soft resetting link
+[   36.559637] ata1.01: configured for PIO
+[   36.567563] ata1.01: device reported invalid CHS sector 0
+[   36.578396] ata1: EH complete
+[   68.919134] ata1: drained 65536 bytes to clear DRQ
+[   68.928530] ata1.01: limiting speed to UDMA7:PIO5
+[   68.937856] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[   68.952487] ata1.01: cmd 20/00:08:00:00:00/00:00:00:00:00/f0 tag 0 pio
+4096 in
+[   68.952487]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[   68.981876] ata1: soft resetting link
+[   69.311683] ata1.01: configured for PIO
+[   69.319304] ata1.01: device reported invalid CHS sector 0
+[   69.330274] ata1: EH complete
+[  101.687134] ata1: drained 65536 bytes to clear DRQ
+[  101.696646] ata1.01: limiting speed to PIO0
+[  101.704921] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[  101.719288] ata1.01: cmd 20/00:08:00:00:00/00:00:00:00:00/f0 tag 0 pio
+4096 in
+[  101.719288]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[  101.748593] ata1: soft resetting link
+[  102.079594] ata1.01: configured for PIO
+[  102.087204] ata1.01: device reported invalid CHS sector 0
+[  102.098144] ata1: EH complete
+[  132.407134] ata1: drained 65536 bytes to clear DRQ
+[  132.416687] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[  132.430752] ata1.01: cmd 20/00:08:00:00:00/00:00:00:00:00/f0 tag 0 pio
+4096 in
+[  132.430752]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[  132.460168] ata1: soft resetting link
+[  132.791594] ata1.01: configured for PIO
+[  132.799048] ata1.01: device reported invalid CHS sector 0
+[  132.810076] ata1: EH complete
+[  165.175163] ata1: drained 65536 bytes to clear DRQ
+[  165.186023] ata1.01: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+frozen
+[  165.200192] ata1.01: cmd 20/00:08:00:00:00/00:00:00:00:00/f0 tag 0 pio
+4096 in
+[  165.200192]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4
+(timeout)
+[  165.229531] ata1: soft resetting link
+
+
+Can anyone suggest why I am getting the above errors?
+
+Thanks,
+Sachin.
+
+
+
+--
+Sent from: http://linuxppc.10917.n7.nabble.com/linuxppc-dev-f3.html
