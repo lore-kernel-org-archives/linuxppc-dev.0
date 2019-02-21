@@ -6,79 +6,79 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E643C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 18:02:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BC3DC00319
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 18:03:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C50820836
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 18:02:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C50820836
+	by mail.kernel.org (Postfix) with ESMTPS id 23CCB20836
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 18:03:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23CCB20836
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4452P85DSpzDqP1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:02:20 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4452Qx1NGczDq75
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:03:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4451r86q85zDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:37:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4451rV0JnQzDqBK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:37:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4451r84C1sz8tD8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:37:12 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4451rR1rh1z8tD8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 04:37:27 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 4451r83P7mz9sD4; Fri, 22 Feb 2019 04:37:12 +1100 (AEDT)
+ id 4451rP70Nnz9sD4; Fri, 22 Feb 2019 04:37:25 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4451r762N3z9sCH
- for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2019 04:37:11 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 4451rP2qJMz9sCH
+ for <linuxppc-dev@ozlabs.org>; Fri, 22 Feb 2019 04:37:25 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1LHanET121228
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:37:10 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qswmmsdvk-1
+ x1LHa52a007291
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:37:23 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qsy6p4fd8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:37:09 -0500
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Feb 2019 12:37:23 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Thu, 21 Feb 2019 17:37:06 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ Thu, 21 Feb 2019 17:37:21 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 21 Feb 2019 17:37:04 -0000
+ Thu, 21 Feb 2019 17:37:20 -0000
 Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
  [9.149.105.62])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1LHb2w451970242
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1LHbIi629098216
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 21 Feb 2019 17:37:02 GMT
+ Thu, 21 Feb 2019 17:37:18 GMT
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A21F6AE045;
- Thu, 21 Feb 2019 17:37:02 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 512F3AE055;
+ Thu, 21 Feb 2019 17:37:18 +0000 (GMT)
 Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1E198AE05A;
- Thu, 21 Feb 2019 17:37:01 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id C06B0AE051;
+ Thu, 21 Feb 2019 17:37:16 +0000 (GMT)
 Received: from hbathini.in.ibm.com (unknown [9.199.32.125])
  by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 21 Feb 2019 17:37:00 +0000 (GMT)
-Subject: [PATCH 14/18] powernv/opalcore: provide an option to invalidate
- /proc/opalcore file
+ Thu, 21 Feb 2019 17:37:16 +0000 (GMT)
+Subject: [PATCH 16/18] powernv/fadump: update documentation about option to
+ release opalcore
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
@@ -86,7 +86,7 @@ To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Vasant Hegde <hegdevasant@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Stewart Smith <stewart@linux.ibm.com>
-Date: Thu, 21 Feb 2019 23:07:00 +0530
+Date: Thu, 21 Feb 2019 23:07:15 +0530
 In-Reply-To: <155077048463.21014.13936958730316555495.stgit@hbathini.in.ibm.com>
 References: <155077048463.21014.13936958730316555495.stgit@hbathini.in.ibm.com>
 User-Agent: StGit/0.17.1-dirty
@@ -94,10 +94,10 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19022117-0016-0000-0000-000002594818
+x-cbid: 19022117-4275-0000-0000-000003125706
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022117-0017-0000-0000-000032B399CB
-Message-Id: <155077062004.21014.7607877742157578224.stgit@hbathini.in.ibm.com>
+x-cbparentid: 19022117-4276-0000-0000-000038208C1C
+Message-Id: <155077063570.21014.1747553021181992718.stgit@hbathini.in.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-21_11:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
@@ -121,76 +121,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Writing '1' to /sys/kernel/fadump_release_opalcore would release the
-memory held by kernel in exporting /proc/opalcore file.
+With /proc/opalcore support available on OPAL based machines and an
+option to release memory used by kernel in exporting /proc/opalcore,
+update FADump documentation with these details.
 
 Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-core.c |   39 ++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ Documentation/powerpc/firmware-assisted-dump.txt |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-core.c b/arch/powerpc/platforms/powernv/opal-core.c
-index 5355d95..f9473b7 100644
---- a/arch/powerpc/platforms/powernv/opal-core.c
-+++ b/arch/powerpc/platforms/powernv/opal-core.c
-@@ -19,6 +19,8 @@
- #include <linux/proc_fs.h>
- #include <linux/elf.h>
- #include <linux/elfcore.h>
-+#include <linux/kobject.h>
-+#include <linux/sysfs.h>
- #include <linux/slab.h>
- #include <linux/crash_core.h>
- #include <linux/of.h>
-@@ -532,6 +534,36 @@ static void opalcore_cleanup(void)
- }
- __exitcall(opalcore_cleanup);
+diff --git a/Documentation/powerpc/firmware-assisted-dump.txt b/Documentation/powerpc/firmware-assisted-dump.txt
+index fa35593..6411449 100644
+--- a/Documentation/powerpc/firmware-assisted-dump.txt
++++ b/Documentation/powerpc/firmware-assisted-dump.txt
+@@ -107,6 +107,16 @@ capture kernel boot to process this crash data. Kernel config
+ option CONFIG_PRESERVE_FA_DUMP has to be enabled on such kernel
+ to ensure that crash data is preserved to process later.
  
-+static ssize_t fadump_release_opalcore_store(struct kobject *kobj,
-+					     struct kobj_attribute *attr,
-+					     const char *buf, size_t count)
-+{
-+	int input = -1;
++-- On OPAL based machines (PowerNV), if the kernel is build with
++   CONFIG_OPAL_CORE=y, OPAL memory at the time of crash is also
++   exported as /proc/opalcore file. This procfs file is helpful
++   in debugging OPAL crashes with GDB. The kernel memory used
++   for exporting this procfs file can be released by echo'ing
++   '1' to /sys/kernel/fadump_release_opalcore node.
 +
-+	if (kstrtoint(buf, 0, &input))
-+		return -EINVAL;
++   e.g.
++     # echo 1 > /sys/kernel/fadump_release_opalcore
 +
-+	if (input == 1) {
-+		if (oc_conf == NULL) {
-+			pr_err("'/proc/opalcore' file does not exist!\n");
-+			return -EPERM;
-+		}
+ Implementation details:
+ ----------------------
+ 
+@@ -260,6 +270,15 @@ Here is the list of files under kernel sysfs:
+     enhanced to use this interface to release the memory reserved for
+     dump and continue without 2nd reboot.
+ 
++ /sys/kernel/fadump_release_opalcore
 +
-+		/*
-+		 * Take away '/proc/opalcore' and release all memory
-+		 * used for exporting this file.
-+		 */
-+		opalcore_cleanup();
-+	} else
-+		return -EINVAL;
++    This file is available only on OPAL based machines when FADump is
++    active during capture kernel. This is used to release the memory
++    used by the kernel to export /proc/opalcore file. To release this
++    memory, echo '1' to it:
 +
-+	return count;
-+}
++    echo 1  > /sys/kernel/fadump_release_opalcore
 +
-+static struct kobj_attribute opalcore_rel_attr = __ATTR(fadump_release_opalcore,
-+						0200, NULL,
-+						fadump_release_opalcore_store);
-+
- /* Init function for opalcore module. */
- static int __init opalcore_init(void)
- {
-@@ -558,6 +590,13 @@ static int __init opalcore_init(void)
- 					     &proc_opalcore_operations);
- 	if (oc_conf->proc_opalcore)
- 		proc_set_size(oc_conf->proc_opalcore, oc_conf->opalcore_size);
-+
-+	rc = sysfs_create_file(kernel_kobj, &opalcore_rel_attr.attr);
-+	if (rc) {
-+		pr_warn("unable to create sysfs file fadump_release_opalcore (%d)\n",
-+			rc);
-+	}
-+
- 	return 0;
- }
- fs_initcall(opalcore_init);
+ Here is the list of files under powerpc debugfs:
+ (Assuming debugfs is mounted on /sys/kernel/debug directory.)
+ 
 
