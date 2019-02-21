@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63895C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B581C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:29:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D40E12077B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:27:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id B05202077B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Feb 2019 19:29:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="qA6SPzKi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D40E12077B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="VxhFAYYL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B05202077B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4454Hw68PgzDqSt
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:27:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4454Kc5C3GzDqSY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 06:29:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="qA6SPzKi"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="VxhFAYYL"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4453st4NDvzDqRc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4453sv16kPzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:08:51 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 4453sq0dK3z9v9DF;
- Thu, 21 Feb 2019 20:08:47 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 4453sr1Htxz9v9DH;
+ Thu, 21 Feb 2019 20:08:48 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=qA6SPzKi; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=VxhFAYYL; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id G49XXnvW1VoT; Thu, 21 Feb 2019 20:08:47 +0100 (CET)
+ with ESMTP id hqxJ4phjcETZ; Thu, 21 Feb 2019 20:08:48 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 4453sp6hBvz9v6ky;
- Thu, 21 Feb 2019 20:08:46 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 4453sr038yz9v9DG;
+ Thu, 21 Feb 2019 20:08:48 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550776126; bh=6+UN/pZUxlGcDtKNcykeJgXkzYMi9CIgcgeN2UqrbQg=;
+ t=1550776128; bh=02ljiBkmcqq7HcRxan5DntP8oMfjS88LVnUYOxruHkQ=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=qA6SPzKizKA24YWynU+FNtSqv0DmFTop/h6lznNsP9R8lynlb1gS9SdStEyg23VKO
- CD/p/E1424XW1tlekMyIoieR3q8T4WhXDznwUJ8Mm87VFkELt6r+ufLfrZzFnHTJmf
- /6BRxGH5RKvM3AiRjpj7/5cBzj1JtTn5ATypiWqQ=
+ b=VxhFAYYLSmGaGQFcOpAYoWY/29Q0q+2/me9UNpzKdEfakVHh6882R3TWGPpSOHLdA
+ xDXw/umTYysAumVokx8C9hrUWfpzf0XYgR9eZCPDdDn3hpvqNNL6tS5kFb0/5/Jbo3
+ LBOLZBy3ESUEjQbnQKpHUWRiP2pLbXXb8tt0Q16M=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E69DE8B86A;
- Thu, 21 Feb 2019 20:08:46 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 079F48B86A;
+ Thu, 21 Feb 2019 20:08:48 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id gz_eZjADO4Sk; Thu, 21 Feb 2019 20:08:46 +0100 (CET)
+ with ESMTP id 851xaWu4prLf; Thu, 21 Feb 2019 20:08:47 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BC2FA8B852;
- Thu, 21 Feb 2019 20:08:46 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CFA618B852;
+ Thu, 21 Feb 2019 20:08:47 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 919186EF61; Thu, 21 Feb 2019 19:08:46 +0000 (UTC)
-Message-Id: <48b5bf4da0842d93319202c3d4fb1041e6443f31.1550775950.git.christophe.leroy@c-s.fr>
+ id A3A626EF61; Thu, 21 Feb 2019 19:08:47 +0000 (UTC)
+Message-Id: <ba19b60d4f1ecdd56e33363dc611473338226f5e.1550775950.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1550775950.git.christophe.leroy@c-s.fr>
 References: <cover.1550775950.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 10/16] powerpc/kconfig: define PAGE_SHIFT inside Kconfig
+Subject: [PATCH v5 11/16] powerpc/kconfig: define CONFIG_DATA_SHIFT and
+ CONFIG_ETEXT_SHIFT
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  j.neuschaefer@gmx.net
-Date: Thu, 21 Feb 2019 19:08:46 +0000 (UTC)
+Date: Thu, 21 Feb 2019 19:08:47 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,60 +93,71 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch defined CONFIG_PPC_PAGE_SHIFT in order
-to be able to use PAGE_SHIFT value inside Kconfig.
+CONFIG_STRICT_KERNEL_RWX requires a special alignment
+for DATA for some subarches. Today it is just defined
+as an #ifdef in vmlinux.lds.S
+
+In order to get more flexibility, this patch moves the
+definition of this alignment in Kconfig
+
+On some subarches, CONFIG_STRICT_KERNEL_RWX will
+require a special alignment of _etext.
+
+This patch also adds a configuration item for it in Kconfig
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig            |  7 +++++++
- arch/powerpc/include/asm/page.h | 13 ++-----------
- 2 files changed, 9 insertions(+), 11 deletions(-)
+ arch/powerpc/Kconfig              | 9 +++++++++
+ arch/powerpc/kernel/vmlinux.lds.S | 9 +++------
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 849b0d5ac3d1..417e52a27f63 100644
+index 417e52a27f63..edef40a2b446 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -708,6 +708,13 @@ config PPC_256K_PAGES
+@@ -725,6 +725,15 @@ config THREAD_SHIFT
+ 	  Used to define the stack size. The default is almost always what you
+ 	  want. Only change this if you know what you are doing.
  
- endchoice
- 
-+config PPC_PAGE_SHIFT
++config ETEXT_SHIFT
 +	int
-+	default 18 if PPC_256K_PAGES
-+	default 16 if PPC_64K_PAGES
-+	default 14 if PPC_16K_PAGES
-+	default 12
++	default PPC_PAGE_SHIFT
 +
- config THREAD_SHIFT
- 	int "Thread shift" if EXPERT
- 	range 13 15
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index aa4497175bd3..ed870468ef6f 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -20,20 +20,11 @@
++config DATA_SHIFT
++	int
++	default 24 if STRICT_KERNEL_RWX && PPC64
++	default PPC_PAGE_SHIFT
++
+ config FORCE_MAX_ZONEORDER
+ 	int "Maximum zone order"
+ 	range 8 9 if PPC64 && PPC_64K_PAGES
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index c3efb972c8c1..060a1acd7c6d 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -12,11 +12,8 @@
+ #include <asm/cache.h>
+ #include <asm/thread_info.h>
  
- /*
-  * On regular PPC32 page size is 4K (but we support 4K/16K/64K/256K pages
-- * on PPC44x). For PPC64 we support either 4K or 64K software
-+ * on PPC44x and 4K/16K on 8xx). For PPC64 we support either 4K or 64K software
-  * page size. When using 64K pages however, whether we are really supporting
-  * 64K pages in HW or not is irrelevant to those definitions.
-  */
--#if defined(CONFIG_PPC_256K_PAGES)
--#define PAGE_SHIFT		18
--#elif defined(CONFIG_PPC_64K_PAGES)
--#define PAGE_SHIFT		16
--#elif defined(CONFIG_PPC_16K_PAGES)
--#define PAGE_SHIFT		14
+-#if defined(CONFIG_STRICT_KERNEL_RWX) && !defined(CONFIG_PPC32)
+-#define STRICT_ALIGN_SIZE	(1 << 24)
 -#else
--#define PAGE_SHIFT		12
+-#define STRICT_ALIGN_SIZE	PAGE_SIZE
 -#endif
--
-+#define PAGE_SHIFT		CONFIG_PPC_PAGE_SHIFT
- #define PAGE_SIZE		(ASM_CONST(1) << PAGE_SHIFT)
++#define STRICT_ALIGN_SIZE	(1 << CONFIG_DATA_SHIFT)
++#define ETEXT_ALIGN_SIZE	(1 << CONFIG_ETEXT_SHIFT)
  
- #ifndef __ASSEMBLY__
+ ENTRY(_stext)
+ 
+@@ -131,7 +128,7 @@ SECTIONS
+ 
+ 	} :kernel
+ 
+-	. = ALIGN(PAGE_SIZE);
++	. = ALIGN(ETEXT_ALIGN_SIZE);
+ 	_etext = .;
+ 	PROVIDE32 (etext = .);
+ 
 -- 
 2.13.3
 
