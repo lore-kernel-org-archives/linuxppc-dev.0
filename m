@@ -6,86 +6,85 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4311EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:00:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B885C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:02:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A95EA207E0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:00:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A95EA207E0
+	by mail.kernel.org (Postfix) with ESMTPS id 05384207E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:02:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05384207E0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445Mfb3qdXzDqRk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:00:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445Mj138ypzDqS8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:02:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=sandipan@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445MWK53mRzDqTs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 17:53:49 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1M6i5OO089723
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:53:47 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445MWP328kzDqTG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 17:53:53 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1M6iAG5138486
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:53:50 -0500
 Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qt8x8xwsv-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qt9vwvs0f-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:53:47 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:53:50 -0500
 Received: from localhost
  by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Fri, 22 Feb 2019 06:53:45 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ Fri, 22 Feb 2019 06:53:48 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
  by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 22 Feb 2019 06:53:43 -0000
+ Fri, 22 Feb 2019 06:53:46 -0000
 Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
  [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1M6rghS7602292
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1M6rj2530474310
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 22 Feb 2019 06:53:42 GMT
+ Fri, 22 Feb 2019 06:53:45 GMT
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5305311C052;
- Fri, 22 Feb 2019 06:53:42 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id E2B8611C05B;
+ Fri, 22 Feb 2019 06:53:44 +0000 (GMT)
 Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0D5B211C04A;
- Fri, 22 Feb 2019 06:53:41 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 9B74611C04C;
+ Fri, 22 Feb 2019 06:53:43 +0000 (GMT)
 Received: from localhost.localdomain (unknown [9.195.22.129])
  by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 22 Feb 2019 06:53:40 +0000 (GMT)
+ Fri, 22 Feb 2019 06:53:43 +0000 (GMT)
 From: Sandipan Das <sandipan@linux.ibm.com>
 To: sandipan@linux.ibm.com
-Subject: [PATCH v2 3/6] powerpc sstep: Add support for cnttzw,
- cnttzd instructions
-Date: Fri, 22 Feb 2019 12:23:29 +0530
+Subject: [PATCH v2 4/6] powerpc sstep: Add support for extswsli instruction
+Date: Fri, 22 Feb 2019 12:23:30 +0530
 X-Mailer: git-send-email 2.19.2
 In-Reply-To: <cover.1550817742.git.sandipan@linux.ibm.com>
 References: <cover.1550817742.git.sandipan@linux.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19022206-0008-0000-0000-000002C3808E
+x-cbid: 19022206-0008-0000-0000-000002C3808F
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022206-0009-0000-0000-0000222FBE07
-Message-Id: <a8407c0fc7c1c9c31a8ec119de3b22f5e7952b2c.1550817743.git.sandipan@linux.ibm.com>
+x-cbparentid: 19022206-0009-0000-0000-0000222FBE08
+Message-Id: <889bd04c9730ea9ef33f42f72046a239c1e79590.1550817743.git.sandipan@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-22_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=821 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902220046
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -105,8 +104,7 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 This adds emulation support for the following integer instructions:
-  * Count Trailing Zeros Word (cnttzw[.])
-  * Count Trailing Zeros Doubleword (cnttzd[.])
+  * Extend-Sign Word and Shift Left Immediate (extswsli[.])
 
 Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
 ---
@@ -114,30 +112,30 @@ Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
  1 file changed, 14 insertions(+)
 
 diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index ab575e02f9b8..94189da4c159 100644
+index 94189da4c159..742298bdf30b 100644
 --- a/arch/powerpc/lib/sstep.c
 +++ b/arch/powerpc/lib/sstep.c
-@@ -1819,6 +1819,20 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 		case 506:	/* popcntd */
- 			do_popcnt(regs, op, regs->gpr[rd], 64);
- 			goto logical_done_nocc;
-+#endif
-+		case 538:	/* cnttzw */
+@@ -1935,6 +1935,20 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 				op->xerval &= ~XER_CA;
+ 			set_ca32(op, op->xerval & XER_CA);
+ 			goto logical_done;
++
++		case 890:	/* extswsli with sh_5 = 0 */
++		case 891:	/* extswsli with sh_5 = 1 */
 +			if (!cpu_has_feature(CPU_FTR_ARCH_300))
 +				return -1;
-+			val = (unsigned int) regs->gpr[rd];
-+			op->val = (val ? __builtin_ctz(val) : 32);
++			op->type = COMPUTE + SETREG;
++			sh = rb | ((instr & 2) << 4);
++			val = (signed int) regs->gpr[rd];
++			if (sh)
++				op->val = ROTATE(val, sh) & MASK64(0, 63 - sh);
++			else
++				op->val = val;
 +			goto logical_done;
-+#ifdef __powerpc64__
-+		case 570:	/* cnttzd */
-+			if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+				return -1;
-+			val = regs->gpr[rd];
-+			op->val = (val ? __builtin_ctzl(val) : 64);
-+			goto logical_done;
- #endif
- 		case 922:	/* extsh */
- 			op->val = (signed short) regs->gpr[rd];
++
+ #endif /* __powerpc64__ */
+ 
+ /*
 -- 
 2.19.2
 
