@@ -3,75 +3,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FA2DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:56:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CE4CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:58:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0B4362075C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:56:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0B4362075C
+	by mail.kernel.org (Postfix) with ESMTPS id 830B420700
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:58:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 830B420700
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445VDC6HMYzDqCT
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 22:56:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445VGJ4BtrzDqLM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 22:58:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=softfail (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445Td45gfLzDqWS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445Td44176zDqWN
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 22:29:12 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1MBOfbd080114
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:29:07 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qtevq48rk-1
+ x1MBO7m1040653
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:29:03 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qtefsnddc-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:29:06 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 06:29:02 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@kaod.org>;
- Fri, 22 Feb 2019 11:29:04 -0000
+ Fri, 22 Feb 2019 11:29:01 -0000
 Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 22 Feb 2019 11:29:00 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
+ Fri, 22 Feb 2019 11:28:58 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
  by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1MBSxF648758846
+ x1MBSvfo35455092
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 22 Feb 2019 11:28:59 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9CE274C050;
- Fri, 22 Feb 2019 11:28:59 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C8784C04E;
- Fri, 22 Feb 2019 11:28:59 +0000 (GMT)
+ Fri, 22 Feb 2019 11:28:57 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 52827A4060;
+ Fri, 22 Feb 2019 11:28:57 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 381FCA405F;
+ Fri, 22 Feb 2019 11:28:57 +0000 (GMT)
 Received: from smtp.lab.toulouse-stg.fr.ibm.com (unknown [9.101.4.1])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 22 Feb 2019 11:28:59 +0000 (GMT)
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 22 Feb 2019 11:28:57 +0000 (GMT)
 Received: from zorba.kaod.org.com (sig-9-145-77-130.uk.ibm.com [9.145.77.130])
  by smtp.lab.toulouse-stg.fr.ibm.com (Postfix) with ESMTP id
- 97ACC22026B; Fri, 22 Feb 2019 12:28:58 +0100 (CET)
+ 787C9220296; Fri, 22 Feb 2019 12:28:56 +0100 (CET)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v2 16/16] KVM: PPC: Book3S HV: XIVE: clear the vCPU interrupt
- presenters
-Date: Fri, 22 Feb 2019 12:28:40 +0100
+Subject: [PATCH v2 13/16] KVM: PPC: Book3S HV: XIVE: add a mapping for the
+ source ESB pages
+Date: Fri, 22 Feb 2019 12:28:37 +0100
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190222112840.25000-1-clg@kaod.org>
 References: <20190222112840.25000-1-clg@kaod.org>
@@ -79,17 +79,17 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19022211-0016-0000-0000-0000025996BF
+x-cbid: 19022211-4275-0000-0000-00000312A5A8
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022211-0017-0000-0000-000032B3EB33
-Message-Id: <20190222112840.25000-17-clg@kaod.org>
+x-cbparentid: 19022211-4276-0000-0000-00003820DCCF
+Message-Id: <20190222112840.25000-14-clg@kaod.org>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-22_09:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=13 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=4 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1034 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=602 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902220081
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -109,159 +109,126 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When the VM boots, the CAS negotiation process determines which
-interrupt mode to use and invokes a machine reset. At that time, the
-previous KVM interrupt device is 'destroyed' before the chosen one is
-created. Upon destruction, the vCPU interrupt presenters using the KVM
-device should be cleared first, the machine will reconnect them later
-to the new device after it is created.
+Each source is associated with an Event State Buffer (ESB) with a
+even/odd pair of pages which provides commands to manage the source:
+to trigger, to EOI, to turn off the source for instance.
 
-When using the KVM device, there is still a race window with the early
-checks in kvmppc_native_connect_vcpu(). Yet to be fixed.
+The custom VM fault handler will deduce the guest IRQ number from the
+offset of the fault, and the ESB page of the associated XIVE interrupt
+will be inserted into the VMA using the internal structure caching
+information on the interrupts.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 ---
- arch/powerpc/kvm/book3s_xics.c        | 19 +++++++++++++
- arch/powerpc/kvm/book3s_xive.c        | 39 +++++++++++++++++++++++++--
- arch/powerpc/kvm/book3s_xive_native.c | 16 +++++++++++
- 3 files changed, 72 insertions(+), 2 deletions(-)
+ arch/powerpc/include/uapi/asm/kvm.h        |  1 +
+ arch/powerpc/kvm/book3s_xive_native.c      | 57 ++++++++++++++++++++++
+ Documentation/virtual/kvm/devices/xive.txt |  7 +++
+ 3 files changed, 65 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index f27ee57ab46e..81cdabf4295f 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -1342,6 +1342,25 @@ static void kvmppc_xics_free(struct kvm_device *dev)
- 	struct kvmppc_xics *xics = dev->private;
- 	int i;
- 	struct kvm *kvm = xics->kvm;
-+	struct kvm_vcpu *vcpu;
-+
-+	/*
-+	 * When destroying the VM, the vCPUs are destroyed first and
-+	 * the vCPU list should be empty. If this is not the case,
-+	 * then we are simply destroying the device and we should
-+	 * clean up the vCPU interrupt presenters first.
-+	 */
-+	if (atomic_read(&kvm->online_vcpus) != 0) {
-+		/*
-+		 * call kick_all_cpus_sync() to ensure that all CPUs
-+		 * have executed any pending interrupts
-+		 */
-+		if (is_kvmppc_hv_enabled(kvm))
-+			kick_all_cpus_sync();
-+
-+		kvm_for_each_vcpu(i, vcpu, kvm)
-+			kvmppc_xics_free_icp(vcpu);
-+	}
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index be9b255e061d..d8990e9044e3 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -721,5 +721,6 @@ struct kvm_ppc_xive_eq {
+ #define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
  
- 	debugfs_remove(xics->dentry);
+ #define KVM_XIVE_TIMA_PAGE_OFFSET	0
++#define KVM_XIVE_ESB_PAGE_OFFSET	4
  
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index 7a14512b8944..0a1c11d6881c 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -1105,11 +1105,19 @@ void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
- void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
--	struct kvmppc_xive *xive = xc->xive;
-+	struct kvmppc_xive *xive;
- 	int i;
- 
-+	if (!kvmppc_xics_enabled(vcpu))
-+		return;
-+
-+	if (!xc)
-+		return;
-+
- 	pr_devel("cleanup_vcpu(cpu=%d)\n", xc->server_num);
- 
-+	xive = xc->xive;
-+
- 	/* Ensure no interrupt is still routed to that VP */
- 	xc->valid = false;
- 	kvmppc_xive_disable_vcpu_interrupts(vcpu);
-@@ -1146,6 +1154,10 @@ void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
- 	}
- 	/* Free the VP */
- 	kfree(xc);
-+
-+	/* Cleanup the vcpu */
-+	vcpu->arch.irq_type = KVMPPC_IRQ_DEFAULT;
-+	vcpu->arch.xive_vcpu = NULL;
- }
- 
- int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
-@@ -1163,7 +1175,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	}
- 	if (xive->kvm != vcpu->kvm)
- 		return -EPERM;
--	if (vcpu->arch.irq_type)
-+	if (vcpu->arch.irq_type != KVMPPC_IRQ_DEFAULT)
- 		return -EBUSY;
- 	if (kvmppc_xive_find_server(vcpu->kvm, cpu)) {
- 		pr_devel("Duplicate !\n");
-@@ -1833,8 +1845,31 @@ static void kvmppc_xive_free(struct kvm_device *dev)
- {
- 	struct kvmppc_xive *xive = dev->private;
- 	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
- 	int i;
- 
-+	/*
-+	 * When destroying the VM, the vCPUs are destroyed first and
-+	 * the vCPU list should be empty. If this is not the case,
-+	 * then we are simply destroying the device and we should
-+	 * clean up the vCPU interrupt presenters first.
-+	 */
-+	if (atomic_read(&kvm->online_vcpus) != 0) {
-+		/*
-+		 * call kick_all_cpus_sync() to ensure that all CPUs
-+		 * have executed any pending interrupts
-+		 */
-+		if (is_kvmppc_hv_enabled(kvm))
-+			kick_all_cpus_sync();
-+
-+		/*
-+		 * TODO: There is still a race window with the early
-+		 * checks in kvmppc_native_connect_vcpu()
-+		 */
-+		kvm_for_each_vcpu(i, vcpu, kvm)
-+			kvmppc_xive_cleanup_vcpu(vcpu);
-+	}
-+
- 	debugfs_remove(xive->dentry);
- 
- 	if (kvm)
+ #endif /* __LINUX_KVM_POWERPC_H */
 diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index bf60870144f1..c0655164d9af 100644
+index c6ac818a13b2..92cab6409e8e 100644
 --- a/arch/powerpc/kvm/book3s_xive_native.c
 +++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -909,8 +909,24 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
- {
- 	struct kvmppc_xive *xive = dev->private;
- 	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
- 	int i;
+@@ -176,6 +176,59 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+ 	return rc;
+ }
  
++static int xive_native_esb_fault(struct vm_fault *vmf)
++{
++	struct vm_area_struct *vma = vmf->vma;
++	struct kvm_device *dev = vma->vm_file->private_data;
++	struct kvmppc_xive *xive = dev->private;
++	struct kvmppc_xive_src_block *sb;
++	struct kvmppc_xive_irq_state *state;
++	struct xive_irq_data *xd;
++	u32 hw_num;
++	u16 src;
++	u64 page;
++	unsigned long irq;
++	u64 page_offset;
++
 +	/*
-+	 * When destroying the VM, the vCPUs are destroyed first and
-+	 * the vCPU list should be empty. If this is not the case,
-+	 * then we are simply destroying the device and we should
-+	 * clean up the vCPU interrupt presenters first.
++	 * Linux/KVM uses a two pages ESB setting, one for trigger and
++	 * one for EOI
 +	 */
-+	if (atomic_read(&kvm->online_vcpus) != 0) {
-+		/*
-+		 * TODO: There is still a race window with the early
-+		 * checks in kvmppc_xive_native_connect_vcpu()
-+		 */
-+		kvm_for_each_vcpu(i, vcpu, kvm)
-+			kvmppc_xive_native_cleanup_vcpu(vcpu);
++	page_offset = vmf->pgoff - vma->vm_pgoff;
++	irq = page_offset / 2;
++
++	sb = kvmppc_xive_find_source(xive, irq, &src);
++	if (!sb) {
++		pr_devel("%s: source %lx not found !\n", __func__, irq);
++		return VM_FAULT_SIGBUS;
 +	}
 +
- 	debugfs_remove(xive->dentry);
++	state = &sb->irq_state[src];
++	kvmppc_xive_select_irq(state, &hw_num, &xd);
++
++	arch_spin_lock(&sb->lock);
++
++	/*
++	 * first/even page is for trigger
++	 * second/odd page is for EOI and management.
++	 */
++	page = page_offset % 2 ? xd->eoi_page : xd->trig_page;
++	arch_spin_unlock(&sb->lock);
++
++	if (WARN_ON(!page)) {
++		pr_err("%s: acessing invalid ESB page for source %lx !\n",
++		       __func__, irq);
++		return VM_FAULT_SIGBUS;
++	}
++
++	vmf_insert_pfn(vma, vmf->address, page >> PAGE_SHIFT);
++	return VM_FAULT_NOPAGE;
++}
++
++static const struct vm_operations_struct xive_native_esb_vmops = {
++	.fault = xive_native_esb_fault,
++};
++
+ static int xive_native_tima_fault(struct vm_fault *vmf)
+ {
+ 	struct vm_area_struct *vma = vmf->vma;
+@@ -205,6 +258,10 @@ static int kvmppc_xive_native_mmap(struct kvm_device *dev,
+ 		if (vma_pages(vma) > 4)
+ 			return -EINVAL;
+ 		vma->vm_ops = &xive_native_tima_vmops;
++	} else if (vma->vm_pgoff == KVM_XIVE_ESB_PAGE_OFFSET) {
++		if (vma_pages(vma) > KVMPPC_XIVE_NR_IRQS * 2)
++			return -EINVAL;
++		vma->vm_ops = &xive_native_esb_vmops;
+ 	} else {
+ 		return -EINVAL;
+ 	}
+diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
+index 4d6b41609fd9..be5000b2eb5a 100644
+--- a/Documentation/virtual/kvm/devices/xive.txt
++++ b/Documentation/virtual/kvm/devices/xive.txt
+@@ -36,6 +36,13 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+   third (operating system) and the fourth (user level) are exposed the
+   guest.
  
- 	pr_devel("Destroying xive native device\n");
++  2. Event State Buffer (ESB)
++
++  Each source is associated with an Event State Buffer (ESB) with
++  either a pair of even/odd pair of pages which provides commands to
++  manage the source: to trigger, to EOI, to turn off the source for
++  instance.
++
+ * Groups:
+ 
+   1. KVM_DEV_XIVE_GRP_CTRL
 -- 
 2.20.1
 
