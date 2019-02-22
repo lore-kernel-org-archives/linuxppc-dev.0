@@ -2,61 +2,84 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D345C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:18:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2475FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:39:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DC9F520818
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:18:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 48A9020823
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:39:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="GzWxaENd"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC9F520818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="mQhlMa3m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 48A9020823
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445N3s0FV0zDqQs
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:18:33 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445NX04nMSzDqSq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:39:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="mQhlMa3m"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445Mz236QVzDqVP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 18:14:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="GzWxaENd"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 445Mz16KDnz9s9L;
- Fri, 22 Feb 2019 18:14:21 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1550819662;
- bh=BUotE6TJCLy3uPerF71sH4otRbu4tnk2oqTCpT0GvvU=;
- h=Date:From:To:Cc:Subject:From;
- b=GzWxaENdNSlHkSNu8kE4lbFZmnPVv33hQmdZuA29yF8ZfKqqdcuVJoZ7FwwTbO6Nw
- SMyD2bhdWmv0j5dvPZV6fHdKHRRlT9C6sCKqD43NpDwVotL5UIUgOYEqt3U4+7JN07
- D0BthU8u+iKSZk3ySmCq9f6FGrZQNkJ5UGv6qG2s9iF1Yz74Sza+FTzMtXEvUgtTOg
- tP7F2gxp6d3IzRMUIEoWdrClnZM1zJNZSScopihuXljGM64qRVvCBwN2OXJEzowry0
- XIs7RukmqrGoZ6JBNpydO393c1zDyywD0UdE1ybfsIASj3vNlgoTPCZCzAn6QU+aTt
- l1VrbDQI/C/jw==
-Date: Fri, 22 Feb 2019 18:14:03 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the powerpc tree
-Message-ID: <20190222181403.4ce373bd@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445NVG3QfWzDqS5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 18:37:57 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 445NV91FTkzB09ZS;
+ Fri, 22 Feb 2019 08:37:53 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=mQhlMa3m; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id ES9Zh3bF8BWb; Fri, 22 Feb 2019 08:37:53 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 445NV90BTKzB09ZR;
+ Fri, 22 Feb 2019 08:37:53 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1550821073; bh=pootY2ICxlPl5SwfrjtlioothWZDPlMOqxL4/DIqGY0=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=mQhlMa3mXlDXo7oyYJ2uCLN9Gtnw4ggsYG3vIHSUgXv+C3mmG3lx6tGZ0POgfld84
+ wHes/3k6+IHF2K6+VoTNWoJYN8VjD19Q5pmjrKKOT744fYq5WHJpjVcfUkDKBNZUCD
+ HAQL0wWVKm5F+05ktO64fkpANNAnohXg2NYBgqck=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 45C848B885;
+ Fri, 22 Feb 2019 08:37:53 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id YZ07whHOHDKY; Fri, 22 Feb 2019 08:37:52 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 0833B8B8D7;
+ Fri, 22 Feb 2019 08:37:44 +0100 (CET)
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+References: <20190222181403.4ce373bd@canb.auug.org.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <535192d6-2142-05a6-4088-0f71d744c345@c-s.fr>
+Date: Fri, 22 Feb 2019 08:37:44 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/+FbZc7FKr5m2vNkwx0fiVQQ"; protocol="application/pgp-signature"
+In-Reply-To: <20190222181403.4ce373bd@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -74,43 +97,24 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/+FbZc7FKr5m2vNkwx0fiVQQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
 
-After merging the powerpc tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+Le 22/02/2019 à 08:14, Stephen Rothwell a écrit :
+> Hi all,
+> 
+> After merging the powerpc tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> make[4]: *** No rule to make target 'arch/powerpc/mm/ptdump/core.o', needed by 'arch/powerpc/mm/ptdump/built-in.a'.
+> 
+> Caused by commit
+> 
+>    5df1cfa43394 ("powerpc: Move page table dump files in a dedicated subdirectory")
+> 
+> I have reverted that commit for today.
+> 
 
-make[4]: *** No rule to make target 'arch/powerpc/mm/ptdump/core.o', needed=
- by 'arch/powerpc/mm/ptdump/built-in.a'.
+In the Makefile, replace core.o by ptdump.o (or rename the file ptdump.c 
+to core.c). Michael, what was your intention ?
 
-Caused by commit
-
-  5df1cfa43394 ("powerpc: Move page table dump files in a dedicated subdire=
-ctory")
-
-I have reverted that commit for today.
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/+FbZc7FKr5m2vNkwx0fiVQQ
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxvoTsACgkQAVBC80lX
-0Gwdbgf9FSrUjejdUoAe9U3PpHeJakQyVdhu9ZoCWGxHwRsdnWi7ZUT4yEB4FD7Q
-YRBbEm5sugDNBU+s5vlLHDzUqA34reGO6ntx+rO0ZOtUVnHBZSkpEI+Cn2ipGPWA
-t2ximMCh1IYR1kyOB/iNBT8+bv8ep9AhOfyxtjUqNhAB35OvvtMURv5+rZYMuxHX
-kdqFgTMsux674D0/ajFqMbh/j79AcIERxVPfjHLCPaXUIoJyjVFLx/2MRvRtaUL2
-jbRP4npWJaFapY5xXo+hHQ3kyPCZdBujIvychdEKbVkQToPXXAfKHtcRs4n+LTsz
-fqGvP2mfO4oZuRag4Ns71k8S7pArPQ==
-=g7aE
------END PGP SIGNATURE-----
-
---Sig_/+FbZc7FKr5m2vNkwx0fiVQQ--
+Christophe
