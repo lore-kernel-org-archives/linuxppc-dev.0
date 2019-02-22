@@ -3,44 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D039C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:39:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FA19C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:41:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 849CC206B7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:39:50 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 849CC206B7
+	by mail.kernel.org (Postfix) with ESMTPS id 20C76206B7
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:41:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20C76206B7
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445SX44XwBzDqR5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:39:48 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 445SYx53LnzDqVT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:41:25 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445RNS22H4zDq7k
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445RNS4kYkzDqH3
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 20:48:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 445RNR6d0wz9sBp; Fri, 22 Feb 2019 20:48:07 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 445RNR3184z9sP2; Fri, 22 Feb 2019 20:48:07 +1100 (AEDT)
+ id 445RNS1X6Wz9sP3; Fri, 22 Feb 2019 20:48:08 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 884dfb722db899e36d8c382783347aab57f96caa
+X-powerpc-patch-commit: 40058337f23f79212f92ed5ef066e90a032905b1
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190221023849.7zra6dhii6fele6i@oak.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <2fac63e1eb595870a990da51f81ba97c11903c0e.1550745320.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [v2,1/2] KVM: PPC: Book3S HV: Simplify machine check handling
-Message-Id: <445RNR3184z9sP2@ozlabs.org>
-Date: Fri, 22 Feb 2019 20:48:07 +1100 (AEDT)
+Subject: Re: [v2,01/10] powerpc: simplify BDI switch
+Message-Id: <445RNS1X6Wz9sP3@ozlabs.org>
+Date: Fri, 22 Feb 2019 20:48:08 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,52 +51,19 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-02-21 at 02:38:49 UTC, Paul Mackerras wrote:
-> This makes the handling of machine check interrupts that occur inside
-> a guest simpler and more robust, with less done in assembler code and
-> in real mode.
+On Thu, 2019-02-21 at 10:37:53 UTC, Christophe Leroy wrote:
+> There is no reason to re-read each time the pointer at
+> location 0xf0 as it is fixed and known.
 > 
-> Now, when a machine check occurs inside a guest, we always get the
-> machine check event struct and put a copy in the vcpu struct for the
-> vcpu where the machine check occurred.  We no longer call
-> machine_check_queue_event() from kvmppc_realmode_mc_power7(), because
-> on POWER8, when a vcpu is running on an offline secondary thread and
-> we call machine_check_queue_event(), that calls irq_work_queue(),
-> which doesn't work because the CPU is offline, but instead triggers
-> the WARN_ON(lazy_irq_pending()) in pnv_smp_cpu_kill_self() (which
-> fires again and again because nothing clears the condition).
-> 
-> All that machine_check_queue_event() actually does is to cause the
-> event to be printed to the console.  For a machine check occurring in
-> the guest, we now print the event in kvmppc_handle_exit_hv()
-> instead.
-> 
-> The assembly code at label machine_check_realmode now just calls C
-> code and then continues exiting the guest.  We no longer either
-> synthesize a machine check for the guest in assembly code or return
-> to the guest without a machine check.
-> 
-> The code in kvmppc_handle_exit_hv() is extended to handle the case
-> where the guest is not FWNMI-capable.  In that case we now always
-> synthesize a machine check interrupt for the guest.  Previously, if
-> the host thinks it has recovered the machine check fully, it would
-> return to the guest without any notification that the machine check
-> had occurred.  If the machine check was caused by some action of the
-> guest (such as creating duplicate SLB entries), it is much better to
-> tell the guest that it has caused a problem.  Therefore we now always
-> generate a machine check interrupt for guests that are not
-> FWNMI-capable.
-> 
-> Reviewed-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-> Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/884dfb722db899e36d8c382783347aab
+https://git.kernel.org/powerpc/c/40058337f23f79212f92ed5ef066e90a
 
 cheers
