@@ -2,42 +2,82 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.7 required=3.0 tests=BIGNUM_EMAILS,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D5A5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 152E1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:46:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24F2A20818
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:44:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24F2A20818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 848A720818
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:46:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="5oN/Ulaf"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 848A720818
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445Sdz1NDlzDq5g
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:44:55 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 445Sgr2WVGzDqVQ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:46:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=156.151.31.86; helo=userp2130.oracle.com;
+ envelope-from=dan.carpenter@oracle.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="5oN/Ulaf"; 
+ dkim-atps=neutral
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445Rgw21LJzDqPV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 21:01:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 445Rgv63KTz9s8m; Fri, 22 Feb 2019 21:01:31 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8f5b27347e88b171c755562f0090ce40e514fc00
-X-Patchwork-Hint: ignore
-In-Reply-To: <20190218055801.35165-1-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [kernel] powerpc/powernv/sriov: Register IOMMU groups for VFs
-Message-Id: <445Rgv63KTz9s8m@ozlabs.org>
-Date: Fri, 22 Feb 2019 21:01:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445Sc74mKhzDqVj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 21:43:18 +1100 (AEDT)
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+ by userp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x1MAXRjU035211;
+ Fri, 22 Feb 2019 10:43:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=date : from : to : cc
+ : subject : message-id : mime-version : content-type; s=corp-2018-07-02;
+ bh=1i5WQCUCPoPzUI1Cx/77kV+RikwrD0ABD4aQmyeJDRU=;
+ b=5oN/Ulafd3sRdLdLZ0cQ8a79PT/Sjpv33pLl3yxoJEDex585pHD+xfFWObIKJwaPAkW4
+ 4D8IRHlDChBoNQcKJJof6jdDSv2WYFScj17z5/hx5bLEDs7BpngnybnTLLzC+CtgRW9v
+ bkxYpGYsnwpSAZ+IdS7GoSP7KPFyOc9DXT9gYM07Yih7F4RLBwEzXmyY2nqg4nVPre9l
+ AHlLvsGnGiE/pLVThzzhc5LMAra09D6zGaqTP9UReRKtbtuAXV7x9MSexiAoKEWB0p7G
+ W+f7YmF6JgUlMiCdYA9Dqxarrx6v89JQ7rMvQmukhQ9YeKsUyTj0YkNRMQa0E95jbHYB rg== 
+Received: from aserv0021.oracle.com (aserv0021.oracle.com [141.146.126.233])
+ by userp2130.oracle.com with ESMTP id 2qp9xuekvr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 22 Feb 2019 10:43:11 +0000
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by aserv0021.oracle.com (8.14.4/8.14.4) with ESMTP id x1MAh9ib021092
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 22 Feb 2019 10:43:10 GMT
+Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x1MAh8Bv017302;
+ Fri, 22 Feb 2019 10:43:09 GMT
+Received: from kadam (/197.157.0.19) by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Fri, 22 Feb 2019 02:43:08 -0800
+Date: Fri, 22 Feb 2019 13:43:02 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: christophe.leroy@c-s.fr
+Subject: [bug report] powerpc/mm: dump block address translation on book3s/32
+Message-ID: <20190222104302.GA17252@kadam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9174
+ signatures=668684
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=1 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=776 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1902220075
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -49,34 +89,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 2019-02-18 at 05:58:01 UTC, Alexey Kardashevskiy wrote:
-> The compound IOMMU group rework moved iommu_register_group() together in
-> pnv_pci_ioda_setup_iommu_api() (which is a part of ppc_md.pcibios_fixup).
-> As the result, pnv_ioda_setup_bus_iommu_group() does not create groups
-> any more, it only adds devices to groups.
-> 
-> This works fine for boot time devices. However IOMMU groups for SRIOV's
-> VFs were added by pnv_ioda_setup_bus_iommu_group() so this got broken:
-> pnv_tce_iommu_bus_notifier() expects a group to be registered for VF
-> and it is not.
-> 
-> This adds missing group registration and adds a NULL pointer check into
-> the bus notifier so we won't stop in xmon if there is no group, although
-> it is not expected to happen now.
-> 
-> Fixes: 0bd971676e68 "powerpc/powernv/npu: Add compound IOMMU groups"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reported-by: Santwana Samantray<santwana.samantray@in.ibm.com>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Hello Christophe Leroy,
 
-Applied to powerpc fixes, thanks.
+The patch 7c91efce1608: "powerpc/mm: dump block address translation
+on book3s/32" from Dec 3, 2018, leads to the following static checker
+warning:
 
-https://git.kernel.org/powerpc/c/8f5b27347e88b171c755562f0090ce40
+	arch/powerpc/mm/dump_bats.c:20 pp_601()
+	warn: both sides of ternary the same: '"RWX"'
 
-cheers
+arch/powerpc/mm/dump_bats.c
+    13 static char *pp_601(int k, int pp)
+    14 {
+    15 	if (pp == 0)
+    16 		return k ? "NA" : "RWX";
+    17 	if (pp == 1)
+    18 		return k ? "ROX" : "RWX";
+    19 	if (pp == 2)
+--> 20 		return k ? "RWX" : "RWX";
+                            ^^^     ^^^
+    21 	return k ? "ROX" : "ROX";
+                    ^^^     ^^^
+
+Was something else intended here?  Or we could make it simpler:
+
+	if (pp == 2)
+		return "RWX";
+	return "ROX";
+
+
+    22 }
+
+regards,
+dan carpenter
