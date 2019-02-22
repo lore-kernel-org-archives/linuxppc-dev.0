@@ -6,39 +6,38 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7D0CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:27:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48200C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:29:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8BFF32081B
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:27:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BFF32081B
+	by mail.kernel.org (Postfix) with ESMTPS id F177C2081B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 10:29:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F177C2081B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445SFx5MgmzDqNG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:27:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445SHj1qTtzDqSM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 21:29:05 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445RNH0XVXzDqB3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445RNH2zdvzDqLM
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 20:47:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 445RNG2CkMz9sNf; Fri, 22 Feb 2019 20:47:58 +1100 (AEDT)
+ id 445RNH0Xkvz9sN1; Fri, 22 Feb 2019 20:47:59 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: c746ca00f5eac6224eda02f39ebdc48fabfad3c5
+X-powerpc-patch-commit: 46ee7c3c5212b0f4f8713d60cfd595721efdf0d3
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190214064540.26597-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org
+In-Reply-To: <20190215004817.19961-1-oohall@gmail.com>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/book3s: Remove a few page table update interfaces.
-Message-Id: <445RNG2CkMz9sNf@ozlabs.org>
-Date: Fri, 22 Feb 2019 20:47:58 +1100 (AEDT)
+Subject: Re: [v2,1/7] powerpc/eeh: Use debugfs_create_u32 for eeh_max_freezes
+Message-Id: <445RNH0Xkvz9sN1@ozlabs.org>
+Date: Fri, 22 Feb 2019 20:47:59 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -50,24 +49,22 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: sbobroff@linux.ibm.com, Oliver O'Halloran <oohall@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-02-14 at 06:45:40 UTC, "Aneesh Kumar K.V" wrote:
-> When updating page tables, we need to make sure we fill the page table
-> entry valid bit. We should be using page table populate interface for
-> updating the table entries. The page table 'set' interface allows
-> updating the raw value of page table entry. This can result in
-> updating the entry wrongly. Remove the 'set' interface so that we avoid
-> its future usage.
+On Fri, 2019-02-15 at 00:48:11 UTC, Oliver O'Halloran wrote:
+> There's no need to the custom getter/setter functions so we should remove
+> them in favour of using the generic one. While we're here, change the type
+> of eeh_max_freeze to u32 and print the value in decimal rather than
+> hex because printing it in hex makes no sense.
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> Reviewed-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c746ca00f5eac6224eda02f39ebdc48f
+https://git.kernel.org/powerpc/c/46ee7c3c5212b0f4f8713d60cfd59572
 
 cheers
