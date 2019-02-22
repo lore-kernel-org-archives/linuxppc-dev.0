@@ -3,100 +3,85 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD2BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 294C0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:18:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AC36820818
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:13:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9CE922080F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:18:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="NQtoOTsn";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="cQ1NolWA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC36820818
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="NON7VxcJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CE922080F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=chromium.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445BdH5kMRzDqTX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:13:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445Bkf4349zDqTR
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:18:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=russell.cc
- (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
- envelope-from=ruscur@russell.cc; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=chromium.org
+ (client-ip=2607:f8b0:4864:20::941; helo=mail-ua1-x941.google.com;
+ envelope-from=keescook@chromium.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=russell.cc
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="NQtoOTsn"; 
- dkim=pass (2048-bit key;
- unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="cQ1NolWA"; dkim-atps=neutral
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
+ dmarc=pass (p=none dis=none) header.from=chromium.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=chromium.org header.i=@chromium.org header.b="NON7VxcJ";
+ dkim-atps=neutral
+Received: from mail-ua1-x941.google.com (mail-ua1-x941.google.com
+ [IPv6:2607:f8b0:4864:20::941])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445Bbf713ZzDq6k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 11:11:58 +1100 (AEDT)
-Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 2E72721DA6;
- Thu, 21 Feb 2019 19:11:56 -0500 (EST)
-Received: from mailfrontend1 ([10.202.2.162])
- by compute6.internal (MEProxy); Thu, 21 Feb 2019 19:11:56 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
- message-id:subject:from:to:cc:date:in-reply-to:references
- :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- FNd4Cn7WvHska6I/7VkOpFrTaCEZha8lOQPmi9WBbq8=; b=NQtoOTsnL60EtTDb
- pkt2V/QMIxo0Ojv1hM8AUJWjZLK0QmfGiWeHOJ420Ll51J9JtS95pGM+AHYXnX2t
- k3nUlUHeE6EFjvlfxpwm+WmhTpqbbs2JRiTJPFbE5KqElVsb/c6zd8EGb9De3ceB
- BfxwxknPCgyyns7fbyD1+PHsjsCLC/qbRwnd76wpLGqmjnqhSO7Nffa1f9v9CK/J
- QDK/CYlggM8LAiIN/VJyAmIRz0U3AJ4K7ZkUQI5Th63E+GY5N3MMsrGzFK6FgQg2
- VxXZCU+eBKI2iBe9dUF+Fn+hjnTbWl5A5VVHQ9Zt20nEczQUYUuV1+acfj6RY2s4
- Lf/HPQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
- messagingengine.com; h=cc:content-transfer-encoding:content-type
- :date:from:in-reply-to:message-id:mime-version:references
- :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=FNd4Cn7WvHska6I/7VkOpFrTaCEZha8lOQPmi9WBb
- q8=; b=cQ1NolWAymbEsJjr8yeHOQqoQLb4yhqXvyaPUvI2D1LG9V9YFAWogW+P9
- /3BcHwqRZxHJYz0OejsCa3vvCkqWA0JGkfpBP3nQ0f7VNzDX4wIfvkRzfkjKtsko
- VjjfT1AWclriHw3qdcJb/IbZGnjCj6cq+wNf4QJIL/8dB4wVBucXfrh0s1AUo9T9
- tUKeRLXO6OlhK47qQUdcU1n6EWg9IKh62S//9aGvszTtTCPBqmio4N1A27iDIt8Z
- NR/BMDVpXO0cgoIog3v3JKMrsB+3tVHq39WNJFygt6CnrN+QwAMJZ2oRbaQMpmWz
- hERLHf+SNlXiwTRrYevDc72FQ9JgA==
-X-ME-Sender: <xms:Sj5vXNBVrYB_p5kgF65zutyb5ub7T2ymWxCxxPEHWYhtLRRyGNMz7w>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedutddrtdelgddujeculddtuddrgedtledrtddtmd
- cutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthen
- uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- gfrhhlucfvnfffucdludehmdenucfjughrpefkuffhvfffjghftggfggfgsehtkeertddt
- reejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
- hsvghllhdrtggtqeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduvddv
- rdelledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruh
- hsshgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
-X-ME-Proxy: <xmx:Sj5vXOS18Chzaj96gge-ld5SQZjEM4emlbqRpB3ryyqpKTP9TWDPkA>
- <xmx:Sj5vXFfldKthe4Z_vqThEQjfm5dz7GPPi5shpmIThq9RSs3zi7lG-Q>
- <xmx:Sj5vXPSABOIoGJxrTVqj2jstgU3Bvi2KA8bIciWz32dBux2t99KaDw>
- <xmx:TD5vXLqUepPGrUlIBTtyuUNXabeYqKs6LRggS468E_Z5ZgC_BUFqVw>
-Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id 75BDEE419A;
- Thu, 21 Feb 2019 19:11:52 -0500 (EST)
-Message-ID: <3ee891ded467e1fd473c9b075658b959e091e8f6.camel@russell.cc>
-Subject: Re: [PATCH 3/7] powerpc/mm: Add a framework for Kernel Userspace
- Access Protection
-From: Russell Currey <ruscur@russell.cc>
-To: Mark Rutland <mark.rutland@arm.com>, Christophe Leroy
- <christophe.leroy@c-s.fr>
-Date: Fri, 22 Feb 2019 11:11:49 +1100
-In-Reply-To: <20190221144818.GI33673@lakrids.cambridge.arm.com>
-References: <20190221093601.27920-1-ruscur@russell.cc>
- <20190221093601.27920-4-ruscur@russell.cc>
- <adb2b7c9-3472-2b9c-37e1-6150697d0940@c-s.fr>
- <20190221144818.GI33673@lakrids.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.30.5 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445Bht3CHMzDqSY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 11:16:30 +1100 (AEDT)
+Received: by mail-ua1-x941.google.com with SMTP id a42so451795uad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 16:16:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=chromium.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=AoWMtIV9BjXIPc20XxfyIRC43G0u1RbPWkNgUcYk4Q8=;
+ b=NON7VxcJEE7WKDxxCeuaLczyqOKpBeyge1Sj7SUw/Q6OvCTd9/ggI1OAlh+L2dsMht
+ hrxehbNLMgSpGEL7+Ektn6Avmj1+PnhKbjQzWU/J8dAji46kRlgbEVBrn5joK+ynXPbn
+ M2VynFuxkTuihNwc2Fw1y7p11t4fl46FdSjY0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=AoWMtIV9BjXIPc20XxfyIRC43G0u1RbPWkNgUcYk4Q8=;
+ b=qe8WUHqHo4T4Mz2Y1yoZ7sKBhDtoSGzoHUQHk3Lf9T7JU8gnfHXUu3BZzl7KnVHhKD
+ Y5m/lmfwxKmlj9/NuBFjCI6vRdkZtIfEUWLPHT0XmTQ+bT35mlghl7n7IQW3NdYhMQkL
+ 9zoPBmfjCcZ4hDsXHuHMO1AF/xK7pUsuTfmM1cin+Fd/Cl9ob2G8a7ixrvbtz1pnqpUB
+ 7sbw59WZDwf6MD5Y20MiL702aP8rHE806ZtqDROe3P29u2RK45SJHzJIBs/Sg0/Ogr2s
+ tqRTljDDXSJSkg7PsoM3q/aBH2fTZwd1lcCbnRB4aXoISuXk5Jb8bMNRHEmjaIRicLyr
+ bGyA==
+X-Gm-Message-State: AHQUAua8Q74TiPoEO1DtzT2yTfnaoQlytfPluXYxZQXjh1rZFMdR0CKZ
+ DNrtxKhMRys6Ma59mjFJ9BjCWjJwTZU=
+X-Google-Smtp-Source: AHgI3IY4Ni6X/MvkexAfbm5qnPhkFqgK99LOwubwMKTwk2CZl1d9ZQzmJnlnZpO1xgJlLY5GClKSgA==
+X-Received: by 2002:a67:c98c:: with SMTP id y12mr797922vsk.60.1550794587108;
+ Thu, 21 Feb 2019 16:16:27 -0800 (PST)
+Received: from mail-ua1-f49.google.com (mail-ua1-f49.google.com.
+ [209.85.222.49])
+ by smtp.gmail.com with ESMTPSA id q199sm102002vke.23.2019.02.21.16.16.24
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Thu, 21 Feb 2019 16:16:25 -0800 (PST)
+Received: by mail-ua1-f49.google.com with SMTP id s15so423049uap.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 16:16:24 -0800 (PST)
+X-Received: by 2002:a67:fe97:: with SMTP id b23mr32945vsr.66.1550794584524;
+ Thu, 21 Feb 2019 16:16:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190221093601.27920-1-ruscur@russell.cc>
+ <CAGXu5j+P1wh0uf1kfMywSTo4NYtwFPSnKXg6wbfyBRqwVRZVYA@mail.gmail.com>
+ <8ef1669cdfbcc6114eebc30c610c91c191c7cc7a.camel@russell.cc>
+In-Reply-To: <8ef1669cdfbcc6114eebc30c610c91c191c7cc7a.camel@russell.cc>
+From: Kees Cook <keescook@chromium.org>
+Date: Thu, 21 Feb 2019 16:16:12 -0800
+X-Gmail-Original-Message-ID: <CAGXu5jL0ZOzTo2sXiWkgemcwHusX4YuM9b_9y-MZ2THuDoRC+g@mail.gmail.com>
+Message-ID: <CAGXu5jL0ZOzTo2sXiWkgemcwHusX4YuM9b_9y-MZ2THuDoRC+g@mail.gmail.com>
+Subject: Re: [PATCH 0/7] Kernel Userspace Protection for radix
+To: Russell Currey <ruscur@russell.cc>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,48 +93,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
- kernel-hardening@lists.openwall.com
+Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>, Nick Piggin <npiggin@gmail.com>,
+ Kernel Hardening <kernel-hardening@lists.openwall.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-02-21 at 14:48 +0000, Mark Rutland wrote:
-> On Thu, Feb 21, 2019 at 11:46:06AM +0100, Christophe Leroy wrote:
-> > 
-> > Le 21/02/2019 à 10:35, Russell Currey a écrit :
-> > > From: Christophe Leroy <christophe.leroy@c-s.fr>
-> > > 
-> > > This patch implements a framework for Kernel Userspace Access
-> > > Protection.
-> > > 
-> > > Then subarches will have to possibility to provide their own
-> > > implementation by providing setup_kuap() and
-> > > lock/unlock_user_access()
-> > > 
-> > > Some platform will need to know the area accessed and whether it
-> > > is
-> > > accessed from read, write or both. Therefore source, destination
-> > > and
-> > > size and handed over to the two functions.
-> > 
-> > Should we also consider adding user_access_begin() and the 3 other
-> > associated macros ?
-> > 
-> > See x86 for details.
-> 
-> As a heads-up, there are some potential issues with
-> user_access_{begin,end}() that may affect PPC. There's a long thread
-> starting at:
-> 
-> https://lkml.kernel.org/r/1547560709-56207-4-git-send-email-julien.thierry@arm.com/
+On Thu, Feb 21, 2019 at 4:09 PM Russell Currey <ruscur@russell.cc> wrote:
+> On Thu, 2019-02-21 at 08:07 -0800, Kees Cook wrote:
+> > On Thu, Feb 21, 2019 at 1:36 AM Russell Currey <ruscur@russell.cc>
+> > wrote:
+> > > The first three patches of these series are from Christophe's work
+> > > and are
+> > > the bare minimum framework needed to implement the support for
+> > > radix.
+> > >
+> > > In patch 3, I have removed from Christophe's patch my
+> > > implementation of
+> > > the 64-bit exception handling code, since we don't have an answer
+> > > for
+> > > making nested exceptions work yet.  This is mentioned in the final
+> > > KUAP
+> > > patch.  Regardless, this is still a significant security
+> > > improvement
+> > > and greatly narrows the attack surface.
+> >
+> > Nice! Am I understanding correctly that with this series powerpc9 and
+> > later, using radix, will pass the lkdtm tests for KUAP and KUEP (i.e.
+> > EXEC_USERSPACE and ACCESS_USERSPACE)?
+>
+> Yes!  We've had execution prevention for a while on radix (which is
+> default on POWER9) since 3b10d0095a1e, the only functional thing this
+> series does is allow disabling it with nosmep.  This series adds access
+> prevention.
 
-I'd say we should look at adding those macros, but as follow-up work
-after this series (and after we know what's going on with those issues)
+Ah-ha; excellent. And CONFIG_PPC_RADIX_MMU is "default y" already. :)
 
-- Russell
-
-> 
-> Thanks,
-> Mark.
-
+-- 
+Kees Cook
