@@ -2,86 +2,99 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28AD0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:16:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C6B1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:35:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 593B52086A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:16:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cgcoVYCB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 593B52086A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 917BF207E0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 05:35:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 917BF207E0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445KMH0zxWzDqQ4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 16:16:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445Kn73syfzDqV3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 16:35:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::644; helo=mail-pl1-x644.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sbobroff@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="cgcoVYCB"; 
- dkim-atps=neutral
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com
- [IPv6:2607:f8b0:4864:20::644])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445KK74Fj5zDqS9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 16:14:51 +1100 (AEDT)
-Received: by mail-pl1-x644.google.com with SMTP id 101so542988pld.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Feb 2019 21:14:51 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:subject:to:cc:references:in-reply-to:mime-version
- :user-agent:message-id:content-transfer-encoding;
- bh=UwGRrNYqSp+7D8FhrHB70Y9Kd/LoH9J8frW17JEkkZA=;
- b=cgcoVYCBYFqD0IG6hkGBuU8dHbAgle9Ntz0rHLkLC2/7uigl82iXtqbuMjIFY5MbJH
- pjAcTK9kAjIvvVIRFcuScePZbb2Yp/kagvPC0bsKGglxEj1AiUHR+maCpZaHmUNQojTI
- 43KQCTcLJZteMKSou7KfIOHD0itNBxaaP5fdaG0ost++g10r4I0Td/aBLbn0CJpVoP70
- EXz9SPVoUnCuiAxjzB9Zg7sYMuPGpoAnVt9nlMHugknrsPw8Rt69GvPiwJSR1yh2kBfi
- Qgb12dDJ1Jvi3UxYEGfByY3125qJeowtwMzoRpiN5r0bRf/9oIf0Cb6DEk2u7kJ9iROf
- JAAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
- :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=UwGRrNYqSp+7D8FhrHB70Y9Kd/LoH9J8frW17JEkkZA=;
- b=JHkOdG4p9/yDzQDh1jKLgW60claZiQk1UDpFJwEw45WxFzjzKV9ylfoLxyMMvQLobl
- LKPKtu7EsG+oNigMGTb4HGr7wQMU0jSp+oEcP5hwNCQhll7gGxdfRPjx8lDEL+NKJRWX
- R5IzvaqPS269P4r+XOgXeUWyb8SIKrVEyxPzo7lZ62+QFDo7h6J7+G79NJS9vp5eVFQf
- mEq9UFbCDWTLj1UlzDJvEfMEMZ+ft0CVFJRjxUcxep1zF0wtlKu4JHPNn8nB3wmaKnMS
- 8qevE0CxGabRGpn0f0zICdO9btlDsBzoDx9hn9QgKBy70lAHG29/JfVC7uJAaHDW6tmp
- G0yQ==
-X-Gm-Message-State: AHQUAuZELQZYMDRBgNOXgQGgruu+/4tWi0cRx/Hxeejb3UBcpeeNWXrl
- lOgJD/IXcFQP5EDEKUdyLzfI/JSP
-X-Google-Smtp-Source: AHgI3IYjRaJbYOIGwzJcexgzf0pwQwWSwp/JfXb4EEvcwZmsHygfSFM78X2eRTWlAEHVyKHZkhYfWQ==
-X-Received: by 2002:a17:902:f302:: with SMTP id
- gb2mr2400827plb.51.1550812489021; 
- Thu, 21 Feb 2019 21:14:49 -0800 (PST)
-Received: from localhost ([210.185.74.20])
- by smtp.gmail.com with ESMTPSA id f67sm657178pff.29.2019.02.21.21.14.45
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 21 Feb 2019 21:14:46 -0800 (PST)
-Date: Fri, 22 Feb 2019 15:14:39 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 7/7] powerpc/64s: Implement KUAP for Radix MMU
-To: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>
-References: <20190221093601.27920-1-ruscur@russell.cc>
- <20190221093601.27920-8-ruscur@russell.cc>
-In-Reply-To: <20190221093601.27920-8-ruscur@russell.cc>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445KlD026wzDqPj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 16:33:59 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1M5TSA0144376
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 00:33:55 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qta38a17y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 00:33:55 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Fri, 22 Feb 2019 05:33:53 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 22 Feb 2019 05:33:51 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1M5Xod832505920
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 22 Feb 2019 05:33:51 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DBEC9A405D;
+ Fri, 22 Feb 2019 05:33:50 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 46452A405B;
+ Fri, 22 Feb 2019 05:33:50 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 22 Feb 2019 05:33:50 +0000 (GMT)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3E32CA0138;
+ Fri, 22 Feb 2019 16:33:49 +1100 (AEDT)
+Date: Fri, 22 Feb 2019 16:33:48 +1100
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Oliver <oohall@gmail.com>
+Subject: Re: [PATCH 1/1] powerpc/64: Adjust order in pcibios_init()
+References: <f232553753fe148118646c9013a3d962c19b58ec.1550121250.git.sbobroff@linux.ibm.com>
+ <20190222032320.GA4334@tungsten.ozlabs.ibm.com>
+ <CAOSf1CFezjdgu1idFXmGoXUof0kPyAFcii30MMXXiuoVj0mJ7w@mail.gmail.com>
 MIME-Version: 1.0
-User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1550811470.v0q5r976xq.astroid@bobo.none>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
+Content-Disposition: inline
+In-Reply-To: <CAOSf1CFezjdgu1idFXmGoXUof0kPyAFcii30MMXXiuoVj0mJ7w@mail.gmail.com>
+User-Agent: Mutt/1.9.3 (2018-01-21)
+X-TM-AS-GCONF: 00
+x-cbid: 19022205-0028-0000-0000-0000034B94A8
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022205-0029-0000-0000-00002409DBF3
+Message-Id: <20190222053347.GB4334@tungsten.ozlabs.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-22_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902220036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,121 +106,142 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kernel-hardening@lists.openwall.com
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Russell Currey's on February 21, 2019 7:36 pm:
-> Kernel Userspace Access Prevention utilises a feature of the Radix MMU
-> which disallows read and write access to userspace addresses. By
-> utilising this, the kernel is prevented from accessing user data from
-> outside of trusted paths that perform proper safety checks, such as
-> copy_{to/from}_user() and friends.
+
+--yEPQxsgoJgBvi8ip
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Feb 22, 2019 at 03:31:57PM +1100, Oliver wrote:
+> On Fri, Feb 22, 2019 at 2:24 PM Sam Bobroff <sbobroff@linux.ibm.com> wrot=
+e:
+> >
+> > Hey all,
+> >
+> > After some consideration, I've decided to post a v2 of this patch that
+> > will make it a bit safer (although I haven't seen any problems with it)
+> > and make it a little easier to refactor some of the EEH code that
+> > interacts with the hooks.
 >=20
-> Userspace access is disabled from early boot and is only enabled when
-> performing an operation like copy_{to/from}_user().  The register that
-> controls this (AMR) does not prevent userspace from accessing other
-> userspace, so there is no need to save and restore when entering and
-> exiting userspace.
+> Can you be a little more specific?
+
+Sure:
+
+When the original patch moves pci_bus_add_devices() to after
+pcibios_resource_survey(), this also causes the pcibios_fixup hook
+to move, because it's called at the end of pcibios_resource_survey().
+
+So pcibios_fixup would run before pcibios_bus_add_device and while I
+don't think that will actually cause problems, there doesn't seem to be
+any reason to change the order either. So, I think it would be better
+to extract the pcibios_fixup hook out of pcibios_resource_survey() and
+call it from pcibios_init after the devices are added, preserving that
+ordering.
+
+That's the general reasoning but more specifically, I want to refactor
+the EEH code around adding devices, and it seems like I'm going to
+need the handlers in that order so that pcibios_bus_add_device() can
+probe for EEH support in devices before the EEH post init code needs to
+know if any were found.
+
+> > Cheers,
+> > Sam.
+> >
+> > On Thu, Feb 14, 2019 at 04:14:42PM +1100, Sam Bobroff wrote:
+> > > The pcibios_init() function for 64 bit PowerPC currently calls
+> > > pci_bus_add_devices() before pcibios_resource_survey(), which seems
+> > > incorrect because it adds devices and attempts to bind their drivers
+> > > before allocating their resources (although no problems seem to be
+> > > apparent).
+> > >
+> > > So move the call to pci_bus_add_devices() to after
+> > > pcibios_resource_survey().
+> > >
+> > > This will also allow the ppc_md.pcibios_bus_add_device() hooks to
+> > > perform actions that depend on PCI resources, both during rescanning
+> > > (where this is already the case) and at boot time, which should
+> > > support improvements and refactoring.
+> > >
+> > > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> > > ---
+> > > Hi everyone,
+> > >
+> > > I've tested this on a P9 for both the host and a KVM guest, and the c=
+hange
+> > > hasn't caused any differences in PCI resource assignments or the gene=
+ral boot
+> > > messages.
+> > >
+> > > I've also had a go at inspecting most of the code used by pci_bus_add=
+_devices()
+> > > and pcibios_resource_survey() and it doesn't look like there are goin=
+g to be
+> > > any changes in behaviour caused by reordering.  It might be worth men=
+tioning
+> > > that the hotplug path (see pcibios_finish_adding_to_bus()) already do=
+es
+> > > resource allocation before calling pci_bus_add_devices().
+> > >
+> > > However, it would be great if someone could test this change on some =
+older
+> > > hardware or comment on wether we should make the same change on 32 bi=
+t machines.
+> > >
+> > > Cheers,
+> > > Sam.
+> > >
+> > >  arch/powerpc/kernel/pci_64.c | 8 +++++---
+> > >  1 file changed, 5 insertions(+), 3 deletions(-)
+> > >
+> > > diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_6=
+4.c
+> > > index 9d8c10d55407..1ce28888dbdb 100644
+> > > --- a/arch/powerpc/kernel/pci_64.c
+> > > +++ b/arch/powerpc/kernel/pci_64.c
+> > > @@ -58,14 +58,16 @@ static int __init pcibios_init(void)
+> > >       pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
+> > >
+> > >       /* Scan all of the recorded PCI controllers.  */
+> > > -     list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> > > +     list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+> > >               pcibios_scan_phb(hose);
+> > > -             pci_bus_add_devices(hose->bus);
+> > > -     }
+> > >
+> > >       /* Call common code to handle resource allocation */
+> > >       pcibios_resource_survey();
+> > >
+> > > +     /* Add devices. */
+> > > +     list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+> > > +             pci_bus_add_devices(hose->bus);
+> > > +
+> > >       printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
+> > >
+> > >       return 0;
+> > > --
+> > > 2.19.0.2.gcad72f5712
+> > >
 >=20
-> This feature has a slight performance impact which I roughly measured
-> to be 3% slower in the worst case (performing 1GB of 1 byte
-> read()/write() syscalls), and is gated behind the CONFIG_PPC_KUAP
-> option for performance-critical builds.
->=20
-> This feature can be tested by using the lkdtm driver (CONFIG_LKDTM=3Dy)
-> and performing the following:
->=20
->   # (echo ACCESS_USERSPACE) > [debugfs]/provoke-crash/DIRECT
->=20
-> If enabled, this should send SIGSEGV to the thread.
->=20
-> A big limitation of the current implementation is that user access
-> is left unlocked if an exception is taken while user access is unlocked
-> (i.e. if an interrupt is taken during copy_to_user()). This should be
-> resolved in future, and is why the state is tracked in the PACA even
-> though nothing currently uses it.
 
-Did you have an implementation for this in an earlier series?
-What's happened to that? If the idea is to add things incrementally
-that's fine.
+--yEPQxsgoJgBvi8ip
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
-> ---
->  .../powerpc/include/asm/book3s/64/kup-radix.h | 36 +++++++++++++++++++
->  arch/powerpc/include/asm/kup.h                |  4 +++
->  arch/powerpc/include/asm/mmu.h                |  9 ++++-
->  arch/powerpc/include/asm/reg.h                |  1 +
->  arch/powerpc/mm/pgtable-radix.c               | 16 +++++++++
->  arch/powerpc/mm/pkeys.c                       |  7 ++--
->  arch/powerpc/platforms/Kconfig.cputype        |  1 +
->  7 files changed, 71 insertions(+), 3 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/book3s/64/kup-radix.h
->=20
-> diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerp=
-c/include/asm/book3s/64/kup-radix.h
-> new file mode 100644
-> index 000000000000..5cfdea954418
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-> @@ -0,0 +1,36 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _ASM_POWERPC_KUP_RADIX_H
-> +#define _ASM_POWERPC_KUP_RADIX_H
-> +
-> +#ifndef __ASSEMBLY__
-> +#ifdef CONFIG_PPC_KUAP
-> +#include <asm/reg.h>
-> +/*
-> + * We do have the ability to individually lock/unlock reads and writes r=
-ather
-> + * than both at once, however it's a significant performance hit due to =
-needing
-> + * to do a read-modify-write, which adds a mfspr, which is slow.  As a r=
-esult,
-> + * locking/unlocking both at once is preferred.
-> + */
-> +static inline void unlock_user_access(void __user *to, const void __user=
- *from,
-> +				      unsigned long size)
-> +{
-> +	if (!mmu_has_feature(MMU_FTR_RADIX_KUAP))
-> +		return;
-> +
-> +	mtspr(SPRN_AMR, 0);
-> +	isync();
-> +	get_paca()->user_access_allowed =3D 1;
+-----BEGIN PGP SIGNATURE-----
 
-I think this is going to get corrupted when you context switch isn't
-it? I would have thought a per thread flag would be easier, but maybe=20
-that's difficult in your exception code... If you've got more code to=20
-deal with it in a later patch, might be worth just moving all the
-user_access_allowed stuff there.
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlxvibUACgkQMX8w6AQl
+/iK5BQf/cXBz54Reqx33EFqFoSs1UXJl2xZm2ADNTZsst+so0Obc2Tqp+P2RSrzR
+FVLCmj0GU/iMX6ZhJJJtgr+2aQrtkphde9Znh22VqfrwS0eJn5l0hrvFfALFZl0t
+R0juFFJ71gbyKmpyMkG8/TkgbWimxB69198fx/btdftnYLX7OelT2QpU4E9ZsuoL
+SqRJYmeay8J1vTMUZdB7yaodIC9rymnKFitD3lbg0P9xJwHa64bh1JvIqgj4i7aJ
+ovXoFm0CJlCkQZmBwQSKJ0gk/3IC2ht9p5aCvOS1Zte7CaF6I1G4FJsS32c34rWw
+6vU/s4tu/8g5jyugfU2m8UNbT3CqHw==
+=Vrbe
+-----END PGP SIGNATURE-----
 
-Possibly you could add some debug warnings to catch double lock or=20
-unpaired unlock? That could be removed or put under a CONFIG option=20
-after it gets more testing.
+--yEPQxsgoJgBvi8ip--
 
-> +}
-> +
-> +static inline void lock_user_access(void __user *to, const void __user *=
-from,
-> +				    unsigned long size)
-> +{
-> +	if (!mmu_has_feature(MMU_FTR_RADIX_KUAP))
-> +		return;
-> +
-> +	mtspr(SPRN_AMR, RADIX_AMR_LOCKED);
-> +	get_paca()->user_access_allowed =3D 0;
-
-Without the isync here gives you some small window to execute user=20
-accesses without faulting I think. If that's for performance I won't=20
-complain, but a comment would be good.
-
-Looks good though, no real complaints about the series.
-
-Thanks,
-Nick
-
-=
