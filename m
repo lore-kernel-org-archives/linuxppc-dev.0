@@ -2,83 +2,49 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=BIGNUM_EMAILS,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74CFEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:10:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3953C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:31:25 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DD7D206B6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:10:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="XeRf22e4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DD7D206B6
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 500632070D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:31:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 500632070D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445TCR4H5bzDqWP
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 22:10:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="XeRf22e4"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 445TgZ6dQXzDqWW
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 22:31:22 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445T9b1hFnzDqV8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 22:08:51 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 445T9V6SL2z9v087;
- Fri, 22 Feb 2019 12:08:46 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=XeRf22e4; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id noy52El0ymAR; Fri, 22 Feb 2019 12:08:46 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 445T9V5Qpgz9v086;
- Fri, 22 Feb 2019 12:08:46 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1550833726; bh=lUTUCg+HHznpY4KERZk8fqgVjFcF0DrkwFR0a+XOSMM=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=XeRf22e4dtUjpL/m9wZa9ujkxfPQOfFxnB9RU2g0ycnxFsYKHMEJNtfu/lTJWSe80
- /YPGuQ53XIIe0ZAsLkt93z1dqLEwj41yK4HqHOW+SAWxUpK6lL3I6WwvG4LoSymKTh
- OKBcjMG+mqulGqb9t7QBTWvccRC5e77a0c1cg4ew=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E70668B8B4;
- Fri, 22 Feb 2019 12:08:47 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id hCfKhYGatiq2; Fri, 22 Feb 2019 12:08:47 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id C68378B754;
- Fri, 22 Feb 2019 12:08:47 +0100 (CET)
-Subject: Re: [bug report] powerpc/mm: dump block address translation on
- book3s/32
-To: Dan Carpenter <dan.carpenter@oracle.com>
-References: <20190222104302.GA17252@kadam>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <781e2495-20ee-1f85-8e15-cbfbb77e0c7b@c-s.fr>
-Date: Fri, 22 Feb 2019 12:08:47 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445TcC6CvqzDqWH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 22:28:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 445TcC37gYz9s8m;
+ Fri, 22 Feb 2019 22:28:27 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+In-Reply-To: <535192d6-2142-05a6-4088-0f71d744c345@c-s.fr>
+References: <20190222181403.4ce373bd@canb.auug.org.au>
+ <535192d6-2142-05a6-4088-0f71d744c345@c-s.fr>
+Date: Fri, 22 Feb 2019 22:28:26 +1100
+Message-ID: <87tvgwkqp1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190222104302.GA17252@kadam>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,68 +56,40 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-  Hello Dan,
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> Le 22/02/2019 =C3=A0 08:14, Stephen Rothwell a =C3=A9crit=C2=A0:
+>> Hi all,
+>>=20
+>> After merging the powerpc tree, today's linux-next build (powerpc
+>> allyesconfig) failed like this:
+>>=20
+>> make[4]: *** No rule to make target 'arch/powerpc/mm/ptdump/core.o', nee=
+ded by 'arch/powerpc/mm/ptdump/built-in.a'.
+>>=20
+>> Caused by commit
+>>=20
+>>    5df1cfa43394 ("powerpc: Move page table dump files in a dedicated sub=
+directory")
+>>=20
+>> I have reverted that commit for today.
+>
+> In the Makefile, replace core.o by ptdump.o (or rename the file ptdump.c=
+=20
+> to core.c). Michael, what was your intention ?
 
+To not break the build :}
 
-Le 22/02/2019 à 11:43, Dan Carpenter a écrit :
-> Hello Christophe Leroy,
-> 
-> The patch 7c91efce1608: "powerpc/mm: dump block address translation
-> on book3s/32" from Dec 3, 2018, leads to the following static checker
-> warning:
-> 
-> 	arch/powerpc/mm/dump_bats.c:20 pp_601()
-> 	warn: both sides of ternary the same: '"RWX"'
-> 
-> arch/powerpc/mm/dump_bats.c
->      13 static char *pp_601(int k, int pp)
->      14 {
->      15 	if (pp == 0)
->      16 		return k ? "NA" : "RWX";
->      17 	if (pp == 1)
->      18 		return k ? "ROX" : "RWX";
->      19 	if (pp == 2)
-> --> 20 		return k ? "RWX" : "RWX";
->                              ^^^     ^^^
->      21 	return k ? "ROX" : "ROX";
->                      ^^^     ^^^
-> 
-> Was something else intended here?  Or we could make it simpler:
-> 
-> 	if (pp == 2)
-> 		return "RWX";
-> 	return "ROX";
-> 
-> 
->      22 }
-> 
+I originally used core.c but then decided ptdump.c was clearer.
 
-The intention was to map the following table from the mpc601 user manual 
-chapter 6.4:
+My jenkins was unhappy last night due to a distro upgrade so my builds
+didn't run and catch the breakage.
 
-Table 6-7. Access Protection Control with Key
+I'll just fix it and force push.
 
-Key(1)  PP(2)  Block or Page Type
-0       00     Read/write
-0       01     Read/write
-0       10     Read/write
-0       11     Read only
-1       00     No access
-1       01     Read only
-1       10     Read/write
-1       11     Read only
-
-(1) Ks or Ku selected by state of MSR[PR]
-(2) PP protection option bits in BAT array entry or
-PTE
-
-
-So I have no objection for your proposed change
-
-Regards
-Christophe
+cheers
