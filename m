@@ -2,116 +2,94 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6425C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:27:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4728C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 23:00:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3B6E520700
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:27:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B6E520700
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 13D6A206C0
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 23:00:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13D6A206C0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445fwF0TtPzDqTy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Feb 2019 05:27:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445myF0fxVzDqZ3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Feb 2019 10:00:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=pbonzini@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=bauerman@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445ftH3hfjzDqXJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Feb 2019 05:26:14 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
- [10.5.11.16])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id D9E38883C2;
- Fri, 22 Feb 2019 18:26:11 +0000 (UTC)
-Received: from [10.36.112.23] (ovpn-112-23.ams2.redhat.com [10.36.112.23])
- by smtp.corp.redhat.com (Postfix) with ESMTPS id 83C1A5C647;
- Fri, 22 Feb 2019 18:25:57 +0000 (UTC)
-Subject: Re: [PATCH V3 00/10] X86/KVM/Hyper-V: Add HV ept tlb range list flush
- support in KVM
-To: lantianyu1986@gmail.com
-References: <20190222150637.2337-1-Tianyu.Lan@microsoft.com>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Openpgp: preference=signencrypt
-Autocrypt: addr=pbonzini@redhat.com; prefer-encrypt=mutual; keydata=
- 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
- uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
-Message-ID: <75e9238a-f168-b90d-e1f1-89938e6df57a@redhat.com>
-Date: Fri, 22 Feb 2019 19:25:53 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445mwP4PHdzDqWf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Feb 2019 09:58:28 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1MMn0FY017794
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 17:58:26 -0500
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qtqctgjve-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 17:58:26 -0500
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Fri, 22 Feb 2019 22:58:25 -0000
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e15.ny.us.ibm.com (146.89.104.202) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 22 Feb 2019 22:58:22 -0000
+Received: from b01ledav006.gho.pok.ibm.com (b01ledav006.gho.pok.ibm.com
+ [9.57.199.111])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1MMwLBp17367120
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 22 Feb 2019 22:58:21 GMT
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0FE27AC064;
+ Fri, 22 Feb 2019 22:58:21 +0000 (GMT)
+Received: from b01ledav006.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 19297AC05B;
+ Fri, 22 Feb 2019 22:58:19 +0000 (GMT)
+Received: from morokweng.localdomain.com (unknown [9.85.132.183])
+ by b01ledav006.gho.pok.ibm.com (Postfix) with ESMTP;
+ Fri, 22 Feb 2019 22:58:18 +0000 (GMT)
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/pseries: Only wait for dying CPU after call to
+ rtas_stop_self()
+Date: Fri, 22 Feb 2019 19:57:52 -0300
+X-Mailer: git-send-email 2.17.2
 MIME-Version: 1.0
-In-Reply-To: <20190222150637.2337-1-Tianyu.Lan@microsoft.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.26]); Fri, 22 Feb 2019 18:26:12 +0000 (UTC)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19022222-0068-0000-0000-000003983108
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010646; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01164933; UDB=6.00608378; IPR=6.00945521; 
+ MB=3.00025703; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-22 22:58:23
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022222-0069-0000-0000-00004798C9BA
+Message-Id: <20190222225752.6375-1-bauerman@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-22_14:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902220157
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -123,36 +101,120 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, will.deacon@arm.com,
- christoffer.dall@arm.com, hpa@zytor.com, kys@microsoft.com,
- kvmarm@lists.cs.columbia.edu, sashal@kernel.org, sthemmin@microsoft.com,
- x86@kernel.org, linux@armlinux.org.uk, michael.h.kelley@microsoft.com,
- mingo@redhat.com, catalin.marinas@arm.com, jhogan@kernel.org,
- linux-mips@vger.kernel.org, Lan Tianyu <Tianyu.Lan@microsoft.com>,
- marc.zyngier@arm.com, haiyangz@microsoft.com, kvm-ppc@vger.kernel.org,
- bp@alien8.de, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, paul.burton@mips.com,
- devel@linuxdriverproject.org, vkuznets@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 22/02/19 16:06, lantianyu1986@gmail.com wrote:
-> From: Lan Tianyu <Tianyu.Lan@microsoft.com>
-> 
-> This patchset is to introduce hv ept tlb range list flush function
-> support in the KVM MMU component. Flushing ept tlbs of several address
-> range can be done via single hypercall and new list flush function is
-> used in the kvm_mmu_commit_zap_page() and FNAME(sync_page). This patchset
-> also adds more hv ept tlb range flush support in more KVM MMU function.
-> 
-> This patchset is based on the fix patch "x86/Hyper-V: Fix definition HV_MAX_FLUSH_REP_COUNT".
-> (https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1939455.html)
+When testing DLPAR CPU add/remove on a system under stress,
+pseries_cpu_die() doesn't wait long enough for a CPU to die:
 
-Note that this won't make it in 5.1 unless Linus releases an -rc8.
-Otherwise, I'll get to it next week.
+[  446.983944] cpu 148 (hwid 148) Ready to die...
+[  446.984062] cpu 149 (hwid 149) Ready to die...
+[  446.993518] cpu 150 (hwid 150) Ready to die...
+[  446.993543] Querying DEAD? cpu 150 (150) shows 2
+[  446.994098] cpu 151 (hwid 151) Ready to die...
+[  447.133726] cpu 136 (hwid 136) Ready to die...
+[  447.403532] cpu 137 (hwid 137) Ready to die...
+[  447.403772] cpu 138 (hwid 138) Ready to die...
+[  447.403839] cpu 139 (hwid 139) Ready to die...
+[  447.403887] cpu 140 (hwid 140) Ready to die...
+[  447.403937] cpu 141 (hwid 141) Ready to die...
+[  447.403979] cpu 142 (hwid 142) Ready to die...
+[  447.404038] cpu 143 (hwid 143) Ready to die...
+[  447.513546] cpu 128 (hwid 128) Ready to die...
+[  447.693533] cpu 129 (hwid 129) Ready to die...
+[  447.693999] cpu 130 (hwid 130) Ready to die...
+[  447.703530] cpu 131 (hwid 131) Ready to die...
+[  447.704087] Querying DEAD? cpu 132 (132) shows 2
+[  447.704102] cpu 132 (hwid 132) Ready to die...
+[  447.713534] cpu 133 (hwid 133) Ready to die...
+[  447.714064] Querying DEAD? cpu 134 (134) shows 2
 
-Thanks,
+This is a race between one CPU stopping and another one calling
+pseries_cpu_die() to wait for it to stop. That function does a short busy
+loop calling RTAS query-cpu-stopped-state on the stopping CPU to verify
+that it is stopped, but I think there's a lot for the stopping CPU to do
+which may take longer than this loop allows.
 
-Paolo
+As can be seen in the dmesg right before or after the "Querying DEAD?"
+messages, if pseries_cpu_die() waited a little longer it would have seen
+the CPU in the stopped state.
+
+I see two cases that can be causing this race:
+
+1. It's possible that CPU 134 was inactive at the time it was unplugged. In
+   that case, dlpar_offline_cpu() calls H_PROD on that CPU and immediately
+   calls pseries_cpu_die(). Meanwhile, the prodded CPU activates and start
+   the process of stopping itself. It's possible that the busy loop is not
+   long enough to allow for the CPU to wake up and complete the stopping
+   process.
+
+2. If CPU 134 was online at the time it was unplugged, it would have gone
+   through the new CPU hotplug state machine in kernel/cpu.c that was
+   introduced in v4.6 to get itself stopped. It's possible that the busy
+   loop in pseries_cpu_die() was long enough for the older hotplug code but
+   not for the new hotplug state machine.
+
+I don't know if this race condition has any ill effects, but we can make
+the race a lot more even if we only start querying if the CPU is stopped
+when the stopping CPU is close to call rtas_stop_self().
+
+Since pseries_mach_cpu_die() sets the CPU current state to offline almost
+immediately before calling rtas_stop_self(), we use that as a signal that
+it is either already stopped or very close to that point, and we can start
+the busy loop.
+
+As suggested by Michael Ellerman, this patch also changes the busy loop to
+wait for a fixed amount of wall time.
+
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/hotplug-cpu.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+I tried to estimate good amounts for the timeout and loop delays, but
+I'm not sure how reasonable my numbers are. The busy loops will wait for
+100 µs between each try, and spin_event_timeout() will timeout after
+100 ms. I'll be happy to change these values if you have better
+suggestions.
+
+Gautham was able to test this patch and it solved the race condition.
+
+v1 was a cruder patch which just increased the number of loops:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-February/153734.html
+
+v1 also mentioned a kernel crash but Gautham narrowed it down to a bug
+in RTAS, which is in the process of being fixed.
+
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 97feb6e79f1a..424146cc752e 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -214,13 +214,21 @@ static void pseries_cpu_die(unsigned int cpu)
+ 			msleep(1);
+ 		}
+ 	} else if (get_preferred_offline_state(cpu) == CPU_STATE_OFFLINE) {
++		/*
++		 * If the current state is not offline yet, it means that the
++		 * dying CPU (which is in pseries_mach_cpu_die) didn't have a
++		 * chance to call rtas_stop_self yet and therefore it's too
++		 * early to query if the CPU is stopped.
++		 */
++		spin_event_timeout(get_cpu_current_state(cpu) == CPU_STATE_OFFLINE,
++				   100000, 100);
+ 
+ 		for (tries = 0; tries < 25; tries++) {
+ 			cpu_status = smp_query_cpu_stopped(pcpu);
+ 			if (cpu_status == QCSS_STOPPED ||
+ 			    cpu_status == QCSS_HARDWARE_ERROR)
+ 				break;
+-			cpu_relax();
++			udelay(100);
+ 		}
+ 	}
+ 
+
