@@ -2,92 +2,61 @@ Return-Path: <SRS0=2rUD=Q5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 769CBC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D345C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:18:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 00B6F20818
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:16:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 00B6F20818
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id DC9F520818
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 07:18:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="GzWxaENd"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DC9F520818
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445N201CNszDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:16:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=sandipan@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 445N3s0FV0zDqQs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 18:18:33 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445MY21xQkzDqRm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 17:55:18 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1M6sQS5016250
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:55:15 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qtbka9bvk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 01:55:15 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.ibm.com>;
- Fri, 22 Feb 2019 06:55:13 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 22 Feb 2019 06:55:12 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1M6tA2e28508234
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 22 Feb 2019 06:55:10 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6956FAE053;
- Fri, 22 Feb 2019 06:55:10 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 24110AE059;
- Fri, 22 Feb 2019 06:55:09 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.195.22.129])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 22 Feb 2019 06:55:08 +0000 (GMT)
-From: Sandipan Das <sandipan@linux.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2 6/6] powerpc sstep: Add support for modsd,
- modud instructions
-Date: Fri, 22 Feb 2019 12:24:52 +0530
-X-Mailer: git-send-email 2.19.2
-In-Reply-To: <cover.1550817742.git.sandipan@linux.ibm.com>
-References: <cover.1550817742.git.sandipan@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445Mz236QVzDqVP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 18:14:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
+ header.b="GzWxaENd"; dkim-atps=neutral
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
+ SHA256) (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 445Mz16KDnz9s9L;
+ Fri, 22 Feb 2019 18:14:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
+ s=201702; t=1550819662;
+ bh=BUotE6TJCLy3uPerF71sH4otRbu4tnk2oqTCpT0GvvU=;
+ h=Date:From:To:Cc:Subject:From;
+ b=GzWxaENdNSlHkSNu8kE4lbFZmnPVv33hQmdZuA29yF8ZfKqqdcuVJoZ7FwwTbO6Nw
+ SMyD2bhdWmv0j5dvPZV6fHdKHRRlT9C6sCKqD43NpDwVotL5UIUgOYEqt3U4+7JN07
+ D0BthU8u+iKSZk3ySmCq9f6FGrZQNkJ5UGv6qG2s9iF1Yz74Sza+FTzMtXEvUgtTOg
+ tP7F2gxp6d3IzRMUIEoWdrClnZM1zJNZSScopihuXljGM64qRVvCBwN2OXJEzowry0
+ XIs7RukmqrGoZ6JBNpydO393c1zDyywD0UdE1ybfsIASj3vNlgoTPCZCzAn6QU+aTt
+ l1VrbDQI/C/jw==
+Date: Fri, 22 Feb 2019 18:14:03 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the powerpc tree
+Message-ID: <20190222181403.4ce373bd@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19022206-0020-0000-0000-00000319D515
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022206-0021-0000-0000-0000216B2AB2
-Message-Id:
- <0e5102b6273901a78c24bb92ebb57e38db084052.1550817743.git.sandipan@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-22_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=928 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902220047
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/+FbZc7FKr5m2vNkwx0fiVQQ"; protocol="application/pgp-signature"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,58 +68,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: naveen.n.rao@linux.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- ravi.bangoria@linux.ibm.com
+Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Message-ID: <20190222065452.EbBjEuqbjcDI5Lq_hb-L2HuVI5FwdU4t6TuLOeAclJY@z>
 
-This adds emulation support for the following integer instructions:
-  * Modulo Signed Doubleword (modsd)
-  * Modulo Unsigned Doubleword (modud)
+--Sig_/+FbZc7FKr5m2vNkwx0fiVQQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Sandipan Das <sandipan@linux.ibm.com>
----
- arch/powerpc/lib/sstep.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+Hi all,
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 9c65fb1da298..3d33fb509ef4 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1704,7 +1704,13 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 				(int) regs->gpr[rb];
- 
- 			goto arith_done;
--
-+#ifdef __powerpc64__
-+		case 265:	/* modud */
-+			if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+				return -1;
-+			op->val = regs->gpr[ra] % regs->gpr[rb];
-+			goto compute_done;
-+#endif
- 		case 266:	/* add */
- 			op->val = regs->gpr[ra] + regs->gpr[rb];
- 			goto arith_done;
-@@ -1756,7 +1762,14 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
- 			}
- 
- 			return -1;
--
-+#ifdef __powerpc64__
-+		case 777:	/* modsd */
-+			if (!cpu_has_feature(CPU_FTR_ARCH_300))
-+				return -1;
-+			op->val = (long int) regs->gpr[ra] %
-+				(long int) regs->gpr[rb];
-+			goto compute_done;
-+#endif
- 		case 779:	/* modsw */
- 			if (!cpu_has_feature(CPU_FTR_ARCH_300))
- 				return -1;
--- 
-2.19.2
+After merging the powerpc tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
+make[4]: *** No rule to make target 'arch/powerpc/mm/ptdump/core.o', needed=
+ by 'arch/powerpc/mm/ptdump/built-in.a'.
+
+Caused by commit
+
+  5df1cfa43394 ("powerpc: Move page table dump files in a dedicated subdire=
+ctory")
+
+I have reverted that commit for today.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/+FbZc7FKr5m2vNkwx0fiVQQ
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxvoTsACgkQAVBC80lX
+0Gwdbgf9FSrUjejdUoAe9U3PpHeJakQyVdhu9ZoCWGxHwRsdnWi7ZUT4yEB4FD7Q
+YRBbEm5sugDNBU+s5vlLHDzUqA34reGO6ntx+rO0ZOtUVnHBZSkpEI+Cn2ipGPWA
+t2ximMCh1IYR1kyOB/iNBT8+bv8ep9AhOfyxtjUqNhAB35OvvtMURv5+rZYMuxHX
+kdqFgTMsux674D0/ajFqMbh/j79AcIERxVPfjHLCPaXUIoJyjVFLx/2MRvRtaUL2
+jbRP4npWJaFapY5xXo+hHQ3kyPCZdBujIvychdEKbVkQToPXXAfKHtcRs4n+LTsz
+fqGvP2mfO4oZuRag4Ns71k8S7pArPQ==
+=g7aE
+-----END PGP SIGNATURE-----
+
+--Sig_/+FbZc7FKr5m2vNkwx0fiVQQ--
