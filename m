@@ -3,25 +3,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5C43C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:11:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4AD2BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:13:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id F04FC20836
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:11:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AC36820818
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 00:13:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="wOxDWryB";
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="E1wTlKwY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F04FC20836
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=russell.cc header.i=@russell.cc header.b="NQtoOTsn";
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="cQ1NolWA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC36820818
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 445BZk3D9fzDqTX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:11:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 445BdH5kMRzDqTX
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Feb 2019 11:13:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=russell.cc
  (client-ip=66.111.4.26; helo=out2-smtp.messagingengine.com;
@@ -29,70 +29,74 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=russell.cc
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=russell.cc header.i=@russell.cc header.b="wOxDWryB"; 
+ unprotected) header.d=russell.cc header.i=@russell.cc header.b="NQtoOTsn"; 
  dkim=pass (2048-bit key;
  unprotected) header.d=messagingengine.com header.i=@messagingengine.com
- header.b="E1wTlKwY"; dkim-atps=neutral
+ header.b="cQ1NolWA"; dkim-atps=neutral
 Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
  [66.111.4.26])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 445BXr08fGzDqSV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 11:09:31 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 445Bbf713ZzDq6k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Feb 2019 11:11:58 +1100 (AEDT)
 Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
- by mailout.nyi.internal (Postfix) with ESMTP id 7712D22252;
- Thu, 21 Feb 2019 19:09:29 -0500 (EST)
-Received: from mailfrontend2 ([10.202.2.163])
- by compute6.internal (MEProxy); Thu, 21 Feb 2019 19:09:29 -0500
+ by mailout.nyi.internal (Postfix) with ESMTP id 2E72721DA6;
+ Thu, 21 Feb 2019 19:11:56 -0500 (EST)
+Received: from mailfrontend1 ([10.202.2.162])
+ by compute6.internal (MEProxy); Thu, 21 Feb 2019 19:11:56 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=russell.cc; h=
  message-id:subject:from:to:cc:date:in-reply-to:references
  :content-type:mime-version:content-transfer-encoding; s=fm1; bh=
- ilHHJeKNQVAXWVIEo81s8qVuOqwIEGjlx5IhFcSzrdI=; b=wOxDWryBcgz8Hsou
- Fm3Y5kGGs/o7K9UPoicth5KkedOF4c1H+/S/5xL1Nfb7uuu3UUOsd+Gt9A2h13jf
- YHp4WHDxV3w6gmKQQnS/Hw9RNb9d45LmjAcQP8LiMQpr1DfjAu+Mct71nq+Wgqu9
- CVKMhOBpXO1Fxr3DlRNcF0gGoonhBfiYp3h92iZFdbObdZA4eRJJM0Y8hao5xdg4
- LmO9g8bqHbmqBlZN5P/rjr1LWOh/WkiC2d0NU4ezDOJzHll+sK02IPlTOve0kSK+
- iGBG9bEha5n1YwpczG4vDpsHt3PHvOc7e/t1pmGu45251DMey7JDRoBb/Kv+3lDn
- dpOveQ==
+ FNd4Cn7WvHska6I/7VkOpFrTaCEZha8lOQPmi9WBbq8=; b=NQtoOTsnL60EtTDb
+ pkt2V/QMIxo0Ojv1hM8AUJWjZLK0QmfGiWeHOJ420Ll51J9JtS95pGM+AHYXnX2t
+ k3nUlUHeE6EFjvlfxpwm+WmhTpqbbs2JRiTJPFbE5KqElVsb/c6zd8EGb9De3ceB
+ BfxwxknPCgyyns7fbyD1+PHsjsCLC/qbRwnd76wpLGqmjnqhSO7Nffa1f9v9CK/J
+ QDK/CYlggM8LAiIN/VJyAmIRz0U3AJ4K7ZkUQI5Th63E+GY5N3MMsrGzFK6FgQg2
+ VxXZCU+eBKI2iBe9dUF+Fn+hjnTbWl5A5VVHQ9Zt20nEczQUYUuV1+acfj6RY2s4
+ Lf/HPQ==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
  messagingengine.com; h=cc:content-transfer-encoding:content-type
  :date:from:in-reply-to:message-id:mime-version:references
  :subject:to:x-me-proxy:x-me-proxy:x-me-sender:x-me-sender
- :x-sasl-enc; s=fm2; bh=ilHHJeKNQVAXWVIEo81s8qVuOqwIEGjlx5IhFcSzr
- dI=; b=E1wTlKwY0tfdbtQEkCLRoNAEwU7oZWChihGpop4pKKhfv9aitdbVGJp0d
- h98ZglKetOEwUphlgdpl+gS/IJKoGYjDYNIGEqeqcrvVpYcnD7kFAhYTcxRMX0kX
- YdSo3XnbwE/Ax+CvyGrAVDtT78+40Y6Vv/ArQij5YConprTe/Ll4TBQGH1sUHWn2
- nHf4A2b2+UJEt5rHA4F5V+hpD+KjEmzO6HJST9jCgAQ9P28/NE3LI8IkAFgimuio
- 0kQAYRl5La1QPLkmHO70Vd7v+1RFI3CtPr88orduh2DDpWu3zypas7K29bzD5hAS
- RZtP3cOboTy5jMTAeW/CNtch8DS5Q==
-X-ME-Sender: <xms:uD1vXBvC4akDp1_psdjSL1AhBwE65YngdAZ9LyyhsT9rXrE_Go8A-w>
+ :x-sasl-enc; s=fm2; bh=FNd4Cn7WvHska6I/7VkOpFrTaCEZha8lOQPmi9WBb
+ q8=; b=cQ1NolWAymbEsJjr8yeHOQqoQLb4yhqXvyaPUvI2D1LG9V9YFAWogW+P9
+ /3BcHwqRZxHJYz0OejsCa3vvCkqWA0JGkfpBP3nQ0f7VNzDX4wIfvkRzfkjKtsko
+ VjjfT1AWclriHw3qdcJb/IbZGnjCj6cq+wNf4QJIL/8dB4wVBucXfrh0s1AUo9T9
+ tUKeRLXO6OlhK47qQUdcU1n6EWg9IKh62S//9aGvszTtTCPBqmio4N1A27iDIt8Z
+ NR/BMDVpXO0cgoIog3v3JKMrsB+3tVHq39WNJFygt6CnrN+QwAMJZ2oRbaQMpmWz
+ hERLHf+SNlXiwTRrYevDc72FQ9JgA==
+X-ME-Sender: <xms:Sj5vXNBVrYB_p5kgF65zutyb5ub7T2ymWxCxxPEHWYhtLRRyGNMz7w>
 X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedutddrtdelgddujeculddtuddrgedtledrtddtmd
  cutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpqfhuthen
  uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
- gfrhhlucfvnfffucdlfedtmdenucfjughrpefkuffhvfffjghftggfggfgsehtjeertddt
+ gfrhhlucfvnfffucdludehmdenucfjughrpefkuffhvfffjghftggfggfgsehtkeertddt
  reejnecuhfhrohhmpeftuhhsshgvlhhlucevuhhrrhgvhicuoehruhhstghurhesrhhush
- hsvghllhdrtggtqeenucfkphepuddvvddrleelrdekvddruddtnecurfgrrhgrmhepmhgr
- ihhlfhhrohhmpehruhhstghurhesrhhushhsvghllhdrtggtnecuvehluhhsthgvrhfuih
- iivgeptd
-X-ME-Proxy: <xmx:uD1vXI7kKli9_kB8JKhiG5pS-fejFfRzEbmRdNiGzgADtGUgLlN6yA>
- <xmx:uD1vXHhvOAfwZkA0j6S8Q9Q1LKwQ1QsO6bsEqQ5Ci6C7Y23QUXuA3g>
- <xmx:uD1vXNALRPEGpBtN_5n5e4Tbyjnq2tOsjPZ-BYwjnn2qujXQD8Uhrw>
- <xmx:uT1vXFOSh-lf-m3flFcOyjDwQ92BWgUkieMZImcl3M57nCzMpFxb1w>
+ hsvghllhdrtggtqeenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppeduvddv
+ rdelledrkedvrddutdenucfrrghrrghmpehmrghilhhfrhhomheprhhushgtuhhrsehruh
+ hsshgvlhhlrdgttgenucevlhhushhtvghrufhiiigvpedt
+X-ME-Proxy: <xmx:Sj5vXOS18Chzaj96gge-ld5SQZjEM4emlbqRpB3ryyqpKTP9TWDPkA>
+ <xmx:Sj5vXFfldKthe4Z_vqThEQjfm5dz7GPPi5shpmIThq9RSs3zi7lG-Q>
+ <xmx:Sj5vXPSABOIoGJxrTVqj2jstgU3Bvi2KA8bIciWz32dBux2t99KaDw>
+ <xmx:TD5vXLqUepPGrUlIBTtyuUNXabeYqKs6LRggS468E_Z5ZgC_BUFqVw>
 Received: from crackle.ozlabs.ibm.com (unknown [122.99.82.10])
- by mail.messagingengine.com (Postfix) with ESMTPA id C928C1030F;
- Thu, 21 Feb 2019 19:09:25 -0500 (EST)
-Message-ID: <8ef1669cdfbcc6114eebc30c610c91c191c7cc7a.camel@russell.cc>
-Subject: Re: [PATCH 0/7] Kernel Userspace Protection for radix
+ by mail.messagingengine.com (Postfix) with ESMTPA id 75BDEE419A;
+ Thu, 21 Feb 2019 19:11:52 -0500 (EST)
+Message-ID: <3ee891ded467e1fd473c9b075658b959e091e8f6.camel@russell.cc>
+Subject: Re: [PATCH 3/7] powerpc/mm: Add a framework for Kernel Userspace
+ Access Protection
 From: Russell Currey <ruscur@russell.cc>
-To: Kees Cook <keescook@chromium.org>
-Date: Fri, 22 Feb 2019 11:09:22 +1100
-In-Reply-To: <CAGXu5j+P1wh0uf1kfMywSTo4NYtwFPSnKXg6wbfyBRqwVRZVYA@mail.gmail.com>
+To: Mark Rutland <mark.rutland@arm.com>, Christophe Leroy
+ <christophe.leroy@c-s.fr>
+Date: Fri, 22 Feb 2019 11:11:49 +1100
+In-Reply-To: <20190221144818.GI33673@lakrids.cambridge.arm.com>
 References: <20190221093601.27920-1-ruscur@russell.cc>
- <CAGXu5j+P1wh0uf1kfMywSTo4NYtwFPSnKXg6wbfyBRqwVRZVYA@mail.gmail.com>
+ <20190221093601.27920-4-ruscur@russell.cc>
+ <adb2b7c9-3472-2b9c-37e1-6150697d0940@c-s.fr>
+ <20190221144818.GI33673@lakrids.cambridge.arm.com>
 Content-Type: text/plain; charset="UTF-8"
 User-Agent: Evolution 3.30.5 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -104,36 +108,48 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>, Nick Piggin <npiggin@gmail.com>,
- Kernel Hardening <kernel-hardening@lists.openwall.com>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+ kernel-hardening@lists.openwall.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-02-21 at 08:07 -0800, Kees Cook wrote:
-> On Thu, Feb 21, 2019 at 1:36 AM Russell Currey <ruscur@russell.cc>
-> wrote:
-> > The first three patches of these series are from Christophe's work
-> > and are
-> > the bare minimum framework needed to implement the support for
-> > radix.
+On Thu, 2019-02-21 at 14:48 +0000, Mark Rutland wrote:
+> On Thu, Feb 21, 2019 at 11:46:06AM +0100, Christophe Leroy wrote:
 > > 
-> > In patch 3, I have removed from Christophe's patch my
-> > implementation of
-> > the 64-bit exception handling code, since we don't have an answer
-> > for
-> > making nested exceptions work yet.  This is mentioned in the final
-> > KUAP
-> > patch.  Regardless, this is still a significant security
-> > improvement
-> > and greatly narrows the attack surface.
+> > Le 21/02/2019 à 10:35, Russell Currey a écrit :
+> > > From: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > 
+> > > This patch implements a framework for Kernel Userspace Access
+> > > Protection.
+> > > 
+> > > Then subarches will have to possibility to provide their own
+> > > implementation by providing setup_kuap() and
+> > > lock/unlock_user_access()
+> > > 
+> > > Some platform will need to know the area accessed and whether it
+> > > is
+> > > accessed from read, write or both. Therefore source, destination
+> > > and
+> > > size and handed over to the two functions.
+> > 
+> > Should we also consider adding user_access_begin() and the 3 other
+> > associated macros ?
+> > 
+> > See x86 for details.
 > 
-> Nice! Am I understanding correctly that with this series powerpc9 and
-> later, using radix, will pass the lkdtm tests for KUAP and KUEP (i.e.
-> EXEC_USERSPACE and ACCESS_USERSPACE)?
+> As a heads-up, there are some potential issues with
+> user_access_{begin,end}() that may affect PPC. There's a long thread
+> starting at:
+> 
+> https://lkml.kernel.org/r/1547560709-56207-4-git-send-email-julien.thierry@arm.com/
 
-Yes!  We've had execution prevention for a while on radix (which is
-default on POWER9) since 3b10d0095a1e, the only functional thing this
-series does is allow disabling it with nosmep.  This series adds access
-prevention.
+I'd say we should look at adding those macros, but as follow-up work
+after this series (and after we know what's going on with those issues)
+
+- Russell
+
+> 
+> Thanks,
+> Mark.
 
