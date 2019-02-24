@@ -2,59 +2,59 @@ Return-Path: <SRS0=+31F=RA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0AF6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:03:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06FD0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:05:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FAD42084D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:03:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 75E1D2084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:05:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="j/xyOUPe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FAD42084D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="k09jPs11"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E1D2084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4477bb2chnzDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 15:03:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4477dH6pWczDq7w
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 15:05:07 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4477Rk6Mn4zDqGZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4477Rk3LyKzDqF6
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 14:56:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="j/xyOUPe"; dkim-atps=neutral
+ header.b="k09jPs11"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4477Rk51rhz9sMM; Mon, 25 Feb 2019 14:56:50 +1100 (AEDT)
+ id 4477Rk1wWsz9sCH; Mon, 25 Feb 2019 14:56:50 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1551067010;
- bh=ENNejeStRPfQ6jUa+1txQ6T8OuJse6535oK6BEak+UE=;
+ bh=L7UtPKcpKXf94nPw2kurjtIUKKpPCWd2NTwGpKIYkbU=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=j/xyOUPe30IIpNq6VlGiMDC+vlWlxM2TBafh/uyHDYMfTISIpYHZ/GNzVU+vtQ96g
- 9hf1On4UdgrFEpjAK3umcsPVLcrqctHVbxjwbpS/gLfcwUBmmYWSjikfAM07TSkLKY
- fqeY8cR4HMe9L/z6pKtCdgJL/oXtzL6j7sEK1CJM=
-Date: Mon, 25 Feb 2019 13:10:12 +1100
+ b=k09jPs11yoBrpTpLBaFThSaU38Xk0ginAUok4czgFPY8MfAmrtCGrcX9n1xjKykT0
+ 88r4HHBive+G46bk14wIihAdR1Rig85HpIOa8grQInowvo9alfsgK/Xhg7gXc9m970
+ DJ3sNZB4um1VNizHsxxFNF5pjmdor1RpXEs8Sz+s=
+Date: Mon, 25 Feb 2019 10:42:35 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 04/16] KVM: PPC: Book3S HV: XIVE: add a control to
- initialize a source
-Message-ID: <20190225021012.GH7668@umbus.fritz.box>
+Subject: Re: [PATCH v2 01/16] powerpc/xive: add OPAL extensions for the XIVE
+ native exploitation support
+Message-ID: <20190224234235.GE7668@umbus.fritz.box>
 References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-5-clg@kaod.org>
+ <20190222112840.25000-2-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="cW+P/jduATWpL925"
+ protocol="application/pgp-signature"; boundary="X3gaHHMYHkYqP6yf"
 Content-Disposition: inline
-In-Reply-To: <20190222112840.25000-5-clg@kaod.org>
+In-Reply-To: <20190222112840.25000-2-clg@kaod.org>
 User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -74,322 +74,247 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---cW+P/jduATWpL925
+--X3gaHHMYHkYqP6yf
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 22, 2019 at 12:28:28PM +0100, C=E9dric Le Goater wrote:
-> The associated HW interrupt source is simply allocated at the OPAL/HW
-> level and then MASKED. KVM only needs to know about its type: LSI or
-> MSI.
+On Fri, Feb 22, 2019 at 12:28:25PM +0100, C=E9dric Le Goater wrote:
+> The support for XIVE native exploitation mode in Linux/KVM needs a
+> couple more OPAL calls to configure the sPAPR guest and to get/set the
+> state of the XIVE internal structures.
 >=20
 > Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
 > ---
->  arch/powerpc/include/uapi/asm/kvm.h        |   5 +
->  arch/powerpc/kvm/book3s_xive.h             |  10 ++
->  arch/powerpc/kvm/book3s_xive.c             |   8 +-
->  arch/powerpc/kvm/book3s_xive_native.c      | 114 +++++++++++++++++++++
->  Documentation/virtual/kvm/devices/xive.txt |  15 +++
->  5 files changed, 148 insertions(+), 4 deletions(-)
+>  arch/powerpc/include/asm/opal-api.h           | 11 ++-
+>  arch/powerpc/include/asm/opal.h               |  7 ++
+>  arch/powerpc/include/asm/xive.h               | 14 +++
+>  arch/powerpc/sysdev/xive/native.c             | 99 +++++++++++++++++++
+>  .../powerpc/platforms/powernv/opal-wrappers.S |  3 +
+>  5 files changed, 130 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/u=
-api/asm/kvm.h
-> index b002c0c67787..a9ad99f2a11b 100644
-> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> @@ -677,5 +677,10 @@ struct kvm_ppc_cpu_char {
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/a=
+sm/opal-api.h
+> index 870fb7b239ea..cdfc54f78101 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -186,8 +186,8 @@
+>  #define OPAL_XIVE_FREE_IRQ			140
+>  #define OPAL_XIVE_SYNC				141
+>  #define OPAL_XIVE_DUMP				142
+> -#define OPAL_XIVE_RESERVED3			143
+> -#define OPAL_XIVE_RESERVED4			144
+> +#define OPAL_XIVE_GET_QUEUE_STATE		143
+> +#define OPAL_XIVE_SET_QUEUE_STATE		144
+>  #define OPAL_SIGNAL_SYSTEM_RESET		145
+>  #define OPAL_NPU_INIT_CONTEXT			146
+>  #define OPAL_NPU_DESTROY_CONTEXT		147
+> @@ -209,8 +209,11 @@
+>  #define OPAL_SENSOR_GROUP_ENABLE		163
+>  #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+>  #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+> -#define	OPAL_NX_COPROC_INIT			167
+> -#define OPAL_LAST				167
+> +#define OPAL_HANDLE_HMI2			166
+> +#define OPAL_NX_COPROC_INIT			167
+> +#define OPAL_NPU_SET_RELAXED_ORDER		168
+> +#define OPAL_NPU_GET_RELAXED_ORDER		169
+> +#define OPAL_XIVE_GET_VP_STATE			170
 > =20
->  /* POWER9 XIVE Native Interrupt Controller */
->  #define KVM_DEV_XIVE_GRP_CTRL		1
-> +#define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source attributes */
+>  #define QUIESCE_HOLD			1 /* Spin all calls at entry */
+>  #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/o=
+pal.h
+> index a55b01c90bb1..4e978d4dea5c 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -279,6 +279,13 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
+>  int64_t opal_xive_free_irq(uint32_t girq);
+>  int64_t opal_xive_sync(uint32_t type, uint32_t id);
+>  int64_t opal_xive_dump(uint32_t type, uint32_t id);
+> +int64_t opal_xive_get_queue_state(uint64_t vp, uint32_t prio,
+> +				  __be32 *out_qtoggle,
+> +				  __be32 *out_qindex);
+> +int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
+> +				  uint32_t qtoggle,
+> +				  uint32_t qindex);
+> +int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
+>  int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
+>  			uint64_t desc, uint16_t pe_number);
+> =20
+> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/x=
+ive.h
+> index 3c704f5dd3ae..b579a943407b 100644
+> --- a/arch/powerpc/include/asm/xive.h
+> +++ b/arch/powerpc/include/asm/xive.h
+> @@ -109,12 +109,26 @@ extern int xive_native_configure_queue(u32 vp_id, s=
+truct xive_q *q, u8 prio,
+>  extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 pr=
+io);
+> =20
+>  extern void xive_native_sync_source(u32 hw_irq);
+> +extern void xive_native_sync_queue(u32 hw_irq);
+>  extern bool is_xive_irq(struct irq_chip *chip);
+>  extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
+>  extern int xive_native_disable_vp(u32 vp_id);
+>  extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_=
+chip_id);
+>  extern bool xive_native_has_single_escalation(void);
+> =20
+> +extern int xive_native_get_queue_info(u32 vp_id, uint32_t prio,
+> +				      u64 *out_qpage,
+> +				      u64 *out_qsize,
+> +				      u64 *out_qeoi_page,
+> +				      u32 *out_escalate_irq,
+> +				      u64 *out_qflags);
 > +
-> +/* Layout of 64-bit XIVE source attribute values */
-> +#define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
-> +#define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
-> =20
->  #endif /* __LINUX_KVM_POWERPC_H */
-> diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xiv=
-e.h
-> index bcb1bbcf0359..f22f2d46d0f0 100644
-> --- a/arch/powerpc/kvm/book3s_xive.h
-> +++ b/arch/powerpc/kvm/book3s_xive.h
-> @@ -12,6 +12,13 @@
->  #ifdef CONFIG_KVM_XICS
->  #include "book3s_xics.h"
-> =20
-> +/*
-> + * The XIVE IRQ number space is aligned with the XICS IRQ number
-> + * space, CPU IPIs being allocated in the first 4K.
-
-We do align these in qemu, but I don't see that the kernel part
-cares: as far as it's concerned only one of XICS or XIVE is active at
-a time, and the irq numbers are chosen by userspace.
-
-> + */
-> +#define KVMPPC_XIVE_FIRST_IRQ	0
-> +#define KVMPPC_XIVE_NR_IRQS	KVMPPC_XICS_NR_IRQS
+> +extern int xive_native_get_queue_state(u32 vp_id, uint32_t prio, u32 *qt=
+oggle,
+> +				       u32 *qindex);
+> +extern int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qto=
+ggle,
+> +				       u32 qindex);
+> +extern int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
 > +
->  /*
->   * State for one guest irq source.
->   *
-> @@ -253,6 +260,9 @@ extern int (*__xive_vm_h_eoi)(struct kvm_vcpu *vcpu, =
-unsigned long xirr);
->   */
->  void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu);
->  int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *v=
-cpu);
-> +struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
-> +	struct kvmppc_xive *xive, int irq);
-> +void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
+>  #else
 > =20
->  #endif /* CONFIG_KVM_XICS */
->  #endif /* _KVM_PPC_BOOK3S_XICS_H */
-> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xiv=
-e.c
-> index d1cc18a5b1c4..6f950ecb3592 100644
-> --- a/arch/powerpc/kvm/book3s_xive.c
-> +++ b/arch/powerpc/kvm/book3s_xive.c
-
-I wonder if we should rename this book3s_xics_on_xive.c or something
-at some point, I keep getting confused because I forget that this is
-only dealing with host xive, not guest xive.
-
-> @@ -1485,8 +1485,8 @@ static int xive_get_source(struct kvmppc_xive *xive=
-, long irq, u64 addr)
->  	return 0;
+>  static inline bool xive_enabled(void) { return false; }
+> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive=
+/native.c
+> index 1ca127d052a6..0c037e933e55 100644
+> --- a/arch/powerpc/sysdev/xive/native.c
+> +++ b/arch/powerpc/sysdev/xive/native.c
+> @@ -437,6 +437,12 @@ void xive_native_sync_source(u32 hw_irq)
 >  }
+>  EXPORT_SYMBOL_GPL(xive_native_sync_source);
 > =20
-> -static struct kvmppc_xive_src_block *xive_create_src_block(struct kvmppc=
-_xive *xive,
-> -							   int irq)
-> +struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
-> +	struct kvmppc_xive *xive, int irq)
->  {
->  	struct kvm *kvm =3D xive->kvm;
->  	struct kvmppc_xive_src_block *sb;
-
-It's odd that this function, now used from the xive-on-xive path as
-well as the xics-on-xive path references KVMPPC_XICS_ICS_SHIFT a few
-lines down from this change.
-
-> @@ -1565,7 +1565,7 @@ static int xive_set_source(struct kvmppc_xive *xive=
-, long irq, u64 addr)
->  	sb =3D kvmppc_xive_find_source(xive, irq, &idx);
->  	if (!sb) {
->  		pr_devel("No source, creating source block...\n");
-> -		sb =3D xive_create_src_block(xive, irq);
-> +		sb =3D kvmppc_xive_create_src_block(xive, irq);
->  		if (!sb) {
->  			pr_devel("Failed to create block...\n");
->  			return -ENOMEM;
-> @@ -1789,7 +1789,7 @@ static void kvmppc_xive_cleanup_irq(u32 hw_num, str=
-uct xive_irq_data *xd)
->  	xive_cleanup_irq_data(xd);
->  }
-> =20
-> -static void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
-> +void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
->  {
->  	int i;
-> =20
-> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/boo=
-k3s_xive_native.c
-> index 1f3da47a4a6a..a9b2d2d9af99 100644
-> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> @@ -31,6 +31,29 @@
-> =20
->  #include "book3s_xive.h"
-> =20
-> +/*
-> + * TODO: introduce a common template file with the XIVE native layer
-> + * and the XICS-on-XIVE glue for the utility functions
-> + */
-> +#define __x_eoi_page(xd)	((void __iomem *)((xd)->eoi_mmio))
-> +#define __x_trig_page(xd)	((void __iomem *)((xd)->trig_mmio))
-> +#define __x_readq	__raw_readq
-> +#define __x_writeq	__raw_writeq
-> +
-> +static u8 xive_vm_esb_load(struct xive_irq_data *xd, u32 offset)
+> +void xive_native_sync_queue(u32 hw_irq)
 > +{
-> +	u64 val;
-> +
-> +	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
-> +		offset |=3D offset << 4;
-> +
-> +	val =3D __x_readq(__x_eoi_page(xd) + offset);
-> +#ifdef __LITTLE_ENDIAN__
-> +	val >>=3D 64-8;
-> +#endif
-> +	return (u8)val;
+> +	opal_xive_sync(XIVE_SYNC_QUEUE, hw_irq);
 > +}
+> +EXPORT_SYMBOL_GPL(xive_native_sync_queue);
 > +
->  static void kvmppc_xive_native_cleanup_queue(struct kvm_vcpu *vcpu, int =
-prio)
->  {
->  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> @@ -153,12 +176,89 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_devi=
-ce *dev,
->  	return rc;
+>  static const struct xive_ops xive_native_ops =3D {
+>  	.populate_irq_data	=3D xive_native_populate_irq_data,
+>  	.configure_irq		=3D xive_native_configure_irq,
+> @@ -711,3 +717,96 @@ bool xive_native_has_single_escalation(void)
+>  	return xive_has_single_esc;
 >  }
-> =20
-> +static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long =
-irq,
-> +					 u64 addr)
+>  EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
+> +
+> +int xive_native_get_queue_info(u32 vp_id, u32 prio,
+> +			       u64 *out_qpage,
+> +			       u64 *out_qsize,
+> +			       u64 *out_qeoi_page,
+> +			       u32 *out_escalate_irq,
+> +			       u64 *out_qflags)
 > +{
-> +	struct kvmppc_xive_src_block *sb;
-> +	struct kvmppc_xive_irq_state *state;
-> +	u64 __user *ubufp =3D (u64 __user *) addr;
-> +	u64 val;
-> +	u16 idx;
+> +	__be64 qpage;
+> +	__be64 qsize;
+> +	__be64 qeoi_page;
+> +	__be32 escalate_irq;
+> +	__be64 qflags;
+> +	s64 rc;
 > +
-> +	pr_devel("%s irq=3D0x%lx\n", __func__, irq);
-> +
-> +	if (irq < KVMPPC_XIVE_FIRST_IRQ || irq >=3D KVMPPC_XIVE_NR_IRQS)
-> +		return -E2BIG;
-> +
-> +	sb =3D kvmppc_xive_find_source(xive, irq, &idx);
-> +	if (!sb) {
-> +		pr_debug("No source, creating source block...\n");
-> +		sb =3D kvmppc_xive_create_src_block(xive, irq);
-> +		if (!sb) {
-> +			pr_err("Failed to create block...\n");
-> +			return -ENOMEM;
-> +		}
-> +	}
-> +	state =3D &sb->irq_state[idx];
-> +
-> +	if (get_user(val, ubufp)) {
-> +		pr_err("fault getting user info !\n");
-> +		return -EFAULT;
-> +	}
-
-You should validate the value loaded here to check it doesn't have any
-bits set we don't know about.
-
-> +
-> +	/*
-> +	 * If the source doesn't already have an IPI, allocate
-> +	 * one and get the corresponding data
-> +	 */
-> +	if (!state->ipi_number) {
-> +		state->ipi_number =3D xive_native_alloc_irq();
-> +		if (state->ipi_number =3D=3D 0) {
-> +			pr_err("Failed to allocate IRQ !\n");
-> +			return -ENXIO;
-> +		}
-> +		xive_native_populate_irq_data(state->ipi_number,
-> +					      &state->ipi_data);
-> +		pr_debug("%s allocated hw_irq=3D0x%x for irq=3D0x%lx\n", __func__,
-> +			 state->ipi_number, irq);
+> +	rc =3D opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
+> +				      &qeoi_page, &escalate_irq, &qflags);
+> +	if (rc) {
+> +		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
+> +		       vp_id, prio, rc);
+> +		return -EIO;
 > +	}
 > +
-> +	arch_spin_lock(&sb->lock);
-
-Why the direct call to arch_spin_lock() rather than just spin_lock()?
-
-> +
-> +	/* Restore LSI state */
-> +	if (val & KVM_XIVE_LEVEL_SENSITIVE) {
-> +		state->lsi =3D true;
-> +		if (val & KVM_XIVE_LEVEL_ASSERTED)
-> +			state->asserted =3D true;
-> +		pr_devel("  LSI ! Asserted=3D%d\n", state->asserted);
-> +	}
-> +
-> +	/* Mask IRQ to start with */
-> +	state->act_server =3D 0;
-> +	state->act_priority =3D MASKED;
-> +	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
-> +	xive_native_configure_irq(state->ipi_number, 0, MASKED, 0);
-> +
-> +	/* Increment the number of valid sources and mark this one valid */
-> +	if (!state->valid)
-> +		xive->src_count++;
-> +	state->valid =3D true;
-> +
-> +	arch_spin_unlock(&sb->lock);
+> +	if (out_qpage)
+> +		*out_qpage =3D be64_to_cpu(qpage);
+> +	if (out_qsize)
+> +		*out_qsize =3D be32_to_cpu(qsize);
+> +	if (out_qeoi_page)
+> +		*out_qeoi_page =3D be64_to_cpu(qeoi_page);
+> +	if (out_escalate_irq)
+> +		*out_escalate_irq =3D be32_to_cpu(escalate_irq);
+> +	if (out_qflags)
+> +		*out_qflags =3D be64_to_cpu(qflags);
 > +
 > +	return 0;
 > +}
+> +EXPORT_SYMBOL_GPL(xive_native_get_queue_info);
 > +
->  static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
->  				       struct kvm_device_attr *attr)
->  {
-> +	struct kvmppc_xive *xive =3D dev->private;
+> +int xive_native_get_queue_state(u32 vp_id, u32 prio, u32 *qtoggle, u32 *=
+qindex)
+> +{
+> +	__be32 opal_qtoggle;
+> +	__be32 opal_qindex;
+> +	s64 rc;
 > +
->  	switch (attr->group) {
->  	case KVM_DEV_XIVE_GRP_CTRL:
->  		break;
-> +	case KVM_DEV_XIVE_GRP_SOURCE:
-> +		return kvmppc_xive_native_set_source(xive, attr->attr,
-> +						     attr->addr);
->  	}
->  	return -ENXIO;
->  }
-> @@ -175,6 +275,11 @@ static int kvmppc_xive_native_has_attr(struct kvm_de=
-vice *dev,
->  	switch (attr->group) {
->  	case KVM_DEV_XIVE_GRP_CTRL:
->  		break;
-> +	case KVM_DEV_XIVE_GRP_SOURCE:
-> +		if (attr->attr >=3D KVMPPC_XIVE_FIRST_IRQ &&
-> +		    attr->attr < KVMPPC_XIVE_NR_IRQS)
-> +			return 0;
-> +		break;
->  	}
->  	return -ENXIO;
->  }
-> @@ -183,6 +288,7 @@ static void kvmppc_xive_native_free(struct kvm_device=
- *dev)
->  {
->  	struct kvmppc_xive *xive =3D dev->private;
->  	struct kvm *kvm =3D xive->kvm;
-> +	int i;
-> =20
->  	debugfs_remove(xive->dentry);
-> =20
-> @@ -191,6 +297,14 @@ static void kvmppc_xive_native_free(struct kvm_devic=
-e *dev)
->  	if (kvm)
->  		kvm->arch.xive =3D NULL;
-> =20
-> +	/* Mask and free interrupts */
-> +	for (i =3D 0; i <=3D xive->max_sbid; i++) {
-> +		if (xive->src_blocks[i])
-> +			kvmppc_xive_free_sources(xive->src_blocks[i]);
-> +		kfree(xive->src_blocks[i]);
-> +		xive->src_blocks[i] =3D NULL;
+> +	rc =3D opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
+> +				       &opal_qindex);
+> +	if (rc) {
+> +		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
+> +		       vp_id, prio, rc);
+> +		return -EIO;
 > +	}
 > +
->  	if (xive->vp_base !=3D XIVE_INVALID_VP)
->  		xive_native_free_vp_block(xive->vp_base);
-> =20
-> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/v=
-irtual/kvm/devices/xive.txt
-> index fdbd2ff92a88..cd8bfc37b72e 100644
-> --- a/Documentation/virtual/kvm/devices/xive.txt
-> +++ b/Documentation/virtual/kvm/devices/xive.txt
-> @@ -17,3 +17,18 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
-> =20
->    1. KVM_DEV_XIVE_GRP_CTRL
->    Provides global controls on the device
+> +	if (qtoggle)
+> +		*qtoggle =3D be32_to_cpu(opal_qtoggle);
+> +	if (qindex)
+> +		*qindex =3D be32_to_cpu(opal_qindex);
 > +
-> +  2. KVM_DEV_XIVE_GRP_SOURCE (write only)
-> +  Initializes a new source in the XIVE device and mask it.
-> +  Attributes:
-> +    Interrupt source number  (64-bit)
-> +  The kvm_device_attr.addr points to a __u64 value:
-> +  bits:     | 63   ....  2 |   1   |   0
-> +  values:   |    unused    | level | type
-> +  - type:  0:MSI 1:LSI
-> +  - level: assertion level in case of an LSI.
-> +  Errors:
-> +    -E2BIG:  Interrupt source number is out of range
-> +    -ENOMEM: Could not create a new source block
-> +    -EFAULT: Invalid user pointer for attr->addr.
-> +    -ENXIO:  Could not allocate underlying HW interrupt
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(xive_native_get_queue_state);
+> +
+> +int xive_native_set_queue_state(u32 vp_id, u32 prio, u32 qtoggle, u32 qi=
+ndex)
+> +{
+> +	s64 rc;
+> +
+> +	rc =3D opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
+> +	if (rc) {
+> +		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
+> +		       vp_id, prio, rc);
+> +		return -EIO;
+> +	}
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(xive_native_set_queue_state);
+> +
+> +int xive_native_get_vp_state(u32 vp_id, u64 *out_state)
+> +{
+> +	__be64 state;
+> +	s64 rc;
+> +
+> +	rc =3D opal_xive_get_vp_state(vp_id, &state);
+> +	if (rc) {
+> +		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
+> +		       vp_id, rc);
+> +		return -EIO;
+> +	}
+> +
+> +	if (out_state)
+> +		*out_state =3D be64_to_cpu(state);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(xive_native_get_vp_state);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerp=
+c/platforms/powernv/opal-wrappers.S
+> index f4875fe3f8ff..3179953d6b56 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -309,6 +309,9 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_IN=
+FO);
+>  OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+>  OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+>  OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
+> +OPAL_CALL(opal_xive_get_queue_state,		OPAL_XIVE_GET_QUEUE_STATE);
+> +OPAL_CALL(opal_xive_set_queue_state,		OPAL_XIVE_SET_QUEUE_STATE);
+> +OPAL_CALL(opal_xive_get_vp_state,		OPAL_XIVE_GET_VP_STATE);
+>  OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+>  OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+>  OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -397,24 +322,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---cW+P/jduATWpL925
+--X3gaHHMYHkYqP6yf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxzToEACgkQbDjKyiDZ
-s5IhGA/+Kd4kvqzlqVU2EElTtIrWQWTfZp9GQtnjQboEcuHXzqSBSJeK+o6N3N9p
-umJmYmavfxEoYnQLJcElu3D4u1It/y5tJV1/aMM3IF+O7VPA1J4AykMdMcwcSIl5
-SJpeATADC2g8TbJft94A7RNGY+jDsHRMnAbK9nTA1y/GLGj5XhPHStqWp6le4z+z
-jNn/Cugv4U6czcC3teuH8DgJrbrE3FzkVCKmOxV7Ln4R2gYNRY1uQ6n/Nj/EXgg0
-ZFPNxOmxbVofkiRvZDDAuW1c7YYLwddN7g8nX/6sFjCLFeGno1A1eGbGF6KLiiXw
-jLtpU7htpzp8Frs4jwOX3uvhunZkmmNALuFOTBHrjjMc/9StL/67WlpVcAUsp238
-TsF69+Xpah4MmolbIqCRJy8+PlMI0SP4BkYy/w+qI+xlD0mH1xt3lky41yrNdFVg
-kV+Nf5wCGdRYI87M+taehUxcDqAjU399Y+EyvPvG0fYO4HGe+OHq39iBCyVRKvpG
-TO7Szcgg1w1LhYTTRyRrZ6jtuTDqlZajn+mE+cheCfltOHfR2iqK7/pZe7IYgGBc
-+HSVK9WlLY6gGaXDqIwmWEFT+unAEzN47Y/OWiWRk9YRxDRgRG2dHnASd7TMMu6E
-4GM0pqamArrFuJ+R3tuBPS36LXcgGt+N0n+0ERNhoIZlXYsxGh8=
-=sLnf
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxzK+sACgkQbDjKyiDZ
+s5JUTg//TZFNo8MOXus8ZzfIpa1zDD/u99I/aXQeyUEhd9lEnHLuaPsoaFjRk8QK
+1+Aovz8N5OnDW2UI+AczHyWbUwcy3a66QwlGYmM8zKYjoDU6zvI/UlSrNbvDUcbh
+UGArmRSjKeRVsDmGD8izj19ScBYsjNA/3ztSr4AQ2CwBHy3rzMl04lKfcUxEsmRT
+8qmBFsLMbmFRFAmwMzG2gJ9x1Xg2oWEs+RAs2ABX98QBkwxSgy/nJbwgJpkP1sy3
+/5rZ0VqPMN75FtLntQSYvNnsvxOo90X9yjIzRtwsOIN3asi1C3PLb/YVGtw7sRXO
+1JcWwbbxvKDbMKj+ZNYJY0iujNpG6/0t8QXo2JMNMwyeX76hjYgxZMhXULsljcfA
+kkv0w3756vX9SS9P+xEtHVOc+8NTROWwrj2wDcTg5itTziACLKEr4MhfXVrpYkNF
+P3wqqAe4P42L8H9KkYTPfDLpCKHxLZa+XdAUPEUuO3mEWqHMWfokE/3ou5Z93SgE
+IOeAXIcxGWbfk9YOqJIk1MyF7MbZMmUhSemS6A8tf2nHda7+ewdcflEeH5Ryq3P3
+FVDY4M0Gcxk4MzUfnaMYohrmf1DiAhPCjiu323ziIaYghmjEUrNgEUn6gdBS9Yin
+u410fqUIg9g0IJg4x4+ZoL1Vv1Dzg60jbknSpqsMg6K3OFt4HjM=
+=mQ2S
 -----END PGP SIGNATURE-----
 
---cW+P/jduATWpL925--
+--X3gaHHMYHkYqP6yf--
