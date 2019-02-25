@@ -2,64 +2,85 @@ Return-Path: <SRS0=+31F=RA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1C64C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 06:46:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 046BAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 09:50:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FDD520842
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 06:46:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3B1922084D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 09:50:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.b="S5Tnu+8S"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FDD520842
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=canb.auug.org.au
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ns0vYqSo"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3B1922084D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447CC301GPzDq64
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 17:46:07 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447C8d3ZnKzDqNt
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 17:44:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=canb.auug.org.au
+	by lists.ozlabs.org (Postfix) with ESMTP id 447HHP0zgyzDqD5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 20:50:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=himadri18.07@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au
- header.b="S5Tnu+8S"; dkim-atps=neutral
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest
- SHA256) (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 447C8d0GJmz9s9T;
- Mon, 25 Feb 2019 17:44:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=canb.auug.org.au;
- s=201702; t=1551077041;
- bh=lmVs1hT0QQWLsvKg/U6KhyGLPlbJl1E6/182Q7hmkYs=;
- h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
- b=S5Tnu+8SBbht4e7A0TFxOhNs8TxiSPWx5pZrBfObNP1lBb9G8bPWPIs3G6uRgLfOq
- DI7H0/xjcWrpF/2lfWufMS+WeNHLZ7VoZL1r7CzlJaEglgkN5RNuG1Js6/OqNWgNwg
- zZzxzKcqn/v2cX5AQK/0aIiM/7PlO3cXeFFBqLENq5x3vOpuWaqMZ5cpwUEuaD3FTG
- WBBOOa12SNAB2svEf6N/NJszFl2u8LdYh1vpQE3IxOuhP031ReGZCteZp34ViN22q4
- 7Cpgg4lLkyMj/S+edQD7DCovKNafIw4wp4Hm8j7doNMpZY4enRltq9+SkWoF4g4imv
- 9jXCDQzfji9iw==
-Date: Mon, 25 Feb 2019 17:44:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: linux-next: manual merge of the akpm-current tree with the
- powerpc tree
-Message-ID: <20190225174400.5bdafa10@canb.auug.org.au>
-In-Reply-To: <20190225174248.54aceebd@canb.auug.org.au>
-References: <20190225174248.54aceebd@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/GqQvoPQHf6A=dm3VZXg1K90"; protocol="application/pgp-signature"
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="ns0vYqSo"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447GBy6m3nzDqDl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 20:01:11 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id r124so4197678pgr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 01:01:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=PvYCnuVke77+JFr3v8AmDRAxbaZsaVVDdH592VB9bFY=;
+ b=ns0vYqSoAno1BI7Uh/Zfnq6d14RQ8V1mBWsS+sonCErFMVFRcQ23oVoUQkgriEYiSr
+ 76VRXMXdkSxeEeOA0K7TcNabVP1JWlFxAzJnL2mIilZ1KvCYz7h78Hisla27NjCIxe4H
+ nNyQhpql48ceChLBGc9QkRORse1Zs+yyPI57PnJzVdbjHqTh/wZ2eiCMOYjInQW0UNZy
+ Qi7E1+H9THzKMNbojTRWczBUXX0WIVbzaKsImBjGLFTi7+awSv7Unk2h9fSDHycVuS4D
+ b1tj+nDuXnxYm9T4keXSBdfKUxmuU3NozdDs8Y0/kLyHXUrLzBVTxy2Ga73Xl9cbv5eI
+ 98jg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=PvYCnuVke77+JFr3v8AmDRAxbaZsaVVDdH592VB9bFY=;
+ b=YE7Hf6574jCCfnQrQvSUlS+EXRN1gN5n/7CmOEHu8xN+J6WL8zWb7o7mIfaUWepl5Y
+ Rio8f6vcub88bfhvZz/I82yUWviSnD06eyBl1lpNW7ksUEL1Wb3EtPIAAD2xDhdkslfR
+ jpdB9vcyy827iWh3j9O657MPU2rBXg3DHrxiGtf+KJ+PA4XtSBa8PX1ANwtEf3lud4Em
+ 2pKuNSI7LZXBia2ElnJmKZscB6ze8gc7dvbYANipYxDTczhGVwBLzZkBjb8QS4UlKD1Y
+ gw9ZP5bv6yLwV9T7VZf863hJ9SimSPABgSnqPeTxLcyPPlSTcsld3Sskors6ZrlP9SMT
+ VqYQ==
+X-Gm-Message-State: AHQUAub8lXYrzETycWT1+1Xgv9bcfDCI0tyCgct321/AYGNSZa3D0TSO
+ /nw+FX82Wpp1iPWlG4LgRfk=
+X-Google-Smtp-Source: AHgI3IZ0FoVp5jiSzQYCmUlR/Y345f+zfNW+HWNZulIyLt8+Q47+iZ1MxLIOyKXAFHE8msPx7SqGCg==
+X-Received: by 2002:a62:e11a:: with SMTP id q26mr19060240pfh.187.1551085267833; 
+ Mon, 25 Feb 2019 01:01:07 -0800 (PST)
+Received: from localhost.localdomain (mx.daiict.ac.in. [220.225.53.35])
+ by smtp.googlemail.com with ESMTPSA id
+ t185sm16308645pfd.165.2019.02.25.01.01.04
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 25 Feb 2019 01:01:06 -0800 (PST)
+From: Himadri Pandya <himadri18.07@gmail.com>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v2 1/2] arch: powerpc/kexec: Add missing of_node-put() in
+ default_machine_kexec_prepare()
+Date: Mon, 25 Feb 2019 14:30:55 +0530
+Message-Id: <20190225090056.19055-1-himadri18.07@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190224080209.15969-1-himadri18.07@gmail.com>
+References: <20190224080209.15969-1-himadri18.07@gmail.com>
+X-Mailman-Approved-At: Mon, 25 Feb 2019 20:48:32 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,43 +92,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Himadri Pandya <himadri18.07@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---Sig_/GqQvoPQHf6A=dm3VZXg1K90
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Decrement the reference count on device_node "node" while breaking out
+of the loop. Issue identified by Coccinelle.
 
-Hi all,
+Signed-off-by: Himadri Pandya <himadri18.07@gmail.com>
+---
+Changes in V2:
+	- Change subject line
+---
+ arch/powerpc/kernel/machine_kexec_64.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On Mon, 25 Feb 2019 17:42:48 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next merge of the akpm-current tree got a conflict in:
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index a0f6f45005bd..46edde582984 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -65,6 +65,7 @@ int default_machine_kexec_prepare(struct kimage *image)
+ 			end = begin + image->segment[i].memsz;
+ 
+ 			if ((begin < high) && (end > low))
++				of_node_put(node);
+ 				return -ETXTBSY;
+ 		}
+ 	}
+-- 
+2.17.1
 
-This was actually the akpm tree.
-
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/GqQvoPQHf6A=dm3VZXg1K90
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlxzjrAACgkQAVBC80lX
-0Gxb1Qf8C4i23ZrR8/vEGRDTU4flKaWN2Z5qbCqEHaVZg8oZe072WIkAaRVyfbqb
-w1fafTTNAjFTdRMyt+WQFhhwqU7O4uhIsISWmONiBQv5OEX2LEGgSZkqsMJAX0ZS
-04Y+bU4B80fUWo0TfBkPc5csbhXvQECsHGicewMtjUbomS7rZt9VnvN94+n3BNKR
-BBCzUTI0Vnu6Yaqk8OJooYfODof8TBU6d3Oft/vV7qMCiw/dmrXn5q12HJ/XBpr9
-brIlZmXL/TecAzlErGep+/bl9w001n8dkoKxxWU4d0Vj5nwAeTWLiec8EPfsfdEZ
-UbRuK4Exnj2YXL7apMqjGQ4Q3aqhBw==
-=DUpk
------END PGP SIGNATURE-----
-
---Sig_/GqQvoPQHf6A=dm3VZXg1K90--
