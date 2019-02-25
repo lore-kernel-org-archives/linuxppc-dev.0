@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F51CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 14:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA32AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 14:08:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DF6272146F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 14:07:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 58CF920663
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 14:08:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="imulGtqB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DF6272146F
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="wCmnPKwz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58CF920663
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447Nzn2sTrzDqPZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 01:07:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447P1q3YDGzDqTT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 01:08:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,52 +28,51 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="imulGtqB"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="wCmnPKwz"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447NZp1GtgzDqPj
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447NZp0RNLzDqPZ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 00:48:50 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 447NZd0Ft2zB09b3;
- Mon, 25 Feb 2019 14:48:41 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 447NZY6k4GzB09Zy;
+ Mon, 25 Feb 2019 14:48:37 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=imulGtqB; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=wCmnPKwz; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id OO7uHKRQX9Et; Mon, 25 Feb 2019 14:48:40 +0100 (CET)
+ with ESMTP id ADRVeE-l3elj; Mon, 25 Feb 2019 14:48:37 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 447NZc6HvszB09Zn;
- Mon, 25 Feb 2019 14:48:40 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 447NZY5b2tzB09Zn;
+ Mon, 25 Feb 2019 14:48:37 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551102520; bh=8i6BZYBVOnklYOVbK567NRMBSuNfNdhf+35JteJYb48=;
+ t=1551102517; bh=fF6LjTP5Ef3hsquG7Y6XBTU3dO56YlYJpsVAo831ABM=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=imulGtqBo/ES7Z2dxdDVORNqJ3N0i4PSkqYblVgWQX+panXUiCtjEQGguU3Pal7vr
- EBaZzGCsI6+36+zobAcXGdiRj7IkLBt0xbxRtaFyvCGdv/zRr6w1joTF6MgoA7lJLU
- /G29i5DppfA1z7QDqhT51JApPIklKA0m9V17yE/s=
+ b=wCmnPKwzCLDNOLCiscA/KESLJ4fbF2vwYcH6QM5d/0uVh9xt8mU8NyQeswDgNOahv
+ sHtP8AWt9i/xJDumilkf4Lsf+w3XBrGYsvjbAXI+Wo0p7xcX01rXP0ciuDUMvn69m/
+ hC31j4yPbRMuhtZXCBxxQpZS2HbM+1mvlxtWNMUg=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 366BA8B844;
- Mon, 25 Feb 2019 14:48:45 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B6E28B845;
+ Mon, 25 Feb 2019 14:48:42 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id VXX0HYr9fIOD; Mon, 25 Feb 2019 14:48:45 +0100 (CET)
+ with ESMTP id cHyaQZ8BiJa5; Mon, 25 Feb 2019 14:48:42 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
  [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A9AA8B81D;
- Mon, 25 Feb 2019 14:48:45 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DFC7C8B81D;
+ Mon, 25 Feb 2019 14:48:41 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 8A7636F20E; Mon, 25 Feb 2019 13:48:45 +0000 (UTC)
-Message-Id: <a7d608d51bda982afbe51ec6a34c67cd6a7c8cef.1551098215.git.christophe.leroy@c-s.fr>
+ id 731256F20E; Mon, 25 Feb 2019 13:48:42 +0000 (UTC)
+Message-Id: <bada5c0051f749565d27da9527ce933aa205bf86.1551098214.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1551098214.git.christophe.leroy@c-s.fr>
 References: <cover.1551098214.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 10/11] powerpc/32s: move hash code patching out of
- MMU_init_hw()
+Subject: [PATCH v7 07/11] powerpc/32: prepare shadow area for KASAN
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -81,7 +80,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Mon, 25 Feb 2019 13:48:45 +0000 (UTC)
+Date: Mon, 25 Feb 2019 13:48:42 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,119 +98,121 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For KASAN, hash table handling will be activated early for
-accessing to KASAN shadow areas.
+This patch prepares a shadow area for KASAN.
 
-In order to avoid any modification of the hash functions while
-they are still used with the early hash table, the code patching
-is moved out of MMU_init_hw() and put close to the big-bang switch
-to the final hash table.
+The shadow area will be at the top of the kernel virtual
+memory space above the fixmap area and will occupy one
+eighth of the total kernel virtual memory space.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_32.S |  3 +++
- arch/powerpc/mm/mmu_decl.h    |  1 +
- arch/powerpc/mm/ppc_mmu_32.c  | 34 ++++++++++++++++++++--------------
- 3 files changed, 24 insertions(+), 14 deletions(-)
+ arch/powerpc/Kconfig              |  5 +++++
+ arch/powerpc/include/asm/fixmap.h |  5 +++++
+ arch/powerpc/include/asm/kasan.h  | 17 +++++++++++++++++
+ arch/powerpc/mm/mem.c             |  4 ++++
+ arch/powerpc/mm/ptdump/ptdump.c   |  8 ++++++++
+ 5 files changed, 39 insertions(+)
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 02229c005853..e644aab2cf5b 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -960,6 +960,9 @@ start_here:
- 	bl	machine_init
- 	bl	__save_cpu_setup
- 	bl	MMU_init
-+BEGIN_MMU_FTR_SECTION
-+	bl	MMU_init_hw_patch
-+END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 652c25260838..f446e016f4a1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -382,6 +382,11 @@ config PGTABLE_LEVELS
+ 	default 3 if PPC_64K_PAGES && !PPC_BOOK3S_64
+ 	default 4
  
- /*
-  * Go back to running unmapped so we can load up new values
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 74ff61dabcb1..d726ff776054 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -130,6 +130,7 @@ extern void wii_memory_fixups(void);
-  */
- #ifdef CONFIG_PPC32
- extern void MMU_init_hw(void);
-+void MMU_init_hw_patch(void);
- unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
++config KASAN_SHADOW_OFFSET
++	hex
++	depends on KASAN
++	default 0xe0000000
++
+ source "arch/powerpc/sysdev/Kconfig"
+ source "arch/powerpc/platforms/Kconfig"
+ 
+diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
+index b9fbed84ddca..51a1a309c919 100644
+--- a/arch/powerpc/include/asm/fixmap.h
++++ b/arch/powerpc/include/asm/fixmap.h
+@@ -22,7 +22,12 @@
+ #include <asm/kmap_types.h>
  #endif
  
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 2d5b0d50fb31..d591f768fac6 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -39,6 +39,7 @@
- struct hash_pte *Hash, *Hash_end;
- unsigned long Hash_size, Hash_mask;
- unsigned long _SDR1;
-+static unsigned int Hash_mb, Hash_mb2;
++#ifdef CONFIG_KASAN
++#include <asm/kasan.h>
++#define FIXADDR_TOP	KASAN_SHADOW_START
++#else
+ #define FIXADDR_TOP	((unsigned long)(-PAGE_SIZE))
++#endif
  
- struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
+ /*
+  * Here we define all the compile-time 'special' virtual
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+index 2efd0e42cfc9..b554d3bd3e2c 100644
+--- a/arch/powerpc/include/asm/kasan.h
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -12,4 +12,21 @@
+ #define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(fn)
+ #endif
  
-@@ -308,7 +309,6 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
-  */
- void __init MMU_init_hw(void)
- {
--	unsigned int hmask, mb, mb2;
- 	unsigned int n_hpteg, lg_n_hpteg;
- 
- 	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE))
-@@ -349,20 +349,28 @@ void __init MMU_init_hw(void)
- 	       (unsigned long long)(total_memory >> 20), Hash_size >> 10, Hash);
- 
- 
--	/*
--	 * Patch up the instructions in hashtable.S:create_hpte
--	 */
--	if ( ppc_md.progress ) ppc_md.progress("hash:patch", 0x345);
- 	Hash_mask = n_hpteg - 1;
--	hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
--	mb2 = mb = 32 - LG_HPTEG_SIZE - lg_n_hpteg;
-+	Hash_mb2 = Hash_mb = 32 - LG_HPTEG_SIZE - lg_n_hpteg;
- 	if (lg_n_hpteg > 16)
--		mb2 = 16 - LG_HPTEG_SIZE;
-+		Hash_mb2 = 16 - LG_HPTEG_SIZE;
-+}
++#ifndef __ASSEMBLY__
 +
-+void __init MMU_init_hw_patch(void)
-+{
-+	unsigned int hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
++#include <asm/page.h>
++#include <asm/pgtable-types.h>
 +
-+	if ( ppc_md.progress ) ppc_md.progress("hash:patch", 0x345);
-+	if ( ppc_md.progress ) ppc_md.progress("hash:done", 0x205);
- 
-+	/* WARNING: Make sure nothing can trigger a KASAN check past this point */
++#define KASAN_SHADOW_SCALE_SHIFT	3
 +
-+	/*
-+	 * Patch up the instructions in hashtable.S:create_hpte
-+	 */
- 	modify_instruction_site(&patch__hash_page_A0, 0xffff,
- 				((unsigned int)Hash - PAGE_OFFSET) >> 16);
--	modify_instruction_site(&patch__hash_page_A1, 0x7c0, mb << 6);
--	modify_instruction_site(&patch__hash_page_A2, 0x7c0, mb2 << 6);
-+	modify_instruction_site(&patch__hash_page_A1, 0x7c0, Hash_mb << 6);
-+	modify_instruction_site(&patch__hash_page_A2, 0x7c0, Hash_mb2 << 6);
- 	modify_instruction_site(&patch__hash_page_B, 0xffff, hmask);
- 	modify_instruction_site(&patch__hash_page_C, 0xffff, hmask);
++#define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
++
++#define KASAN_SHADOW_START	(KASAN_SHADOW_OFFSET + \
++				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
++
++#define KASAN_SHADOW_END	0UL
++
++#define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
++
++#endif /* __ASSEMBLY */
+ #endif
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index f6787f90e158..4e7fa4eb2dd3 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -309,6 +309,10 @@ void __init mem_init(void)
+ 	mem_init_print_info(NULL);
+ #ifdef CONFIG_PPC32
+ 	pr_info("Kernel virtual memory layout:\n");
++#ifdef CONFIG_KASAN
++	pr_info("  * 0x%08lx..0x%08lx  : kasan shadow mem\n",
++		KASAN_SHADOW_START, KASAN_SHADOW_END);
++#endif
+ 	pr_info("  * 0x%08lx..0x%08lx  : fixmap\n", FIXADDR_START, FIXADDR_TOP);
+ #ifdef CONFIG_HIGHMEM
+ 	pr_info("  * 0x%08lx..0x%08lx  : highmem PTEs\n",
+diff --git a/arch/powerpc/mm/ptdump/ptdump.c b/arch/powerpc/mm/ptdump/ptdump.c
+index 37138428ab55..812ed680024f 100644
+--- a/arch/powerpc/mm/ptdump/ptdump.c
++++ b/arch/powerpc/mm/ptdump/ptdump.c
+@@ -101,6 +101,10 @@ static struct addr_marker address_markers[] = {
+ 	{ 0,	"Fixmap start" },
+ 	{ 0,	"Fixmap end" },
+ #endif
++#ifdef CONFIG_KASAN
++	{ 0,	"kasan shadow mem start" },
++	{ 0,	"kasan shadow mem end" },
++#endif
+ 	{ -1,	NULL },
+ };
  
-@@ -371,11 +379,9 @@ void __init MMU_init_hw(void)
- 	 */
- 	modify_instruction_site(&patch__flush_hash_A0, 0xffff,
- 				((unsigned int)Hash - PAGE_OFFSET) >> 16);
--	modify_instruction_site(&patch__flush_hash_A1, 0x7c0, mb << 6);
--	modify_instruction_site(&patch__flush_hash_A2, 0x7c0, mb2 << 6);
-+	modify_instruction_site(&patch__flush_hash_A1, 0x7c0, Hash_mb << 6);
-+	modify_instruction_site(&patch__flush_hash_A2, 0x7c0, Hash_mb2 << 6);
- 	modify_instruction_site(&patch__flush_hash_B, 0xffff, hmask);
--
--	if ( ppc_md.progress ) ppc_md.progress("hash:done", 0x205);
+@@ -322,6 +326,10 @@ static void populate_markers(void)
+ #endif
+ 	address_markers[i++].start_address = FIXADDR_START;
+ 	address_markers[i++].start_address = FIXADDR_TOP;
++#ifdef CONFIG_KASAN
++	address_markers[i++].start_address = KASAN_SHADOW_START;
++	address_markers[i++].start_address = KASAN_SHADOW_END;
++#endif
+ #endif /* CONFIG_PPC64 */
  }
  
- void setup_initial_memory_limit(phys_addr_t first_memblock_base,
 -- 
 2.13.3
 
