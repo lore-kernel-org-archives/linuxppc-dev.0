@@ -4,55 +4,57 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52014C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:14:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C13FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:15:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BF4152087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:14:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id CBB442087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 04:15:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fu6H+rwe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BF4152087C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="Li+sKdGT"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CBB442087C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4477qc68wSzDq6J
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 15:14:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4477sD669szDqS0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 15:15:28 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4477Rm3ZwzzDqFF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4477Rm6fdzzDqFv
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 14:56:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="fu6H+rwe"; dkim-atps=neutral
+ header.b="Li+sKdGT"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 4477Rm1lJRz9sNK; Mon, 25 Feb 2019 14:56:51 +1100 (AEDT)
+ id 4477Rm3FNQz9sNL; Mon, 25 Feb 2019 14:56:51 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1551067012;
- bh=p8ezU6M4jszLeLTiIbWtAq+sTb5HxGmLaGhL/iqvtAs=;
+ bh=1gGH6Kseb6ZnQeprKziQR6Xj+F0DiqK42i0/uGCdnts=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=fu6H+rwerTmxJD1Jfb2QlnupmwZ0ck26zXoFJujWwaLI8mb5pfXeIrEsdUXYFQBWY
- lMxr+t00pdgav3JaWuX6PGMp2JAiRbPxlnPz3cexWfvE9XZN0AaXWw9/5Rb+9+2vBG
- f1udkfZdvu+INDJqABYz83wrnUi/BR204LtQgY1E=
-Date: Mon, 25 Feb 2019 14:33:09 +1100
+ b=Li+sKdGTTQMkJHKl0BICwNkl0BCJzRz2UOJhwJGotCRSotmO4i8wiyv2ZZagHsBNa
+ u4IrnXNUNcRsWn0WlIn665aVx1LK5PC2TaK1n4i6QRJHTpZU68F4Biuny8JvNkgQcv
+ 1AmBA3zS7y/CuoWI8ttZUG05j3MPIRU+E2pgvRD0=
+Date: Mon, 25 Feb 2019 14:47:26 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 11/16] KVM: introduce a 'mmap' method for KVM devices
-Message-ID: <20190225033309.GO7668@umbus.fritz.box>
+Subject: Re: [PATCH v2 13/16] KVM: PPC: Book3S HV: XIVE: add a mapping for
+ the source ESB pages
+Message-ID: <20190225034726.GQ7668@umbus.fritz.box>
 References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-12-clg@kaod.org>
+ <20190222112840.25000-14-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="MdEjg5WkSuUg8x46"
+ protocol="application/pgp-signature"; boundary="mzmkN2k+aDjaU9Rr"
 Content-Disposition: inline
-In-Reply-To: <20190222112840.25000-12-clg@kaod.org>
+In-Reply-To: <20190222112840.25000-14-clg@kaod.org>
 User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -72,74 +74,142 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---MdEjg5WkSuUg8x46
+--mzmkN2k+aDjaU9Rr
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 22, 2019 at 12:28:35PM +0100, C=E9dric Le Goater wrote:
-> Some KVM devices will want to handle special mappings related to the
-> underlying HW. For instance, the XIVE interrupt controller of the
-> POWER9 processor has MMIO pages for thread interrupt management and
-> for interrupt source control that need to be exposed to the guest when
-> the OS has the required support.
+On Fri, Feb 22, 2019 at 12:28:37PM +0100, C=E9dric Le Goater wrote:
+> Each source is associated with an Event State Buffer (ESB) with a
+> even/odd pair of pages which provides commands to manage the source:
+> to trigger, to EOI, to turn off the source for instance.
+>=20
+> The custom VM fault handler will deduce the guest IRQ number from the
+> offset of the fault, and the ESB page of the associated XIVE interrupt
+> will be inserted into the VMA using the internal structure caching
+> information on the interrupts.
 >=20
 > Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
 
-Ah, when I suggested mmap() on the base device fd, I hadn't realized
-there wasn't a facility for that yet.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Have you discussed this with Paolo?  We'll need some core KVM buy in
-to merge this.
+With the same caveat as the previous patch.
 
 > ---
->  include/linux/kvm_host.h |  1 +
->  virt/kvm/kvm_main.c      | 11 +++++++++++
->  2 files changed, 12 insertions(+)
+>  arch/powerpc/include/uapi/asm/kvm.h        |  1 +
+>  arch/powerpc/kvm/book3s_xive_native.c      | 57 ++++++++++++++++++++++
+>  Documentation/virtual/kvm/devices/xive.txt |  7 +++
+>  3 files changed, 65 insertions(+)
 >=20
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index c38cc5eb7e73..cbf81487b69f 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1223,6 +1223,7 @@ struct kvm_device_ops {
->  	int (*has_attr)(struct kvm_device *dev, struct kvm_device_attr *attr);
->  	long (*ioctl)(struct kvm_device *dev, unsigned int ioctl,
->  		      unsigned long arg);
-> +	int (*mmap)(struct kvm_device *dev, struct vm_area_struct *vma);
->  };
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/u=
+api/asm/kvm.h
+> index be9b255e061d..d8990e9044e3 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -721,5 +721,6 @@ struct kvm_ppc_xive_eq {
+>  #define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
 > =20
->  void kvm_device_get(struct kvm_device *dev);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 585845203db8..84717d8cb5e4 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -2878,6 +2878,16 @@ static long kvm_vcpu_compat_ioctl(struct file *fil=
-p,
+>  #define KVM_XIVE_TIMA_PAGE_OFFSET	0
+> +#define KVM_XIVE_ESB_PAGE_OFFSET	4
+> =20
+>  #endif /* __LINUX_KVM_POWERPC_H */
+> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/boo=
+k3s_xive_native.c
+> index c6ac818a13b2..92cab6409e8e 100644
+> --- a/arch/powerpc/kvm/book3s_xive_native.c
+> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+> @@ -176,6 +176,59 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_devic=
+e *dev,
+>  	return rc;
 >  }
->  #endif
 > =20
-> +static int kvm_device_mmap(struct file *filp, struct vm_area_struct *vma)
+> +static int xive_native_esb_fault(struct vm_fault *vmf)
 > +{
-> +	struct kvm_device *dev =3D filp->private_data;
+> +	struct vm_area_struct *vma =3D vmf->vma;
+> +	struct kvm_device *dev =3D vma->vm_file->private_data;
+> +	struct kvmppc_xive *xive =3D dev->private;
+> +	struct kvmppc_xive_src_block *sb;
+> +	struct kvmppc_xive_irq_state *state;
+> +	struct xive_irq_data *xd;
+> +	u32 hw_num;
+> +	u16 src;
+> +	u64 page;
+> +	unsigned long irq;
+> +	u64 page_offset;
 > +
-> +	if (dev->ops->mmap)
-> +		return dev->ops->mmap(dev, vma);
+> +	/*
+> +	 * Linux/KVM uses a two pages ESB setting, one for trigger and
+> +	 * one for EOI
+> +	 */
+> +	page_offset =3D vmf->pgoff - vma->vm_pgoff;
+> +	irq =3D page_offset / 2;
 > +
-> +	return -ENODEV;
+> +	sb =3D kvmppc_xive_find_source(xive, irq, &src);
+> +	if (!sb) {
+> +		pr_devel("%s: source %lx not found !\n", __func__, irq);
+> +		return VM_FAULT_SIGBUS;
+> +	}
+> +
+> +	state =3D &sb->irq_state[src];
+> +	kvmppc_xive_select_irq(state, &hw_num, &xd);
+> +
+> +	arch_spin_lock(&sb->lock);
+> +
+> +	/*
+> +	 * first/even page is for trigger
+> +	 * second/odd page is for EOI and management.
+> +	 */
+> +	page =3D page_offset % 2 ? xd->eoi_page : xd->trig_page;
+> +	arch_spin_unlock(&sb->lock);
+> +
+> +	if (WARN_ON(!page)) {
+> +		pr_err("%s: acessing invalid ESB page for source %lx !\n",
+> +		       __func__, irq);
+> +		return VM_FAULT_SIGBUS;
+> +	}
+> +
+> +	vmf_insert_pfn(vma, vmf->address, page >> PAGE_SHIFT);
+> +	return VM_FAULT_NOPAGE;
 > +}
 > +
->  static int kvm_device_ioctl_attr(struct kvm_device *dev,
->  				 int (*accessor)(struct kvm_device *dev,
->  						 struct kvm_device_attr *attr),
-> @@ -2927,6 +2937,7 @@ static const struct file_operations kvm_device_fops=
- =3D {
->  	.unlocked_ioctl =3D kvm_device_ioctl,
->  	.release =3D kvm_device_release,
->  	KVM_COMPAT(kvm_device_ioctl),
-> +	.mmap =3D kvm_device_mmap,
->  };
+> +static const struct vm_operations_struct xive_native_esb_vmops =3D {
+> +	.fault =3D xive_native_esb_fault,
+> +};
+> +
+>  static int xive_native_tima_fault(struct vm_fault *vmf)
+>  {
+>  	struct vm_area_struct *vma =3D vmf->vma;
+> @@ -205,6 +258,10 @@ static int kvmppc_xive_native_mmap(struct kvm_device=
+ *dev,
+>  		if (vma_pages(vma) > 4)
+>  			return -EINVAL;
+>  		vma->vm_ops =3D &xive_native_tima_vmops;
+> +	} else if (vma->vm_pgoff =3D=3D KVM_XIVE_ESB_PAGE_OFFSET) {
+> +		if (vma_pages(vma) > KVMPPC_XIVE_NR_IRQS * 2)
+> +			return -EINVAL;
+> +		vma->vm_ops =3D &xive_native_esb_vmops;
+>  	} else {
+>  		return -EINVAL;
+>  	}
+> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/v=
+irtual/kvm/devices/xive.txt
+> index 4d6b41609fd9..be5000b2eb5a 100644
+> --- a/Documentation/virtual/kvm/devices/xive.txt
+> +++ b/Documentation/virtual/kvm/devices/xive.txt
+> @@ -36,6 +36,13 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+>    third (operating system) and the fourth (user level) are exposed the
+>    guest.
 > =20
->  struct kvm_device *kvm_device_from_filp(struct file *filp)
+> +  2. Event State Buffer (ESB)
+> +
+> +  Each source is associated with an Event State Buffer (ESB) with
+> +  either a pair of even/odd pair of pages which provides commands to
+> +  manage the source: to trigger, to EOI, to turn off the source for
+> +  instance.
+> +
+>  * Groups:
+> =20
+>    1. KVM_DEV_XIVE_GRP_CTRL
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -147,24 +217,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---MdEjg5WkSuUg8x46
+--mzmkN2k+aDjaU9Rr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxzYfUACgkQbDjKyiDZ
-s5JP/A/9E2eVjzW3hIpObywCYF59PrShr4U3oPk+MgINMc39o5VpZNPU8KbGV8AR
-duGV33Vtv5+mBrY4hzGH0n1KVxf5hnRAGn0fVDXZcYG/1HcDMbCbNJClafOjn3Qu
-xI7jFQ6zbLbVSL7B7IQR9nvSu3xFp0gss16SEgw+KccfMV4RJ+COHKfRd6V4vzg0
-HZ+rHvr0136ipued9dl9zJ00KqP/GOgMTJR4nFe83DgaYhhR63tP9E5gdqe3zlfG
-D5BoP3LDQBTLKGZfYEXvVa1VoCZCUxhW2uFGzmdjA3Ext1HrgyQ/A5Y8Hq363vT8
-FTAsbbbpTmAHrVdom2EZo2m0a2j9sRNaYcFPnEOhfuOkp65eqOTDDeAp40LBGa3l
-fFEovLumIJFBfMQ8WN5Sl+irc8v9e1BdAA6ZH7IYiAaEH6bnIt9Q2UEcU1500rXy
-j0FrO+iiOb+4XVQ9lO5MhYusxl/mzawRcGqjhi6O1HmgOJjUluCywWq31ANkwEcS
-ymPk/R5qcGgSfvplvvY+dnpRj8FLBiezbbEl4vdYDW3hQV7BchUDybm00HaJQ/PN
-rDgYT+2nqgjnBUUPwmBvS3CIrbfiQchNAhRMdR4op9fIM77RipzxffHbbX20MP2b
-KF/Yjc4okuWGMnOhdoiJh+B47W3IujZX9YTnMe25hO45EiVc1YU=
-=U2aO
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlxzZU4ACgkQbDjKyiDZ
+s5LLAA/7BwSS3balDu1I+2pzrekPl75En1rAboth5fLaxxN5/dQGUmz2Hv2OpCAt
+5JP5xPi/F3/cS7WP2rMVDY/n/1pKvh9ylOkYY7iOcI4/x0vTOWEJNojJWxAHMaw8
+0cxI/Yrgj9WJgy5wSd1vK2ipAt4IGW1ik43lAC8TxdQOemx11kMZcckLJJO1Jyop
+zxr8CXP24B5hZOXGvbsyQjAf7pOWskcd2pcVvMYg72Fv+2J5Biiy34Klhd/HDOnn
+H4qL355TNxkPbGX+I/5Lze39FS1pCgqE2teYpi7hzqewedJ9ocwahC0Sng2FG19X
+jiB4PhS3c2KzkGA48bQaRvIgwDxIw5wS00MjnzxpH9fvlpw22Vzdc/lVtH9Cy+Tz
+TyKCZIRabCbtA5XzqiZGekdloHXsnPuJzmXZyzHNr2PtB0Hy1XQAVfNVMgp+GDKH
+w83nbU5cdzwTEpGsX315wFQJZuFJAtGad4mtDHZMSY72aTcQehvukch/ZcQwYQ95
+WaQnkgPRMsHtzTatcabinNSFymtpK1eL83MCHjz0liKVr+/3TR5c8jq6pBtEjUci
+p6VtJnEIS77Z94TcUPMXk+vbCW8BAnTb7LLCCiZOqdC3MG02fYB38+pI0S5Gh2xC
+SAYK0q4cnX8g8Z9ACABk6QuLTMZ21Z9h9NDhOvZm/YGz0r+t1Vk=
+=9e31
 -----END PGP SIGNATURE-----
 
---MdEjg5WkSuUg8x46--
+--mzmkN2k+aDjaU9Rr--
