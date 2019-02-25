@@ -2,50 +2,86 @@ Return-Path: <SRS0=+31F=RA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14ACBC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 19:04:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D351DC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:17:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3C54A2084D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 19:04:57 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3C54A2084D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 157702147C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:17:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EN9JF5Q7"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 157702147C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447WbV47y5zDqNr
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:04:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447ZXW1F9rzDqMn
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:17:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.intel.com
- (client-ip=192.55.52.115; helo=mga14.intel.com;
- envelope-from=dave.hansen@linux.intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.intel.com
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="EN9JF5Q7"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447WXy6HKCzDqKS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 06:02:38 +1100 (AEDT)
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
- by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 25 Feb 2019 11:02:36 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.58,412,1544515200"; d="scan'208";a="149861256"
-Received: from viggo.jf.intel.com (HELO localhost.localdomain) ([10.54.77.144])
- by fmsmga001.fm.intel.com with ESMTP; 25 Feb 2019 11:02:34 -0800
-Subject: [PATCH 1/5] mm/resource: return real error codes from walk failures
-To: linux-kernel@vger.kernel.org
-From: Dave Hansen <dave.hansen@linux.intel.com>
-Date: Mon, 25 Feb 2019 10:57:30 -0800
-References: <20190225185727.BCBD768C@viggo.jf.intel.com>
-In-Reply-To: <20190225185727.BCBD768C@viggo.jf.intel.com>
-Message-Id: <20190225185730.D8AA7812@viggo.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447ZTP5VcBzDqLr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 08:14:49 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id e17so3016649pgd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 13:14:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:in-reply-to:user-agent;
+ bh=NfMnZUTKo3oeNIQksAdalm/3O+wiOQKUjySMWuXpGZc=;
+ b=EN9JF5Q7oI1GF811QXe9K2QaCKJqyTav667MKJ2/jnicEv3sAckhwFg/C90E17QlwZ
+ hpWv3BgSdOApyppwAQyo0P4Sv8WNe27PX985JyxZvCDXzt092py1rqPDHR39I/4eO+na
+ 6NYTEck+v6IC06t8yONoEamfxnixxtAW3RxEHkUdnSMJi7oFNIy4Z5SVctjxCx5OYTe4
+ c4zK/L3r1edltY5IKo87MORyBJLFL3b+GpziGwLW8y0oRP5Rj4C/nquplYf1X9zts9GX
+ IzxCaU960o6TM+3ZxokN7Sb1SyN8/kGJMW7RfE5VDPgYlXGvv0fijJRRrnZj+eK3IwMg
+ cFzA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=NfMnZUTKo3oeNIQksAdalm/3O+wiOQKUjySMWuXpGZc=;
+ b=WgEaNaSRiDO3UhQNU6pi88nEAdMk4QsbtH/WiDYVSMFIWkG7Qly3iBFZLuN+W5xzgf
+ xX4sDv4gixZLCTlJOoTJTLeCRr49qyMnW6Y1/yqd3wiibL3GS2X4lWVwmrEhvlauWNCv
+ Kw6ghjvyvkljfGWoC+wBOTGQF/T/7Ay0hSVT/qkqCjuDtMTZA90gc7zP/dSNgpooIRzs
+ 0iXSyTVKumtvuxd1wi4ARLAMTTvUoj/GHNJxZCwnBROrgg9utykv6WEYRwQmmNfamcG5
+ 4J+LBxWeE3+vXriGqceXIxkEvogjlI/jZQ24DZsqrTNYIEYjPukUdOy8oPwZT4y3FEHX
+ 4WvA==
+X-Gm-Message-State: AHQUAuZdrwL7JSf5vUJJVDGr/2EG89mtwYZiz25Xai33ZQTUi+KvHpyE
+ sHRfYW0Xi54OJEaqaWE+iPk=
+X-Google-Smtp-Source: AHgI3IZM3xnAe4WN/84X2M9NHv4h1Ohc/PpN+sT+Iib2W4YiLuGUhnXl5EygOK5pr1zVl6yfMbjKzg==
+X-Received: by 2002:a65:5788:: with SMTP id b8mr20344953pgr.8.1551129286088;
+ Mon, 25 Feb 2019 13:14:46 -0800 (PST)
+Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
+ [216.228.112.22])
+ by smtp.gmail.com with ESMTPSA id k17sm32713198pfj.92.2019.02.25.13.14.45
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 25 Feb 2019 13:14:45 -0800 (PST)
+Date: Mon, 25 Feb 2019 13:14:41 -0800
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: "S.j. Wang" <shengjiu.wang@nxp.com>
+Subject: Re: [PATCH V2] ASoC: fsl_esai: fix channel swap issue when stream
+ starts
+Message-ID: <20190225211440.GA20734@Asurada-Nvidia.nvidia.com>
+References: <e31c31acb3c62d16e6b32682e8226c7dbc05f147.1551062751.git.shengjiu.wang@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e31c31acb3c62d16e6b32682e8226c7dbc05f147.1551062751.git.shengjiu.wang@nxp.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,102 +93,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mhocko@suse.com, tiwai@suse.de, Dave Hansen <dave.hansen@linux.intel.com>,
- keith.busch@intel.com, linux-mm@kvack.org, paulus@samba.org,
- baiyaowei@cmss.chinamobile.com, zwisler@kernel.org, dave.jiang@intel.com,
- linux-nvdimm@lists.01.org, ying.huang@intel.com, bp@suse.de,
- thomas.lendacky@amd.com, jglisse@redhat.com, bhelgaas@google.com,
- dan.j.williams@intel.com, vishal.l.verma@intel.com, akpm@linux-foundation.org,
- fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Feb 25, 2019 at 02:48:18AM +0000, S.j. Wang wrote:
+> There is very low possibility ( < 0.1% ) that channel swap happened
+> in beginning when multi output/input pin is enabled. The issue is
+> that hardware can't send data to correct pin in the beginning with
+> the normal enable flow.
+> 
+> This is hardware issue, but there is no errata, the workaround flow
+> is that: Each time playback/recording, firstly clear the xSMA/xSMB,
+> then enable TE/RE, then enable xSMB and xSMA (xSMB must be enabled
+> before xSMA). Which is to use the xSMA as the trigger start register,
+> previously the xCR_TE or xCR_RE is the bit for starting.
+> 
+> Fixes 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+> Cc: <stable@vger.kernel.org>
+> Reviewed-by: Fabio Estevam <festevam@gmail.com>
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> ---
+> Changes in v2
+> - update commit comments.
+> 
+>  sound/soc/fsl/fsl_esai.c | 32 ++++++++++++++++++++++----------
+>  1 file changed, 22 insertions(+), 10 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+> index afe67c865330..23bd0ad4ac31 100644
+> --- a/sound/soc/fsl/fsl_esai.c
+> +++ b/sound/soc/fsl/fsl_esai.c
+> @@ -54,6 +54,8 @@ struct fsl_esai {
+>  	u32 fifo_depth;
+>  	u32 slot_width;
+>  	u32 slots;
+> +	u32 tx_mask;
+> +	u32 rx_mask;
+>  	u32 hck_rate[2];
+>  	u32 sck_rate[2];
+>  	bool hck_dir[2];
+> @@ -361,21 +363,13 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+>  	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
+>  			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
+>  
+> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMA,
+> -			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(tx_mask));
+> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMB,
+> -			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(tx_mask));
+> -
+>  	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
+>  			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
+>  
+> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMA,
+> -			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(rx_mask));
+> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMB,
+> -			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(rx_mask));
+> -
+>  	esai_priv->slot_width = slot_width;
+>  	esai_priv->slots = slots;
+> +	esai_priv->tx_mask    = tx_mask;
+> +	esai_priv->rx_mask    = rx_mask;
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+The two masks only got values here. If a machine driver doesn't
+have a set_dai_tdm_slot() call, they will be remained as 0 and
+then will seemly clean those four registers.
 
-walk_system_ram_range() can return an error code either becuase
-*it* failed, or because the 'func' that it calls returned an
-error.  The memory hotplug does the following:
+Thanks
+Nicolin
 
-	ret = walk_system_ram_range(..., func);
-        if (ret)
-		return ret;
-
-and 'ret' makes it out to userspace, eventually.  The problem
-s, walk_system_ram_range() failues that result from *it* failing
-(as opposed to 'func') return -1.  That leads to a very odd
--EPERM (-1) return code out to userspace.
-
-Make walk_system_ram_range() return -EINVAL for internal
-failures to keep userspace less confused.
-
-This return code is compatible with all the callers that I
-audited.
-
-This changes both the generic mm/ and powerpc-specific
-implementations to have the same return value.
-
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Dave Jiang <dave.jiang@intel.com>
-Cc: Ross Zwisler <zwisler@kernel.org>
-Cc: Vishal Verma <vishal.l.verma@intel.com>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: linux-nvdimm@lists.01.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Fengguang Wu <fengguang.wu@intel.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Yaowei Bai <baiyaowei@cmss.chinamobile.com>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jerome Glisse <jglisse@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Keith Busch <keith.busch@intel.com>
----
-
- b/arch/powerpc/mm/mem.c |    2 +-
- b/kernel/resource.c     |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff -puN arch/powerpc/mm/mem.c~memory-hotplug-walk_system_ram_range-returns-neg-1 arch/powerpc/mm/mem.c
---- a/arch/powerpc/mm/mem.c~memory-hotplug-walk_system_ram_range-returns-neg-1	2019-02-25 10:56:47.452908034 -0800
-+++ b/arch/powerpc/mm/mem.c	2019-02-25 10:56:47.458908034 -0800
-@@ -189,7 +189,7 @@ walk_system_ram_range(unsigned long star
- 	struct memblock_region *reg;
- 	unsigned long end_pfn = start_pfn + nr_pages;
- 	unsigned long tstart, tend;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	for_each_memblock(memory, reg) {
- 		tstart = max(start_pfn, memblock_region_memory_base_pfn(reg));
-diff -puN kernel/resource.c~memory-hotplug-walk_system_ram_range-returns-neg-1 kernel/resource.c
---- a/kernel/resource.c~memory-hotplug-walk_system_ram_range-returns-neg-1	2019-02-25 10:56:47.454908034 -0800
-+++ b/kernel/resource.c	2019-02-25 10:56:47.459908034 -0800
-@@ -382,7 +382,7 @@ static int __walk_iomem_res_desc(resourc
- 				 int (*func)(struct resource *, void *))
- {
- 	struct resource res;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	while (start < end &&
- 	       !find_next_iomem_res(start, end, flags, desc, first_lvl, &res)) {
-@@ -462,7 +462,7 @@ int walk_system_ram_range(unsigned long
- 	unsigned long flags;
- 	struct resource res;
- 	unsigned long pfn, end_pfn;
--	int ret = -1;
-+	int ret = -EINVAL;
- 
- 	start = (u64) start_pfn << PAGE_SHIFT;
- 	end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
-_
+>  
+>  	return 0;
+>  }
+> @@ -596,6 +590,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+>  	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+>  	u8 i, channels = substream->runtime->channels;
+>  	u32 pins = DIV_ROUND_UP(channels, esai_priv->slots);
+> +	u32 mask;
+>  
+>  	switch (cmd) {
+>  	case SNDRV_PCM_TRIGGER_START:
+> @@ -611,12 +606,23 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+>  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+>  				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK,
+>  				   tx ? ESAI_xCR_TE(pins) : ESAI_xCR_RE(pins));
+> +		mask = tx ? esai_priv->tx_mask : esai_priv->rx_mask;
+> +
+> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
+> +				   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(mask));
+> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
+> +				   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(mask));
+> +
+>  		break;
+>  	case SNDRV_PCM_TRIGGER_SUSPEND:
+>  	case SNDRV_PCM_TRIGGER_STOP:
+>  	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+>  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+>  				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK, 0);
+> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
+> +				   ESAI_xSMA_xS_MASK, 0);
+> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
+> +				   ESAI_xSMB_xS_MASK, 0);
+>  
+>  		/* Disable and reset FIFO */
+>  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
+> @@ -906,6 +912,12 @@ static int fsl_esai_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> +	/* Clear the TSMA, TSMB, RSMA, RSMB */
+> +	regmap_write(esai_priv->regmap, REG_ESAI_TSMA, 0);
+> +	regmap_write(esai_priv->regmap, REG_ESAI_TSMB, 0);
+> +	regmap_write(esai_priv->regmap, REG_ESAI_RSMA, 0);
+> +	regmap_write(esai_priv->regmap, REG_ESAI_RSMB, 0);
+> +
+>  	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
+>  					      &fsl_esai_dai, 1);
+>  	if (ret) {
+> -- 
+> 1.9.1
+> 
