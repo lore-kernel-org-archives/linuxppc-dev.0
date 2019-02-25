@@ -2,86 +2,67 @@ Return-Path: <SRS0=+31F=RA=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D351DC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:17:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B4BCC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:33:09 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 157702147C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:17:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 73E6A2184E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Feb 2019 21:33:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EN9JF5Q7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 157702147C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SHRgScoX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73E6A2184E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447ZXW1F9rzDqMn
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:17:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447ZtV1bkHzDqMt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:33:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=nicoleotsuka@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="EN9JF5Q7"; 
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=srs0=mf0b=ra=linuxfoundation.org=gregkh@kernel.org;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SHRgScoX"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447ZTP5VcBzDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 08:14:49 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id e17so3016649pgd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 13:14:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:in-reply-to:user-agent;
- bh=NfMnZUTKo3oeNIQksAdalm/3O+wiOQKUjySMWuXpGZc=;
- b=EN9JF5Q7oI1GF811QXe9K2QaCKJqyTav667MKJ2/jnicEv3sAckhwFg/C90E17QlwZ
- hpWv3BgSdOApyppwAQyo0P4Sv8WNe27PX985JyxZvCDXzt092py1rqPDHR39I/4eO+na
- 6NYTEck+v6IC06t8yONoEamfxnixxtAW3RxEHkUdnSMJi7oFNIy4Z5SVctjxCx5OYTe4
- c4zK/L3r1edltY5IKo87MORyBJLFL3b+GpziGwLW8y0oRP5Rj4C/nquplYf1X9zts9GX
- IzxCaU960o6TM+3ZxokN7Sb1SyN8/kGJMW7RfE5VDPgYlXGvv0fijJRRrnZj+eK3IwMg
- cFzA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=NfMnZUTKo3oeNIQksAdalm/3O+wiOQKUjySMWuXpGZc=;
- b=WgEaNaSRiDO3UhQNU6pi88nEAdMk4QsbtH/WiDYVSMFIWkG7Qly3iBFZLuN+W5xzgf
- xX4sDv4gixZLCTlJOoTJTLeCRr49qyMnW6Y1/yqd3wiibL3GS2X4lWVwmrEhvlauWNCv
- Kw6ghjvyvkljfGWoC+wBOTGQF/T/7Ay0hSVT/qkqCjuDtMTZA90gc7zP/dSNgpooIRzs
- 0iXSyTVKumtvuxd1wi4ARLAMTTvUoj/GHNJxZCwnBROrgg9utykv6WEYRwQmmNfamcG5
- 4J+LBxWeE3+vXriGqceXIxkEvogjlI/jZQ24DZsqrTNYIEYjPukUdOy8oPwZT4y3FEHX
- 4WvA==
-X-Gm-Message-State: AHQUAuZdrwL7JSf5vUJJVDGr/2EG89mtwYZiz25Xai33ZQTUi+KvHpyE
- sHRfYW0Xi54OJEaqaWE+iPk=
-X-Google-Smtp-Source: AHgI3IZM3xnAe4WN/84X2M9NHv4h1Ohc/PpN+sT+Iib2W4YiLuGUhnXl5EygOK5pr1zVl6yfMbjKzg==
-X-Received: by 2002:a65:5788:: with SMTP id b8mr20344953pgr.8.1551129286088;
- Mon, 25 Feb 2019 13:14:46 -0800 (PST)
-Received: from Asurada-Nvidia.nvidia.com (thunderhill.nvidia.com.
- [216.228.112.22])
- by smtp.gmail.com with ESMTPSA id k17sm32713198pfj.92.2019.02.25.13.14.45
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 25 Feb 2019 13:14:45 -0800 (PST)
-Date: Mon, 25 Feb 2019 13:14:41 -0800
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH V2] ASoC: fsl_esai: fix channel swap issue when stream
- starts
-Message-ID: <20190225211440.GA20734@Asurada-Nvidia.nvidia.com>
-References: <e31c31acb3c62d16e6b32682e8226c7dbc05f147.1551062751.git.shengjiu.wang@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447Zpd1QxSzDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 08:29:45 +1100 (AEDT)
+Received: from localhost (5356596B.cm-6-7b.dynamic.ziggo.nl [83.86.89.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2BBC32146F;
+ Mon, 25 Feb 2019 21:29:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1551130182;
+ bh=wIY9TFHPYzMQCPeDiIw7Oc6DXgQGKBSCb8OzncThEK8=;
+ h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+ b=SHRgScoXC7D0sfIFJCSIfj6+3jirfKK1T8h06zEwtqlktnWFpbJt0NjWnCfUTyV4u
+ j/dVca2FMw1V0CToq5xoedbwqkbrBdYb8oiSxSdaR33Y1Ldu9+gNJlKDXkCLLRSMTB
+ MDe6RdDyPL0yrJIUh0YCyV62djtQ5N/diqCSr/aU=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4.20 040/183] soc/fsl/qe: fix err handling of ucc_of_parse_tdm
+Date: Mon, 25 Feb 2019 22:10:13 +0100
+Message-Id: <20190225195101.411722480@linuxfoundation.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190225195054.748060397@linuxfoundation.org>
+References: <20190225195054.748060397@linuxfoundation.org>
+User-Agent: quilt/0.65
+X-stable: review
+X-Patchwork-Hint: ignore
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e31c31acb3c62d16e6b32682e8226c7dbc05f147.1551062751.git.shengjiu.wang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,129 +74,223 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Sasha Levin <sashal@kernel.org>, Peng Hao <peng.hao2@zte.com.cn>,
+ "David S. Miller" <davem@davemloft.net>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Li Yang <leoyang.li@nxp.com>, Julia Lawall <julia.lawall@lip6.fr>,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Wen Yang <wen.yang99@zte.com.cn>, Zhao Qiang <qiang.zhao@nxp.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 25, 2019 at 02:48:18AM +0000, S.j. Wang wrote:
-> There is very low possibility ( < 0.1% ) that channel swap happened
-> in beginning when multi output/input pin is enabled. The issue is
-> that hardware can't send data to correct pin in the beginning with
-> the normal enable flow.
-> 
-> This is hardware issue, but there is no errata, the workaround flow
-> is that: Each time playback/recording, firstly clear the xSMA/xSMB,
-> then enable TE/RE, then enable xSMB and xSMA (xSMB must be enabled
-> before xSMA). Which is to use the xSMA as the trigger start register,
-> previously the xCR_TE or xCR_RE is the bit for starting.
-> 
-> Fixes 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
-> Cc: <stable@vger.kernel.org>
-> Reviewed-by: Fabio Estevam <festevam@gmail.com>
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
-> Changes in v2
-> - update commit comments.
-> 
->  sound/soc/fsl/fsl_esai.c | 32 ++++++++++++++++++++++----------
->  1 file changed, 22 insertions(+), 10 deletions(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index afe67c865330..23bd0ad4ac31 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -54,6 +54,8 @@ struct fsl_esai {
->  	u32 fifo_depth;
->  	u32 slot_width;
->  	u32 slots;
-> +	u32 tx_mask;
-> +	u32 rx_mask;
->  	u32 hck_rate[2];
->  	u32 sck_rate[2];
->  	bool hck_dir[2];
-> @@ -361,21 +363,13 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
->  	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
->  			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
->  
-> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMA,
-> -			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(tx_mask));
-> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMB,
-> -			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(tx_mask));
-> -
->  	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
->  			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
->  
-> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMA,
-> -			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(rx_mask));
-> -	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMB,
-> -			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(rx_mask));
-> -
->  	esai_priv->slot_width = slot_width;
->  	esai_priv->slots = slots;
-> +	esai_priv->tx_mask    = tx_mask;
-> +	esai_priv->rx_mask    = rx_mask;
+4.20-stable review patch.  If anyone has any objections, please let me know.
 
-The two masks only got values here. If a machine driver doesn't
-have a set_dai_tdm_slot() call, they will be remained as 0 and
-then will seemly clean those four registers.
+------------------
 
-Thanks
-Nicolin
+[ Upstream commit 8d68100ab4ad92560a16a68b72e068613ac4d573 ]
 
->  
->  	return 0;
->  }
-> @@ -596,6 +590,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
->  	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
->  	u8 i, channels = substream->runtime->channels;
->  	u32 pins = DIV_ROUND_UP(channels, esai_priv->slots);
-> +	u32 mask;
->  
->  	switch (cmd) {
->  	case SNDRV_PCM_TRIGGER_START:
-> @@ -611,12 +606,23 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
->  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
->  				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK,
->  				   tx ? ESAI_xCR_TE(pins) : ESAI_xCR_RE(pins));
-> +		mask = tx ? esai_priv->tx_mask : esai_priv->rx_mask;
-> +
-> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
-> +				   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(mask));
-> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
-> +				   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(mask));
-> +
->  		break;
->  	case SNDRV_PCM_TRIGGER_SUSPEND:
->  	case SNDRV_PCM_TRIGGER_STOP:
->  	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
->  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
->  				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK, 0);
-> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
-> +				   ESAI_xSMA_xS_MASK, 0);
-> +		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
-> +				   ESAI_xSMB_xS_MASK, 0);
->  
->  		/* Disable and reset FIFO */
->  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
-> @@ -906,6 +912,12 @@ static int fsl_esai_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> +	/* Clear the TSMA, TSMB, RSMA, RSMB */
-> +	regmap_write(esai_priv->regmap, REG_ESAI_TSMA, 0);
-> +	regmap_write(esai_priv->regmap, REG_ESAI_TSMB, 0);
-> +	regmap_write(esai_priv->regmap, REG_ESAI_RSMA, 0);
-> +	regmap_write(esai_priv->regmap, REG_ESAI_RSMB, 0);
-> +
->  	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
->  					      &fsl_esai_dai, 1);
->  	if (ret) {
-> -- 
-> 1.9.1
-> 
+Currently there are some issues with the ucc_of_parse_tdm function:
+1, a possible null pointer dereference in ucc_of_parse_tdm,
+detected by the semantic patch deref_null.cocci,
+with the following warning:
+drivers/soc/fsl/qe/qe_tdm.c:177:21-24: ERROR: pdev is NULL but dereferenced.
+2, dev gets modified, so in any case that devm_iounmap() will fail
+even when the new pdev is valid, because the iomap was done with a
+ different pdev.
+3, there is no driver bind with the "fsl,t1040-qe-si" or
+"fsl,t1040-qe-siram" device. So allocating resources using devm_*()
+with these devices won't provide a cleanup path for these resources
+when the caller fails.
+
+This patch fixes them.
+
+Suggested-by: Li Yang <leoyang.li@nxp.com>
+Suggested-by: Christophe LEROY <christophe.leroy@c-s.fr>
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Reviewed-by: Peng Hao <peng.hao2@zte.com.cn>
+CC: Julia Lawall <julia.lawall@lip6.fr>
+CC: Zhao Qiang <qiang.zhao@nxp.com>
+CC: David S. Miller <davem@davemloft.net>
+CC: netdev@vger.kernel.org
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 62 +++++++++++++++++++++++++++++++++-
+ drivers/soc/fsl/qe/qe_tdm.c    | 55 ------------------------------
+ 2 files changed, 61 insertions(+), 56 deletions(-)
+
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 4d6409605207c..af13d8cf94ad4 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -1049,6 +1049,54 @@ static const struct net_device_ops uhdlc_ops = {
+ 	.ndo_tx_timeout	= uhdlc_tx_timeout,
+ };
+ 
++static int hdlc_map_iomem(char *name, int init_flag, void __iomem **ptr)
++{
++	struct device_node *np;
++	struct platform_device *pdev;
++	struct resource *res;
++	static int siram_init_flag;
++	int ret = 0;
++
++	np = of_find_compatible_node(NULL, NULL, name);
++	if (!np)
++		return -EINVAL;
++
++	pdev = of_find_device_by_node(np);
++	if (!pdev) {
++		pr_err("%pOFn: failed to lookup pdev\n", np);
++		of_node_put(np);
++		return -EINVAL;
++	}
++
++	of_node_put(np);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		ret = -EINVAL;
++		goto error_put_device;
++	}
++	*ptr = ioremap(res->start, resource_size(res));
++	if (!*ptr) {
++		ret = -ENOMEM;
++		goto error_put_device;
++	}
++
++	/* We've remapped the addresses, and we don't need the device any
++	 * more, so we should release it.
++	 */
++	put_device(&pdev->dev);
++
++	if (init_flag && siram_init_flag == 0) {
++		memset_io(*ptr, 0, resource_size(res));
++		siram_init_flag = 1;
++	}
++	return  0;
++
++error_put_device:
++	put_device(&pdev->dev);
++
++	return ret;
++}
++
+ static int ucc_hdlc_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -1143,6 +1191,15 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+ 		ret = ucc_of_parse_tdm(np, utdm, ut_info);
+ 		if (ret)
+ 			goto free_utdm;
++
++		ret = hdlc_map_iomem("fsl,t1040-qe-si", 0,
++				     (void __iomem **)&utdm->si_regs);
++		if (ret)
++			goto free_utdm;
++		ret = hdlc_map_iomem("fsl,t1040-qe-siram", 1,
++				     (void __iomem **)&utdm->siram);
++		if (ret)
++			goto unmap_si_regs;
+ 	}
+ 
+ 	if (of_property_read_u16(np, "fsl,hmask", &uhdlc_priv->hmask))
+@@ -1151,7 +1208,7 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+ 	ret = uhdlc_init(uhdlc_priv);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to init uhdlc\n");
+-		goto free_utdm;
++		goto undo_uhdlc_init;
+ 	}
+ 
+ 	dev = alloc_hdlcdev(uhdlc_priv);
+@@ -1181,6 +1238,9 @@ static int ucc_hdlc_probe(struct platform_device *pdev)
+ free_dev:
+ 	free_netdev(dev);
+ undo_uhdlc_init:
++	iounmap(utdm->siram);
++unmap_si_regs:
++	iounmap(utdm->si_regs);
+ free_utdm:
+ 	if (uhdlc_priv->tsa)
+ 		kfree(utdm);
+diff --git a/drivers/soc/fsl/qe/qe_tdm.c b/drivers/soc/fsl/qe/qe_tdm.c
+index f78c34647ca2d..76480df195a87 100644
+--- a/drivers/soc/fsl/qe/qe_tdm.c
++++ b/drivers/soc/fsl/qe/qe_tdm.c
+@@ -44,10 +44,6 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
+ 	const char *sprop;
+ 	int ret = 0;
+ 	u32 val;
+-	struct resource *res;
+-	struct device_node *np2;
+-	static int siram_init_flag;
+-	struct platform_device *pdev;
+ 
+ 	sprop = of_get_property(np, "fsl,rx-sync-clock", NULL);
+ 	if (sprop) {
+@@ -124,57 +120,6 @@ int ucc_of_parse_tdm(struct device_node *np, struct ucc_tdm *utdm,
+ 	utdm->siram_entry_id = val;
+ 
+ 	set_si_param(utdm, ut_info);
+-
+-	np2 = of_find_compatible_node(NULL, NULL, "fsl,t1040-qe-si");
+-	if (!np2)
+-		return -EINVAL;
+-
+-	pdev = of_find_device_by_node(np2);
+-	if (!pdev) {
+-		pr_err("%pOFn: failed to lookup pdev\n", np2);
+-		of_node_put(np2);
+-		return -EINVAL;
+-	}
+-
+-	of_node_put(np2);
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	utdm->si_regs = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(utdm->si_regs)) {
+-		ret = PTR_ERR(utdm->si_regs);
+-		goto err_miss_siram_property;
+-	}
+-
+-	np2 = of_find_compatible_node(NULL, NULL, "fsl,t1040-qe-siram");
+-	if (!np2) {
+-		ret = -EINVAL;
+-		goto err_miss_siram_property;
+-	}
+-
+-	pdev = of_find_device_by_node(np2);
+-	if (!pdev) {
+-		ret = -EINVAL;
+-		pr_err("%pOFn: failed to lookup pdev\n", np2);
+-		of_node_put(np2);
+-		goto err_miss_siram_property;
+-	}
+-
+-	of_node_put(np2);
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	utdm->siram = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(utdm->siram)) {
+-		ret = PTR_ERR(utdm->siram);
+-		goto err_miss_siram_property;
+-	}
+-
+-	if (siram_init_flag == 0) {
+-		memset_io(utdm->siram, 0,  resource_size(res));
+-		siram_init_flag = 1;
+-	}
+-
+-	return ret;
+-
+-err_miss_siram_property:
+-	devm_iounmap(&pdev->dev, utdm->si_regs);
+ 	return ret;
+ }
+ EXPORT_SYMBOL(ucc_of_parse_tdm);
+-- 
+2.19.1
+
+
+
