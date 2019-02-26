@@ -2,25 +2,26 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B463C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B11AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:14:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1499C2147C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:13:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 18C412147C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:14:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="M7qh427I"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1499C2147C
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="U9UDMNkr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 18C412147C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447vlM1LMzzDqJt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 21:13:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447vn60y3kzDqXw
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 21:14:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=permerror (mailfrom) smtp.mailfrom=nxp.com
  (client-ip=2a01:111:f400:fe1e::61d;
@@ -29,27 +30,27 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="M7qh427I"; 
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="U9UDMNkr"; 
  dkim-atps=neutral
 Received: from EUR01-HE1-obe.outbound.protection.outlook.com
  (mail-he1eur01on061d.outbound.protection.outlook.com
  [IPv6:2a01:111:f400:fe1e::61d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447vj14kbjzDqTb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 21:10:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447vj318tqzDqQr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 21:11:03 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ZlVW7FuyJL1lviyVJqTIJlyj0gVro3M76EetL/oYmWY=;
- b=M7qh427IEtrWu1UmMpq5tZH+kedKjipO44ivEfGpMY00X5h3SJVIBIgU6iUrGicNJDwp/PXR2h+ZecCqdM6p+r8S9V9Xw5pKt2QmuUdXd8Cw7ue6x9IXDY/EX1YkPP9Oz6op0c43PQcXEaMrslmFo494/ychnmvEseIdGrMN1F8=
+ bh=WG269VoNS5sKeqRvSDeU13wX2mT/JDfn6uqCW8w3biU=;
+ b=U9UDMNkrlFJmljUgBrfL8rerkJwxWBLePNFWkloL27sR7LbItc4sHFHwIKasnXHlf9CdA5E4eTBGrxc9s5jFP7YgD95Wd8YqYev0w78EEE0sTzXcHAH2LZ52L8PybjgXjHoXKzGbmabDCEPj0x0UKhQLoDhi+AH77Nz9+M4panY=
 Received: from VI1PR04MB4800.eurprd04.prod.outlook.com (20.177.48.221) by
  VI1PR04MB5726.eurprd04.prod.outlook.com (20.178.127.24) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1643.14; Tue, 26 Feb 2019 10:10:46 +0000
+ 15.20.1643.14; Tue, 26 Feb 2019 10:10:51 +0000
 Received: from VI1PR04MB4800.eurprd04.prod.outlook.com
  ([fe80::7437:2195:ffd3:a33a]) by VI1PR04MB4800.eurprd04.prod.outlook.com
  ([fe80::7437:2195:ffd3:a33a%5]) with mapi id 15.20.1643.019; Tue, 26 Feb 2019
- 10:10:46 +0000
+ 10:10:51 +0000
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
 To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net"
  <oss@buserror.net>, "linux-kernel@vger.kernel.org"
@@ -71,12 +72,13 @@ To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net"
  <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
  <yamada.masahiro@socionext.com>, Leo Li <leoyang.li@nxp.com>,
  "shawnguo@kernel.org" <shawnguo@kernel.org>
-Subject: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A SoC
-Thread-Topic: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A
- SoC
-Thread-Index: AQHUzbuK+PMriY4fR0+7hv0/i3vTSA==
-Date: Tue, 26 Feb 2019 10:10:46 +0000
-Message-ID: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+Subject: [PATCH v1 1/4] dt-bindings: arm64: add compatible for LX2160A
+Thread-Topic: [PATCH v1 1/4] dt-bindings: arm64: add compatible for LX2160A
+Thread-Index: AQHUzbuN4akhuqbX10Ke5fel48DmPg==
+Date: Tue, 26 Feb 2019 10:10:51 +0000
+Message-ID: <1551132245-6089-2-git-send-email-vabhav.sharma@nxp.com>
+References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -90,55 +92,54 @@ x-ms-exchange-messagesentrepresentingtype: 1
 x-mailer: git-send-email 1.9.1
 x-originating-ip: [92.120.1.65]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 49ca1841-ed43-4c9e-7460-08d69bd2ac64
+x-ms-office365-filtering-correlation-id: a8741c6a-141d-47c9-c522-08d69bd2af87
 x-ms-office365-filtering-ht: Tenant
 x-microsoft-antispam: BCL:0; PCL:0;
  RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
  SRVR:VI1PR04MB5726; 
 x-ms-traffictypediagnostic: VI1PR04MB5726:
-x-ms-exchange-purlcount: 1
 x-microsoft-exchange-diagnostics: =?iso-8859-1?Q?1; VI1PR04MB5726;
- 23:wxtVswVupM+N7aScgpBdlWRnNo6O+yCNbEz4qpK?=
- =?iso-8859-1?Q?4Wu7C8+v3uFceocYqKWNIQhOk9adFw0Le+T4yBPtOieqDhXi5WvzKRFPbG?=
- =?iso-8859-1?Q?v0N0td8Z72ErpUpgbhAFYXEXKsM1YG3HgCDRRBHZ4lEXX8t8bR5oIU3q2g?=
- =?iso-8859-1?Q?dDHeHmsLC8L7P/boXJ7vMS4vdHEal2PgyTy4795B29M0WHTpfGJ6xwra+V?=
- =?iso-8859-1?Q?WTcr4f1054SQDRiuijQK8k6OvI+BFr+lUCFvKhj70xJQ5WesYumPExLvxL?=
- =?iso-8859-1?Q?G9A1JK5eqTMP7nZw65re78kxtJVyPgD7vw9pnXICUzz9KYHvdrchx7adFQ?=
- =?iso-8859-1?Q?j8N0wpZ6dgMomdyOcOr8+77a6TWGHE3ExlxLP11ZWv2wUHgzMOkakNxivX?=
- =?iso-8859-1?Q?Uis8hhLc6NRkc3bU9z4XvX9fLQoprJfpZAQa1KY6uRg4cLlurJwNAY7WAB?=
- =?iso-8859-1?Q?S9vjTiZiNsDy1dZeKnDIisbvIN/nZg+J1k9rGJclC+qfw1LcosZf6/9FI9?=
- =?iso-8859-1?Q?wwG6qA8kBwD6yfL7s4uN+naQz8vA+OPkD1RLJib9JSteqv8VIlg/beTX+j?=
- =?iso-8859-1?Q?lWemW6pwgxCKCSrQHWEkAJKOvYTzxQlumGyh53+qpbZzVHLEx9Lf7w1zT+?=
- =?iso-8859-1?Q?0W+2vzvG8ZcDUr18rL8pDVyFpyxc/poRLFvnlOacTSCArSs4ph9nlrRwGS?=
- =?iso-8859-1?Q?lNknJgYqN8ZnRi/8QLTtsZnebA+v/V/f7nI7KGmJUYf0+aAAVsFT9k8Yqn?=
- =?iso-8859-1?Q?NUi6Rx6t/WqZgiPIm8H+KZM+I9nVNMcxOT+Cox0dcNa1LbJHCPYX1DmmXQ?=
- =?iso-8859-1?Q?YM5Nb5NUj2jZcnOv90HlHYPlbbdegQ0efgazGhcTJ1UTssZjcEruaQ04AJ?=
- =?iso-8859-1?Q?waGtaTkWfUZrwPVV0Rb2Xa+mBL59NvLp0JSDnqufkf0TLuFWeZc1pNSX+k?=
- =?iso-8859-1?Q?YoKveuHhWHpNHB/tHJdhGD7ehMExWDdqbbhM5q44i9qzCpXnl/9wVqJbq8?=
- =?iso-8859-1?Q?bzX38alSmfG6y1vRVFBW8Ibf8p4tVjv4gOhTfbIZPA4gqdlNJzgOlBPEuw?=
- =?iso-8859-1?Q?HzVj8j87JDPSyiPuDpYZTlJiWopjCY0xsXSBkWebsjDqGLjiJ/ZDQnP7fw?=
- =?iso-8859-1?Q?ETSrZ9fHLSDiQP/m+6/3hx33RVAvlZiC7jwJQUaJ78jsGuUfgO2fmutI2D?=
- =?iso-8859-1?Q?HtGe40xYkAJtJ6zAMbcuDtSio1jdZKbrMWNR15ASV0KV697SSK6VT2T38m?=
- =?iso-8859-1?Q?oyxFnKpmN1qyMZhJkRWLO54jEaTtB6fkR4cRhS2VfBg58r0SRuvkJSOOn/?=
- =?iso-8859-1?Q?kOmC/oX015ohfUMnS3nWoDjNpYX0slNJdpc/eu5qrTyCKUq+ZkK616UieR?=
- =?iso-8859-1?Q?miZSvhfE=3D?=
-x-microsoft-antispam-prvs: <VI1PR04MB5726431276480A216C5BC117F37B0@VI1PR04MB5726.eurprd04.prod.outlook.com>
+ 23:LLueLWAyrlECdw1axX8h+doQxCkcHteHFlmWSnb?=
+ =?iso-8859-1?Q?v4S5I9gU+G74TKX0Fefd8HDzmvx+Pr6FfSWP4j9AO+FW1gAMVgWYGxpull?=
+ =?iso-8859-1?Q?qmYsNZCAETiXvfVDtQf3XBerEFMQNdu4zX2zkuz4KW8am+hlBNp0AQA/8K?=
+ =?iso-8859-1?Q?RZ7qJifK9Jhtw5X0VDuDxw41kOzRUyZWbWRkn5bcakiS8USBMRzPA5gq9a?=
+ =?iso-8859-1?Q?zaupXWCeBAu0pmmuMoilBQk6QvOiDVYHva+OMmgVz49cIYu2UlYWSpFpf6?=
+ =?iso-8859-1?Q?dC6Q1H1J3T2evATJGHu2QYvo+wL1X4rRQBBeCKx+BuZo+/T0G+ZsKpqENS?=
+ =?iso-8859-1?Q?EEMluj1ePb9NgkPa8UgmT/Mdg2X3AZ6jZvAPlUsoMw7fEQEZHqVPY/oq6F?=
+ =?iso-8859-1?Q?Q5lPVsRCC2ZDTmTZ1N/thJ2cKsIfnrRiVEdKW9l/XsBxC3XDXvdYTSy7TO?=
+ =?iso-8859-1?Q?sKBsJqDatkDRrzlwxwAaMxpktXqmds74ayXqM1BesctMTRxqogMiYx2t0b?=
+ =?iso-8859-1?Q?nGjALqHUCHlN8E+kebTbtxtI10bS+CtkpbmsmO5m2tsjRlb+AhSUCxS1Fx?=
+ =?iso-8859-1?Q?45IqeKAf3N2PqRR/PqLSSGOWhU5fN86nsLTCpzNRUI7wlpdbOwcUvDcnfY?=
+ =?iso-8859-1?Q?pX2v0HXHm0UZO8xMkW6W8iAz3RsOfXT+jPwKdLg6VcLMw5WiLq1T3rFhhP?=
+ =?iso-8859-1?Q?OXallBzqSyLDSDs8n3n4cxWnpXYwrGyMSLq/KpS1DczBfxIboB8daaeZzi?=
+ =?iso-8859-1?Q?reiI7PGDB4Af+FuLgZAgkCrsUG4jX5qh/4LhxB7tGWMpX344oNzdAdOp3D?=
+ =?iso-8859-1?Q?yPq82PiA/HEtiGPBsBNw94NIGgmJ2AMKQwqsZuidybQZ721a+N8hlQKSaP?=
+ =?iso-8859-1?Q?Lus2/zbVJ2cQ7odAoKPtAuQfaFJutpSQ0iLba1UxW7WRgQsoH4OYmWD4/M?=
+ =?iso-8859-1?Q?WT8ZVNV3h/RDEoWYtro4ZANNH5a0pqqMNWJDsK9dHGo/7GN9ABHd8qvcRG?=
+ =?iso-8859-1?Q?bijSeYyfuL7KwILEoAD97y12tWGZ3aDZq+fwAQyrBSLTOHHrWxupDZ9g0P?=
+ =?iso-8859-1?Q?z4CV74ohlWEtMcwUsye3KsqdJl6myXKw8MhpQOE7++Dt0dsFvjooKkihbT?=
+ =?iso-8859-1?Q?zckCb8wuE9VRUD9iNnIq7NOSD6BbXlk/KjuFC8qtovNp2Tgni/XGI7anmp?=
+ =?iso-8859-1?Q?gSGbXVdcA+K46yipoeh9f950Y0nMMvVW0NefUh6XTHTRhXhwrqDtsCR3zB?=
+ =?iso-8859-1?Q?ECjgEguSpRdCY9S2Z+CUqTUqQZXJ86d5o5tfs5Mb5kz1d5fP/74sqPKsOY?=
+ =?iso-8859-1?Q?wqNLEuZxSAfw1eG5lPSLtQR5FZAkDf7hpB+ooSDnMMKI7K2C82xeoEdq0O?=
+ =?iso-8859-1?Q?opZz79mU=3D?=
+x-microsoft-antispam-prvs: <VI1PR04MB5726CE06A0C000CF7EBE1A3FF37B0@VI1PR04MB5726.eurprd04.prod.outlook.com>
 x-forefront-prvs: 096029FF66
 x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(346002)(376002)(366004)(396003)(136003)(39860400002)(189003)(199004)(6116002)(3846002)(50226002)(4326008)(26005)(99286004)(6506007)(386003)(316002)(54906003)(110136005)(8936002)(8676002)(102836004)(305945005)(36756003)(25786009)(53936002)(6486002)(81156014)(81166006)(478600001)(6436002)(44832011)(2906002)(6512007)(71200400001)(2501003)(6306002)(71190400001)(66066001)(106356001)(105586002)(5660300002)(14454004)(7416002)(97736004)(256004)(14444005)(966005)(68736007)(7736002)(486006)(4744005)(86362001)(2616005)(476003)(2201001)(52116002)(186003)(921003)(1121003);
+ SFS:(10009020)(346002)(376002)(366004)(396003)(136003)(39860400002)(189003)(199004)(6116002)(3846002)(50226002)(4326008)(26005)(99286004)(6506007)(386003)(316002)(54906003)(110136005)(8936002)(8676002)(102836004)(305945005)(36756003)(25786009)(53936002)(6486002)(81156014)(81166006)(478600001)(6436002)(44832011)(2906002)(6512007)(71200400001)(2501003)(71190400001)(66066001)(106356001)(105586002)(5660300002)(14454004)(7416002)(97736004)(256004)(14444005)(446003)(68736007)(7736002)(76176011)(486006)(86362001)(2616005)(476003)(11346002)(2201001)(52116002)(186003)(921003)(1121003);
  DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5726;
  H:VI1PR04MB4800.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
  PTR:InfoNoRecords; MX:1; A:1; 
 received-spf: None (protection.outlook.com: nxp.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: jhydYefqmPF1docIuJy4/FMk7wful5QpevVEu8sTyqZWreSbLRFrm80X5cOlFX29aCzmtBskpd6kaoPODKyM+GdBbpYaG1i+OwkvOykW+miuLM4K9LQbnN7znqij1Fvf3S+abCz1dzJ835bBl2YVuf+vrUJWfM/yacYAuF5Jl3hKE41NxS/MDnh4K30T6TK0jUcqcWzJzC0mIMzU+LTNuv6j+GR2HH4UHEra0S6KnrBkRbe+9zqK1t8qdTwnwkUMo3QgRgoJTupsDXd19ocm8pYux/nhDzepRNLlw1lNh2bDKdBObDGiYAhP+wXb07hdDtwCuirBFlk9s6Z42fVuEImq5Ua+zn1SfRGumg2fMjaRKjKtGYMUEuZAbqfC1mTnz0AHPgLmHGiCbW/Z/CABbtGoZUVTaXLMFXw0oMJqWG8=
+x-microsoft-antispam-message-info: y6R3uF9isdD8O2bgyYl2GXNoDhN5BXIa8lM/pq6HEuhEpH4N/t13wWbn6hVk94c+XdqW/45uAwZFhYAU/wEgFcIr/G6JOROpZlleK3XxUUkSKxJrXZw0lLOIViwPhmOISdXDwOihYhMUHNNsDpWYc1CaAuPXMb73h0QnuFXT9UTm3RwalsI3VUbkwGcqGRAMMgXE+KrSUGKNLi0lu68Ueg+Ibi1iGRhv5sRg47u0RwDB/8Cu3tgWl+8WRLlmPHkJRAu9qEzI/TWmgeitV0wyBX5N5RJFxqXTsLEECug9FPCGo4il7ZXZ9HEFpcQqPOSMBMHo5udvzqPzhpvYLavTP1aAsCWVymdSoNLpW7bdEEkre0oFz2Lfa/WHj5cb0p7u5Wj8qsooegMovUo+tOTQ9i+BkxYVajH/DzAtKcT9sjY=
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 49ca1841-ed43-4c9e-7460-08d69bd2ac64
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2019 10:10:40.7902 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: a8741c6a-141d-47c9-c522-08d69bd2af87
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2019 10:10:46.2949 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
 X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
@@ -162,29 +163,70 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-These patches were reviewed and acked but dropped during merge window.
-Patchwork link was https://lore.kernel.org/patchwork/cover/1004155/
+Add compatible for LX2160A SoC,QDS and RDB board
+Add lx2160a compatible for clockgen and dcfg
 
-Changes for v1:
-- Updated lx2160a clockgen in alphabetical order
+Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/arm/freescale/fsl,layerscape-dcfg.txt           |  2 +-
+ Documentation/devicetree/bindings/arm/fsl.txt                | 12 ++++++++=
+++++
+ Documentation/devicetree/bindings/clock/qoriq-clock.txt      |  1 +
+ 3 files changed, 14 insertions(+), 1 deletion(-)
 
-Vabhav Sharma (2):
-  dt-bindings: arm64: add compatible for LX2160A
-  soc/fsl/guts: Add definition for LX2160A
-
-Yogesh Gaur (2):
-  clk: qoriq: increase array size of cmux_to_group
-  clk: qoriq: Add clockgen support for lx2160a
-
- .../bindings/arm/freescale/fsl,layerscape-dcfg.txt       |  2 +-
- Documentation/devicetree/bindings/arm/fsl.txt            | 12 ++++++++++++
- Documentation/devicetree/bindings/clock/qoriq-clock.txt  |  1 +
- drivers/clk/clk-qoriq.c                                  | 16 ++++++++++++=
-++--
- drivers/cpufreq/qoriq-cpufreq.c                          |  1 +
- drivers/soc/fsl/guts.c                                   |  6 ++++++
- 6 files changed, 35 insertions(+), 3 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape=
+-dcfg.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-=
+dcfg.txt
+index b5cb374..dc76046 100644
+--- a/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.t=
+xt
++++ b/Documentation/devicetree/bindings/arm/freescale/fsl,layerscape-dcfg.t=
+xt
+@@ -8,7 +8,7 @@ Required properties:
+   - compatible: Should contain a chip-specific compatible string,
+ 	Chip-specific strings are of the form "fsl,<chip>-dcfg",
+ 	The following <chip>s are known to be supported:
+-	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a.
++	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a, lx2160a.
+=20
+   - reg : should contain base address and length of DCFG memory-mapped reg=
+isters
+=20
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/=
+devicetree/bindings/arm/fsl.txt
+index 7fbc424..baef162 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -235,3 +235,15 @@ Required root node properties:
+ LS2088A ARMv8 based RDB Board
+ Required root node properties:
+     - compatible =3D "fsl,ls2088a-rdb", "fsl,ls2088a";
++
++LX2160A SoC
++Required root node properties:
++    - compatible =3D "fsl,lx2160a";
++
++LX2160A ARMv8 based QDS Board
++Required root node properties:
++    - compatible =3D "fsl,lx2160a-qds", "fsl,lx2160a";
++
++LX2160A ARMv8 based RDB Board
++Required root node properties:
++    - compatible =3D "fsl,lx2160a-rdb", "fsl,lx2160a";
+diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Docu=
+mentation/devicetree/bindings/clock/qoriq-clock.txt
+index c655f28..f322989 100644
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -43,6 +43,7 @@ Required properties:
+ 	* "fsl,ls1046a-clockgen"
+ 	* "fsl,ls1088a-clockgen"
+ 	* "fsl,ls2080a-clockgen"
++	* "fsl,lx2160a-clockgen"
+ 	Chassis-version clock strings include:
+ 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
+ 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
 --=20
 2.7.4
 
