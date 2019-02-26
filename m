@@ -2,55 +2,57 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13C58C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:11:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B463C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:13:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36281217F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:11:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 1499C2147C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:13:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="K8Wb+Kpa"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36281217F5
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="M7qh427I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1499C2147C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447vj71chZzDqJj
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 21:11:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447vlM1LMzzDqJt
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 21:13:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.0.52; helo=eur02-am5-obe.outbound.protection.outlook.com;
+ spf=permerror (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=2a01:111:f400:fe1e::61d;
+ helo=eur01-he1-obe.outbound.protection.outlook.com;
  envelope-from=vabhav.sharma@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="K8Wb+Kpa"; 
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="M7qh427I"; 
  dkim-atps=neutral
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00052.outbound.protection.outlook.com [40.107.0.52])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Received: from EUR01-HE1-obe.outbound.protection.outlook.com
+ (mail-he1eur01on061d.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe1e::61d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447vgF0RVnzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 21:09:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447vj14kbjzDqTb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 21:10:59 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=cT8eMPIBD+bQdahfE5HcVLfMkvcxeQ79UjDhdNe9Sts=;
- b=K8Wb+KpaN3Rz17tSwKvAJGHSJT+NxX90TdBPk9+CRXmnc1IgTzrHIdD62c0iU2pXhiMXsSFscZSX3BO7JZE8NQ5RvfXJZ+3QRFZO0N24PKuythlK0hf0wCn/FjBDXy6myR97MpJPAFLmeM8h3UUUZnqQsrGZnjChJD0MsJIr0HE=
+ bh=ZlVW7FuyJL1lviyVJqTIJlyj0gVro3M76EetL/oYmWY=;
+ b=M7qh427IEtrWu1UmMpq5tZH+kedKjipO44ivEfGpMY00X5h3SJVIBIgU6iUrGicNJDwp/PXR2h+ZecCqdM6p+r8S9V9Xw5pKt2QmuUdXd8Cw7ue6x9IXDY/EX1YkPP9Oz6op0c43PQcXEaMrslmFo494/ychnmvEseIdGrMN1F8=
 Received: from VI1PR04MB4800.eurprd04.prod.outlook.com (20.177.48.221) by
- VI1PR04MB5277.eurprd04.prod.outlook.com (20.177.51.218) with Microsoft SMTP
+ VI1PR04MB5726.eurprd04.prod.outlook.com (20.178.127.24) with Microsoft SMTP
  Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1643.15; Tue, 26 Feb 2019 10:09:18 +0000
+ 15.20.1643.14; Tue, 26 Feb 2019 10:10:46 +0000
 Received: from VI1PR04MB4800.eurprd04.prod.outlook.com
  ([fe80::7437:2195:ffd3:a33a]) by VI1PR04MB4800.eurprd04.prod.outlook.com
  ([fe80::7437:2195:ffd3:a33a%5]) with mapi id 15.20.1643.019; Tue, 26 Feb 2019
- 10:09:18 +0000
+ 10:10:46 +0000
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: Scott Wood <oss@buserror.net>, "sudeep.holla@arm.com"
- <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org"
+To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net"
+ <oss@buserror.net>, "linux-kernel@vger.kernel.org"
  <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
  <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
  "mark.rutland@arm.com" <mark.rutland@arm.com>,
@@ -69,82 +71,78 @@ To: Scott Wood <oss@buserror.net>, "sudeep.holla@arm.com"
  <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
  <yamada.masahiro@socionext.com>, Leo Li <leoyang.li@nxp.com>,
  "shawnguo@kernel.org" <shawnguo@kernel.org>
-Subject: RE: [PATCH 4/4] clk: qoriq: Add clockgen support for lx2160a
-Thread-Topic: [PATCH 4/4] clk: qoriq: Add clockgen support for lx2160a
-Thread-Index: AQHUza4hvZ73Kv/IW0iTEWsunnaw7qXx1JKAgAAGm4A=
-Date: Tue, 26 Feb 2019 10:09:18 +0000
-Message-ID: <VI1PR04MB4800DE15F522A6B4782323D5F37B0@VI1PR04MB4800.eurprd04.prod.outlook.com>
-References: <1551126463-5341-1-git-send-email-vabhav.sharma@nxp.com>
- <1551126463-5341-5-git-send-email-vabhav.sharma@nxp.com>
- <07441256501ad8bd45b187cf6e25338b028bc9ac.camel@buserror.net>
-In-Reply-To: <07441256501ad8bd45b187cf6e25338b028bc9ac.camel@buserror.net>
+Subject: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A SoC
+Thread-Topic: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A
+ SoC
+Thread-Index: AQHUzbuK+PMriY4fR0+7hv0/i3vTSA==
+Date: Tue, 26 Feb 2019 10:10:46 +0000
+Message-ID: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
+x-clientproxiedby: BMXPR01CA0011.INDPRD01.PROD.OUTLOOK.COM
+ (2603:1096:b00:d::21) To VI1PR04MB4800.eurprd04.prod.outlook.com
+ (2603:10a6:803:53::29)
 authentication-results: spf=none (sender IP is )
  smtp.mailfrom=vabhav.sharma@nxp.com; 
-x-originating-ip: [92.121.36.198]
+x-ms-exchange-messagesentrepresentingtype: 1
+x-mailer: git-send-email 1.9.1
+x-originating-ip: [92.120.1.65]
 x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: c41f4ecc-6195-4aac-5ee6-08d69bd2785e
+x-ms-office365-filtering-correlation-id: 49ca1841-ed43-4c9e-7460-08d69bd2ac64
 x-ms-office365-filtering-ht: Tenant
 x-microsoft-antispam: BCL:0; PCL:0;
  RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:VI1PR04MB5277; 
-x-ms-traffictypediagnostic: VI1PR04MB5277:
-x-microsoft-exchange-diagnostics: =?utf-8?B?MTtWSTFQUjA0TUI1Mjc3OzIzOjByL2J2a2I0RnN5SVRFMUNqdGorR1J4bVY0?=
- =?utf-8?B?bTEvZFRnWU4wQzBrQzEyN3pQNWhyQndpWVg4ZDNiR0NtT1NwV0wva2g1UkEx?=
- =?utf-8?B?TzB1UjZjU2E3aHZrbkxXVnV5clB3V3NkanF6bGs2QWFJT2kvcGRqR2xMaWkz?=
- =?utf-8?B?K1FkV3IrUklHdDRjV2FmYUY4RWxKbm00a1VRU1hkQ3dINVZLOVhSSkJhaG1o?=
- =?utf-8?B?Zmhoem90dW50Y3RrRGdUTDFxU0FsbllFMjNVVmFhS3M5S09WSkVFQ3BONXJX?=
- =?utf-8?B?YzdSdUlRWE51MGJBMXBVSUQ0ZnVIT3lVSWg4VGt5TFM2Umh6YzVJUm8wWFFm?=
- =?utf-8?B?ZzQzOTRvcDdwSjMrSk11UmxMSHg4c2N1RVIzYTlxT2JNcXdSUGN5Y29JVTE0?=
- =?utf-8?B?RDJBcndncC91SmFIV3VPK1hscXdDZHpuc09nVmF5N1dDSzRyTGxadnQ3d0Vr?=
- =?utf-8?B?WkhVSmREYlBNOE5yeXV0VnAyUTBhK1V6dzYrTlFXNFhndVp5Slh5WW1YbWox?=
- =?utf-8?B?cDF0dFN4RWlmc2w5emxmNk1aeFVXblJIanFKZjMrSURsVFA4Q3p1T1czMldy?=
- =?utf-8?B?TUtRUFNENXFDOXJzQ1BQSmpiTHZLOS9Uck5jK1dScVJ4Qlh3aVlvK3ZGalA3?=
- =?utf-8?B?dFRNakJNK2RxMlJlRUZhbHFmNXVkR2tvQTZqbngzQWFtdGxmZVEwL2dpSWwz?=
- =?utf-8?B?SlVCY1RoNm5hWDNLRFVOMkZVOFJ3c3Y4a0NmSkNOTE8rRStsbDdPUGVCQ004?=
- =?utf-8?B?d3FXMi9TTlRzMjBVSm9nem5vbzdTM1Z6Q3Y1dkZLYWV5OHllM2tlRy9OOW5U?=
- =?utf-8?B?OEdmZUxycFdZUHptOS9ZWDdNTlhudk1jb2xNMUN5TEhxQWs5RHhxM1JaUzQ4?=
- =?utf-8?B?czZ5ZGkvN0FnNytlaE9qTk82b3VWVTBjT3dEL0thZWRMeGZCeG9uQy9aS3Iw?=
- =?utf-8?B?ZUVzR1R3Mk1iT3ZYekR1ME43eTdDK2RIQVJIMW80c29GS05jenlEMlBtSVlL?=
- =?utf-8?B?RmZxdXE4d04ybUtjMVpMOUFiemx6eFNsRDBVUUFGbVc2TXgxallrcXA2eEdj?=
- =?utf-8?B?UEU3R1NsNGpRdTN4U2JCSCtTWGptYmRybThCTS82Yi9IamtQWDRaYk9TVTVi?=
- =?utf-8?B?SFRCZFN2RitDSzJyZHovNVlNUEpmUFZNZlU5NWkwdkpnQXFKK3R0YTUvL0x0?=
- =?utf-8?B?WEtCYjZIWk1yeDdUVXFKbDVDem01SUxHelZpbE9OQjlUTjhxMjdEWjBKTDZM?=
- =?utf-8?B?M08zTHJSVjhZU1ZGSDQvZE1pNEI5dXFzRXM2eFlxcWRwdWNWT0pzc2R6U1d3?=
- =?utf-8?B?NzlZU3VOenhnU04yQmFiS2RJMHlHaElCT2FSVjFoc3RhdWNaYXB6Zk00emFt?=
- =?utf-8?B?RkZMQWlvcDBlV1VERFl1N015UTFDVEhTTkdkVGd0Zy9LQ1BoTWMrV3ZNQjV1?=
- =?utf-8?B?Z1p6M1hTcFphNDEveVgrWmVtdFdWUEVYek1vTWtpNjVIVFFaaXJyOVhIcGZi?=
- =?utf-8?B?MnJqZ1p6aHdSSVpmbDVDK0ZRdDNYUzRjME42SllxVHhZQUx3c2lqbTVqQ0dq?=
- =?utf-8?B?alVLdHd5OEpsdnYwRVNOd2JnVEpySzNhZkh4YzQ5VlJ0aUhaUGJadUhja3NP?=
- =?utf-8?B?STBXQURSaEsvdDdrdEl2N1lBZ201T05JYkRPSUdjKyt3MHY5ekkwWUlvREV0?=
- =?utf-8?B?MjVZdExaeG9hSnFKMHhVcFJMVG5FUUJmMEdVOFVGTzVyZlpMUEhLS3pUMnRZ?=
- =?utf-8?B?N09Ib2NzejdiM0VTSXNjYWpzOE5XT2NFN282SEpUaGM4bTNobU5ZL2c4ajNj?=
- =?utf-8?B?ZHZGT2ZDRlY5Qk5LQ2ZyVlRPU1p4QlNYaUFMQjJESFNxTWxQcjFIVzY2a2t6?=
- =?utf-8?Q?QjdO2hjb0/o=3D?=
-x-microsoft-antispam-prvs: <VI1PR04MB5277C66F665F2392877BD8E3F37B0@VI1PR04MB5277.eurprd04.prod.outlook.com>
+ SRVR:VI1PR04MB5726; 
+x-ms-traffictypediagnostic: VI1PR04MB5726:
+x-ms-exchange-purlcount: 1
+x-microsoft-exchange-diagnostics: =?iso-8859-1?Q?1; VI1PR04MB5726;
+ 23:wxtVswVupM+N7aScgpBdlWRnNo6O+yCNbEz4qpK?=
+ =?iso-8859-1?Q?4Wu7C8+v3uFceocYqKWNIQhOk9adFw0Le+T4yBPtOieqDhXi5WvzKRFPbG?=
+ =?iso-8859-1?Q?v0N0td8Z72ErpUpgbhAFYXEXKsM1YG3HgCDRRBHZ4lEXX8t8bR5oIU3q2g?=
+ =?iso-8859-1?Q?dDHeHmsLC8L7P/boXJ7vMS4vdHEal2PgyTy4795B29M0WHTpfGJ6xwra+V?=
+ =?iso-8859-1?Q?WTcr4f1054SQDRiuijQK8k6OvI+BFr+lUCFvKhj70xJQ5WesYumPExLvxL?=
+ =?iso-8859-1?Q?G9A1JK5eqTMP7nZw65re78kxtJVyPgD7vw9pnXICUzz9KYHvdrchx7adFQ?=
+ =?iso-8859-1?Q?j8N0wpZ6dgMomdyOcOr8+77a6TWGHE3ExlxLP11ZWv2wUHgzMOkakNxivX?=
+ =?iso-8859-1?Q?Uis8hhLc6NRkc3bU9z4XvX9fLQoprJfpZAQa1KY6uRg4cLlurJwNAY7WAB?=
+ =?iso-8859-1?Q?S9vjTiZiNsDy1dZeKnDIisbvIN/nZg+J1k9rGJclC+qfw1LcosZf6/9FI9?=
+ =?iso-8859-1?Q?wwG6qA8kBwD6yfL7s4uN+naQz8vA+OPkD1RLJib9JSteqv8VIlg/beTX+j?=
+ =?iso-8859-1?Q?lWemW6pwgxCKCSrQHWEkAJKOvYTzxQlumGyh53+qpbZzVHLEx9Lf7w1zT+?=
+ =?iso-8859-1?Q?0W+2vzvG8ZcDUr18rL8pDVyFpyxc/poRLFvnlOacTSCArSs4ph9nlrRwGS?=
+ =?iso-8859-1?Q?lNknJgYqN8ZnRi/8QLTtsZnebA+v/V/f7nI7KGmJUYf0+aAAVsFT9k8Yqn?=
+ =?iso-8859-1?Q?NUi6Rx6t/WqZgiPIm8H+KZM+I9nVNMcxOT+Cox0dcNa1LbJHCPYX1DmmXQ?=
+ =?iso-8859-1?Q?YM5Nb5NUj2jZcnOv90HlHYPlbbdegQ0efgazGhcTJ1UTssZjcEruaQ04AJ?=
+ =?iso-8859-1?Q?waGtaTkWfUZrwPVV0Rb2Xa+mBL59NvLp0JSDnqufkf0TLuFWeZc1pNSX+k?=
+ =?iso-8859-1?Q?YoKveuHhWHpNHB/tHJdhGD7ehMExWDdqbbhM5q44i9qzCpXnl/9wVqJbq8?=
+ =?iso-8859-1?Q?bzX38alSmfG6y1vRVFBW8Ibf8p4tVjv4gOhTfbIZPA4gqdlNJzgOlBPEuw?=
+ =?iso-8859-1?Q?HzVj8j87JDPSyiPuDpYZTlJiWopjCY0xsXSBkWebsjDqGLjiJ/ZDQnP7fw?=
+ =?iso-8859-1?Q?ETSrZ9fHLSDiQP/m+6/3hx33RVAvlZiC7jwJQUaJ78jsGuUfgO2fmutI2D?=
+ =?iso-8859-1?Q?HtGe40xYkAJtJ6zAMbcuDtSio1jdZKbrMWNR15ASV0KV697SSK6VT2T38m?=
+ =?iso-8859-1?Q?oyxFnKpmN1qyMZhJkRWLO54jEaTtB6fkR4cRhS2VfBg58r0SRuvkJSOOn/?=
+ =?iso-8859-1?Q?kOmC/oX015ohfUMnS3nWoDjNpYX0slNJdpc/eu5qrTyCKUq+ZkK616UieR?=
+ =?iso-8859-1?Q?miZSvhfE=3D?=
+x-microsoft-antispam-prvs: <VI1PR04MB5726431276480A216C5BC117F37B0@VI1PR04MB5726.eurprd04.prod.outlook.com>
 x-forefront-prvs: 096029FF66
 x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(346002)(136003)(366004)(39860400002)(376002)(396003)(13464003)(189003)(199004)(81156014)(55016002)(81166006)(9686003)(33656002)(8676002)(53546011)(7696005)(53936002)(76176011)(6506007)(26005)(6436002)(4326008)(102836004)(25786009)(2501003)(99286004)(66066001)(8936002)(105586002)(14454004)(106356001)(2906002)(14444005)(256004)(6116002)(74316002)(229853002)(3846002)(6246003)(305945005)(478600001)(7736002)(486006)(86362001)(44832011)(11346002)(476003)(446003)(7416002)(68736007)(5660300002)(71190400001)(71200400001)(316002)(52536013)(2201001)(186003)(97736004)(110136005)(54906003)(921003)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5277;
+ SFS:(10009020)(346002)(376002)(366004)(396003)(136003)(39860400002)(189003)(199004)(6116002)(3846002)(50226002)(4326008)(26005)(99286004)(6506007)(386003)(316002)(54906003)(110136005)(8936002)(8676002)(102836004)(305945005)(36756003)(25786009)(53936002)(6486002)(81156014)(81166006)(478600001)(6436002)(44832011)(2906002)(6512007)(71200400001)(2501003)(6306002)(71190400001)(66066001)(106356001)(105586002)(5660300002)(14454004)(7416002)(97736004)(256004)(14444005)(966005)(68736007)(7736002)(486006)(4744005)(86362001)(2616005)(476003)(2201001)(52116002)(186003)(921003)(1121003);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5726;
  H:VI1PR04MB4800.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
  PTR:InfoNoRecords; MX:1; A:1; 
 received-spf: None (protection.outlook.com: nxp.com does not designate
  permitted sender hosts)
 x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: A7OE0haRVSsAYCGJItakEQJvfY550hdKSwSlXGjCXOLWEYhc4giKIk7KG4ikDE1r7uRcuVDKEStgCm2YszAOsCfgzmVBaiIwOcG61OMegVy1Kd7IIMliSMmaoAItvLIJO2BZ8u1rti8KyfRgpG+EpNVYVKkC75HPzrXCIsf4t9QaHE4LUC+3YwhD2Rn6RKs0UrPdnQEiBY33H0bnKgjPJLk+yosBSmEWlET2URSoD5I+IdgIbRWBmAVjQpx081WoO3wBWFLpNO3VtJmahLjSTp2E2Rkipxg7CaRMyFzRv/3GhvOUC4z771VvZXQKPMPMWfzYzXxPMpBaxx6oh7jlY8fM/L3VJ/Lqdh6HXM/Kyaj70P/p6HM9xTjbveWdEggRNlL37esdun6aP/Cga9HgPWSmkhlYzSbSG+jgWWaq7kA=
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+x-microsoft-antispam-message-info: jhydYefqmPF1docIuJy4/FMk7wful5QpevVEu8sTyqZWreSbLRFrm80X5cOlFX29aCzmtBskpd6kaoPODKyM+GdBbpYaG1i+OwkvOykW+miuLM4K9LQbnN7znqij1Fvf3S+abCz1dzJ835bBl2YVuf+vrUJWfM/yacYAuF5Jl3hKE41NxS/MDnh4K30T6TK0jUcqcWzJzC0mIMzU+LTNuv6j+GR2HH4UHEra0S6KnrBkRbe+9zqK1t8qdTwnwkUMo3QgRgoJTupsDXd19ocm8pYux/nhDzepRNLlw1lNh2bDKdBObDGiYAhP+wXb07hdDtwCuirBFlk9s6Z42fVuEImq5Ua+zn1SfRGumg2fMjaRKjKtGYMUEuZAbqfC1mTnz0AHPgLmHGiCbW/Z/CABbtGoZUVTaXLMFXw0oMJqWG8=
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
 X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: c41f4ecc-6195-4aac-5ee6-08d69bd2785e
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2019 10:09:18.2370 (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 49ca1841-ed43-4c9e-7460-08d69bd2ac64
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2019 10:10:40.7902 (UTC)
 X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5277
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5726
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -157,38 +155,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
- Andy Tang <andy.tang@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ Vabhav Sharma <vabhav.sharma@nxp.com>,
  "adrian.hunter@intel.com" <adrian.hunter@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCA8b3Nz
-QGJ1c2Vycm9yLm5ldD4NCj4gU2VudDogVHVlc2RheSwgRmVicnVhcnkgMjYsIDIwMTkgMzoxNSBQ
-TQ0KPiBUbzogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPjsgc3VkZWVwLmhv
-bGxhQGFybS5jb207DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVA
-dmdlci5rZXJuZWwub3JnOw0KPiByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0u
-Y29tOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gbGludXgtYXJtLWtlcm5lbEBs
-aXN0cy5pbmZyYWRlYWQub3JnOyBtdHVycXVldHRlQGJheWxpYnJlLmNvbTsNCj4gc2JveWRAa2Vy
-bmVsLm9yZzsgcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOyBsaW51
-eC0NCj4gY2xrQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51
-eC1rZXJuZWwtDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZzsgY2F0YWxpbi5tYXJpbmFzQGFybS5j
-b207IHdpbGwuZGVhY29uQGFybS5jb207DQo+IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBh
-cm5kQGFybmRiLmRlOw0KPiBrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnOyB5YW1hZGEubWFz
-YWhpcm9Ac29jaW9uZXh0LmNvbTsgTGVvIExpDQo+IDxsZW95YW5nLmxpQG54cC5jb20+OyBzaGF3
-bmd1b0BrZXJuZWwub3JnDQo+IENjOiBsaW51eEBhcm1saW51eC5vcmcudWs7IGFkcmlhbi5odW50
-ZXJAaW50ZWwuY29tOw0KPiB1bGYuaGFuc3NvbkBsaW5hcm8ub3JnOyBZb2dlc2ggTmFyYXlhbiBH
-YXVyDQo+IDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT47IEFuZHkgVGFuZyA8YW5keS50YW5n
-QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggNC80XSBjbGs6IHFvcmlxOiBBZGQgY2xv
-Y2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYQ0KPiANCj4gT24gVHVlLCAyMDE5LTAyLTI2IGF0IDA4
-OjM0ICswMDAwLCBWYWJoYXYgU2hhcm1hIHdyb3RlOg0KPiA+IEBAIC0xNDM1LDYgKzE0NDYsNyBA
-QCBDTEtfT0ZfREVDTEFSRShxb3JpcV9jbG9ja2dlbl90MTAyMywNCj4gImZzbCx0MTAyMy0NCj4g
-PiBjbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOyAgQ0xLX09GX0RFQ0xBUkUocW9yaXFfY2xvY2tn
-ZW5fdDEwNDAsDQo+ID4gImZzbCx0MTA0MC1jbG9ja2dlbiIsIGNsb2NrZ2VuX2luaXQpOw0KPiA+
-IENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3QyMDgwLCAiZnNsLHQyMDgwLWNsb2NrZ2Vu
-IiwNCj4gPiBjbG9ja2dlbl9pbml0KTsgIENMS19PRl9ERUNMQVJFKHFvcmlxX2Nsb2NrZ2VuX3Q0
-MjQwLA0KPiA+ICJmc2wsdDQyNDAtY2xvY2tnZW4iLCBjbG9ja2dlbl9pbml0KTsNCj4gPiArQ0xL
-X09GX0RFQ0xBUkUocW9yaXFfY2xvY2tnZW5fbHgyMTYwYSwgImZzbCxseDIxNjBhLWNsb2NrZ2Vu
-IiwNCj4gPiBjbG9ja2dlbl9pbml0KTsNCj4gDQo+IFRoZSBjaGlwcyB3ZXJlIHByZXZpb3VzbHkg
-aW4gYWxwaGFiZXRpY2FsIG9yZGVyLi4uDQpPaw0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+These patches were reviewed and acked but dropped during merge window.
+Patchwork link was https://lore.kernel.org/patchwork/cover/1004155/
+
+Changes for v1:
+- Updated lx2160a clockgen in alphabetical order
+
+Vabhav Sharma (2):
+  dt-bindings: arm64: add compatible for LX2160A
+  soc/fsl/guts: Add definition for LX2160A
+
+Yogesh Gaur (2):
+  clk: qoriq: increase array size of cmux_to_group
+  clk: qoriq: Add clockgen support for lx2160a
+
+ .../bindings/arm/freescale/fsl,layerscape-dcfg.txt       |  2 +-
+ Documentation/devicetree/bindings/arm/fsl.txt            | 12 ++++++++++++
+ Documentation/devicetree/bindings/clock/qoriq-clock.txt  |  1 +
+ drivers/clk/clk-qoriq.c                                  | 16 ++++++++++++=
+++--
+ drivers/cpufreq/qoriq-cpufreq.c                          |  1 +
+ drivers/soc/fsl/guts.c                                   |  6 ++++++
+ 6 files changed, 35 insertions(+), 3 deletions(-)
+
+--=20
+2.7.4
+
