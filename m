@@ -2,78 +2,81 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B421CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 05:45:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B7B9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:11:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B49A2147C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 05:45:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AC8DA213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:11:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="V+kM/FN1"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B49A2147C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qEtOV3c4"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AC8DA213A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447npG5mf6zDqTw
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 16:45:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447pNL41TLzDqRC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 17:11:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
- envelope-from=ndesaulniers@google.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="V+kM/FN1"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="qEtOV3c4"; 
  dkim-atps=neutral
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447nmd73CzzDqDK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 16:43:39 +1100 (AEDT)
-Received: by mail-pg1-x544.google.com with SMTP id b2so5648863pgl.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 21:43:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=D5xyv1fNfDGlGg9siZmH4kTxv/+JHEmjDQOSbD75FlM=;
- b=V+kM/FN1oYtNuAe0bWJL+QhJ0n1PnBRPlKoLdIQ/BpF1aZHXmKHRnloXWMkZgJsw8C
- b5uqn+Ygzn4uddKHes8qiFONB/JRG1EAmkeU37Edsmnm/gKKr0fkrp8ZIBIVP1elo5El
- 3+bczcqNwaJyFZeIx0fIMupSKib8KeeG1V7IJWlB3Fi6m36Kdzz9CEmaP3O97t6xj/HM
- ZKAmHquYWWs9JY9Pmp6gb+MTfmBffrxZH8Y0MF/HpR+QbXZlBDi+Z2xyadSLPOTr/d6u
- /EZLWaNc7wxfY3lUUC0qGT+RpSwCi35d+BimLHkbJ+lCsK56nfowsLPMNzdT1drZ7V+k
- rJIw==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447pLC0mwNzDqP0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 17:09:22 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id u9so5682319pgo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 22:09:22 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references;
+ bh=9RiWTkkAYduX2IpkAdj2MO/14l5OaPZQyH+cGdRbUXQ=;
+ b=qEtOV3c4xUikdfvDw5uY8JE/8eGQMvgd5fqtoYDjGoZd4iR9l7RuKRyGWiOTAKRMUr
+ GtYZcweM6ar1dkuTucOjHv8ueWrS6reG3yElip2xun9HwgQSnzrmImKULwBLLwHdnE/7
+ UQ3VGTtmqhhPlVI0oMc5nlvnukY3bH/u3HO7xrwW9LATw94WCivtc5mG6BFQ5VqPiQbV
+ AXXNaLQfqWI07BP48KqogwQuGnmb94LxnJCRa/9G51bhTLimwGRmlJiOYAC9zcHpnvqg
+ DZ+8E5QSbpbdW4pL86byLTULdHKfRunp2WwkM8FJFP5pzl63YH7f8YjU9XCeGTtyckNP
+ lWng==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=D5xyv1fNfDGlGg9siZmH4kTxv/+JHEmjDQOSbD75FlM=;
- b=ILep2TNPI/vDoE/OB9WNJHO1RvvkJkelqjZarI6Cnq3s+jZITHCSLjdbauK10S7woZ
- fCAgNKrkult/KeQQvKFJK9SlH/7UTVGt9J11JfaLbRrEAJVNKpa1IQWh8T6rUDjP1HNs
- aUxdLux8h7fKTD2wo3R8rDtFjb/QpW4Nqhl0DgAhFTnmNkJ1HkHLwmw1jMFXypjyST2N
- GIvMA8+2Z2cvwcxhAriGHzgZxr/RCWhAmo2PPLTvhVAM9uMbCOXMvg8yJTBw8C+waCCU
- 4FNmOxeeJWmOn8de3Pnz3INsI91e8NeNXe+drZazNSUBV4b3hWYs5Se6R0tRS2IdrdIC
- 4FDQ==
-X-Gm-Message-State: AHQUAuY59RYILB6UK6ws7UvnO0RHG8UyfyNC0GRo53qdH71tVAzZxBTC
- /JKs7u4TEcweL3QlN6sMgUYQ+1dalUoB5gvZI/R9Iw==
-X-Google-Smtp-Source: AHgI3IblwsDq0v8w8uwDFDXShUnGCXvsmZCLS8U72WJ/yG50fLocYpIaMzDH+pF3bkPLatzQ2GN2GmFAnlAXAVBgLXU=
-X-Received: by 2002:a63:5506:: with SMTP id j6mr22882913pgb.202.1551159816396; 
- Mon, 25 Feb 2019 21:43:36 -0800 (PST)
-MIME-Version: 1.0
-References: <20190226053855.7020-1-natechancellor@gmail.com>
-In-Reply-To: <20190226053855.7020-1-natechancellor@gmail.com>
-From: Nick Desaulniers <ndesaulniers@google.com>
-Date: Mon, 25 Feb 2019 21:43:24 -0800
-Message-ID: <CAKwvOd=PsmVmxoQVT1fhGx+eMkKRqJV_yUQ56_Fs0R-guTuo2Q@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/xmon: Fix opcode being uninitialized in
- print_insn_powerpc
-To: Nathan Chancellor <natechancellor@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=9RiWTkkAYduX2IpkAdj2MO/14l5OaPZQyH+cGdRbUXQ=;
+ b=AixKOdKWydwOPVC+RGRq84P8V0Ww9pz/V4asd/G0KzJgYrWwtnF+6gDzxgB1IURAN4
+ 3+J2XH65NtejU7OhtNdksejf7W3pdXaXS5ko1uH5urF+Az/k8qvBwVpeRVN6pPlp4qZa
+ 7qtOSWoADftVNyZHaO3ToEICRxnSg78xbwfrRJBAqB92txmv5u9FHLqJJYJtAfOhubzn
+ r4Z1FrxyMJdNtl2SApLmNd7hliaoKZqnZqgwYpvkkiX1s/gZKtYZC4nEM5KlN2Y1CNR7
+ 1fyD3uRcqejyHPjsKAnhIQXAKuOk+bBq3uFkCmNX0NiD6R7vtCZvyv7R99IaSVcCBjJq
+ iQiA==
+X-Gm-Message-State: AHQUAuaoNSnJgKj/FJadWxlIBYaPUjXCsrYY6GxvdWLxSf4hyaU6/uaT
+ yQTLD8iQZiMVURkYedcxRIBTAll4
+X-Google-Smtp-Source: AHgI3IbPWRHphwP8XgrI+r5bJI/GbNR5mrMebuBOFyVhvJI+2RePvVGzK1BJ5vn6c0c5WvyqdtlO+Q==
+X-Received: by 2002:aa7:81ce:: with SMTP id c14mr23741756pfn.51.1551161360885; 
+ Mon, 25 Feb 2019 22:09:20 -0800 (PST)
+Received: from roar.local0.net ([125.254.1.96])
+ by smtp.gmail.com with ESMTPSA id s6sm18478814pgm.90.2019.02.25.22.09.18
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 25 Feb 2019 22:09:19 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/4] powerpc/64s: Fix HV NMI vs HV interrupt recoverability
+ test
+Date: Tue, 26 Feb 2019 16:08:58 +1000
+Message-Id: <20190226060901.18715-2-npiggin@gmail.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20190226060901.18715-1-npiggin@gmail.com>
+References: <20190226060901.18715-1-npiggin@gmail.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,71 +88,184 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Feb 25, 2019 at 9:39 PM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> When building with -Wsometimes-uninitialized, Clang warns:
->
-> arch/powerpc/xmon/ppc-dis.c:157:7: warning: variable 'opcode' is used
-> uninitialized whenever 'if' condition is false
-> [-Wsometimes-uninitialized]
->   if (cpu_has_feature(CPU_FTRS_POWER9))
->       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> arch/powerpc/xmon/ppc-dis.c:167:7: note: uninitialized use occurs here
->   if (opcode == NULL)
->       ^~~~~~
-> arch/powerpc/xmon/ppc-dis.c:157:3: note: remove the 'if' if its
-> condition is always true
->   if (cpu_has_feature(CPU_FTRS_POWER9))
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> arch/powerpc/xmon/ppc-dis.c:132:38: note: initialize the variable
-> 'opcode' to silence this warning
->   const struct powerpc_opcode *opcode;
->                                      ^
->                                       = NULL
-> 1 warning generated.
->
-> This warning seems to make no sense on the surface because opcode is set
-> to NULL right below this statement. However, there is a comma instead of
-> semicolon to end the dialect assignment, meaning that the opcode
-> assignment only happens in the if statement. Properly terminate that
-> line so that Clang no longer warns.
->
-> Fixes: 5b102782c7f4 ("powerpc/xmon: Enable disassembly files (compilation changes)")
-> Link: https://github.com/ClangBuiltLinux/linux/issues/390
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+HV interrupts that use HSRR registers do not enter with MSR[RI] clear,
+but their entry code is not recoverable vs NMI, due to shared use of
+HSPRG1 as a scratch register to save r13.
 
-haha! (shows office mates).  Nice find, and fix!
-Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+This means that a system reset or machine check that hits in HSRR
+interrupt entry can cause r13 to be silently corrupted.
 
-> ---
->  arch/powerpc/xmon/ppc-dis.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/xmon/ppc-dis.c b/arch/powerpc/xmon/ppc-dis.c
-> index 9deea5ee13f6..27f1e6415036 100644
-> --- a/arch/powerpc/xmon/ppc-dis.c
-> +++ b/arch/powerpc/xmon/ppc-dis.c
-> @@ -158,7 +158,7 @@ int print_insn_powerpc (unsigned long insn, unsigned long memaddr)
->      dialect |= (PPC_OPCODE_POWER5 | PPC_OPCODE_POWER6 | PPC_OPCODE_POWER7
->                 | PPC_OPCODE_POWER8 | PPC_OPCODE_POWER9 | PPC_OPCODE_HTM
->                 | PPC_OPCODE_ALTIVEC | PPC_OPCODE_ALTIVEC2
-> -               | PPC_OPCODE_VSX | PPC_OPCODE_VSX3),
-> +               | PPC_OPCODE_VSX | PPC_OPCODE_VSX3);
->
->    /* Get the major opcode of the insn.  */
->    opcode = NULL;
-> --
-> 2.21.0
->
+Fix this by marking NMIs non-recoverable if they land in HV interrupt
+ranges.
 
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/asm-prototypes.h |  8 +++
+ arch/powerpc/include/asm/nmi.h            |  2 +
+ arch/powerpc/kernel/exceptions-64s.S      |  8 +++
+ arch/powerpc/kernel/mce.c                 |  3 ++
+ arch/powerpc/kernel/traps.c               | 66 +++++++++++++++++++++++
+ 5 files changed, 87 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 1d911f68a23b..0f8326644fa4 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -51,6 +51,14 @@ int exit_vmx_usercopy(void);
+ int enter_vmx_ops(void);
+ void *exit_vmx_ops(void *dest);
+ 
++/* Exceptions */
++#ifdef CONFIG_PPC_POWERNV
++extern unsigned long real_trampolines_start;
++extern unsigned long real_trampolines_end;
++extern unsigned long virt_trampolines_start;
++extern unsigned long virt_trampolines_end;
++#endif
++
+ /* Traps */
+ long machine_check_early(struct pt_regs *regs);
+ long hmi_exception_realmode(struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
+index bd9ba8defd72..84b4cfe73edd 100644
+--- a/arch/powerpc/include/asm/nmi.h
++++ b/arch/powerpc/include/asm/nmi.h
+@@ -14,4 +14,6 @@ extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
+ #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
+ #endif
+ 
++extern void hv_nmi_check_nonrecoverable(struct pt_regs *regs);
++
+ #endif /* _ASM_NMI_H */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 9e253ce27e08..d2e9fc968655 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -68,6 +68,14 @@ OPEN_FIXED_SECTION(real_vectors,        0x0100, 0x1900)
+ OPEN_FIXED_SECTION(real_trampolines,    0x1900, 0x4000)
+ OPEN_FIXED_SECTION(virt_vectors,        0x4000, 0x5900)
+ OPEN_FIXED_SECTION(virt_trampolines,    0x5900, 0x7000)
++
++#ifdef CONFIG_PPC_POWERNV
++	.globl real_trampolines_start
++	.globl real_trampolines_end
++	.globl virt_trampolines_start
++	.globl virt_trampolines_end
++#endif
++
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+ /*
+  * Data area reserved for FWNMI option.
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index bd933a75f0bc..d653b5de4537 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -31,6 +31,7 @@
+ 
+ #include <asm/machdep.h>
+ #include <asm/mce.h>
++#include <asm/nmi.h>
+ 
+ static DEFINE_PER_CPU(int, mce_nest_count);
+ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
+@@ -488,6 +489,8 @@ long machine_check_early(struct pt_regs *regs)
+ {
+ 	long handled = 0;
+ 
++	hv_nmi_check_nonrecoverable(regs);
++
+ 	/*
+ 	 * See if platform is capable of handling machine check.
+ 	 */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 64936b60d521..12b54908c15d 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -376,6 +376,70 @@ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
+ 	force_sig_fault(signr, code, (void __user *)addr, current);
+ }
+ 
++/*
++ * The interrupt architecture has a quirk in that the HV interrupts excluding
++ * the NMIs (0x100 and 0x200) do not clear MSR[RI] at entry. The first thing
++ * that an interrupt handler must do is save off a GPR into a scratch register,
++ * and all interrupts on POWERNV (HV=1) use the HSPRG1 register as scratch.
++ * Therefore an NMI can clobber an HV interrupt's live HSPRG1 without noticing
++ * that it is non-reentrant, which leads to random data corruption.
++ *
++ * The solution is for NMI interrupts in HV mode to check if they originated
++ * from these critical HV interrupt regions. If so, then mark them not
++ * recoverable.
++ *
++ * An alternative would be for HV NMIs to use SPRG for scratch to avoid the
++ * HSPRG1 clobber, however this would cause guest SPRG to be clobbered. Linux
++ * guests should always have MSR[RI]=0 when its scratch SPRG is in use, so
++ * that would work. However any other guest OS that may have the SPRG live
++ * and MSR[RI]=1 could encounter silent corruption.
++ *
++ * Builds that do not support KVM could take this second option to increase
++ * the recoverability of NMIs.
++ */
++void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC_POWERNV
++	unsigned long kbase = (unsigned long)_stext;
++	unsigned long nip = regs->nip;
++
++	if (!(regs->msr & MSR_RI))
++		return;
++	if (!(regs->msr & MSR_HV))
++		return;
++	if (regs->msr & MSR_PR)
++		return;
++
++	/*
++	 * Now test if the interrupt has hit a range that may be using
++	 * HSPRG1 without having RI=0 (i.e., an HSRR interrupt). The
++	 * problem ranges all run un-relocated. Test real and virt modes
++	 * at the same time by droping the high bit of the nip (virt mode
++	 * entry points still have the +0x4000 offset).
++	 */
++	nip &= ~0xc000000000000000ULL;
++	if ((nip >= 0x500 && nip < 0x600) || (nip >= 0x4500 && nip < 0x4600))
++		goto nonrecoverable;
++	if ((nip >= 0x980 && nip < 0xa00) || (nip >= 0x4980 && nip < 0x4a00))
++		goto nonrecoverable;
++	if ((nip >= 0xe00 && nip < 0xec0) || (nip >= 0x4e00 && nip < 0x4ec0))
++		goto nonrecoverable;
++	if ((nip >= 0xf80 && nip < 0xfa0) || (nip >= 0x4f80 && nip < 0x4fa0))
++		goto nonrecoverable;
++	/* Trampoline code runs un-relocated so subtract kbase. */
++	if (nip >= real_trampolines_start - kbase &&
++			nip < real_trampolines_end - kbase)
++		goto nonrecoverable;
++	if (nip >= virt_trampolines_start - kbase &&
++			nip < virt_trampolines_end - kbase)
++		goto nonrecoverable;
++	return;
++
++nonrecoverable:
++	regs->msr &= ~MSR_RI;
++#endif
++}
++
+ void system_reset_exception(struct pt_regs *regs)
+ {
+ 	/*
+@@ -386,6 +450,8 @@ void system_reset_exception(struct pt_regs *regs)
+ 	if (!nested)
+ 		nmi_enter();
+ 
++	hv_nmi_check_nonrecoverable(regs);
++
+ 	__this_cpu_inc(irq_stat.sreset_irqs);
+ 
+ 	/* See if any machine dependent calls */
 -- 
-Thanks,
-~Nick Desaulniers
+2.18.0
+
