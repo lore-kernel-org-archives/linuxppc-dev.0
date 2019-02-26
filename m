@@ -2,81 +2,48 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 956D2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 13:04:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F40A4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 13:16:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFDBC20651
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 13:04:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="iJj1haDe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFDBC20651
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id AA6EE217F9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 13:16:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA6EE217F9
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447zY23tj9zDqNB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 00:04:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447zq172chzDqT6
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 00:16:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
- envelope-from=lantianyu1986@gmail.com; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="iJj1haDe"; 
- dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447zSL4NWtzDqQW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 00:00:18 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id y5so6215420plk.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 05:00:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=j8h6kEd36XZA0W1ta6d86WO4PPXq666Fw8Odg1HSHWE=;
- b=iJj1haDeQ/N4knB6ZkfPIbBBikEijc4XMQEhvso+uGw3Gzonlx2LMHbxDNhxdOsLO5
- 9/RC7drvjRuaIn9F0S3cLM0+Nf2VDOHoOBcPVpE04JoO4DDFvYHnfNhs3GM3TDepBHHL
- x3uKoOE/K+vdpA+YGX5nfTLL8rGudeiuruGtiPzknZPEsi1M+w74lrRcVnhePEkZKzSm
- hnJ+9/urf6gLp/t3HOljNrg3FSXuSCHaFrniZmdn16YbkBYxmGnUX+M73aEZGT3um4Zl
- RvuLmLpg/dPuOkvCJnfMcBVQMFa+KO/Cdp+mtyFhSiUVeuti7z0gGmnmt7LRbfq0Bfzj
- OJTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=j8h6kEd36XZA0W1ta6d86WO4PPXq666Fw8Odg1HSHWE=;
- b=NMW7Nu5IjJZOS/dhjizVUIR4CNr9vjZAkEgBLvEvkM/DMQL6EG+DtASkZVDtnof4NR
- 7tb/msB/7DbxeSsTy4kUIbS5MKxE8To2TMaocm15ouUvRhTEO/vtGD1V4D9vUha5dF1D
- 97+/Nad2oqljhcj/jbDzHJUFnACTsoJIs1JvsvEoYY4QOPfr2+bWfi4RqcubGCjMfXhh
- iEEGYhxRsvA1W8j9zyZDXfpplSVJbJAD41d3qVunB1/Zku0GcJS4rV3NxtwtDXhGk1Q0
- aqfn1dhcvTk5JDspdPfsVNjaf4tpvAmuYwD29Duw3uqWW1ZAPFICEirY3gC7ImvYqVyY
- 2RKQ==
-X-Gm-Message-State: AHQUAuYU5KiHUtaYktnO19arJH53iMt8Bc0uRav2tHpgTUE6StKeCxkH
- +Ty5bvQIc3ovddpI92GaMaTF4SQOeJ/odoOt5qM=
-X-Google-Smtp-Source: AHgI3IaS1g7D372cnowLzJym/B9Y1K14HF4sJbQbbdphhYleutKi1EM8iKYA0AgMOkK+w28JpCc2kA1tVi6yaSNleEo=
-X-Received: by 2002:a17:902:8b8b:: with SMTP id
- ay11mr26134560plb.162.1551186014272; 
- Tue, 26 Feb 2019 05:00:14 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447zjz373CzDqP4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 00:12:06 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 1D6C1AF72;
+ Tue, 26 Feb 2019 13:12:02 +0000 (UTC)
+Date: Tue, 26 Feb 2019 14:12:01 +0100
+From: Michal Hocko <mhocko@kernel.org>
+To: linux-mm@kvack.org
+Subject: Re: [PATCH 0/2] x86, numa: always initialize all possible nodes
+Message-ID: <20190226131201.GA10588@dhcp22.suse.cz>
+References: <20190212095343.23315-1-mhocko@kernel.org>
 MIME-Version: 1.0
-References: <20190222150637.2337-1-Tianyu.Lan@microsoft.com>
- <20190222150637.2337-2-Tianyu.Lan@microsoft.com>
- <SN6PR2101MB0912C24CD03D22248C868196CC7F0@SN6PR2101MB0912.namprd21.prod.outlook.com>
-In-Reply-To: <SN6PR2101MB0912C24CD03D22248C868196CC7F0@SN6PR2101MB0912.namprd21.prod.outlook.com>
-From: Tianyu Lan <lantianyu1986@gmail.com>
-Date: Tue, 26 Feb 2019 21:00:03 +0800
-Message-ID: <CAOLK0pzVwH-1pObn3FjmLorc_pjLu2q0Q_EG4iYm3yb2aXL7PQ@mail.gmail.com>
-Subject: Re: [PATCH V3 1/10] X86/Hyper-V: Add parameter offset for
- hyperv_fill_flush_guest_mapping_list()
-To: Stephen Hemminger <sthemmin@microsoft.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190212095343.23315-1-mhocko@kernel.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,57 +55,26 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "rkrcmar@redhat.com" <rkrcmar@redhat.com>,
- "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "will.deacon@arm.com" <will.deacon@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "hpa@zytor.com" <hpa@zytor.com>, KY Srinivasan <kys@microsoft.com>,
- "kvmarm@lists.cs.columbia.edu" <kvmarm@lists.cs.columbia.edu>,
- "sashal@kernel.org" <sashal@kernel.org>, "x86@kernel.org" <x86@kernel.org>,
- "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "mingo@redhat.com" <mingo@redhat.com>, "jhogan@kernel.org" <jhogan@kernel.org>,
- "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>,
- Tianyu Lan <Tianyu.Lan@microsoft.com>,
- "marc.zyngier@arm.com" <marc.zyngier@arm.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "bp@alien8.de" <bp@alien8.de>,
- "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- Michael Kelley <mikelley@microsoft.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "christoffer.dall@arm.com" <christoffer.dall@arm.com>,
- "ralf@linux-mips.org" <ralf@linux-mips.org>,
- "paul.burton@mips.com" <paul.burton@mips.com>,
- "pbonzini@redhat.com" <pbonzini@redhat.com>, vkuznets <vkuznets@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
+ Dave Hansen <dave.hansen@intel.com>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Stephen:
-               Thanks for your review.
-On Sat, Feb 23, 2019 at 1:08 AM Stephen Hemminger
-<sthemmin@microsoft.com> wrote:
->
-> int hyperv_fill_flush_guest_mapping_list(
->                 struct hv_guest_mapping_flush_list *flush,
-> -               u64 start_gfn, u64 pages)
-> +               int offset, u64 start_gfn, u64 pages)
->  {
->         u64 cur = start_gfn;
->         u64 additional_pages;
-> -       int gpa_n = 0;
-> +       int gpa_n = offset;
->
->         do {
->                 /*
->
-> Do you mean to support negative offsets here? Maybe unsigned would be better?
+On Tue 12-02-19 10:53:41, Michal Hocko wrote:
+> Hi,
+> this has been posted as an RFC previously [1]. There didn't seem to be
+> any objections so I am reposting this for inclusion. I have added a
+> debugging patch which prints the zonelist setup for each numa node
+> for an easier debugging of a broken zonelist setup.
+> 
+> [1] http://lkml.kernel.org/r/20190114082416.30939-1-mhocko@kernel.org
 
-Yes, this makes sense. Will update. Thanks.
-
+Friendly ping. I haven't heard any complains so can we route this via
+tip/x86/mm or should we go via mmotm.
 -- 
-Best regards
-Tianyu Lan
+Michal Hocko
+SUSE Labs
