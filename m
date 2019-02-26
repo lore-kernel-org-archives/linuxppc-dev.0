@@ -2,147 +2,119 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1983C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:00:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC792C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:54:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8CF7A217F5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:00:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CF7A217F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
+	by mail.kernel.org (Postfix) with ESMTPS id 622D42173C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:54:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 622D42173C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447y7L5gg5zDqT6
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 23:00:30 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447y3l6bZhzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:57:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447zKh5CJZzDqRB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 23:54:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 447y3k2CMtz8t4q
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:57:22 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 447y3j6cdSz9sCH; Tue, 26 Feb 2019 22:57:21 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=samsung.com
- (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com;
- envelope-from=b.zolnierkie@samsung.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=samsung.com
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"; 
- dkim-atps=neutral
-X-Greylist: delayed 322 seconds by postgrey-1.36 at bilbo;
- Tue, 26 Feb 2019 22:57:19 AEDT
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=pbonzini@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 447y3g5Bhhz9s5c
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2019 22:57:17 +1100 (AEDT)
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
- by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
- 20190226115151euoutp02c220c5f39232552c59e0c128351488e7~G57r5EpZ_1947719477euoutp02H
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2019 11:51:51 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
- 20190226115151euoutp02c220c5f39232552c59e0c128351488e7~G57r5EpZ_1947719477euoutp02H
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
- s=mail20170921; t=1551181911;
- bh=PjCVhQAp5EO97zKk2n8MxjOqBqvhq2DZ66r65l02p5g=;
- h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
- b=KKo4ghsA4x01H+ngLh5rTkVbs7nScgDziiVVBh1L28s3npnI6FtAVEaqDvsJ97NHz
- 3BAwUp5vOkY3mJKijoN4heTDICFBTK1kfNP+zR1WXR64U/R7i8cpr+98mxBlGkeU8N
- k7wltoYxTn4TXW9k5zamJXttsvDmI48tD6iGa8H8=
-Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
- eucas1p2.samsung.com (KnoxPortal) with ESMTP id
- 20190226115151eucas1p2954701bb893a53ac04ae811bfe581981~G57rkuxQZ1113411134eucas1p2N;
- Tue, 26 Feb 2019 11:51:51 +0000 (GMT)
-Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
- eusmges2new.samsung.com (EUCPMTA) with SMTP id 69.14.04294.758257C5; Tue, 26
- Feb 2019 11:51:51 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
- eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
- 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f~G57q4_Uto1118211182eucas1p2c;
- Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
- eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
- 20190226115150eusmtrp18aad98e7adf7e191e63e5c11726a0e32~G57q4ELZ72473024730eusmtrp1m;
- Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
-X-AuditID: cbfec7f4-84fff700000010c6-23-5c7528571d6f
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
- eusmgms2.samsung.com (EUCPMTA) with SMTP id D1.43.04128.658257C5; Tue, 26
- Feb 2019 11:51:50 +0000 (GMT)
-Received: from [106.120.53.102] (unknown [106.120.53.102]) by
- eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
- 20190226115150eusmtip1fecaf8dce064c30b5ea8c95713271591~G57qhGtOv1600816008eusmtip13;
- Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
-Subject: Re: Re: Kernel panic when loading the IDE controller driver
-To: Christophe Leroy <christophe.leroy@c-s.fr>, sgosavi1
- <Sachin.Gosavi@emerson.com>
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Message-ID: <37311a64-63ac-3ef2-9cdf-c19248cf7d77@samsung.com>
-Date: Tue, 26 Feb 2019 12:51:49 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
- Thunderbird/45.3.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447zHk0W4LzDqQW
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:52:49 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com
+ [10.5.11.22])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 4579899DD6;
+ Tue, 26 Feb 2019 12:52:47 +0000 (UTC)
+Received: from [10.36.112.59] (ovpn-112-59.ams2.redhat.com [10.36.112.59])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 8CDE71001DEF;
+ Tue, 26 Feb 2019 12:52:43 +0000 (UTC)
+Subject: Re: [PATCH v2 11/16] KVM: introduce a 'mmap' method for KVM devices
+To: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-12-clg@kaod.org>
+ <20190225033309.GO7668@umbus.fritz.box>
+ <c906cf13-fb2a-3a76-4382-2a7f98496c05@kaod.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=pbonzini@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+ uUHgL9dKIfvpm+rNXRn9wAwGjk0X/A==
+Message-ID: <e1a35077-8c0f-313c-15d0-0483956bfcd6@redhat.com>
+Date: Tue, 26 Feb 2019 13:52:39 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <40b6281d-3aed-bff1-79fc-09a293d37b7f@c-s.fr>
+In-Reply-To: <c906cf13-fb2a-3a76-4382-2a7f98496c05@kaod.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprHKsWRmVeSWpSXmKPExsWy7djPc7rhGqUxBuv+C1p833KdyaKjmcli
- zvkWFotjOx4xWfy/8YbF4vmn8+wObB6t/T/YPLasvMnksXjnP3aPnbPusnusvHSR3ePzJrkA
- tigum5TUnMyy1CJ9uwSujN6mzSwFE0QrWl5fY29gnC/YxcjJISFgIvFt8yTmLkYuDiGBFYwS
- r/6fYYRwvjBK/DmynhXC+cwoMbd1IitMy915s1ggEssZJZY9PQ7V8p5RYuq05UwgVcICLhKv
- /11nBLFFBMIk1p7YxARSxCwwkVFixbtWZpAEm4CVxMT2VWBFvAJ2EouXXwazWQRUJX7NnQ+0
- joNDVCBCov+MOkSJoMTJmU9YQGxOoNZN6x+BjWEWkJdo3jqbGeK6RewSf2a7QdguErMP9kPF
- hSVeHd/CDmHLSJye3AP2gYTAdEaJN7+WQjnrGSXWnDnGBFFlLXH4+EWwI5gFNCXW79KHCDtK
- zLn+lQ0kLCHAJ3HjrSDEDXwSk7ZNZ4YI80p0tAlBVKtJbFi2gQ1mbdfOlVDneEhsmjCZaQKj
- 4iwkn81C8s0shL0LGJlXMYqnlhbnpqcWG+WllusVJ+YWl+al6yXn525iBKaa0/+Of9nBuOtP
- 0iFGAQ5GJR7eE/eLY4RYE8uKK3MPMUpwMCuJ8N5QLY0R4k1JrKxKLcqPLyrNSS0+xCjNwaIk
- zlvN8CBaSCA9sSQ1OzW1ILUIJsvEwSnVwNjlxXm0OS1I0ONe3gGL1Udl1+n6Lzl464HTCXFf
- bbsGo4zULO25Vamup+7Kr7qz5esELh/lqHmCKkuXHOT16dkj/vDznwl7zkaenl2kdnjOo0Ms
- ru80BJM2rVK19ZdTN3i9OunrrJ2sL2YqudX8Ni2Mz7h+7ELBwlU3Y046TPUVKls5O9trvYwS
- S3FGoqEWc1FxIgDOT9CWMQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrKIsWRmVeSWpSXmKPExsVy+t/xu7phGqUxBv9falt833KdyaKjmcli
- zvkWFotjOx4xWfy/8YbF4vmn8+wObB6t/T/YPLasvMnksXjnP3aPnbPusnusvHSR3ePzJrkA
- tig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMTSz1DY/NYKyNTJX07m5TUnMyy1CJ9uwS9jN6m
- zSwFE0QrWl5fY29gnC/YxcjJISFgInF33iyWLkYuDiGBpYwSCyZ/Y+9i5ABKyEgcX18GUSMs
- 8edaFxtEzVtGibZDjYwgCWEBF4nX/66D2SICYRL3519nhyjaxyTRPv01WAezwERGiVldIO2c
- HGwCVhIT21eBdfAK2EksXn4ZzGYRUJX4NXc+K4gtKhAhcethBwtEjaDEyZlPwGxOoN5N6x8x
- g9jMAuoSf+ZdgrLlJZq3zmaewCg4C0nLLCRls5CULWBkXsUoklpanJueW2ykV5yYW1yal66X
- nJ+7iREYRduO/dyyg7HrXfAhRgEORiUeXoVHxTFCrIllxZW5hxglOJiVRHhvqJbGCPGmJFZW
- pRblxxeV5qQWH2I0BXpiIrOUaHI+MMLzSuINTQ3NLSwNzY3Njc0slMR5zxtURgkJpCeWpGan
- phakFsH0MXFwSjUw8ryf1XxsflWghhbDvSlz7my8rXt0uy3v8rMcWXnOXrX2B9b/2tp9xrRE
- 2ueztbWGT4mg1G3p1frzQw3XxGkuTzigO7NNTadywZXtO6vvL1YPk14464tofi/jEneRjasC
- wr8sT2c59dQ99UrLt6ui9Z+zfjwRqP38T6jp7N2a9t1tT/itDK5LK7EUZyQaajEXFScCABFz
- oLa4AgAA
-X-CMS-MailID: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
-References: <1550055691105-0.post@n7.nabble.com>
- <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
- <1550060685213-0.post@n7.nabble.com>
- <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
- <1550062386389-0.post@n7.nabble.com>
- <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
- <40b6281d-3aed-bff1-79fc-09a293d37b7f@c-s.fr>
- <CGME20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f@eucas1p2.samsung.com>
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.38]); Tue, 26 Feb 2019 12:52:47 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -154,73 +126,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-On 02/14/2019 06:54 PM, Christophe Leroy wrote:
+On 25/02/19 11:57, C�dric Le Goater wrote:
+> Hello Paolo,
 > 
-> 
-> Le 13/02/2019 à 16:27, Christophe Leroy a écrit :
->>
->>
->> Le 13/02/2019 à 13:53, sgosavi1 a écrit :
->>>> Why using 4.15.13 which is obsolete instead of using one of the Long
->>>> Term Support versions which are still maintained, like 4.14 or 4.19 ?
->>>> (see the complete list at https://www.kernel.org/category/releases.html)
+> On 2/25/19 4:33 AM, David Gibson wrote:
+>> On Fri, Feb 22, 2019 at 12:28:35PM +0100, C�dric Le Goater wrote:
+>>> Some KVM devices will want to handle special mappings related to the
+>>> underlying HW. For instance, the XIVE interrupt controller of the
+>>> POWER9 processor has MMIO pages for thread interrupt management and
+>>> for interrupt source control that need to be exposed to the guest when
+>>> the OS has the required support.
 >>>
->>> Well, when I started this task 4.15.13 was probably the latest stable
->>> release and hence we decided to port this version. In the older kernel, we
->>> have the m8260_setup.c source file for our board where the function
->>> "io_block_mapping" was used to configure the non-standard IO port address
->>> starting at 0xe0000000 location. This address was passed as the base address
->>> followed by control address and IRQ number to the ide-core.ko module. In the
->>> new kernel we do not have an option to send these addresses and IRQ numbers
->>> as arguments to the driver. Instead the ide-generic.c source file in the new
->>> kernel uses the standard IO port values and IRQ values. I modified the code
->>> in the above file to used the addresses and IRQ number we used in the past.
->>> Also, added code in the "MMU_init" function call available under
->>> arch/PowerPC/init_32.c to setup the IO port address range by adding the
->>> "io_block_mapping" call and the required IO port address range.
->>>
->>> Is there anything else that needs to be added or how can we configure the
->>> desired IO address range in the new kernel?
->>>
+>>> Signed-off-by: C�dric Le Goater <clg@kaod.org>
 >>
->> Maybe look around https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=9a0e77f28b50128df0c9e26ae489e44e29a7270a
+>> Ah, when I suggested mmap() on the base device fd, I hadn't realized
+>> there wasn't a facility for that yet.
 >>
->> Also look at ide_platform.c. I imagine there must be some way to set it up in your device tree.
-
-Please don't add new users to subsystem deprecated almost 10 years ago..
-
->> Maybe Bartlomiej Zolnierkiewicz can help ?
->>
->> Christophe
+>> Have you discussed this with Paolo?  
 > 
-> Le 14/02/2019 à 09:17, sgosavi1 a écrit :>> Maybe look around
->>
->> I have gone through this before and also tried the pata_platform driver but
->> no success yet. I haven't found any example that passes the IO ports and IRQ
->> information through the device tree to the driver code.
+> Not yet.
+> 
+>> We'll need some core KVM buy in to merge this.
+> 
+> Here is an extension of the KVM device to allow special mappings.
+> Something we would need for the support of the POWER9 XIVE interrupt 
+> controller.
+> 
+> There are two MMIOs we need to expose to the guest : 
+> 
+>  1. HW MMIO controlling of the interrupt presenter registers (TIMA)
+>  2. HW MMIO of the interrupt sources for interrupt management (ESB)
+> 
+> The TIMA could have been exposed with a page offset in the vCPU mapping
+> but as it only makes sense when the XIVE interrupt mode is active, we 
+> chose to use directly the KVM device fd for that. Is that ok ? 
+> 
+> An alternate solution is to use a device ioctl to allocate an anon fd
+> and do the mapping, but that seems like extra fuss for the same result. 
 
-Please look at pata_of_platform.c driver from libata subsystem,
-it should have all required functionality.
+It's okay, it's a natural extension to dev_ops - but thanks for asking
+anyway. :)
 
->> Thanks,
->> Sachin.
-> 
-> 
-> Maybe someone from the IDE SUBSYSTEM would be able to help better ?
-> 
-> Entire thread at http://linuxppc.10917.n7.nabble.com/Kernel-panic-when-loading-the-IDE-controller-driver-td150020.html#none
-> 
-> Christophe
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Paolo
