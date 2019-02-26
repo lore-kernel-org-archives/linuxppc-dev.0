@@ -6,57 +6,57 @@ X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55C29C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 22:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15C45C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 23:38:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C0C372146F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 22:26:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 85770218D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 23:38:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="xgiSD0Nn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0C372146F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="EXGUM2HH"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85770218D0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448D1g6CvPzDqMP
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:26:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448Fck6LRmzDqMP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 10:38:30 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448Cz1736GzDqLH
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 09:24:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="xgiSD0Nn"; 
- dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1003)
- id 448Cz15Jzqz9s71; Wed, 27 Feb 2019 09:24:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
- t=1551219853; bh=YjQ+L8f4zeePcqAA3Wxa3G0/mN53ATFx5ZaBFER/4Ss=;
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448FZb0Jy0zDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 10:36:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="EXGUM2HH"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 448FZZ3XVhz9s9y; Wed, 27 Feb 2019 10:36:38 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1551224198;
+ bh=td0Myqjkda8XlZ0PuI6HW3nQBt57Fk8mgbxoc7+Yh7w=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=xgiSD0NnUXxLUPuI85XdTSM/F5ZLE0UErrH4H3FPOazzJg0gcbK5dVoOd5vI21zjP
- C18qT86GI9cNDaklIbN/GebUQ4xzvAEyKrDXfFpyhrMeILowU9n1ROjaDFbgCR62WI
- IvqRXRx8eY0E4hn/yqKA4pje7eJrQ4wCoZ1aJzAq3mtY4L8BPJqik7j4iPi9RKr7xn
- CG1V9b2P8izEVBWlyqjIzs9t8A8Zx0BnWgOFeWp8PrXNwFlzWkgyDsNRUYeP9PsBD0
- V+otGfPN4Z0wg4RhOM6ANYBFiiDAAtZqG41SIE/sXA6qcnsNA/2OV+iTMUYh0h9F8W
- I+7xIfNcoYuoQ==
-Date: Wed, 27 Feb 2019 09:24:08 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: build failure of current mmotm with skiroot_defconfig
-Message-ID: <20190226222408.GE28015@blackberry>
-References: <20190226081224.GA11981@rapoport-lnx>
- <3844e8ab-ed20-c202-2e65-6179631b7d91@c-s.fr>
- <20190226095908.GD11981@rapoport-lnx>
+ b=EXGUM2HHgszqu99Ze9jAvKSXkaFetJ4qblwF7xAiWDQ6uC81FNTxXE+1xiBBOgqX5
+ L5hc8dIHxLfrO15bLKDBcKHEHg9Mm9f3dd2sD34nhpoXSshclzrgCoL7wVJbWAvAW5
+ wv0BEttz/WCcrOhGGZsBGXFlTJiHHX3J2Y5NE+L8=
+Date: Wed, 27 Feb 2019 10:20:33 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH v2 04/16] KVM: PPC: Book3S HV: XIVE: add a control to
+ initialize a source
+Message-ID: <20190226232033.GU6872@umbus.fritz.box>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-5-clg@kaod.org>
+ <20190225021012.GH7668@umbus.fritz.box>
+ <20190226042515.GB28015@blackberry>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="lIC76ItX9S6XOZ/S"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190226095908.GD11981@rapoport-lnx>
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <20190226042515.GB28015@blackberry>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,39 +68,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 26, 2019 at 11:59:08AM +0200, Mike Rapoport wrote:
-> On Tue, Feb 26, 2019 at 10:39:54AM +0100, Christophe Leroy wrote:
-> > 
-> > 
-> > Le 26/02/2019 à 09:12, Mike Rapoport a écrit :
-> > >Hi,
-> > >
-> > >I've encountered the following error when building skyroot_defconfig with
-> > >current mmotm tree:
-> > >
-> > >make CONFIG_OF_ALL_DTBS=y CONFIG_DTC=y CROSS_COMPILE=/opt/gcc-8.1.0-nolibc/powerpc64-linux/bin/powerpc64-linux- ARCH=powerpc vmlinux
-> > >   ...
-> > >   CC      arch/powerpc/kernel/dbell.o
-> > >In file included from arch/powerpc/kernel/dbell.c:20:
-> > >arch/powerpc/include/asm/kvm_ppc.h: In function 'xics_on_xive':
-> > >arch/powerpc/include/asm/kvm_ppc.h:625:9: error: implicit declaration of function 'xive_enabled'; did you mean 'eeh_enabled'? [-Werror=implicit-function-declaration]
-> > >   return xive_enabled() && cpu_has_feature(CPU_FTR_HVMODE);
-> > >          ^~~~~~~~~~~~
-> > >          eeh_enabled
-> > 
-> > I can neither find the above in arch/powerpc/include/asm/kvm_ppc.h in the
-> > powerpc tree, nor a patch removing it.
-> > 
-> > Where does that comes from ?
-> 
-> It's from current mmotm, probably some merge conflict...
 
-It's not a merge conflict; see http://patchwork.ozlabs.org/patch/1048584/
-for the fix.
+--lIC76ItX9S6XOZ/S
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paul.
+On Tue, Feb 26, 2019 at 03:25:15PM +1100, Paul Mackerras wrote:
+> On Mon, Feb 25, 2019 at 01:10:12PM +1100, David Gibson wrote:
+> > On Fri, Feb 22, 2019 at 12:28:28PM +0100, C=E9dric Le Goater wrote:
+> > > +	/*
+> > > +	 * If the source doesn't already have an IPI, allocate
+> > > +	 * one and get the corresponding data
+> > > +	 */
+> > > +	if (!state->ipi_number) {
+> > > +		state->ipi_number =3D xive_native_alloc_irq();
+> > > +		if (state->ipi_number =3D=3D 0) {
+> > > +			pr_err("Failed to allocate IRQ !\n");
+> > > +			return -ENXIO;
+> > > +		}
+> > > +		xive_native_populate_irq_data(state->ipi_number,
+> > > +					      &state->ipi_data);
+> > > +		pr_debug("%s allocated hw_irq=3D0x%x for irq=3D0x%lx\n", __func__,
+> > > +			 state->ipi_number, irq);
+> > > +	}
+> > > +
+> > > +	arch_spin_lock(&sb->lock);
+> >=20
+> > Why the direct call to arch_spin_lock() rather than just spin_lock()?
+>=20
+> He's sharing data structures with the xics-on-xive code, and that code
+> has a real-mode variant, and in real mode we don't want to risk
+> invoking lockdep code.  Hence sb->lock is an arch_spinlock_t, and he
+> has to use arch_spin_lock() on it.
+
+Ah, right.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--lIC76ItX9S6XOZ/S
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlx1ycEACgkQbDjKyiDZ
+s5K9yQ//TxJ/OtHQ+JjZ1OENZvfGSQS0F8DT2GAPYWoH3vFizcDU/RTQrrXVVEC/
+dTF9uNqs9zuk7SC26php82pL4S5xYCaI+/DeZOY5KJ70FUWmtGuKQV7a3eMAC/UA
+dip35re9ojfN4ctsrgwGZiLD9TrPFH6LVERmyJhhGLN4ZJfC+OjmwPv5MEl/pJMu
+tN9rdvnm82Jt8nzuJmCTYNBSzvGJ+wAi9ZLXgnfLHWvuo6wZuG6URJyt+hSwMS/o
+LuhXz+/Q+mKlexrgFvS/lO3lwbkJ3MazisH0ihiBVa8HHlchiaslGbhU29weInN2
+QLxSyz1PjRhcnf/AkqTGLF1VJqSxtEzARriFbzfTHNjSCSOFXW1w7h44Har7758n
+UdFustPWr4Nh8khI4U2wTjUwuNrpLIlBv6KWGTebxxEBcdWB0fMOs1M7kIFNdAc9
+/o34BN1iBupWPPfPksDcTbz6ff3HhfPQN8pq2XrF8i8sCtP2diRdJHRtlRaH0yPO
+U8069EwRqP46xl8GqLqeRm2dlECZIR7yOjl3LKK4qFk4jmA9gXENeuuaakTMmsbM
+CgEPxcLnpIYVZ7St7ORCvbOq0Rk7eh1eAXvlEZsDCAYm/X/a1cm/R2z8in3cUezi
+aJacnJH6r5L1gW0XVLkix3RspjzZzJH29j2ItggWUs0jVm/Sp1M=
+=n0wd
+-----END PGP SIGNATURE-----
+
+--lIC76ItX9S6XOZ/S--
