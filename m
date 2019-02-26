@@ -6,40 +6,41 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1146C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 03:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54A75C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 03:31:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 413BB217F4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 03:29:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 413BB217F4
+	by mail.kernel.org (Postfix) with ESMTPS id F3E6B206B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 03:31:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F3E6B206B8
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447kns0Vn4zDqMB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 14:29:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447kqX6f7rzDq9y
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 14:31:04 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447klp1kP2zDqM2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447klp4qydzDqM5
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 14:27:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 447klp0Sx2z9s5c; Tue, 26 Feb 2019 14:27:50 +1100 (AEDT)
+ id 447klp3tMhz9s9L; Tue, 26 Feb 2019 14:27:50 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 447klp04Gvz9s70; Tue, 26 Feb 2019 14:27:49 +1100 (AEDT)
+ id 447klp2ZMHz9sBL; Tue, 26 Feb 2019 14:27:50 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: e7fda7e569e1776d4dccbcef52d34882b62b0654
+X-powerpc-patch-commit: c8e409a33cf8df5060064a70df3e1350841371e1
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190117113510.4265-1-mpe@ellerman.id.au>
+In-Reply-To: <20190205113219.17903-2-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/64s: Remove MSR_RI optimisation in system_call_exit()
-Message-Id: <447klp04Gvz9s70@ozlabs.org>
-Date: Tue, 26 Feb 2019 14:27:49 +1100 (AEDT)
+Subject: Re: [v16,
+ 01/21] powerpc/irq: use memblock functions returning virtual address
+Message-Id: <447klp2ZMHz9sBL@ozlabs.org>
+Date: Tue, 26 Feb 2019 14:27:50 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,37 +57,22 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 2019-01-17 at 11:35:10 UTC, Michael Ellerman wrote:
-> Currently in system_call_exit() we have an optimisation where we
-> disable MSR_RI (recoverable interrupt) and MSR_EE (external interrupt
-> enable) in a single mtmsrd instruction.
+On Tue, 2019-02-05 at 11:31:59 UTC, Michael Ellerman wrote:
+> From: Christophe Leroy <christophe.leroy@c-s.fr>
 > 
-> Unfortunately this will no longer work with THREAD_INFO_IN_TASK,
-> because then the load of TI_FLAGS might fault and faulting with MSR_RI
-> clear is treated as an unrecoverable exception which leads to a
-> panic().
+> Since only the virtual address of allocated blocks is used,
+> lets use functions returning directly virtual address.
 > 
-> So change the code to only clear MSR_EE prior to loading TI_FLAGS,
-> leaving the clear of MSR_RI until later. We have some latitude in
-> where do the clear of MSR_RI. A bit of experimentation has shown that
-> this location gives the least slow down.
+> Those functions have the advantage of also zeroing the block.
 > 
-> This still causes a noticeable slow down in our null_syscall
-> performance. On a Power9 DD2.2:
-> 
->   Before        After         Delta     Delta %
->   955 cycles    999 cycles    -44	-4.6%
-> 
-> On the plus side this does simplify the code somewhat, because we
-> don't have to reenable MSR_RI on the restore_math() or
-> syscall_exit_work() paths which was necessitated previously by the
-> optimisation.
-> 
+> Suggested-by: Mike Rapoport <rppt@linux.ibm.com>
+> Acked-by: Mike Rapoport <rppt@linux.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e7fda7e569e1776d4dccbcef52d34882
+https://git.kernel.org/powerpc/c/c8e409a33cf8df5060064a70df3e1350
 
 cheers
