@@ -2,145 +2,147 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2BC4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:19:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1983C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:00:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6EF5D20684
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 10:19:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8CF7A217F5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 12:00:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="Aw7PpfGU"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6EF5D20684
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8CF7A217F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=samsung.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447vv76bK2zDqW3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 21:19:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=40.107.0.73; helo=eur02-am5-obe.outbound.protection.outlook.com;
- envelope-from=vabhav.sharma@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=nxp.com header.i=@nxp.com header.b="Aw7PpfGU"; 
- dkim-atps=neutral
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00073.outbound.protection.outlook.com [40.107.0.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 447y7L5gg5zDqT6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 23:00:30 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447vjG5GVlzDqLV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 21:11:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Z6yx9+XmqFPikl/HnGKaf00f5Dt+SvH1gw7tqvo/SxY=;
- b=Aw7PpfGU0KjthGZMl3Gi5WSTtyULdxmUco6FGV3JuSmEkRj/WH3Y/gZpDsZz+3+6YSasPnZ07GiALNkbXsRshTRO2EzyAh6lSbZzAF+K8oQ6pi0z66NmSqvYIyNkTtrvNTeUhEQIZQHSlm0Gh4QAJ6JEZzQkSyX5ajY5zd7+x1Q=
-Received: from VI1PR04MB4800.eurprd04.prod.outlook.com (20.177.48.221) by
- VI1PR04MB5277.eurprd04.prod.outlook.com (20.177.51.218) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.1643.15; Tue, 26 Feb 2019 10:11:08 +0000
-Received: from VI1PR04MB4800.eurprd04.prod.outlook.com
- ([fe80::7437:2195:ffd3:a33a]) by VI1PR04MB4800.eurprd04.prod.outlook.com
- ([fe80::7437:2195:ffd3:a33a%5]) with mapi id 15.20.1643.019; Tue, 26 Feb 2019
- 10:11:08 +0000
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net"
- <oss@buserror.net>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
- <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org"
- <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
- <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
- <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "arnd@arndb.de"
- <arnd@arndb.de>, "kstewart@linuxfoundation.org"
- <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
- <yamada.masahiro@socionext.com>, Leo Li <leoyang.li@nxp.com>,
- "shawnguo@kernel.org" <shawnguo@kernel.org>
-Subject: [PATCH v1 4/4] clk: qoriq: Add clockgen support for lx2160a
-Thread-Topic: [PATCH v1 4/4] clk: qoriq: Add clockgen support for lx2160a
-Thread-Index: AQHUzbuXu37W8f+1a0WjYnXw55qsUA==
-Date: Tue, 26 Feb 2019 10:11:08 +0000
-Message-ID: <1551132245-6089-5-git-send-email-vabhav.sharma@nxp.com>
-References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
-In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-clientproxiedby: BMXPR01CA0011.INDPRD01.PROD.OUTLOOK.COM
- (2603:1096:b00:d::21) To VI1PR04MB4800.eurprd04.prod.outlook.com
- (2603:10a6:803:53::29)
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=vabhav.sharma@nxp.com; 
-x-ms-exchange-messagesentrepresentingtype: 1
-x-mailer: git-send-email 1.9.1
-x-originating-ip: [92.120.1.65]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: 5c12fabf-c1da-4a60-45a3-08d69bd2b974
-x-ms-office365-filtering-ht: Tenant
-x-microsoft-antispam: BCL:0; PCL:0;
- RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
- SRVR:VI1PR04MB5277; 
-x-ms-traffictypediagnostic: VI1PR04MB5277:
-x-microsoft-exchange-diagnostics: =?iso-8859-1?Q?1; VI1PR04MB5277;
- 23:SgYx5HX5dVEQmQxbXrmsPJJRryBsJkZmdVa/ePW?=
- =?iso-8859-1?Q?7RJLb1yCrrTA3/h4JLL5Uw0JoQ8JHs1Olkx4IXqZZIk6eCP2+2KC06QK9z?=
- =?iso-8859-1?Q?N51Vwd1lEcDfPfneCwluJ40IeHS+J1TppPgOPpNymH93t8j6SuRdx7WpsI?=
- =?iso-8859-1?Q?eZfNAp5LDl+gfys/Btwjbsn0yG5uQsShEfcZgFcEo6bw57mH1bS/v+OKs8?=
- =?iso-8859-1?Q?3NmbyUIfvxDjljdRVBbQA1ol5P97uSRshotDvybA7ghIQ2eTAdme8XomXb?=
- =?iso-8859-1?Q?nVaLiTbmNxd7+LO4qBDicJxMlSI+tybxf07Z48hwH8yAPST+KgjPf4q67w?=
- =?iso-8859-1?Q?ONJEtedL7BOkCQ8jIlDVJr5L1mskppI69HNGoOVu4k3p16jVvYwWvHnQFV?=
- =?iso-8859-1?Q?Pa71T5wdl7STztfx1RK/+Q/26X5c36KREOErPLdI4pI4EvB6yBHSyPtxB2?=
- =?iso-8859-1?Q?2IL1531lyqumNL+iGzFLzOUGS27CYS5CXIk5F6XJFTeF0H7LZhgPwLKj+T?=
- =?iso-8859-1?Q?e5hqQfUisB+3t+7ZuotTWl44jkau7qmJcn66A0oKD4w6A0vNIC16h2YoWw?=
- =?iso-8859-1?Q?D+lk0EX20fYcyXErm10zrHX1Y8QJX2uCZkC7kq2ooCue5wRGyCItLFKlNP?=
- =?iso-8859-1?Q?NfEVIGY+/Pbg8JRR/xzUOz3FPKRfISWCujlCDF5JayRb7q9r4JNjtYun0+?=
- =?iso-8859-1?Q?TltNLm48t8efdV5Z61xs8ZQ+m4aSyvUhH+gYczN4/F0BFyj3OdGRLl203N?=
- =?iso-8859-1?Q?+a6q7FABM05NaBOu2hPydp6SwXJBVKZrwvXgXqpSXSwi8JrpsEkq1zZxCb?=
- =?iso-8859-1?Q?L04ErjnyqynXdMMkQj7q+s04wHWHuxmDw2GLOZh225Hg/J6RkXZ8BmOlOq?=
- =?iso-8859-1?Q?hOFqnViNGf2d/FTI+nK+KyCkkuGX3W8N4TeqnTmR4whS8w7tFT6mcwKHEg?=
- =?iso-8859-1?Q?t2JNmUX5szEgHs/Pt6nlUw0RII5bQHSRmYGAhNwYDkmiafuHMxUZ6ZdqZz?=
- =?iso-8859-1?Q?W8MX9XilvN49/QHntVNR232ksZ/wm6GnivfhX0UsyXWN/KlCbtmymnQYoi?=
- =?iso-8859-1?Q?GoPCczGbtocPhb+Ftyy7bazX4Bn+Tv4rnkRYK36LaOIN9AuFAPOFEpGyUV?=
- =?iso-8859-1?Q?ZheztAN/P5iEcbha7jB+bEAZrsR3v8T0TG6es4gnzgdeth+XwQAEU4OTBt?=
- =?iso-8859-1?Q?tHQJllw9kSZF887oZ2LlhIEfi75BJNpvYDabuZzFCkcmOdqL0eslZZsUiA?=
- =?iso-8859-1?Q?yBsbv+QlRgVVqWqRNMcQgJfAzu9n6jci4WjVc7xITr+RRptxRYvnRKnFsS?=
- =?iso-8859-1?Q?O11gAUYWhZkkmZxuMm6U2PKwhu2BILtPuVll1lLcm8jKg=3D=3D?=
-x-microsoft-antispam-prvs: <VI1PR04MB527754FF34E5149AB97BD95AF37B0@VI1PR04MB5277.eurprd04.prod.outlook.com>
-x-forefront-prvs: 096029FF66
-x-forefront-antispam-report: SFV:NSPM;
- SFS:(10009020)(346002)(136003)(366004)(39860400002)(376002)(396003)(189003)(199004)(81156014)(81166006)(6512007)(8676002)(386003)(52116002)(53936002)(76176011)(6506007)(26005)(6486002)(6436002)(4326008)(102836004)(36756003)(50226002)(25786009)(2501003)(99286004)(66066001)(8936002)(105586002)(14454004)(106356001)(2906002)(256004)(6116002)(3846002)(305945005)(478600001)(7736002)(486006)(86362001)(44832011)(11346002)(476003)(2616005)(446003)(7416002)(68736007)(5660300002)(71190400001)(71200400001)(316002)(2201001)(186003)(97736004)(110136005)(54906003)(921003)(1121003);
- DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR04MB5277;
- H:VI1PR04MB4800.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
- PTR:InfoNoRecords; MX:1; A:1; 
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam-message-info: RrOEwimNC0lzv2V3L7yH4eNc0iQw/iSfAXF/HpYnfsgtqUDz4EIou/HMtWFZF1Q8bpUKWUE6t95LwieM7UVMgdlZXZ5LykCbmreysh//VxZ6mDdbsx3AqCxaHG1tYzjlBwbJT076V74Aftb4OnHTDQRSysxF8jDn/3FZvSBqIohGbjgQGcrarZEAOijDeoTsrZyU8Pb/QfeGM113M9v2z7KMl9I9CTJpbihoOTkSr3pqiOPcG0gp2HQYls2ajpb5YgUB6Se0LbmA7fh3rbxAneeqlVRZkPnhwoVLYCeKn19nwpq7shzVJrJ0IyVag3l9zhQjfx5FOIf5DMvIMoGFiOgW6MxWFSlrhc+R4IW9AzyqDfJKyi+XNTrPii4yht0yrsaHhNxooLAT/3mYgeuZxMMZYEPAfcGnt2mW0fHQhzU=
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447y3l6bZhzDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:57:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 447y3k2CMtz8t4q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:57:22 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 447y3j6cdSz9sCH; Tue, 26 Feb 2019 22:57:21 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=samsung.com
+ (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com;
+ envelope-from=b.zolnierkie@samsung.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=samsung.com
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=samsung.com header.i=@samsung.com header.b="KKo4ghsA"; 
+ dkim-atps=neutral
+X-Greylist: delayed 322 seconds by postgrey-1.36 at bilbo;
+ Tue, 26 Feb 2019 22:57:19 AEDT
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 447y3g5Bhhz9s5c
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2019 22:57:17 +1100 (AEDT)
+Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
+ by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id
+ 20190226115151euoutp02c220c5f39232552c59e0c128351488e7~G57r5EpZ_1947719477euoutp02H
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Feb 2019 11:51:51 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com
+ 20190226115151euoutp02c220c5f39232552c59e0c128351488e7~G57r5EpZ_1947719477euoutp02H
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+ s=mail20170921; t=1551181911;
+ bh=PjCVhQAp5EO97zKk2n8MxjOqBqvhq2DZ66r65l02p5g=;
+ h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+ b=KKo4ghsA4x01H+ngLh5rTkVbs7nScgDziiVVBh1L28s3npnI6FtAVEaqDvsJ97NHz
+ 3BAwUp5vOkY3mJKijoN4heTDICFBTK1kfNP+zR1WXR64U/R7i8cpr+98mxBlGkeU8N
+ k7wltoYxTn4TXW9k5zamJXttsvDmI48tD6iGa8H8=
+Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTP id
+ 20190226115151eucas1p2954701bb893a53ac04ae811bfe581981~G57rkuxQZ1113411134eucas1p2N;
+ Tue, 26 Feb 2019 11:51:51 +0000 (GMT)
+Received: from eucas1p1.samsung.com ( [182.198.249.206]) by
+ eusmges2new.samsung.com (EUCPMTA) with SMTP id 69.14.04294.758257C5; Tue, 26
+ Feb 2019 11:51:51 +0000 (GMT)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+ eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+ 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f~G57q4_Uto1118211182eucas1p2c;
+ Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+ eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+ 20190226115150eusmtrp18aad98e7adf7e191e63e5c11726a0e32~G57q4ELZ72473024730eusmtrp1m;
+ Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
+X-AuditID: cbfec7f4-84fff700000010c6-23-5c7528571d6f
+Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
+ eusmgms2.samsung.com (EUCPMTA) with SMTP id D1.43.04128.658257C5; Tue, 26
+ Feb 2019 11:51:50 +0000 (GMT)
+Received: from [106.120.53.102] (unknown [106.120.53.102]) by
+ eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
+ 20190226115150eusmtip1fecaf8dce064c30b5ea8c95713271591~G57qhGtOv1600816008eusmtip13;
+ Tue, 26 Feb 2019 11:51:50 +0000 (GMT)
+Subject: Re: Re: Kernel panic when loading the IDE controller driver
+To: Christophe Leroy <christophe.leroy@c-s.fr>, sgosavi1
+ <Sachin.Gosavi@emerson.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Message-ID: <37311a64-63ac-3ef2-9cdf-c19248cf7d77@samsung.com>
+Date: Tue, 26 Feb 2019 12:51:49 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101
+ Thunderbird/45.3.0
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5c12fabf-c1da-4a60-45a3-08d69bd2b974
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Feb 2019 10:11:02.7292 (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB5277
+In-Reply-To: <40b6281d-3aed-bff1-79fc-09a293d37b7f@c-s.fr>
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprHKsWRmVeSWpSXmKPExsWy7djPc7rhGqUxBuv+C1p833KdyaKjmcli
+ zvkWFotjOx4xWfy/8YbF4vmn8+wObB6t/T/YPLasvMnksXjnP3aPnbPusnusvHSR3ePzJrkA
+ tigum5TUnMyy1CJ9uwSujN6mzSwFE0QrWl5fY29gnC/YxcjJISFgIvFt8yTmLkYuDiGBFYwS
+ r/6fYYRwvjBK/DmynhXC+cwoMbd1IitMy915s1ggEssZJZY9PQ7V8p5RYuq05UwgVcICLhKv
+ /11nBLFFBMIk1p7YxARSxCwwkVFixbtWZpAEm4CVxMT2VWBFvAJ2EouXXwazWQRUJX7NnQ+0
+ joNDVCBCov+MOkSJoMTJmU9YQGxOoNZN6x+BjWEWkJdo3jqbGeK6RewSf2a7QdguErMP9kPF
+ hSVeHd/CDmHLSJye3AP2gYTAdEaJN7+WQjnrGSXWnDnGBFFlLXH4+EWwI5gFNCXW79KHCDtK
+ zLn+lQ0kLCHAJ3HjrSDEDXwSk7ZNZ4YI80p0tAlBVKtJbFi2gQ1mbdfOlVDneEhsmjCZaQKj
+ 4iwkn81C8s0shL0LGJlXMYqnlhbnpqcWG+WllusVJ+YWl+al6yXn525iBKaa0/+Of9nBuOtP
+ 0iFGAQ5GJR7eE/eLY4RYE8uKK3MPMUpwMCuJ8N5QLY0R4k1JrKxKLcqPLyrNSS0+xCjNwaIk
+ zlvN8CBaSCA9sSQ1OzW1ILUIJsvEwSnVwNjlxXm0OS1I0ONe3gGL1Udl1+n6Lzl464HTCXFf
+ bbsGo4zULO25Vamup+7Kr7qz5esELh/lqHmCKkuXHOT16dkj/vDznwl7zkaenl2kdnjOo0Ms
+ ru80BJM2rVK19ZdTN3i9OunrrJ2sL2YqudX8Ni2Mz7h+7ELBwlU3Y046TPUVKls5O9trvYwS
+ S3FGoqEWc1FxIgDOT9CWMQMAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrKIsWRmVeSWpSXmKPExsVy+t/xu7phGqUxBv9falt833KdyaKjmcli
+ zvkWFotjOx4xWfy/8YbF4vmn8+wObB6t/T/YPLasvMnksXjnP3aPnbPusnusvHSR3ePzJrkA
+ tig9m6L80pJUhYz84hJbpWhDCyM9Q0sLPSMTSz1DY/NYKyNTJX07m5TUnMyy1CJ9uwS9jN6m
+ zSwFE0QrWl5fY29gnC/YxcjJISFgInF33iyWLkYuDiGBpYwSCyZ/Y+9i5ABKyEgcX18GUSMs
+ 8edaFxtEzVtGibZDjYwgCWEBF4nX/66D2SICYRL3519nhyjaxyTRPv01WAezwERGiVldIO2c
+ HGwCVhIT21eBdfAK2EksXn4ZzGYRUJX4NXc+K4gtKhAhcethBwtEjaDEyZlPwGxOoN5N6x8x
+ g9jMAuoSf+ZdgrLlJZq3zmaewCg4C0nLLCRls5CULWBkXsUoklpanJueW2ykV5yYW1yal66X
+ nJ+7iREYRduO/dyyg7HrXfAhRgEORiUeXoVHxTFCrIllxZW5hxglOJiVRHhvqJbGCPGmJFZW
+ pRblxxeV5qQWH2I0BXpiIrOUaHI+MMLzSuINTQ3NLSwNzY3Njc0slMR5zxtURgkJpCeWpGan
+ phakFsH0MXFwSjUw8ryf1XxsflWghhbDvSlz7my8rXt0uy3v8rMcWXnOXrX2B9b/2tp9xrRE
+ 2ueztbWGT4mg1G3p1frzQw3XxGkuTzigO7NNTadywZXtO6vvL1YPk14464tofi/jEneRjasC
+ wr8sT2c59dQ99UrLt6ui9Z+zfjwRqP38T6jp7N2a9t1tT/itDK5LK7EUZyQaajEXFScCABFz
+ oLa4AgAA
+X-CMS-MailID: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f
+References: <1550055691105-0.post@n7.nabble.com>
+ <7c695098-8b2b-5af0-c961-f25457459f8e@c-s.fr>
+ <1550060685213-0.post@n7.nabble.com>
+ <558c15bc-75d0-d02a-8a78-8155838b8809@c-s.fr>
+ <1550062386389-0.post@n7.nabble.com>
+ <173559f3-7b2b-735b-acc7-66ccbdc7905d@c-s.fr>
+ <40b6281d-3aed-bff1-79fc-09a293d37b7f@c-s.fr>
+ <CGME20190226115150eucas1p2f759d8df50102507a0ee66c4ab36003f@eucas1p2.samsung.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -152,79 +154,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
- Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
- Andy Tang <andy.tang@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
- "adrian.hunter@intel.com" <adrian.hunter@intel.com>,
- Vabhav Sharma <vabhav.sharma@nxp.com>
+Cc: linuxppc-dev@ozlabs.org, "David S. Miller" <davem@davemloft.net>,
+ Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
 
-Add clockgen support for lx2160a.
-Added entry for compat 'fsl,lx2160a-clockgen'.
+On 02/14/2019 06:54 PM, Christophe Leroy wrote:
+> 
+> 
+> Le 13/02/2019 à 16:27, Christophe Leroy a écrit :
+>>
+>>
+>> Le 13/02/2019 à 13:53, sgosavi1 a écrit :
+>>>> Why using 4.15.13 which is obsolete instead of using one of the Long
+>>>> Term Support versions which are still maintained, like 4.14 or 4.19 ?
+>>>> (see the complete list at https://www.kernel.org/category/releases.html)
+>>>
+>>> Well, when I started this task 4.15.13 was probably the latest stable
+>>> release and hence we decided to port this version. In the older kernel, we
+>>> have the m8260_setup.c source file for our board where the function
+>>> "io_block_mapping" was used to configure the non-standard IO port address
+>>> starting at 0xe0000000 location. This address was passed as the base address
+>>> followed by control address and IRQ number to the ide-core.ko module. In the
+>>> new kernel we do not have an option to send these addresses and IRQ numbers
+>>> as arguments to the driver. Instead the ide-generic.c source file in the new
+>>> kernel uses the standard IO port values and IRQ values. I modified the code
+>>> in the above file to used the addresses and IRQ number we used in the past.
+>>> Also, added code in the "MMU_init" function call available under
+>>> arch/PowerPC/init_32.c to setup the IO port address range by adding the
+>>> "io_block_mapping" call and the required IO port address range.
+>>>
+>>> Is there anything else that needs to be added or how can we configure the
+>>> desired IO address range in the new kernel?
+>>>
+>>
+>> Maybe look around https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=9a0e77f28b50128df0c9e26ae489e44e29a7270a
+>>
+>> Also look at ide_platform.c. I imagine there must be some way to set it up in your device tree.
 
-Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-Acked-by: Stephen Boyd <sboyd@kernel.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/clk/clk-qoriq.c         | 12 ++++++++++++
- drivers/cpufreq/qoriq-cpufreq.c |  1 +
- 2 files changed, 13 insertions(+)
+Please don't add new users to subsystem deprecated almost 10 years ago..
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index e75194a..288e8f0c 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] =3D {
- 		.flags =3D CG_VER3 | CG_LITTLE_ENDIAN,
- 	},
- 	{
-+		.compat =3D "fsl,lx2160a-clockgen",
-+		.cmux_groups =3D {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.cmux_to_group =3D {
-+			0, 0, 0, 0, 1, 1, 1, 1, -1
-+		},
-+		.pll_mask =3D 0x37,
-+		.flags =3D CG_VER3 | CG_LITTLE_ENDIAN,
-+	},
-+	{
- 		.compat =3D "fsl,p2041-clockgen",
- 		.guts_compat =3D "fsl,qoriq-device-config-1.0",
- 		.init_periph =3D p2041_init_periph,
-@@ -1426,6 +1437,7 @@ CLK_OF_DECLARE(qoriq_clockgen_ls1043a, "fsl,ls1043a-c=
-lockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1046a, "fsl,ls1046a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_ls1088a, "fsl,ls1088a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_ls2080a, "fsl,ls2080a-clockgen", clockgen_in=
-it);
-+CLK_OF_DECLARE(qoriq_clockgen_lx2160a, "fsl,lx2160a-clockgen", clockgen_in=
-it);
- CLK_OF_DECLARE(qoriq_clockgen_p2041, "fsl,p2041-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_p3041, "fsl,p3041-clockgen", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_p4080, "fsl,p4080-clockgen", clockgen_init);
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufre=
-q.c
-index 3d773f6..83921b7 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -295,6 +295,7 @@ static const struct of_device_id node_matches[] __initc=
-onst =3D {
- 	{ .compatible =3D "fsl,ls1046a-clockgen", },
- 	{ .compatible =3D "fsl,ls1088a-clockgen", },
- 	{ .compatible =3D "fsl,ls2080a-clockgen", },
-+	{ .compatible =3D "fsl,lx2160a-clockgen", },
- 	{ .compatible =3D "fsl,p4080-clockgen", },
- 	{ .compatible =3D "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible =3D "fsl,qoriq-clockgen-2.0", },
---=20
-2.7.4
+>> Maybe Bartlomiej Zolnierkiewicz can help ?
+>>
+>> Christophe
+> 
+> Le 14/02/2019 à 09:17, sgosavi1 a écrit :>> Maybe look around
+>>
+>> I have gone through this before and also tried the pata_platform driver but
+>> no success yet. I haven't found any example that passes the IO ports and IRQ
+>> information through the device tree to the driver code.
 
+Please look at pata_of_platform.c driver from libata subsystem,
+it should have all required functionality.
+
+>> Thanks,
+>> Sachin.
+> 
+> 
+> Maybe someone from the IDE SUBSYSTEM would be able to help better ?
+> 
+> Entire thread at http://linuxppc.10917.n7.nabble.com/Kernel-panic-when-loading-the-IDE-controller-driver-td150020.html#none
+> 
+> Christophe
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
