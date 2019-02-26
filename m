@@ -2,81 +2,91 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79D6AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:17:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01262C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:53:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE7602173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:17:44 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h3HV+ze7"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE7602173C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 468C4213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 06:53:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 468C4213A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447pWp5xlQzDqTf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 17:17:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447qK254VvzDqTh
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 17:53:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
- envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="h3HV+ze7"; 
- dkim-atps=neutral
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447pLL31PYzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 17:09:30 +1100 (AEDT)
-Received: by mail-pf1-x442.google.com with SMTP id a3so5679248pff.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Feb 2019 22:09:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=OM6DZ8FssG3VifsSQSUkcZ4QE9MKsoZni0ApGDOFvGs=;
- b=h3HV+ze7lYDLaAB61/9RbmgTnwt7a4fC90zsCssc9DKNeJ/gjinsSfVESDV8ZdM5dz
- akvoP7682Zk4iCnTky8nR3iogW7rbmp50rH+DVRN9BRuNCTAnvxocEsxyglN3HWiPgZC
- 7XLxxrPXxaQ9w0CKzLA9iiLLUrp853xi+8Jqd5FyWNXxNg2dI35eTyJf2SndHUvdD02D
- mz6RgmoTr3hQ8j+Cg6IYmTAnaMCpgXtiOZ1xRNHmEWF31DgXVmqH20JIvnQirFFiWzuk
- h2KDtoBRtrbC6YKBUMlB3F1dcJv1Kuv3OAuDbun246Ugp9fy6mM3CpTJdjnwFAPSpju2
- WqJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=OM6DZ8FssG3VifsSQSUkcZ4QE9MKsoZni0ApGDOFvGs=;
- b=Q6LJP7pnmdESZR45xTXRj1SYh5k5BrLOrBtNxtF8NMywxTORFeeSsSgj1eZP6IBW47
- lyrIHnaxf5Uz4SdcgbE6fJSBjY46iT+jVbqz+CZ79bNKZkWJUSo36HWGj/pDRbOpFKYD
- xr5cRRka9rh8AVbQpt8f6MtUc2G1K98IjlhSh6kk5ZhNpDdKBVvzhLUXlUNldhPsv/pw
- TuqDRFKK9/YYhIp/HWzcs03r76BqDhSD5istLQzftvCS/S2XmQmTlunQu/qt3EVzUL8F
- 6W0aEFwQTpykJrf/e7jSowJ7yXfPmS/He4XduWH9Ndur6m8FHLqIuPz6e2ILYYAw1AS3
- /DYQ==
-X-Gm-Message-State: AHQUAuYjc0ybgE6QguB5/twzKZaK7aQY1XGWyaqb9PTiBIV95pBGt+IN
- ug6uWp2KbAhxAkUVpNZ8zk+p5xTqqm8=
-X-Google-Smtp-Source: AHgI3IYgZzo5xwwibvueD+ZKftptfI57kY75XpH72A3lcovWH7FhCZUxm0VgWsjgR2SMiIxGrIw17A==
-X-Received: by 2002:a62:a504:: with SMTP id v4mr24824964pfm.22.1551161367844; 
- Mon, 25 Feb 2019 22:09:27 -0800 (PST)
-Received: from roar.local0.net ([125.254.1.96])
- by smtp.gmail.com with ESMTPSA id s6sm18478814pgm.90.2019.02.25.22.09.25
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Mon, 25 Feb 2019 22:09:27 -0800 (PST)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 4/4] powerpc/64s: Fix data interrupts vs d-side MCE
- reentrancy
-Date: Tue, 26 Feb 2019 16:09:01 +1000
-Message-Id: <20190226060901.18715-5-npiggin@gmail.com>
-X-Mailer: git-send-email 2.18.0
-In-Reply-To: <20190226060901.18715-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447qGp0mcZzDq8F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 17:51:22 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1Q6hajn017574
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 01:51:19 -0500
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qvy5auquf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 01:51:19 -0500
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
+ Tue, 26 Feb 2019 06:51:17 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 26 Feb 2019 06:51:15 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1Q6pE5C31195238
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 26 Feb 2019 06:51:14 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id F2917A4054;
+ Tue, 26 Feb 2019 06:51:13 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 25C46A405B;
+ Tue, 26 Feb 2019 06:51:13 +0000 (GMT)
+Received: from sathnaga86.in.ibm.com (unknown [9.193.110.210])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Tue, 26 Feb 2019 06:51:12 +0000 (GMT)
+Date: Tue, 26 Feb 2019 12:21:10 +0530
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v3 0/4] Fixes for 3 separate NMI reentrancy bugs
 References: <20190226060901.18715-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190226060901.18715-1-npiggin@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 19022606-0012-0000-0000-000002FA3749
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022606-0013-0000-0000-00002131D9F3
+Message-Id: <20190226065110.GA13164@sathnaga86.in.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-26_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902260051
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,121 +98,85 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Nicholas Piggin <npiggin@gmail.com>
+Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Handlers for interrupts that set DAR / DSISR, set MSR[RI] before those
-SPRs are read. If a d-side machine check hits in this window, DAR /
-DSISR will be clobbered silently, leading to random corruption.
+On Tue, Feb 26, 2019 at 04:08:57PM +1000, Nicholas Piggin wrote:
+> This series fixes several similar but unrelated bugs with NMIs
+> clobbering live registers without noticing it, because MSR[RI] is set.
+> Pretty rare bugs, but serious silent corruption consequences.
+> 
+> For the most part these can be observed and tested quite easily
+> with the mambo simulator, except that it does not seem to follow
+> the architecture wrt leaving MSR[RI] unchanged for HV interrupts.
+> Mambo clears MSR[RI], so you have to account for that manually.
+> 
+> Since v1:
+> - Fixed several build bugs.
+> 
+> Since v2:
+> - Improved changelog and comments.
+> - Fixed the NIA test for virt mode interrupts.
 
-Fix this by having handlers save those registers before setting MSR[RI].
+Hit with below crash on Power8 box, patch built with linuxppc merge branch with `ppc64le_defconfig`
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/exceptions-64s.S | 36 ++++++++++++++++++++--------
- 1 file changed, 26 insertions(+), 10 deletions(-)
+UnknownStateTransition: Something happened system state="8" and we transitioned to UNKNOWN state.  Review the following for more details
+Message="OpTestSystem in run_IPLing and Exception="Kernel OOPS (machine in state '5'): Oops: Kernel access of bad area, sig: 11 [#1]
+[    0.000000] LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=2048 NUMA PowerNV
+[    0.000000] Modules linked in:
+[    0.000000] CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7-gf46b87021 #1
+[    0.000000] NIP:  c000000000c1306c LR: c000000000c12f64 CTR: c00000000033d860
+[    0.000000] REGS: c0000000014878b0 TRAP: 0380   Not tainted  (5.0.0-rc7-gf46b87021)
+[    0.000000] MSR:  9000000000001033 <SF,HV,ME,IR,DR,RI,LE>  CR: 28002224  XER: 00000000
+[    0.000000] CFAR: c000000000c12f7c IRQMASK: 1 
+[    0.000000] GPR00: c000000000c12f64 c000000001487b40 c000000001488400 f000000000000000 
+[    0.000000] GPR04: c000000001487b18 c000000001487b20 0000000000000000 c000000001388400 
+[    0.000000] GPR08: f000000000000000 f000000000000008 0000000000000000 0000000800000000 
+[    0.000000] GPR12: c0000000015e1ed0 c000000001670000 0000000000000000 0000000000000000 
+[    0.000000] GPR16: 0000000000000000 0000000000000000 c0000000015e0d40 0000000000000001 
+[    0.000000] GPR20: ffffffffffffffff ffffffffffffffff 0000000008000000 c000000001413b90 
+[    0.000000] GPR24: c000000001413b98 007ffff000000000 0000000000080000 0000000000000000 
+[    0.000000] GPR28: 0000000000000000 0000000000000000 007ffff000001000 0000000000000000 
+[    0.000000] NIP [c000000000c1306c] memmap_init_zone+0x258/0x308
+[    0.000000] LR [c000000000c12f64] memmap_init_zone+0x150/0x308
+[    0.000000] Call Trace:
+[    0.000000] [c000000001487b40] [c000000000c12f64] memmap_init_zone+0x150/0x308 (unreliable)
+[    0.000000] [c000000001487be0] [c000000000f87acc] free_area_init_node+0x480/0x518
+[    0.000000] [c000000001487cf0] [c000000000f88630] free_area_init_nodes+0x838/0x940
+[    0.000000] [c000000001487e10] [c000000000f6340c] paging_init+0x8c/0xa8
+[    0.000000] [c000000001487e80] [c000000000f5bc00] setup_arch+0x3b4/0x3f0
+[    0.000000] [c000000001487ef0] [c000000000f53b68] start_kernel+0x94/0x630
+[    0.000000] [c000000001487f90] [c00000000000b37c] start_here_common+0x1c/0x520
+[    0.000000] Instruction dump:
+[    0.000000] 71290002 41820014 ebea0008 7cc6fa14 78df8402 48000070 3d22000c 7bea3664 
+[    0.000000] 39299d20 e9090000 7c685214 39230008 <fa290010> fa290018 fa290020 fa290030 
+[    0.000000] random: get_random_bytes called from print_oops_end_marker+0x40/0x80 with crng_init=0
+[    0.000000] ---[ end trace 0000000000000000 ]---
+[    0.000000] 
+[    0.000000] Kernel panic - not syncing: Attempted to kill the idle task!
+[    0.000000] Rebooting in 10 seconds" caused the system to go to UNKNOWN_BAD and the system will be stopping."
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0b8b57597837..77e9c70f1b49 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -582,12 +582,25 @@ EXC_REAL_END(data_access, 0x300, 0x80)
- 
- TRAMP_REAL_BEGIN(tramp_real_data_access)
- EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x300)
-+	/*
-+	 * DAR/DSISR must be read before setting MSR[RI], because
-+	 * a d-side MCE will clobber those registers so is not
-+	 * recoverable if they are live.
-+	 */
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r11,SPRN_DSISR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
-+	stw	r11,PACA_EXGEN+EX_DSISR(r13)
- EXCEPTION_PROLOG_2(data_access_common, EXC_STD)
- 
- EXC_VIRT_BEGIN(data_access, 0x4300, 0x80)
- SET_SCRATCH0(r13)		/* save r13 */
- EXCEPTION_PROLOG_0(PACA_EXGEN)
- EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x300)
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r11,SPRN_DSISR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
-+	stw	r11,PACA_EXGEN+EX_DSISR(r13)
- EXCEPTION_PROLOG_2_RELON(data_access_common, EXC_STD)
- EXC_VIRT_END(data_access, 0x4300, 0x80)
- 
-@@ -598,11 +611,8 @@ EXC_COMMON_BEGIN(data_access_common)
- 	 * Here r13 points to the paca, r9 contains the saved CR,
- 	 * SRR0 and SRR1 are saved in r11 and r12,
- 	 * r9 - r13 are saved in paca->exgen.
-+	 * EX_DAR and EX_DSISR have saved DAR/DSISR
- 	 */
--	mfspr	r10,SPRN_DAR
--	std	r10,PACA_EXGEN+EX_DAR(r13)
--	mfspr	r10,SPRN_DSISR
--	stw	r10,PACA_EXGEN+EX_DSISR(r13)
- 	EXCEPTION_PROLOG_COMMON(0x300, PACA_EXGEN)
- 	RECONCILE_IRQ_STATE(r10, r11)
- 	ld	r12,_MSR(r1)
-@@ -626,20 +636,22 @@ EXC_REAL_END(data_access_slb, 0x380, 0x80)
- 
- TRAMP_REAL_BEGIN(tramp_real_data_access_slb)
- EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x380)
-+	mfspr	r10,SPRN_DAR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
- EXCEPTION_PROLOG_2(data_access_slb_common, EXC_STD)
- 
- EXC_VIRT_BEGIN(data_access_slb, 0x4380, 0x80)
- SET_SCRATCH0(r13)		/* save r13 */
- EXCEPTION_PROLOG_0(PACA_EXSLB)
- EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
-+	mfspr	r10,SPRN_DAR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
- EXCEPTION_PROLOG_2_RELON(data_access_slb_common, EXC_STD)
- EXC_VIRT_END(data_access_slb, 0x4380, 0x80)
- 
- TRAMP_KVM_SKIP(PACA_EXSLB, 0x380)
- 
- EXC_COMMON_BEGIN(data_access_slb_common)
--	mfspr	r10,SPRN_DAR
--	std	r10,PACA_EXSLB+EX_DAR(r13)
- 	EXCEPTION_PROLOG_COMMON(0x380, PACA_EXSLB)
- 	ld	r4,PACA_EXSLB+EX_DAR(r13)
- 	std	r4,_DAR(r1)
-@@ -739,6 +751,10 @@ EXC_REAL_BEGIN(alignment, 0x600, 0x100)
- SET_SCRATCH0(r13)		/* save r13 */
- EXCEPTION_PROLOG_0(PACA_EXGEN)
- EXCEPTION_PROLOG_1(PACA_EXGEN, KVMTEST_PR, 0x600)
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r11,SPRN_DSISR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
-+	stw	r11,PACA_EXGEN+EX_DSISR(r13)
- EXCEPTION_PROLOG_2(alignment_common, EXC_STD)
- EXC_REAL_END(alignment, 0x600, 0x100)
- 
-@@ -746,15 +762,15 @@ EXC_VIRT_BEGIN(alignment, 0x4600, 0x100)
- SET_SCRATCH0(r13)		/* save r13 */
- EXCEPTION_PROLOG_0(PACA_EXGEN)
- EXCEPTION_PROLOG_1(PACA_EXGEN, NOTEST, 0x600)
-+	mfspr	r10,SPRN_DAR
-+	mfspr	r11,SPRN_DSISR
-+	std	r10,PACA_EXGEN+EX_DAR(r13)
-+	stw	r11,PACA_EXGEN+EX_DSISR(r13)
- EXCEPTION_PROLOG_2_RELON(alignment_common, EXC_STD)
- EXC_VIRT_END(alignment, 0x4600, 0x100)
- 
- TRAMP_KVM(PACA_EXGEN, 0x600)
- EXC_COMMON_BEGIN(alignment_common)
--	mfspr	r10,SPRN_DAR
--	std	r10,PACA_EXGEN+EX_DAR(r13)
--	mfspr	r10,SPRN_DSISR
--	stw	r10,PACA_EXGEN+EX_DSISR(r13)
- 	EXCEPTION_PROLOG_COMMON(0x600, PACA_EXGEN)
- 	ld	r3,PACA_EXGEN+EX_DAR(r13)
- 	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
--- 
-2.18.0
+Regards,
+-Satheesh.
+> 
+> Nicholas Piggin (4):
+>   powerpc/64s: Fix HV NMI vs HV interrupt recoverability test
+>   powerpc/64s: system reset interrupt preserve HSRRs
+>   powerpc/64s: Prepare to handle data interrupts vs d-side MCE
+>     reentrancy
+>   powerpc/64s: Fix data interrupts vs d-side MCE reentrancy
+> 
+>  arch/powerpc/include/asm/asm-prototypes.h |  8 ++
+>  arch/powerpc/include/asm/nmi.h            |  2 +
+>  arch/powerpc/kernel/exceptions-64s.S      | 92 +++++++++++++++++++----
+>  arch/powerpc/kernel/mce.c                 |  3 +
+>  arch/powerpc/kernel/traps.c               | 91 +++++++++++++++++++++-
+>  5 files changed, 179 insertions(+), 17 deletions(-)
+> 
+> -- 
+> 2.18.0
+> 
 
