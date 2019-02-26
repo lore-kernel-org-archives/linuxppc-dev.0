@@ -2,90 +2,61 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA805C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:18:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A362C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:35:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 430B9213A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:18:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 430B9213A2
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9F2DB2173C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:35:47 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9F2DB2173C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447sCH63bBzDqV2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 19:18:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447sb54qnlzDqSD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 19:35:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
+ (client-ip=63.217.80.70; helo=mxhk.zte.com.cn;
+ envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=zte.com.cn
+X-Greylist: delayed 952 seconds by postgrey-1.36 at bilbo;
+ Tue, 26 Feb 2019 19:33:54 AEDT
+Received: from mxhk.zte.com.cn (mxhk.zte.com.cn [63.217.80.70])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447s9G2200zDqNQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 19:16:49 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1Q8EJtW131789
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 03:16:46 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qw1q9gaea-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 03:16:46 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
- Tue, 26 Feb 2019 08:16:44 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Tue, 26 Feb 2019 08:16:41 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1Q8GenR55181348
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Tue, 26 Feb 2019 08:16:40 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5EA1C42045;
- Tue, 26 Feb 2019 08:16:40 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BA1BA42041;
- Tue, 26 Feb 2019 08:16:39 +0000 (GMT)
-Received: from rapoport-lnx (unknown [9.148.8.84])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Tue, 26 Feb 2019 08:16:39 +0000 (GMT)
-Date: Tue, 26 Feb 2019 10:16:38 +0200
-From: Mike Rapoport <rppt@linux.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the akpm tree
-References: <20190226183915.053f5993@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190226183915.053f5993@canb.auug.org.au>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-TM-AS-GCONF: 00
-x-cbid: 19022608-0016-0000-0000-0000025AF948
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022608-0017-0000-0000-000032B55A18
-Message-Id: <20190226081637.GB11981@rapoport-lnx>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-26_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902260063
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447sXy0ypBzDqNd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 19:33:52 +1100 (AEDT)
+Received: from mse01.zte.com.cn (unknown [10.30.3.20])
+ by Forcepoint Email with ESMTPS id E1C9FE0726FE0D116BE0;
+ Tue, 26 Feb 2019 16:17:58 +0800 (CST)
+Received: from notes_smtp.zte.com.cn ([10.30.1.239])
+ by mse01.zte.com.cn with ESMTP id x1Q8Hp1Y018889;
+ Tue, 26 Feb 2019 16:17:51 +0800 (GMT-8)
+ (envelope-from wen.yang99@zte.com.cn)
+Received: from fox-host8.localdomain ([10.74.120.8])
+ by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
+ with ESMTP id 2019022616180546-1860813 ;
+ Tue, 26 Feb 2019 16:18:05 +0800 
+From: Wen Yang <wen.yang99@zte.com.cn>
+To: lgirdwood@gmail.com
+Subject: [PATCH 2/3] ASoC: fsl_utils: fix a leaked reference by adding missing
+ of_node_put
+Date: Tue, 26 Feb 2019 16:17:50 +0800
+Message-Id: <1551169071-11639-2-git-send-email-wen.yang99@zte.com.cn>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1551169071-11639-1-git-send-email-wen.yang99@zte.com.cn>
+References: <1551169071-11639-1-git-send-email-wen.yang99@zte.com.cn>
+X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
+ 8.5.3FP6|November 21, 2013) at 2019-02-26 16:18:05,
+ Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
+ 2019-02-26 16:17:47, Serialize complete at 2019-02-26 16:17:47
+X-MAIL: mse01.zte.com.cn x1Q8Hp1Y018889
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,51 +68,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Next Mailing List <linux-next@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: wang.yi59@zte.com.cn, alsa-devel@alsa-project.org, timur@kernel.org,
+ Xiubo.Lee@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, tiwai@suse.com, nicoleotsuka@gmail.com,
+ broonie@kernel.org, perex@perex.cz, festevam@gmail.com,
+ Wen Yang <wen.yang99@zte.com.cn>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Feb 26, 2019 at 06:39:15PM +1100, Stephen Rothwell wrote:
-> Hi Andrew,
-> 
-> After merging the akpm tree, today's linux-next build (powerpc
-> allnoconfig) failed like this:
-> 
-> /home/sfr/next/next/arch/powerpc/kernel/setup_32.c:176:21: error: redefinition of 'alloc_stack'
->  static void *__init alloc_stack(void)
->                      ^~~~~~~~~~~
-> /home/sfr/next/next/arch/powerpc/kernel/setup_32.c:165:21: note: previous definition of 'alloc_stack' was here
->  static void *__init alloc_stack(void)
->                      ^~~~~~~~~~~
-> 
-> Caused by patch
-> 
->   "powerpc: use memblock functions returning virtual address"
-> 
-> from the akpm tree interacting with commit
-> 
->   c8e409a33cf8 ("powerpc/irq: use memblock functions returning virtual address")
-> 
-> from the powerpc tree.
-> 
-> Both patches added the alloc_stack() function and git resolved it by
-> adding both. :-(  I have added a patch to remove one of them.
+The call to of_parse_phandle returns a node pointer with refcount
+incremented thus it must be explicitly decremented after the last
+usage.
 
-Yeah, me too :)
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/fsl_utils.c:74:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 38, but without a corresponding     object release within this function.
 
-https://lore.kernel.org/linux-mm/20190226064032.GA5873@rapoport-lnx/
- 
-Stephen, sorry, should have cc'ed you
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ sound/soc/fsl/fsl_utils.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-> -- 
-> Cheers,
-> Stephen Rothwell
-
+diff --git a/sound/soc/fsl/fsl_utils.c b/sound/soc/fsl/fsl_utils.c
+index 9981668..040d06b 100644
+--- a/sound/soc/fsl/fsl_utils.c
++++ b/sound/soc/fsl/fsl_utils.c
+@@ -71,6 +71,7 @@ int fsl_asoc_get_dma_channel(struct device_node *ssi_np,
+ 	iprop = of_get_property(dma_np, "cell-index", NULL);
+ 	if (!iprop) {
+ 		of_node_put(dma_np);
++		of_node_put(dma_channel_np);
+ 		return -EINVAL;
+ 	}
+ 	*dma_id = be32_to_cpup(iprop);
 -- 
-Sincerely yours,
-Mike.
+2.9.5
 
