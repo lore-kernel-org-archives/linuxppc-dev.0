@@ -2,84 +2,86 @@ Return-Path: <SRS0=JJ8i=RB=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D9D4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 07:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3ECBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:14:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9EACF2173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 07:43:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Mf9scPfn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9EACF2173C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id E3014213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 08:14:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3014213A2
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 447rQZ4gckzDqTb
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 18:43:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 447s6F48yvzDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Feb 2019 19:14:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=rppt@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Mf9scPfn"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 447rNq5ZPwzDqP0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 18:41:46 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 447rNh1F9pz9v4sW;
- Tue, 26 Feb 2019 08:41:40 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Mf9scPfn; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Cd1Gi_BCb91v; Tue, 26 Feb 2019 08:41:40 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 447rNg73TSz9v4sS;
- Tue, 26 Feb 2019 08:41:39 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551166900; bh=WGRK7XUOculPeJLrz4JzavGSjbEwTXAS4iVpUNRRB/k=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=Mf9scPfnJq09iY94lCFQ4KLoJsu5oZjihynYNCNo0d4O0zHKSHG2imdiP1aNhn1iT
- Ifj4GwyDtCF9LCXiD7brdSw9C+UzOdMC6wKC3+TeaD8qCDiHLMAbbKB/VZYammHSMJ
- odpD4WN1Bx8dRVCx8EjBema8ZUAKvwA40SLmBCFE=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id DBBD08B90F;
- Tue, 26 Feb 2019 08:41:40 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 3gTK6PjDqmLx; Tue, 26 Feb 2019 08:41:40 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id BEEB88B794;
- Tue, 26 Feb 2019 08:41:39 +0100 (CET)
-Subject: Re: [PATCH 1/5] mm/resource: return real error codes from walk
- failures
-To: Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org
-References: <20190225185727.BCBD768C@viggo.jf.intel.com>
- <20190225185730.D8AA7812@viggo.jf.intel.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <87f914ce-c9e8-7fc5-d048-702fa809013f@c-s.fr>
-Date: Tue, 26 Feb 2019 08:41:39 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 447s4M6hfFzDqNL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 19:12:35 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1Q84igd100953
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 03:12:31 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qvykq6nu9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 03:12:31 -0500
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.ibm.com>;
+ Tue, 26 Feb 2019 08:12:29 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Tue, 26 Feb 2019 08:12:27 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1Q8CQFD34013274
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Tue, 26 Feb 2019 08:12:27 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DE19C52052;
+ Tue, 26 Feb 2019 08:12:26 +0000 (GMT)
+Received: from rapoport-lnx (unknown [9.148.8.84])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTPS id 7855052050;
+ Tue, 26 Feb 2019 08:12:26 +0000 (GMT)
+Date: Tue, 26 Feb 2019 10:12:24 +0200
+From: Mike Rapoport <rppt@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: build failure of current mmotm with skiroot_defconfig
 MIME-Version: 1.0
-In-Reply-To: <20190225185730.D8AA7812@viggo.jf.intel.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.24 (2015-08-30)
+X-TM-AS-GCONF: 00
+x-cbid: 19022608-0028-0000-0000-0000034D183F
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022608-0029-0000-0000-0000240B6A2A
+Message-Id: <20190226081224.GA11981@rapoport-lnx>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-26_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=704 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902260062
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,111 +93,36 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: thomas.lendacky@amd.com, mhocko@suse.com, dave.jiang@intel.com,
- linux-nvdimm@lists.01.org, tiwai@suse.de, vishal.l.verma@intel.com,
- ying.huang@intel.com, keith.busch@intel.com, linux-mm@kvack.org,
- jglisse@redhat.com, fengguang.wu@intel.com, paulus@samba.org,
- baiyaowei@cmss.chinamobile.com, zwisler@kernel.org, bhelgaas@google.com,
- dan.j.williams@intel.com, bp@suse.de, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi,
+
+I've encountered the following error when building skyroot_defconfig with
+current mmotm tree:
+
+make CONFIG_OF_ALL_DTBS=y CONFIG_DTC=y CROSS_COMPILE=/opt/gcc-8.1.0-nolibc/powerpc64-linux/bin/powerpc64-linux- ARCH=powerpc vmlinux
+  ...
+  CC      arch/powerpc/kernel/dbell.o
+In file included from arch/powerpc/kernel/dbell.c:20:
+arch/powerpc/include/asm/kvm_ppc.h: In function 'xics_on_xive':
+arch/powerpc/include/asm/kvm_ppc.h:625:9: error: implicit declaration of function 'xive_enabled'; did you mean 'eeh_enabled'? [-Werror=implicit-function-declaration]
+  return xive_enabled() && cpu_has_feature(CPU_FTR_HVMODE);
+         ^~~~~~~~~~~~
+         eeh_enabled
+cc1: all warnings being treated as errors
+scripts/Makefile.build:278: recipe for target 'arch/powerpc/kernel/dbell.o' failed
+make[3]: *** [arch/powerpc/kernel/dbell.o] Error 1
+scripts/Makefile.build:493: recipe for target 'arch/powerpc/kernel' failed
+make[2]: *** [arch/powerpc/kernel] Error 2
+Makefile:1049: recipe for target 'arch/powerpc' failed
+make[1]: *** [arch/powerpc] Error 2
 
 
-Le 25/02/2019 à 19:57, Dave Hansen a écrit :
-> From: Dave Hansen <dave.hansen@linux.intel.com>
-> 
-> walk_system_ram_range() can return an error code either becuase
-> *it* failed, or because the 'func' that it calls returned an
-> error.  The memory hotplug does the following:
-> 
-> 	ret = walk_system_ram_range(..., func);
->          if (ret)
-> 		return ret;
-> 
-> and 'ret' makes it out to userspace, eventually.  The problem
-> s, walk_system_ram_range() failues that result from *it* failing
-> (as opposed to 'func') return -1.  That leads to a very odd
-> -EPERM (-1) return code out to userspace.
-> 
-> Make walk_system_ram_range() return -EINVAL for internal
-> failures to keep userspace less confused.
-> 
-> This return code is compatible with all the callers that I
-> audited.
-> 
-> This changes both the generic mm/ and powerpc-specific
-> implementations to have the same return value.
-> 
-> Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: Dave Jiang <dave.jiang@intel.com>
-> Cc: Ross Zwisler <zwisler@kernel.org>
-> Cc: Vishal Verma <vishal.l.verma@intel.com>
-> Cc: Tom Lendacky <thomas.lendacky@amd.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: linux-nvdimm@lists.01.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> Cc: Huang Ying <ying.huang@intel.com>
-> Cc: Fengguang Wu <fengguang.wu@intel.com>
-> Cc: Borislav Petkov <bp@suse.de>
-> Cc: Yaowei Bai <baiyaowei@cmss.chinamobile.com>
-> Cc: Takashi Iwai <tiwai@suse.de>
-> Cc: Jerome Glisse <jglisse@redhat.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Keith Busch <keith.busch@intel.com>
-> ---
-> 
->   b/arch/powerpc/mm/mem.c |    2 +-
+-- 
+Sincerely yours,
+Mike.
 
-walk_system_ram_range() was droped in commit 
-https://git.kernel.orghttps://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=26b523356f49a0117c8f9e32ca98aa6d6e496e1a
-
-Christophe
-
->   b/kernel/resource.c     |    4 ++--
->   2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff -puN arch/powerpc/mm/mem.c~memory-hotplug-walk_system_ram_range-returns-neg-1 arch/powerpc/mm/mem.c
-> --- a/arch/powerpc/mm/mem.c~memory-hotplug-walk_system_ram_range-returns-neg-1	2019-02-25 10:56:47.452908034 -0800
-> +++ b/arch/powerpc/mm/mem.c	2019-02-25 10:56:47.458908034 -0800
-> @@ -189,7 +189,7 @@ walk_system_ram_range(unsigned long star
->   	struct memblock_region *reg;
->   	unsigned long end_pfn = start_pfn + nr_pages;
->   	unsigned long tstart, tend;
-> -	int ret = -1;
-> +	int ret = -EINVAL;
->   
->   	for_each_memblock(memory, reg) {
->   		tstart = max(start_pfn, memblock_region_memory_base_pfn(reg));
-> diff -puN kernel/resource.c~memory-hotplug-walk_system_ram_range-returns-neg-1 kernel/resource.c
-> --- a/kernel/resource.c~memory-hotplug-walk_system_ram_range-returns-neg-1	2019-02-25 10:56:47.454908034 -0800
-> +++ b/kernel/resource.c	2019-02-25 10:56:47.459908034 -0800
-> @@ -382,7 +382,7 @@ static int __walk_iomem_res_desc(resourc
->   				 int (*func)(struct resource *, void *))
->   {
->   	struct resource res;
-> -	int ret = -1;
-> +	int ret = -EINVAL;
->   
->   	while (start < end &&
->   	       !find_next_iomem_res(start, end, flags, desc, first_lvl, &res)) {
-> @@ -462,7 +462,7 @@ int walk_system_ram_range(unsigned long
->   	unsigned long flags;
->   	struct resource res;
->   	unsigned long pfn, end_pfn;
-> -	int ret = -1;
-> +	int ret = -EINVAL;
->   
->   	start = (u64) start_pfn << PAGE_SHIFT;
->   	end = ((u64)(start_pfn + nr_pages) << PAGE_SHIFT) - 1;
-> _
-> 
