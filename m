@@ -2,83 +2,63 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89D26C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:55:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE0F0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 11:15:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 06236205F4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:55:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 58FDF20851
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 11:15:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mPS840HF"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 06236205F4
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=ozlabs.org header.i=@ozlabs.org header.b="nWq+ca+m"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58FDF20851
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448WK24qpgzDqJY
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 20:55:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=himadri18.07@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="mPS840HF"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 448Y4z4XX5zDqLW
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 22:15:31 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448WF32Zc7zDqJN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 20:52:23 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id q206so7710858pgq.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 01:52:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references;
- bh=Mq05DlQWgAAhQB0YKmFCrwjAzMG8GDqjEen6K7LMNG4=;
- b=mPS840HFZvcmCeDdfoju/6I9b7pJtgtiMo5dyXLARuWBH6WVNZEwO6bMp454OCzcq4
- 0wXk/UM4CqIJExR9maAULeuq22jRM8k2CsAjnPJh8/VDUKctVxTzKFfeKrU9cIRL0SWu
- Cb/9CNgZ79fvTcyO/H61PYoRAtwI6M/eS5zKpBrYBhwCWOwtjBG8DC7s/PS3zLhEinMr
- 5ovkgnA7J1K403S8cDjYLXXILB2EKNufE4MS72BPqyEHzT6OkFkJ3/DCZqbgk9I5i+rG
- +CGKlbF9etoWVHr/KMHx9SL9VwHOpOD5GOukUPxobV8f0aAOp6bTd3TtvZ8A1oZU+wQf
- dciA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references;
- bh=Mq05DlQWgAAhQB0YKmFCrwjAzMG8GDqjEen6K7LMNG4=;
- b=o6YmWK7jH0k/AsAqpLtCPx2MbKWTqMwuq93aeixIArApjPOLqromlDoWidJIpp7RFS
- pAKvCRixOG/zuZob360/v8CgGfvco2yYWRMlso92Fq0lq6K7IXa9hq1fuxxL+hHlOgt+
- eUAIKdPspQhoZchWQoGybDFTQ5dpWMTDg2oG/nzAivcU1vBygnQh8kZJDNc49NJvzqkq
- y3Kv4v73L9I22YfFrLTqetP+q5wYdDcPHhY0V5lBhxCv4oYrCZdBjjT0qVn15wKDZiO9
- yCvTFZjTT0poeguVHWwmprZcnfROpRa2c3G1NmDvcxPwhPaedw6HC1G7nObgwCa/oM84
- /6fg==
-X-Gm-Message-State: AHQUAuYTZ71G+s6i/AsIpn+QL/SFYKum+36d93lAtaSY7H+BF2gzp3oz
- +CleDqKkIdBeaH7FWbl6OReBcI6WmAE=
-X-Google-Smtp-Source: AHgI3IaI8vrHMjPrjSEpWKz8qMzMfg2MJpXCIiIjbHdMsMFMLHrEhF66Jcewcfd8CbWUYsr95EJWOA==
-X-Received: by 2002:a62:e11a:: with SMTP id q26mr737694pfh.187.1551261140730; 
- Wed, 27 Feb 2019 01:52:20 -0800 (PST)
-Received: from localhost.localdomain ([157.32.131.196])
- by smtp.googlemail.com with ESMTPSA id m24sm15797303pgv.1.2019.02.27.01.52.17
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 27 Feb 2019 01:52:20 -0800 (PST)
-From: Himadri Pandya <himadri18.07@gmail.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- tyreld@linux.vnet.ibm.com
-Subject: [PATCH v3 2/2] arch: powerpc/hlwd-pic: Add missing of_node-put() in
- hlwd_pic_probe()
-Date: Wed, 27 Feb 2019 15:21:38 +0530
-Message-Id: <20190227095138.30263-2-himadri18.07@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190227095138.30263-1-himadri18.07@gmail.com>
-References: <20190225090056.19055-1-himadri18.07@gmail.com>
- <20190227095138.30263-1-himadri18.07@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448Y2P0GV5zDqDf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 22:13:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ secure) header.d=ozlabs.org header.i=@ozlabs.org header.b="nWq+ca+m"; 
+ dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1003)
+ id 448Y2N4J3dz9s71; Wed, 27 Feb 2019 22:13:16 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ozlabs.org; s=201707;
+ t=1551265996; bh=jC/ODDt77XgUnmv0+h3hiUubSfcCmoBo8QmKQJwqsok=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=nWq+ca+mbpeFjXVrXumC6EldBhN2z+LaOsdTJXC0bmnFM/lxLGguPkMdivansPokh
+ /7UQhOmzH6+bv1zTRw15OcLEk5w34TdrMwGrvaQN+QLeSsoQrU3f8ZvVjOaZVBA5ss
+ +egNGRAndC0ZQMxXhH8uW7QF7fFSx0l6gULTBExikrqghK50dnGpPgz5wOO6Wr0Ihc
+ fSox5YjE+77M1UcZsNGFtHMYKUUUt9kadBb+hiW4VTfJBtHwOqfxFPM2YNiIpJvMuU
+ S80rlikwBjYJIJn6/cEW8hQyLGQx1GbTsRY6JGR8RN1GOQik5dQzX3NUO74Ys+PbvV
+ nUVeLjjian3cA==
+Date: Wed, 27 Feb 2019 22:13:14 +1100
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: build failure of current mmotm with skiroot_defconfig
+Message-ID: <20190227111314.GA15195@blackberry>
+References: <20190226081224.GA11981@rapoport-lnx>
+ <3844e8ab-ed20-c202-2e65-6179631b7d91@c-s.fr>
+ <20190226095908.GD11981@rapoport-lnx>
+ <20190226222408.GE28015@blackberry>
+ <fea8a5ef-2c90-8222-fc80-3ae77a2fd473@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <fea8a5ef-2c90-8222-fc80-3ae77a2fd473@c-s.fr>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,46 +70,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Himadri Pandya <himadri18.07@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Mike Rapoport <rppt@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Decrement the reference count on device_node "np" while breaking out of
-the loop. Issue identified by Coccinelle.
+On Wed, Feb 27, 2019 at 07:41:21AM +0100, Christophe Leroy wrote:
+> 
+> 
+> Le 26/02/2019 à 23:24, Paul Mackerras a écrit :
+> >On Tue, Feb 26, 2019 at 11:59:08AM +0200, Mike Rapoport wrote:
+> >>On Tue, Feb 26, 2019 at 10:39:54AM +0100, Christophe Leroy wrote:
+> >>>
+> >>>
+> >>>Le 26/02/2019 à 09:12, Mike Rapoport a écrit :
+> >>>>Hi,
+> >>>>
+> >>>>I've encountered the following error when building skyroot_defconfig with
+> >>>>current mmotm tree:
+> >>>>
+> >>>>make CONFIG_OF_ALL_DTBS=y CONFIG_DTC=y CROSS_COMPILE=/opt/gcc-8.1.0-nolibc/powerpc64-linux/bin/powerpc64-linux- ARCH=powerpc vmlinux
+> >>>>   ...
+> >>>>   CC      arch/powerpc/kernel/dbell.o
+> >>>>In file included from arch/powerpc/kernel/dbell.c:20:
+> >>>>arch/powerpc/include/asm/kvm_ppc.h: In function 'xics_on_xive':
+> >>>>arch/powerpc/include/asm/kvm_ppc.h:625:9: error: implicit declaration of function 'xive_enabled'; did you mean 'eeh_enabled'? [-Werror=implicit-function-declaration]
+> >>>>   return xive_enabled() && cpu_has_feature(CPU_FTR_HVMODE);
+> >>>>          ^~~~~~~~~~~~
+> >>>>          eeh_enabled
+> >>>
+> >>>I can neither find the above in arch/powerpc/include/asm/kvm_ppc.h in the
+> >>>powerpc tree, nor a patch removing it.
+> >>>
+> >>>Where does that comes from ?
+> >>
+> >>It's from current mmotm, probably some merge conflict...
+> >
+> >It's not a merge conflict; see http://patchwork.ozlabs.org/patch/1048584/
+> >for the fix.
+> >
+> 
+> Why not include asm/xive.h all the time, as it defines xive_enabled() for
+> when CONFIG_PPC_XIVE is set and for when it is not set ?
 
-Signed-off-by: Himadri Pandya <himadri18.07@gmail.com>
----
-Changes in V2:
-	- Change subject line
----
-Changes in V3:
-	- Do not remove the blank line at end of the file
----
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+I wasn't sure it wouldn't break the build for 32-bit configs.
 
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index 8112b39879d6..df098989e373 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -220,6 +220,7 @@ void hlwd_pic_probe(void)
- 			irq_set_chained_handler(cascade_virq,
- 						hlwd_pic_irq_cascade);
- 			hlwd_irq_host = host;
-+			of_node_put(np);
- 			break;
- 		}
- 	}
-@@ -232,7 +233,7 @@ void hlwd_pic_probe(void)
-  *
-  */
- void hlwd_quiesce(void)
--{
-+{i
- 	void __iomem *io_base = hlwd_irq_host->host_data;
- 
- 	__hlwd_quiesce(io_base);
--- 
-2.17.1
-
+Paul.
