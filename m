@@ -2,66 +2,98 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEEB0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:39:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0194AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:50:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 22BEF213A2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:39:47 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 22BEF213A2
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7CCC420863
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:50:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7CCC420863
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448dcc2WqfzDqJs
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 01:39:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448drV0p2fzDqN6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 01:50:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.173; helo=1.mo69.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 2290 seconds by postgrey-1.36 at bilbo;
- Thu, 28 Feb 2019 01:37:39 AEDT
-Received: from 1.mo69.mail-out.ovh.net (1.mo69.mail-out.ovh.net
- [178.33.251.173])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448dZC3ZyxzDqJc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 01:37:36 +1100 (AEDT)
-Received: from player168.ha.ovh.net (unknown [10.109.146.168])
- by mo69.mail-out.ovh.net (Postfix) with ESMTP id 29D9C45796
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 14:59:21 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player168.ha.ovh.net (Postfix) with ESMTPSA id 6D27030E2BBE;
- Wed, 27 Feb 2019 13:59:12 +0000 (UTC)
-Date: Wed, 27 Feb 2019 14:59:11 +0100
-From: Greg Kurz <groug@kaod.org>
-To: Frederic Barrat <fbarrat@linux.ibm.com>
-Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
-Message-ID: <20190227145911.60859bbb@bahia.lan>
-In-Reply-To: <13209edc-d027-4d2f-668b-ad969a25eb06@linux.ibm.com>
-References: <20190227045741.21412-1-alastair@au1.ibm.com>
- <20190227045741.21412-2-alastair@au1.ibm.com>
- <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
- <156e01d4ce6e$ee42d9f0$cac88dd0$@d-silva.org>
- <a36b088b-b8d7-8725-50db-6aad58672784@au1.ibm.com>
- <158101d4ce73$11ff4550$35fdcff0$@d-silva.org>
- <97ad5218-4876-956e-e6ef-fb3449eca68e@au1.ibm.com>
- <13209edc-d027-4d2f-668b-ad969a25eb06@linux.ibm.com>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448dpg1p77zDqJg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 01:48:27 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1RElwDE011535
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 09:48:24 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qwuwjjnpn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 09:48:23 -0500
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 27 Feb 2019 14:48:18 -0000
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 27 Feb 2019 14:48:14 -0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1REmDtL17629292
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 27 Feb 2019 14:48:13 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8FFB6C6059;
+ Wed, 27 Feb 2019 14:48:13 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 45A5DC6055;
+ Wed, 27 Feb 2019 14:48:10 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.199.49.135])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Feb 2019 14:48:09 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
+Subject: [PATCH v8 4/4] powerpc/mm/iommu: Allow large IOMMU page size only for
+ hugetlb backing
+Date: Wed, 27 Feb 2019 20:17:36 +0530
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
+References: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Ovh-Tracer-Id: 10932488099000326501
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrvddugdehlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19022714-8235-0000-0000-00000E661291
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010674; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01167143; UDB=6.00609716; IPR=6.00947753; 
+ MB=3.00025765; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-27 14:48:17
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022714-8236-0000-0000-0000449E73C8
+Message-Id: <20190227144736.5872-5-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-27_10:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902270100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,101 +105,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: 'Alastair D'Silva' <alastair@au1.ibm.com>, 'Arnd
- Bergmann' <arnd@arndb.de>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Alastair D'Silva <alastair@d-silva.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 27 Feb 2019 14:45:44 +0100
-Frederic Barrat <fbarrat@linux.ibm.com> wrote:
+THP pages can get split during different code paths. An incremented reference
+count does imply we will not split the compound page. But the pmd entry can be
+converted to level 4 pte entries. Keep the code simpler by allowing large
+IOMMU page size only if the guest ram is backed by hugetlb pages.
 
-> Le 27/02/2019 =C3=A0 09:18, Andrew Donnellan a =C3=A9crit=C2=A0:
-> > On 27/2/19 7:04 pm, Alastair D'Silva wrote: =20
-> >>> -----Original Message-----
-> >>> From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> >>> Sent: Wednesday, 27 February 2019 6:55 PM
-> >>> To: Alastair D'Silva <alastair@d-silva.org>; 'Alastair D'Silva'
-> >>> <alastair@au1.ibm.com>
-> >>> Cc: 'Greg Kurz' <groug@kaod.org>; 'Frederic Barrat'
-> >>> <fbarrat@linux.ibm.com>; 'Arnd Bergmann' <arnd@arndb.de>; 'Greg Kroah-
-> >>> Hartman' <gregkh@linuxfoundation.org>; linuxppc-dev@lists.ozlabs.org;
-> >>> linux-kernel@vger.kernel.org
-> >>> Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
-> >>>
-> >>> On 27/2/19 6:34 pm, Alastair D'Silva wrote:>>> diff --git
-> >>> a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c index =20
-> >>>>>> e6a607488f8a..16eb8a60d5c7 100644
-> >>>>>> --- a/drivers/misc/ocxl/file.c
-> >>>>>> +++ b/drivers/misc/ocxl/file.c
-> >>>>>> @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct
-> >>>>>> ocxl_context *ctx,
-> >>>>>>
-> >>>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
- if (status =3D=3D ATTACHED) {
-> >>>>>> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0 int rc;
-> >>>>>> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 struct link *link =3D ctx->afu->fn->link;
-> >>>>>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0 void *link =3D ctx->afu->fn->link; =20
-> >>>>>
-> >>>>> This doesn't look like a rename... =20
-> >>>>
-> >>>> That corrects the type to what the member (and prototype for =20
-> >>> ocxl_link_update_pe) declare it as. =20
-> >>>>
-> >>>> The struct link there is bogus, it shouldn't even compile (since the=
-=20
-> >>>> intended =20
-> >>> struct link is defined in a different compilation unit), but instead=
-=20
-> >>> picks up a
-> >>> different definition of 'struct link' from elsewhere. =20
-> >>>> =20
-> >>>
-> >>> Given there's only a handful of struct links defined across the=20
-> >>> entire kernel,
-> >>> I'm going to guess that the definition it's picking up is in fact the=
-=20
-> >>> ocxl one.
-> >>> =20
-> >>
-> >> Unlikely, since that's never in a header. It wasn't caught since it=20
-> >> was assigned to/from a void*. =20
-> >=20
-> > Ah, yeah that'd explain it... and it's a pointer so it never needs to=20
-> > know its size. I'm clearly not very good at C.
-> >  =20
-> >> =20
-> >>> I think the better solution here is to move struct ocxl_link into
-> >>> ocxl_internal.h, change ocxl_fn::link to be struct ocxl_link * rather=
-=20
-> >>> than void
-> >>> *, and update the function signature for ocxl_link_update_pe() as wel=
-l. =20
-> >> Not move it, but we could have an opaque declaration there.
-> >> =20
-> >=20
-> > Putting it there would fit with all the other ocxl_* structs, but eithe=
-r=20
-> > way, we definitely need a declaration in there and get rid of the void*=
-, t =20
->=20
->=20
-> Mmm, it might turn out to be more invasive that planned...
-> The point was only to have it as an opaque to the outside world, for=20
-> APIs we'd like to deprecate at some point, so I wouldn't sweat too much=20
-> over it.
->=20
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/mmu_context_iommu.c | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
 
-I concur. And even if an API change turns out to be beneficial, it
-clearly belongs to some other patch/series. Hence my proposal to
-simply drop that controversial and unneeded link variable in
-afu_ioctl_enable_p9_wait().
-
->    Fred
->=20
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index 85b4e9f5c615..e7a9c4f6bfca 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -98,8 +98,6 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	long i, ret, locked_entries = 0;
+ 	unsigned int pageshift;
+-	unsigned long flags;
+-	unsigned long cur_ua;
+ 
+ 	mutex_lock(&mem_list_mutex);
+ 
+@@ -167,22 +165,14 @@ static long mm_iommu_do_alloc(struct mm_struct *mm, unsigned long ua,
+ 	for (i = 0; i < entries; ++i) {
+ 		struct page *page = mem->hpages[i];
+ 
+-		cur_ua = ua + (i << PAGE_SHIFT);
+-		if (mem->pageshift > PAGE_SHIFT && PageCompound(page)) {
+-			pte_t *pte;
++		/*
++		 * Allow to use larger than 64k IOMMU pages. Only do that
++		 * if we are backed by hugetlb.
++		 */
++		if ((mem->pageshift > PAGE_SHIFT) && PageHuge(page)) {
+ 			struct page *head = compound_head(page);
+-			unsigned int compshift = compound_order(head);
+-			unsigned int pteshift;
+-
+-			local_irq_save(flags); /* disables as well */
+-			pte = find_linux_pte(mm->pgd, cur_ua, NULL, &pteshift);
+-
+-			/* Double check it is still the same pinned page */
+-			if (pte && pte_page(*pte) == head &&
+-			    pteshift == compshift + PAGE_SHIFT)
+-				pageshift = max_t(unsigned int, pteshift,
+-						PAGE_SHIFT);
+-			local_irq_restore(flags);
++
++			pageshift = compound_order(head) + PAGE_SHIFT;
+ 		}
+ 		mem->pageshift = min(mem->pageshift, pageshift);
+ 		/*
+-- 
+2.20.1
 
