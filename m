@@ -2,99 +2,60 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94EC8C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:19:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87260C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 17:00:51 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1AD5320C01
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:19:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1AD5320C01
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CC89F20823
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 17:00:50 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CC89F20823
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448gr80phVzDqMb
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 03:19:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448hlN2t8LzDqLJ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 04:00:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=paulmck@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.58.91; helo=7.mo178.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 9603 seconds by postgrey-1.36 at bilbo;
+ Thu, 28 Feb 2019 03:59:13 AEDT
+Received: from 7.mo178.mail-out.ovh.net (7.mo178.mail-out.ovh.net
+ [46.105.58.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448gpM6NzTzDqGB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 03:18:16 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1RGF3TV120411
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 11:18:13 -0500
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwvr9ve43-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 11:18:12 -0500
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 27 Feb 2019 16:18:11 -0000
-Received: from b01cxnp23034.gho.pok.ibm.com (9.57.198.29)
- by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 16:18:01 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1RGHxB38978600
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 16:17:59 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 644DCB2065;
- Wed, 27 Feb 2019 16:17:59 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 17D80B205F;
- Wed, 27 Feb 2019 16:17:59 +0000 (GMT)
-Received: from paulmck-ThinkPad-W541 (unknown [9.70.82.188])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 16:17:59 +0000 (GMT)
-Received: by paulmck-ThinkPad-W541 (Postfix, from userid 1000)
- id D4F6616C42A7; Wed, 27 Feb 2019 08:17:58 -0800 (PST)
-Date: Wed, 27 Feb 2019 08:17:58 -0800
-From: "Paul E. McKenney" <paulmck@linux.ibm.com>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Subject: Re: [RFC PATCH v2 09/14] watchdog/hardlockup: Make
- arch_touch_nmi_watchdog() to hpet-based implementation
-References: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1551283518-18922-10-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448hjY33YNzDqJN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 03:59:09 +1100 (AEDT)
+Received: from player773.ha.ovh.net (unknown [10.109.146.132])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 884B64E747
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 14:53:57 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player773.ha.ovh.net (Postfix) with ESMTPSA id D6DA8323B00A;
+ Wed, 27 Feb 2019 13:53:47 +0000 (UTC)
+Date: Wed, 27 Feb 2019 14:53:46 +0100
+From: Greg Kurz <groug@kaod.org>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
+Message-ID: <20190227145346.2fc86646@bahia.lan>
+In-Reply-To: <20190227045741.21412-2-alastair@au1.ibm.com>
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190227045741.21412-2-alastair@au1.ibm.com>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1551283518-18922-10-git-send-email-ricardo.neri-calderon@linux.intel.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
-X-TM-AS-GCONF: 00
-x-cbid: 19022716-0040-0000-0000-000004C8DD4C
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010674; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01167172; UDB=6.00606765; IPR=6.00947783; 
- MB=3.00025768; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-27 16:18:10
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022716-0041-0000-0000-000008D3E51E
-Message-Id: <20190227161758.GE4072@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270110
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 10841571680088856907
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrvddugdehkecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,121 +67,209 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Reply-To: paulmck@linux.ibm.com
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Peter Zijlstra <peterz@infradead.org>, Alexei Starovoitov <ast@kernel.org>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, Christoffer Dall <cdall@linaro.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Ashok Raj <ashok.raj@intel.com>,
- x86@kernel.org, David Rientjes <rientjes@google.com>,
- Andi Kleen <andi.kleen@intel.com>, Waiman Long <longman@redhat.com>,
- Borislav Petkov <bp@suse.de>, Don Zickus <dzickus@redhat.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Marc Zyngier <marc.zyngier@arm.com>, Frederic Weisbecker <frederic@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>, Ricardo Neri <ricardo.neri@intel.com>,
- Byungchul Park <byungchul.park@lge.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, Babu Moger <babu.moger@oracle.com>,
- Randy Dunlap <rdunlap@infradead.org>, linux-kernel@vger.kernel.org,
- "Luis R. Rodriguez" <mcgrof@kernel.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, alastair@d-silva.org,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 27, 2019 at 08:05:13AM -0800, Ricardo Neri wrote:
-> CPU architectures that have an NMI watchdog use arch_touch_nmi_watchdog()
-> to briefly ignore the hardlockup detector. If the architecture does not
-> have an NMI watchdog, one can be constructed using a source of non-
-> maskable interrupts. In this case, arch_touch_nmi_watchdog() is common
-> to any underlying hardware resource used to drive the detector and needs
-> to be available to other kernel subsystems if hardware different from perf
-> drives the detector.
+On Wed, 27 Feb 2019 15:57:37 +1100
+"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
+
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> There exists perf-based and HPET-based implementations. Make it available
-> to the latter.
+> The term 'link' is ambiguous (especially when the struct is used for a
+> list), so rename it for clarity.
 > 
-> For clarity, wrap this function in a separate preprocessor conditional
-> from functions which are truly specific to the perf-based implementation.
-> 
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Ashok Raj <ashok.raj@intel.com>
-> Cc: Andi Kleen <andi.kleen@intel.com>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> Cc: Don Zickus <dzickus@redhat.com>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Frederic Weisbecker <frederic@kernel.org>
-> Cc: Alexei Starovoitov <ast@kernel.org>
-> Cc: Babu Moger <babu.moger@oracle.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-> Cc: Masami Hiramatsu <mhiramat@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Philippe Ombredanne <pombredanne@nexb.com>
-> Cc: Colin Ian King <colin.king@canonical.com>
-> Cc: Byungchul Park <byungchul.park@lge.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>
-> Cc: Waiman Long <longman@redhat.com>
-> Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Davidlohr Bueso <dave@stgolabs.net>
-> Cc: Christoffer Dall <cdall@linaro.org>
-> Cc: Marc Zyngier <marc.zyngier@arm.com>
-> Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-> Cc: David Rientjes <rientjes@google.com>
-> Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
-> Cc: x86@kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Reviewed-by: Greg Kurz <groug@kaod.org>
 > ---
->  include/linux/nmi.h | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+>  drivers/misc/ocxl/file.c |  2 +-
+>  drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
+>  2 files changed, 19 insertions(+), 19 deletions(-)
 > 
-> diff --git a/include/linux/nmi.h b/include/linux/nmi.h
-> index 5a8b19749769..bf5ebcfdd590 100644
-> --- a/include/linux/nmi.h
-> +++ b/include/linux/nmi.h
-> @@ -94,8 +94,16 @@ static inline void hardlockup_detector_disable(void) {}
->  # define NMI_WATCHDOG_SYSCTL_PERM	0444
->  #endif
+> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+> index e6a607488f8a..16eb8a60d5c7 100644
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
+>  
+>  		if (status == ATTACHED) {
+>  			int rc;
+> -			struct link *link = ctx->afu->fn->link;
+> +			void *link = ctx->afu->fn->link;
 > 
-> -#if defined(CONFIG_HARDLOCKUP_DETECTOR_PERF)
-> +#if defined(CONFIG_HARDLOCKUP_DETECTOR_PERF) || \
-> +    defined(CONFIG_X86_HARDLOCKUP_DETECTOR_HPET)
 
-Why not instead make CONFIG_X86_HARDLOCKUP_DETECTOR_HPET select
-CONFIG_HARDLOCKUP_DETECTOR_PERF?  Keep the arch-specific details
-in the arch-specific files and all that.
+Thinking about that again, the link variable only has one user. Irrespectively
+of the discussion on adding a struct ocxl_link forward declaration in the
+private header and changing the API, link isn't needed in the first place...
+ 
+>  			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
 
-							Thanx, Paul
+... and we could just do:
 
->  extern void arch_touch_nmi_watchdog(void);
-> +#else
-> +# if !defined(CONFIG_HAVE_NMI_WATCHDOG)
-> +static inline void arch_touch_nmi_watchdog(void) {}
-> +# endif
-> +#endif
-> +
-> +#if defined(CONFIG_HARDLOCKUP_DETECTOR_PERF)
->  extern void hardlockup_detector_perf_stop(void);
->  extern void hardlockup_detector_perf_restart(void);
->  extern void hardlockup_detector_perf_disable(void);
-> -- 
-> 2.17.1
-> 
+			rc = ocxl_link_update_pe(ctx->afu->fn->link, ctx->pasid,
+						 ctx->tidr);
+
+I guess it is acceptable to do this change "while here" since the patch is
+about dropping the ambiguous 'link' term.
+
+>  			if (rc)
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index d50b861d7e57..8d2690a1a9de 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -76,7 +76,7 @@ struct spa {
+>   * limited number of opencapi slots on a system and lookup is only
+>   * done when the device is probed
+>   */
+> -struct link {
+> +struct ocxl_link {
+>  	struct list_head list;
+>  	struct kref ref;
+>  	int domain;
+> @@ -179,7 +179,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+>  
+>  static irqreturn_t xsl_fault_handler(int irq, void *data)
+>  {
+> -	struct link *link = (struct link *) data;
+> +	struct ocxl_link *link = (struct ocxl_link *) data;
+>  	struct spa *spa = link->spa;
+>  	u64 dsisr, dar, pe_handle;
+>  	struct pe_data *pe_data;
+> @@ -256,7 +256,7 @@ static int map_irq_registers(struct pci_dev *dev, struct spa *spa)
+>  				&spa->reg_tfc, &spa->reg_pe_handle);
+>  }
+>  
+> -static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> +static int setup_xsl_irq(struct pci_dev *dev, struct ocxl_link *link)
+>  {
+>  	struct spa *spa = link->spa;
+>  	int rc;
+> @@ -311,7 +311,7 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>  	return rc;
+>  }
+>  
+> -static void release_xsl_irq(struct link *link)
+> +static void release_xsl_irq(struct ocxl_link *link)
+>  {
+>  	struct spa *spa = link->spa;
+>  
+> @@ -323,7 +323,7 @@ static void release_xsl_irq(struct link *link)
+>  	unmap_irq_registers(spa);
+>  }
+>  
+> -static int alloc_spa(struct pci_dev *dev, struct link *link)
+> +static int alloc_spa(struct pci_dev *dev, struct ocxl_link *link)
+>  {
+>  	struct spa *spa;
+>  
+> @@ -350,7 +350,7 @@ static int alloc_spa(struct pci_dev *dev, struct link *link)
+>  	return 0;
+>  }
+>  
+> -static void free_spa(struct link *link)
+> +static void free_spa(struct ocxl_link *link)
+>  {
+>  	struct spa *spa = link->spa;
+>  
+> @@ -364,12 +364,12 @@ static void free_spa(struct link *link)
+>  	}
+>  }
+>  
+> -static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+> +static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_link)
+>  {
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>  	int rc;
+>  
+> -	link = kzalloc(sizeof(struct link), GFP_KERNEL);
+> +	link = kzalloc(sizeof(struct ocxl_link), GFP_KERNEL);
+>  	if (!link)
+>  		return -ENOMEM;
+>  
+> @@ -405,7 +405,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+>  	return rc;
+>  }
+>  
+> -static void free_link(struct link *link)
+> +static void free_link(struct ocxl_link *link)
+>  {
+>  	release_xsl_irq(link);
+>  	free_spa(link);
+> @@ -415,7 +415,7 @@ static void free_link(struct link *link)
+>  int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
+>  {
+>  	int rc = 0;
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>  
+>  	mutex_lock(&links_list_lock);
+>  	list_for_each_entry(link, &links_list, list) {
+> @@ -442,7 +442,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_setup);
+>  
+>  static void release_xsl(struct kref *ref)
+>  {
+> -	struct link *link = container_of(ref, struct link, ref);
+> +	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
+>  
+>  	list_del(&link->list);
+>  	/* call platform code before releasing data */
+> @@ -452,7 +452,7 @@ static void release_xsl(struct kref *ref)
+>  
+>  void ocxl_link_release(struct pci_dev *dev, void *link_handle)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  
+>  	mutex_lock(&links_list_lock);
+>  	kref_put(&link->ref, release_xsl);
+> @@ -488,7 +488,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>  		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>  		void *xsl_err_data)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  	struct spa *spa = link->spa;
+>  	struct ocxl_process_element *pe;
+>  	int pe_handle, rc = 0;
+> @@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
+>  
+>  int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  	struct spa *spa = link->spa;
+>  	struct ocxl_process_element *pe;
+>  	int pe_handle, rc;
+> @@ -594,7 +594,7 @@ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>  
+>  int ocxl_link_remove_pe(void *link_handle, int pasid)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  	struct spa *spa = link->spa;
+>  	struct ocxl_process_element *pe;
+>  	struct pe_data *pe_data;
+> @@ -666,7 +666,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
+>  
+>  int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  	int rc, irq;
+>  	u64 addr;
+>  
+> @@ -687,7 +687,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
+>  
+>  void ocxl_link_free_irq(void *link_handle, int hw_irq)
+>  {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>  
+>  	pnv_ocxl_free_xive_irq(hw_irq);
+>  	atomic_inc(&link->irq_available);
 
