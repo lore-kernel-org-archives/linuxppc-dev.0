@@ -2,99 +2,82 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2558C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:17:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85458C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:42:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E3C92218D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:17:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3C92218D0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B51D721852
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:42:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (4096-bit key) header.d=d-silva.org header.i=@d-silva.org header.b="WJPJTNyb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B51D721852
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=d-silva.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448RpK4rBYzDqK9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 18:17:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448SM71b74zDqPG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 18:42:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=d-silva.org
+ (client-ip=167.160.173.127; helo=ushosting.nmnhosting.com;
+ envelope-from=alastair@d-silva.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448Rmb6sJFzDqBb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 18:15:59 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R7AAM6106247
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 02:15:57 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwn4kag8x-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 02:15:57 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 27 Feb 2019 07:15:53 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 07:15:50 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R7FnSW30015682
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 27 Feb 2019 07:15:49 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7EF7B11C052;
- Wed, 27 Feb 2019 07:15:49 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id DC00811C04A;
- Wed, 27 Feb 2019 07:15:48 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 07:15:48 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DADC6A0243;
- Wed, 27 Feb 2019 18:15:45 +1100 (AEDT)
-Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+ dmarc=none (p=none dis=none) header.from=d-silva.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (4096-bit key;
+ unprotected) header.d=d-silva.org header.i=@d-silva.org header.b="WJPJTNyb"; 
+ dkim-atps=neutral
+X-Greylist: delayed 347 seconds by postgrey-1.36 at bilbo;
+ Wed, 27 Feb 2019 18:40:52 AEDT
+Received: from ushosting.nmnhosting.com (ushosting.nmnhosting.com
+ [167.160.173.127])
+ by lists.ozlabs.org (Postfix) with ESMTP id 448SKJ2fWszDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 18:40:52 +1100 (AEDT)
+Received: from mail2.nmnhosting.com (unknown [202.169.106.97])
+ by ushosting.nmnhosting.com (Postfix) with ESMTPS id 8E07F2F20623;
+ Wed, 27 Feb 2019 02:35:00 -0500 (EST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=d-silva.org;
+ s=201810a; t=1551252901;
+ bh=xa+h4X+54kh9XEOJk4sDO8SsZmCrhjEVj8J/32pTkFA=;
+ h=From:To:Cc:References:In-Reply-To:Subject:Date:From;
+ b=WJPJTNybOC/N+0RsXNc7I1lUz53ZEA0+NZnnSp4U7g9eu+K6uWrCTaoTVus02k441
+ UAxO1QyPq5fWCiEX1R7cGQMJ7H/jl+BN0abSp0J9Pm42oi8mlnXFSJM4MQc7fZYqD7
+ WKkW2mCgP4WSrB9wXx9VDMFQRd/LQFK9Yxb4HIM7VVKkJlgYDyjERbI05CGge46lF+
+ nr/NN3/i9zqZJZ0KQMQTcROaFyho6IYHfUK/AGCZtrY633+X+ccyP11l/3nuDv08Ga
+ qjIpUKmFAa36LIqqB+VXgHZQ3oVYzxw4B2TbprLDSMJWq7JKUMmCs0mWPtW5qQOr3Z
+ V4k5gb7Z4uXjvSItNKFoj2bWSq1uvCatIK+xf1gKhA76Ii0hrE1d0IpWZ+XNoYvydO
+ BLTHD0zPADVAgqq4biqwdxSnJohqmo7Ep1badldGyOzkwwGCvtvxM9wqHXh8Fmh4+R
+ m65PP/uQbVrAmXNq/OLIUK3NCp3mZmBqrVYl5DOyNuMLA9V3vFN4j+4GlZNmBocvzq
+ ba8oUxlrM1z5Uv3ZEsN9rZRmk/UCrmN2+kN55I0WJzSwXb6vKnyEh0IPYqhO06tFra
+ WUMz4rYktiUXQOwoh9nuSkeRDFKB0IgiLNY42zWqWIxugmOEadkojoz0b++FGnAfka
+ yXhmJ0DqbaV4RGNBxUfRqWg0=
+Received: from Hawking (ntp.lan [10.0.1.1]) (authenticated bits=0)
+ by mail2.nmnhosting.com (8.15.2/8.15.2) with ESMTPSA id x1R7Ysec085383
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Wed, 27 Feb 2019 18:34:54 +1100 (AEDT)
+ (envelope-from alastair@d-silva.org)
+From: "Alastair D'Silva" <alastair@d-silva.org>
+To: "'Andrew Donnellan'" <andrew.donnellan@au1.ibm.com>,
+ "'Alastair D'Silva'" <alastair@au1.ibm.com>
 References: <20190227045741.21412-1-alastair@au1.ibm.com>
  <20190227045741.21412-2-alastair@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 27 Feb 2019 18:15:45 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
+In-Reply-To: <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
+Subject: RE: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
+Date: Wed, 27 Feb 2019 18:34:53 +1100
+Message-ID: <156e01d4ce6e$ee42d9f0$cac88dd0$@d-silva.org>
 MIME-Version: 1.0
-In-Reply-To: <20190227045741.21412-2-alastair@au1.ibm.com>
-Content-Language: en-AU
-X-TM-AS-GCONF: 00
-x-cbid: 19022707-0020-0000-0000-0000031BC33F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022707-0021-0000-0000-0000216D2D5A
-Message-Id: <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270049
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: Microsoft Outlook 16.0
+Thread-Index: AQHHd7z5h6oO3uW69oxVqiBFDB4gBAHhAfo8A1gpEmyl5CQc4A==
+Content-Language: en-au
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.6.2
+ (mail2.nmnhosting.com [10.0.1.20]); Wed, 27 Feb 2019 18:34:55 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -106,201 +89,63 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: 'Arnd Bergmann' <arnd@arndb.de>,
+ 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>,
+ 'Greg Kurz' <groug@kaod.org>, linux-kernel@vger.kernel.org,
+ 'Frederic Barrat' <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27/2/19 3:57 pm, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> The term 'link' is ambiguous (especially when the struct is used for a
-> list), so rename it for clarity.
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
-> ---
->   drivers/misc/ocxl/file.c |  2 +-
->   drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
->   2 files changed, 19 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index e6a607488f8a..16eb8a60d5c7 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
->   
->   		if (status == ATTACHED) {
->   			int rc;
-> -			struct link *link = ctx->afu->fn->link;
-> +			void *link = ctx->afu->fn->link;
+> -----Original Message-----
+> From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Sent: Wednesday, 27 February 2019 6:16 PM
+> To: Alastair D'Silva <alastair@au1.ibm.com>; alastair@d-silva.org
+> Cc: Greg Kurz <groug@kaod.org>; Frederic Barrat =
+<fbarrat@linux.ibm.com>;
+> Arnd Bergmann <arnd@arndb.de>; Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org>; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org
+> Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
+>=20
+> On 27/2/19 3:57 pm, Alastair D'Silva wrote:
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> >
+> > The term 'link' is ambiguous (especially when the struct is used for =
+a
+> > list), so rename it for clarity.
+> >
+> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> > Reviewed-by: Greg Kurz <groug@kaod.org>
+> > ---
+> >   drivers/misc/ocxl/file.c |  2 +-
+> >   drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
+> >   2 files changed, 19 insertions(+), 19 deletions(-)
+> >
+> > diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c =
+index
+> > e6a607488f8a..16eb8a60d5c7 100644
+> > --- a/drivers/misc/ocxl/file.c
+> > +++ b/drivers/misc/ocxl/file.c
+> > @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct
+> > ocxl_context *ctx,
+> >
+> >   		if (status =3D=3D ATTACHED) {
+> >   			int rc;
+> > -			struct link *link =3D ctx->afu->fn->link;
+> > +			void *link =3D ctx->afu->fn->link;
+>=20
+> This doesn't look like a rename...
 
-This doesn't look like a rename...
+That corrects the type to what the member (and prototype for =
+ocxl_link_update_pe) declare it as.
 
->   
->   			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
->   			if (rc)
-> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-> index d50b861d7e57..8d2690a1a9de 100644
-> --- a/drivers/misc/ocxl/link.c
-> +++ b/drivers/misc/ocxl/link.c
-> @@ -76,7 +76,7 @@ struct spa {
->    * limited number of opencapi slots on a system and lookup is only
->    * done when the device is probed
->    */
-> -struct link {
-> +struct ocxl_link {
->   	struct list_head list;
->   	struct kref ref;
->   	int domain;
-> @@ -179,7 +179,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
->   
->   static irqreturn_t xsl_fault_handler(int irq, void *data)
->   {
-> -	struct link *link = (struct link *) data;
-> +	struct ocxl_link *link = (struct ocxl_link *) data;
->   	struct spa *spa = link->spa;
->   	u64 dsisr, dar, pe_handle;
->   	struct pe_data *pe_data;
-> @@ -256,7 +256,7 @@ static int map_irq_registers(struct pci_dev *dev, struct spa *spa)
->   				&spa->reg_tfc, &spa->reg_pe_handle);
->   }
->   
-> -static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
-> +static int setup_xsl_irq(struct pci_dev *dev, struct ocxl_link *link)
->   {
->   	struct spa *spa = link->spa;
->   	int rc;
-> @@ -311,7 +311,7 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
->   	return rc;
->   }
->   
-> -static void release_xsl_irq(struct link *link)
-> +static void release_xsl_irq(struct ocxl_link *link)
->   {
->   	struct spa *spa = link->spa;
->   
-> @@ -323,7 +323,7 @@ static void release_xsl_irq(struct link *link)
->   	unmap_irq_registers(spa);
->   }
->   
-> -static int alloc_spa(struct pci_dev *dev, struct link *link)
-> +static int alloc_spa(struct pci_dev *dev, struct ocxl_link *link)
->   {
->   	struct spa *spa;
->   
-> @@ -350,7 +350,7 @@ static int alloc_spa(struct pci_dev *dev, struct link *link)
->   	return 0;
->   }
->   
-> -static void free_spa(struct link *link)
-> +static void free_spa(struct ocxl_link *link)
->   {
->   	struct spa *spa = link->spa;
->   
-> @@ -364,12 +364,12 @@ static void free_spa(struct link *link)
->   	}
->   }
->   
-> -static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
-> +static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_link)
->   {
-> -	struct link *link;
-> +	struct ocxl_link *link;
->   	int rc;
->   
-> -	link = kzalloc(sizeof(struct link), GFP_KERNEL);
-> +	link = kzalloc(sizeof(struct ocxl_link), GFP_KERNEL);
->   	if (!link)
->   		return -ENOMEM;
->   
-> @@ -405,7 +405,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
->   	return rc;
->   }
->   
-> -static void free_link(struct link *link)
-> +static void free_link(struct ocxl_link *link)
->   {
->   	release_xsl_irq(link);
->   	free_spa(link);
-> @@ -415,7 +415,7 @@ static void free_link(struct link *link)
->   int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
->   {
->   	int rc = 0;
-> -	struct link *link;
-> +	struct ocxl_link *link;
->   
->   	mutex_lock(&links_list_lock);
->   	list_for_each_entry(link, &links_list, list) {
-> @@ -442,7 +442,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_setup);
->   
->   static void release_xsl(struct kref *ref)
->   {
-> -	struct link *link = container_of(ref, struct link, ref);
-> +	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
->   
->   	list_del(&link->list);
->   	/* call platform code before releasing data */
-> @@ -452,7 +452,7 @@ static void release_xsl(struct kref *ref)
->   
->   void ocxl_link_release(struct pci_dev *dev, void *link_handle)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   
->   	mutex_lock(&links_list_lock);
->   	kref_put(&link->ref, release_xsl);
-> @@ -488,7 +488,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
->   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->   		void *xsl_err_data)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   	struct spa *spa = link->spa;
->   	struct ocxl_process_element *pe;
->   	int pe_handle, rc = 0;
-> @@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
->   
->   int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   	struct spa *spa = link->spa;
->   	struct ocxl_process_element *pe;
->   	int pe_handle, rc;
-> @@ -594,7 +594,7 @@ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
->   
->   int ocxl_link_remove_pe(void *link_handle, int pasid)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   	struct spa *spa = link->spa;
->   	struct ocxl_process_element *pe;
->   	struct pe_data *pe_data;
-> @@ -666,7 +666,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
->   
->   int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   	int rc, irq;
->   	u64 addr;
->   
-> @@ -687,7 +687,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
->   
->   void ocxl_link_free_irq(void *link_handle, int hw_irq)
->   {
-> -	struct link *link = (struct link *) link_handle;
-> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
->   
->   	pnv_ocxl_free_xive_irq(hw_irq);
->   	atomic_inc(&link->irq_available);
-> 
+The struct link there is bogus, it shouldn't even compile (since the =
+intended struct link is defined in a different compilation unit), but =
+instead picks up a different definition of 'struct link' from elsewhere.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+--=20
+Alastair D'Silva           mob: 0423 762 819
+skype: alastair_dsilva     msn: alastair@d-silva.org
+blog: http://alastair.d-silva.org    Twitter: @EvilDeece
 
