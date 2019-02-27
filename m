@@ -3,90 +3,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F545C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:00:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DE19C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:20:28 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D8FC218CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:00:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D8FC218CD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B939920842
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 09:20:27 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B939920842
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=virtuozzo.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448V591SwWzDqNl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 20:00:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448VX93s5szDqNZ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 20:20:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=virtuozzo.com
+ (client-ip=185.231.240.75; helo=relay.sw.ru;
+ envelope-from=aryabinin@virtuozzo.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=virtuozzo.com
+Received: from relay.sw.ru (relay.sw.ru [185.231.240.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448V3Q64t7zDqKN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 19:58:58 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R8tArd027732
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 03:58:55 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwpny2quv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 03:58:55 -0500
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 27 Feb 2019 08:58:53 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 08:58:48 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R8wlXj27918412
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 27 Feb 2019 08:58:47 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8C34C11C05C;
- Wed, 27 Feb 2019 08:58:47 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0EF6411C04A;
- Wed, 27 Feb 2019 08:58:46 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.124.31.69])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 08:58:45 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH V5 0/5] NestMMU pte upgrade workaround for mprotect
-In-Reply-To: <20190226153733.2552bb48dd195ae3bd46c3ef@linux-foundation.org>
-References: <20190116085035.29729-1-aneesh.kumar@linux.ibm.com>
- <20190226153733.2552bb48dd195ae3bd46c3ef@linux-foundation.org>
-Date: Wed, 27 Feb 2019 14:28:43 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448VVS2BbfzDqLh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 20:18:52 +1100 (AEDT)
+Received: from [172.16.25.12] by relay.sw.ru with esmtp (Exim 4.91)
+ (envelope-from <aryabinin@virtuozzo.com>)
+ id 1gyvMU-00037a-1i; Wed, 27 Feb 2019 12:18:46 +0300
+Subject: Re: BUG: KASAN: stack-out-of-bounds
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
+References: <c6d80735-0cfe-b4ab-0349-673fc65b2e15@c-s.fr>
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Message-ID: <5f0203bd-77ea-d94c-11b7-1befba439cd4@virtuozzo.com>
+Date: Wed, 27 Feb 2019 12:19:04 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19022708-0020-0000-0000-0000031BCC4F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022708-0021-0000-0000-0000216D36E4
-Message-Id: <87k1hltxoc.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=628 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270061
+In-Reply-To: <c6d80735-0cfe-b4ab-0349-673fc65b2e15@c-s.fr>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,30 +58,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: x86@kernel.org, npiggin@gmail.com, linux-mm@kvack.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ kasan-dev@googlegroups.com, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> [patch 1/5]: unreviewed and has unaddressed comments from mpe.
-> [patch 2/5]: ditto
-> [patch 3/5]: ditto
-> [patch 4/5]: seems ready
-> [patch 5/5]: reviewed by mpe, but appears to need more work
 
-That was mostly variable naming preferences. I like the christmas
-tree style not the inverted christmas tree. There is one detail about
-commit message, which indicate the change may be required by other
-architecture too. Was not sure whether that needed a commit message
-update.
+On 2/27/19 11:25 AM, Christophe Leroy wrote:
+> With version v8 of the series implementing KASAN on 32 bits powerpc (https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=94309), I'm now able to activate KASAN on a mac99 is QEMU.
+> 
+> Then I get the following reports at startup. Which of the two reports I get seems to depend on the option used to build the kernel, but for a given kernel I always get the same report.
+> 
+> Is that a real bug, in which case how could I spot it ? Or is it something wrong in my implementation of KASAN ?
+> 
+> I checked that after kasan_init(), the entire shadow memory is full of 0 only.
+> 
+> I also made a try with the strong STACK_PROTECTOR compiled in, but no difference and nothing detected by the stack protector.
+> 
+> ==================================================================
+> BUG: KASAN: stack-out-of-bounds in memchr+0x24/0x74
+> Read of size 1 at addr c0ecdd40 by task swapper/0
+> 
+> CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1133
+> Call Trace:
+> [c0e9dca0] [c01c42a0] print_address_description+0x64/0x2bc (unreliable)
+> [c0e9dcd0] [c01c4684] kasan_report+0xfc/0x180
+> [c0e9dd10] [c089579c] memchr+0x24/0x74
+> [c0e9dd30] [c00a9e38] msg_print_text+0x124/0x574
+> [c0e9dde0] [c00ab710] console_unlock+0x114/0x4f8
+> [c0e9de40] [c00adc60] vprintk_emit+0x188/0x1c4
+> --- interrupt: c0e9df00 at 0x400f330
+>     LR = init_stack+0x1f00/0x2000
+> [c0e9de80] [c00ae3c4] printk+0xa8/0xcc (unreliable)
+> [c0e9df20] [c0c28e44] early_irq_init+0x38/0x108
+> [c0e9df50] [c0c16434] start_kernel+0x310/0x488
+> [c0e9dff0] [00003484] 0x3484
+> 
+> The buggy address belongs to the variable:
+>  __log_buf+0xec0/0x4020
+> The buggy address belongs to the page:
+> page:c6eac9a0 count:1 mapcount:0 mapping:00000000 index:0x0
+> flags: 0x1000(reserved)
+> raw: 00001000 c6eac9a4 c6eac9a4 00000000 00000000 00000000 ffffffff 00000001
+> page dumped because: kasan: bad access detected
+> 
+> Memory state around the buggy address:
+>  c0ecdc00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>  c0ecdc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>>c0ecdd00: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00
+>                                    ^
+>  c0ecdd80: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+>  c0ecde00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> ==================================================================
+> 
 
-I didn't send an updated series because after replying to most of them I
-didn't find a strong request to get the required changes in. If you want
-me update the series with this variable name ordering and commit message
-update I can send a new series today.
+This one doesn't look good. Notice that it says stack-out-of-bounds, but at the same time there is 
+	"The buggy address belongs to the variable:  __log_buf+0xec0/0x4020"
+ which is printed by following code:
+	if (kernel_or_module_addr(addr) && !init_task_stack_addr(addr)) {
+		pr_err("The buggy address belongs to the variable:\n");
+		pr_err(" %pS\n", addr);
+	}
 
--aneesh
-
+So the stack unrelated address got stack-related poisoning. This could be a stack overflow, did you increase THREAD_SHIFT?
+KASAN with stack instrumentation significantly increases stack usage.
