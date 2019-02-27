@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD76BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 13:27:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11E12C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 13:43:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EEB9E2075B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 13:27:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEB9E2075B
+	by mail.kernel.org (Postfix) with ESMTPS id CDD0920C01
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 13:43:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDD0920C01
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448c1X4XpSzDqKJ
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 00:27:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448cM44NpCzDqJj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 00:42:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
  (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
@@ -29,68 +29,66 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448bzh2SDdzDqJj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 00:26:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448cDF2XjpzDq5n
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 00:37:00 +1100 (AEDT)
 Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1RDM8So132640
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 08:26:04 -0500
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwsu4562w-1
+ x1RDRXB1004092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 08:36:58 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qwsu45t9t-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 08:26:03 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 08:36:57 -0500
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Wed, 27 Feb 2019 13:25:59 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Wed, 27 Feb 2019 13:36:55 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 13:25:58 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1RDPu4F23134332
+ Wed, 27 Feb 2019 13:36:54 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1RDaqbs24510666
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 27 Feb 2019 13:25:56 GMT
+ Wed, 27 Feb 2019 13:36:52 GMT
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6ADBA4203F;
- Wed, 27 Feb 2019 13:25:56 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id 5C9B542042;
+ Wed, 27 Feb 2019 13:36:52 +0000 (GMT)
 Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 0A84442045;
- Wed, 27 Feb 2019 13:25:56 +0000 (GMT)
+ by IMSVA (Postfix) with ESMTP id EF5AB42041;
+ Wed, 27 Feb 2019 13:36:51 +0000 (GMT)
 Received: from [9.145.24.93] (unknown [9.145.24.93])
  by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 13:25:55 +0000 (GMT)
-Subject: Re: [PATCH 3/5] ocxl: read_pasid never returns an error, so make it
- void
+ Wed, 27 Feb 2019 13:36:51 +0000 (GMT)
+Subject: Re: [PATCH 4/5] ocxl: Remove superfluous 'extern' from headers
 To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
 References: <20190227045741.21412-1-alastair@au1.ibm.com>
- <20190227045741.21412-4-alastair@au1.ibm.com>
+ <20190227045741.21412-5-alastair@au1.ibm.com>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Wed, 27 Feb 2019 14:25:55 +0100
+Date: Wed, 27 Feb 2019 14:36:51 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.4.0
 MIME-Version: 1.0
-In-Reply-To: <20190227045741.21412-4-alastair@au1.ibm.com>
+In-Reply-To: <20190227045741.21412-5-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19022713-0012-0000-0000-000002FAD65A
+x-cbid: 19022713-0008-0000-0000-000002C594A0
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022713-0013-0000-0000-000021327E53
-Message-Id: <c2c30a57-dfe3-da55-c65c-5cd720ed75f8@linux.ibm.com>
+x-cbparentid: 19022713-0009-0000-0000-00002231E212
+Message-Id: <a46809b1-4f54-5537-5ea4-05ade78a7894@linux.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-27_08:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270089
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902270090
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,10 +100,9 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -115,52 +112,254 @@ Sender: "Linuxppc-dev"
 Le 27/02/2019 à 05:57, Alastair D'Silva a écrit :
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> No need for a return value in read_pasid as it only returns 0.
+> The 'extern' keyword adds no value here.
 > 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
 > ---
 
-Thanks!
 Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
 
->   drivers/misc/ocxl/config.c | 9 ++-------
->   1 file changed, 2 insertions(+), 7 deletions(-)
+>   drivers/misc/ocxl/ocxl_internal.h | 54 +++++++++++++++----------------
+>   include/misc/ocxl.h               | 36 ++++++++++-----------
+>   2 files changed, 44 insertions(+), 46 deletions(-)
 > 
-> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-> index 0ee7856b033d..026ac2ac4f9c 100644
-> --- a/drivers/misc/ocxl/config.c
-> +++ b/drivers/misc/ocxl/config.c
-> @@ -68,7 +68,7 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
->   	return 0;
->   }
+> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+> index a32f2151029f..321b29e77f45 100644
+> --- a/drivers/misc/ocxl/ocxl_internal.h
+> +++ b/drivers/misc/ocxl/ocxl_internal.h
+> @@ -16,7 +16,6 @@
 >   
-> -static int read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
-> +static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
->   {
->   	u16 val;
->   	int pos;
-> @@ -89,7 +89,6 @@ static int read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
->   out:
->   	dev_dbg(&dev->dev, "PASID capability:\n");
->   	dev_dbg(&dev->dev, "  Max PASID log = %d\n", fn->max_pasid_log);
-> -	return 0;
->   }
+>   extern struct pci_driver ocxl_pci_driver;
 >   
->   static int read_dvsec_tl(struct pci_dev *dev, struct ocxl_fn_config *fn)
-> @@ -205,11 +204,7 @@ int ocxl_config_read_function(struct pci_dev *dev, struct ocxl_fn_config *fn)
->   {
->   	int rc;
+> -
+>   struct ocxl_fn {
+>   	struct device dev;
+>   	int bar_used[3];
+> @@ -92,41 +91,40 @@ struct ocxl_process_element {
+>   	__be32 software_state;
+>   };
 >   
-> -	rc = read_pasid(dev, fn);
-> -	if (rc) {
-> -		dev_err(&dev->dev, "Invalid PASID configuration: %d\n", rc);
-> -		return -ENODEV;
-> -	}
-> +	read_pasid(dev, fn);
+> +struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
+> +void ocxl_afu_put(struct ocxl_afu *afu);
 >   
->   	rc = read_dvsec_tl(dev, fn);
->   	if (rc) {
+> -extern struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
+> -extern void ocxl_afu_put(struct ocxl_afu *afu);
+> -
+> -extern int ocxl_create_cdev(struct ocxl_afu *afu);
+> -extern void ocxl_destroy_cdev(struct ocxl_afu *afu);
+> -extern int ocxl_register_afu(struct ocxl_afu *afu);
+> -extern void ocxl_unregister_afu(struct ocxl_afu *afu);
+> +int ocxl_create_cdev(struct ocxl_afu *afu);
+> +void ocxl_destroy_cdev(struct ocxl_afu *afu);
+> +int ocxl_register_afu(struct ocxl_afu *afu);
+> +void ocxl_unregister_afu(struct ocxl_afu *afu);
+>   
+> -extern int ocxl_file_init(void);
+> -extern void ocxl_file_exit(void);
+> +int ocxl_file_init(void);
+> +void ocxl_file_exit(void);
+>   
+> -extern int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
+> -extern void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+> -extern int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
+> -extern void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+> +int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
+> +void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+> +int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
+> +void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+>   
+> -extern struct ocxl_context *ocxl_context_alloc(void);
+> -extern int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
+> +struct ocxl_context *ocxl_context_alloc(void);
+> +int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
+>   			struct address_space *mapping);
+> -extern int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
+> -extern int ocxl_context_mmap(struct ocxl_context *ctx,
+> +int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
+> +int ocxl_context_mmap(struct ocxl_context *ctx,
+>   			struct vm_area_struct *vma);
+> -extern int ocxl_context_detach(struct ocxl_context *ctx);
+> -extern void ocxl_context_detach_all(struct ocxl_afu *afu);
+> -extern void ocxl_context_free(struct ocxl_context *ctx);
+> +int ocxl_context_detach(struct ocxl_context *ctx);
+> +void ocxl_context_detach_all(struct ocxl_afu *afu);
+> +void ocxl_context_free(struct ocxl_context *ctx);
+>   
+> -extern int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
+> -extern void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
+> +int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
+> +void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
+>   
+> -extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
+> -extern int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
+> -extern void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
+> -extern int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
+> +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
+> +int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
+> +void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
+> +int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
+>   			int eventfd);
+> -extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
+> +u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
+>   
+>   #endif /* _OCXL_INTERNAL_H_ */
+> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+> index 9ff6ddc28e22..4544573cc93c 100644
+> --- a/include/misc/ocxl.h
+> +++ b/include/misc/ocxl.h
+> @@ -53,7 +53,7 @@ struct ocxl_fn_config {
+>    * Read the configuration space of a function and fill in a
+>    * ocxl_fn_config structure with all the function details
+>    */
+> -extern int ocxl_config_read_function(struct pci_dev *dev,
+> +int ocxl_config_read_function(struct pci_dev *dev,
+>   				struct ocxl_fn_config *fn);
+>   
+>   /*
+> @@ -62,14 +62,14 @@ extern int ocxl_config_read_function(struct pci_dev *dev,
+>    * AFU indexes can be sparse, so a driver should check all indexes up
+>    * to the maximum found in the function description
+>    */
+> -extern int ocxl_config_check_afu_index(struct pci_dev *dev,
+> +int ocxl_config_check_afu_index(struct pci_dev *dev,
+>   				struct ocxl_fn_config *fn, int afu_idx);
+>   
+>   /*
+>    * Read the configuration space of a function for the AFU specified by
+>    * the index 'afu_idx'. Fills in a ocxl_afu_config structure
+>    */
+> -extern int ocxl_config_read_afu(struct pci_dev *dev,
+> +int ocxl_config_read_afu(struct pci_dev *dev,
+>   				struct ocxl_fn_config *fn,
+>   				struct ocxl_afu_config *afu,
+>   				u8 afu_idx);
+> @@ -77,7 +77,7 @@ extern int ocxl_config_read_afu(struct pci_dev *dev,
+>   /*
+>    * Get the max PASID value that can be used by the function
+>    */
+> -extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+> +int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+>   
+>   /*
+>    * Tell an AFU, by writing in the configuration space, the PASIDs that
+> @@ -87,7 +87,7 @@ extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+>    * 'afu_control_offset' is the offset of the AFU control DVSEC which
+>    * can be found in the function configuration
+>    */
+> -extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
+> +void ocxl_config_set_afu_pasid(struct pci_dev *dev,
+>   				int afu_control_offset,
+>   				int pasid_base, u32 pasid_count_log);
+>   
+> @@ -98,7 +98,7 @@ extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
+>    * 'supported' is the total number of actags desired by all the AFUs
+>    *             of the function.
+>    */
+> -extern int ocxl_config_get_actag_info(struct pci_dev *dev,
+> +int ocxl_config_get_actag_info(struct pci_dev *dev,
+>   				u16 *base, u16 *enabled, u16 *supported);
+>   
+>   /*
+> @@ -108,7 +108,7 @@ extern int ocxl_config_get_actag_info(struct pci_dev *dev,
+>    * 'func_offset' is the offset of the Function DVSEC that can found in
+>    * the function configuration
+>    */
+> -extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
+> +void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
+>   				u32 actag_base, u32 actag_count);
+>   
+>   /*
+> @@ -118,7 +118,7 @@ extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
+>    * 'afu_control_offset' is the offset of the AFU control DVSEC for the
+>    * desired AFU. It can be found in the AFU configuration
+>    */
+> -extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
+> +void ocxl_config_set_afu_actag(struct pci_dev *dev,
+>   				int afu_control_offset,
+>   				int actag_base, int actag_count);
+>   
+> @@ -128,7 +128,7 @@ extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
+>    * 'afu_control_offset' is the offset of the AFU control DVSEC for the
+>    * desired AFU. It can be found in the AFU configuration
+>    */
+> -extern void ocxl_config_set_afu_state(struct pci_dev *dev,
+> +void ocxl_config_set_afu_state(struct pci_dev *dev,
+>   				int afu_control_offset, int enable);
+>   
+>   /*
+> @@ -139,7 +139,7 @@ extern void ocxl_config_set_afu_state(struct pci_dev *dev,
+>    * between the host and device, and set the Transaction Layer on both
+>    * accordingly.
+>    */
+> -extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
+> +int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
+>   
+>   /*
+>    * Request an AFU to terminate a PASID.
+> @@ -152,7 +152,7 @@ extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
+>    * 'afu_control_offset' is the offset of the AFU control DVSEC for the
+>    * desired AFU. It can be found in the AFU configuration
+>    */
+> -extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
+> +int ocxl_config_terminate_pasid(struct pci_dev *dev,
+>   				int afu_control_offset, int pasid);
+>   
+>   /*
+> @@ -165,13 +165,13 @@ extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
+>    * Returns a 'link handle' that should be used for further calls for
+>    * the link
+>    */
+> -extern int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
+> +int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
+>   			void **link_handle);
+>   
+>   /*
+>    * Remove the association between the function and its link.
+>    */
+> -extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
+> +void ocxl_link_release(struct pci_dev *dev, void *link_handle);
+>   
+>   /*
+>    * Add a Process Element to the Shared Process Area for a link.
+> @@ -183,7 +183,7 @@ extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
+>    * 'xsl_err_data' is an argument passed to the above callback, if
+>    * defined
+>    */
+> -extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+> +int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>   		u64 amr, struct mm_struct *mm,
+>   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>   		void *xsl_err_data);
+> @@ -195,12 +195,12 @@ extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>    * pasid: the PASID for the AFU context
+>    * tid: the new thread id for the process element
+>    */
+> -extern int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
+> +int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
+>   
+>   /*
+>    * Remove a Process Element from the Shared Process Area for a link
+>    */
+> -extern int ocxl_link_remove_pe(void *link_handle, int pasid);
+> +int ocxl_link_remove_pe(void *link_handle, int pasid);
+>   
+>   /*
+>    * Allocate an AFU interrupt associated to the link.
+> @@ -212,12 +212,12 @@ extern int ocxl_link_remove_pe(void *link_handle, int pasid);
+>    * interrupt. It is an MMIO address which needs to be remapped (one
+>    * page).
+>    */
+> -extern int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
+> +int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
+>   			u64 *obj_handle);
+>   
+>   /*
+>    * Free a previously allocated AFU interrupt
+>    */
+> -extern void ocxl_link_free_irq(void *link_handle, int hw_irq);
+> +void ocxl_link_free_irq(void *link_handle, int hw_irq);
+>   
+>   #endif /* _MISC_OCXL_H_ */
 > 
 
