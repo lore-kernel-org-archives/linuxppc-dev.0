@@ -6,82 +6,82 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6586BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:07:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A047DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:09:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D8C80218CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:07:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D8C80218CD
+	by mail.kernel.org (Postfix) with ESMTPS id 25F7A2146F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:09:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 25F7A2146F
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448Nwc46JLzDqNX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:07:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448NyJ1x4jzDqBY
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:09:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448NkC3jKZzDqKV
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:58:43 +1100 (AEDT)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R4sXQp053727
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:41 -0500
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwk2gt612-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448NkD4gvRzDqMq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:58:41 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1R4sRPP021689
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:38 -0500
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qwf8kuenx-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:41 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:37 -0500
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 27 Feb 2019 04:58:38 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Wed, 27 Feb 2019 04:58:36 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 04:58:35 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R4wYcx57016382
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 04:58:34 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8E9314C040;
- Wed, 27 Feb 2019 04:58:34 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EB1194C046;
- Wed, 27 Feb 2019 04:58:33 +0000 (GMT)
+ Wed, 27 Feb 2019 04:58:33 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1R4wWiV25296922
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 27 Feb 2019 04:58:33 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D074942049;
+ Wed, 27 Feb 2019 04:58:32 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 86B594203F;
+ Wed, 27 Feb 2019 04:58:32 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 04:58:33 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Feb 2019 04:58:32 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id CD966A03C3;
- Wed, 27 Feb 2019 15:58:32 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6EA1DA0264;
+ Wed, 27 Feb 2019 15:58:31 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH 5/5] ocxl: Remove some unused exported symbols
-Date: Wed, 27 Feb 2019 15:57:41 +1100
+Subject: [PATCH 2/5] ocxl: Clean up printf formats
+Date: Wed, 27 Feb 2019 15:57:38 +1100
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190227045741.21412-1-alastair@au1.ibm.com>
 References: <20190227045741.21412-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 X-TM-AS-GCONF: 00
-x-cbid: 19022704-0020-0000-0000-0000031BB60D
+x-cbid: 19022704-4275-0000-0000-000003146EC1
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022704-0021-0000-0000-0000216D1FA5
-Message-Id: <20190227045741.21412-6-alastair@au1.ibm.com>
+x-cbparentid: 19022704-4276-0000-0000-00003822B03A
+Message-Id: <20190227045741.21412-3-alastair@au1.ibm.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
@@ -90,7 +90,7 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=822 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902270035
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,123 +113,94 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-Remove some unused exported symbols.
+Use %# instead of using a literal '0x'
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/misc/ocxl/config.c        |  2 --
- drivers/misc/ocxl/ocxl_internal.h | 26 +++++++++++++++++++++++++-
- include/misc/ocxl.h               | 23 -----------------------
- 3 files changed, 25 insertions(+), 26 deletions(-)
+ drivers/misc/ocxl/config.c  |  6 +++---
+ drivers/misc/ocxl/context.c |  2 +-
+ drivers/misc/ocxl/trace.h   | 10 +++++-----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index 026ac2ac4f9c..c90c2e4875bf 100644
+index 8f2c5d8bd2ee..0ee7856b033d 100644
 --- a/drivers/misc/ocxl/config.c
 +++ b/drivers/misc/ocxl/config.c
-@@ -299,7 +299,6 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
- 	}
- 	return 1;
+@@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+ 	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
+ 
+ 	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
+-	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+-	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+-	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
++	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
++	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
++	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
+ 	return 0;
  }
--EXPORT_SYMBOL_GPL(ocxl_config_check_afu_index);
  
- static int read_afu_name(struct pci_dev *dev, struct ocxl_fn_config *fn,
- 			struct ocxl_afu_config *afu)
-@@ -535,7 +534,6 @@ int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count)
- {
- 	return pnv_ocxl_get_pasid_count(dev, count);
- }
--EXPORT_SYMBOL_GPL(ocxl_config_get_pasid_info);
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index c10a940e3b38..3498a0199bde 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -134,7 +134,7 @@ static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
+ 	vm_fault_t ret;
  
- void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int pasid_base,
- 			u32 pasid_count_log)
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index 321b29e77f45..cd5a1e3cc950 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -107,10 +107,34 @@ void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
- int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
- void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+ 	offset = vmf->pgoff << PAGE_SHIFT;
+-	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
++	pr_debug("%s: pasid %d address %#lx offset %#llx\n", __func__,
+ 		ctx->pasid, vmf->address, offset);
  
-+/*
-+ * Get the max PASID value that can be used by the function
-+ */
-+int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-+
-+int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
-+
-+/*
-+ * Check if an AFU index is valid for the given function.
-+ *
-+ * AFU indexes can be sparse, so a driver should check all indexes up
-+ * to the maximum found in the function description
-+ */
-+int ocxl_config_check_afu_index(struct pci_dev *dev,
-+				struct ocxl_fn_config *fn, int afu_idx);
-+
-+/**
-+ * Update values within a Process Element
-+ *
-+ * link_handle: the link handle associated with the process element
-+ * pasid: the PASID for the AFU context
-+ * tid: the new thread id for the process element
-+ */
-+int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-+
- struct ocxl_context *ocxl_context_alloc(void);
- int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
- 			struct address_space *mapping);
--int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
- int ocxl_context_mmap(struct ocxl_context *ctx,
- 			struct vm_area_struct *vma);
- int ocxl_context_detach(struct ocxl_context *ctx);
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index 4544573cc93c..9530d3be1b30 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -56,15 +56,6 @@ struct ocxl_fn_config {
- int ocxl_config_read_function(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn);
+ 	if (offset < ctx->afu->irq_base_offset)
+diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+index bcb7ff330c1e..8d2f53812edd 100644
+--- a/drivers/misc/ocxl/trace.h
++++ b/drivers/misc/ocxl/trace.h
+@@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(ocxl_context,
+ 		__entry->tidr = tidr;
+ 	),
  
--/*
-- * Check if an AFU index is valid for the given function.
-- *
-- * AFU indexes can be sparse, so a driver should check all indexes up
-- * to the maximum found in the function description
-- */
--int ocxl_config_check_afu_index(struct pci_dev *dev,
--				struct ocxl_fn_config *fn, int afu_idx);
--
- /*
-  * Read the configuration space of a function for the AFU specified by
-  * the index 'afu_idx'. Fills in a ocxl_afu_config structure
-@@ -74,11 +65,6 @@ int ocxl_config_read_afu(struct pci_dev *dev,
- 				struct ocxl_afu_config *afu,
- 				u8 afu_idx);
+-	TP_printk("linux pid=%d spa=0x%p pasid=0x%x pidr=0x%x tidr=0x%x",
++	TP_printk("linux pid=%d spa=%p pasid=%#x pidr=%#x tidr=%#x",
+ 		__entry->pid,
+ 		__entry->spa,
+ 		__entry->pasid,
+@@ -61,7 +61,7 @@ TRACE_EVENT(ocxl_terminate_pasid,
+ 		__entry->rc = rc;
+ 	),
  
--/*
-- * Get the max PASID value that can be used by the function
-- */
--int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
--
- /*
-  * Tell an AFU, by writing in the configuration space, the PASIDs that
-  * it can use. Range starts at 'pasid_base' and its size is a multiple
-@@ -188,15 +174,6 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
- 		void *xsl_err_data);
+-	TP_printk("pasid=0x%x rc=%d",
++	TP_printk("pasid=%#x rc=%d",
+ 		__entry->pasid,
+ 		__entry->rc
+ 	)
+@@ -87,7 +87,7 @@ DECLARE_EVENT_CLASS(ocxl_fault_handler,
+ 		__entry->tfc = tfc;
+ 	),
  
--/**
-- * Update values within a Process Element
-- *
-- * link_handle: the link handle associated with the process element
-- * pasid: the PASID for the AFU context
-- * tid: the new thread id for the process element
-- */
--int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
--
- /*
-  * Remove a Process Element from the Shared Process Area for a link
-  */
+-	TP_printk("spa=%p pe=0x%llx dsisr=0x%llx dar=0x%llx tfc=0x%llx",
++	TP_printk("spa=%p pe=%#llx dsisr=%#llx dar=%#llx tfc=%#llx",
+ 		__entry->spa,
+ 		__entry->pe,
+ 		__entry->dsisr,
+@@ -127,7 +127,7 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
+ 		__entry->irq_offset = irq_offset;
+ 	),
+ 
+-	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
++	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
+ 		__entry->pasid,
+ 		__entry->irq_id,
+ 		__entry->virq,
+@@ -150,7 +150,7 @@ TRACE_EVENT(ocxl_afu_irq_free,
+ 		__entry->irq_id = irq_id;
+ 	),
+ 
+-	TP_printk("pasid=0x%x irq_id=%d",
++	TP_printk("pasid=%#x irq_id=%d",
+ 		__entry->pasid,
+ 		__entry->irq_id
+ 	)
 -- 
 2.20.1
 
