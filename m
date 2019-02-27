@@ -6,57 +6,55 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92CC9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DD74C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:59:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D21FD21852
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:57:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D21FD21852
+	by mail.kernel.org (Postfix) with ESMTPS id CAA9D21852
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:59:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CAA9D21852
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448NjC1j80zDqFD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 15:57:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448NlG5s8MzDq72
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 15:59:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
  (client-ip=202.103.147.172; helo=mxct.zte.com.cn;
  envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=zte.com.cn
-X-Greylist: delayed 923 seconds by postgrey-1.36 at bilbo;
- Wed, 27 Feb 2019 15:56:11 AEDT
 Received: from mxct.zte.com.cn (out1.zte.com.cn [202.103.147.172])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448NgH6Z0MzDqDF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448NgJ2DPrzDqKT
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:56:11 +1100 (AEDT)
 Received: from mse01.zte.com.cn (unknown [10.30.3.20])
- by Forcepoint Email with ESMTPS id 69CC474E1EE0FF3A0483;
- Wed, 27 Feb 2019 12:40:53 +0800 (CST)
+ by Forcepoint Email with ESMTPS id 8A565DC04187BD37D4FC;
+ Wed, 27 Feb 2019 12:40:47 +0800 (CST)
 Received: from notes_smtp.zte.com.cn ([10.30.1.239])
- by mse01.zte.com.cn with ESMTP id x1R4em8h003706;
- Wed, 27 Feb 2019 12:40:48 +0800 (GMT-8)
+ by mse01.zte.com.cn with ESMTP id x1R4efqI003675;
+ Wed, 27 Feb 2019 12:40:41 +0800 (GMT-8)
  (envelope-from wen.yang99@zte.com.cn)
 Received: from fox-host8.localdomain ([10.74.120.8])
  by szsmtp06.zte.com.cn (Lotus Domino Release 8.5.3FP6)
- with ESMTP id 2019022712410885-2029139 ;
- Wed, 27 Feb 2019 12:41:08 +0800 
+ with ESMTP id 2019022712410218-2029116 ;
+ Wed, 27 Feb 2019 12:41:02 +0800 
 From: Wen Yang <wen.yang99@zte.com.cn>
 To: benh@kernel.crashing.org
-Subject: [PATCH 5/8] PCI: aardvark: fix a leaked reference by adding missing
+Subject: [PATCH 4/8] PCI: rockchip: fix a leaked reference by adding missing
  of_node_put
-Date: Wed, 27 Feb 2019 12:40:40 +0800
-Message-Id: <1551242443-27300-5-git-send-email-wen.yang99@zte.com.cn>
+Date: Wed, 27 Feb 2019 12:40:39 +0800
+Message-Id: <1551242443-27300-4-git-send-email-wen.yang99@zte.com.cn>
 X-Mailer: git-send-email 1.8.3.1
 In-Reply-To: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
 References: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
 X-MIMETrack: Itemize by SMTP Server on SZSMTP06/server/zte_ltd(Release
- 8.5.3FP6|November 21, 2013) at 2019-02-27 12:41:09,
+ 8.5.3FP6|November 21, 2013) at 2019-02-27 12:41:02,
  Serialize by Router on notes_smtp/zte_ltd(Release 9.0.1FP7|August  17, 2016) at
- 2019-02-27 12:40:40, Serialize complete at 2019-02-27 12:40:40
-X-MAIL: mse01.zte.com.cn x1R4em8h003706
+ 2019-02-27 12:40:34, Serialize complete at 2019-02-27 12:40:34
+X-MAIL: mse01.zte.com.cn x1R4efqI003675
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,66 +81,41 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The call to of_get_next_child returns a node pointer with refcount
+The call to of_get_child_by_name returns a node pointer with refcount
 incremented thus it must be explicitly decremented after the last
 usage.
 irq_domain_add_linear also calls of_node_get to increase refcount,
 so irq_domain will not be affected when it is released.
 
 Detected by coccinelle with the following warnings:
-./drivers/pci/controller/pci-aardvark.c:826:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 798, but without a corresponding object release within this function.
+./drivers/pci/controller/pcie-rockchip-host.c:729:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 718, but without a corresponding object release within this function.
+./drivers/pci/controller/pcie-rockchip-host.c:732:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 718, but without a corresponding object release within this function.
 
 Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
-Cc: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+Cc: Shawn Lin <shawn.lin@rock-chips.com>
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Heiko Stuebner <heiko@sntech.de>
 Cc: linux-pci@vger.kernel.org
+Cc: linux-rockchip@lists.infradead.org
 Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 ---
- drivers/pci/controller/pci-aardvark.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/pci/controller/pcie-rockchip-host.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/pci/controller/pci-aardvark.c b/drivers/pci/controller/pci-aardvark.c
-index 750081c..56ecb16 100644
---- a/drivers/pci/controller/pci-aardvark.c
-+++ b/drivers/pci/controller/pci-aardvark.c
-@@ -794,6 +794,7 @@ static int advk_pcie_init_irq_domain(struct advk_pcie *pcie)
- 	struct device_node *node = dev->of_node;
- 	struct device_node *pcie_intc_node;
- 	struct irq_chip *irq_chip;
-+	int ret = 0;
+diff --git a/drivers/pci/controller/pcie-rockchip-host.c b/drivers/pci/controller/pcie-rockchip-host.c
+index 1372d27..8d20f17 100644
+--- a/drivers/pci/controller/pcie-rockchip-host.c
++++ b/drivers/pci/controller/pcie-rockchip-host.c
+@@ -724,6 +724,7 @@ static int rockchip_pcie_init_irq_domain(struct rockchip_pcie *rockchip)
  
- 	pcie_intc_node =  of_get_next_child(node, NULL);
- 	if (!pcie_intc_node) {
-@@ -806,8 +807,8 @@ static int advk_pcie_init_irq_domain(struct advk_pcie *pcie)
- 	irq_chip->name = devm_kasprintf(dev, GFP_KERNEL, "%s-irq",
- 					dev_name(dev));
- 	if (!irq_chip->name) {
--		of_node_put(pcie_intc_node);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto out_put_node;
- 	}
- 
- 	irq_chip->irq_mask = advk_pcie_irq_mask;
-@@ -819,11 +820,13 @@ static int advk_pcie_init_irq_domain(struct advk_pcie *pcie)
- 				      &advk_pcie_irq_domain_ops, pcie);
- 	if (!pcie->irq_domain) {
- 		dev_err(dev, "Failed to get a INTx IRQ domain\n");
--		of_node_put(pcie_intc_node);
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto out_put_node;
- 	}
- 
--	return 0;
-+out_put_node:
-+	of_node_put(pcie_intc_node);
-+	return ret;
- }
- 
- static void advk_pcie_remove_irq_domain(struct advk_pcie *pcie)
+ 	rockchip->irq_domain = irq_domain_add_linear(intc, PCI_NUM_INTX,
+ 						    &intx_domain_ops, rockchip);
++	of_node_put(intc);
+ 	if (!rockchip->irq_domain) {
+ 		dev_err(dev, "failed to get a INTx IRQ domain\n");
+ 		return -EINVAL;
 -- 
 2.9.5
 
