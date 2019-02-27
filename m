@@ -6,91 +6,94 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 756E0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:01:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8FA4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:19:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A92B9218CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:01:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A92B9218CD
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E648C218D8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 04:19:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E648C218D8
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448MS34T9XzDqL8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 15:01:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448Mrw427kzDqJj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 15:19:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=stewart@linux.ibm.com; receiver=<UNKNOWN>)
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448MQ958dczDqHp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 14:59:44 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R3xFwj000609
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:59:40 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwfn0re1g-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448Mq73HBxzDqHx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:17:54 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1R4EZUK135048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:17:49 -0500
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qwjt5s936-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:59:39 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:17:49 -0500
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
- Wed, 27 Feb 2019 03:59:39 -0000
-Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 27 Feb 2019 04:17:48 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 03:59:37 -0000
-Received: from b03ledav001.gho.boulder.ibm.com
- (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R3xaGT23789770
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 03:59:37 GMT
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D0C1F6E04E;
- Wed, 27 Feb 2019 03:59:36 +0000 (GMT)
-Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 37FA96E050;
- Wed, 27 Feb 2019 03:59:36 +0000 (GMT)
-Received: from birb.localdomain (unknown [9.102.35.114])
- by b03ledav001.gho.boulder.ibm.com (Postfix) with SMTP;
- Wed, 27 Feb 2019 03:59:35 +0000 (GMT)
-Received: by birb.localdomain (Postfix, from userid 1000)
- id 574DF4EC65C; Wed, 27 Feb 2019 14:59:32 +1100 (AEDT)
-From: Stewart Smith <stewart@linux.ibm.com>
-To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ Wed, 27 Feb 2019 04:17:45 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1R4HixC28770548
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 27 Feb 2019 04:17:44 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1407442045;
+ Wed, 27 Feb 2019 04:17:44 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B8DC342041;
+ Wed, 27 Feb 2019 04:17:43 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Feb 2019 04:17:43 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 69FD0A01B5;
+ Wed, 27 Feb 2019 15:17:42 +1100 (AEDT)
 Subject: Re: [PATCH] powerpc/powernv: Make opal log only readable by root
-In-Reply-To: <20190227030229.12814-1-jniethe5@gmail.com>
+To: Jordan Niethe <jniethe5@gmail.com>, linuxppc-dev@lists.ozlabs.org
 References: <20190227030229.12814-1-jniethe5@gmail.com>
-Date: Wed, 27 Feb 2019 14:59:32 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 27 Feb 2019 15:17:42 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20190227030229.12814-1-jniethe5@gmail.com>
+Content-Language: en-AU
 X-TM-AS-GCONF: 00
-x-cbid: 19022703-8235-0000-0000-00000E65D93D
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010671; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01166928; UDB=6.00609586; IPR=6.00947536; 
- MB=3.00025758; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-27 03:59:38
+x-cbid: 19022704-0028-0000-0000-0000034D7A8C
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022703-8236-0000-0000-0000449D33EF
-Message-Id: <87ef7tubiz.fsf@linux.vnet.ibm.com>
+x-cbparentid: 19022704-0029-0000-0000-0000240BCFF6
+Message-Id: <ea10bb2b-849d-b199-95df-fe4cf26146c5@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_03:, , signatures=0
+ definitions=2019-02-27_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=992 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270027
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902270029
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,24 +105,25 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jordan Niethe <jniethe5@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jordan Niethe <jniethe5@gmail.com> writes:
+On 27/2/19 2:02 pm, Jordan Niethe wrote:
 > Currently the opal log is globally readable. It is kernel policy to limit
 > the visibility of physical addresses / kernel pointers to root.
 > Given this and the fact the opal log may contain this information it would
 > be better to limit the readability to root.
->
+> 
 > Signed-off-by: Jordan Niethe <jniethe5@gmail.com>
 
-Yeah, this is a really good idea.
+Guess I'll have to get used to typing sudo more often. :(
 
-Reviewed-by: Stewart Smith <stewart@linux.ibm.com>
+Makes sense also given that we do the same thing for exports afaict.
+
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
