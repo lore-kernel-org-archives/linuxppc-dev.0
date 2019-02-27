@@ -2,80 +2,53 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FROM_EXCESS_BASE64,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,SUBJ_ALL_CAPS,USER_AGENT_NEOMUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 266B2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:05:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFF1AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:08:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5C033217F5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:05:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="ufIaeunu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5C033217F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	by mail.kernel.org (Postfix) with ESMTPS id 3AB82217F5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:08:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AB82217F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448gWl19j7zDqKy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 03:05:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448gZk2QK8zDqJq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 03:08:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yadro.com
- (client-ip=89.207.88.251; helo=mta-01.yadro.com; envelope-from=ilya@yadro.com;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yadro.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="ufIaeunu"; 
- dkim-atps=neutral
-X-Greylist: delayed 377 seconds by postgrey-1.36 at bilbo;
- Thu, 28 Feb 2019 03:03:51 AEDT
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+ spf=none (mailfrom) smtp.mailfrom=linux.intel.com
+ (client-ip=134.134.136.126; helo=mga18.intel.com;
+ envelope-from=ricardo.neri-calderon@linux.intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.intel.com
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448gTg0KQQzDq6k
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 03:03:50 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 6584441974
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:57:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- user-agent:content-disposition:content-type:content-type
- :mime-version:message-id:subject:subject:from:from:date:date
- :received:received:received; s=mta-01; t=1551283048; x=
- 1553097449; bh=bNLOqlc6VxHjvmbHxfGdtVkZRHn1znNgeSK++MMK/+o=; b=u
- fIaeunuYue3jSIc6IP3vXkLVM3hx9Ipoc8nL0I41SQfAo1qTy1LwZnraIwOq3Khj
- h818RlB6VOl/NBjM5yFR8PVRKcdI2M3di13LV4mI1Z+ORHAWkzOVhEd+RpwGMqF3
- PXEn3FvQy8AfetNf6QsCgnaI+9aT+mx7S3vVC7fzgs=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id iT0JX1j9RJcX for <linuxppc-dev@lists.ozlabs.org>;
- Wed, 27 Feb 2019 18:57:28 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id AF86641940
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 18:57:28 +0300 (MSK)
-Received: from localhost (172.17.15.183) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 27
- Feb 2019 18:57:28 +0300
-Date: Wed, 27 Feb 2019 18:57:02 +0300
-From: =?utf-8?B?0JjQu9GM0Y8g0JrRg9C30L3QtdGG0L7Qsg==?= <ilya@yadro.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: DMA & POWER8
-Message-ID: <20190227155702.ngm3l5bjsde2vvrw@yadro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Content-Disposition: inline
-User-Agent: NeoMutt/20180716
-X-Originating-IP: [172.17.15.183]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448gX75FWfzDqDr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 03:05:56 +1100 (AEDT)
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+ by orsmga106.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 27 Feb 2019 08:05:51 -0800
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.58,420,1544515200"; d="scan'208";a="303011689"
+Received: from unknown (HELO luv-build.sc.intel.com) ([172.25.110.25])
+ by orsmga005.jf.intel.com with ESMTP; 27 Feb 2019 08:05:48 -0800
+From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
+ Borislav Petkov <bp@suse.de>
+Subject: [RFC PATCH v2 08/14] watchdog/hardlockup: Decouple the hardlockup
+ detector from perf
+Date: Wed, 27 Feb 2019 08:05:12 -0800
+Message-Id: <1551283518-18922-9-git-send-email-ricardo.neri-calderon@linux.intel.com>
+X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
+References: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,12 +60,444 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: a.fomichev@yadro.com
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Ricardo Neri <ricardo.neri@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Ashok Raj <ashok.raj@intel.com>, x86@kernel.org,
+ Andi Kleen <andi.kleen@intel.com>, Don Zickus <dzickus@redhat.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Tony Luck <tony.luck@intel.com>, Babu Moger <babu.moger@oracle.com>,
+ linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Colin Ian King <colin.king@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We're trying to use Slave-DMA API of the DMA Engine in the linux kernel on
-POWER8 OpenPOWER platform. And we discovered that dma_request_channel() always fails.
-Does it mean that Turismo hardware does not support Slave-DMA? Or DMA
-subsystem in the linux kernel needs to be fixed, doesn't it?
+The current default implementation of the hardlockup detector assumes that
+it is implemented using perf events. However, the hardlockup detector can
+be driven by other sources of non-maskable interrupts (e.g., a properly
+configured timer).
+
+Put in a separate file all the code that is specific to perf: create and
+manage events, stop and start the detector. This perf-specific code is put
+in the new file watchdog_hld_perf.c
+
+The code generic code used to monitor the timers' thresholds, check
+timestamps and detect hardlockups remains in watchdog_hld.c
+
+Functions and variables are simply relocated to a new file. No functional
+changes were made.
+
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ashok Raj <ashok.raj@intel.com>
+Cc: Andi Kleen <andi.kleen@intel.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Don Zickus <dzickus@redhat.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Frederic Weisbecker <frederic@kernel.org>
+Cc: Babu Moger <babu.moger@oracle.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Colin Ian King <colin.king@canonical.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
+Cc: x86@kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+---
+ kernel/Makefile            |   3 +-
+ kernel/watchdog_hld.c      | 153 --------------------------------
+ kernel/watchdog_hld_perf.c | 175 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 177 insertions(+), 154 deletions(-)
+ create mode 100644 kernel/watchdog_hld_perf.c
+
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 6aa7543bcdb2..5b75e6003458 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -81,7 +81,8 @@ obj-$(CONFIG_FAIL_FUNCTION) += fail_function.o
+ obj-$(CONFIG_KGDB) += debug/
+ obj-$(CONFIG_DETECT_HUNG_TASK) += hung_task.o
+ obj-$(CONFIG_LOCKUP_DETECTOR) += watchdog.o
+-obj-$(CONFIG_HARDLOCKUP_DETECTOR_PERF) += watchdog_hld.o
++obj-$(CONFIG_HARDLOCKUP_DETECTOR) += watchdog_hld.o
++obj-$(CONFIG_HARDLOCKUP_DETECTOR_PERF) += watchdog_hld_perf.o
+ obj-$(CONFIG_SECCOMP) += seccomp.o
+ obj-$(CONFIG_RELAY) += relay.o
+ obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
+diff --git a/kernel/watchdog_hld.c b/kernel/watchdog_hld.c
+index 9724cd57307b..372db565b1b9 100644
+--- a/kernel/watchdog_hld.c
++++ b/kernel/watchdog_hld.c
+@@ -22,12 +22,8 @@
+ 
+ static DEFINE_PER_CPU(bool, hard_watchdog_warn);
+ static DEFINE_PER_CPU(bool, watchdog_nmi_touch);
+-static DEFINE_PER_CPU(struct perf_event *, watchdog_ev);
+-static DEFINE_PER_CPU(struct perf_event *, dead_event);
+-static struct cpumask dead_events_mask;
+ 
+ static unsigned long hardlockup_allcpu_dumped;
+-static atomic_t watchdog_cpus = ATOMIC_INIT(0);
+ 
+ notrace void arch_touch_nmi_watchdog(void)
+ {
+@@ -98,14 +94,6 @@ static inline bool watchdog_check_timestamp(void)
+ }
+ #endif
+ 
+-static struct perf_event_attr wd_hw_attr = {
+-	.type		= PERF_TYPE_HARDWARE,
+-	.config		= PERF_COUNT_HW_CPU_CYCLES,
+-	.size		= sizeof(struct perf_event_attr),
+-	.pinned		= 1,
+-	.disabled	= 1,
+-};
+-
+ void inspect_for_hardlockups(struct pt_regs *regs)
+ {
+ 	if (__this_cpu_read(watchdog_nmi_touch) == true) {
+@@ -156,144 +144,3 @@ void inspect_for_hardlockups(struct pt_regs *regs)
+ 	return;
+ }
+ 
+-/* Callback function for perf event subsystem */
+-static void watchdog_overflow_callback(struct perf_event *event,
+-				       struct perf_sample_data *data,
+-				       struct pt_regs *regs)
+-{
+-	/* Ensure the watchdog never gets throttled */
+-	event->hw.interrupts = 0;
+-	inspect_for_hardlockups(regs);
+-}
+-
+-static int hardlockup_detector_event_create(void)
+-{
+-	unsigned int cpu = smp_processor_id();
+-	struct perf_event_attr *wd_attr;
+-	struct perf_event *evt;
+-
+-	wd_attr = &wd_hw_attr;
+-	wd_attr->sample_period = hw_nmi_get_sample_period(watchdog_thresh);
+-
+-	/* Try to register using hardware perf events */
+-	evt = perf_event_create_kernel_counter(wd_attr, cpu, NULL,
+-					       watchdog_overflow_callback, NULL);
+-	if (IS_ERR(evt)) {
+-		pr_debug("Perf event create on CPU %d failed with %ld\n", cpu,
+-			 PTR_ERR(evt));
+-		return PTR_ERR(evt);
+-	}
+-	this_cpu_write(watchdog_ev, evt);
+-	return 0;
+-}
+-
+-/**
+- * hardlockup_detector_perf_enable - Enable the local event
+- */
+-void hardlockup_detector_perf_enable(void)
+-{
+-	if (hardlockup_detector_event_create())
+-		return;
+-
+-	/* use original value for check */
+-	if (!atomic_fetch_inc(&watchdog_cpus))
+-		pr_info("Enabled. Permanently consumes one hw-PMU counter.\n");
+-
+-	perf_event_enable(this_cpu_read(watchdog_ev));
+-}
+-
+-/**
+- * hardlockup_detector_perf_disable - Disable the local event
+- */
+-void hardlockup_detector_perf_disable(void)
+-{
+-	struct perf_event *event = this_cpu_read(watchdog_ev);
+-
+-	if (event) {
+-		perf_event_disable(event);
+-		this_cpu_write(watchdog_ev, NULL);
+-		this_cpu_write(dead_event, event);
+-		cpumask_set_cpu(smp_processor_id(), &dead_events_mask);
+-		atomic_dec(&watchdog_cpus);
+-	}
+-}
+-
+-/**
+- * hardlockup_detector_perf_cleanup - Cleanup disabled events and destroy them
+- *
+- * Called from lockup_detector_cleanup(). Serialized by the caller.
+- */
+-void hardlockup_detector_perf_cleanup(void)
+-{
+-	int cpu;
+-
+-	for_each_cpu(cpu, &dead_events_mask) {
+-		struct perf_event *event = per_cpu(dead_event, cpu);
+-
+-		/*
+-		 * Required because for_each_cpu() reports  unconditionally
+-		 * CPU0 as set on UP kernels. Sigh.
+-		 */
+-		if (event)
+-			perf_event_release_kernel(event);
+-		per_cpu(dead_event, cpu) = NULL;
+-	}
+-	cpumask_clear(&dead_events_mask);
+-}
+-
+-/**
+- * hardlockup_detector_perf_stop - Globally stop watchdog events
+- *
+- * Special interface for x86 to handle the perf HT bug.
+- */
+-void __init hardlockup_detector_perf_stop(void)
+-{
+-	int cpu;
+-
+-	lockdep_assert_cpus_held();
+-
+-	for_each_online_cpu(cpu) {
+-		struct perf_event *event = per_cpu(watchdog_ev, cpu);
+-
+-		if (event)
+-			perf_event_disable(event);
+-	}
+-}
+-
+-/**
+- * hardlockup_detector_perf_restart - Globally restart watchdog events
+- *
+- * Special interface for x86 to handle the perf HT bug.
+- */
+-void __init hardlockup_detector_perf_restart(void)
+-{
+-	int cpu;
+-
+-	lockdep_assert_cpus_held();
+-
+-	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
+-		return;
+-
+-	for_each_online_cpu(cpu) {
+-		struct perf_event *event = per_cpu(watchdog_ev, cpu);
+-
+-		if (event)
+-			perf_event_enable(event);
+-	}
+-}
+-
+-/**
+- * hardlockup_detector_perf_init - Probe whether NMI event is available at all
+- */
+-int __init hardlockup_detector_perf_init(void)
+-{
+-	int ret = hardlockup_detector_event_create();
+-
+-	if (ret) {
+-		pr_info("Perf NMI watchdog permanently disabled\n");
+-	} else {
+-		perf_event_release_kernel(this_cpu_read(watchdog_ev));
+-		this_cpu_write(watchdog_ev, NULL);
+-	}
+-	return ret;
+-}
+diff --git a/kernel/watchdog_hld_perf.c b/kernel/watchdog_hld_perf.c
+new file mode 100644
+index 000000000000..1d06ec5a8e42
+--- /dev/null
++++ b/kernel/watchdog_hld_perf.c
+@@ -0,0 +1,175 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Detect hard lockups on a system
++ *
++ * Copyright (C) Intel Corporation 2019
++ *
++ * Note: All of this code comes from the original perf-specific hardlockup
++ * detector.
++ */
++
++#define pr_fmt(fmt) "NMI perf watchdog: " fmt
++
++#include <linux/nmi.h>
++#include <linux/atomic.h>
++#include <linux/module.h>
++#include <linux/sched/debug.h>
++#include <linux/perf_event.h>
++#include <asm/irq_regs.h>
++
++static DEFINE_PER_CPU(struct perf_event *, watchdog_ev);
++static DEFINE_PER_CPU(struct perf_event *, dead_event);
++static struct cpumask dead_events_mask;
++
++static atomic_t watchdog_cpus = ATOMIC_INIT(0);
++
++static struct perf_event_attr wd_hw_attr = {
++	.type		= PERF_TYPE_HARDWARE,
++	.config		= PERF_COUNT_HW_CPU_CYCLES,
++	.size		= sizeof(struct perf_event_attr),
++	.pinned		= 1,
++	.disabled	= 1,
++};
++
++/* Callback function for perf event subsystem */
++static void watchdog_overflow_callback(struct perf_event *event,
++				       struct perf_sample_data *data,
++				       struct pt_regs *regs)
++{
++	/* Ensure the watchdog never gets throttled */
++	event->hw.interrupts = 0;
++	inspect_for_hardlockups(regs);
++}
++
++static int hardlockup_detector_event_create(void)
++{
++	unsigned int cpu = smp_processor_id();
++	struct perf_event_attr *wd_attr;
++	struct perf_event *evt;
++
++	wd_attr = &wd_hw_attr;
++	wd_attr->sample_period = hw_nmi_get_sample_period(watchdog_thresh);
++
++	/* Try to register using hardware perf events */
++	evt = perf_event_create_kernel_counter(wd_attr, cpu, NULL,
++					       watchdog_overflow_callback, NULL);
++	if (IS_ERR(evt)) {
++		pr_debug("Perf event create on CPU %d failed with %ld\n", cpu,
++			 PTR_ERR(evt));
++		return PTR_ERR(evt);
++	}
++	this_cpu_write(watchdog_ev, evt);
++	return 0;
++}
++
++/**
++ * hardlockup_detector_perf_enable - Enable the local event
++ */
++void hardlockup_detector_perf_enable(void)
++{
++	if (hardlockup_detector_event_create())
++		return;
++
++	/* use original value for check */
++	if (!atomic_fetch_inc(&watchdog_cpus))
++		pr_info("Enabled. Permanently consumes one hw-PMU counter.\n");
++
++	perf_event_enable(this_cpu_read(watchdog_ev));
++}
++
++/**
++ * hardlockup_detector_perf_disable - Disable the local event
++ */
++void hardlockup_detector_perf_disable(void)
++{
++	struct perf_event *event = this_cpu_read(watchdog_ev);
++
++	if (event) {
++		perf_event_disable(event);
++		this_cpu_write(watchdog_ev, NULL);
++		this_cpu_write(dead_event, event);
++		cpumask_set_cpu(smp_processor_id(), &dead_events_mask);
++		atomic_dec(&watchdog_cpus);
++	}
++}
++
++/**
++ * hardlockup_detector_perf_cleanup - Cleanup disabled events and destroy them
++ *
++ * Called from lockup_detector_cleanup(). Serialized by the caller.
++ */
++void hardlockup_detector_perf_cleanup(void)
++{
++	int cpu;
++
++	for_each_cpu(cpu, &dead_events_mask) {
++		struct perf_event *event = per_cpu(dead_event, cpu);
++
++		/*
++		 * Required because for_each_cpu() reports  unconditionally
++		 * CPU0 as set on UP kernels. Sigh.
++		 */
++		if (event)
++			perf_event_release_kernel(event);
++		per_cpu(dead_event, cpu) = NULL;
++	}
++	cpumask_clear(&dead_events_mask);
++}
++
++/**
++ * hardlockup_detector_perf_stop - Globally stop watchdog events
++ *
++ * Special interface for x86 to handle the perf HT bug.
++ */
++void __init hardlockup_detector_perf_stop(void)
++{
++	int cpu;
++
++	lockdep_assert_cpus_held();
++
++	for_each_online_cpu(cpu) {
++		struct perf_event *event = per_cpu(watchdog_ev, cpu);
++
++		if (event)
++			perf_event_disable(event);
++	}
++}
++
++/**
++ * hardlockup_detector_perf_restart - Globally restart watchdog events
++ *
++ * Special interface for x86 to handle the perf HT bug.
++ */
++void __init hardlockup_detector_perf_restart(void)
++{
++	int cpu;
++
++	lockdep_assert_cpus_held();
++
++	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
++		return;
++
++	for_each_online_cpu(cpu) {
++		struct perf_event *event = per_cpu(watchdog_ev, cpu);
++
++		if (event)
++			perf_event_enable(event);
++	}
++}
++
++/**
++ * hardlockup_detector_perf_init - Probe whether NMI event is available at all
++ */
++int __init hardlockup_detector_perf_init(void)
++{
++	int ret = hardlockup_detector_event_create();
++
++	if (ret) {
++		pr_info("Perf NMI watchdog permanently disabled\n");
++	} else {
++		perf_event_release_kernel(this_cpu_read(watchdog_ev));
++		this_cpu_write(watchdog_ev, NULL);
++	}
++	return ret;
++}
++
+-- 
+2.17.1
+
