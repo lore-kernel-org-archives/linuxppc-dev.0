@@ -2,101 +2,81 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2366EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 08:19:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8624FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 08:27:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69409218E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 08:19:56 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69409218E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id F35DE21852
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 08:27:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Sk2KAcpB"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F35DE21852
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448TBL1c1qzDqH2
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 19:19:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448TLn4h93zDqJk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 19:27:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Sk2KAcpB"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448T8Y3HlwzDqH2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 19:18:20 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R84uxD091316
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 03:18:18 -0500
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qwpk116tr-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 03:18:17 -0500
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 27 Feb 2019 08:18:15 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 08:18:12 -0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
- [9.149.105.232])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R8IBhw31653972
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 08:18:11 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8057F5204F;
- Wed, 27 Feb 2019 08:18:11 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2CC365205A;
- Wed, 27 Feb 2019 08:18:11 +0000 (GMT)
-Received: from [9.102.32.74] (unknown [9.102.32.74])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6B845A0243;
- Wed, 27 Feb 2019 19:18:09 +1100 (AEDT)
-Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
-To: "Alastair D'Silva" <alastair@d-silva.org>,
- "'Alastair D'Silva'" <alastair@au1.ibm.com>
-References: <20190227045741.21412-1-alastair@au1.ibm.com>
- <20190227045741.21412-2-alastair@au1.ibm.com>
- <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
- <156e01d4ce6e$ee42d9f0$cac88dd0$@d-silva.org>
- <a36b088b-b8d7-8725-50db-6aad58672784@au1.ibm.com>
- <158101d4ce73$11ff4550$35fdcff0$@d-silva.org>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 27 Feb 2019 19:18:08 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448TJv5T65zDqJ1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 19:25:34 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 448TJl5nw3z9tySf;
+ Wed, 27 Feb 2019 09:25:27 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Sk2KAcpB; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id Y0pg6aSDFRow; Wed, 27 Feb 2019 09:25:27 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 448TJl4WPbz9tySd;
+ Wed, 27 Feb 2019 09:25:27 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1551255927; bh=/UPkz0WwtcL8bE1OiayFX/WKIUhxV4kqxfgR2z1/XR4=;
+ h=From:To:Cc:Subject:Date:From;
+ b=Sk2KAcpBKlWKabKx+a2QuMpVdmH/nVEZ5yF52y5E+HRUWX3xYEIeeO2jYX9ZyuKTl
+ cHDWZPePtubFbxdYeLOfOxjAFOxEBMqmlk1+A+lO7ORUdKXWzhR7aK0/j218LlEjZR
+ LxJIRj8BR/176Zc4NmxNC1DsjcVUB+Vl5rVABqdo=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 96D968B8B4;
+ Wed, 27 Feb 2019 09:25:28 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id qY-R5Qmgzj6G; Wed, 27 Feb 2019 09:25:28 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 69AE18B754;
+ Wed, 27 Feb 2019 09:25:28 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
+Subject: BUG: KASAN: stack-out-of-bounds
+Message-ID: <c6d80735-0cfe-b4ab-0349-673fc65b2e15@c-s.fr>
+Date: Wed, 27 Feb 2019 09:25:28 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <158101d4ce73$11ff4550$35fdcff0$@d-silva.org>
-Content-Language: en-AU
-X-TM-AS-GCONF: 00
-x-cbid: 19022708-4275-0000-0000-000003148120
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022708-4276-0000-0000-00003822C30C
-Message-Id: <97ad5218-4876-956e-e6ef-fb3449eca68e@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270055
+Content-Language: fr
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -108,70 +88,172 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: 'Arnd Bergmann' <arnd@arndb.de>,
- 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>,
- 'Greg Kurz' <groug@kaod.org>, linux-kernel@vger.kernel.org,
- 'Frederic Barrat' <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ kasan-dev@googlegroups.com, Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 27/2/19 7:04 pm, Alastair D'Silva wrote:
->> -----Original Message-----
->> From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->> Sent: Wednesday, 27 February 2019 6:55 PM
->> To: Alastair D'Silva <alastair@d-silva.org>; 'Alastair D'Silva'
->> <alastair@au1.ibm.com>
->> Cc: 'Greg Kurz' <groug@kaod.org>; 'Frederic Barrat'
->> <fbarrat@linux.ibm.com>; 'Arnd Bergmann' <arnd@arndb.de>; 'Greg Kroah-
->> Hartman' <gregkh@linuxfoundation.org>; linuxppc-dev@lists.ozlabs.org;
->> linux-kernel@vger.kernel.org
->> Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
->>
->> On 27/2/19 6:34 pm, Alastair D'Silva wrote:>>> diff --git
->> a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c index
->>>>> e6a607488f8a..16eb8a60d5c7 100644
->>>>> --- a/drivers/misc/ocxl/file.c
->>>>> +++ b/drivers/misc/ocxl/file.c
->>>>> @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct
->>>>> ocxl_context *ctx,
->>>>>
->>>>>     		if (status == ATTACHED) {
->>>>>     			int rc;
->>>>> -			struct link *link = ctx->afu->fn->link;
->>>>> +			void *link = ctx->afu->fn->link;
->>>>
->>>> This doesn't look like a rename...
->>>
->>> That corrects the type to what the member (and prototype for
->> ocxl_link_update_pe) declare it as.
->>>
->>> The struct link there is bogus, it shouldn't even compile (since the intended
->> struct link is defined in a different compilation unit), but instead picks up a
->> different definition of 'struct link' from elsewhere.
->>>
->>
->> Given there's only a handful of struct links defined across the entire kernel,
->> I'm going to guess that the definition it's picking up is in fact the ocxl one.
->>
-> 
-> Unlikely, since that's never in a header. It wasn't caught since it was assigned to/from a void*.
+With version v8 of the series implementing KASAN on 32 bits powerpc 
+(https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=94309), 
+I'm now able to activate KASAN on a mac99 is QEMU.
 
-Ah, yeah that'd explain it... and it's a pointer so it never needs to 
-know its size. I'm clearly not very good at C.
+Then I get the following reports at startup. Which of the two reports I 
+get seems to depend on the option used to build the kernel, but for a 
+given kernel I always get the same report.
 
-> 
->> I think the better solution here is to move struct ocxl_link into
->> ocxl_internal.h, change ocxl_fn::link to be struct ocxl_link * rather than void
->> *, and update the function signature for ocxl_link_update_pe() as well.
->   
-> Not move it, but we could have an opaque declaration there.
-> 
+Is that a real bug, in which case how could I spot it ? Or is it 
+something wrong in my implementation of KASAN ?
 
-Putting it there would fit with all the other ocxl_* structs, but either 
-way, we definitely need a declaration in there and get rid of the void*, t
+I checked that after kasan_init(), the entire shadow memory is full of 0 
+only.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+I also made a try with the strong STACK_PROTECTOR compiled in, but no 
+difference and nothing detected by the stack protector.
 
+==================================================================
+BUG: KASAN: stack-out-of-bounds in memchr+0x24/0x74
+Read of size 1 at addr c0ecdd40 by task swapper/0
+
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1133
+Call Trace:
+[c0e9dca0] [c01c42a0] print_address_description+0x64/0x2bc (unreliable)
+[c0e9dcd0] [c01c4684] kasan_report+0xfc/0x180
+[c0e9dd10] [c089579c] memchr+0x24/0x74
+[c0e9dd30] [c00a9e38] msg_print_text+0x124/0x574
+[c0e9dde0] [c00ab710] console_unlock+0x114/0x4f8
+[c0e9de40] [c00adc60] vprintk_emit+0x188/0x1c4
+--- interrupt: c0e9df00 at 0x400f330
+     LR = init_stack+0x1f00/0x2000
+[c0e9de80] [c00ae3c4] printk+0xa8/0xcc (unreliable)
+[c0e9df20] [c0c28e44] early_irq_init+0x38/0x108
+[c0e9df50] [c0c16434] start_kernel+0x310/0x488
+[c0e9dff0] [00003484] 0x3484
+
+The buggy address belongs to the variable:
+  __log_buf+0xec0/0x4020
+The buggy address belongs to the page:
+page:c6eac9a0 count:1 mapcount:0 mapping:00000000 index:0x0
+flags: 0x1000(reserved)
+raw: 00001000 c6eac9a4 c6eac9a4 00000000 00000000 00000000 ffffffff 00000001
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+  c0ecdc00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  c0ecdc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ >c0ecdd00: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00
+                                    ^
+  c0ecdd80: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+  c0ecde00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+==================================================================
+
+==================================================================
+BUG: KASAN: stack-out-of-bounds in pmac_nvram_init+0x1ec/0x600
+Read of size 1 at addr f6f37de0 by task swapper/0
+
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1134
+Call Trace:
+[c0ff7d60] [c01fe808] print_address_description+0x6c/0x2b0 (unreliable)
+[c0ff7d90] [c01fe4fc] kasan_report+0x13c/0x1ac
+[c0ff7dd0] [c0d34324] pmac_nvram_init+0x1ec/0x600
+[c0ff7ef0] [c0d31148] pmac_setup_arch+0x280/0x308
+[c0ff7f20] [c0d2c30c] setup_arch+0x250/0x280
+[c0ff7f50] [c0d26354] start_kernel+0xb8/0x4d8
+[c0ff7ff0] [00003484] 0x3484
+
+
+Memory state around the buggy address:
+  f6f37c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  f6f37d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ >f6f37d80: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+                                                ^
+  f6f37e00: 00 00 00 00 f2 f2 f2 f2 00 00 00 00 f2 f2 f2 f2
+  f6f37e80: 00 00 01 f2 00 00 00 00 00 00 00 00 00 00 00 00
+==================================================================
+
+==================================================================
+BUG: KASAN: stack-out-of-bounds in memchr+0xa0/0xac
+Read of size 1 at addr c17cdd30 by task swapper/0
+
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1135
+Call Trace:
+[c179dc90] [c032fe28] print_address_description+0x64/0x2bc (unreliable)
+[c179dcc0] [c033020c] kasan_report+0xfc/0x180
+[c179dd00] [c115ef50] memchr+0xa0/0xac
+[c179dd20] [c01297f8] msg_print_text+0xc8/0x67c
+[c179ddd0] [c012bc8c] console_unlock+0x17c/0x818
+[c179de40] [c012f420] vprintk_emit+0x188/0x1c4
+--- interrupt: c179df30 at 0x400def0
+     LR = init_stack+0x1ef0/0x2000
+[c179de80] [c012fff0] printk+0xa8/0xcc (unreliable)
+[c179df20] [c150b4b8] early_irq_init+0x38/0x108
+[c179df50] [c14ef7f8] start_kernel+0x30c/0x530
+[c179dff0] [00003484] 0x3484
+
+The buggy address belongs to the variable:
+  __log_buf+0xeb0/0x4020
+The buggy address belongs to the page:
+page:c6ebe9a0 count:1 mapcount:0 mapping:00000000 index:0x0
+flags: 0x1000(reserved)
+raw: 00001000 c6ebe9a4 c6ebe9a4 00000000 00000000 00000000 ffffffff 00000001
+page dumped because: kasan: bad access detected
+
+Memory state around the buggy address:
+  c17cdc00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  c17cdc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ >c17cdd00: 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00 f3 f3
+                              ^
+  c17cdd80: f3 f3 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  c17cde00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+==================================================================
+
+==================================================================
+BUG: KASAN: stack-out-of-bounds in pmac_nvram_init+0x228/0xae0
+Read of size 1 at addr f6f37dd0 by task swapper/0
+
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1136
+Call Trace:
+[c1c37d50] [c03f7e88] print_address_description+0x6c/0x2b0 (unreliable)
+[c1c37d80] [c03f7bd4] kasan_report+0x10c/0x16c
+[c1c37dc0] [c19879b4] pmac_nvram_init+0x228/0xae0
+[c1c37ef0] [c19826bc] pmac_setup_arch+0x578/0x6a8
+[c1c37f20] [c19792bc] setup_arch+0x5f4/0x620
+[c1c37f50] [c196f898] start_kernel+0xb8/0x588
+[c1c37ff0] [00003484] 0x3484
+
+
+Memory state around the buggy address:
+  f6f37c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  f6f37d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ >f6f37d80: 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00
+                                          ^
+  f6f37e00: 01 f2 f2 f2 f2 f2 00 00 00 00 f2 f2 f2 f2 00 00
+  f6f37e80: 00 00 f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00
+==================================================================
+
+==================================================================
+BUG: KASAN: stack-out-of-bounds in pmac_nvram_init+0x1ec/0x5ec
+Read of size 1 at addr f6f37de0 by task swapper/0
+
+CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1137
+Call Trace:
+[c0fb7d60] [c01f8184] print_address_description+0x6c/0x2b0 (unreliable)
+[c0fb7d90] [c01f7ed0] kasan_report+0x10c/0x16c
+[c0fb7dd0] [c0d1dfe8] pmac_nvram_init+0x1ec/0x5ec
+[c0fb7ef0] [c0d1ae90] pmac_setup_arch+0x280/0x308
+[c0fb7f20] [c0d16138] setup_arch+0x250/0x280
+[c0fb7f50] [c0d1032c] start_kernel+0xb8/0x4a4
+[c0fb7ff0] [00003484] 0x3484
+
+
+Memory state around the buggy address:
+  f6f37c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  f6f37d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ >f6f37d80: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+                                                ^
+  f6f37e00: 00 00 01 f2 f2 f2 f2 f2 00 00 00 00 f2 f2 f2 f2
+  f6f37e80: 00 00 00 00 f3 f3 f3 f3 00 00 00 00 00 00 00 00
+==================================================================
+
+Thanks
+Christophe
