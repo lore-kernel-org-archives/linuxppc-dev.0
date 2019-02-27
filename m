@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A7A1C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:10:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AAF1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:12:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3DB421852
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:10:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3DB421852
+	by mail.kernel.org (Postfix) with ESMTPS id E724A218D0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:12:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E724A218D0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448P026xnRzDq99
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:10:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448P1p0knmzDqFB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:12:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,68 +29,68 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448NkD63xdzDqMr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:58:41 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448NkF203qzDqHL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:58:42 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R4sRXR068272
+ x1R4sRwX001862
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:39 -0500
 Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qwgk2g2gq-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2qwjsx2s81-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:38 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:39 -0500
 Received: from localhost
  by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
  Wed, 27 Feb 2019 04:58:37 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
  by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
  Wed, 27 Feb 2019 04:58:34 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R4wXjK19857416
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1R4wXCh23461896
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
  Wed, 27 Feb 2019 04:58:33 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4FF34A405C;
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1470EAE05A;
  Wed, 27 Feb 2019 04:58:33 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F3117A4054;
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6F4D3AE055;
  Wed, 27 Feb 2019 04:58:32 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
  Wed, 27 Feb 2019 04:58:32 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id E5299A0266;
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 08361A025F;
  Wed, 27 Feb 2019 15:58:31 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH 3/5] ocxl: read_pasid never returns an error, so make it void
-Date: Wed, 27 Feb 2019 15:57:39 +1100
+Subject: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
+Date: Wed, 27 Feb 2019 15:57:37 +1100
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190227045741.21412-1-alastair@au1.ibm.com>
 References: <20190227045741.21412-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 X-TM-AS-GCONF: 00
-x-cbid: 19022704-0012-0000-0000-000002FAA4EB
+x-cbid: 19022704-0012-0000-0000-000002FAA4EC
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022704-0013-0000-0000-000021324B18
-Message-Id: <20190227045741.21412-4-alastair@au1.ibm.com>
+x-cbparentid: 19022704-0013-0000-0000-000021324B17
+Message-Id: <20190227045741.21412-2-alastair@au1.ibm.com>
 Content-Type: text/plain
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-27_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=760 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=939 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902270035
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -113,48 +113,184 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-No need for a return value in read_pasid as it only returns 0.
+The term 'link' is ambiguous (especially when the struct is used for a
+list), so rename it for clarity.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 Reviewed-by: Greg Kurz <groug@kaod.org>
 ---
- drivers/misc/ocxl/config.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/misc/ocxl/file.c |  2 +-
+ drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
+ 2 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-index 0ee7856b033d..026ac2ac4f9c 100644
---- a/drivers/misc/ocxl/config.c
-+++ b/drivers/misc/ocxl/config.c
-@@ -68,7 +68,7 @@ static int find_dvsec_afu_ctrl(struct pci_dev *dev, u8 afu_idx)
+diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+index e6a607488f8a..16eb8a60d5c7 100644
+--- a/drivers/misc/ocxl/file.c
++++ b/drivers/misc/ocxl/file.c
+@@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
+ 
+ 		if (status == ATTACHED) {
+ 			int rc;
+-			struct link *link = ctx->afu->fn->link;
++			void *link = ctx->afu->fn->link;
+ 
+ 			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
+ 			if (rc)
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index d50b861d7e57..8d2690a1a9de 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -76,7 +76,7 @@ struct spa {
+  * limited number of opencapi slots on a system and lookup is only
+  * done when the device is probed
+  */
+-struct link {
++struct ocxl_link {
+ 	struct list_head list;
+ 	struct kref ref;
+ 	int domain;
+@@ -179,7 +179,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+ 
+ static irqreturn_t xsl_fault_handler(int irq, void *data)
+ {
+-	struct link *link = (struct link *) data;
++	struct ocxl_link *link = (struct ocxl_link *) data;
+ 	struct spa *spa = link->spa;
+ 	u64 dsisr, dar, pe_handle;
+ 	struct pe_data *pe_data;
+@@ -256,7 +256,7 @@ static int map_irq_registers(struct pci_dev *dev, struct spa *spa)
+ 				&spa->reg_tfc, &spa->reg_pe_handle);
+ }
+ 
+-static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
++static int setup_xsl_irq(struct pci_dev *dev, struct ocxl_link *link)
+ {
+ 	struct spa *spa = link->spa;
+ 	int rc;
+@@ -311,7 +311,7 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+ 	return rc;
+ }
+ 
+-static void release_xsl_irq(struct link *link)
++static void release_xsl_irq(struct ocxl_link *link)
+ {
+ 	struct spa *spa = link->spa;
+ 
+@@ -323,7 +323,7 @@ static void release_xsl_irq(struct link *link)
+ 	unmap_irq_registers(spa);
+ }
+ 
+-static int alloc_spa(struct pci_dev *dev, struct link *link)
++static int alloc_spa(struct pci_dev *dev, struct ocxl_link *link)
+ {
+ 	struct spa *spa;
+ 
+@@ -350,7 +350,7 @@ static int alloc_spa(struct pci_dev *dev, struct link *link)
  	return 0;
  }
  
--static int read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
-+static void read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
+-static void free_spa(struct link *link)
++static void free_spa(struct ocxl_link *link)
  {
- 	u16 val;
- 	int pos;
-@@ -89,7 +89,6 @@ static int read_pasid(struct pci_dev *dev, struct ocxl_fn_config *fn)
- out:
- 	dev_dbg(&dev->dev, "PASID capability:\n");
- 	dev_dbg(&dev->dev, "  Max PASID log = %d\n", fn->max_pasid_log);
--	return 0;
+ 	struct spa *spa = link->spa;
+ 
+@@ -364,12 +364,12 @@ static void free_spa(struct link *link)
+ 	}
  }
  
- static int read_dvsec_tl(struct pci_dev *dev, struct ocxl_fn_config *fn)
-@@ -205,11 +204,7 @@ int ocxl_config_read_function(struct pci_dev *dev, struct ocxl_fn_config *fn)
+-static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
++static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_link)
  {
+-	struct link *link;
++	struct ocxl_link *link;
  	int rc;
  
--	rc = read_pasid(dev, fn);
--	if (rc) {
--		dev_err(&dev->dev, "Invalid PASID configuration: %d\n", rc);
--		return -ENODEV;
--	}
-+	read_pasid(dev, fn);
+-	link = kzalloc(sizeof(struct link), GFP_KERNEL);
++	link = kzalloc(sizeof(struct ocxl_link), GFP_KERNEL);
+ 	if (!link)
+ 		return -ENOMEM;
  
- 	rc = read_dvsec_tl(dev, fn);
- 	if (rc) {
+@@ -405,7 +405,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+ 	return rc;
+ }
+ 
+-static void free_link(struct link *link)
++static void free_link(struct ocxl_link *link)
+ {
+ 	release_xsl_irq(link);
+ 	free_spa(link);
+@@ -415,7 +415,7 @@ static void free_link(struct link *link)
+ int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
+ {
+ 	int rc = 0;
+-	struct link *link;
++	struct ocxl_link *link;
+ 
+ 	mutex_lock(&links_list_lock);
+ 	list_for_each_entry(link, &links_list, list) {
+@@ -442,7 +442,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_setup);
+ 
+ static void release_xsl(struct kref *ref)
+ {
+-	struct link *link = container_of(ref, struct link, ref);
++	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
+ 
+ 	list_del(&link->list);
+ 	/* call platform code before releasing data */
+@@ -452,7 +452,7 @@ static void release_xsl(struct kref *ref)
+ 
+ void ocxl_link_release(struct pci_dev *dev, void *link_handle)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 
+ 	mutex_lock(&links_list_lock);
+ 	kref_put(&link->ref, release_xsl);
+@@ -488,7 +488,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+ 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+ 		void *xsl_err_data)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 	struct spa *spa = link->spa;
+ 	struct ocxl_process_element *pe;
+ 	int pe_handle, rc = 0;
+@@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
+ 
+ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 	struct spa *spa = link->spa;
+ 	struct ocxl_process_element *pe;
+ 	int pe_handle, rc;
+@@ -594,7 +594,7 @@ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+ 
+ int ocxl_link_remove_pe(void *link_handle, int pasid)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 	struct spa *spa = link->spa;
+ 	struct ocxl_process_element *pe;
+ 	struct pe_data *pe_data;
+@@ -666,7 +666,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
+ 
+ int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 	int rc, irq;
+ 	u64 addr;
+ 
+@@ -687,7 +687,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
+ 
+ void ocxl_link_free_irq(void *link_handle, int hw_irq)
+ {
+-	struct link *link = (struct link *) link_handle;
++	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+ 
+ 	pnv_ocxl_free_xive_irq(hw_irq);
+ 	atomic_inc(&link->irq_available);
 -- 
 2.20.1
 
