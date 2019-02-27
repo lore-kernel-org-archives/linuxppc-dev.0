@@ -2,96 +2,122 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=BAD_ENC_HEADER,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 62221C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B43A4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 06:32:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB20F218D0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 05:15:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB20F218D0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id E8A47218D0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 06:32:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="AqEcO/KD"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E8A47218D0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448P5905ZQzDqD7
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 16:15:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448QpW2xMzzDqNn
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 17:32:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=40.107.6.76; helo=eur04-db3-obe.outbound.protection.outlook.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="AqEcO/KD"; 
+ dkim-atps=neutral
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-eopbgr60076.outbound.protection.outlook.com [40.107.6.76])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448NkG01LWzDq60
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 15:58:42 +1100 (AEDT)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1R4sSmd050534
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:40 -0500
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwfvu1uh5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 23:58:40 -0500
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 27 Feb 2019 04:58:38 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 04:58:35 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1R4wY8D25886802
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 04:58:34 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 10DF3A4060;
- Wed, 27 Feb 2019 04:58:34 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E828A4054;
- Wed, 27 Feb 2019 04:58:33 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 04:58:33 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5697BA0270;
- Wed, 27 Feb 2019 15:58:32 +1100 (AEDT)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org
-Subject: [PATCH 4/5] ocxl: Remove superfluous 'extern' from headers
-Date: Wed, 27 Feb 2019 15:57:40 +1100
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190227045741.21412-1-alastair@au1.ibm.com>
-References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448QmC2QNBzDq5Z
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 17:30:31 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=0m1GYISN0DwhTdbZq2ELx3cth4vwZGiWo+l05kcQktU=;
+ b=AqEcO/KDShbqkLOj9Ba1kkGqkRZGmr7/Jol4EyB/OA6wMAkgupTaYF8w74VknI+2BOTjkG8dSSGQcnQZPXx6zMlmyTJ1Yu8zlmvi3WIrF+TVzHISkqO92aYTMgcWwTL+5BiJ7oHdLd4oR+Bb2zLOFY0X2v8+nrbI2u3M4OjECxA=
+Received: from VI1PR0402MB3392.eurprd04.prod.outlook.com (52.134.1.153) by
+ VI1PR0402MB3326.eurprd04.prod.outlook.com (52.134.8.138) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1665.15; Wed, 27 Feb 2019 06:30:24 +0000
+Received: from VI1PR0402MB3392.eurprd04.prod.outlook.com
+ ([fe80::407:6e30:6a9d:2a22]) by VI1PR0402MB3392.eurprd04.prod.outlook.com
+ ([fe80::407:6e30:6a9d:2a22%3]) with mapi id 15.20.1643.019; Wed, 27 Feb 2019
+ 06:30:24 +0000
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: RE: [PATCH V3] ASoC: fsl_esai: fix channel swap issue when stream
+ starts
+Thread-Topic: [PATCH V3] ASoC: fsl_esai: fix channel swap issue when stream
+ starts
+Thread-Index: AQHUzYEZNqiYMhmT3kyzaOJ9QeioVKXycwAAgAC9qhA=
+Date: Wed, 27 Feb 2019 06:30:24 +0000
+Message-ID: <VI1PR0402MB33926551CFE8DA8621C367F2E3740@VI1PR0402MB3392.eurprd04.prod.outlook.com>
+References: <6a5f6ddf5c1683106b0cadd5691cd2d9cfe2c997.1551150582.git.shengjiu.wang@nxp.com>
+ <20190226191057.GA24082@Asurada-Nvidia.nvidia.com>
+In-Reply-To: <20190226191057.GA24082@Asurada-Nvidia.nvidia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=shengjiu.wang@nxp.com; 
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: e60ff17b-3ed4-42cc-f5bb-08d69c7d0e7e
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR0402MB3326; 
+x-ms-traffictypediagnostic: VI1PR0402MB3326:
+x-microsoft-exchange-diagnostics: =?us-ascii?Q?1; VI1PR0402MB3326;
+ 23:1vfUIzV/SCqAkc0/HeT5eYWm/eBmhaR2IoUsU99?=
+ =?us-ascii?Q?g1bC4r8szbYKAVTFiyj1oBnTvh+urXSEahipBYDq3NnhLER5zurHmX2QoB4M?=
+ =?us-ascii?Q?W+24dJ3VGFjxYgY9MIU+V7+F+dQgqyupCbOLRxXEvczao62rEXg6WfM0illl?=
+ =?us-ascii?Q?RcveMJuhkNmgE4jkSmT9Ztol/65t+d6vK+dJxisVbvGDJPhfvT8k2tZ9Weo9?=
+ =?us-ascii?Q?DRa0xpsGJ5Lf7qo3wGF1//vT3JsPOYKi10oG99C0yMx5KiwY2I3nTjuGjkJm?=
+ =?us-ascii?Q?B/8cBmEmtmV8ug0SU/t64D5x+n4wuupy4P5JZVL/Kdr0cvWTF6jC2qmwK0aF?=
+ =?us-ascii?Q?y7wdEqdV4jfVA7NX5y/P/ixsWfU9W/1PdHrQYWvJVb82HK+xG05kWgXsl/oo?=
+ =?us-ascii?Q?vqFbXYpVZ0fBULkVvHOEEBJX7IcgB5fF6dPWsgO9+f5V8sE9vpVvc0pYbarb?=
+ =?us-ascii?Q?PQt6VQw2zLb6HKuTdoU2pDrFwXtmdS4ZC/IVUV2ml+bXGDRyuLaEXZ6tPXTe?=
+ =?us-ascii?Q?V5LKb4sTpnMxenn06JfGCGaEIMkWPEV9Mk2LcLauQ8etHJm0y9bmkWvNVnd9?=
+ =?us-ascii?Q?Z60CbF8bZSfacy3fP3afLJT5mXhTm7dA8TL+FVgl6n6DZXSc4iRa9YmaeAiY?=
+ =?us-ascii?Q?NHm0lkIAsGCb59X8ngtzk2EAsVNMkvbjcCX/1ic5AZsvo/J42zrWTn4yg1p7?=
+ =?us-ascii?Q?QHA40UrPLvP5SjQIvHXh4ouuhlMd2aV1/rGtFMOU0mLrnOVHQeDY3hJy5obY?=
+ =?us-ascii?Q?cFM340r0wDJTv7eoqFSSgZqzj2C2YxFK2fotl70NC1Xmp9+oD+ER4jlAPwOQ?=
+ =?us-ascii?Q?g/EEIvpbtbRoFptJ6k4GOFk6eiUpDVYBH5m79lczuq8eIhwx8lGhpWavg9gl?=
+ =?us-ascii?Q?j+S7I1FcffXFeXNDHeRLYxH2ycLK6+aik539PSMaJ6Fr7UkC9leKRSKu9cFw?=
+ =?us-ascii?Q?KBCvnY8wSwo8vlMJhydAmR3htO/rAjP8fF1gLf5x/8JAGbo48Xbn5dS8aPdt?=
+ =?us-ascii?Q?jxhgwhkSlUczeGtLxrK1DwbiaFF/tUQyjFjHYi31aNEg6c1tHUo1PxEE28z7?=
+ =?us-ascii?Q?DcA+FqN5gUuxWMaUwZJRpJDoDwNIvBwsWFBP2Z79L3NiAe6jJfTpOG6o8wEd?=
+ =?us-ascii?Q?pule6gjDW6D5tJIYzw8xY7X1xM+atn9jkWo9iic9b1rV11RKtz1acISW+cVn?=
+ =?us-ascii?Q?684Qyv5GHw991cBq0NzGhrzOgiqumvgAoouNtCve3GSh1Rxdk0lOkyGxZzwz?=
+ =?us-ascii?Q?NUBNp6FnBU8YONOdsS28=3D?=
+x-microsoft-antispam-prvs: <VI1PR0402MB3326AFA4C5A3A62040EEFEEEE3740@VI1PR0402MB3326.eurprd04.prod.outlook.com>
+x-forefront-prvs: 0961DF5286
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(376002)(136003)(39860400002)(366004)(396003)(189003)(199004)(86362001)(6436002)(478600001)(229853002)(68736007)(71200400001)(6916009)(9686003)(71190400001)(11346002)(446003)(476003)(105586002)(106356001)(4326008)(486006)(66066001)(1411001)(25786009)(305945005)(7736002)(186003)(33656002)(74316002)(26005)(97736004)(256004)(76176011)(14454004)(55016002)(81166006)(54906003)(81156014)(2906002)(8676002)(6246003)(14444005)(3846002)(6116002)(6506007)(102836004)(7696005)(52536013)(8936002)(99286004)(316002)(5660300002)(53936002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB3326;
+ H:VI1PR0402MB3392.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: zkujqIL51DxWNi0CbIy2w/+EkbKmDn5bgxGgTZ9GRHn8kj+QooSkdmOgyZrZCjIF19oDsYHUoTrdl7lshJrx38fnbphlX9sMXDK7rhE3pDNKHuIARUfQ7UsmTJ9L7qSezjhl0vMC4A914+WKiH69xA7Da9FZM4O4wQLjjzEipk97ThhxRIHhbkHRGZYNvyCKTYBJ43TPVCWGn8izAn0kNEb98mJ6NuB3/xNBq5hvr5V98UxtA782ev0U4d2sKo4Ak2Uf9dAHtUNfh9sEQb5HiiQkiB7hyrXoLed+P14viYLb777INrjbXRZfxBOYT6tB5YrGGeUcOQJrUiMc6hx0Bf1aakoGHseLGDRd0gLsoRGz7xcH5szthbTxL7zIIXXHOyJ1TPLBtSmRX1VAehpUn3j90lKU9A7GEKAmmxf0cvU=
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-x-cbid: 19022704-0008-0000-0000-000002C56125
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022704-0009-0000-0000-00002231ACBC
-Message-Id: <20190227045741.21412-5-alastair@au1.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=816 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270035
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: e60ff17b-3ed4-42cc-f5bb-08d69c7d0e7e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 27 Feb 2019 06:30:24.6469 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3326
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,261 +129,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+Ok, will send v4.
 
-The 'extern' keyword adds no value here.
-
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- drivers/misc/ocxl/ocxl_internal.h | 54 +++++++++++++++----------------
- include/misc/ocxl.h               | 36 ++++++++++-----------
- 2 files changed, 44 insertions(+), 46 deletions(-)
-
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index a32f2151029f..321b29e77f45 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -16,7 +16,6 @@
- 
- extern struct pci_driver ocxl_pci_driver;
- 
--
- struct ocxl_fn {
- 	struct device dev;
- 	int bar_used[3];
-@@ -92,41 +91,40 @@ struct ocxl_process_element {
- 	__be32 software_state;
- };
- 
-+struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
-+void ocxl_afu_put(struct ocxl_afu *afu);
- 
--extern struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
--extern void ocxl_afu_put(struct ocxl_afu *afu);
--
--extern int ocxl_create_cdev(struct ocxl_afu *afu);
--extern void ocxl_destroy_cdev(struct ocxl_afu *afu);
--extern int ocxl_register_afu(struct ocxl_afu *afu);
--extern void ocxl_unregister_afu(struct ocxl_afu *afu);
-+int ocxl_create_cdev(struct ocxl_afu *afu);
-+void ocxl_destroy_cdev(struct ocxl_afu *afu);
-+int ocxl_register_afu(struct ocxl_afu *afu);
-+void ocxl_unregister_afu(struct ocxl_afu *afu);
- 
--extern int ocxl_file_init(void);
--extern void ocxl_file_exit(void);
-+int ocxl_file_init(void);
-+void ocxl_file_exit(void);
- 
--extern int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
--extern void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
--extern int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
--extern void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-+int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
-+void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-+int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
-+void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
- 
--extern struct ocxl_context *ocxl_context_alloc(void);
--extern int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
-+struct ocxl_context *ocxl_context_alloc(void);
-+int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
- 			struct address_space *mapping);
--extern int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
--extern int ocxl_context_mmap(struct ocxl_context *ctx,
-+int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
-+int ocxl_context_mmap(struct ocxl_context *ctx,
- 			struct vm_area_struct *vma);
--extern int ocxl_context_detach(struct ocxl_context *ctx);
--extern void ocxl_context_detach_all(struct ocxl_afu *afu);
--extern void ocxl_context_free(struct ocxl_context *ctx);
-+int ocxl_context_detach(struct ocxl_context *ctx);
-+void ocxl_context_detach_all(struct ocxl_afu *afu);
-+void ocxl_context_free(struct ocxl_context *ctx);
- 
--extern int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
--extern void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
-+int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
-+void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
- 
--extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
--extern int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
--extern void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
--extern int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
-+int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
-+int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
-+void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
-+int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
- 			int eventfd);
--extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
-+u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
- 
- #endif /* _OCXL_INTERNAL_H_ */
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index 9ff6ddc28e22..4544573cc93c 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -53,7 +53,7 @@ struct ocxl_fn_config {
-  * Read the configuration space of a function and fill in a
-  * ocxl_fn_config structure with all the function details
-  */
--extern int ocxl_config_read_function(struct pci_dev *dev,
-+int ocxl_config_read_function(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn);
- 
- /*
-@@ -62,14 +62,14 @@ extern int ocxl_config_read_function(struct pci_dev *dev,
-  * AFU indexes can be sparse, so a driver should check all indexes up
-  * to the maximum found in the function description
-  */
--extern int ocxl_config_check_afu_index(struct pci_dev *dev,
-+int ocxl_config_check_afu_index(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn, int afu_idx);
- 
- /*
-  * Read the configuration space of a function for the AFU specified by
-  * the index 'afu_idx'. Fills in a ocxl_afu_config structure
-  */
--extern int ocxl_config_read_afu(struct pci_dev *dev,
-+int ocxl_config_read_afu(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn,
- 				struct ocxl_afu_config *afu,
- 				u8 afu_idx);
-@@ -77,7 +77,7 @@ extern int ocxl_config_read_afu(struct pci_dev *dev,
- /*
-  * Get the max PASID value that can be used by the function
-  */
--extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-+int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
- 
- /*
-  * Tell an AFU, by writing in the configuration space, the PASIDs that
-@@ -87,7 +87,7 @@ extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-  * 'afu_control_offset' is the offset of the AFU control DVSEC which
-  * can be found in the function configuration
-  */
--extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
-+void ocxl_config_set_afu_pasid(struct pci_dev *dev,
- 				int afu_control_offset,
- 				int pasid_base, u32 pasid_count_log);
- 
-@@ -98,7 +98,7 @@ extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
-  * 'supported' is the total number of actags desired by all the AFUs
-  *             of the function.
-  */
--extern int ocxl_config_get_actag_info(struct pci_dev *dev,
-+int ocxl_config_get_actag_info(struct pci_dev *dev,
- 				u16 *base, u16 *enabled, u16 *supported);
- 
- /*
-@@ -108,7 +108,7 @@ extern int ocxl_config_get_actag_info(struct pci_dev *dev,
-  * 'func_offset' is the offset of the Function DVSEC that can found in
-  * the function configuration
-  */
--extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
-+void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
- 				u32 actag_base, u32 actag_count);
- 
- /*
-@@ -118,7 +118,7 @@ extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
-+void ocxl_config_set_afu_actag(struct pci_dev *dev,
- 				int afu_control_offset,
- 				int actag_base, int actag_count);
- 
-@@ -128,7 +128,7 @@ extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern void ocxl_config_set_afu_state(struct pci_dev *dev,
-+void ocxl_config_set_afu_state(struct pci_dev *dev,
- 				int afu_control_offset, int enable);
- 
- /*
-@@ -139,7 +139,7 @@ extern void ocxl_config_set_afu_state(struct pci_dev *dev,
-  * between the host and device, and set the Transaction Layer on both
-  * accordingly.
-  */
--extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
-+int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
- 
- /*
-  * Request an AFU to terminate a PASID.
-@@ -152,7 +152,7 @@ extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
-+int ocxl_config_terminate_pasid(struct pci_dev *dev,
- 				int afu_control_offset, int pasid);
- 
- /*
-@@ -165,13 +165,13 @@ extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
-  * Returns a 'link handle' that should be used for further calls for
-  * the link
-  */
--extern int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
-+int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
- 			void **link_handle);
- 
- /*
-  * Remove the association between the function and its link.
-  */
--extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
-+void ocxl_link_release(struct pci_dev *dev, void *link_handle);
- 
- /*
-  * Add a Process Element to the Shared Process Area for a link.
-@@ -183,7 +183,7 @@ extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
-  * 'xsl_err_data' is an argument passed to the above callback, if
-  * defined
-  */
--extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-+int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 		u64 amr, struct mm_struct *mm,
- 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
- 		void *xsl_err_data);
-@@ -195,12 +195,12 @@ extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-  * pasid: the PASID for the AFU context
-  * tid: the new thread id for the process element
-  */
--extern int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-+int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
- 
- /*
-  * Remove a Process Element from the Shared Process Area for a link
-  */
--extern int ocxl_link_remove_pe(void *link_handle, int pasid);
-+int ocxl_link_remove_pe(void *link_handle, int pasid);
- 
- /*
-  * Allocate an AFU interrupt associated to the link.
-@@ -212,12 +212,12 @@ extern int ocxl_link_remove_pe(void *link_handle, int pasid);
-  * interrupt. It is an MMIO address which needs to be remapped (one
-  * page).
-  */
--extern int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
-+int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
- 			u64 *obj_handle);
- 
- /*
-  * Free a previously allocated AFU interrupt
-  */
--extern void ocxl_link_free_irq(void *link_handle, int hw_irq);
-+void ocxl_link_free_irq(void *link_handle, int hw_irq);
- 
- #endif /* _MISC_OCXL_H_ */
--- 
-2.20.1
-
+Best regards
+Wang shengjiu
+>=20
+> Hi Shengjiu,
+>=20
+> Two more trivial comments inline.
+>=20
+> On Tue, Feb 26, 2019 at 03:12:25AM +0000, S.j. Wang wrote:
+> > There is very low possibility ( < 0.1% ) that channel swap happened in
+> > beginning when multi output/input pin is enabled. The issue is that
+> > hardware can't send data to correct pin in the beginning with the
+> > normal enable flow.
+> >
+> > This is hardware issue, but there is no errata, the workaround flow is
+> > that: Each time playback/recording, firstly clear the xSMA/xSMB, then
+> > enable TE/RE, then enable xSMB and xSMA (xSMB must be enabled
+> before
+> > xSMA). Which is to use the xSMA as the trigger start register,
+> > previously the xCR_TE or xCR_RE is the bit for starting.
+> >
+> > Fixes commit 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+> > Cc: <stable@vger.kernel.org>
+> > Re> @@ -361,21 +363,13 @@ static int fsl_esai_set_dai_tdm_slot(struct
+> > Re> snd_soc_dai *dai, u32 tx_mask,
+> >  	esai_priv->slot_width =3D slot_width;
+> >  	esai_priv->slots =3D slots;
+> > +	esai_priv->tx_mask    =3D tx_mask;
+> > +	esai_priv->rx_mask    =3D rx_mask;
+>=20
+> Not necessary to have tabs before "=3D"s.
+>=20
+> > @@ -611,12 +606,23 @@ static int fsl_esai_trigger(struct
+> snd_pcm_substream *substream, int cmd,
+> >  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+> >  				   tx ? ESAI_xCR_TE_MASK :
+> ESAI_xCR_RE_MASK,
+> >  				   tx ? ESAI_xCR_TE(pins) :
+> ESAI_xCR_RE(pins));
+> > +		mask =3D tx ? esai_priv->tx_mask : esai_priv->rx_mask;
+> > +
+>=20
+> Please add a line of brief comments for the reason why we are doing this
+> here, something similar to the commit log, but should have:
+> 1) Clear xSMA/B 2) Set TE/RE before xSMA/B 3)Set xSMB before xSMA.
+>=20
+> Apparently having this mask settings in the trigger() does not look very
+> common, so I believe a line of comments would help a lot.
+>=20
+> You may add my Acked-by in your next version:
+>=20
+> Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+>=20
+> Thanks
+>=20
+> > +		regmap_update_bits(esai_priv->regmap,
+> REG_ESAI_xSMB(tx),
+> > +				   ESAI_xSMB_xS_MASK,
+> ESAI_xSMB_xS(mask));
+> > +		regmap_update_bits(esai_priv->regmap,
+> REG_ESAI_xSMA(tx),
+> > +				   ESAI_xSMA_xS_MASK,
+> ESAI_xSMA_xS(mask));
+> > +
+> >  		break;
+> >  	case SNDRV_PCM_TRIGGER_SUSPEND:
+> >  	case SNDRV_PCM_TRIGGER_STOP:
+> >  	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+> >  		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+> >  				   tx ? ESAI_xCR_TE_MASK :
+> ESAI_xCR_RE_MASK, 0);
+> > +		regmap_update_bits(esai_priv->regmap,
+> REG_ESAI_xSMA(tx),
+> > +				   ESAI_xSMA_xS_MASK, 0);
+> > +		regmap_update_bits(esai_priv->regmap,
+> REG_ESAI_xSMB(tx),
+> > +				   ESAI_xSMB_xS_MASK, 0);
+> >
