@@ -2,98 +2,84 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49DCFC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:57:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5662DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:58:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C3A8B2147C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:57:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C3A8B2147C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id BFE8E2147C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 14:58:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K/Wq3Deb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BFE8E2147C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448f0W31hXzDqLC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 01:56:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448f2K5LbwzDqNW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 01:58:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="K/Wq3Deb"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448drd3SSdzDqLW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 01:50:09 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1REnx8a022762
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 09:50:07 -0500
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qwua6cpnj-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 09:50:00 -0500
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 27 Feb 2019 14:48:08 -0000
-Received: from b03cxnp08026.gho.boulder.ibm.com (9.17.130.18)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Feb 2019 14:48:04 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1REm38L64159882
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Feb 2019 14:48:04 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id CB755C6055;
- Wed, 27 Feb 2019 14:48:03 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7FB33C605A;
- Wed, 27 Feb 2019 14:48:00 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.199.49.135])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Wed, 27 Feb 2019 14:48:00 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
-Subject: [PATCH v8 2/4] mm: Update get_user_pages_longterm to migrate pages
- allocated from CMA region
-Date: Wed, 27 Feb 2019 20:17:34 +0530
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
-References: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448dxD2FykzDqRL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 01:54:07 +1100 (AEDT)
+Received: by mail-pf1-x441.google.com with SMTP id n22so8133850pfa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 06:54:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:references:in-reply-to:mime-version:user-agent
+ :message-id:content-transfer-encoding;
+ bh=S9j0YOQBdyOL8hLYMPV74+7RuCP7wPF4MTbEw96SxL8=;
+ b=K/Wq3Deb130Puh0BrnmsvV2ZSI29/uvENrnZzLB84wee4noby24t3d0KbH10bU2sbR
+ lH36qQVT5sGrtgueFLVFFH2ju34e4dvACKAIGMF5GvXPB9ZzQMOQIsyRh2c2vPFk02Wh
+ e/r537cQxR9H6ZCttyqT2DS5xrLRViZhyhXrJ8SNgOxUJmgHv6kzrV2+/pulrgRJhJRA
+ QkE/hcqKfoq6SjnC7K886Bnz64jTtkYXCeCSFqJKrCZzfnDjTD0VtGUvZthMJlaK841a
+ +h5AY/9+KakzHw/Dm4sh2RlPvwc0HMer5THG+daC0iBwhiOYCluNs3lvFDh0tgvIwtqP
+ K0xg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=S9j0YOQBdyOL8hLYMPV74+7RuCP7wPF4MTbEw96SxL8=;
+ b=B8AForSQsGTntVRUOND8QAcHfXjXb1QbYBu6gTLuvA2gbAj7GMyHka90JH3BrHX3vn
+ RhVzzqTTovisMuFvffTyKqoKN4Cn6RjI+CyUKqUWskxtw8ziRESWBTYPEnlcbnwIe8qg
+ /W0VWA7A8Nw8oe3eADApQElDoiQVRJZVJnEa90BTV3AKd8B5phLNNgZ3bujVijaqEKQt
+ 1BkbA5EvaTEzMkwO6WaWhW5WgyvGz5Sk8yPIToR5C4rmMEZJdbC91wXwgU0dicRZVtjn
+ SVr9P1tXJY9RZNlLPtNSNSQ3+NUKjPt0SOfYfBE4SQKD87UBu6PIiJN7wha9FjRvY67V
+ ErGg==
+X-Gm-Message-State: AHQUAuYjhKrSYjzxq8VkW7er/+dk56/Qv7wTpRQaWCnfI8Ub2DsUuogA
+ dTtIcNis/87kmS7A7wkHbsnIs5S/
+X-Google-Smtp-Source: AHgI3IaeOkRDvH8G+d90jqaOAkZzfpZm8thYzXySTsawBB/Ypug6T4XMwtpWHRrpgpA/+5kX+6Ku5Q==
+X-Received: by 2002:a62:b248:: with SMTP id x69mr2023161pfe.256.1551279242525; 
+ Wed, 27 Feb 2019 06:54:02 -0800 (PST)
+Received: from localhost (60-240-164-4.tpgi.com.au. [60.240.164.4])
+ by smtp.gmail.com with ESMTPSA id f193sm30135704pgc.3.2019.02.27.06.54.00
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 27 Feb 2019 06:54:01 -0800 (PST)
+Date: Thu, 28 Feb 2019 00:53:55 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2] powerpc/powernv/idle: Restore IAMR after idle
+To: linuxppc-dev@lists.ozlabs.org, Russell Currey <ruscur@russell.cc>
+References: <20190208111103.4901-1-ruscur@russell.cc>
+In-Reply-To: <20190208111103.4901-1-ruscur@russell.cc>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19022714-8235-0000-0000-00000E66128C
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010674; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01167143; UDB=6.00609716; IPR=6.00947753; 
- MB=3.00025765; MTD=3.00000008; XFM=3.00000015; UTC=2019-02-27 14:48:07
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022714-8236-0000-0000-0000449E73B8
-Message-Id: <20190227144736.5872-3-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-02-27_10:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1902270100
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1551271665.t9k4qh3o3r.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,317 +91,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch updates get_user_pages_longterm to migrate pages allocated out
-of CMA region. This makes sure that we don't keep non-movable pages (due to page
-reference count) in the CMA area.
+Russell Currey's on February 8, 2019 9:11 pm:
+> Without restoring the IAMR after idle, execution prevention on POWER9
+> with Radix MMU is overwritten and the kernel can freely execute userspace=
+ without
+> faulting.
+>=20
+> This is necessary when returning from any stop state that modifies user
+> state, as well as hypervisor state.
+>=20
+> To test how this fails without this patch, load the lkdtm driver and
+> do the following:
+>=20
+>    echo EXEC_USERSPACE > /sys/kernel/debug/provoke-crash/DIRECT
+>=20
+> which won't fault, then boot the kernel with powersave=3Doff, where it
+> will fault.  Applying this patch will fix this.
+>=20
+> Fixes: 3b10d0095a1e ("powerpc/mm/radix: Prevent kernel execution of user
+> space")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+> Since v1:
+>       - no longer use paca to save IAMR, instead use _DAR (thanks mpe)
+>       - remove isync and pnv_wakeup_noloss section (thanks Nick)
 
-This will be used by ppc64 in a later patch to avoid pinning pages in the CMA
-region. ppc64 uses CMA region for allocation of the hardware page table (hash page
-table) and not able to migrate pages out of CMA region results in page table
-allocation failures.
+Thanks for that, looks good.
 
-One case where we hit this easy is when a guest using a VFIO passthrough device.
-VFIO locks all the guest's memory and if the guest memory is backed by CMA
-region, it becomes unmovable resulting in fragmenting the CMA and possibly
-preventing other guests from allocation a large enough hash page table.
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-NOTE: We allocate the new page without using __GFP_THISNODE
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- include/linux/hugetlb.h |   2 +
- include/linux/mm.h      |   3 +-
- mm/gup.c                | 200 +++++++++++++++++++++++++++++++++++-----
- mm/hugetlb.c            |   4 +-
- 4 files changed, 182 insertions(+), 27 deletions(-)
-
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 087fd5f48c91..1eed0cdaec0e 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -371,6 +371,8 @@ struct page *alloc_huge_page_nodemask(struct hstate *h, int preferred_nid,
- 				nodemask_t *nmask);
- struct page *alloc_huge_page_vma(struct hstate *h, struct vm_area_struct *vma,
- 				unsigned long address);
-+struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-+				     int nid, nodemask_t *nmask);
- int huge_add_to_page_cache(struct page *page, struct address_space *mapping,
- 			pgoff_t idx);
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 80bb6408fe73..20ec56f8e2bb 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1536,7 +1536,8 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
- 		    unsigned int gup_flags, struct page **pages, int *locked);
- long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
- 		    struct page **pages, unsigned int gup_flags);
--#ifdef CONFIG_FS_DAX
-+
-+#if defined(CONFIG_FS_DAX) || defined(CONFIG_CMA)
- long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
- 			    unsigned int gup_flags, struct page **pages,
- 			    struct vm_area_struct **vmas);
-diff --git a/mm/gup.c b/mm/gup.c
-index 75029649baca..22291db50013 100644
---- a/mm/gup.c
-+++ b/mm/gup.c
-@@ -13,6 +13,9 @@
- #include <linux/sched/signal.h>
- #include <linux/rwsem.h>
- #include <linux/hugetlb.h>
-+#include <linux/migrate.h>
-+#include <linux/mm_inline.h>
-+#include <linux/sched/mm.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/pgtable.h>
-@@ -1126,7 +1129,167 @@ long get_user_pages(unsigned long start, unsigned long nr_pages,
- }
- EXPORT_SYMBOL(get_user_pages);
- 
-+#if defined(CONFIG_FS_DAX) || defined (CONFIG_CMA)
-+
- #ifdef CONFIG_FS_DAX
-+static bool check_dax_vmas(struct vm_area_struct **vmas, long nr_pages)
-+{
-+	long i;
-+	struct vm_area_struct *vma_prev = NULL;
-+
-+	for (i = 0; i < nr_pages; i++) {
-+		struct vm_area_struct *vma = vmas[i];
-+
-+		if (vma == vma_prev)
-+			continue;
-+
-+		vma_prev = vma;
-+
-+		if (vma_is_fsdax(vma))
-+			return true;
-+	}
-+	return false;
-+}
-+#else
-+static inline bool check_dax_vmas(struct vm_area_struct **vmas, long nr_pages)
-+{
-+	return false;
-+}
-+#endif
-+
-+#ifdef CONFIG_CMA
-+static struct page *new_non_cma_page(struct page *page, unsigned long private)
-+{
-+	/*
-+	 * We want to make sure we allocate the new page from the same node
-+	 * as the source page.
-+	 */
-+	int nid = page_to_nid(page);
-+	/*
-+	 * Trying to allocate a page for migration. Ignore allocation
-+	 * failure warnings. We don't force __GFP_THISNODE here because
-+	 * this node here is the node where we have CMA reservation and
-+	 * in some case these nodes will have really less non movable
-+	 * allocation memory.
-+	 */
-+	gfp_t gfp_mask = GFP_USER | __GFP_NOWARN;
-+
-+	if (PageHighMem(page))
-+		gfp_mask |= __GFP_HIGHMEM;
-+
-+#ifdef CONFIG_HUGETLB_PAGE
-+	if (PageHuge(page)) {
-+		struct hstate *h = page_hstate(page);
-+		/*
-+		 * We don't want to dequeue from the pool because pool pages will
-+		 * mostly be from the CMA region.
-+		 */
-+		return alloc_migrate_huge_page(h, gfp_mask, nid, NULL);
-+	}
-+#endif
-+	if (PageTransHuge(page)) {
-+		struct page *thp;
-+		/*
-+		 * ignore allocation failure warnings
-+		 */
-+		gfp_t thp_gfpmask = GFP_TRANSHUGE | __GFP_NOWARN;
-+
-+		/*
-+		 * Remove the movable mask so that we don't allocate from
-+		 * CMA area again.
-+		 */
-+		thp_gfpmask &= ~__GFP_MOVABLE;
-+		thp = __alloc_pages_node(nid, thp_gfpmask, HPAGE_PMD_ORDER);
-+		if (!thp)
-+			return NULL;
-+		prep_transhuge_page(thp);
-+		return thp;
-+	}
-+
-+	return __alloc_pages_node(nid, gfp_mask, 0);
-+}
-+
-+static long check_and_migrate_cma_pages(unsigned long start, long nr_pages,
-+					unsigned int gup_flags,
-+					struct page **pages,
-+					struct vm_area_struct **vmas)
-+{
-+	long i;
-+	bool drain_allow = true;
-+	bool migrate_allow = true;
-+	LIST_HEAD(cma_page_list);
-+
-+check_again:
-+	for (i = 0; i < nr_pages; i++) {
-+		/*
-+		 * If we get a page from the CMA zone, since we are going to
-+		 * be pinning these entries, we might as well move them out
-+		 * of the CMA zone if possible.
-+		 */
-+		if (is_migrate_cma_page(pages[i])) {
-+
-+			struct page *head = compound_head(pages[i]);
-+
-+			if (PageHuge(head)) {
-+				isolate_huge_page(head, &cma_page_list);
-+			} else {
-+				if (!PageLRU(head) && drain_allow) {
-+					lru_add_drain_all();
-+					drain_allow = false;
-+				}
-+
-+				if (!isolate_lru_page(head)) {
-+					list_add_tail(&head->lru, &cma_page_list);
-+					mod_node_page_state(page_pgdat(head),
-+							    NR_ISOLATED_ANON +
-+							    page_is_file_cache(head),
-+							    hpage_nr_pages(head));
-+				}
-+			}
-+		}
-+	}
-+
-+	if (!list_empty(&cma_page_list)) {
-+		/*
-+		 * drop the above get_user_pages reference.
-+		 */
-+		for (i = 0; i < nr_pages; i++)
-+			put_page(pages[i]);
-+
-+		if (migrate_pages(&cma_page_list, new_non_cma_page,
-+				  NULL, 0, MIGRATE_SYNC, MR_CONTIG_RANGE)) {
-+			/*
-+			 * some of the pages failed migration. Do get_user_pages
-+			 * without migration.
-+			 */
-+			migrate_allow = false;
-+
-+			if (!list_empty(&cma_page_list))
-+				putback_movable_pages(&cma_page_list);
-+		}
-+		/*
-+		 * We did migrate all the pages, Try to get the page references again
-+		 * migrating any new CMA pages which we failed to isolate earlier.
-+		 */
-+		nr_pages = get_user_pages(start, nr_pages, gup_flags, pages, vmas);
-+		if ((nr_pages > 0) && migrate_allow) {
-+			drain_allow = true;
-+			goto check_again;
-+		}
-+	}
-+
-+	return nr_pages;
-+}
-+#else
-+static inline long check_and_migrate_cma_pages(unsigned long start, long nr_pages,
-+					       unsigned int gup_flags,
-+					       struct page **pages,
-+					       struct vm_area_struct **vmas)
-+{
-+	return nr_pages;
-+}
-+#endif
-+
- /*
-  * This is the same as get_user_pages() in that it assumes we are
-  * operating on the current task's mm, but it goes further to validate
-@@ -1140,11 +1303,11 @@ EXPORT_SYMBOL(get_user_pages);
-  * Contrast this to iov_iter_get_pages() usages which are transient.
-  */
- long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
--		unsigned int gup_flags, struct page **pages,
--		struct vm_area_struct **vmas_arg)
-+			     unsigned int gup_flags, struct page **pages,
-+			     struct vm_area_struct **vmas_arg)
- {
- 	struct vm_area_struct **vmas = vmas_arg;
--	struct vm_area_struct *vma_prev = NULL;
-+	unsigned long flags;
- 	long rc, i;
- 
- 	if (!pages)
-@@ -1157,31 +1320,20 @@ long get_user_pages_longterm(unsigned long start, unsigned long nr_pages,
- 			return -ENOMEM;
- 	}
- 
-+	flags = memalloc_nocma_save();
- 	rc = get_user_pages(start, nr_pages, gup_flags, pages, vmas);
-+	memalloc_nocma_restore(flags);
-+	if (rc < 0)
-+		goto out;
- 
--	for (i = 0; i < rc; i++) {
--		struct vm_area_struct *vma = vmas[i];
--
--		if (vma == vma_prev)
--			continue;
--
--		vma_prev = vma;
--
--		if (vma_is_fsdax(vma))
--			break;
--	}
--
--	/*
--	 * Either get_user_pages() failed, or the vma validation
--	 * succeeded, in either case we don't need to put_page() before
--	 * returning.
--	 */
--	if (i >= rc)
-+	if (check_dax_vmas(vmas, rc)) {
-+		for (i = 0; i < rc; i++)
-+			put_page(pages[i]);
-+		rc = -EOPNOTSUPP;
- 		goto out;
-+	}
- 
--	for (i = 0; i < rc; i++)
--		put_page(pages[i]);
--	rc = -EOPNOTSUPP;
-+	rc = check_and_migrate_cma_pages(start, rc, gup_flags, pages, vmas);
- out:
- 	if (vmas != vmas_arg)
- 		kfree(vmas);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index afef61656c1e..c80f0c16a226 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1586,8 +1586,8 @@ static struct page *alloc_surplus_huge_page(struct hstate *h, gfp_t gfp_mask,
- 	return page;
- }
- 
--static struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
--		int nid, nodemask_t *nmask)
-+struct page *alloc_migrate_huge_page(struct hstate *h, gfp_t gfp_mask,
-+				     int nid, nodemask_t *nmask)
- {
- 	struct page *page;
- 
--- 
-2.20.1
-
+=
