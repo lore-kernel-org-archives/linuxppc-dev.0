@@ -2,84 +2,99 @@ Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 615DFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 06:56:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A2558C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:17:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1BCC218CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 06:56:38 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="GBVBe2IP"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1BCC218CD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id E3C92218D0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 07:17:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3C92218D0
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448RLD61tszDqJS
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 17:56:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448RpK4rBYzDqK9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 18:17:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="GBVBe2IP"; 
- dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448RJT3WNLzDqJR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 17:55:03 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id h11so7492749pgl.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Feb 2019 22:55:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=ALlyeDQ+17/DtTOUvMgCQbekcr7m6lXtdxY4HBgDEb0=;
- b=GBVBe2IPwZ13QAdllliQtO1WeLVc3hNYqQm/wqGtiu5Ln2pOnlVZnRPcUgGJKpoNqC
- krM6sDT4voeFm/hdmHREFAxs5yHcWKYo7XQ42QMS8Jtbt3+G2ITZCN7cckLi+upGtfH7
- WzSqljsE4k5twyuCsTFdbFhxzxqdfeB4kDWfg=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=ALlyeDQ+17/DtTOUvMgCQbekcr7m6lXtdxY4HBgDEb0=;
- b=MkkXc+GPhR9gzTUV3oR8NvzCQfva3tbxBmtAOIZpejoOJtLOT3lEOr1p6yCH8IqoNk
- LVJrT2TXieIYB6RXpdD1AMm3X0DANBXouR16pGW67mnRML1hkSu/FVuiL2UJbXoimFRO
- UBfA4apQnmuBI3rYKEBULawFRgUI52FLfg934xLV0fJfXV8m6wk57TxBlEiKlqIIcyw8
- koISZXIuh1Ig9GCrVboRZ6QKECqxx2F40gMLGFIjPgXqUhPXt9WVxLlwEJ/mV/Xwt6p+
- hXD+n7VQ3HmbDN+NK2pyvFamnF8tWqsjDWK2CpzRs9Haeydw1yLKrdboWNr8ttWwBb4q
- bQAA==
-X-Gm-Message-State: AHQUAublndebupfNrnr7A8FURVnxGke94JBccZIo7XlZomv8iS/KgCdH
- ut30BVC4en2ua+lC2tYysUaHOw==
-X-Google-Smtp-Source: AHgI3IbiPy9uUCRaro/P/CbUrQYgI8Mhn+niPyGv47A0TxjGhYmYl3CA2xNwi9XI9TR1K2ZBBTEE9g==
-X-Received: by 2002:a62:20c9:: with SMTP id m70mr167765pfj.118.1551250500118; 
- Tue, 26 Feb 2019 22:55:00 -0800 (PST)
-Received: from localhost (203-59-50-226.dyn.iinet.net.au. [203.59.50.226])
- by smtp.gmail.com with ESMTPSA id m13sm24505555pff.175.2019.02.26.22.54.57
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 26 Feb 2019 22:54:59 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
-Subject: Re: [PATCH v8 02/11] powerpc: prepare string/mem functions for KASAN
-In-Reply-To: <54c5d48a557647be5e0269a22be277891bbdd7f7.1551161392.git.christophe.leroy@c-s.fr>
-References: <cover.1551161392.git.christophe.leroy@c-s.fr>
- <54c5d48a557647be5e0269a22be277891bbdd7f7.1551161392.git.christophe.leroy@c-s.fr>
-Date: Wed, 27 Feb 2019 17:54:54 +1100
-Message-ID: <877edl3em9.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448Rmb6sJFzDqBb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 18:15:59 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x1R7AAM6106247
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 02:15:57 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qwn4kag8x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 02:15:57 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 27 Feb 2019 07:15:53 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 27 Feb 2019 07:15:50 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1R7FnSW30015682
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 27 Feb 2019 07:15:49 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7EF7B11C052;
+ Wed, 27 Feb 2019 07:15:49 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC00811C04A;
+ Wed, 27 Feb 2019 07:15:48 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Feb 2019 07:15:48 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DADC6A0243;
+ Wed, 27 Feb 2019 18:15:45 +1100 (AEDT)
+Subject: Re: [PATCH 1/5] ocxl: Rename struct link to ocxl_link
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190227045741.21412-2-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Wed, 27 Feb 2019 18:15:45 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20190227045741.21412-2-alastair@au1.ibm.com>
+Content-Language: en-AU
+X-TM-AS-GCONF: 00
+x-cbid: 19022707-0020-0000-0000-0000031BC33F
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19022707-0021-0000-0000-0000216D2D5A
+Message-Id: <8c0300fc-4319-bd66-a47e-4ffda6ac795c@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-02-27_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1902270049
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,350 +106,201 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
+ linux-kernel@vger.kernel.org, Frederic Barrat <fbarrat@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-
-> CONFIG_KASAN implements wrappers for memcpy() memmove() and memset()
-> Those wrappers are doing the verification then call respectively
-> __memcpy() __memmove() and __memset(). The arches are therefore
-> expected to rename their optimised functions that way.
->
-> For files on which KASAN is inhibited, #defines are used to allow
-> them to directly call optimised versions of the functions without
-> going through the KASAN wrappers.
->
-> See commit 393f203f5fd5 ("x86_64: kasan: add interceptors for
-> memset/memmove/memcpy functions") for details.
->
-> Other string / mem functions do not (yet) have kasan wrappers,
-> we therefore have to fallback to the generic versions when
-> KASAN is active, otherwise KASAN checks will be skipped.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On 27/2/19 3:57 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> The term 'link' is ambiguous (especially when the struct is used for a
+> list), so rename it for clarity.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Reviewed-by: Greg Kurz <groug@kaod.org>
 > ---
->  arch/powerpc/include/asm/kasan.h       | 15 +++++++++++++++
->  arch/powerpc/include/asm/string.h      | 32 +++++++++++++++++++++++++++++---
->  arch/powerpc/kernel/prom_init_check.sh | 10 +++++++++-
->  arch/powerpc/lib/Makefile              | 11 ++++++++---
->  arch/powerpc/lib/copy_32.S             | 15 +++++++++------
->  arch/powerpc/lib/mem_64.S              | 11 +++++++----
->  arch/powerpc/lib/memcpy_64.S           |  5 +++--
->  7 files changed, 80 insertions(+), 19 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/kasan.h
->
-> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-> new file mode 100644
-> index 000000000000..c3161b8fc017
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/kasan.h
-> @@ -0,0 +1,15 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef __ASM_KASAN_H
-> +#define __ASM_KASAN_H
-> +
-> +#ifdef CONFIG_KASAN
-> +#define _GLOBAL_KASAN(fn)	.weak fn ; _GLOBAL(__##fn) ; _GLOBAL(fn)
-> +#define _GLOBAL_TOC_KASAN(fn)	.weak fn ; _GLOBAL_TOC(__##fn) ; _GLOBAL_TOC(fn)
-> +#define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(__##fn) ; EXPORT_SYMBOL(fn)
+>   drivers/misc/ocxl/file.c |  2 +-
+>   drivers/misc/ocxl/link.c | 36 ++++++++++++++++++------------------
+>   2 files changed, 19 insertions(+), 19 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+> index e6a607488f8a..16eb8a60d5c7 100644
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -152,7 +152,7 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
+>   
+>   		if (status == ATTACHED) {
+>   			int rc;
+> -			struct link *link = ctx->afu->fn->link;
+> +			void *link = ctx->afu->fn->link;
 
-[FWIW, and this shouldn't block your patch:] This doesn't seem to work
-with the 64bit elf abi v1, as we have symbols and dot symbols - our
-_GLOBAL* doesn't just create a symtab entry. I don't fully understand
-the inner workings just yet, but Aneesh and Balbir have solutions that
-use .set instead of creating two entries.
+This doesn't look like a rename...
 
-What I am also struggling with is why we export the __symbol
-version. I know the x86 version does this, but I can't figure that out
-either - why would a module need an uninstrumented copy?
+>   
+>   			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
+>   			if (rc)
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index d50b861d7e57..8d2690a1a9de 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -76,7 +76,7 @@ struct spa {
+>    * limited number of opencapi slots on a system and lookup is only
+>    * done when the device is probed
+>    */
+> -struct link {
+> +struct ocxl_link {
+>   	struct list_head list;
+>   	struct kref ref;
+>   	int domain;
+> @@ -179,7 +179,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+>   
+>   static irqreturn_t xsl_fault_handler(int irq, void *data)
+>   {
+> -	struct link *link = (struct link *) data;
+> +	struct ocxl_link *link = (struct ocxl_link *) data;
+>   	struct spa *spa = link->spa;
+>   	u64 dsisr, dar, pe_handle;
+>   	struct pe_data *pe_data;
+> @@ -256,7 +256,7 @@ static int map_irq_registers(struct pci_dev *dev, struct spa *spa)
+>   				&spa->reg_tfc, &spa->reg_pe_handle);
+>   }
+>   
+> -static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+> +static int setup_xsl_irq(struct pci_dev *dev, struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   	int rc;
+> @@ -311,7 +311,7 @@ static int setup_xsl_irq(struct pci_dev *dev, struct link *link)
+>   	return rc;
+>   }
+>   
+> -static void release_xsl_irq(struct link *link)
+> +static void release_xsl_irq(struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   
+> @@ -323,7 +323,7 @@ static void release_xsl_irq(struct link *link)
+>   	unmap_irq_registers(spa);
+>   }
+>   
+> -static int alloc_spa(struct pci_dev *dev, struct link *link)
+> +static int alloc_spa(struct pci_dev *dev, struct ocxl_link *link)
+>   {
+>   	struct spa *spa;
+>   
+> @@ -350,7 +350,7 @@ static int alloc_spa(struct pci_dev *dev, struct link *link)
+>   	return 0;
+>   }
+>   
+> -static void free_spa(struct link *link)
+> +static void free_spa(struct ocxl_link *link)
+>   {
+>   	struct spa *spa = link->spa;
+>   
+> @@ -364,12 +364,12 @@ static void free_spa(struct link *link)
+>   	}
+>   }
+>   
+> -static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+> +static int alloc_link(struct pci_dev *dev, int PE_mask, struct ocxl_link **out_link)
+>   {
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>   	int rc;
+>   
+> -	link = kzalloc(sizeof(struct link), GFP_KERNEL);
+> +	link = kzalloc(sizeof(struct ocxl_link), GFP_KERNEL);
+>   	if (!link)
+>   		return -ENOMEM;
+>   
+> @@ -405,7 +405,7 @@ static int alloc_link(struct pci_dev *dev, int PE_mask, struct link **out_link)
+>   	return rc;
+>   }
+>   
+> -static void free_link(struct link *link)
+> +static void free_link(struct ocxl_link *link)
+>   {
+>   	release_xsl_irq(link);
+>   	free_spa(link);
+> @@ -415,7 +415,7 @@ static void free_link(struct link *link)
+>   int ocxl_link_setup(struct pci_dev *dev, int PE_mask, void **link_handle)
+>   {
+>   	int rc = 0;
+> -	struct link *link;
+> +	struct ocxl_link *link;
+>   
+>   	mutex_lock(&links_list_lock);
+>   	list_for_each_entry(link, &links_list, list) {
+> @@ -442,7 +442,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_setup);
+>   
+>   static void release_xsl(struct kref *ref)
+>   {
+> -	struct link *link = container_of(ref, struct link, ref);
+> +	struct ocxl_link *link = container_of(ref, struct ocxl_link, ref);
+>   
+>   	list_del(&link->list);
+>   	/* call platform code before releasing data */
+> @@ -452,7 +452,7 @@ static void release_xsl(struct kref *ref)
+>   
+>   void ocxl_link_release(struct pci_dev *dev, void *link_handle)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   
+>   	mutex_lock(&links_list_lock);
+>   	kref_put(&link->ref, release_xsl);
+> @@ -488,7 +488,7 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>   		void *xsl_err_data)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	int pe_handle, rc = 0;
+> @@ -558,7 +558,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
+>   
+>   int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	int pe_handle, rc;
+> @@ -594,7 +594,7 @@ int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
+>   
+>   int ocxl_link_remove_pe(void *link_handle, int pasid)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	struct spa *spa = link->spa;
+>   	struct ocxl_process_element *pe;
+>   	struct pe_data *pe_data;
+> @@ -666,7 +666,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_remove_pe);
+>   
+>   int ocxl_link_irq_alloc(void *link_handle, int *hw_irq, u64 *trigger_addr)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   	int rc, irq;
+>   	u64 addr;
+>   
+> @@ -687,7 +687,7 @@ EXPORT_SYMBOL_GPL(ocxl_link_irq_alloc);
+>   
+>   void ocxl_link_free_irq(void *link_handle, int hw_irq)
+>   {
+> -	struct link *link = (struct link *) link_handle;
+> +	struct ocxl_link *link = (struct ocxl_link *) link_handle;
+>   
+>   	pnv_ocxl_free_xive_irq(hw_irq);
+>   	atomic_inc(&link->irq_available);
+> 
 
-Anyway, I am getting some issues such as:
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
-WARNING: EXPORT symbol "__memcpy" [vmlinux] version generation failed, symbol will not be versioned.
-WARNING: EXPORT symbol "__memset" [vmlinux] version generation failed, symbol will not be versioned.
-WARNING: EXPORT symbol "__memmove" [vmlinux] version generation failed, symbol will not be versioned.
-
-I think Balbir and Aneesh avoided this by just not ever exporting the
-__symbol versions, but perhaps that won't fly for the final version. It
-looks like we can also avoid this by jumping through some extra hoops
-and creating new weak symbols - I'll keep working on it and let you know
-how I go.
-
-As I said, I don't think this should necessarily block your patches -
-it's just notes on ppc64 progress.
-
-Regards,
-Daniel
-
-> +#else
-> +#define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
-> +#define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
-> +#define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(fn)
-> +#endif
-> +
-> +#endif
-> diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-> index 1647de15a31e..9bf6dffb4090 100644
-> --- a/arch/powerpc/include/asm/string.h
-> +++ b/arch/powerpc/include/asm/string.h
-> @@ -4,14 +4,17 @@
->  
->  #ifdef __KERNEL__
->  
-> +#ifndef CONFIG_KASAN
->  #define __HAVE_ARCH_STRNCPY
->  #define __HAVE_ARCH_STRNCMP
-> +#define __HAVE_ARCH_MEMCHR
-> +#define __HAVE_ARCH_MEMCMP
-> +#define __HAVE_ARCH_MEMSET16
-> +#endif
-> +
->  #define __HAVE_ARCH_MEMSET
->  #define __HAVE_ARCH_MEMCPY
->  #define __HAVE_ARCH_MEMMOVE
-> -#define __HAVE_ARCH_MEMCMP
-> -#define __HAVE_ARCH_MEMCHR
-> -#define __HAVE_ARCH_MEMSET16
->  #define __HAVE_ARCH_MEMCPY_FLUSHCACHE
->  
->  extern char * strcpy(char *,const char *);
-> @@ -27,7 +30,27 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
->  extern void * memchr(const void *,int,__kernel_size_t);
->  extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
->  
-> +void *__memset(void *s, int c, __kernel_size_t count);
-> +void *__memcpy(void *to, const void *from, __kernel_size_t n);
-> +void *__memmove(void *to, const void *from, __kernel_size_t n);
-> +
-> +#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
-> +/*
-> + * For files that are not instrumented (e.g. mm/slub.c) we
-> + * should use not instrumented version of mem* functions.
-> + */
-> +#define memcpy(dst, src, len) __memcpy(dst, src, len)
-> +#define memmove(dst, src, len) __memmove(dst, src, len)
-> +#define memset(s, c, n) __memset(s, c, n)
-> +
-> +#ifndef __NO_FORTIFY
-> +#define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
-> +#endif
-> +
-> +#endif
-> +
->  #ifdef CONFIG_PPC64
-> +#ifndef CONFIG_KASAN
->  #define __HAVE_ARCH_MEMSET32
->  #define __HAVE_ARCH_MEMSET64
->  
-> @@ -49,8 +72,11 @@ static inline void *memset64(uint64_t *p, uint64_t v, __kernel_size_t n)
->  {
->  	return __memset64(p, v, n * 8);
->  }
-> +#endif
->  #else
-> +#ifndef CONFIG_KASAN
->  #define __HAVE_ARCH_STRLEN
-> +#endif
->  
->  extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
->  #endif
-> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-> index 667df97d2595..181fd10008ef 100644
-> --- a/arch/powerpc/kernel/prom_init_check.sh
-> +++ b/arch/powerpc/kernel/prom_init_check.sh
-> @@ -16,8 +16,16 @@
->  # If you really need to reference something from prom_init.o add
->  # it to the list below:
->  
-> +grep "^CONFIG_KASAN=y$" .config >/dev/null
-> +if [ $? -eq 0 ]
-> +then
-> +	MEM_FUNCS="__memcpy __memset"
-> +else
-> +	MEM_FUNCS="memcpy memset"
-> +fi
-> +
->  WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
-> -_end enter_prom memcpy memset reloc_offset __secondary_hold
-> +_end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
->  __secondary_hold_acknowledge __secondary_hold_spinloop __start
->  strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
->  reloc_got2 kernstart_addr memstart_addr linux_banner _stext
-> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-> index 79396e184bca..47a4de434c22 100644
-> --- a/arch/powerpc/lib/Makefile
-> +++ b/arch/powerpc/lib/Makefile
-> @@ -8,9 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->  CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
->  CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
->  
-> -obj-y += string.o alloc.o code-patching.o feature-fixups.o
-> +obj-y += alloc.o code-patching.o feature-fixups.o
->  
-> -obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o strlen_32.o
-> +ifndef CONFIG_KASAN
-> +obj-y	+=	string.o memcmp_$(BITS).o
-> +obj-$(CONFIG_PPC32)	+= strlen_32.o
-> +endif
-> +
-> +obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
->  
->  obj-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
->  
-> @@ -34,7 +39,7 @@ obj64-$(CONFIG_KPROBES_SANITY_TEST)	+= test_emulate_step.o \
->  					   test_emulate_step_exec_instr.o
->  
->  obj-y			+= checksum_$(BITS).o checksum_wrappers.o \
-> -			   string_$(BITS).o memcmp_$(BITS).o
-> +			   string_$(BITS).o
->  
->  obj-y			+= sstep.o ldstfp.o quad.o
->  obj64-y			+= quad.o
-> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-> index ba66846fe973..fc4fa7246200 100644
-> --- a/arch/powerpc/lib/copy_32.S
-> +++ b/arch/powerpc/lib/copy_32.S
-> @@ -14,6 +14,7 @@
->  #include <asm/ppc_asm.h>
->  #include <asm/export.h>
->  #include <asm/code-patching-asm.h>
-> +#include <asm/kasan.h>
->  
->  #define COPY_16_BYTES		\
->  	lwz	r7,4(r4);	\
-> @@ -68,6 +69,7 @@ CACHELINE_BYTES = L1_CACHE_BYTES
->  LG_CACHELINE_BYTES = L1_CACHE_SHIFT
->  CACHELINE_MASK = (L1_CACHE_BYTES-1)
->  
-> +#ifndef CONFIG_KASAN
->  _GLOBAL(memset16)
->  	rlwinm.	r0 ,r5, 31, 1, 31
->  	addi	r6, r3, -4
-> @@ -81,6 +83,7 @@ _GLOBAL(memset16)
->  	sth	r4, 4(r6)
->  	blr
->  EXPORT_SYMBOL(memset16)
-> +#endif
->  
->  /*
->   * Use dcbz on the complete cache lines in the destination
-> @@ -91,7 +94,7 @@ EXPORT_SYMBOL(memset16)
->   * We therefore skip the optimised bloc that uses dcbz. This jump is
->   * replaced by a nop once cache is active. This is done in machine_init()
->   */
-> -_GLOBAL(memset)
-> +_GLOBAL_KASAN(memset)
->  	cmplwi	0,r5,4
->  	blt	7f
->  
-> @@ -150,7 +153,7 @@ _GLOBAL(memset)
->  9:	stbu	r4,1(r6)
->  	bdnz	9b
->  	blr
-> -EXPORT_SYMBOL(memset)
-> +EXPORT_SYMBOL_KASAN(memset)
->  
->  /*
->   * This version uses dcbz on the complete cache lines in the
-> @@ -163,12 +166,12 @@ EXPORT_SYMBOL(memset)
->   * We therefore jump to generic_memcpy which doesn't use dcbz. This jump is
->   * replaced by a nop once cache is active. This is done in machine_init()
->   */
-> -_GLOBAL(memmove)
-> +_GLOBAL_KASAN(memmove)
->  	cmplw	0,r3,r4
->  	bgt	backwards_memcpy
->  	/* fall through */
->  
-> -_GLOBAL(memcpy)
-> +_GLOBAL_KASAN(memcpy)
->  1:	b	generic_memcpy
->  	patch_site	1b, patch__memcpy_nocache
->  
-> @@ -242,8 +245,8 @@ _GLOBAL(memcpy)
->  	stbu	r0,1(r6)
->  	bdnz	40b
->  65:	blr
-> -EXPORT_SYMBOL(memcpy)
-> -EXPORT_SYMBOL(memmove)
-> +EXPORT_SYMBOL_KASAN(memcpy)
-> +EXPORT_SYMBOL_KASAN(memmove)
->  
->  generic_memcpy:
->  	srwi.	r7,r5,3
-> diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
-> index 3c3be02f33b7..7cd6cf6822a2 100644
-> --- a/arch/powerpc/lib/mem_64.S
-> +++ b/arch/powerpc/lib/mem_64.S
-> @@ -12,7 +12,9 @@
->  #include <asm/errno.h>
->  #include <asm/ppc_asm.h>
->  #include <asm/export.h>
-> +#include <asm/kasan.h>
->  
-> +#ifndef CONFIG_KASAN
->  _GLOBAL(__memset16)
->  	rlwimi	r4,r4,16,0,15
->  	/* fall through */
-> @@ -29,8 +31,9 @@ _GLOBAL(__memset64)
->  EXPORT_SYMBOL(__memset16)
->  EXPORT_SYMBOL(__memset32)
->  EXPORT_SYMBOL(__memset64)
-> +#endif
->  
-> -_GLOBAL(memset)
-> +_GLOBAL_KASAN(memset)
->  	neg	r0,r3
->  	rlwimi	r4,r4,8,16,23
->  	andi.	r0,r0,7			/* # bytes to be 8-byte aligned */
-> @@ -95,9 +98,9 @@ _GLOBAL(memset)
->  10:	bflr	31
->  	stb	r4,0(r6)
->  	blr
-> -EXPORT_SYMBOL(memset)
-> +EXPORT_SYMBOL_KASAN(memset)
->  
-> -_GLOBAL_TOC(memmove)
-> +_GLOBAL_TOC_KASAN(memmove)
->  	cmplw	0,r3,r4
->  	bgt	backwards_memcpy
->  	b	memcpy
-> @@ -138,4 +141,4 @@ _GLOBAL(backwards_memcpy)
->  	beq	2b
->  	mtctr	r7
->  	b	1b
-> -EXPORT_SYMBOL(memmove)
-> +EXPORT_SYMBOL_KASAN(memmove)
-> diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
-> index 273ea67e60a1..862b515b8868 100644
-> --- a/arch/powerpc/lib/memcpy_64.S
-> +++ b/arch/powerpc/lib/memcpy_64.S
-> @@ -11,6 +11,7 @@
->  #include <asm/export.h>
->  #include <asm/asm-compat.h>
->  #include <asm/feature-fixups.h>
-> +#include <asm/kasan.h>
->  
->  #ifndef SELFTEST_CASE
->  /* For big-endian, 0 == most CPUs, 1 == POWER6, 2 == Cell */
-> @@ -18,7 +19,7 @@
->  #endif
->  
->  	.align	7
-> -_GLOBAL_TOC(memcpy)
-> +_GLOBAL_TOC_KASAN(memcpy)
->  BEGIN_FTR_SECTION
->  #ifdef __LITTLE_ENDIAN__
->  	cmpdi	cr7,r5,0
-> @@ -229,4 +230,4 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
->  4:	ld	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)	/* return dest pointer */
->  	blr
->  #endif
-> -EXPORT_SYMBOL(memcpy)
-> +EXPORT_SYMBOL_KASAN(memcpy)
-> -- 
-> 2.13.3
