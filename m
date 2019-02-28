@@ -2,109 +2,93 @@ Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C1EEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 05:03:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93C33C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 05:05:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ABAC22171F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 05:03:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABAC22171F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 157372171F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 05:05:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 157372171F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4490nb4tBMzDqB4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 16:03:47 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4490ls5YbkzDqKh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 16:02:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4490qK0xPjzDqLC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 16:05:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4490ls41F5z8t60
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 16:02:17 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 4490ls3f4Fz9s9T; Thu, 28 Feb 2019 16:02:17 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=hbathini@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4490lr4Mm3z9s47
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2019 16:02:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4490mk0c7DzDqKv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 16:03:01 +1100 (AEDT)
 Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x1S4xBPX029401
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2019 00:02:13 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2qx4pg9vkf-1
+ x1S4x8DQ029237
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 00:02:56 -0500
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2qx4pg9wch-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Feb 2019 00:02:12 -0500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 00:02:56 -0500
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Thu, 28 Feb 2019 05:02:10 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 28 Feb 2019 05:02:54 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 28 Feb 2019 05:02:07 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
- [9.149.105.60])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x1S525qq52035596
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 28 Feb 2019 05:02:05 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BB5744204C;
- Thu, 28 Feb 2019 05:02:05 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 04FAA42041;
- Thu, 28 Feb 2019 05:02:04 +0000 (GMT)
-Received: from [9.85.71.224] (unknown [9.85.71.224])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 28 Feb 2019 05:02:03 +0000 (GMT)
-Subject: Re: [PATCH 00/18] Add FADump support on PowerNV platform
-To: Daniel Axtens <dja@axtens.net>,
- Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Vasant Hegde <hegdevasant@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Stewart Smith <stewart@linux.ibm.com>
-References: <155077048463.21014.13936958730316555495.stgit@hbathini.in.ibm.com>
- <877edlaola.fsf@linkitivity.dja.id.au>
-From: Hari Bathini <hbathini@linux.ibm.com>
-Date: Thu, 28 Feb 2019 10:32:02 +0530
+ Thu, 28 Feb 2019 05:02:51 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x1S52oV428180604
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 28 Feb 2019 05:02:50 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 49E4352069;
+ Thu, 28 Feb 2019 05:02:50 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9F4925204E;
+ Thu, 28 Feb 2019 05:02:49 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 701F2A0264;
+ Thu, 28 Feb 2019 16:02:48 +1100 (AEDT)
+Subject: Re: [PATCH 2/5] ocxl: Clean up printf formats
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190227045741.21412-3-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 28 Feb 2019 16:02:48 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <877edlaola.fsf@linkitivity.dja.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+In-Reply-To: <20190227045741.21412-3-alastair@au1.ibm.com>
+Content-Language: en-AU
 X-TM-AS-GCONF: 00
-x-cbid: 19022805-0016-0000-0000-0000025BD52A
+x-cbid: 19022805-0008-0000-0000-000002C5D74A
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19022805-0017-0000-0000-000032B6402A
-Message-Id: <df2f1198-ecfd-be2a-c947-bf469fcb8981@linux.ibm.com>
+x-cbparentid: 19022805-0009-0000-0000-000022322742
+Message-Id: <54602f3f-6ad8-e90b-3a69-48914bf86d61@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-02-28_02:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1902280033
@@ -119,59 +103,112 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 27/2/19 3:57 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> Use %# instead of using a literal '0x'
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-On 27/02/19 9:07 AM, Daniel Axtens wrote:
-> Hi Hari,
+Not hugely fussed either way, but today I learned about %#...
 
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Hi Daniel,
+> ---
+>   drivers/misc/ocxl/config.c  |  6 +++---
+>   drivers/misc/ocxl/context.c |  2 +-
+>   drivers/misc/ocxl/trace.h   | 10 +++++-----
+>   3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 8f2c5d8bd2ee..0ee7856b033d 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+>   	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
+>   
+>   	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
+> -	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+> -	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+> -	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
+> +	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
+> +	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
+> +	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
+>   	return 0;
+>   }
+>   
+> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+> index c10a940e3b38..3498a0199bde 100644
+> --- a/drivers/misc/ocxl/context.c
+> +++ b/drivers/misc/ocxl/context.c
+> @@ -134,7 +134,7 @@ static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
+>   	vm_fault_t ret;
+>   
+>   	offset = vmf->pgoff << PAGE_SHIFT;
+> -	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
+> +	pr_debug("%s: pasid %d address %#lx offset %#llx\n", __func__,
+>   		ctx->pasid, vmf->address, offset);
+>   
+>   	if (offset < ctx->afu->irq_base_offset)
+> diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+> index bcb7ff330c1e..8d2f53812edd 100644
+> --- a/drivers/misc/ocxl/trace.h
+> +++ b/drivers/misc/ocxl/trace.h
+> @@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(ocxl_context,
+>   		__entry->tidr = tidr;
+>   	),
+>   
+> -	TP_printk("linux pid=%d spa=0x%p pasid=0x%x pidr=0x%x tidr=0x%x",
+> +	TP_printk("linux pid=%d spa=%p pasid=%#x pidr=%#x tidr=%#x",
+>   		__entry->pid,
+>   		__entry->spa,
+>   		__entry->pasid,
+> @@ -61,7 +61,7 @@ TRACE_EVENT(ocxl_terminate_pasid,
+>   		__entry->rc = rc;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x rc=%d",
+> +	TP_printk("pasid=%#x rc=%d",
+>   		__entry->pasid,
+>   		__entry->rc
+>   	)
+> @@ -87,7 +87,7 @@ DECLARE_EVENT_CLASS(ocxl_fault_handler,
+>   		__entry->tfc = tfc;
+>   	),
+>   
+> -	TP_printk("spa=%p pe=0x%llx dsisr=0x%llx dar=0x%llx tfc=0x%llx",
+> +	TP_printk("spa=%p pe=%#llx dsisr=%#llx dar=%#llx tfc=%#llx",
+>   		__entry->spa,
+>   		__entry->pe,
+>   		__entry->dsisr,
+> @@ -127,7 +127,7 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
+>   		__entry->irq_offset = irq_offset;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
+> +	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
+>   		__entry->pasid,
+>   		__entry->irq_id,
+>   		__entry->virq,
+> @@ -150,7 +150,7 @@ TRACE_EVENT(ocxl_afu_irq_free,
+>   		__entry->irq_id = irq_id;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x irq_id=%d",
+> +	TP_printk("pasid=%#x irq_id=%d",
+>   		__entry->pasid,
+>   		__entry->irq_id
+>   	)
+> 
 
-
->> Firmware-Assisted Dump (FADump) is currently supported only on pseries
->> platform. This patch series adds support for powernv platform too.
->>
->> The first and third patches refactor the FADump code to make use of common
->> code across multiple platforms. The fifth patch adds basic FADump support
->> for powernv platform. Patches seven & eight honour reserved-ranges DT node
->> while reserving/releasing memory used by FADump. The next patch processes
->> CPU state data provided by firmware to create and append core notes to the
->> ELF core file. The tenth patch adds support for preserving crash data for
->> subsequent boots (useful in cases like petitboot). Patch twelve provides
->> support to export opalcore. This is to make debugging of failures in OPAL
->> code easier. The subsequent patch ensures vmcore processing is skipped
->> when only OPAL core is exported by f/w. The next patch provides option to
->> release the kernel memory used to export opalcore. Patch seventeen adds
->> backup area (an area populated before crash and used in the capture kernel
->> to setup vmcore file robustly) support on PowerNV platform. The remaining
->> patches update Firmware-Assisted Dump documentation appropriately.
->>
->> Note that the quantam of increase in robustness due to patch seventeen may
->> not be worth breaking backward compatibility for older kernel versions.
->> Would like to hear thoughts from others on it.
->>
->> The patch series is tested with the latest firmware plus the below skiboot
->> changes for MPIPL support:
->>
->>      https://patchwork.ozlabs.org/project/skiboot/list/?series=78497
->>      ("MPIPL support")
->>
-> If I want to test this, is there some userspace tooling that will
-> extract a fadump from a rebooted system and allow me to examine it as I
-> would with a kdump (e.g. with crash)?  I did look at
-> Documentation/powerpc/firmware-assisted-dump.txt but it seems to only
-> cover the kernel layer.
-
-This patches export two dump files: /proc/vmcore (kernel), /proc/opalcore (OPAL).
-If you are only interested in kernel dump, then passing fadump=on to the kernel
-and enabling/starting kdump-tools/kdump service, shipped with distro, would ensure
-dump is captured to /var/crash dir and rebooted but please be aware that the
-script would not copy /proc/opalcore to disk yet. Need to update scripts once this
-changes make it upstream..
-
-Thanks
-Hari
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
