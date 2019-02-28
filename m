@@ -2,78 +2,117 @@ Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C4A5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 11:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82529C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 12:23:40 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 99FF220857
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 11:19:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="pbM5HIXR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 99FF220857
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	by mail.kernel.org (Postfix) with ESMTPS id BEEFF214D8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 12:23:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BEEFF214D8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44997Y4Vc8zDqPl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 22:19:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449BY40GHdzDqPf
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 23:23:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=vbabka@suse.cz;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="pbM5HIXR"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44995J5VkvzDqNv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 22:17:54 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id i20so9579124pfo.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 03:17:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=UHHl8AM7Jhi///WMGmk4ybie58KH2C4i507/H9P4AV4=;
- b=pbM5HIXR+VUBsh08LFocMwTaNq5WRB8aPrEVqFlSnGDiCIqXVeqIztGPyOtW81GQif
- CaJDbo1zPkBwBsZE7Qn8TzANW/UFhMKj6eXkb0xG3vebAPaJZekgwG/BzBZSMesZN2Rr
- ls5pATdLZ0nsldnVVnPYUdshq1kwZHU1YTnEc=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=UHHl8AM7Jhi///WMGmk4ybie58KH2C4i507/H9P4AV4=;
- b=p2mF8fuyGUCL/jZlClBzv/1PFfqsGsyKU6cRg/vV8hSDEbizPzMaXQX93jrfl1M2WX
- /9BqLHOTty6kOc1rukuXdgSPganDBcNsf8aUt2H+dwSEPr2Rbbq3nqcrv1fseNq1zPMq
- SIQTI3uhJPBCrrMK/zYBTUP7DYkF/yKK7W8ZYgc8h+7COzpsRFt8GoH6jbAOLCTIDHy3
- fyrFHpjcXd3olpsyXaQKJv0QeUR7IbO59OUlptx/BCzr1BFaDB5s1aqNY9Jwst7n6SUY
- r7FMbwiAs8GtIh2FMUlNVNEf+r+ApJrRMeaKiEKqJBlF75G03zp9ibcE2LDb0ZUmga29
- SDdA==
-X-Gm-Message-State: AHQUAubpXmnJcaJXUZkK2U0mcfZixhRTgwWycAW1dwtw0yepd02H/xPx
- 1mVwuL6SBUJHUfoEcyOdzwN3BQ==
-X-Google-Smtp-Source: AHgI3IbdFjOp73631g0UjM/K5GUWQCGpt8CXA4zAWeRe0XAVb+tYs17iKcud8fh21VOSGl+jJB/rrw==
-X-Received: by 2002:a63:fd03:: with SMTP id d3mr7766532pgh.359.1551352671085; 
- Thu, 28 Feb 2019 03:17:51 -0800 (PST)
-Received: from localhost (203-59-50-226.dyn.iinet.net.au. [203.59.50.226])
- by smtp.gmail.com with ESMTPSA id z191sm12033580pgd.45.2019.02.28.03.17.49
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 28 Feb 2019 03:17:50 -0800 (PST)
-From: Daniel Axtens <dja@axtens.net>
-To: Mathieu Malaterre <malat@debian.org>, Jakub Drnec <jaydee@email.cz>
-Subject: Re: PROBLEM: monotonic clock going backwards on ppc64
-In-Reply-To: <CA+7wUswyzc5SGjjb+WS4QpopyL0qoGYj0WF1jNaTfsC5ZsMpdw@mail.gmail.com>
-References: <HaC.ZfES.62bwlnvAvMP.1STMMj@seznam.cz>
- <CA+7wUswyzc5SGjjb+WS4QpopyL0qoGYj0WF1jNaTfsC5ZsMpdw@mail.gmail.com>
-Date: Thu, 28 Feb 2019 22:17:46 +1100
-Message-ID: <87va1417s5.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449BT73GvzzDqP7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 23:20:09 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id AB20DAE0F;
+ Thu, 28 Feb 2019 12:20:04 +0000 (UTC)
+Subject: Re: [PATCH v8 1/4] mm/cma: Add PF flag to force non cma alloc
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ akpm@linux-foundation.org, Michal Hocko <mhocko@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Andrea Arcangeli <aarcange@redhat.com>, mpe@ellerman.id.au
+References: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
+ <20190227144736.5872-2-aneesh.kumar@linux.ibm.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Openpgp: preference=signencrypt
+Autocrypt: addr=vbabka@suse.cz; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <1d083bf9-0beb-0c49-9aab-c6bc14da46ea@suse.cz>
+Date: Thu, 28 Feb 2019 13:20:03 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20190227144736.5872-2-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,101 +124,121 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mathieu Malaterre <malat@debian.org> writes:
+On 2/27/19 3:47 PM, Aneesh Kumar K.V wrote:
+> This patch adds PF_MEMALLOC_NOCMA which make sure any allocation in that context
+> is marked non-movable and hence cannot be satisfied by CMA region.
+> 
+> This is useful with get_user_pages_longterm where we want to take a page pin by
+> migrating pages from CMA region. Marking the section PF_MEMALLOC_NOCMA ensures
+> that we avoid unnecessary page migration later.
+> 
+> Suggested-by: Andrea Arcangeli <aarcange@redhat.com>
+> Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-> On Tue, Feb 26, 2019 at 9:36 PM Jakub Drnec <jaydee@email.cz> wrote:
->>
->> Hi all,
->>
->> I think I observed a potential problem, is this the correct place to report it? (CC me, not on list)
->>
->> [1.] One line summary: monotonic clock can be made to decrease on ppc64
->> [2.] Full description:
->> Setting the realtime clock can sometimes make the monotonic clock go back by over a hundred years.
->> Decreasing the realtime clock across the y2k38 threshold is one reliable way to reproduce.
->> Allegedly this can also happen just by running ntpd, I have not managed to reproduce that other
->> than booting with rtc at >2038 and then running ntp.
->
-> Isn't it the expected behavior. Here is what I see for powermac:
->
-> $ git show 22db552b50fa
-> ...
->     This changes the logic to cast to an unsigned 32-bit number first for
->     the Macintosh time and then convert that to the Unix time, which then
->     gives us a time in the documented 1904..2040 year range. I decided not
->     to use the longer 1970..2106 range that other drivers use, for
->     consistency with the literal interpretation of the register, but that
->     could be easily changed if we decide we want to support any Mac after
->     2040.
-> ...
->
++CC scheduler guys
 
-My interpretation of that commit is that it relates to the kernel
-reading the hardware RTC on a powermac, but this issue relates to
-userspace fetching the time from the vDSO. I'm also not running on a
-powermac, so my hardware should be able to deal with times > 2040...
+Do we really take the last available PF flag just so that "we avoid
+unnecessary page migration later"?
+If yes, that's a third PF_MEMALLOC flag, should we get separate variable
+for gfp context at this point?
+Also I don't like the name PF_MEMALLOC_NOCMA, as it's unnecessarily tied
+to CMA. If anything it should be e.g. PF_MEMALLOC_NOMOVABLE.
 
+Thanks.
 
-Regards,
-Daniel
+> ---
+>  include/linux/sched.h    |  1 +
+>  include/linux/sched/mm.h | 48 +++++++++++++++++++++++++++++++++-------
+>  2 files changed, 41 insertions(+), 8 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index f9b43c989577..dfa90088ba08 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1403,6 +1403,7 @@ extern struct pid *cad_pid;
+>  #define PF_UMH			0x02000000	/* I'm an Usermodehelper process */
+>  #define PF_NO_SETAFFINITY	0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
+>  #define PF_MCE_EARLY		0x08000000      /* Early kill for mce process policy */
+> +#define PF_MEMALLOC_NOCMA	0x10000000 /* All allocation request will have _GFP_MOVABLE cleared */
+>  #define PF_MUTEX_TESTER		0x20000000	/* Thread belongs to the rt mutex tester */
+>  #define PF_FREEZER_SKIP		0x40000000	/* Freezer should not count it as freezable */
+>  #define PF_SUSPEND_TASK		0x80000000      /* This thread called freeze_processes() and should not be frozen */
+> diff --git a/include/linux/sched/mm.h b/include/linux/sched/mm.h
+> index 3bfa6a0cbba4..0cd9f10423fb 100644
+> --- a/include/linux/sched/mm.h
+> +++ b/include/linux/sched/mm.h
+> @@ -148,17 +148,25 @@ static inline bool in_vfork(struct task_struct *tsk)
+>   * Applies per-task gfp context to the given allocation flags.
+>   * PF_MEMALLOC_NOIO implies GFP_NOIO
+>   * PF_MEMALLOC_NOFS implies GFP_NOFS
+> + * PF_MEMALLOC_NOCMA implies no allocation from CMA region.
+>   */
+>  static inline gfp_t current_gfp_context(gfp_t flags)
+>  {
+> -	/*
+> -	 * NOIO implies both NOIO and NOFS and it is a weaker context
+> -	 * so always make sure it makes precedence
+> -	 */
+> -	if (unlikely(current->flags & PF_MEMALLOC_NOIO))
+> -		flags &= ~(__GFP_IO | __GFP_FS);
+> -	else if (unlikely(current->flags & PF_MEMALLOC_NOFS))
+> -		flags &= ~__GFP_FS;
+> +	if (unlikely(current->flags &
+> +		     (PF_MEMALLOC_NOIO | PF_MEMALLOC_NOFS | PF_MEMALLOC_NOCMA))) {
+> +		/*
+> +		 * NOIO implies both NOIO and NOFS and it is a weaker context
+> +		 * so always make sure it makes precedence
+> +		 */
+> +		if (current->flags & PF_MEMALLOC_NOIO)
+> +			flags &= ~(__GFP_IO | __GFP_FS);
+> +		else if (current->flags & PF_MEMALLOC_NOFS)
+> +			flags &= ~__GFP_FS;
+> +#ifdef CONFIG_CMA
+> +		if (current->flags & PF_MEMALLOC_NOCMA)
+> +			flags &= ~__GFP_MOVABLE;
+> +#endif
+> +	}
+>  	return flags;
+>  }
+>  
+> @@ -248,6 +256,30 @@ static inline void memalloc_noreclaim_restore(unsigned int flags)
+>  	current->flags = (current->flags & ~PF_MEMALLOC) | flags;
+>  }
+>  
+> +#ifdef CONFIG_CMA
+> +static inline unsigned int memalloc_nocma_save(void)
+> +{
+> +	unsigned int flags = current->flags & PF_MEMALLOC_NOCMA;
+> +
+> +	current->flags |= PF_MEMALLOC_NOCMA;
+> +	return flags;
+> +}
+> +
+> +static inline void memalloc_nocma_restore(unsigned int flags)
+> +{
+> +	current->flags = (current->flags & ~PF_MEMALLOC_NOCMA) | flags;
+> +}
+> +#else
+> +static inline unsigned int memalloc_nocma_save(void)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void memalloc_nocma_restore(unsigned int flags)
+> +{
+> +}
+> +#endif
+> +
+>  #ifdef CONFIG_MEMCG
+>  /**
+>   * memalloc_use_memcg - Starts the remote memcg charging scope.
+> 
 
->> When this happens, anything with timers (e.g. openjdk) breaks rather badly.
->>
->> [3.] Keywords: gettimeofday, ppc64, vdso
->> [4.] Kernel information
->> [4.1.] Kernel version: any (tested on 4.19)
->> [4.2.] Kernel .config file: any
->> [5.] Most recent kernel version which did not have the bug: not a regression
->> [6.] Output of Oops..: not applicable
->> [7.] Example program which triggers the problem
->> --- testcase.c
->> #include <stdio.h>
->> #include <time.h>
->> #include <stdlib.h>
->> #include <unistd.h>
->>
->> long get_time() {
->>   struct timespec tp;
->>   if (clock_gettime(CLOCK_MONOTONIC, &tp) != 0) {
->>     perror("clock_gettime failed");
->>     exit(1);
->>   }
->>   long result = tp.tv_sec + tp.tv_nsec / 1000000000;
->>   return result;
->> }
->>
->> int main() {
->>   printf("monitoring monotonic clock...\n");
->>   long last = get_time();
->>   while(1) {
->>     long now = get_time();
->>     if (now < last) {
->>       printf("clock went backwards by %ld seconds!\n",
->>         last - now);
->>     }
->>     last = now;
->>     sleep(1);
->>   }
->>   return 0;
->> }
->> ---
->> when running
->> # date -s 2040-1-1
->> # date -s 2037-1-1
->> program outputs: clock went backwards by 4294967295 seconds!
->>
->> [8.] Environment: any ppc64, currently reproducing on qemu-system-ppc64le running debian unstable
->> [X.] Other notes, patches, fixes, workarounds:
->> The problem seems to be in vDSO code in arch/powerpc/kernel/vdso64/gettimeofday.S.
->> (possibly because some values used in the calculation are only 32 bit?)
->> Slightly silly workaround:
->> nuke the "cmpwi cr1,r3,CLOCK_MONOTONIC" in __kernel_clock_gettime
->> Now it always goes through the syscall fallback which does not have the same problem.
->>
->> Regards,
->> Jakub Drnec
