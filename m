@@ -2,50 +2,70 @@ Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42A97C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 19:47:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76ADCC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 19:49:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C105B20C01
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 19:47:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C105B20C01
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
+	by mail.kernel.org (Postfix) with ESMTPS id EEE54218AE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 19:49:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEE54218AE
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449NPf5P5pzDqN6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:47:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449NRl5HXZzDqNH
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:49:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=altlinux.org
- (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
- envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
+ envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=altlinux.org
-X-Greylist: delayed 353 seconds by postgrey-1.36 at bilbo;
- Fri, 01 Mar 2019 06:45:29 AEDT
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 449NLx3dsRzDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 06:45:29 +1100 (AEDT)
-Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
- by vmicros1.altlinux.org (Postfix) with ESMTP id 9835D72CA65;
- Thu, 28 Feb 2019 22:39:31 +0300 (MSK)
-Received: by mua.local.altlinux.org (Postfix, from userid 508)
- id 8F8B37CC74D; Thu, 28 Feb 2019 22:39:31 +0300 (MSK)
-Date: Thu, 28 Feb 2019 22:39:31 +0300
-From: "Dmitry V. Levin" <ldv@altlinux.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v7 16/22] powerpc: define syscall_get_error()
-Message-ID: <20190228193930.GB13217@altlinux.org>
-References: <20190107025101.GA1182@altlinux.org>
- <20190107025417.GP1207@altlinux.org>
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
+ [209.85.167.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449NPT2mWMzDqN6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 06:47:40 +1100 (AEDT)
+Received: by mail-oi1-f196.google.com with SMTP id b4so17522911oif.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 11:47:40 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:in-reply-to:user-agent;
+ bh=4zLpkg9lasy0oknFW0BAb173RlRaDWUARDEXV2KYlVQ=;
+ b=fLs2MutSXrDqXWSTEQKbhuE1p+F4G7KPu461U0Yy66L7cLuC1SxfAqECgMKL/j+Mv8
+ Nm0KdgWJiG4b9unlpFNo9QaebSGrgza8jrZg9hHrahcC5X/sMEAJAEqJeQ7ASUeqaoLd
+ XQqcq0HccjkEPoaXaKaszHF3YzR+bjFKrzsBRBtcODbCLkcB38H6KMVYUOZ86o4K6m0W
+ 2dl/QchCEZuR6TWwZ2m+4CXK1CKYjBW3+EqA8CT6M5JWB+UTYi8zKmSkfNSzGSO8+dYG
+ tBscHZz5cdrhX2DaU4jFfCkPmf5prJWiPaqh4ESco8qfx9WyYoZTw6/Pc6wvoJxQFPAr
+ 2ypg==
+X-Gm-Message-State: APjAAAXHK5p0MnWWqYWG2NxOF7ZrTk6jTnwWIEMxO4ANXLJl6xNgGy1a
+ AMSo49IxrMUEJdEDYYA3Eg==
+X-Google-Smtp-Source: AHgI3IZcVaVIt3JIXFrJEaqwgrZfby2Bq9Ok7clcX8jSWYhPXacngMqyeXKcxOKyylxGRBhN6jT2vw==
+X-Received: by 2002:aca:fc09:: with SMTP id a9mr874570oii.106.1551383258425;
+ Thu, 28 Feb 2019 11:47:38 -0800 (PST)
+Received: from localhost ([2607:fb90:20de:307f:59ce:35b2:628:2365])
+ by smtp.gmail.com with ESMTPSA id a15sm7951821otq.35.2019.02.28.11.47.37
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 28 Feb 2019 11:47:37 -0800 (PST)
+Date: Thu, 28 Feb 2019 13:47:36 -0600
+From: Rob Herring <robh@kernel.org>
+To: Patrick Havelange <patrick.havelange@essensium.com>
+Subject: Re: [PATCH 7/8] dt-bindings: iio/counter: ftm-quaddec: add
+ poll-interval parameter
+Message-ID: <20190228194736.GA6079@bogus>
+References: <20190218140321.19166-1-patrick.havelange@essensium.com>
+ <20190218140321.19166-7-patrick.havelange@essensium.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190107025417.GP1207@altlinux.org>
+In-Reply-To: <20190218140321.19166-7-patrick.havelange@essensium.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,68 +77,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Eugene Syromyatnikov <esyr@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
- Elvira Khabirova <lineprinter@altlinux.org>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ Patrick Havelange <patrick.havelange@essensium.com>, linux-pwm@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ William Breathitt Gray <vilhelm.gray@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Esben Haabendal <esben@haabendal.dk>,
+ Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Jonathan Cameron <jic23@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-syscall_get_error() is required to be implemented on this
-architecture in addition to already implemented syscall_get_nr(),
-syscall_get_arguments(), syscall_get_return_value(), and
-syscall_get_arch() functions in order to extend the generic
-ptrace API with PTRACE_GET_SYSCALL_INFO request.
+On Mon, 18 Feb 2019 15:03:20 +0100, Patrick Havelange wrote:
+> New optional parameter supported by updated driver.
+> 
+> Signed-off-by: Patrick Havelange <patrick.havelange@essensium.com>
+> Reviewed-by: Esben Haabendal <esben@haabendal.dk>
+> ---
+>  .../devicetree/bindings/iio/counter/ftm-quaddec.txt       | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Elvira Khabirova <lineprinter@altlinux.org>
-Cc: Eugene Syromyatnikov <esyr@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Dmitry V. Levin <ldv@altlinux.org>
----
-
-This is just a gentle ping, the patch is unchanged.
-
-Notes:
-    v7: unchanged
-    v6: unchanged
-    v5:
-    This change has been tested with
-    tools/testing/selftests/ptrace/get_syscall_info.c and strace,
-    so it's correct from PTRACE_GET_SYSCALL_INFO point of view.
-    
-    This cast doubts on commit v4.3-rc1~86^2~81 that changed
-    syscall_set_return_value() in a way that doesn't quite match
-    syscall_get_error(), but syscall_set_return_value() is out
-    of scope of this series, so I'll just let you know my concerns.
-
- arch/powerpc/include/asm/syscall.h | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index 1a0e7a8b1c81..b522781ad7c0 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -38,6 +38,16 @@ static inline void syscall_rollback(struct task_struct *task,
- 	regs->gpr[3] = regs->orig_gpr3;
- }
- 
-+static inline long syscall_get_error(struct task_struct *task,
-+				     struct pt_regs *regs)
-+{
-+	/*
-+	 * If the system call failed,
-+	 * regs->gpr[3] contains a positive ERRORCODE.
-+	 */
-+	return (regs->ccr & 0x10000000UL) ? -regs->gpr[3] : 0;
-+}
-+
- static inline long syscall_get_return_value(struct task_struct *task,
- 					    struct pt_regs *regs)
- {
--- 
-ldv
+Reviewed-by: Rob Herring <robh@kernel.org>
