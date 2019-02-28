@@ -2,81 +2,53 @@ Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B591C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 09:38:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C886DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 09:42:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1C212171F
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 09:38:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=google.com header.i=@google.com header.b="uwdDKCe9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1C212171F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=reject dis=none) header.from=google.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4B745218AE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 09:42:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4B745218AE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4496v42nD2zDq9d
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 20:38:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4496yg09LKzDqQR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 20:42:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=google.com
- (client-ip=2607:f8b0:4864:20::141; helo=mail-it1-x141.google.com;
- envelope-from=dvyukov@google.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=google.com header.i=@google.com header.b="uwdDKCe9"; 
- dkim-atps=neutral
-Received: from mail-it1-x141.google.com (mail-it1-x141.google.com
- [IPv6:2607:f8b0:4864:20::141])
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4496fM6ZxrzDqH4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 20:27:55 +1100 (AEDT)
-Received: by mail-it1-x141.google.com with SMTP id v2so13693370ith.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 01:27:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=9s56Sp6Ed/MToCgAULSr2dBXvDzRcDfr+4abxb4jwy0=;
- b=uwdDKCe9aRXyxGfP9urtA8fjaFCSZaPhodSDBVfsZLEfmoH8yMiEnOf27n/f7tOyMo
- UtaD0ck58kimQ3jT0IiK7WF4BI7mB4l5LPGweSX9IMWwT2BvpE/v5jBDacp6+Ar0+nfN
- Eu+E9j/g07ps5TXSy0mPxB8j4KCKtpIFTLgVdXOIkmsnRZnPwGy+TY5f3jrl5etX/TyF
- crYELAnPv+gAt1t6LSZW/V71PY0kzQp8PqdMiN9aNomRB0aVT8aiZzvITg3r7BYa/zoy
- TJPB4xucDawif6ErBAhvIR4hlVE6qgDpMKZ8dwEzorYcNpFt7pkdamksQr6x5ob/2ooB
- a52w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=9s56Sp6Ed/MToCgAULSr2dBXvDzRcDfr+4abxb4jwy0=;
- b=T+kZr8qV8ZVRN7tjxFyUBK1WCVJv+kKeEyFkJAWqQdb/9rMjLuIKgtNTzidkDteZph
- 7Y5hHPhqBvT4l0Zc2Ifjf0k4rShynH56PjCy1htAo+NMa8UjeoXEHEBIByUINB3mV8ap
- +LbYkvwhRYP+jjO1Ym8I3NXrKCyI+DXxzeYRTQ/edRvU+EFkTF01KXbyTMyrGAGoUDh2
- rOOQZxK1rOP6JrjVxSw6tzlP3H4K+bqWTHddb8nPhYNOKrcKM/qmTVK2gBPWtACc4CP+
- donLsXJqAK4IKqm6OmGhEcCwpGWlzleugGXpOW/n5sXFbwxmUrasyp2niJ6jLDmzR0Jj
- gT9A==
-X-Gm-Message-State: AHQUAuYKIEi89aeAHJf6WUWoeOOimusXl0mdpu0rSbJhwE51+6NttXBE
- p3OGxMm2zcU8uDbewWT1ZF55n/3euMKvtkm/xGLMow==
-X-Google-Smtp-Source: APXvYqxpckk/OUJ/wZnYGGbDlZgdTfJE0PYF8yyOfS9XhX8qiKcQhM+JlI9sCynpqDCTxSP8ng0jc1mKFU0C0aBvN24=
-X-Received: by 2002:a24:3b01:: with SMTP id c1mr2034025ita.144.1551346071368; 
- Thu, 28 Feb 2019 01:27:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4496wb3dmvzDq5b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 20:40:15 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 1AC1DAD36;
+ Thu, 28 Feb 2019 09:40:12 +0000 (UTC)
+Received: by quack2.suse.cz (Postfix, from userid 1000)
+ id 764DB1E4263; Thu, 28 Feb 2019 10:40:11 +0100 (CET)
+Date: Thu, 28 Feb 2019 10:40:11 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
+Message-ID: <20190228094011.GB22210@quack2.suse.cz>
+References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
+ <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
-References: <c6d80735-0cfe-b4ab-0349-673fc65b2e15@c-s.fr>
- <5f0203bd-77ea-d94c-11b7-1befba439cd4@virtuozzo.com>
- <15a40476-2852-cf5a-0982-d899dd79d9c1@c-s.fr>
- <7778f728-3ca2-7ad6-503f-72ca098863cb@virtuozzo.com>
-In-Reply-To: <7778f728-3ca2-7ad6-503f-72ca098863cb@virtuozzo.com>
-From: Dmitry Vyukov <dvyukov@google.com>
-Date: Thu, 28 Feb 2019 10:27:40 +0100
-Message-ID: <CACT4Y+adjRarmcWTrQxotATzaHoFQ4TXbyiRXEpWozLPzjQBrQ@mail.gmail.com>
-Subject: Re: BUG: KASAN: stack-out-of-bounds
-To: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,146 +60,105 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kasan-dev <kasan-dev@googlegroups.com>, Linux-MM <linux-mm@kvack.org>,
- Alexander Potapenko <glider@google.com>, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Oliver O'Halloran <oohall@gmail.com>, Ross Zwisler <zwisler@kernel.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 28, 2019 at 10:22 AM Andrey Ryabinin
-<aryabinin@virtuozzo.com> wrote:
->
->
->
-> On 2/27/19 4:11 PM, Christophe Leroy wrote:
-> >
-> >
-> > Le 27/02/2019 =C3=A0 10:19, Andrey Ryabinin a =C3=A9crit :
-> >>
-> >>
-> >> On 2/27/19 11:25 AM, Christophe Leroy wrote:
-> >>> With version v8 of the series implementing KASAN on 32 bits powerpc (=
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=3D94309), I'=
-m now able to activate KASAN on a mac99 is QEMU.
-> >>>
-> >>> Then I get the following reports at startup. Which of the two reports=
- I get seems to depend on the option used to build the kernel, but for a gi=
-ven kernel I always get the same report.
-> >>>
-> >>> Is that a real bug, in which case how could I spot it ? Or is it some=
-thing wrong in my implementation of KASAN ?
-> >>>
-> >>> I checked that after kasan_init(), the entire shadow memory is full o=
-f 0 only.
-> >>>
-> >>> I also made a try with the strong STACK_PROTECTOR compiled in, but no=
- difference and nothing detected by the stack protector.
-> >>>
-> >>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >>> BUG: KASAN: stack-out-of-bounds in memchr+0x24/0x74
-> >>> Read of size 1 at addr c0ecdd40 by task swapper/0
-> >>>
-> >>> CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1133
-> >>> Call Trace:
-> >>> [c0e9dca0] [c01c42a0] print_address_description+0x64/0x2bc (unreliabl=
-e)
-> >>> [c0e9dcd0] [c01c4684] kasan_report+0xfc/0x180
-> >>> [c0e9dd10] [c089579c] memchr+0x24/0x74
-> >>> [c0e9dd30] [c00a9e38] msg_print_text+0x124/0x574
-> >>> [c0e9dde0] [c00ab710] console_unlock+0x114/0x4f8
-> >>> [c0e9de40] [c00adc60] vprintk_emit+0x188/0x1c4
-> >>> --- interrupt: c0e9df00 at 0x400f330
-> >>>      LR =3D init_stack+0x1f00/0x2000
-> >>> [c0e9de80] [c00ae3c4] printk+0xa8/0xcc (unreliable)
-> >>> [c0e9df20] [c0c28e44] early_irq_init+0x38/0x108
-> >>> [c0e9df50] [c0c16434] start_kernel+0x310/0x488
-> >>> [c0e9dff0] [00003484] 0x3484
-> >>>
-> >>> The buggy address belongs to the variable:
-> >>>   __log_buf+0xec0/0x4020
-> >>> The buggy address belongs to the page:
-> >>> page:c6eac9a0 count:1 mapcount:0 mapping:00000000 index:0x0
-> >>> flags: 0x1000(reserved)
-> >>> raw: 00001000 c6eac9a4 c6eac9a4 00000000 00000000 00000000 ffffffff 0=
-0000001
-> >>> page dumped because: kasan: bad access detected
-> >>>
-> >>> Memory state around the buggy address:
-> >>>   c0ecdc00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >>>   c0ecdc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >>>> c0ecdd00: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00
-> >>>                                     ^
-> >>>   c0ecdd80: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
-> >>>   c0ecde00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> >>>
-> >>
-> >> This one doesn't look good. Notice that it says stack-out-of-bounds, b=
-ut at the same time there is
-> >>     "The buggy address belongs to the variable:  __log_buf+0xec0/0x402=
-0"
-> >>   which is printed by following code:
-> >>     if (kernel_or_module_addr(addr) && !init_task_stack_addr(addr)) {
-> >>         pr_err("The buggy address belongs to the variable:\n");
-> >>         pr_err(" %pS\n", addr);
-> >>     }
-> >>
-> >> So the stack unrelated address got stack-related poisoning. This could=
- be a stack overflow, did you increase THREAD_SHIFT?
-> >> KASAN with stack instrumentation significantly increases stack usage.
-> >>
-> >
-> > I get the above with THREAD_SHIFT set to 13 (default value).
-> > If increasing it to 14, I get the following instead. That means that in=
- that case the problem arises a lot earlier in the boot process (but still =
-after the final kasan shadow setup).
-> >
->
-> We usually use 15 (with 4k pages), but I think 14 should be enough for th=
-e clean boot.
->
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > BUG: KASAN: stack-out-of-bounds in pmac_nvram_init+0x1f8/0x5d0
-> > Read of size 1 at addr f6f37de0 by task swapper/0
-> >
-> > CPU: 0 PID: 0 Comm: swapper Not tainted 5.0.0-rc7+ #1143
-> > Call Trace:
-> > [c0e9fd60] [c01c43c0] print_address_description+0x164/0x2bc (unreliable=
-)
-> > [c0e9fd90] [c01c46a4] kasan_report+0xfc/0x180
-> > [c0e9fdd0] [c0c226d4] pmac_nvram_init+0x1f8/0x5d0
-> > [c0e9fef0] [c0c1f73c] pmac_setup_arch+0x298/0x314
-> > [c0e9ff20] [c0c1ac40] setup_arch+0x250/0x268
-> > [c0e9ff50] [c0c151dc] start_kernel+0xb8/0x488
-> > [c0e9fff0] [00003484] 0x3484
-> >
-> >
-> > Memory state around the buggy address:
-> >  f6f37c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >  f6f37d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> >>f6f37d80: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
-> >                                                ^
-> >  f6f37e00: 00 00 01 f4 f2 f2 f2 f2 00 00 00 00 f2 f2 f2 f2
-> >  f6f37e80: 00 00 00 00 f3 f3 f3 f3 00 00 00 00 00 00 00 00
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->
-> Powerpc's show_stack() prints stack addresses, so we know that stack is s=
-omething near 0xc0e9f... address.
-> f6f37de0 is definitely not stack address and it's to far for the stack ov=
-erflow.
-> So it looks like shadow for stack  - kasan_mem_to_shadow(0xc0e9f...) and =
-shadow for address in report - kasan_mem_to_shadow(0xf6f37de0)
-> point to the same physical page.
+On Thu 28-02-19 14:05:22, Aneesh Kumar K.V wrote:
+> Add a flag to indicate the ability to do huge page dax mapping. On architecture
+> like ppc64, the hypervisor can disable huge page support in the guest. In
+> such a case, we should not enable huge page dax mapping. This patch adds
+> a flag which the architecture code will update to indicate huge page
+> dax mapping support.
+> 
+> Architectures mostly do transparent_hugepage_flag = 0; if they can't
+> do hugepages. That also takes care of disabling dax hugepage mapping
+> with this change.
+> 
+> Without this patch we get the below error with kvm on ppc64.
+> 
+> [  118.849975] lpar: Failed hash pte insert with error -4
+> 
+> NOTE: The patch also use
+> 
+> echo never > /sys/kernel/mm/transparent_hugepage/enabled
+> to disable dax huge page mapping.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Shouldn't shadow start at 0xf8 for powerpc32? I did some math
-yesterday which I think lead me to 0xf8.
-This allows to cover at most 1GB of memory. Do you have more by any chance?
+Added Dan to CC for opinion. I kind of fail to see why you don't use
+TRANSPARENT_HUGEPAGE_FLAG for this. I know that technically DAX huge pages
+and normal THPs are different things but so far we've tried to avoid making
+that distinction visible to userspace.
+
+								Honza
+> ---
+> TODO:
+> * Add Fixes: tag
+> 
+>  include/linux/huge_mm.h | 4 +++-
+>  mm/huge_memory.c        | 4 ++++
+>  2 files changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+> index 381e872bfde0..01ad5258545e 100644
+> --- a/include/linux/huge_mm.h
+> +++ b/include/linux/huge_mm.h
+> @@ -53,6 +53,7 @@ vm_fault_t vmf_insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>  			pud_t *pud, pfn_t pfn, bool write);
+>  enum transparent_hugepage_flag {
+>  	TRANSPARENT_HUGEPAGE_FLAG,
+> +	TRANSPARENT_HUGEPAGE_DAX_FLAG,
+>  	TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG,
+>  	TRANSPARENT_HUGEPAGE_DEFRAG_DIRECT_FLAG,
+>  	TRANSPARENT_HUGEPAGE_DEFRAG_KSWAPD_FLAG,
+> @@ -111,7 +112,8 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
+>  	if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
+>  		return true;
+>  
+> -	if (vma_is_dax(vma))
+> +	if (vma_is_dax(vma) &&
+> +	    (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_DAX_FLAG)))
+>  		return true;
+>  
+>  	if (transparent_hugepage_flags &
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index faf357eaf0ce..43d742fe0341 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -53,6 +53,7 @@ unsigned long transparent_hugepage_flags __read_mostly =
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE_MADVISE
+>  	(1<<TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG)|
+>  #endif
+> +	(1 << TRANSPARENT_HUGEPAGE_DAX_FLAG) |
+>  	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_REQ_MADV_FLAG)|
+>  	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_KHUGEPAGED_FLAG)|
+>  	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
+> @@ -475,6 +476,8 @@ static int __init setup_transparent_hugepage(char *str)
+>  			  &transparent_hugepage_flags);
+>  		clear_bit(TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG,
+>  			  &transparent_hugepage_flags);
+> +		clear_bit(TRANSPARENT_HUGEPAGE_DAX_FLAG,
+> +			  &transparent_hugepage_flags);
+>  		ret = 1;
+>  	}
+>  out:
+> @@ -753,6 +756,7 @@ static void insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  	spinlock_t *ptl;
+>  
+>  	ptl = pmd_lock(mm, pmd);
+> +	/* should we check for none here again? */
+>  	entry = pmd_mkhuge(pfn_t_pmd(pfn, prot));
+>  	if (pfn_t_devmap(pfn))
+>  		entry = pmd_mkdevmap(entry);
+> -- 
+> 2.20.1
+> 
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
