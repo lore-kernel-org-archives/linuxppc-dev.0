@@ -1,81 +1,83 @@
-Return-Path: <SRS0=o5MI=RC=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 316D3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 22:39:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60710C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 00:03:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 909B42083D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Feb 2019 22:39:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 81A4E21850
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 00:03:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="UyLXQp/x"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 909B42083D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zDfH4MMV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 81A4E21850
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 448rGb4mHMzDqLj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 09:39:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 448t6s2Y0yzDqNH
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 11:03:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::841; helo=mail-qt1-x841.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=sboyd@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.b="UyLXQp/x"; 
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+ dkim=fail reason="signature verification failed" (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="zDfH4MMV"; 
  dkim-atps=neutral
-Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com
- [IPv6:2607:f8b0:4864:20::841])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448qfs58n3zDqKJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 09:12:17 +1100 (AEDT)
-Received: by mail-qt1-x841.google.com with SMTP id s1so21239014qte.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Feb 2019 14:12:17 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=from:to:cc:subject:date:message-id;
- bh=gJVRQLlqnwk8sxjewpHNesdly6P+LqOTjUsl1nOlzTg=;
- b=UyLXQp/xZQLZdLznUzhv0eDX+KSDYCghve1vumeb29D+/9quguhYCPT4+S9j2aGDsb
- mNAbWPvVLEeIuu3AH58JDKad3Pwl3VoBmhOZiEpJnuKEnickaMF5t3GzyjlWcW9pOXDJ
- p6zOpKL2o78jVDEiunfb70Sf+0dRcjKWPz/CQMUqOdg6kr/zR2hKntRFPoAZ3qaNXhjh
- Hf6RmnyaJyacgGy5nNz1y+ML1+srkoE3Uv3d/D59N3GbV53AXFx+53QbolnIAPuPcb40
- YMJ+BywVLOBaQbZrm+1Fp1/cwb9pebK9SyjHDHrATqqrqBO8ZS3hoNZn9eLsImqfUBa+
- GNag==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=gJVRQLlqnwk8sxjewpHNesdly6P+LqOTjUsl1nOlzTg=;
- b=bAV98WGqVYki5cY+1DgmY6HgvzypWBZF+lFg5mr5lKZxhLzGhIskh6TdgGG+ARvByu
- pEwucEAGMX3K8zyzC2YFCvn9tUt7aM1NOLgq5KrQOaCVKN83W1VGDguQA57qU3aKNe+L
- PvzdxQK1OBBTkr6jExNf1yZoUr/fkfQ+V/aNLop4aS4kq3wTt/TyxWeNJIWhjg1TJEs1
- ive8KirWsjdQLGWiIQfUACJHdcOrY5dPESY+Fy4enaHaTqA618CldN5tZf8p03wWuefx
- u3TDsdKdvjlS53WvHG3GrwOiCNi/3PxgOqmds8QuS5Ldp+TxlojFQWF9XSlF2h0iUhzz
- E0XA==
-X-Gm-Message-State: APjAAAV5utVaC6i2KCVrBmdM3JIN2p9Qk7n4Qov26HqpE+OQhJxEEMJW
- /hsSaucAaQcKlW9zRmwNZEDIPw==
-X-Google-Smtp-Source: APXvYqwmi81Gngi8eMRRAO/I0i5iJ1vm93qc7mPf9+eZoRVTqADL3XHCZ4Q7jR52GigDXpvfSOMR9Q==
-X-Received: by 2002:a0c:8b50:: with SMTP id d16mr3753432qvc.233.1551305533940; 
- Wed, 27 Feb 2019 14:12:13 -0800 (PST)
-Received: from Qians-MBP.fios-router.home
- (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id u1sm12116671qki.36.2019.02.27.14.12.13
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 27 Feb 2019 14:12:13 -0800 (PST)
-From: Qian Cai <cai@lca.pw>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: fix "section_base" set but not used
-Date: Wed, 27 Feb 2019 17:11:59 -0500
-Message-Id: <20190227221159.78055-1-cai@lca.pw>
-X-Mailer: git-send-email 2.17.2 (Apple Git-113)
-X-Mailman-Approved-At: Thu, 28 Feb 2019 09:36:56 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 448t4r4KrHzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Feb 2019 11:01:32 +1100 (AEDT)
+Received: from localhost (unknown [104.132.0.74])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 7A64321850;
+ Thu, 28 Feb 2019 00:01:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1551312089;
+ bh=q1T5iaEa2b4R1Gj+EQUVl8fwuZfLBtUF45gOHNybkwc=;
+ h=To:References:Cc:Subject:From:In-Reply-To:Date:From;
+ b=zDfH4MMVgN14ka7lGXfzzT6yY2UOpwoM08CbnIi2qMsfzFPy/UNF1wP2A5b/g9iRr
+ PwUhxPaX9PMXbmoWzrOiLO2YgO8u71Zefm+U8ke7OoXBMqttzWVLRLqMM5NeX+IBF5
+ UTrQgTHzCmkHGL4IJB+ltUYcHyGkireIt0QMTuqg=
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+To: "arnd@arndb.de" <arnd@arndb.de>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>,
+ "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "mturquette@baylibre.com" <mturquette@baylibre.com>,
+ "oss@buserror.net" <oss@buserror.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "viresh.kumar@lina
+ ro.org" <viresh.kumar@linaro.org>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "yamada.masahiro@socionext.com" <yamada.masahiro@socionext.com>,
+ Leo Li <leoyang.li@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+References: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+Message-ID: <155131208867.260864.6630901066653352400@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.8
+Subject: Re: [PATCH v1 0/4] arm64: dts: NXP: add basic dts file for LX2160A SoC
+From: Stephen Boyd <sboyd@kernel.org>
+In-Reply-To: <1551132245-6089-1-git-send-email-vabhav.sharma@nxp.com>
+Date: Wed, 27 Feb 2019 16:01:28 -0800
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,41 +89,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>,
+ "linux@armlinux.org.uk" <linux@armlinux.org.uk>,
+ Vabhav Sharma <vabhav.sharma@nxp.com>,
+ "adrian.hunter@intel.com" <adrian.hunter@intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-arch/powerpc/mm/init_64.c: In function 'vmemmap_free':
-arch/powerpc/mm/init_64.c:277:16: error: variable 'section_base' set but
-not used [-Werror=unused-but-set-variable]
+Quoting Vabhav Sharma (2019-02-26 02:10:46)
+> These patches were reviewed and acked but dropped during merge window.
+> Patchwork link was https://lore.kernel.org/patchwork/cover/1004155/
+>=20
+> Changes for v1:
+> - Updated lx2160a clockgen in alphabetical order
+>=20
+> Vabhav Sharma (2):
+>   dt-bindings: arm64: add compatible for LX2160A
+>   soc/fsl/guts: Add definition for LX2160A
+>=20
+> Yogesh Gaur (2):
+>   clk: qoriq: increase array size of cmux_to_group
+>   clk: qoriq: Add clockgen support for lx2160a
 
-Signed-off-by: Qian Cai <cai@lca.pw>
----
- arch/powerpc/mm/init_64.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index a5091c034747..a4c155af1597 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -274,7 +274,6 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
- 
- 	for (; start < end; start += page_size) {
- 		unsigned long nr_pages, addr;
--		struct page *section_base;
- 		struct page *page;
- 
- 		/*
-@@ -290,7 +289,6 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
- 			continue;
- 
- 		page = pfn_to_page(addr >> PAGE_SHIFT);
--		section_base = pfn_to_page(vmemmap_section_start(start));
- 		nr_pages = 1 << page_order;
- 		base_pfn = PHYS_PFN(addr);
- 
--- 
-2.17.2 (Apple Git-113)
+Who do you want to apply these patches?
 
