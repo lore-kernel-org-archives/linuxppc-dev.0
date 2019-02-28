@@ -2,51 +2,71 @@ Return-Path: <SRS0=68wk=RD=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E923C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 14:36:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D437EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 14:45:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E15092184A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 14:36:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E15092184A
+	by mail.kernel.org (Postfix) with ESMTPS id 6E0262133D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Feb 2019 14:45:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="JXwmF8KA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E0262133D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449FTp5C74zDqT4
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 01:35:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449FjH6flrzDqQY
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 01:45:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=mhocko@kernel.org;
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=timur@kernel.org;
  receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="JXwmF8KA"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449FRm3ZyQzDq5b
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 01:34:11 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id DCD5EAFF6;
- Thu, 28 Feb 2019 14:34:06 +0000 (UTC)
-Date: Thu, 28 Feb 2019 15:34:05 +0100
-From: Michal Hocko <mhocko@kernel.org>
-To: Vlastimil Babka <vbabka@suse.cz>
-Subject: Re: [PATCH v8 1/4] mm/cma: Add PF flag to force non cma alloc
-Message-ID: <20190228143405.GF10588@dhcp22.suse.cz>
-References: <20190227144736.5872-1-aneesh.kumar@linux.ibm.com>
- <20190227144736.5872-2-aneesh.kumar@linux.ibm.com>
- <1d083bf9-0beb-0c49-9aab-c6bc14da46ea@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449FRC3L6XzDqJk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 01:33:42 +1100 (AEDT)
+Received: from [192.168.1.75] (cpe-24-28-70-126.austin.res.rr.com
+ [24.28.70.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 84783214D8;
+ Thu, 28 Feb 2019 14:33:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1551364420;
+ bh=YmWjXZzkDAmGP6cIxMxdbozvJsLmID0lqbudLpktuko=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=JXwmF8KANDWuxbA0bdxQRLxCNYL+40YzuuW5C35pN8b+b03MPqrIWl91CoO9V5Z2g
+ jeIQA2oRnO+lJhgrQhJtZ7FzbKe/X7dbfWkt37+lWs68AOr7tUlhPpT1wIQ+KNMWBd
+ 7KjbU3Fmff9z84vzeHVDfwzB6Tjo8oT2L35CUrKc=
+Subject: Re: [PATCH] ASoC: cs42xx8: Remove S32_LE in format list
+To: "S.j. Wang" <shengjiu.wang@nxp.com>,
+ "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+References: <1551333389-22791-1-git-send-email-shengjiu.wang@nxp.com>
+From: Timur Tabi <timur@kernel.org>
+Message-ID: <ab0a0d6c-4905-328c-0e22-931c045ed8d9@kernel.org>
+Date: Thu, 28 Feb 2019 08:33:37 -0600
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:60.0)
+ Gecko/20100101 Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1d083bf9-0beb-0c49-9aab-c6bc14da46ea@suse.cz>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <1551333389-22791-1-git-send-email-shengjiu.wang@nxp.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Mailman-Approved-At: Fri, 01 Mar 2019 01:44:22 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,40 +78,18 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linux-kernel@vger.kernel.org,
- Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu 28-02-19 13:20:03, Vlastimil Babka wrote:
-> On 2/27/19 3:47 PM, Aneesh Kumar K.V wrote:
-> > This patch adds PF_MEMALLOC_NOCMA which make sure any allocation in that context
-> > is marked non-movable and hence cannot be satisfied by CMA region.
-> > 
-> > This is useful with get_user_pages_longterm where we want to take a page pin by
-> > migrating pages from CMA region. Marking the section PF_MEMALLOC_NOCMA ensures
-> > that we avoid unnecessary page migration later.
-> > 
-> > Suggested-by: Andrea Arcangeli <aarcange@redhat.com>
-> > Reviewed-by: Andrea Arcangeli <aarcange@redhat.com>
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+On 2/27/19 11:56 PM, S.j. Wang wrote:
+> cs42xx8 is a 24-bit A/D and 24-bit D/A device, so the S32_LE
+> should not be in the supported format list.
 > 
-> +CC scheduler guys
-> 
-> Do we really take the last available PF flag just so that "we avoid
-> unnecessary page migration later"?
-> If yes, that's a third PF_MEMALLOC flag, should we get separate variable
-> for gfp context at this point?
+> Signed-off-by: Shengjiu Wang<shengjiu.wang@nxp.com>
 
-Yes, that sounds like a reasonable thing to do. Just note that xfs still
-uses current_{set,restore}* api to handle PF_MEMALLOC_NOFS so that would
-have to be moved over to the memalloc_nofs_{save,restore} API.
+Is the device capable of accepting 32-bit samples, even if it downgrades 
+it to 24-bit internally?  If so, then maybe SNDRV_PCM_FMTBIT_S32_LE 
+should stay.
 
--- 
-Michal Hocko
