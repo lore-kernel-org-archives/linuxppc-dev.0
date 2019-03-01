@@ -2,41 +2,63 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EB76C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 01:40:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72060C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 02:28:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2B76E2085A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 01:40:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2B76E2085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
+	by mail.kernel.org (Postfix) with ESMTPS id EEEC4218AE
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 02:28:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EEEC4218AE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=mediatek.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449XDY2FyBzDqJs
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:40:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449YJ01vgdzDqKW
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 13:28:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=mediatek.com
+ (client-ip=210.61.82.183; helo=mailgw01.mediatek.com;
+ envelope-from=honghui.zhang@mediatek.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ozlabs.ru
-Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 449XBv1Pp0zDq9C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 12:39:02 +1100 (AEDT)
-Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
- by ozlabs.ru (Postfix) with ESMTP id 7609AAE8000A;
- Thu, 28 Feb 2019 20:38:29 -0500 (EST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v2] KVM: PPC: Allocate guest TCEs on demand too
-Date: Fri,  1 Mar 2019 12:38:27 +1100
-Message-Id: <20190301013827.30504-1-aik@ozlabs.ru>
-X-Mailer: git-send-email 2.17.1
+ dmarc=none (p=none dis=none) header.from=mediatek.com
+X-Greylist: delayed 307 seconds by postgrey-1.36 at bilbo;
+ Fri, 01 Mar 2019 13:04:31 AEDT
+Received: from mailgw01.mediatek.com (mailgw01.mediatek.com [210.61.82.183])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449XmH6yVJzDqHR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 13:04:31 +1100 (AEDT)
+X-UUID: 21cdcab5909a4bec87ce57119ebaf975-20190301
+X-UUID: 21cdcab5909a4bec87ce57119ebaf975-20190301
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by
+ mailgw01.mediatek.com (envelope-from <honghui.zhang@mediatek.com>)
+ (mhqrelay.mediatek.com ESMTP with TLS)
+ with ESMTP id 699210403; Fri, 01 Mar 2019 09:59:17 +0800
+Received: from MTKCAS32.mediatek.inc (172.27.4.184) by mtkmbs08n1.mediatek.inc
+ (172.21.101.55) with Microsoft SMTP Server (TLS) id 15.0.1395.4;
+ Fri, 1 Mar 2019 09:59:15 +0800
+Received: from [10.17.3.153] (172.27.4.253) by MTKCAS32.mediatek.inc
+ (172.27.4.170) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
+ Transport; Fri, 1 Mar 2019 09:59:14 +0800
+Message-ID: <1551405554.32061.19.camel@mhfsdcap03>
+Subject: Re: [PATCH 7/8] PCI: mediatek: fix a leaked reference by adding
+ missing of_node_put
+From: Honghui Zhang <honghui.zhang@mediatek.com>
+To: Wen Yang <wen.yang99@zte.com.cn>
+Date: Fri, 1 Mar 2019 09:59:14 +0800
+In-Reply-To: <1551242443-27300-7-git-send-email-wen.yang99@zte.com.cn>
+References: <1551242443-27300-1-git-send-email-wen.yang99@zte.com.cn>
+ <1551242443-27300-7-git-send-email-wen.yang99@zte.com.cn>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.2.3-0ubuntu6 
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+X-MTK: N
+X-Mailman-Approved-At: Fri, 01 Mar 2019 13:27:04 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -48,230 +70,59 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: heiko@sntech.de, hayashi.kunihiko@socionext.com, shawn.lin@rock-chips.com,
+ minghuan.Lian@nxp.com, paulus@samba.org, thomas.petazzoni@bootlin.com,
+ ryder.lee@mediatek.com, kishon@ti.com, linux-rockchip@lists.infradead.org,
+ bcm-kernel-feedback-list@broadcom.com, linux-arm-kernel@lists.infradead.org,
+ linux-pci@vger.kernel.org, wang.yi59@zte.com.cn, rjui@broadcom.com,
+ lorenzo.pieralisi@arm.com, linux-mediatek@lists.infradead.org,
+ tyreld@linux.vnet.ibm.com, matthias.bgg@gmail.com, linux-omap@vger.kernel.org,
+ mingkai.hu@nxp.com, roy.zang@nxp.com, sbranden@broadcom.com,
+ yamada.masahiro@socionext.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, bhelgaas@google.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-We already allocate hardware TCE tables in multiple levels and skip
-intermediate levels when we can, now it is a turn of the KVM TCE tables.
-Thankfully these are allocated already in 2 levels.
+On Wed, 2019-02-27 at 12:40 +0800, Wen Yang wrote:
+> The call to of_get_next_child returns a node pointer with refcount
+> incremented thus it must be explicitly decremented after the last
+> usage.
+> irq_domain_add_linear also calls of_node_get to increase refcount,
+> so irq_domain will not be affected when it is released.
+> 
+> Detected by coccinelle with the following warnings:
+> ./drivers/pci/controller/pcie-mediatek.c:577:2-8: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 567, but without a corresponding object release within this function.
+> ./drivers/pci/controller/pcie-mediatek.c:583:3-9: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 567, but without a corresponding object release within this function.
+> ./drivers/pci/controller/pcie-mediatek.c:586:1-7: ERROR: missing of_node_put; acquired a node pointer with refcount incremented on line 567, but without a corresponding object release within this function.
+> 
+> Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+> Cc: Ryder Lee <ryder.lee@mediatek.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: Matthias Brugger <matthias.bgg@gmail.com>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-mediatek@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> ---
+>  drivers/pci/controller/pcie-mediatek.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/pci/controller/pcie-mediatek.c b/drivers/pci/controller/pcie-mediatek.c
+> index 55e471c..e91716a 100644
+> --- a/drivers/pci/controller/pcie-mediatek.c
+> +++ b/drivers/pci/controller/pcie-mediatek.c
+> @@ -572,6 +572,7 @@ static int mtk_pcie_init_irq_domain(struct mtk_pcie_port *port,
+>  
+>  	port->irq_domain = irq_domain_add_linear(pcie_intc_node, PCI_NUM_INTX,
+>  						 &intx_domain_ops, port);
+> +	of_node_put(pcie_intc_node);
+>  	if (!port->irq_domain) {
+>  		dev_err(dev, "failed to get INTx IRQ domain\n");
+>  		return -ENODEV;
 
-This moves the table's last level allocation from the creating helper to
-kvmppc_tce_put() and kvm_spapr_tce_fault().
+Thanks for fix this.
 
-This adds kvmppc_rm_ioba_validate() to do an additional test if
-the consequent kvmppc_tce_put() needs a page which has not been allocated;
-if this is the case, we bail out to virtual mode handlers.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v2:
-* added kvm mutex around alloc_page to prevent races; in both place we
-test the pointer, if NULL, then take a lock and check again so on a fast
-path we do not take a lock at all
-
-
----
-For NVLink2 passthrough guests with 128TiB DMA windows and very fragmented
-system RAM the difference is gigabytes of RAM.
----
- arch/powerpc/kvm/book3s_64_vio.c    | 29 ++++++------
- arch/powerpc/kvm/book3s_64_vio_hv.c | 69 ++++++++++++++++++++++++++---
- 2 files changed, 79 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index f02b049..7eed8c9 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -228,7 +228,8 @@ static void release_spapr_tce_table(struct rcu_head *head)
- 	unsigned long i, npages = kvmppc_tce_pages(stt->size);
- 
- 	for (i = 0; i < npages; i++)
--		__free_page(stt->pages[i]);
-+		if (stt->pages[i])
-+			__free_page(stt->pages[i]);
- 
- 	kfree(stt);
- }
-@@ -242,6 +243,20 @@ static vm_fault_t kvm_spapr_tce_fault(struct vm_fault *vmf)
- 		return VM_FAULT_SIGBUS;
- 
- 	page = stt->pages[vmf->pgoff];
-+	if (!page) {
-+		mutex_lock(&stt->kvm->lock);
-+		page = stt->pages[vmf->pgoff];
-+		if (!page) {
-+			page  = alloc_page(GFP_KERNEL | __GFP_ZERO);
-+			if (!page) {
-+				mutex_unlock(&stt->kvm->lock);
-+				return VM_FAULT_OOM;
-+			}
-+			stt->pages[vmf->pgoff] = page;
-+		}
-+		mutex_unlock(&stt->kvm->lock);
-+	}
-+
- 	get_page(page);
- 	vmf->page = page;
- 	return 0;
-@@ -296,7 +311,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	struct kvmppc_spapr_tce_table *siter;
- 	unsigned long npages, size = args->size;
- 	int ret = -ENOMEM;
--	int i;
- 
- 	if (!args->size || args->page_shift < 12 || args->page_shift > 34 ||
- 		(args->offset + args->size > (ULLONG_MAX >> args->page_shift)))
-@@ -320,12 +334,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	stt->kvm = kvm;
- 	INIT_LIST_HEAD_RCU(&stt->iommu_tables);
- 
--	for (i = 0; i < npages; i++) {
--		stt->pages[i] = alloc_page(GFP_KERNEL | __GFP_ZERO);
--		if (!stt->pages[i])
--			goto fail;
--	}
--
- 	mutex_lock(&kvm->lock);
- 
- 	/* Check this LIOBN hasn't been previously allocated */
-@@ -352,11 +360,6 @@ long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
- 	if (ret >= 0)
- 		return ret;
- 
-- fail:
--	for (i = 0; i < npages; i++)
--		if (stt->pages[i])
--			__free_page(stt->pages[i]);
--
- 	kfree(stt);
-  fail_acct:
- 	kvmppc_account_memlimit(kvmppc_stt_pages(npages), false);
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 2206bc7..a0912d5 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -158,23 +158,76 @@ static u64 *kvmppc_page_address(struct page *page)
- 	return (u64 *) page_address(page);
- }
- 
-+/*
-+ * TCEs pages are allocated in kvmppc_tce_put() which won't be able to do so
-+ * in real mode.
-+ * Check if kvmppc_tce_put() can succeed in real mode, i.e. a TCEs page is
-+ * allocated or not required (when clearing a tce entry).
-+ */
-+static long kvmppc_rm_ioba_validate(struct kvmppc_spapr_tce_table *stt,
-+		unsigned long ioba, unsigned long npages, bool clearing)
-+{
-+	unsigned long i, sttpage, sttpages;
-+	unsigned long ret = kvmppc_ioba_validate(stt, ioba, npages);
-+
-+	if (ret)
-+		return ret;
-+	/*
-+	 * clearing==true says kvmppc_tce_put won't be allocating pages
-+	 * for empty tces.
-+	 */
-+	if (clearing)
-+		return H_SUCCESS;
-+
-+	sttpage = ((ioba >> stt->page_shift) - stt->offset) / TCES_PER_PAGE;
-+	sttpages = (npages + TCES_PER_PAGE - 1) / TCES_PER_PAGE;
-+	for (i = sttpage; i < sttpage + sttpages; ++i)
-+		if (!stt->pages[i])
-+			return H_TOO_HARD;
-+
-+	return H_SUCCESS;
-+}
-+
- /*
-  * Handles TCE requests for emulated devices.
-  * Puts guest TCE values to the table and expects user space to convert them.
-  * Called in both real and virtual modes.
-  * Cannot fail so kvmppc_tce_validate must be called before it.
-  *
-- * WARNING: This will be called in real-mode on HV KVM and virtual
-- *          mode on PR KVM
-+ * WARNING: This will be called in real-mode on HV HPT KVM and virtual
-+ *          mode on PR KVM or HV radix KVM
-  */
- void kvmppc_tce_put(struct kvmppc_spapr_tce_table *stt,
- 		unsigned long idx, unsigned long tce)
- {
- 	struct page *page;
- 	u64 *tbl;
-+	unsigned long sttpage;
- 
- 	idx -= stt->offset;
--	page = stt->pages[idx / TCES_PER_PAGE];
-+	sttpage = idx / TCES_PER_PAGE;
-+	page = stt->pages[sttpage];
-+
-+	if (!page) {
-+		/* We allow any TCE, not just with read|write permissions */
-+		if (!tce)
-+			return;
-+		/*
-+		 * We must not end up here in real mode,
-+		 * kvmppc_rm_ioba_validate() takes care of this.
-+		 */
-+		mutex_lock(&stt->kvm->lock);
-+		page = stt->pages[sttpage];
-+		if (!page) {
-+			page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-+			if (WARN_ON_ONCE(!page)) {
-+				mutex_unlock(&stt->kvm->lock);
-+				return;
-+			}
-+			stt->pages[sttpage] = page;
-+		}
-+		mutex_unlock(&stt->kvm->lock);
-+	}
- 	tbl = kvmppc_page_address(page);
- 
- 	tbl[idx % TCES_PER_PAGE] = tce;
-@@ -381,7 +434,7 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 	if (!stt)
- 		return H_TOO_HARD;
- 
--	ret = kvmppc_ioba_validate(stt, ioba, 1);
-+	ret = kvmppc_rm_ioba_validate(stt, ioba, 1, tce == 0);
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
-@@ -480,7 +533,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 	if (tce_list & (SZ_4K - 1))
- 		return H_PARAMETER;
- 
--	ret = kvmppc_ioba_validate(stt, ioba, npages);
-+	ret = kvmppc_rm_ioba_validate(stt, ioba, npages, false);
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
-@@ -583,7 +636,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
- 	if (!stt)
- 		return H_TOO_HARD;
- 
--	ret = kvmppc_ioba_validate(stt, ioba, npages);
-+	ret = kvmppc_rm_ioba_validate(stt, ioba, npages, tce_value == 0);
- 	if (ret != H_SUCCESS)
- 		return ret;
- 
-@@ -635,6 +688,10 @@ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
- 
- 	idx = (ioba >> stt->page_shift) - stt->offset;
- 	page = stt->pages[idx / TCES_PER_PAGE];
-+	if (!page) {
-+		vcpu->arch.regs.gpr[4] = 0;
-+		return H_SUCCESS;
-+	}
- 	tbl = (u64 *)page_address(page);
- 
- 	vcpu->arch.regs.gpr[4] = tbl[idx % TCES_PER_PAGE];
--- 
-2.17.1
+Acked-by: Honghui Zhang <honghui.zhang@mediatek.com>
 
