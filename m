@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 182FAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:47:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC83DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:49:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 885982084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:47:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 26B982084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:49:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rybuktLB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 885982084D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="V9yDVuOO"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26B982084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449q2G47L5zDqCp
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 23:47:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449q4K5w7JzDqSt
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 23:49:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,51 +28,50 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rybuktLB"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="V9yDVuOO"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449pkT0gc5zDqKW
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449pkT1HlJzDqMC
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 23:33:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 449pkG3qKmz9txrr;
- Fri,  1 Mar 2019 13:33:42 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 449pkH3z20z9txrq;
+ Fri,  1 Mar 2019 13:33:43 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=rybuktLB; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=V9yDVuOO; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7fh6xtct_1Ud; Fri,  1 Mar 2019 13:33:42 +0100 (CET)
+ with ESMTP id WaLy-Q3yGWd7; Fri,  1 Mar 2019 13:33:43 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 449pkG2lcbz9txrh;
- Fri,  1 Mar 2019 13:33:42 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551443622; bh=FcoH0MWZdtOBuC7W/yk0A9+bmiNTMQTCcIimrSkyq24=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=rybuktLBqTBbP5JYSCuz5k6KxvrQheL8FM5pOdWxhSLBzmveOkS1mAgRCBi8LKncy
- UEH9iOedKdAZZOeqRlElTiI8SzAeztUUL1ZV5ANzdBw7+ZntaKX60Hsrk+OFy6IQ6S
- CXjw07kftkLCuuK8z4kDMVfzlE99g0cNGBla9/Cg=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 9F9518BB73;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 449pkH2jbQz9txrh;
  Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1551443623; bh=T5roomQKloe+Cr1IT+Xg0/TzN2EQ/rbW1mXIN5nYL+c=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=V9yDVuOO6s54csiG0Uu7iG7sHKI/cZ4MueHDZGOsWn0I4WWu6SeeOMophs+O9WhhY
+ SHjpVDKAcZ3g0ylB68KZJVCUcR7NzG92OPLhXApMwesa42L0S4+wCTOs2rm8owTVS2
+ N7Ok+BurOBBqPEXVJBhkrwQV99oHPfx5+VAB/lus=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A50F28BB8B;
+ Fri,  1 Mar 2019 13:33:44 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 7QyMtoFXDvp0; Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+ with ESMTP id fMya_PpDFcO4; Fri,  1 Mar 2019 13:33:44 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 647948BB8B;
- Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 64D0A8BB73;
+ Fri,  1 Mar 2019 13:33:44 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 3F9AD6F89E; Fri,  1 Mar 2019 12:33:43 +0000 (UTC)
-Message-Id: <9718764d2702d89df6de6e9607e5e53256f766c1.1551443453.git.christophe.leroy@c-s.fr>
+ id 434CA6F89E; Fri,  1 Mar 2019 12:33:44 +0000 (UTC)
+Message-Id: <6b79065e99220dc1f01dc37d0112a329902e5905.1551443453.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1551443452.git.christophe.leroy@c-s.fr>
 References: <cover.1551443452.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9 05/11] powerpc/32: use memset() instead of memset_io() to
- zero BSS
+Subject: [PATCH v9 06/11] powerpc/32: make KVIRT_TOP dependent on FIXMAP_START
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -80,7 +79,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Fri,  1 Mar 2019 12:33:43 +0000 (UTC)
+Date: Fri,  1 Mar 2019 12:33:44 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,31 +97,95 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Since commit 400c47d81ca38 ("powerpc32: memset: only use dcbz once cache is
-enabled"), memset() can be used before activation of the cache,
-so no need to use memset_io() for zeroing the BSS.
+When we add KASAN shadow area, KVIRT_TOP can't be anymore fixed
+at 0xfe000000.
 
-Acked-by: Dmitry Vyukov <dvyukov@google.com>
+This patch uses FIXADDR_START to define KVIRT_TOP.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/early_32.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 13 ++++++++++---
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 13 ++++++++++---
+ 2 files changed, 20 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/early_32.c b/arch/powerpc/kernel/early_32.c
-index cf3cdd81dc47..3482118ffe76 100644
---- a/arch/powerpc/kernel/early_32.c
-+++ b/arch/powerpc/kernel/early_32.c
-@@ -21,8 +21,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
- {
- 	unsigned long offset = reloc_offset();
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index aa8406b8f7ba..838de59f6754 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -134,15 +134,24 @@ static inline bool pte_user(pte_t pte)
+ #define PGDIR_MASK	(~(PGDIR_SIZE-1))
  
--	/* First zero the BSS -- use memset_io, some platforms don't have caches on yet */
--	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
-+	/* First zero the BSS */
-+	memset(PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
+ #define USER_PTRS_PER_PGD	(TASK_SIZE / PGDIR_SIZE)
++
++#ifndef __ASSEMBLY__
++
++int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
++
++#endif /* !__ASSEMBLY__ */
++
+ /*
+  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
+  * value (for now) on others, from where we can start layout kernel
+  * virtual space that goes below PKMAP and FIXMAP
+  */
++#include <asm/fixmap.h>
++
+ #ifdef CONFIG_HIGHMEM
+ #define KVIRT_TOP	PKMAP_BASE
+ #else
+-#define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
++#define KVIRT_TOP	FIXADDR_START
+ #endif
  
- 	/*
- 	 * Identify the CPU type and fix up code sections
+ /*
+@@ -373,8 +382,6 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
+ #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
+ 
+-int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+-
+ /* Generic accessors to PTE bits */
+ static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
+ static inline int pte_read(pte_t pte)		{ return 1; }
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index bed433358260..0284f8f5305f 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -64,15 +64,24 @@ extern int icache_44x_need_flush;
+ #define pgd_ERROR(e) \
+ 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+ 
++#ifndef __ASSEMBLY__
++
++int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
++
++#endif /* !__ASSEMBLY__ */
++
++
+ /*
+  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
+  * value (for now) on others, from where we can start layout kernel
+  * virtual space that goes below PKMAP and FIXMAP
+  */
++#include <asm/fixmap.h>
++
+ #ifdef CONFIG_HIGHMEM
+ #define KVIRT_TOP	PKMAP_BASE
+ #else
+-#define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
++#define KVIRT_TOP	FIXADDR_START
+ #endif
+ 
+ /*
+@@ -379,8 +388,6 @@ static inline int pte_young(pte_t pte)
+ #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
+ #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
+ 
+-int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
+-
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* __ASM_POWERPC_NOHASH_32_PGTABLE_H */
 -- 
 2.13.3
 
