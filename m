@@ -2,82 +2,85 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FROM_EXCESS_BASE64,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,SUBJ_ALL_CAPS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9785C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 10:34:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61DBBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:37:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A4A320851
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 10:34:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9CBC820850
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:37:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="u8GuuV7b"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A4A320851
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="nn5hog9F"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9CBC820850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449m596d9tzDqRy
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 21:34:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449pp80VvGzDq9P
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 23:37:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yadro.com
- (client-ip=89.207.88.251; helo=mta-01.yadro.com; envelope-from=ilya@yadro.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yadro.com
+ dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="u8GuuV7b"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="nn5hog9F"; 
  dkim-atps=neutral
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449m3V2c1qzDqHl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 21:33:26 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id D05F241978;
- Fri,  1 Mar 2019 10:33:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- user-agent:in-reply-to:content-transfer-encoding
- :content-disposition:content-type:content-type:mime-version
- :references:message-id:subject:subject:from:from:date:date
- :received:received:received; s=mta-01; t=1551436393; x=
- 1553250794; bh=SgBOCev7fquOYBn+rGjF4SeZo5oGyiBxj5oGIxzi9nw=; b=u
- 8GuuV7b0ttH3lhjSWHZXUfPT8/31OLO9WHBO0oE0/4+jmnhrkktmRz+kjG6jE9JX
- bsKqxvBkHV4hmRd98S80Nxy+QLzJoBjbnAtTdvtY7tt1tOjFsiu6wyyKgiZ/hZMt
- uZXgDarKnUCWk0Vud9WzsSzJC19SzNs+YYkxQfYJU0=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 0VujjfGtY6QF; Fri,  1 Mar 2019 13:33:13 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 54D4941974;
- Fri,  1 Mar 2019 13:33:13 +0300 (MSK)
-Received: from localhost (172.17.15.183) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Fri, 1 Mar
- 2019 13:33:13 +0300
-Date: Fri, 1 Mar 2019 13:32:46 +0300
-From: =?utf-8?B?0JjQu9GM0Y8g0JrRg9C30L3QtdGG0L7Qsg==?= <ilya@yadro.com>
-To: <linuxppc-dev@lists.ozlabs.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: Re: DMA & POWER8
-Message-ID: <20190301103246.a6elk7ohpmabqyn7@yadro.com>
-References: <20190227155702.ngm3l5bjsde2vvrw@yadro.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20190227155702.ngm3l5bjsde2vvrw@yadro.com>
-User-Agent: NeoMutt/20180716
-X-Originating-IP: [172.17.15.183]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449pkM5h98zDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 23:33:46 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 449pkF4Drhz9txrp;
+ Fri,  1 Mar 2019 13:33:41 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=nn5hog9F; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id NhfshISpNCAD; Fri,  1 Mar 2019 13:33:41 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 449pkF33c0z9txrh;
+ Fri,  1 Mar 2019 13:33:41 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1551443621; bh=g6fhwCUzzCOYhxsR7m9Lo9kcYtSGDH5kmO2yLp27uXY=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=nn5hog9FmupqvIer8UZXuu5YWMe3YWuc/LU+tdF//9x0G3Miq3YDC3iu7tYfmPbY7
+ L5B8RPu9XRAWdlLNZcLYb683D/xU+ATOAz7Qqqj+2ul6EAVDFkI4o/FvtlH4TkzpHN
+ 4rjYplkWt2HUg1ShZgb75mMpLyJJH6VF7Bug/2xY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A36618BB8B;
+ Fri,  1 Mar 2019 13:33:42 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 3wNDqyWP9Mo2; Fri,  1 Mar 2019 13:33:42 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 525E08BB73;
+ Fri,  1 Mar 2019 13:33:42 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id 36C5B6F89E; Fri,  1 Mar 2019 12:33:42 +0000 (UTC)
+Message-Id: <7cd5cc904c0a77f573a0fe116b3464d4f38c7aea.1551443453.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1551443452.git.christophe.leroy@c-s.fr>
+References: <cover.1551443452.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v9 04/11] powerpc/mm: don't use direct assignation during
+ early boot.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
+Date: Fri,  1 Mar 2019 12:33:42 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,27 +92,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: a.fomichev@yadro.com
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I'm sorry for previous email content without greeting.
+In kernel/cputable.c, explicitly use memcpy() instead of *y = *x;
+This will allow GCC to replace it with __memcpy() when KASAN is
+selected.
 
-A bit more description… We are working on enabling RDMA over PCIe NTB on
-OpenPOWER using https://github.com/ntrdma project. During initialization 
-dma_request_channel() founds no available channels. We also found that there no 
-channels at all in dma_device_list. This is probably powerpc specific problem.
-Could someone explain if that is hardware limitation or arch specific part
-should be changed?
+Acked-by: Dmitry Vyukov <dvyukov@google.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/cputable.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-Ben, a while ago you answered regarding DMA master on POWER8, may be you have 
-idea here also?
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 1eab54bc6ee9..cd12f362b61f 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -2147,7 +2147,11 @@ void __init set_cur_cpu_spec(struct cpu_spec *s)
+ 	struct cpu_spec *t = &the_cpu_spec;
+ 
+ 	t = PTRRELOC(t);
+-	*t = *s;
++	/*
++	 * use memcpy() instead of *t = *s so that GCC replaces it
++	 * by __memcpy() when KASAN is active
++	 */
++	memcpy(t, s, sizeof(*t));
+ 
+ 	*PTRRELOC(&cur_cpu_spec) = &the_cpu_spec;
+ }
+@@ -2161,8 +2165,11 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
+ 	t = PTRRELOC(t);
+ 	old = *t;
+ 
+-	/* Copy everything, then do fixups */
+-	*t = *s;
++	/*
++	 * Copy everything, then do fixups. Use memcpy() instead of *t = *s
++	 * so that GCC replaces it by __memcpy() when KASAN is active
++	 */
++	memcpy(t, s, sizeof(*t));
+ 
+ 	/*
+ 	 * If we are overriding a previous value derived from the real
+-- 
+2.13.3
 
-Thank you in advance!
-
-Илья Кузнецов <ilya@yadro.com> wrote on Ср [2019-фев-27 18:57:02 +0300]:
->We're trying to use Slave-DMA API of the DMA Engine in the linux kernel on
->POWER8 OpenPOWER platform. And we discovered that dma_request_channel() always fails.
->Does it mean that Turismo hardware does not support Slave-DMA? Or DMA
->subsystem in the linux kernel needs to be fixed, doesn't it?
