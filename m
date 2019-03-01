@@ -2,72 +2,77 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 584C7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 13:03:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F24BBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 13:06:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CA4472084F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 13:03:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 643D72084F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 13:06:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="uLqc/4Gw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CA4472084F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="aYMnfweA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 643D72084F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449qNc2ntCzDq8Y
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:03:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449qSX1HjyzDqJN
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:06:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
- (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
- envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
- header.b="uLqc/4Gw"; dkim-atps=neutral
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="aYMnfweA"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449pqc6vVhzDqRy
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 23:38:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=sirena.org.uk; s=20170815-heliosphere; h=In-Reply-To:Content-Type:
- MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=jtop4A5EpcUG0rKMeIx3l6MeGsKoOVM1tNtfLoLZ1SM=; b=uLqc/4Gw/aLXDKrAibAZe31ad
- t+KoCXzu8AW2d+cgcGAH8wOVCKSNWgxPv4YRXDDoebyZ3u/S488uCX7Hyzg0l/Vvz0kyukeakLSPd
- 7GrHy8WmxiQ9ffN9Px1+rVPH724dHC0O9EIM7psYRx+fUuJUcyRoBcBhTGV3567LP/mRQ=;
-Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
- ([82.37.168.47] helo=debutante.sirena.org.uk)
- by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
- (envelope-from <broonie@sirena.org.uk>)
- id 1gzhQc-0002B4-H8; Fri, 01 Mar 2019 12:38:14 +0000
-Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
- id ED9C91128742; Fri,  1 Mar 2019 12:38:08 +0000 (GMT)
-Date: Fri, 1 Mar 2019 12:38:08 +0000
-From: Mark Brown <broonie@kernel.org>
-To: "S.j. Wang" <shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl_asrc: add protection for the asrc of older
- version
-Message-ID: <20190301123808.GD7429@sirena.org.uk>
-References: <1551407560-29950-1-git-send-email-shengjiu.wang@nxp.com>
- <20190301025356.GA1371@Asurada-Nvidia.nvidia.com>
- <VI1PR0402MB339254C31997242633511D12E3760@VI1PR0402MB3392.eurprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="GpGaEY17fSl8rd50"
-Content-Disposition: inline
-In-Reply-To: <VI1PR0402MB339254C31997242633511D12E3760@VI1PR0402MB3392.eurprd04.prod.outlook.com>
-X-Cookie: Yow!
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449qDz1sVXzDqVP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 23:56:50 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id m1so11417724pgq.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Mar 2019 04:56:50 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id;
+ bh=IksLj1Sf1ClZcIaTUpFFReQeAryGO2qOdR1X/Hf3fu8=;
+ b=aYMnfweA1scHFSVWl6nVfteqVrGZ//sbMdVn2D7CSkuVWSJybpIkTeOo/sf7/7/Uj9
+ jL9jBQmR8KGcRzXHXoS0M81e5BrXEzK/GTsEtm1V41oTDldRO5vbj6qD0s05pHL05Bbg
+ WOJBYBtNhsmFfThEH04NReeEP4W92Hrofe17RSNd1B2CZ9RtUeO5Ss938YYZgIadt0jy
+ PMmMeZRiJ+M8p+LMAF6B7c9ctHiJHdtdBMyEDbsv/jdUmAd4IzZZc5QtFkGrl5ZvCsQx
+ 1nfpT4I49Wpc61gsnPUfMUX3F+0coPdIYu2t0M7tNtErEdpiPqU6e+oCSeO2kXQLjz5R
+ 6lTA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=IksLj1Sf1ClZcIaTUpFFReQeAryGO2qOdR1X/Hf3fu8=;
+ b=XXbIntnPkCDe0EhAXUtMRigizhjHup+qneMXzK56kKA4iZ169puQS7tLY7upO0SCA9
+ iSI2t/FDYAVF/qQNGtM/GnGdb59RI5XM10CCfRLYuZMXHSEeJ+JfVTiEPpj6a+JlH2uc
+ BjkUf8kw4JTximSIQcbvhkpUcA+zYRvDoG7bjLxdYnvRtxW/7uuPVuDaFILEuo3F8HLX
+ kCvBm4BJ6OGChC0uoX8OnV3tMbvVFy3SY5AZ42ArqVO1Nsw9EbtUKlahhD7bv9ivc3hG
+ nh21bx7r89N0Fg4Ze8WOmCHf8VNv+C+Un0qjaMujl11qEeeL/SWdZyPxPTgZps2W47x8
+ N72A==
+X-Gm-Message-State: APjAAAVKdXRv3j2+9unV6J88Jld0V0OwwHPESBO34jMHX1jA6+owiTEB
+ Q4trVaYC9KfHUC3PFe4Jxp5CVkAa
+X-Google-Smtp-Source: APXvYqyU4Hp3uMbSZKh/l//v0Gp7DkXH4fFUurOqiPRkCK351rE5NnMiZsoF+jUIR2LTplXqpeZACQ==
+X-Received: by 2002:a63:6985:: with SMTP id e127mr4710629pgc.101.1551445007038; 
+ Fri, 01 Mar 2019 04:56:47 -0800 (PST)
+Received: from roar.local0.net (193-116-122-111.tpgi.com.au. [193.116.122.111])
+ by smtp.gmail.com with ESMTPSA id i10sm10194688pgs.26.2019.03.01.04.56.44
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 01 Mar 2019 04:56:46 -0800 (PST)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/64s: Fix unrelocated interrupt trampoline address test
+Date: Fri,  1 Mar 2019 22:56:36 +1000
+Message-Id: <20190301125636.11292-1-npiggin@gmail.com>
+X-Mailer: git-send-email 2.18.0
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -79,61 +84,102 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "timur@kernel.org" <timur@kernel.org>,
- "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
- "festevam@gmail.com" <festevam@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+The recent commit got this test wrong, it declared the assembler
+symbols the wrong way, and also used the wrong symbol name
+(xxx_start rather than start_xxx, see asm/head-64.h).
 
---GpGaEY17fSl8rd50
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fixes: ccd477028a ("powerpc/64s: Fix HV NMI vs HV interrupt recoverability test")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/include/asm/asm-prototypes.h | 8 --------
+ arch/powerpc/include/asm/sections.h       | 7 +++++++
+ arch/powerpc/kernel/exceptions-64s.S      | 8 ++++----
+ arch/powerpc/kernel/traps.c               | 9 +++++----
+ 4 files changed, 16 insertions(+), 16 deletions(-)
 
-On Fri, Mar 01, 2019 at 06:55:25AM +0000, S.j. Wang wrote:
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 0f8326644fa4..1d911f68a23b 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -51,14 +51,6 @@ int exit_vmx_usercopy(void);
+ int enter_vmx_ops(void);
+ void *exit_vmx_ops(void *dest);
+ 
+-/* Exceptions */
+-#ifdef CONFIG_PPC_POWERNV
+-extern unsigned long real_trampolines_start;
+-extern unsigned long real_trampolines_end;
+-extern unsigned long virt_trampolines_start;
+-extern unsigned long virt_trampolines_end;
+-#endif
+-
+ /* Traps */
+ long machine_check_early(struct pt_regs *regs);
+ long hmi_exception_realmode(struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
+index e335a8f846af..4a1664a8658d 100644
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -17,6 +17,13 @@ extern char __end_interrupts[];
+ extern char __prom_init_toc_start[];
+ extern char __prom_init_toc_end[];
+ 
++#ifdef CONFIG_PPC_POWERNV
++extern char start_real_trampolines[];
++extern char end_real_trampolines[];
++extern char start_virt_trampolines[];
++extern char end_virt_trampolines[];
++#endif
++
+ static inline int in_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end)
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index d2e9fc968655..6f0057566a80 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -70,10 +70,10 @@ OPEN_FIXED_SECTION(virt_vectors,        0x4000, 0x5900)
+ OPEN_FIXED_SECTION(virt_trampolines,    0x5900, 0x7000)
+ 
+ #ifdef CONFIG_PPC_POWERNV
+-	.globl real_trampolines_start
+-	.globl real_trampolines_end
+-	.globl virt_trampolines_start
+-	.globl virt_trampolines_end
++	.globl start_real_trampolines
++	.globl end_real_trampolines
++	.globl start_virt_trampolines
++	.globl end_virt_trampolines
+ #endif
+ 
+ #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 12b54908c15d..ee7c6cb876ba 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -426,12 +426,13 @@ void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
+ 		goto nonrecoverable;
+ 	if ((nip >= 0xf80 && nip < 0xfa0) || (nip >= 0x4f80 && nip < 0x4fa0))
+ 		goto nonrecoverable;
++
+ 	/* Trampoline code runs un-relocated so subtract kbase. */
+-	if (nip >= real_trampolines_start - kbase &&
+-			nip < real_trampolines_end - kbase)
++	if (nip >= (unsigned long)(start_real_trampolines - kbase) &&
++			nip < (unsigned long)(end_real_trampolines - kbase))
+ 		goto nonrecoverable;
+-	if (nip >= virt_trampolines_start - kbase &&
+-			nip < virt_trampolines_end - kbase)
++	if (nip >= (unsigned long)(start_virt_trampolines - kbase) &&
++			nip < (unsigned long)(end_virt_trampolines - kbase))
+ 		goto nonrecoverable;
+ 	return;
+ 
+-- 
+2.18.0
 
-> > Alternatively, I feel instead of error-out at here, should we add a HW
-> > constraint or at least fence it off at the beginning of the hw_params()=
-? This
-> > is actually nothing specific to the pair-request function but a hardware
-> > constraint.
-
-> How about add constraint in startup?
-> static int fsl_asrc_dai_startup(struct snd_pcm_substream *substream,
->                                struct snd_soc_dai *dai)
-> {
->        struct fsl_asrc *asrc_priv =3D snd_soc_dai_get_drvdata(dai);
->=20
->        if (asrc_priv->channel_bits =3D=3D 3) {
->                snd_pcm_hw_constraint_step(substream->runtime, 0,
->                                           SNDRV_PCM_HW_PARAM_CHANNELS, 2);
->        }
->=20
->        return 0;
-> }
-
-Yes, that's definitely good - the general idea is that we should never
-need to return an error from hw_params() as the constraints code will
-have filtered out any invalid configurations before they get that far.
-
---GpGaEY17fSl8rd50
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlx5J7AACgkQJNaLcl1U
-h9DsGQf/bJGiExAa++xw/8QvG1DHS0vZLwlo/TnEygG+NNpXo3DdaJAVVoESwF8e
-tz0uKNgBgt9QIx2ZRxRiebIjBA+bpOavCudSOlNwitOoiulffqVLbzQ9aZwo8uJJ
-LksiHyYasvA7lW+6dw+DjOTv0yctUyWOfMPoj5V9GaxT41fBbCMd80XO6jxS6Y4v
-tHe5BNXH2fgX8M4gZFdDXlC6XOw2/lYvONyHsPPR0ZSFYHii8SSu2yaZYJdjudrX
-5hAp3F5ivklIxRhMVdpev8yBclbrHgJPrGeRD/nNa59Myh8Lml3UDs8KBOEV2n2U
-nh/gUw6MTouDYI+PKZ3VEZyRIMbqIw==
-=MsFr
------END PGP SIGNATURE-----
-
---GpGaEY17fSl8rd50--
