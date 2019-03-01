@@ -1,69 +1,54 @@
-Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=6H9d=RF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20237C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 20:01:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C406C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:41:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8DDD120848
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 20:01:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="JaydcnMu"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8DDD120848
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id E2891206DD
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:41:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2891206DD
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44B0fx5S2WzDqJ8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 07:01:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44B6sk1d65zDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 11:41:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.86.78; helo=rcdn-iport-7.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="JaydcnMu"; 
- dkim-atps=neutral
-Received: from rcdn-iport-7.cisco.com (rcdn-iport-7.cisco.com [173.37.86.78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44B0Xy4QL3zDqVj
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 06:56:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=1852; q=dns/txt; s=iport;
- t=1551470178; x=1552679778;
- h=from:to:cc:subject:date:message-id;
- bh=CSGgkLU0GtxBXZ4f0m30bkOxXaKsKnckSnhZfY3p/kw=;
- b=JaydcnMuCMG8igYM8bR5k7aij1ZFBwYkDJq71nZZ3ppiWPnag+34ivF1
- Z3O3BFhs/q6l6eINQ9M+USpm0bRn0r12Q8cL+I9tPKEVORnvXpk8mRFSC
- G7380Znka+jU6LDmrGakfa9P/jqYaD2xgD/5pEWzvUOWDtmNSbfRdH6N+ Q=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0AmAAC/inlc/5NdJa1kHAEBAQQBAQc?=
- =?us-ascii?q?EAQGBUQcBAQsBggRogQMnjCKld4F7DSOESYQjIjQJDQEDAQEDAQMCbRwMhko?=
- =?us-ascii?q?pgQkMgzUBgXQBD6xvii+ICIRDF4FAP4VLGQGBXAKHQgKKESCNM4wWCYJAhQO?=
- =?us-ascii?q?LLAIXgXSFYYtLAZA6jGxvWDiBVjMaCBsVgycJgiuDVopTPzOQSgEB?=
-X-IronPort-AV: E=Sophos;i="5.58,428,1544486400"; d="scan'208";a="523879473"
-Received: from rcdn-core-11.cisco.com ([173.37.93.147])
- by rcdn-iport-7.cisco.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 01 Mar 2019 19:44:32 +0000
-Received: from sjc-ads-2388.cisco.com (sjc-ads-2388.cisco.com [171.70.63.76])
- by rcdn-core-11.cisco.com (8.15.2/8.15.2) with ESMTP id
- x21JiWLi018182; Fri, 1 Mar 2019 19:44:32 GMT
-From: Daniel Walker <danielwa@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PULL REQUEST] powerpc generic command line
-Date: Fri,  1 Mar 2019 19:44:28 +0000
-Message-Id: <1551469472-53043-1-git-send-email-danielwa@cisco.com>
-X-Mailer: git-send-email 2.7.4
-X-Outbound-SMTP-Client: 171.70.63.76, sjc-ads-2388.cisco.com
-X-Outbound-Node: rcdn-core-11.cisco.com
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44B6qs33f3zDqTY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 11:39:37 +1100 (AEDT)
+Received: from p5492e5b8.dip0.t-ipconnect.de ([84.146.229.184] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1gzs3x-0008CO-RD; Sat, 02 Mar 2019 00:59:34 +0100
+Date: Sat, 2 Mar 2019 00:59:33 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: PROBLEM: monotonic clock going backwards on ppc64
+In-Reply-To: <877edik9qu.fsf@concordia.ellerman.id.au>
+Message-ID: <alpine.DEB.2.21.1903020052530.1638@nanos.tec.linutronix.de>
+References: <HaC.ZfES.62bwlnvAvMP.1STMMj@seznam.cz>
+ <877edik9qu.fsf@concordia.ellerman.id.au>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,50 +60,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: John Stultz <john.stultz@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Jakub Drnec <jaydee@email.cz>, Stephen Boyd <sboyd@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Here are the generic command line changes for powerpc. 
+On Sat, 2 Mar 2019, Michael Ellerman wrote:
+> > The problem seems to be in vDSO code in arch/powerpc/kernel/vdso64/gettimeofday.S.
+> 
+> You're right, the wall-to-monotonic offset (wtom_clock_sec) is a signed
+> 32-bit value, so that seems like it's going to have problems.
+> 
+> If I do `date -s 2037-1-1` I see:
+> 
+> [   26.024061] update_vsyscall: tk->wall_to_monotonic.tv_sec -2114341175
+> [   26.042633] update_vsyscall: vdso_data->wtom_clock_sec    -2114341175
+> 
+> Which looks sane.
+> 
+> But then 2040-1-1 shows:
+> 
+> [   32.617020] update_vsyscall: tk->wall_to_monotonic.tv_sec -2208949168
+> [   32.632642] update_vsyscall: vdso_data->wtom_clock_sec     2086018128
+> 
+> ie. the larger negative offset has overflowed and become positive.
+> 
+> But then when we go back to 2037 we get a negative offset again and
+> monotonic time appears to go backward and things are unhappy.
+> 
+> I don't know this code well, but the patch below *appears* to work. I'll
+> have a closer look on Monday.
 
-These changes have been in linux-next for two cycles, with few problems reported.
-It's also been used at Cisco Systems, Inc. in production products for many many
-years with no problems.
+Looks about right. The core hands in the 64bit offset already.
 
-Please pull these changes.
+Thanks,
+
+	tglx
 
 
-The following changes since commit ccda4af0f4b92f7b4c308d3acc262f4a7e3affad:
-
-  Linux 4.20-rc2 (2018-11-11 17:12:31 -0600)
-
-are available in the git repository at:
-
-  https://github.com/daniel-walker/cisco-linux.git for-powerpc
-
-for you to fetch changes up to 5d4514a9c291ecf19b0626695161673d35e5d549:
-
-  powerpc: convert config files to generic cmdline (2018-11-16 07:32:26 -0800)
-
-----------------------------------------------------------------
-Daniel Walker (3):
-      add generic builtin command line
-      powerpc: convert to generic builtin command line
-      powerpc: convert config files to generic cmdline
-
- arch/powerpc/Kconfig                          | 23 +--------
- arch/powerpc/configs/44x/fsp2_defconfig       | 29 ++++++-----
- arch/powerpc/configs/44x/iss476-smp_defconfig | 24 ++++-----
- arch/powerpc/configs/44x/warp_defconfig       | 12 ++---
- arch/powerpc/configs/holly_defconfig          | 12 ++---
- arch/powerpc/configs/mvme5100_defconfig       | 25 +++++-----
- arch/powerpc/configs/skiroot_defconfig        | 48 +++++++++---------
- arch/powerpc/configs/storcenter_defconfig     | 15 +++---
- arch/powerpc/kernel/prom.c                    |  4 ++
- arch/powerpc/kernel/prom_init.c               |  8 +--
- arch/powerpc/kernel/prom_init_check.sh        |  2 +-
- include/linux/cmdline.h                       | 72 +++++++++++++++++++++++++++
- init/Kconfig                                  | 69 +++++++++++++++++++++++++
- 13 files changed, 231 insertions(+), 112 deletions(-)
- create mode 100644 include/linux/cmdline.h
