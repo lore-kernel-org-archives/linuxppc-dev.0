@@ -2,80 +2,95 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EE88C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E267C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 17:54:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8126F2083D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:23:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0C30220857
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 17:54:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="O0Npklz/"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8126F2083D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="JEyoc1et"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C30220857
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=oracle.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449vqP2xlXzDqVC
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 03:23:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449xrL3HnZzDqVJ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 04:54:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=yadro.com
- (client-ip=89.207.88.251; helo=mta-01.yadro.com;
- envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=oracle.com
+ (client-ip=141.146.126.79; helo=aserp2130.oracle.com;
+ envelope-from=mike.kravetz@oracle.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=yadro.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="O0Npklz/"; 
+ dmarc=pass (p=none dis=none) header.from=oracle.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=oracle.com header.i=@oracle.com header.b="JEyoc1et"; 
  dkim-atps=neutral
-Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449vQ729wTzDqTR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 03:05:03 +1100 (AEDT)
-Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 7390B419CA;
- Fri,  1 Mar 2019 16:04:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
- content-type:content-type:content-transfer-encoding:mime-version
- :references:in-reply-to:x-mailer:message-id:date:date:subject
- :subject:from:from:received:received:received; s=mta-01; t=
- 1551456297; x=1553270698; bh=KA6NPazejh7O5QEKvFEOBktDMjpH57Y5rGh
- 7WejsWE8=; b=O0Npklz/yJMtQsG/onFCW0YsuR8a5pzkqnMJtbJ9eYeNtAibZkn
- 5GWtwF333IbUxH8gjsjarV0ed2C8mW4GzE/gjimT3XgJlqPn4Xcok27b5Bz9fRho
- 51FDN44cdNx43c2HQLYi6goDnNk3k1pviB6Ey2XEmXxBAaCiuicUMDlg=
-X-Virus-Scanned: amavisd-new at yadro.com
-Received: from mta-01.yadro.com ([127.0.0.1])
- by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id GJnW_Sqd0mqp; Fri,  1 Mar 2019 19:04:57 +0300 (MSK)
-Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
- [172.17.10.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 49FE3419CF;
- Fri,  1 Mar 2019 19:04:49 +0300 (MSK)
-Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
- (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Fri, 1 Mar
- 2019 19:04:48 +0300
-From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC v4 8/9] powerpc/powernv/pci: Hook up the writes to
- PCI_SECONDARY_BUS register
-Date: Fri, 1 Mar 2019 19:04:39 +0300
-Message-ID: <20190301160440.26262-9-s.miroshnichenko@yadro.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
-References: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449xpf1XRczDqTQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 04:52:51 +1100 (AEDT)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.27/8.16.0.27) with SMTP id x21Hn5jo062465;
+ Fri, 1 Mar 2019 17:52:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com;
+ h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2018-07-02;
+ bh=NpucD7YBrSs74vzv0AXK91DfS+GP9Fp13cRwteMq25o=;
+ b=JEyoc1et9IUl4twUIN7FXN5HbH3g9uCVH6yniiL/mlA6a0Njg1bpBZ3TlW/+rOgFgtnF
+ ko5cw+9Y4gGEflsAEaeReQSQLLwb2eggXY+2FMlDTVmt6CYjXsVNDeFG98zGMtCKt5Yk
+ Fq4OLiaoXpNOX1gKniCDuEEuTulYVV8O4rJtPTOzt7Zmk+uIuAf9vwbyJJP62RWCqIT5
+ LOD5TRMphV1Ye90VpvGC3k6o0NTQHttJ9NOYRiULbbMt/NfT8zOxJp1fnVOccCAGJLOO
+ ID0LYvleQ2Yn00z94C+aNxpOC9QHc40ZkLvYPu8TkCUHlAEp+QFfTOy1fisakExP8i21 Sg== 
+Received: from userv0022.oracle.com (userv0022.oracle.com [156.151.31.74])
+ by aserp2130.oracle.com with ESMTP id 2qtupervyr-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 01 Mar 2019 17:52:04 +0000
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+ by userv0022.oracle.com (8.14.4/8.14.4) with ESMTP id x21HpwU5007124
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 1 Mar 2019 17:51:58 GMT
+Received: from abhmp0019.oracle.com (abhmp0019.oracle.com [141.146.116.25])
+ by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id x21Hpqdx018558;
+ Fri, 1 Mar 2019 17:51:53 GMT
+Received: from [192.168.1.164] (/50.38.38.67)
+ by default (Oracle Beehive Gateway v4.0)
+ with ESMTP ; Fri, 01 Mar 2019 09:51:52 -0800
+Subject: Re: [PATCH v4 4/4] hugetlb: allow to free gigantic pages regardless
+ of the configuration
+To: Alexandre Ghiti <alex@ghiti.fr>
+References: <20190228063604.15298-1-alex@ghiti.fr>
+ <20190228063604.15298-5-alex@ghiti.fr>
+ <9a385cc8-581c-55cf-4a85-10b5c4dd178c@intel.com>
+ <31212559-d397-88fb-eaec-60f6417436c8@oracle.com>
+ <6c842251-1bed-4d79-bf6d-997006ec72e2@intel.com>
+ <6ea4119a-0ecb-511d-3aab-269004245a08@oracle.com>
+ <1cfaca88-a219-d057-3ab8-37fb1c1687d6@ghiti.fr>
+ <f7c94eb5-d496-7e24-d44f-17eaff287012@ghiti.fr>
+From: Mike Kravetz <mike.kravetz@oracle.com>
+Message-ID: <0d3de196-bd71-3ec9-00cd-f8274c9c5f53@oracle.com>
+Date: Fri, 1 Mar 2019 09:51:50 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [172.17.15.60]
-X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
- T-EXCH-02.corp.yadro.com (172.17.10.102)
+In-Reply-To: <f7c94eb5-d496-7e24-d44f-17eaff287012@ghiti.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Virus-Version: vendor=nai engine=5900 definitions=9182
+ signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0
+ priorityscore=1501 malwarescore=0
+ suspectscore=2 phishscore=0 bulkscore=0 spamscore=0 clxscore=1011
+ lowpriorityscore=0 mlxscore=0 impostorscore=0 mlxlogscore=999 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.0.1-1810050000
+ definitions=main-1903010124
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,160 +102,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Sergey Miroshnichenko <s.miroshnichenko@yadro.com>, linux@yadro.com,
- Oliver O'Halloran <oohall@gmail.com>
+Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Dave Hansen <dave.hansen@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S . Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Writing a new value to the PCI_SECONDARY_BUS register of the bridge means
-that its children will become addressable on another address (new B in BDF)
-or even un-addressable if the secondary bus is set to zero.
+On 3/1/19 5:21 AM, Alexandre Ghiti wrote:
+> On 03/01/2019 07:25 AM, Alex Ghiti wrote:
+>> On 2/28/19 5:26 PM, Mike Kravetz wrote:
+>>> On 2/28/19 12:23 PM, Dave Hansen wrote:
+>>>> On 2/28/19 11:50 AM, Mike Kravetz wrote:
+>>>>> On 2/28/19 11:13 AM, Dave Hansen wrote:
+>>>>>>> +    if (hstate_is_gigantic(h) && !IS_ENABLED(CONFIG_CONTIG_ALLOC)) {
+>>>>>>> +        spin_lock(&hugetlb_lock);
+>>>>>>> +        if (count > persistent_huge_pages(h)) {
+>>>>>>> +            spin_unlock(&hugetlb_lock);
+>>>>>>> +            return -EINVAL;
+>>>>>>> +        }
+>>>>>>> +        goto decrease_pool;
+>>>>>>> +    }
+>>>>>> This choice confuses me.  The "Decrease the pool size" code already
+>>>>>> works and the code just falls through to it after skipping all the
+>>>>>> "Increase the pool size" code.
+>>>>>>
+>>>>>> Why did did you need to add this case so early?  Why not just let it
+>>>>>> fall through like before?
+>>>>> I assume you are questioning the goto, right?  You are correct in that
+>>>>> it is unnecessary and we could just fall through.
+>>>> Yeah, it just looked odd to me.
+> 
+>> I'd rather avoid useless checks when we already know they won't
+>> be met and I think that makes the code more understandable.
+>>
+>> But that's up to you for the next version.
 
-On PowerNV, device PEs are heavily BDF-dependent, so they must be updated
-on every such change of its address.
+I too find some value in the goto.  It tells me this !CONFIG_CONTIG_ALLOC
+case is special and we are skipping the normal checks.  But, removing the
+goto is not a requirement for me.
 
-Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
----
- arch/powerpc/platforms/powernv/pci.c | 118 ++++++++++++++++++++++++++-
- 1 file changed, 116 insertions(+), 2 deletions(-)
+>>>>> However, I wonder if we might want to consider a wacky condition that the
+>>>>> above check would prevent.  Consider a system/configuration with 5 gigantic
+...
+>>
+>> If I may, I think that this is the kind of info the user wants to have and we should
+>> return an error when it is not possible to allocate runtime huge pages.
+>> I already noticed that if someone asks for 10 huge pages, and only 5 are allocated,
+>> no error is returned to the user and I found that surprising.
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 73c2d0aed996..52ce717a7905 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -722,13 +722,127 @@ int pnv_pci_cfg_read(struct pci_dn *pdn,
- 				    where, size, val);
- }
- 
-+static void invalidate_children_pes(struct pci_dn *pdn)
-+{
-+	struct pnv_phb *phb = pdn->phb->private_data;
-+	struct pci_dn *child;
-+	bool found_pe = false;
-+	int pe_num;
-+	int pe_bus;
-+
-+	list_for_each_entry(child, &pdn->child_list, list) {
-+		struct pnv_ioda_pe *pe = (child->pe_number != IODA_INVALID_PE) ?
-+			&phb->ioda.pe_array[child->pe_number] :
-+			NULL;
-+
-+		if (!child->busno)
-+			continue;
-+
-+		if ((child->class_code >> 8) == PCI_CLASS_BRIDGE_PCI)
-+			invalidate_children_pes(child);
-+
-+		if (pe) {
-+			u8 rid_bus = (pe->rid >> 8) & 0xff;
-+
-+			if (rid_bus) {
-+				pe_num = child->pe_number;
-+				pe_bus = rid_bus;
-+				found_pe = true;
-+			}
-+
-+			pe->rid &= 0xff;
-+		}
-+
-+		child->busno = 0;
-+	}
-+
-+	if (found_pe) {
-+		u16 rid = pe_bus << 8;
-+
-+		opal_pci_set_pe(phb->opal_id, pe_num, rid, 7, 0, 0, OPAL_UNMAP_PE);
-+	}
-+}
-+
-+static u8 pre_hook_new_sec_bus(struct pci_dn *pdn, u8 new_secondary_bus)
-+{
-+	u32 old_secondary_bus = 0;
-+
-+	if ((pdn->class_code >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		return 0;
-+
-+	pnv_pci_cfg_read(pdn, PCI_SECONDARY_BUS, 1, &old_secondary_bus);
-+	old_secondary_bus &= 0xff;
-+
-+	if (old_secondary_bus != new_secondary_bus)
-+		invalidate_children_pes(pdn);
-+
-+	return old_secondary_bus;
-+}
-+
-+static void update_children_pes(struct pci_dn *pdn, u8 new_secondary_bus)
-+{
-+	struct pnv_phb *phb = pdn->phb->private_data;
-+	struct pci_dn *child;
-+	bool found_pe = false;
-+	int pe_num;
-+
-+	if (!new_secondary_bus)
-+		return;
-+
-+	list_for_each_entry(child, &pdn->child_list, list) {
-+		struct pnv_ioda_pe *pe = (child->pe_number != IODA_INVALID_PE) ?
-+			&phb->ioda.pe_array[child->pe_number] :
-+			NULL;
-+
-+		if (child->busno)
-+			continue;
-+
-+		child->busno = new_secondary_bus;
-+
-+		if (pe) {
-+			pe->rid |= (child->busno << 8);
-+			pe_num = child->pe_number;
-+			found_pe = true;
-+		}
-+	}
-+
-+	if (found_pe) {
-+		u16 rid = new_secondary_bus << 8;
-+
-+		opal_pci_set_pe(phb->opal_id, pe_num, rid, 7, 0, 0, OPAL_MAP_PE);
-+	}
-+}
-+
-+static void post_hook_new_sec_bus(struct pci_dn *pdn, u8 new_secondary_bus)
-+{
-+	if ((pdn->class_code >> 8) != PCI_CLASS_BRIDGE_PCI)
-+		return;
-+
-+	update_children_pes(pdn, new_secondary_bus);
-+}
-+
- int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val)
- {
- 	struct pnv_phb *phb = pdn->phb->private_data;
-+	u8 old_secondary_bus = 0, new_secondary_bus = 0;
-+	int rc;
-+
-+	if (where == PCI_SECONDARY_BUS) {
-+		new_secondary_bus = val & 0xff;
-+		old_secondary_bus = pre_hook_new_sec_bus(pdn, new_secondary_bus);
-+	} else if (where == PCI_PRIMARY_BUS && size > 1) {
-+		new_secondary_bus = (val >> 8) & 0xff;
-+		old_secondary_bus = pre_hook_new_sec_bus(pdn, new_secondary_bus);
-+	}
- 
--	return pnv_pci_cfg_write_raw(phb->opal_id, pdn->busno, pdn->devfn,
--				     where, size, val);
-+	rc = pnv_pci_cfg_write_raw(phb->opal_id, pdn->busno, pdn->devfn,
-+				   where, size, val);
-+
-+	if (new_secondary_bus && old_secondary_bus != new_secondary_bus)
-+		post_hook_new_sec_bus(pdn, new_secondary_bus);
-+
-+	return rc;
- }
- 
- #if CONFIG_EEH
+Upon further thought, let's not consider this wacky permanent -> surplus ->
+permanent case.  I just can't see it being an actual use case.
+
+IIUC, that 'no error' behavior is somewhat expected.  I seem to recall previous
+discussions about changing with the end result to leave as is.
+
+>>>> @@ -2428,7 +2442,9 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
+>>>>       } else
+>>>>           nodes_allowed = &node_states[N_MEMORY];
+>>>>   -    h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
+>>>> +    err = set_max_huge_pages(h, count, nodes_allowed);
+>>>> +    if (err)
+>>>> +        goto out;
+>>>>         if (nodes_allowed != &node_states[N_MEMORY])
+>>>>           NODEMASK_FREE(nodes_allowed);
+>>> Do note that I beleive there is a bug the above change.  The code after
+>>> the out label is:
+>>>
+>>> out:
+>>>          NODEMASK_FREE(nodes_allowed);
+>>>          return err;
+>>> }
+>>>
+>>> With the new goto, we need the same
+>>> if (nodes_allowed != &node_states[N_MEMORY]) before NODEMASK_FREE().
+>>>
+>>> Sorry, I missed this in previous versions.
+>>
+>> Oh right, I'm really sorry I missed that, thank you for noticing.
+
+This is the only issue I have with the code in hugetlb.c.  For me, the
+goto can stay or go.  End result is the same.
 -- 
-2.20.1
-
+Mike Kravetz
