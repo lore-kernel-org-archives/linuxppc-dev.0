@@ -2,86 +2,131 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74265C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20543C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:33:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE27820850
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:27:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE27820850
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 50DB8206DD
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 06:33:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="az5EtLXK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 50DB8206DD
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449fc65dfmzDqRB
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 17:27:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449fl42L12zDqRN
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 17:33:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=shilpa.bhat@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ spf=permerror (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=2a01:111:f400:fe02::605;
+ helo=eur01-db5-obe.outbound.protection.outlook.com;
+ envelope-from=shengjiu.wang@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=nxp.com header.i=@nxp.com header.b="az5EtLXK"; 
+ dkim-atps=neutral
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0605.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe02::605])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449fZL2FbMzDqPm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 17:26:17 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x216N3PZ055203
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Mar 2019 01:26:14 -0500
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2qxvcmxh5m-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Mar 2019 01:26:14 -0500
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Fri, 1 Mar 2019 06:26:13 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 1 Mar 2019 06:25:58 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x216Pwb452363394
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Fri, 1 Mar 2019 06:25:58 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EC7AD11C054;
- Fri,  1 Mar 2019 06:25:57 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C9AA311C04C;
- Fri,  1 Mar 2019 06:25:56 +0000 (GMT)
-Received: from oc4502181600.in.ibm.com (unknown [9.124.35.71])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri,  1 Mar 2019 06:25:56 +0000 (GMT)
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH v2] powernv: powercap: Add hard minimum powercap
-Date: Fri,  1 Mar 2019 11:55:54 +0530
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-x-cbid: 19030106-0016-0000-0000-0000025C5B97
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19030106-0017-0000-0000-000032B6CD61
-Message-Id: <1551421554-11655-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-01_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903010043
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449fjB05WMzDqQL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 17:32:11 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1; 
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LN/KdaWSK4Kj6rhLFWnbs9YTlfukYKL5YZQdUUteisw=;
+ b=az5EtLXKegYdaBw7xaFQnoNJ6/NydxvRC9N574+4k4xfLiA5WBS/wlOPh0Ope5gW4bwUz9lgrOL78WG6CzYLIjuJb7OynXJ8+pg08vxcwVZNAb/kzay6vjhSOw9INwSeOjz3sLYGuw7TknrbxgB9QrW482Zh2BBek41KQWw4eDI=
+Received: from VI1PR0402MB3392.eurprd04.prod.outlook.com (52.134.1.153) by
+ VI1PR0402MB3392.eurprd04.prod.outlook.com (52.134.1.153) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1643.20; Fri, 1 Mar 2019 06:32:05 +0000
+Received: from VI1PR0402MB3392.eurprd04.prod.outlook.com
+ ([fe80::407:6e30:6a9d:2a22]) by VI1PR0402MB3392.eurprd04.prod.outlook.com
+ ([fe80::407:6e30:6a9d:2a22%3]) with mapi id 15.20.1643.022; Fri, 1 Mar 2019
+ 06:32:05 +0000
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+To: Matt Flax <flatmax@flatmax.org>, Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: RE: [alsa-devel] [PATCH] ASoC: cs42xx8: Remove S32_LE in format list
+Thread-Topic: [alsa-devel] [PATCH] ASoC: cs42xx8: Remove S32_LE in format list
+Thread-Index: AQHUzypa4n8NriEugUOXybmAqJXINqX2NlEAgAAD5gCAABfc4A==
+Date: Fri, 1 Mar 2019 06:32:05 +0000
+Message-ID: <VI1PR0402MB3392CCF09FE75CE856C6174EE3760@VI1PR0402MB3392.eurprd04.prod.outlook.com>
+References: <1551333389-22791-1-git-send-email-shengjiu.wang@nxp.com>
+ <20190301045041.GA5064@Asurada>
+ <5c60b8c7-cb85-dec8-0358-6773251d3f2c@flatmax.org>
+In-Reply-To: <5c60b8c7-cb85-dec8-0358-6773251d3f2c@flatmax.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=shengjiu.wang@nxp.com; 
+x-originating-ip: [119.31.174.66]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 8f3ca274-cd90-47b2-9408-08d69e0f9f28
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:VI1PR0402MB3392; 
+x-ms-traffictypediagnostic: VI1PR0402MB3392:
+x-ms-exchange-purlcount: 1
+x-microsoft-exchange-diagnostics: =?utf-8?B?MTtWSTFQUjA0MDJNQjMzOTI7MjM6cXdRT3BMVG5SOU9JeXJWU0hCcnhDNFZX?=
+ =?utf-8?B?WENiYzIxNmFXcFJlWmNJR1U1aXIrdGRoQkVaM0FYSVJ6N3hFK2RHSmpuL0Nj?=
+ =?utf-8?B?WjBaV1QySVJ2K2ErMmluOWE3SE1jMmFNdHBvRWxlMTZGc2lremxWMnp3bmQz?=
+ =?utf-8?B?T0R4M3l0NDRUaWV4NHVNRkI4d2FpSjcwMnU0YU9kQklPZitQK0s3cld5L3RQ?=
+ =?utf-8?B?VldzK0NyQ1JRVldsUzcySGZrdVd2MEpxWHN1YlJkZjhGVklFeWwxU0lYV29k?=
+ =?utf-8?B?bDlhOGpsbVJLSTdjdnBmM1lkT1ZiVHBiRm1ZUUNxenRqNVRadnJEZkFtRTFX?=
+ =?utf-8?B?YUhTQmZSK0VGb1Z3TUxJUHdZSHBQOFhpcXBJTEl2RXdiVjlHeWNadEpCK2dV?=
+ =?utf-8?B?Uk5tZHlob0VTbXBzSEVyMTcwdllJVHNPNFM4ajI4S3dFNEhaaWtHaGxLTjh0?=
+ =?utf-8?B?QTU2aWkvU2RWNHRuRktmb1NXNUpsdFZ4VjVoSUhROEJjNys2MnJ5WCtnYUtG?=
+ =?utf-8?B?NTl5M3Rnc2R5OXlrYk84ZTJsV0ZTNnBCOEEyZGhuUVE5ak8rdEwzUjVjR2FQ?=
+ =?utf-8?B?NHFEZlhtTlgwYXphZ3ZLN0gzdG41WDd0TG1ZRkZmc0RoMkNtRCtMUVJaNlg0?=
+ =?utf-8?B?L1k3Si9xZTFxSHJUY2xxTkV4WHB3OUY0dGtFcnNUSXR4M09WMWQySUJwOXRh?=
+ =?utf-8?B?UlpLT3h2d0lJRmtGK3EzOGFRZEhMcWRkQ1AvbGdPbmwrOE9MN1dkRVErRHZz?=
+ =?utf-8?B?Q1hCS0lzREkxTzNoRENJcjR5VDRYR0UwRmpzdWpadlFGMUcrTDdwcTczRHdM?=
+ =?utf-8?B?MVpkNnNFVE9oU0E2WEVLcWtJbS9tSFF2dk1rUGtZdzNCVFhlZjJSdGpDY2Ns?=
+ =?utf-8?B?K1BwMjN1RFRGalhrT2RlSnhYcnlsdWU5L05qd044MGVEZGcyR01ZK3krR3Bh?=
+ =?utf-8?B?TGE1MFhlNENWWlB5TnZ1eVltTUUvc3g0UXJPYkVmZDBYS1BoTlVFVDlvUE5T?=
+ =?utf-8?B?Umg5bFJkcDhZUmxKQkZPTDhab2szWXRWQ1hmUDEwZjUvNEFNdmFxK3NoZUV2?=
+ =?utf-8?B?cFFSbVNpK0h0c3hoWVhYcTZUN09hQW96dnZVMzk4YlJmQnRaRzJIM29jRzBF?=
+ =?utf-8?B?TGhJbURjOHppRHBDWjJ1VUg4N2haKzFLR29TQmNLWEdrVXRzMnVheXFORG9O?=
+ =?utf-8?B?cGEydGdYWGpBQm5JRVRiamsvOVIwMnBsWlREbE8rbjFLNEdjYVEreTNQazVY?=
+ =?utf-8?B?SzhJbGVEdm05OFdoMDZvUTZra1JQYkROYlJGcStiTy8ra2toS3RXNWZFTUls?=
+ =?utf-8?B?QTBtYXIxS0JQRERxdkVFUWFyenhsWk83TDJ2QUFkakV0NDhKUXhHV0dzaXlY?=
+ =?utf-8?B?N3B0VTN4S2U1VS9TUWliUUwyRE1LczRJU0pZa05Vc2JiRVNhanUwVXptenZl?=
+ =?utf-8?B?K20rUzM3YWhPd1lWY1BFcEV5UStNVlNoVEg5dGtDWEJVTFJxanl6NXhEeWdQ?=
+ =?utf-8?B?b0RRMFZESWdKMVBPWjRWM2JkY2dwcktvMVJFeHpJT1I3TWJzVlBJVFRZVm1h?=
+ =?utf-8?B?SGxxUXEwRFM1dnF0UHp0M2k1cHJ1T1N3OEt5NmR4Y2dKL3c4YU4zbmV2ZTJI?=
+ =?utf-8?B?d1czRjdsRFpQTmgzWVZtWkRadXBSVTdEejZqNGV1K3g4MVdmc3VvSm9ua2Rn?=
+ =?utf-8?B?K1dqWWlGNHJndlIxVGdhdUlIdmJTVlN0OFRzYjlYT2hqQ1FjUGcvWkQySG0w?=
+ =?utf-8?B?NnZqRmNnZUUrQ0xiak9IamJRPT0=?=
+x-microsoft-antispam-prvs: <VI1PR0402MB33921B1A029736D68AF7ACFDE3760@VI1PR0402MB3392.eurprd04.prod.outlook.com>
+x-forefront-prvs: 09634B1196
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(366004)(39860400002)(136003)(396003)(376002)(199004)(189003)(6306002)(55016002)(81166006)(256004)(97736004)(186003)(7696005)(33656002)(9686003)(26005)(106356001)(105586002)(76176011)(6246003)(8676002)(2906002)(6506007)(53546011)(81156014)(53936002)(66066001)(102836004)(8936002)(74316002)(99286004)(110136005)(54906003)(14454004)(966005)(478600001)(45080400002)(3846002)(6116002)(316002)(229853002)(486006)(305945005)(86362001)(6436002)(4326008)(7736002)(476003)(68736007)(52536013)(11346002)(71190400001)(71200400001)(446003)(25786009)(5660300002);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:VI1PR0402MB3392;
+ H:VI1PR0402MB3392.eurprd04.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 7D+bo4tRztxd3cQ6KJRV/ZMLtpoIxWLdcljB4TgjNvL3FoQ1PHfHrbqxrTCN8/b8btNicWE89aHN3P2a/ZuP/xFYCAZYLvuDu2oxMuRjTSctyWuueTo4k3V5v91iVh86ZM5W13ZxwN28ys1UM2A9cCUTzBSfnM7MUZO1bARzhzlDH/nelXiIApWQlLK5GP8FHCdzIsPfNIKXuY0xuY2nO0hZj1WewwIrTJZKhEFaoXPYDuxDwvDOPg3xcPgJPkCBUr958XXE8/vpSsuMZMBUoZO9amh9Qi/P3+nXDp6jBg56esaiMaFPBfAAmktecjE18UVLCCe76H6Dl0t9R8KaIKW4fOzGq23kfCGR8+SDAUvG/fxFKTwKeBiLc7+I6lPzZOMjMaClXG1oo6VgiFci94fzXpSyYs47UjOw9paFI4M=
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 8f3ca274-cd90-47b2-9408-08d69e0f9f28
+X-MS-Exchange-CrossTenant-originalarrivaltime: 01 Mar 2019 06:32:05.0357 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0402MB3392
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,151 +138,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, dja@axtens.net
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "festevam@gmail.com" <festevam@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In POWER9, OCC(On-Chip-Controller) provides for hard and soft system
-powercapping range. The hard powercap range is guaranteed while soft
-powercap may or may not be enforced by OCC due to various power-thermal
-reasons based on system configuration and workloads. This patch adds
-a sysfs file to export the hard minimum powercap limit to allow the
-user to set the appropriate powercap value that can be managed by the
-system.
-
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-Changes from V1:
-- s/asserted/enforced by OCC
-
- .../ABI/testing/sysfs-firmware-opal-powercap       | 10 ++++
- arch/powerpc/platforms/powernv/opal-powercap.c     | 66 +++++++++-------------
- 2 files changed, 37 insertions(+), 39 deletions(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-firmware-opal-powercap b/Documentation/ABI/testing/sysfs-firmware-opal-powercap
-index c9b66ec..e37d43e 100644
---- a/Documentation/ABI/testing/sysfs-firmware-opal-powercap
-+++ b/Documentation/ABI/testing/sysfs-firmware-opal-powercap
-@@ -29,3 +29,13 @@ Description:	System powercap directory and attributes applicable for
- 		  creates a request for setting a new-powercap. The
- 		  powercap requested must be between powercap-min
- 		  and powercap-max.
-+
-+What:		/sys/firmware/opal/powercap/system-powercap/powercap-hard-min
-+Date:		March 2019
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Hard minimum powercap
-+
-+		This file provides the hard minimum powercap limit in Watts.
-+		The powercap value above hard minimum limit is guaranteed to be
-+		enforced by OCC and the powercap value below this limit may or
-+		may not be guaranteed.
-diff --git a/arch/powerpc/platforms/powernv/opal-powercap.c b/arch/powerpc/platforms/powernv/opal-powercap.c
-index d90ee4f..38408e7 100644
---- a/arch/powerpc/platforms/powernv/opal-powercap.c
-+++ b/arch/powerpc/platforms/powernv/opal-powercap.c
-@@ -139,10 +139,24 @@ static void powercap_add_attr(int handle, const char *name,
- 	attr->handle = handle;
- 	sysfs_attr_init(&attr->attr.attr);
- 	attr->attr.attr.name = name;
--	attr->attr.attr.mode = 0444;
-+
-+	if (!strncmp(name, "powercap-current", strlen(name))) {
-+		attr->attr.attr.mode = 0664;
-+		attr->attr.store = powercap_store;
-+	} else {
-+		attr->attr.attr.mode = 0444;
-+	}
-+
- 	attr->attr.show = powercap_show;
- }
- 
-+static const char * const powercap_strs[] = {
-+	"powercap-max",
-+	"powercap-min",
-+	"powercap-current",
-+	"powercap-hard-min",
-+};
-+
- void __init opal_powercap_init(void)
- {
- 	struct device_node *powercap, *node;
-@@ -167,60 +181,34 @@ void __init opal_powercap_init(void)
- 
- 	i = 0;
- 	for_each_child_of_node(powercap, node) {
--		u32 cur, min, max;
--		int j = 0;
--		bool has_cur = false, has_min = false, has_max = false;
-+		u32 id;
-+		int j, count = 0;
- 
--		if (!of_property_read_u32(node, "powercap-min", &min)) {
--			j++;
--			has_min = true;
--		}
--
--		if (!of_property_read_u32(node, "powercap-max", &max)) {
--			j++;
--			has_max = true;
--		}
-+		for (j = 0; j < ARRAY_SIZE(powercap_strs); j++)
-+			if (!of_property_read_u32(node, powercap_strs[j], &id))
-+				count++;
- 
--		if (!of_property_read_u32(node, "powercap-current", &cur)) {
--			j++;
--			has_cur = true;
--		}
--
--		pcaps[i].pattrs = kcalloc(j, sizeof(struct powercap_attr),
-+		pcaps[i].pattrs = kcalloc(count, sizeof(struct powercap_attr),
- 					  GFP_KERNEL);
- 		if (!pcaps[i].pattrs)
- 			goto out_pcaps_pattrs;
- 
--		pcaps[i].pg.attrs = kcalloc(j + 1, sizeof(struct attribute *),
-+		pcaps[i].pg.attrs = kcalloc(count + 1,
-+					    sizeof(struct attribute *),
- 					    GFP_KERNEL);
- 		if (!pcaps[i].pg.attrs) {
- 			kfree(pcaps[i].pattrs);
- 			goto out_pcaps_pattrs;
- 		}
- 
--		j = 0;
- 		pcaps[i].pg.name = kasprintf(GFP_KERNEL, "%pOFn", node);
--		if (has_min) {
--			powercap_add_attr(min, "powercap-min",
--					  &pcaps[i].pattrs[j]);
--			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
--			j++;
--		}
--
--		if (has_max) {
--			powercap_add_attr(max, "powercap-max",
--					  &pcaps[i].pattrs[j]);
--			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
--			j++;
--		}
-+		for (j = 0; j < ARRAY_SIZE(powercap_strs); j++) {
-+			if (of_property_read_u32(node, powercap_strs[j], &id))
-+				continue;
- 
--		if (has_cur) {
--			powercap_add_attr(cur, "powercap-current",
-+			powercap_add_attr(id, powercap_strs[j],
- 					  &pcaps[i].pattrs[j]);
--			pcaps[i].pattrs[j].attr.attr.mode |= 0220;
--			pcaps[i].pattrs[j].attr.store = powercap_store;
- 			pcaps[i].pg.attrs[j] = &pcaps[i].pattrs[j].attr.attr;
--			j++;
- 		}
- 
- 		if (sysfs_create_group(powercap_kobj, &pcaps[i].pg)) {
--- 
-1.8.3.1
-
+DQoNCj4gDQo+IEl0IHdvdWxkIGJlIGEgbWlzdGFrZSB0byByZW1vdmUgUzMyX0xFIGZyb20gdGhl
+IGZvcm1hdCBsaXN0Lg0KPiANCj4gSWYgeW91IHJlbW92ZWQgdGhhdCwgdGhlbiB3ZSB3b3VsZG4n
+dCBiZSBhYmxlIHRvIGRvIDMyIGJpdCBuYXRpdmUgcGxheWJhY2sNCj4gLSBpdCB3b3VsZCBmb3Jj
+ZSB1c2VycyB0byBnbyB0aHJvdWdoIGFuIEFMU0EgcGx1Z2luLg0KPiANCj4gSWYgeW91IGxvb2sg
+YXQgdGhlIGNzNDI0NDggZGF0YSBzaGVldCBmb3IgZXhhbXBsZSwgdGhlIEkyUyBhbmQgVERNIGJ1
+cw0KPiB1c2VzIGEgMzIgYml0IHdvcmQgc2l6ZS4gRm9yIHRoYXQgcmVhc29uLCBuYXRpdmUgUzMy
+X0xFIGZvcm1hdCBpcyBoYW5kbGVkIGJ5DQo+IHRoZSBjb2RlYy4gV2hpbGUgdGhlIGNvZGVjIG9u
+bHkgdXNlcyB0aGUgMjQgTVNCcywgdGhlIEkyUyBidXMgaXMgMzIgYml0Lg0KDQpUaGlzIGNhc2Ug
+aXMgY292ZXJlZCBieSBTMjRfTEUgSSB0aGluay4gIFRoZSBTMzJfTEUgbWVhbnMgdGhlIGRhdGEg
+aXMgMzJiaXQgYW5kIHNsb3Qgd2lkdGgNCklzIDMyYml0LCB0aGlzIGlzIG5vdCBpbiBkYXRhIHNo
+ZWV0Lg0KDQpCZXN0IHJlZ2FyZHMNCldhbmcgc2hlbmdqaXUNCj4gDQo+IE1hdHQNCj4gDQo+IE9u
+IDEvMy8xOSAzOjUwIHBtLCBOaWNvbGluIENoZW4gd3JvdGU6DQo+ID4gSGkgU2hlbmdqaXUsDQo+
+ID4NCj4gPiBPbiBUaHUsIEZlYiAyOCwgMjAxOSBhdCAwNTo1NjozMUFNICswMDAwLCBTLmouIFdh
+bmcgd3JvdGU6DQo+ID4+IGNzNDJ4eDggaXMgYSAyNC1iaXQgQS9EIGFuZCAyNC1iaXQgRC9BIGRl
+dmljZSwgc28gdGhlIFMzMl9MRSBzaG91bGQNCj4gPj4gbm90IGJlIGluIHRoZSBzdXBwb3J0ZWQg
+Zm9ybWF0IGxpc3QuDQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IFNoZW5naml1IFdhbmcgPHNo
+ZW5naml1LndhbmdAbnhwLmNvbT4NCj4gPj4gLS0tDQo+ID4+ICAgc291bmQvc29jL2NvZGVjcy9j
+czQyeHg4LmMgfCAzICstLQ0KPiA+IFRoaXMgaXMgZm9yIGNzNDJ4eDggY29kZWMgZHJpdmVyLCBi
+dXQgaXRzIG1haW50YWluZXJzIGFyZW4ndCBzZWVtbHkgaW4NCj4gPiBUby9DYyBsaXN0LiBQbGVh
+c2UgcnVuIC4vc2NyaXB0cy9nZXRfbWFpbnRhaW5lci5wbCBmb3IgaXQgYW5kIHJlc2VuZC4NCj4g
+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+IEFs
+c2EtZGV2ZWwgbWFpbGluZyBsaXN0DQo+ID4gQWxzYS1kZXZlbEBhbHNhLXByb2plY3Qub3JnDQo+
+ID4NCj4gaHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3Vy
+bD1odHRwcyUzQSUyRiUyRm1hDQo+IGkNCj4gPiBsbWFuLmFsc2EtcHJvamVjdC5vcmclMkZtYWls
+bWFuJTJGbGlzdGluZm8lMkZhbHNhLQ0KPiBkZXZlbCZhbXA7ZGF0YT0wMiU3Qw0KPiA+DQo+IDAx
+JTdDc2hlbmdqaXUud2FuZyU0MG54cC5jb20lN0NlNTY4NmQ3MmJkNzg0M2M1OTYyNTA4ZDY5ZTAz
+NzBhNA0KPiAlN0M2ODZlDQo+ID4NCj4gYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3QzAl
+N0MxJTdDNjM2ODcwMTM0OTc1NjIzMTIzJmFtcDsNCj4gc2RhdGE9UnINCj4gPg0KPiBZd2ZDNFkz
+eHNzRUQlMkZ6UnVtJTJGWEFCR0pUSHZScll3blJOZ1VMN3UybFUlM0QmYW1wO3Jlc2VydmVkDQo+
+ID0wDQo=
