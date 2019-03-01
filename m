@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC83DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:49:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B5D6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:51:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26B982084D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:49:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D84B62084D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 12:51:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="V9yDVuOO"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26B982084D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="B9i7cTo9"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D84B62084D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449q4K5w7JzDqSt
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 23:49:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449q6t5SrKzDqBd
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 23:51:34 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,50 +28,51 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="V9yDVuOO"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="B9i7cTo9"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449pkT1HlJzDqMC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449pkT3XfDzDqMb
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Mar 2019 23:33:53 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 449pkH3z20z9txrq;
- Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 449pkK4h0Nz9txrt;
+ Fri,  1 Mar 2019 13:33:45 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=V9yDVuOO; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=B9i7cTo9; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id WaLy-Q3yGWd7; Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+ with ESMTP id gtSNb2Sq3_YU; Fri,  1 Mar 2019 13:33:45 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 449pkH2jbQz9txrh;
- Fri,  1 Mar 2019 13:33:43 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 449pkK38xRz9txrh;
+ Fri,  1 Mar 2019 13:33:45 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551443623; bh=T5roomQKloe+Cr1IT+Xg0/TzN2EQ/rbW1mXIN5nYL+c=;
+ t=1551443625; bh=mcZlyr+Y9QTQOXdd/Np+U2T6LsmbrnCiae9jtlgpNP8=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=V9yDVuOO6s54csiG0Uu7iG7sHKI/cZ4MueHDZGOsWn0I4WWu6SeeOMophs+O9WhhY
- SHjpVDKAcZ3g0ylB68KZJVCUcR7NzG92OPLhXApMwesa42L0S4+wCTOs2rm8owTVS2
- N7Ok+BurOBBqPEXVJBhkrwQV99oHPfx5+VAB/lus=
+ b=B9i7cTo9rS8TkSt0I214ItZD0m0vcWhi5DjUC6rSiTgM6kGUuRqME2MNr3FLS2kT0
+ I5GUiUeB7dTCeCOZQbF3B5K7ESQ+NppKo7RsxxePDMF5EIZ/rKTu8bTyN4wJM5oflH
+ +NsIxKGY5b3h6MdbpJ6woa4bqmSu6SZaOjshgMwA=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A50F28BB8B;
- Fri,  1 Mar 2019 13:33:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B3A1F8BB8B;
+ Fri,  1 Mar 2019 13:33:46 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id fMya_PpDFcO4; Fri,  1 Mar 2019 13:33:44 +0100 (CET)
+ with ESMTP id OwCpOqwk-QtK; Fri,  1 Mar 2019 13:33:46 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 64D0A8BB73;
- Fri,  1 Mar 2019 13:33:44 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 7405A8BB73;
+ Fri,  1 Mar 2019 13:33:46 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id 434CA6F89E; Fri,  1 Mar 2019 12:33:44 +0000 (UTC)
-Message-Id: <6b79065e99220dc1f01dc37d0112a329902e5905.1551443453.git.christophe.leroy@c-s.fr>
+ id 4F0206F89E; Fri,  1 Mar 2019 12:33:46 +0000 (UTC)
+Message-Id: <2adea63caf38d51f6cfc5b98906c6a3c05f0b8d3.1551443453.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1551443452.git.christophe.leroy@c-s.fr>
 References: <cover.1551443452.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9 06/11] powerpc/32: make KVIRT_TOP dependent on FIXMAP_START
+Subject: [PATCH v9 08/11] powerpc: disable KASAN instrumentation on
+ early/critical files.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -79,7 +80,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Fri,  1 Mar 2019 12:33:44 +0000 (UTC)
+Date: Fri,  1 Mar 2019 12:33:46 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,95 +98,122 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-When we add KASAN shadow area, KVIRT_TOP can't be anymore fixed
-at 0xfe000000.
+All files containing functions run before kasan_early_init() is called
+must have KASAN instrumentation disabled.
 
-This patch uses FIXADDR_START to define KVIRT_TOP.
+For those file, branch profiling also have to be disabled otherwise
+each if () generates a call to ftrace_likely_update().
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 13 ++++++++++---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 13 ++++++++++---
- 2 files changed, 20 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/Makefile             | 12 ++++++++++++
+ arch/powerpc/lib/Makefile                |  8 ++++++++
+ arch/powerpc/mm/Makefile                 |  6 ++++++
+ arch/powerpc/platforms/powermac/Makefile |  6 ++++++
+ arch/powerpc/purgatory/Makefile          |  3 +++
+ arch/powerpc/xmon/Makefile               |  1 +
+ 6 files changed, 36 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index aa8406b8f7ba..838de59f6754 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -134,15 +134,24 @@ static inline bool pte_user(pte_t pte)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 45e47752b692..0ea6c4aa3a20 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -31,6 +31,18 @@ CFLAGS_REMOVE_btext.o = $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_prom.o = $(CC_FLAGS_FTRACE)
+ endif
  
- #define USER_PTRS_PER_PGD	(TASK_SIZE / PGDIR_SIZE)
++KASAN_SANITIZE_early_32.o := n
++KASAN_SANITIZE_cputable.o := n
++KASAN_SANITIZE_prom_init.o := n
++KASAN_SANITIZE_btext.o := n
 +
-+#ifndef __ASSEMBLY__
++ifdef CONFIG_KASAN
++CFLAGS_early_32.o += -DDISABLE_BRANCH_PROFILING
++CFLAGS_cputable.o += -DDISABLE_BRANCH_PROFILING
++CFLAGS_prom_init.o += -DDISABLE_BRANCH_PROFILING
++CFLAGS_btext.o += -DDISABLE_BRANCH_PROFILING
++endif
 +
-+int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
-+
-+#endif /* !__ASSEMBLY__ */
-+
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-  * value (for now) on others, from where we can start layout kernel
-  * virtual space that goes below PKMAP and FIXMAP
-  */
-+#include <asm/fixmap.h>
-+
- #ifdef CONFIG_HIGHMEM
- #define KVIRT_TOP	PKMAP_BASE
- #else
--#define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
-+#define KVIRT_TOP	FIXADDR_START
- #endif
+ obj-y				:= cputable.o ptrace.o syscalls.o \
+ 				   irq.o align.o signal_32.o pmc.o vdso.o \
+ 				   process.o systbl.o idle.o \
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 47a4de434c22..c55f9c27bf79 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -8,6 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+ CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
  
- /*
-@@ -373,8 +382,6 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
- 
--int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
--
- /* Generic accessors to PTE bits */
- static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
- static inline int pte_read(pte_t pte)		{ return 1; }
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index bed433358260..0284f8f5305f 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -64,15 +64,24 @@ extern int icache_44x_need_flush;
- #define pgd_ERROR(e) \
- 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
- 
-+#ifndef __ASSEMBLY__
++KASAN_SANITIZE_code-patching.o := n
++KASAN_SANITIZE_feature-fixups.o := n
 +
-+int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
++ifdef CONFIG_KASAN
++CFLAGS_code-patching.o += -DDISABLE_BRANCH_PROFILING
++CFLAGS_feature-fixups.o += -DDISABLE_BRANCH_PROFILING
++endif
 +
-+#endif /* !__ASSEMBLY__ */
-+
-+
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-  * value (for now) on others, from where we can start layout kernel
-  * virtual space that goes below PKMAP and FIXMAP
-  */
-+#include <asm/fixmap.h>
-+
- #ifdef CONFIG_HIGHMEM
- #define KVIRT_TOP	PKMAP_BASE
- #else
--#define KVIRT_TOP	(0xfe000000UL)	/* for now, could be FIXMAP_BASE ? */
-+#define KVIRT_TOP	FIXADDR_START
- #endif
+ obj-y += alloc.o code-patching.o feature-fixups.o
  
- /*
-@@ -379,8 +388,6 @@ static inline int pte_young(pte_t pte)
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
+ ifndef CONFIG_KASAN
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index d52ec118e09d..240d73dce6bb 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -7,6 +7,12 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
  
--int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot);
--
- #endif /* !__ASSEMBLY__ */
+ CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
  
- #endif /* __ASM_POWERPC_NOHASH_32_PGTABLE_H */
++KASAN_SANITIZE_ppc_mmu_32.o := n
++
++ifdef CONFIG_KASAN
++CFLAGS_ppc_mmu_32.o  		+= -DDISABLE_BRANCH_PROFILING
++endif
++
+ obj-y				:= fault.o mem.o pgtable.o mmap.o \
+ 				   init_$(BITS).o pgtable_$(BITS).o \
+ 				   init-common.o mmu_context.o drmem.o
+diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
+index 923bfb340433..859efbacdf06 100644
+--- a/arch/powerpc/platforms/powermac/Makefile
++++ b/arch/powerpc/platforms/powermac/Makefile
+@@ -2,6 +2,12 @@
+ CFLAGS_bootx_init.o  		+= -fPIC
+ CFLAGS_bootx_init.o  		+= $(call cc-option, -fno-stack-protector)
+ 
++KASAN_SANITIZE_bootx_init.o := n
++
++ifdef CONFIG_KASAN
++CFLAGS_bootx_init.o  		+= -DDISABLE_BRANCH_PROFILING
++endif
++
+ ifdef CONFIG_FUNCTION_TRACER
+ # Do not trace early boot code
+ CFLAGS_REMOVE_bootx_init.o = $(CC_FLAGS_FTRACE)
+diff --git a/arch/powerpc/purgatory/Makefile b/arch/powerpc/purgatory/Makefile
+index 4314ba5baf43..7c6d8b14f440 100644
+--- a/arch/powerpc/purgatory/Makefile
++++ b/arch/powerpc/purgatory/Makefile
+@@ -1,4 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0
++
++KASAN_SANITIZE := n
++
+ targets += trampoline.o purgatory.ro kexec-purgatory.c
+ 
+ LDFLAGS_purgatory.ro := -e purgatory_start -r --no-undefined
+diff --git a/arch/powerpc/xmon/Makefile b/arch/powerpc/xmon/Makefile
+index 3050f9323254..f142570ad860 100644
+--- a/arch/powerpc/xmon/Makefile
++++ b/arch/powerpc/xmon/Makefile
+@@ -7,6 +7,7 @@ subdir-ccflags-y := $(call cc-disable-warning, builtin-requires-header)
+ GCOV_PROFILE := n
+ KCOV_INSTRUMENT := n
+ UBSAN_SANITIZE := n
++KASAN_SANITIZE := n
+ 
+ # Disable ftrace for the entire directory
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
 -- 
 2.13.3
 
