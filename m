@@ -2,62 +2,79 @@ Return-Path: <SRS0=P3hO=RE=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBD0AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 14:00:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CD65AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 14:22:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1887520850
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 14:00:53 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1887520850
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 134D22084F
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 14:22:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="XL4pegDt"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 134D22084F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449rfp4dJvzDqQ9
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 01:00:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449s7w6Kk0zDqQM
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 01:22:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.183.199; helo=relay9-d.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=lca.pw
+ (client-ip=2607:f8b0:4864:20::844; helo=mail-qt1-x844.google.com;
+ envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
- [217.70.183.199])
+ dmarc=none (p=none dis=none) header.from=lca.pw
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=lca.pw header.i=@lca.pw header.b="XL4pegDt"; 
+ dkim-atps=neutral
+Received: from mail-qt1-x844.google.com (mail-qt1-x844.google.com
+ [IPv6:2607:f8b0:4864:20::844])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449rcn3vJ1zDqMf
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 00:59:02 +1100 (AEDT)
-X-Originating-IP: 81.250.144.103
-Received: from [10.30.1.20] (lneuilly-657-1-5-103.w81-250.abo.wanadoo.fr
- [81.250.144.103]) (Authenticated sender: alex@ghiti.fr)
- by relay9-d.mail.gandi.net (Postfix) with ESMTPSA id DFAE9FF80D;
- Fri,  1 Mar 2019 13:58:49 +0000 (UTC)
-Subject: Re: [PATCH v4 4/4] hugetlb: allow to free gigantic pages regardless
- of the configuration
-To: Vlastimil Babka <vbabka@suse.cz>, Mike Kravetz <mike.kravetz@oracle.com>
-References: <20190228063604.15298-1-alex@ghiti.fr>
- <20190228063604.15298-5-alex@ghiti.fr>
- <9a385cc8-581c-55cf-4a85-10b5c4dd178c@intel.com>
- <31212559-d397-88fb-eaec-60f6417436c8@oracle.com>
- <6c842251-1bed-4d79-bf6d-997006ec72e2@intel.com>
- <6ea4119a-0ecb-511d-3aab-269004245a08@oracle.com>
- <1cfaca88-a219-d057-3ab8-37fb1c1687d6@ghiti.fr>
- <f7c94eb5-d496-7e24-d44f-17eaff287012@ghiti.fr>
- <027de1e2-a9cd-8ba7-859b-ee803937340a@suse.cz>
-From: Alexandre Ghiti <alex@ghiti.fr>
-Message-ID: <4bff265e-e03c-6d74-c09f-a89b74009feb@ghiti.fr>
-Date: Fri, 1 Mar 2019 14:58:49 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.5.2
-MIME-Version: 1.0
-In-Reply-To: <027de1e2-a9cd-8ba7-859b-ee803937340a@suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449s6D1KtXzDqQB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 01:21:05 +1100 (AEDT)
+Received: by mail-qt1-x844.google.com with SMTP id d18so27819093qtg.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Mar 2019 06:21:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
+ h=from:to:cc:subject:date:message-id;
+ bh=EUUs3LNFAaKHMETr2fU5c4ctC/rfaPesGA2Y9uePxyI=;
+ b=XL4pegDt02QxO47umZ4m9BxVx4M0b7LtcYYXt+KoGucZF9eBwAXz0RMBkbHFh/Soje
+ fl7F63DRdLES8p88ieLGs/UvsZGGwIzQPF2/+zV4W1iKf3EBrv2UxgQrbcS85QYPcl2T
+ Zy+1VHFj8mPP9EGQhL970Z5d7hBTwjy/hFZJm6f8YC3rR2aad3wC0z6t2rJkbh5QhO1k
+ T9HzhW7Kd+JVp0CACnsO0ulIjdwsa8gYJeMIwCVazIjh1VLjMnaBK06FBCog7Miegrn7
+ W2BhKD/md0u2/0QlaTDUZIiZFJV+lnZrK7zJolTtlUf/XdM8IA+gUopPlwt+NPMAy9S1
+ cRiQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=EUUs3LNFAaKHMETr2fU5c4ctC/rfaPesGA2Y9uePxyI=;
+ b=puTsS0hrEQRDBnlDSUmlAnNQA1XnoYVSG2Z2SyxqKgJOlSIgQtVXnkqSzYn8zcWHmx
+ d4jTXFP/JUL4DyKhxy6WUFFixQx3kniElCrvawayiRfvejjGCS/ka1LYPGk4P2ckOJ40
+ VZkHQeqORk/I7MYN98xzQNTLhXGCRCPapdnTNQOjDk3+IqTpV6PPsWSXgzOf7le/jkc+
+ rj0YFgkbewYTfjqRhuX5V+xgK00HK/k15qNw15Ay5B/hMA3tYE4L2jrhbfjvZ5NqaLum
+ lgLOjLmyi7Clqgwd49Ual13VfHYEjM/5U91gTWiHEfXJIuG/k8dQuiKB8Tj7r75rswsN
+ 2yWw==
+X-Gm-Message-State: APjAAAVemvu90OkVm4sQ7QWVoMorciSi8Et/KsGSGEfDAxeQJC51mILp
+ MBoA8ho4hr2UqC29b8C3pJEDGQ==
+X-Google-Smtp-Source: APXvYqzELWawwCnip9FOUA+7LIn0MK7kwll1EGvfP0DW2Fkdg98c4eXqvP19Uj2N1CovMa6phNHmgQ==
+X-Received: by 2002:a0c:d237:: with SMTP id m52mr3906179qvh.219.1551450061046; 
+ Fri, 01 Mar 2019 06:21:01 -0800 (PST)
+Received: from ovpn-120-151.rdu2.redhat.com
+ (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
+ by smtp.gmail.com with ESMTPSA id p127sm11396151qke.97.2019.03.01.06.20.59
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 01 Mar 2019 06:21:00 -0800 (PST)
+From: Qian Cai <cai@lca.pw>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v2] powerpc/mm: fix "section_base" set but not used
+Date: Fri,  1 Mar 2019 09:20:40 -0500
+Message-Id: <20190301142040.94204-1-cai@lca.pw>
+X-Mailer: git-send-email 2.17.2 (Apple Git-113)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,30 +86,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- Dave Hansen <dave.hansen@intel.com>, Paul Mackerras <paulus@samba.org>,
- "H . Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org, hch@lst.de,
+ linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/01/2019 02:33 PM, Vlastimil Babka wrote:
-> On 3/1/19 2:21 PM, Alexandre Ghiti wrote:
->> I collected mistakes here: domain name expired and no mailing list added :)
->> Really sorry about that, I missed the whole discussion (if any).
->> Could someone forward it to me (if any) ? Thanks !
-> Bounced you David and Mike's discussion (4 messages total). AFAICS that
-> was all.
+The commit 24b6d4164348 ("mm: pass the vmem_altmap to vmemmap_free")
+removed a line in vmemmap_free(),
 
-Thank you Vlastimil, I got them.
+altmap = to_vmem_altmap((unsigned long) section_base);
 
-Thanks,
+but left a variable no longer used.
+
+arch/powerpc/mm/init_64.c: In function 'vmemmap_free':
+arch/powerpc/mm/init_64.c:277:16: error: variable 'section_base' set but
+not used [-Werror=unused-but-set-variable]
+
+Signed-off-by: Qian Cai <cai@lca.pw>
+---
+
+v2: improve the commit message.
+
+ arch/powerpc/mm/init_64.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a5091c034747..a4c155af1597 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -274,7 +274,6 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
+ 
+ 	for (; start < end; start += page_size) {
+ 		unsigned long nr_pages, addr;
+-		struct page *section_base;
+ 		struct page *page;
+ 
+ 		/*
+@@ -290,7 +289,6 @@ void __ref vmemmap_free(unsigned long start, unsigned long end,
+ 			continue;
+ 
+ 		page = pfn_to_page(addr >> PAGE_SHIFT);
+-		section_base = pfn_to_page(vmemmap_section_start(start));
+ 		nr_pages = 1 << page_order;
+ 		base_pfn = PHYS_PFN(addr);
+ 
+-- 
+2.17.2 (Apple Git-113)
+
