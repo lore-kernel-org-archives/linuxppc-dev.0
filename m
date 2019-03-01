@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE7D3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:08:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5C2AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:10:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5EEDF2084F
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:08:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2403D2083D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  1 Mar 2019 16:10:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="Io1fBAYN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EEDF2084F
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="S8krNtu1"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2403D2083D
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 449vVT3twRzDqWh
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 03:08:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 449vXp21BhzDqTG
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 03:10:50 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -29,33 +29,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="Io1fBAYN"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="S8krNtu1"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 449vPy2YxWzDqT1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 449vPy2TzszDqKW
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 03:04:54 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id C7A2341987;
- Fri,  1 Mar 2019 16:04:49 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 8E099419B7;
+ Fri,  1 Mar 2019 16:04:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1551456288; x=1553270689; bh=8HDoghiP8DCZB/+iPk9niW6uKSuGL0QFLd9
- ito9vAOo=; b=Io1fBAYNfiXAWYzsbiel5Pazjykcg+QY81zC4CkXqT1OlTp6imD
- Z5edFmjZLCs0bBkjWW+flW5PveeNwz0nshPKImZNzZacH8MwN7vTu97hqb9OVg1/
- CWkTRfgQkORrgpKxBnxjjh9DLSEJTc74E6VxK9YFtpo2ULn0qqQVx+ZY=
+ 1551456289; x=1553270690; bh=kUv77+pt4lOtpPkbWsHmP07RFuPq+4Erkig
+ u1vUkblY=; b=S8krNtu1adDSlioycDwG006PEz0LkKcjuQLpG3oNRIF4zGM9TvK
+ LuTDzQcwo783SDn1rK9J+C1x4ilofqr6APtjjhC2u3MSY9X7wm2g1m+HF4pkV1Et
+ wJ6iuWiDHspfRvrPM4oRCgB0IVMpX/rMFfGWCHVEP3O/birCqCrkpchQ=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id KV4Ye5PilcH2; Fri,  1 Mar 2019 19:04:48 +0300 (MSK)
+ with ESMTP id d1BojSsm7Xn2; Fri,  1 Mar 2019 19:04:49 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 32ECE4198A;
+ by mta-01.yadro.com (Postfix) with ESMTPS id 6869E41990;
  Fri,  1 Mar 2019 19:04:48 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
@@ -63,10 +63,10 @@ Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
  2019 19:04:47 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC v4 1/9] powerpc/pci: Access PCI config space directly w/o
- pci_dn
-Date: Fri, 1 Mar 2019 19:04:32 +0300
-Message-ID: <20190301160440.26262-2-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC v4 2/9] powerpc/powernv/pci: Suppress an EEH error when
+ reading an empty slot
+Date: Fri, 1 Mar 2019 19:04:33 +0300
+Message-ID: <20190301160440.26262-3-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
 References: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
@@ -95,301 +95,93 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-To fetch an updated DT for the newly hotplugged device, OS must explicitly
-request it from the firmware via the pnv_php driver.
-
-If pnv_php wasn't triggered/loaded, it is still possible to discover new
-devices if PCIe I/O will not stop in absence of the pci_dn structure.
+Reading an empty slot returns all ones, which triggers a false
+EEH error event on PowerNV. This patch unfreezes the bus where
+it has happened.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/kernel/rtas_pci.c       | 97 +++++++++++++++++++---------
- arch/powerpc/platforms/powernv/pci.c | 64 ++++++++++++------
- 2 files changed, 109 insertions(+), 52 deletions(-)
+ arch/powerpc/include/asm/ppc-pci.h   |  1 +
+ arch/powerpc/kernel/pci_dn.c         |  2 +-
+ arch/powerpc/platforms/powernv/pci.c | 34 ++++++++++++++++++++++++----
+ 3 files changed, 32 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index c2b148b1634a..f675b5ecb5bc 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -55,10 +55,26 @@ static inline int config_access_valid(struct pci_dn *dn, int where)
- 	return 0;
- }
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index f67da277d652..737393c54f58 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -40,6 +40,7 @@ void *traverse_pci_dn(struct pci_dn *root,
+ 		      void *(*fn)(struct pci_dn *, void *),
+ 		      void *data);
+ extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
++struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus);
  
--int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
-+static int rtas_read_raw_config(unsigned long buid, int busno, unsigned int devfn,
-+				int where, int size, u32 *val)
+ /* From rtas_pci.h */
+ extern void init_pci_config_tokens (void);
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index ab147a1909c8..341ed71250f1 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -40,7 +40,7 @@
+  * one of PF's bridge. For other devices, their firmware
+  * data is linked to that of their bridge.
+  */
+-static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
++struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
  {
- 	int returnval = -1;
--	unsigned long buid, addr;
-+	unsigned long addr = rtas_config_addr(busno, devfn, where);
-+	int ret;
-+
-+	if (buid) {
-+		ret = rtas_call(ibm_read_pci_config, 4, 2, &returnval,
-+				addr, BUID_HI(buid), BUID_LO(buid), size);
-+	} else {
-+		ret = rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
-+	}
-+	*val = returnval;
-+
-+	return ret;
-+}
-+
-+int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
-+{
- 	int ret;
- 
- 	if (!pdn)
-@@ -71,16 +87,8 @@ int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
- 		return PCIBIOS_SET_FAILED;
- #endif
- 
--	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
--	buid = pdn->phb->buid;
--	if (buid) {
--		ret = rtas_call(ibm_read_pci_config, 4, 2, &returnval,
--				addr, BUID_HI(buid), BUID_LO(buid), size);
--	} else {
--		ret = rtas_call(read_pci_config, 2, 2, &returnval, addr, size);
--	}
--	*val = returnval;
--
-+	ret = rtas_read_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn,
-+				   where, size, val);
- 	if (ret)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
-@@ -98,18 +106,44 @@ static int rtas_pci_read_config(struct pci_bus *bus,
- 
- 	pdn = pci_get_pdn_by_devfn(bus, devfn);
- 
--	/* Validity of pdn is checked in here */
--	ret = rtas_read_config(pdn, where, size, val);
--	if (*val == EEH_IO_ERROR_VALUE(size) &&
--	    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+	if (pdn) {
-+		/* Validity of pdn is checked in here */
-+		ret = rtas_read_config(pdn, where, size, val);
-+
-+		if (*val == EEH_IO_ERROR_VALUE(size) &&
-+		    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
-+			ret = PCIBIOS_DEVICE_NOT_FOUND;
-+	} else {
-+		struct pci_controller *phb = pci_bus_to_host(bus);
-+
-+		ret = rtas_read_raw_config(phb->buid, bus->number, devfn,
-+					   where, size, val);
-+	}
- 
- 	return ret;
- }
- 
-+static int rtas_write_raw_config(unsigned long buid, int busno, unsigned int devfn,
-+				 int where, int size, u32 val)
-+{
-+	unsigned long addr = rtas_config_addr(busno, devfn, where);
-+	int ret;
-+
-+	if (buid) {
-+		ret = rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
-+				BUID_HI(buid), BUID_LO(buid), size, (ulong)val);
-+	} else {
-+		ret = rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val);
-+	}
-+
-+	if (ret)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
- int rtas_write_config(struct pci_dn *pdn, int where, int size, u32 val)
- {
--	unsigned long buid, addr;
- 	int ret;
- 
- 	if (!pdn)
-@@ -122,15 +156,8 @@ int rtas_write_config(struct pci_dn *pdn, int where, int size, u32 val)
- 		return PCIBIOS_SET_FAILED;
- #endif
- 
--	addr = rtas_config_addr(pdn->busno, pdn->devfn, where);
--	buid = pdn->phb->buid;
--	if (buid) {
--		ret = rtas_call(ibm_write_pci_config, 5, 1, NULL, addr,
--			BUID_HI(buid), BUID_LO(buid), size, (ulong) val);
--	} else {
--		ret = rtas_call(write_pci_config, 3, 1, NULL, addr, size, (ulong)val);
--	}
--
-+	ret = rtas_write_raw_config(pdn->phb->buid, pdn->busno, pdn->devfn,
-+				    where, size, val);
- 	if (ret)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
-@@ -141,12 +168,20 @@ static int rtas_pci_write_config(struct pci_bus *bus,
- 				 unsigned int devfn,
- 				 int where, int size, u32 val)
- {
--	struct pci_dn *pdn;
-+	struct pci_dn *pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	int ret;
- 
--	pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	if (pdn) {
-+		/* Validity of pdn is checked in here. */
-+		ret = rtas_write_config(pdn, where, size, val);
-+	} else {
-+		struct pci_controller *phb = pci_bus_to_host(bus);
- 
--	/* Validity of pdn is checked in here. */
--	return rtas_write_config(pdn, where, size, val);
-+		ret = rtas_write_raw_config(phb->buid, bus->number, devfn,
-+					    where, size, val);
-+	}
-+
-+	return ret;
- }
- 
- static struct pci_ops rtas_pci_ops = {
+ 	struct pci_bus *pbus;
+ 	struct device_node *dn;
 diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 45fb70b4bfa7..3260250d2029 100644
+index 3260250d2029..73c2d0aed996 100644
 --- a/arch/powerpc/platforms/powernv/pci.c
 +++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -652,30 +652,29 @@ static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
- 	}
+@@ -761,6 +761,21 @@ static inline pnv_pci_cfg_check(struct pci_dn *pdn)
  }
+ #endif /* CONFIG_EEH */
  
--int pnv_pci_cfg_read(struct pci_dn *pdn,
--		     int where, int size, u32 *val)
-+static int pnv_pci_cfg_read_raw(u64 phb_id, int busno, unsigned int devfn,
-+				int where, int size, u32 *val)
- {
--	struct pnv_phb *phb = pdn->phb->private_data;
--	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
-+	u32 bdfn = (busno << 8) | devfn;
- 	s64 rc;
- 
- 	switch (size) {
- 	case 1: {
- 		u8 v8;
--		rc = opal_pci_config_read_byte(phb->opal_id, bdfn, where, &v8);
-+		rc = opal_pci_config_read_byte(phb_id, bdfn, where, &v8);
- 		*val = (rc == OPAL_SUCCESS) ? v8 : 0xff;
- 		break;
- 	}
- 	case 2: {
- 		__be16 v16;
--		rc = opal_pci_config_read_half_word(phb->opal_id, bdfn, where,
--						   &v16);
-+		rc = opal_pci_config_read_half_word(phb_id, bdfn, where,
-+						    &v16);
- 		*val = (rc == OPAL_SUCCESS) ? be16_to_cpu(v16) : 0xffff;
- 		break;
- 	}
- 	case 4: {
- 		__be32 v32;
--		rc = opal_pci_config_read_word(phb->opal_id, bdfn, where, &v32);
-+		rc = opal_pci_config_read_word(phb_id, bdfn, where, &v32);
- 		*val = (rc == OPAL_SUCCESS) ? be32_to_cpu(v32) : 0xffffffff;
- 		break;
- 	}
-@@ -684,27 +683,28 @@ int pnv_pci_cfg_read(struct pci_dn *pdn,
- 	}
- 
- 	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
--		 __func__, pdn->busno, pdn->devfn, where, size, *val);
-+		 __func__, busno, devfn, where, size, *val);
-+
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--int pnv_pci_cfg_write(struct pci_dn *pdn,
--		      int where, int size, u32 val)
-+static int pnv_pci_cfg_write_raw(u64 phb_id, int busno, unsigned int devfn,
-+				 int where, int size, u32 val)
- {
--	struct pnv_phb *phb = pdn->phb->private_data;
--	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
-+	u32 bdfn = (busno << 8) | devfn;
- 
- 	pr_devel("%s: bus: %x devfn: %x +%x/%x -> %08x\n",
--		 __func__, pdn->busno, pdn->devfn, where, size, val);
-+		 __func__, busno, devfn, where, size, val);
-+
- 	switch (size) {
- 	case 1:
--		opal_pci_config_write_byte(phb->opal_id, bdfn, where, val);
-+		opal_pci_config_write_byte(phb_id, bdfn, where, val);
- 		break;
- 	case 2:
--		opal_pci_config_write_half_word(phb->opal_id, bdfn, where, val);
-+		opal_pci_config_write_half_word(phb_id, bdfn, where, val);
- 		break;
- 	case 4:
--		opal_pci_config_write_word(phb->opal_id, bdfn, where, val);
-+		opal_pci_config_write_word(phb_id, bdfn, where, val);
- 		break;
- 	default:
- 		return PCIBIOS_FUNC_NOT_SUPPORTED;
-@@ -713,6 +713,24 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-+int pnv_pci_cfg_read(struct pci_dn *pdn,
-+		     int where, int size, u32 *val)
++static int get_bus_pe_number(struct pci_bus *bus)
 +{
-+	struct pnv_phb *phb = pdn->phb->private_data;
++	struct pci_dn *pdn = pci_bus_to_pdn(bus);
++	struct pci_dn *child;
 +
-+	return pnv_pci_cfg_read_raw(phb->opal_id, pdn->busno, pdn->devfn,
-+				    where, size, val);
++	if (!pdn)
++		return IODA_INVALID_PE;
++
++	list_for_each_entry(child, &pdn->child_list, list)
++		if (child->pe_number != IODA_INVALID_PE)
++			return child->pe_number;
++
++	return IODA_INVALID_PE;
 +}
 +
-+int pnv_pci_cfg_write(struct pci_dn *pdn,
-+		      int where, int size, u32 val)
-+{
-+	struct pnv_phb *phb = pdn->phb->private_data;
-+
-+	return pnv_pci_cfg_write_raw(phb->opal_id, pdn->busno, pdn->devfn,
-+				     where, size, val);
-+}
-+
- #if CONFIG_EEH
- static bool pnv_pci_cfg_check(struct pci_dn *pdn)
- {
-@@ -748,13 +766,15 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ static int pnv_pci_read_config(struct pci_bus *bus,
+ 			       unsigned int devfn,
  			       int where, int size, u32 *val)
- {
- 	struct pci_dn *pdn;
--	struct pnv_phb *phb;
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
+@@ -769,12 +784,23 @@ static int pnv_pci_read_config(struct pci_bus *bus,
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	struct pnv_phb *phb = hose->private_data;
  	int ret;
++	u32 empty_val = 0xFFFFFFFF;
  
- 	*val = 0xFFFFFFFF;
+-	*val = 0xFFFFFFFF;
++	*val = empty_val;
  	pdn = pci_get_pdn_by_devfn(bus, devfn);
- 	if (!pdn)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+		return pnv_pci_cfg_read_raw(phb->opal_id, bus->number, devfn,
-+					    where, size, val);
- 
- 	if (!pnv_pci_cfg_check(pdn))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
-@@ -777,12 +797,14 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 				int where, int size, u32 val)
- {
- 	struct pci_dn *pdn;
--	struct pnv_phb *phb;
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+	struct pnv_phb *phb = hose->private_data;
- 	int ret;
- 
- 	pdn = pci_get_pdn_by_devfn(bus, devfn);
- 	if (!pdn)
--		return PCIBIOS_DEVICE_NOT_FOUND;
-+		return pnv_pci_cfg_write_raw(phb->opal_id, bus->number, devfn,
-+					     where, size, val);
+-	if (!pdn)
+-		return pnv_pci_cfg_read_raw(phb->opal_id, bus->number, devfn,
+-					    where, size, val);
++	if (!pdn) {
++		int pe_number = get_bus_pe_number(bus);
++
++		ret = pnv_pci_cfg_read_raw(phb->opal_id, bus->number, devfn,
++					   where, size, val);
++
++		if (!ret && (*val == empty_val) && phb->unfreeze_pe)
++			phb->unfreeze_pe(phb, (pe_number == IODA_INVALID_PE) ?
++					 0xff : pe_number,
++					 OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++
++		return ret;
++	}
  
  	if (!pnv_pci_cfg_check(pdn))
  		return PCIBIOS_DEVICE_NOT_FOUND;
