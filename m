@@ -2,53 +2,64 @@ Return-Path: <SRS0=6H9d=RF=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C406C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:41:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0832BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 01:23:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E2891206DD
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 00:41:16 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2891206DD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 374072075B
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 01:23:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 374072075B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44B6sk1d65zDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 11:41:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44B7pg3cY7zDqVZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Mar 2019 12:23:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linutronix.de
- (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
- envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=perches.com
+ (client-ip=216.40.44.217; helo=smtprelay.hostedemail.com;
+ envelope-from=joe@perches.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linutronix.de
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=perches.com
+X-Greylist: delayed 528 seconds by postgrey-1.36 at bilbo;
+ Sat, 02 Mar 2019 12:22:06 AEDT
+Received: from smtprelay.hostedemail.com (smtprelay0217.hostedemail.com
+ [216.40.44.217])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44B6qs33f3zDqTY
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 11:39:37 +1100 (AEDT)
-Received: from p5492e5b8.dip0.t-ipconnect.de ([84.146.229.184] helo=nanos)
- by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
- (Exim 4.80) (envelope-from <tglx@linutronix.de>)
- id 1gzs3x-0008CO-RD; Sat, 02 Mar 2019 00:59:34 +0100
-Date: Sat, 2 Mar 2019 00:59:33 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: PROBLEM: monotonic clock going backwards on ppc64
-In-Reply-To: <877edik9qu.fsf@concordia.ellerman.id.au>
-Message-ID: <alpine.DEB.2.21.1903020052530.1638@nanos.tec.linutronix.de>
-References: <HaC.ZfES.62bwlnvAvMP.1STMMj@seznam.cz>
- <877edik9qu.fsf@concordia.ellerman.id.au>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Linutronix-Spam-Score: -1.0
-X-Linutronix-Spam-Level: -
-X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
- SHORTCIRCUIT=-0.0001
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44B7mt51H8zDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 12:22:04 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave04.hostedemail.com (Postfix) with ESMTP id B1C6918017524
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Mar 2019 01:13:24 +0000 (UTC)
+Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
+ [216.40.38.60])
+ by smtprelay04.hostedemail.com (Postfix) with ESMTP id 2B028180A814A;
+ Sat,  2 Mar 2019 01:13:12 +0000 (UTC)
+X-Session-Marker: 6A6F6540706572636865732E636F6D
+X-HE-Tag: cream38_1bc573e493721
+X-Filterd-Recvd-Size: 2063
+Received: from XPS-9350.home (unknown [47.151.153.53])
+ (Authenticated sender: joe@perches.com)
+ by omf12.hostedemail.com (Postfix) with ESMTPA;
+ Sat,  2 Mar 2019 01:13:10 +0000 (UTC)
+Message-ID: <fc844ffdfbc028e635f46e7a4a301b4ea8748ee1.camel@perches.com>
+Subject: Re: [PATCH 2/5] ocxl: Clean up printf formats
+From: Joe Perches <joe@perches.com>
+To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
+Date: Fri, 01 Mar 2019 17:13:09 -0800
+In-Reply-To: <20190227045741.21412-3-alastair@au1.ibm.com>
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190227045741.21412-3-alastair@au1.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+User-Agent: Evolution 3.30.1-1build1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,42 +71,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: John Stultz <john.stultz@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Jakub Drnec <jaydee@email.cz>, Stephen Boyd <sboyd@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sat, 2 Mar 2019, Michael Ellerman wrote:
-> > The problem seems to be in vDSO code in arch/powerpc/kernel/vdso64/gettimeofday.S.
+On Wed, 2019-02-27 at 15:57 +1100, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> You're right, the wall-to-monotonic offset (wtom_clock_sec) is a signed
-> 32-bit value, so that seems like it's going to have problems.
-> 
-> If I do `date -s 2037-1-1` I see:
-> 
-> [   26.024061] update_vsyscall: tk->wall_to_monotonic.tv_sec -2114341175
-> [   26.042633] update_vsyscall: vdso_data->wtom_clock_sec    -2114341175
-> 
-> Which looks sane.
-> 
-> But then 2040-1-1 shows:
-> 
-> [   32.617020] update_vsyscall: tk->wall_to_monotonic.tv_sec -2208949168
-> [   32.632642] update_vsyscall: vdso_data->wtom_clock_sec     2086018128
-> 
-> ie. the larger negative offset has overflowed and become positive.
-> 
-> But then when we go back to 2037 we get a negative offset again and
-> monotonic time appears to go backward and things are unhappy.
-> 
-> I don't know this code well, but the patch below *appears* to work. I'll
-> have a closer look on Monday.
+> Use %# instead of using a literal '0x'
 
-Looks about right. The core hands in the 64bit offset already.
+<shrug>  I think it's better not to change this unless
+the compilation unit already uses a mix of styles.
 
-Thanks,
+Overall, the kernel uses "0x%<hex type>" over "%#<hex type>"
+by ~8:1
 
-	tglx
+$ git grep -P '0x%\d*[hl]*x' | wc -l
+27654
+$ git grep -P '%#\d*[hl]*x' | wc -l
+3454
 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+[]
+> @@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+>  	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
+>  
+>  	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
+> -	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+> -	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+> -	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
+> +	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
+> +	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
+> +	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
+[...]
 
