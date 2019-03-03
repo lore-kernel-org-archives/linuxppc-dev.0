@@ -2,71 +2,48 @@ Return-Path: <SRS0=weZV=RG=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD460C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 01:13:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 783F8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 09:08:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 480D520863
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 01:13:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="iMOI3BDx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 480D520863
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A04D82070B
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 09:08:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A04D82070B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44BlXW1Z25zDqNk
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 12:13:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=luto@kernel.org;
- receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="iMOI3BDx"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44By4326yLzDqMw
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Mar 2019 20:08:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44BlVh3x9ZzDqN2
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2019 12:11:55 +1100 (AEDT)
-Received: from mail-wr1-f47.google.com (mail-wr1-f47.google.com
- [209.85.221.47])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D3F7220838
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2019 01:11:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1551575513;
- bh=aeQcNudQANa/9O58tlI+sqExs+mP6kZ+zGbCittOyEk=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=iMOI3BDxBhhvdZdIcqElKOqDFlfv3W9qoWzA76mmfi84rfF1boPaOJ7z8ss2KewJK
- B1YFnvAra/1ejgoMuHGEvS/k6zP1Cs8HPpPTzKL7pGhf184GnqVnlFO1ELJ8A8TZ06
- U3kfnUleQqTJJ7VsrYr6LTppFm6hUSR9auA4C7gE=
-Received: by mail-wr1-f47.google.com with SMTP id w17so1682351wrn.12
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Mar 2019 17:11:52 -0800 (PST)
-X-Gm-Message-State: APjAAAU/jZhHpH/icjg2K7MTDxP68iTYm8LJQ/cR3NQvN42Tzcu1urgy
- PL3i4/YTG0B4KOJQIUgRerhQleR9bH0jV7QNsvdh9w==
-X-Google-Smtp-Source: APXvYqw5H814IruOE6KiflSk63yk0XpLxWMumnCT4d6g3D3LEBouwjR0Z0rqMrV+mGI06upNb53KEAiOR8SV+YPRVK8=
-X-Received: by 2002:a5d:6252:: with SMTP id m18mr7652954wrv.199.1551575511385; 
- Sat, 02 Mar 2019 17:11:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44By2K3rHWzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Mar 2019 20:06:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44By2J6Dmrz9s7h;
+ Sun,  3 Mar 2019 20:06:32 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH] KVM: PPC: powerpc: Add count cache flush parameters to
+ kvmppc_get_cpu_char()
+In-Reply-To: <20190301080113.GB22341@blackberry>
+References: <20190301032516.29919-1-sjitindarsingh@gmail.com>
+ <87bm2vjdbw.fsf@concordia.ellerman.id.au> <20190301080113.GB22341@blackberry>
+Date: Sun, 03 Mar 2019 20:06:29 +1100
+Message-ID: <87wolgiay2.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-References: <20190228183220.15626-1-sudeep.holla@arm.com>
- <20190228183220.15626-4-sudeep.holla@arm.com>
-In-Reply-To: <20190228183220.15626-4-sudeep.holla@arm.com>
-From: Andy Lutomirski <luto@kernel.org>
-Date: Sat, 2 Mar 2019 17:11:40 -0800
-X-Gmail-Original-Message-ID: <CALCETrVOJV0uBX3CbpmuwSGQa98Fabq3-GoRbGMb79m_OoJkmQ@mail.gmail.com>
-Message-ID: <CALCETrVOJV0uBX3CbpmuwSGQa98Fabq3-GoRbGMb79m_OoJkmQ@mail.gmail.com>
-Subject: Re: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
- ptrace_syscall_enter hook
-To: Sudeep Holla <sudeep.holla@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -78,31 +55,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Haibo Xu <haibo.xu@arm.com>, Steve Capper <Steve.Capper@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Jeff Dike <jdike@addtoit.com>,
- X86 ML <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
- LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
- Richard Weinberger <richard@nod.at>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- Bin Lu <bin.lu@arm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Suraj Jitindar Singh <sjitindarsingh@gmail.com>, kvm@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, Feb 28, 2019 at 10:32 AM Sudeep Holla <sudeep.holla@arm.com> wrote:
->
-> Now that we have a new hook ptrace_syscall_enter that can be called from
-> syscall entry code and it handles PTRACE_SYSEMU in generic code, we
-> can do some cleanup using the same in syscall_trace_enter.
->
-> Further the extra logic to find single stepping PTRACE_SYSEMU_SINGLESTEP
-> in syscall_slow_exit_work seems unnecessary. Let's remove the same.
+Paul Mackerras <paulus@ozlabs.org> writes:
 
-I wasn't cc'd on the whole series, so I can't easily review this.  Do
-you have a test case to make sure that emulation still works?  Are
-there adequate tests in tools/testing/selftests/x86?  Do they still
-pass after this patch?
+> On Fri, Mar 01, 2019 at 05:52:51PM +1100, Michael Ellerman wrote:
+>> Suraj Jitindar Singh <sjitindarsingh@gmail.com> writes:
+>> 
+>> > Add KVM_PPC_CPU_CHAR_BCCTR_FLUSH_ASSIST &
+>> > KVM_PPC_CPU_BEHAV_FLUSH_COUNT_CACHE to the characteristics returned from
+>> > the H_GET_CPU_CHARACTERISTICS H-CALL, as queried from either the
+>> > hypervisor or the device tree.
+>> >
+>> > Signed-off-by: Suraj Jitindar Singh <sjitindarsingh@gmail.com>
+>> > ---
+>> >  arch/powerpc/include/uapi/asm/kvm.h |  2 ++
+>> >  arch/powerpc/kvm/powerpc.c          | 18 ++++++++++++++----
+>> >  2 files changed, 16 insertions(+), 4 deletions(-)
+>> >
+>> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> > index b90a7d154180..a99dcac91e50 100644
+>> > --- a/arch/powerpc/kvm/powerpc.c
+>> > +++ b/arch/powerpc/kvm/powerpc.c
+>> > @@ -2251,12 +2253,16 @@ static int kvmppc_get_cpu_char(struct kvm_ppc_cpu_char *cp)
+>> >  		if (have_fw_feat(fw_features, "enabled",
+>> >  				 "fw-count-cache-disabled"))
+>> >  			cp->character |= KVM_PPC_CPU_CHAR_COUNT_CACHE_DIS;
+>> > +		if (have_fw_feat(fw_features, "enabled",
+>> > +				 "fw-count-cache-flush-bcctr2,0,0"))
+>> 
+>> I don't think there's any reason KVM needs to be querying the device
+>> tree directly, is there?
+>> 
+>> Can't it just use the security flags (security_features.h), that are
+>> initialised by the powernv platform code based on the device tree.
+>
+> My recollection is that the security flags didn't have all the
+> information we need.  It's possible that's no longer true.
 
---Andy
+Actually I don't think they existed at all back then, we didn't add them
+until after the initial panic.
+
+> I merged the patch and sent a pull request to Paolo; using the same
+> pattern as the existing code made it a low-risk patch and I wanted to
+> get it in for 5.1.  For 5.2 we can look at changing it over if you
+> like.
+
+Yep that's fine.
+
+cheers
