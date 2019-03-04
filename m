@@ -2,82 +2,102 @@ Return-Path: <SRS0=bgOd=RH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD22AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 18:13:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B9A6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 19:44:53 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 12F262147A
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 18:13:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="DdLdMg7T"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 12F262147A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id B7EB220823
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 19:44:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B7EB220823
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Cp6Y6NHSzDqHp
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 05:13:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.86.77; helo=rcdn-iport-6.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="DdLdMg7T"; 
- dkim-atps=neutral
-Received: from rcdn-iport-6.cisco.com (rcdn-iport-6.cisco.com [173.37.86.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Cp4k2sQSzDqFs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 05:11:31 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=5463; q=dns/txt; s=iport;
- t=1551723094; x=1552932694;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:content-transfer-encoding:in-reply-to;
- bh=bl94wOTSWCQc149FMPOAsjnN1MEcYFqDIyzOncGLb0c=;
- b=DdLdMg7T/paiLa8UyNBwDR7nSg9pc0oxqDIcF8cEuhXCcA3YZQ574umt
- vEN4QIM+NK0+hF+5vOwy0u/G0MgPPp6PBO95jQxBzHifOVDdn5GtfRVAU
- 1yf+Yi2SS9kB9j1tdv198kghY5jVxoZP3tdGtEiV59JcjqPtWRAba/LX9 w=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0AJAACkaX1c/4sNJK1kGgEBAQEBAgE?=
- =?us-ascii?q?BAQEHAgEBAQGBUgQBAQEBCwGCD2hQMyeXbYINjjWJbIF7CwEBI4REAwIChCU?=
- =?us-ascii?q?iNQgNAQEDAQEDAQMCbRwMhUoBAQEBAgEyAUYQCxgJJQ8tGwaDNoFtCA+qR4Q?=
- =?us-ascii?q?vAQsBhWkFFA6BDQGEWYZOF4FAP4ERgxKBKBkBgVwCAhiHKAKKARIghziRPF0?=
- =?us-ascii?q?JgkCFA4slJQyBaIVii0yQP4xIAgQGBQIUb1kBNoFWMxoIGxU7gjgBM4Iig1a?=
- =?us-ascii?q?FFIVgHgMwkRUBAQ?=
-X-IronPort-AV: E=Sophos;i="5.58,440,1544486400"; d="scan'208";a="528745959"
-Received: from alln-core-6.cisco.com ([173.36.13.139])
- by rcdn-iport-6.cisco.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 04 Mar 2019 18:11:26 +0000
-Received: from zorba ([10.156.154.19])
- by alln-core-6.cisco.com (8.15.2/8.15.2) with ESMTPS id x24IBPA3014038
- (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Mon, 4 Mar 2019 18:11:26 GMT
-Date: Mon, 4 Mar 2019 10:11:24 -0800
-From: Daniel Walker <danielwa@cisco.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PULL REQUEST] powerpc generic command line
-Message-ID: <20190304181124.ecdblrqt2an6xlvt@zorba>
-References: <1551469472-53043-1-git-send-email-danielwa@cisco.com>
- <e80b18e3-92fe-3726-a7d7-72f98cdd0b86@c-s.fr>
- <20190304165758.suqyact3tiueslqx@zorba>
- <b804556b-9a2d-96a3-3e16-8ffbbd6006d4@c-s.fr>
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Cr8L2L2pzDqHw
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 06:44:50 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Cr5n5mSkzDqF0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 06:42:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44Cr5n34kfz8t7p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 06:42:37 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44Cr5n26hXz9s5R; Tue,  5 Mar 2019 06:42:37 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44Cr5l3kr3z9s00
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 Mar 2019 06:42:34 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x24Ja394137560
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 Mar 2019 14:42:29 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r17ckqjxh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 04 Mar 2019 14:42:29 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 4 Mar 2019 19:42:22 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 4 Mar 2019 19:42:21 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x24JgKfk28639364
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 4 Mar 2019 19:42:20 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9B9E211C050;
+ Mon,  4 Mar 2019 19:42:20 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2A83D11C04A;
+ Mon,  4 Mar 2019 19:42:20 +0000 (GMT)
+Received: from [192.168.0.25] (unknown [9.199.42.223])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon,  4 Mar 2019 19:42:19 +0000 (GMT)
+Subject: [PATCH] powerpc/hmi: Fix kernel hang when TB is in error state.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Tue, 05 Mar 2019 01:12:19 +0530
+User-Agent: StGit/unknown-version
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b804556b-9a2d-96a3-3e16-8ffbbd6006d4@c-s.fr>
-User-Agent: NeoMutt/20170609 (1.8.3)
-X-Auto-Response-Suppress: DR, OOF, AutoReply
-X-Outbound-SMTP-Client: 10.156.154.19, [10.156.154.19]
-X-Outbound-Node: alln-core-6.cisco.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19030419-0020-0000-0000-0000031E72E6
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19030419-0021-0000-0000-0000217077F3
+Message-Id: <155172853902.20037.16712960724031791025.stgit@jupiter>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-04_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903040140
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,134 +109,181 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Paul Mackerras <paulus@samba.org>, xe-linux-external@cisco.com
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 04, 2019 at 06:29:12PM +0100, Christophe Leroy wrote:
-> 
-> 
-> Le 04/03/2019 à 17:57, Daniel Walker a écrit :
-> > On Mon, Mar 04, 2019 at 02:55:08PM +0100, Christophe Leroy wrote:
-> > > 
-> > > 
-> > > Le 01/03/2019 à 20:44, Daniel Walker a écrit :
-> > > > Here are the generic command line changes for powerpc.
-> > > > 
-> > > > These changes have been in linux-next for two cycles, with few problems reported.
-> > > > It's also been used at Cisco Systems, Inc. in production products for many many
-> > > > years with no problems.
-> > > > 
-> > > > Please pull these changes.
-> > > > 
-> > > > 
-> > > > The following changes since commit ccda4af0f4b92f7b4c308d3acc262f4a7e3affad:
-> > > > 
-> > > >     Linux 4.20-rc2 (2018-11-11 17:12:31 -0600)
-> > > > 
-> > > > are available in the git repository at:
-> > > > 
-> > > >     https://github.com/daniel-walker/cisco-linux.git for-powerpc
-> > > > 
-> > > > for you to fetch changes up to 5d4514a9c291ecf19b0626695161673d35e5d549:
-> > > > 
-> > > >     powerpc: convert config files to generic cmdline (2018-11-16 07:32:26 -0800)
-> > > > 
-> > > > ----------------------------------------------------------------
-> > > > Daniel Walker (3):
-> > > >         add generic builtin command line
-> > > >         powerpc: convert to generic builtin command line
-> > > >         powerpc: convert config files to generic cmdline
-> > > 
-> > > Hello,
-> > > 
-> > > This series is in total contradiction with the work being done to add KASAN
-> > > support to powerpc.
-> > > 
-> > > It also modifies the behaviour for powerpc.
-> > > 
-> > > Please do not apply this series as is, see my comments on the individual
-> > > patchs for details.
-> > > 
-> > 
-> > Not trying to offend you, but you comments seems overly alarmist. KASAN is a
-> > debug feature, generally we don't write code around debug features (especially
-> > ones which aren't merged yet). It would not be hard to correct our use of string
-> > functions when your KASAN enablement is merged, I'm sure you could do it, but I would be happy
-> > to do it also. The other comments you had I don't think rise to the level of
-> > stopping a pull request. Our code is stabilized, so I'm not going to
-> > re-design it at a late date like this.
-> > 
-> > I think the pull request is still valid.
-> > 
-> 
-> Ok, lets the KASAN stuff aside. And I agree I misread the patch when I felt
-> that it was changing the behaviour in prom_init.c
-> 
-> I don't want to criticise your work either, but your series seems overkill.
-> Anyway, could you explain your approach and what is the benefit of your
-> series compared to what is already existing ?
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Current behavior varies across different architectures. Some platforms prepend
-the command line with the boot loader arguments some platforms append it. Cisco
-uses all these platforms. We desire a method to either append or prepend on a
-number of architectures. It reduces code duplication across multiple
-architectures. It allows a number of other command line related features to be
-added in a single location instead of across all architectures. For example MIPS
-has some additional features added related to the command line arguments, this
-could be made generic and available to all architectures.
+On TOD/TB errors timebase register stops/freezes until HMI error recovery
+gets TOD/TB back into running state. On successful recovery, TB starts
+running again and udelay() that relies on TB value continues to function
+properly. But in case when HMI fails to recover from TOD/TB errors, the
+TB register stay freezed. With TB not running the __delay() function
+keeps looping and never return. If __delay() is called while in panic
+path then system hangs and never reboots after panic.
 
-> 
-> Can you also explain how your changes fit with the what is done is the
-> function early_init_dt_scan_chosen_ppc() in drivers/of/fdt.c as your series
-> doesn't modify it ? (extract below)
-> 
-> 
-> 
-> 	/*
-> 	 * CONFIG_CMDLINE is meant to be a default in case nothing else
-> 	 * managed to set the command line, unless CONFIG_CMDLINE_FORCE
-> 	 * is set in which case we override whatever was found earlier.
-> 	 */
-> #ifdef CONFIG_CMDLINE
-> #if defined(CONFIG_CMDLINE_EXTEND)
-> 	strlcat(data, " ", COMMAND_LINE_SIZE);
-> 	strlcat(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-> #elif defined(CONFIG_CMDLINE_FORCE)
-> 	strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-> #else
-> 	/* No arguments from boot loader, use kernel's  cmdl*/
-> 	if (!((char *)data)[0])
-> 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-> #endif
-> #endif /* CONFIG_CMDLINE */
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+This patch has been tested with below skiboot changes:
+http://patchwork.ozlabs.org/project/skiboot/list/?series=95315
+---
+ arch/powerpc/include/asm/opal-api.h            |   10 ++++++++++
+ arch/powerpc/include/asm/opal.h                |    2 ++
+ arch/powerpc/include/asm/time.h                |    2 ++
+ arch/powerpc/kernel/time.c                     |    9 +++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    1 +
+ arch/powerpc/platforms/powernv/opal.c          |   21 +++++++++++++++++++++
+ arch/powerpc/platforms/powernv/setup.c         |    5 ++++-
+ 7 files changed, 49 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..727c74c1693f 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -209,6 +209,7 @@
+ #define OPAL_SENSOR_GROUP_ENABLE		163
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
++#define OPAL_HANDLE_HMI2			166
+ #define	OPAL_NX_COPROC_INIT			167
+ #define OPAL_LAST				167
  
-Our code supersedes this code, and you can see the code is doing similar things.
-Eventually this block will be replaced with a call into generic functions. We've
-submitted changes to this code in the past,
+@@ -634,6 +635,15 @@ struct OpalHMIEvent {
+ 	} u;
+ };
+ 
++/* OPAL_HANDLE_HMI2 out_flags */
++enum {
++	OPAL_HMI_FLAGS_TB_RESYNC	= (1ull << 0), /* Timebase has been resynced */
++	OPAL_HMI_FLAGS_DEC_LOST		= (1ull << 1), /* DEC lost, needs to be reprogrammed */
++	OPAL_HMI_FLAGS_HDEC_LOST	= (1ull << 2), /* HDEC lost, needs to be reprogrammed */
++	OPAL_HMI_FLAGS_TOD_TB_FAIL	= (1ull << 3), /* TOD/TB recovery failed. */
++	OPAL_HMI_FLAGS_NEW_EVENT	= (1ull << 63), /* An event has been created */
++};
++
+ enum {
+ 	OPAL_P7IOC_DIAG_TYPE_NONE	= 0,
+ 	OPAL_P7IOC_DIAG_TYPE_RGC	= 1,
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a55b01c90bb1..7b0bc104a89c 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -203,6 +203,7 @@ int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+ int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
+ int64_t opal_sensor_read_u64(u32 sensor_hndl, int token, __be64 *sensor_data);
+ int64_t opal_handle_hmi(void);
++int64_t opal_handle_hmi2(__be64 *out_flags);
+ int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
+ int64_t opal_unregister_dump_region(uint32_t id);
+ int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
+@@ -352,6 +353,7 @@ int opal_power_control_init(void);
+ extern int opal_machine_check(struct pt_regs *regs);
+ extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
+ extern int opal_hmi_exception_early(struct pt_regs *regs);
++extern int opal_hmi_exception_early2(struct pt_regs *regs);
+ extern int opal_handle_hmi_exception(struct pt_regs *regs);
+ 
+ extern void opal_shutdown(void);
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 54bf7e68a7e1..57e968413d1e 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -36,6 +36,8 @@ extern unsigned long ppc_proc_freq;
+ extern unsigned long ppc_tb_freq;
+ #define DEFAULT_TB_FREQ		125000000UL
+ 
++extern bool tb_invalid;
++
+ struct div_result {
+ 	u64 result_high;
+ 	u64 result_low;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 3646affae963..523a6b455d8e 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -152,6 +152,8 @@ EXPORT_SYMBOL_GPL(ppc_proc_freq);
+ unsigned long ppc_tb_freq;
+ EXPORT_SYMBOL_GPL(ppc_tb_freq);
+ 
++bool tb_invalid;
++
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ /*
+  * Factor for converting from cputime_t (timebase ticks) to
+@@ -461,6 +463,13 @@ void __delay(unsigned long loops)
+ 				diff += 1000000000;
+ 			spin_cpu_relax();
+ 		} while (diff < loops);
++	} else if (tb_invalid) {
++		/*
++		 * TB is in error state and isn't ticking anymore.
++		 * HMI handler was unable to recover from TB error.
++		 * Return immediately, so that kernel won't get stuck here.
++		 */
++		spin_cpu_relax();
+ 	} else {
+ 		start = get_tbl();
+ 		while (get_tbl() - start < loops)
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index f4875fe3f8ff..8ec43594aa1c 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -267,6 +267,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
+ OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
+ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
+ OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
++OPAL_CALL(opal_handle_hmi2,			OPAL_HANDLE_HMI2);
+ OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
+ OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
+ OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 79586f127521..e4adbcf89cf4 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -613,6 +613,27 @@ int opal_hmi_exception_early(struct pt_regs *regs)
+ 	return 0;
+ }
+ 
++int opal_hmi_exception_early2(struct pt_regs *regs)
++{
++	s64 rc;
++	__be64 out_flags;
++
++	/*
++	 * call opal hmi handler.
++	 * Check 64-bit flag mask to find out if an event was generated,
++	 * and whether TB is still valid or not etc.
++	 */
++	rc = opal_handle_hmi2(&out_flags);
++	if (rc != OPAL_SUCCESS)
++		return 0;
++
++	if (be64_to_cpu(out_flags) & OPAL_HMI_FLAGS_NEW_EVENT)
++		local_paca->hmi_event_available = 1;
++	if (be64_to_cpu(out_flags) & OPAL_HMI_FLAGS_TOD_TB_FAIL)
++		tb_invalid = true;
++	return 1;
++}
++
+ /* HMI exception handler called in virtual mode during check_irq_replay. */
+ int opal_handle_hmi_exception(struct pt_regs *regs)
+ {
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 14befee4b3f1..3cf40f689aac 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -401,7 +401,10 @@ static void __init pnv_setup_machdep_opal(void)
+ 	/* ppc_md.system_reset_exception gets filled in by pnv_smp_init() */
+ 	ppc_md.machine_check_exception = opal_machine_check;
+ 	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
+-	ppc_md.hmi_exception_early = opal_hmi_exception_early;
++	if (opal_check_token(OPAL_HANDLE_HMI2))
++		ppc_md.hmi_exception_early = opal_hmi_exception_early2;
++	else
++		ppc_md.hmi_exception_early = opal_hmi_exception_early;
+ 	ppc_md.handle_hmi_exception = opal_handle_hmi_exception;
+ }
+ 
 
-https://lore.kernel.org/patchwork/patch/604997/
-
-However, this code doesn't lend itself to piecemeal conversion to a generic
-system. It's a generic system itself, but only for architectures/platforms with specific
-characteristics. This is why we're doing it one at a time with PowerPC first.
-
-> 
-> 
-> 
-> What I like in your series is that you make the CMDLINE config common to all
-> arches. But my feeling is that the 40 or so lines of code in your cmdline.h
-> is way complex compared to what it aims to do, ie replacing a few lines on
-> code in two places. But I might not have the complete picture so feel free
-> to tell all the details behind it. I see you already submitted part of your
-> series to the ppc list in Novembre
-> (https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=75078)
-> unfortunatly the first patch of the series was not there, and it seems at
-> that time your series has not generated any further discussion.
-
-Our code has been out there for years. I don't recall our first submission but
-it was prior to last year.
-
-Daniel
