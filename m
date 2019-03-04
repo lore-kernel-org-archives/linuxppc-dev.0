@@ -2,54 +2,81 @@ Return-Path: <SRS0=bgOd=RH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C26FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A7C3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:39:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 13D8A2070B
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:29:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 13D8A2070B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C733220830
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:39:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=essensium-com.20150623.gappssmtp.com header.i=@essensium-com.20150623.gappssmtp.com header.b="smRGyYhe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C733220830
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=essensium.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44CfVF0ycMzDqDh
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 23:29:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Cfhy66NSzDqHj
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 23:38:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=essensium.com
+ (client-ip=2607:f8b0:4864:20::c41; helo=mail-yw1-xc41.google.com;
+ envelope-from=patrick.havelange@essensium.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44CfRc2wRXzDqGY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2019 23:27:22 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 436BDA78;
- Mon,  4 Mar 2019 04:27:19 -0800 (PST)
-Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 960DB3F575;
- Mon,  4 Mar 2019 04:27:16 -0800 (PST)
-Date: Mon, 4 Mar 2019 12:27:11 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] ptrace: introduce ptrace_syscall_enter to
- consolidate PTRACE_SYSEMU handling
-Message-ID: <20190304122711.GA28624@e107155-lin>
-References: <20190228183220.15626-1-sudeep.holla@arm.com>
- <20190228183220.15626-3-sudeep.holla@arm.com>
- <f3441e63-c54d-3b9d-2919-8a3955cbee69@arm.com>
- <20190304104643.GA28643@e107155-lin>
- <20190304122331.GG3969@gate.crashing.org>
+ dmarc=none (p=none dis=none) header.from=essensium.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=essensium-com.20150623.gappssmtp.com
+ header.i=@essensium-com.20150623.gappssmtp.com header.b="smRGyYhe"; 
+ dkim-atps=neutral
+Received: from mail-yw1-xc41.google.com (mail-yw1-xc41.google.com
+ [IPv6:2607:f8b0:4864:20::c41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44CffW6B8qzDqFH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2019 23:36:49 +1100 (AEDT)
+Received: by mail-yw1-xc41.google.com with SMTP id 189so3928989ywi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Mar 2019 04:36:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=essensium-com.20150623.gappssmtp.com; s=20150623;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=Ob8hWZ0HmNwlTXJo/mYlu29SYMoP0D3tHnTBPnurEpc=;
+ b=smRGyYheoWgrKBxK4FySqe7WvjpakYuVvISB7ltoRJLyCeitME4JA6Qumxa88B+pn3
+ 3nMM8Q3/KPrMQYpvcRbdPs2YqnadxOaHZYg2T/22WWiYGqVVsTN3pU76f0jDMIryPuHB
+ I0gK0YdNvRO5lIhsF/5go4P5ER6AYkEFyz4b4ULzr8JnJ9TAkmjy/J8lzVBsWlvvXjKh
+ HKGUt8hpBqB6Rldtz37WT9w2332qf7UlJjhqOQECmuRdq3b/F9cJ9nJ53MpMtnABxLTq
+ INCm+C+cD6ogS8xeEsPy11CGnWCU0qXNSzCuMQTsGu2SFwRPlmKOu/KKzgnjt0id3KNF
+ i/2A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=Ob8hWZ0HmNwlTXJo/mYlu29SYMoP0D3tHnTBPnurEpc=;
+ b=CZ/hjZoFc+JY6gI3vaZMUp8OWh/fHABfqVjsRv9bv1bfelLFIomgVZlOm6yL1zR3+E
+ 0Z9T5AmI/7iy8MecQinYOlsJj+xVBxBOKeoWddpXDGLDgLfxd8iLIGgMgvy16vllVxwf
+ cT5PQxJB04SuqtqVZ/Psf88FQ/Ok+o4DYunsVGXkmY+UZ8LatketrXSEDTGHl2Efh1qE
+ 6H3VsqNf0843OQnDpRL9lATOXH9Dv1ehU4z0n+HOcXXAoJrrv/luAwM79jQHnXpeedme
+ hZWBsconYVSCW7A7bPBBRmSJlIxxBBSeVTVdhKjqMM8EkUJbKcMJ7BqAleT4Z4OoPN4R
+ e5Lw==
+X-Gm-Message-State: APjAAAUmUznmlh6C24dz2+oYhcVk+/MAD4u7vDl5LDLw+6OC2FnrJBh8
+ bTlaMF+u4AD6fUybuO0VN6g1E/LeGUwXCN2V4Hry5w==
+X-Google-Smtp-Source: APXvYqxVfOPCjAyP0ik8yPHGWa5ghB1GFgpMDODBfMk1sD3Il17SauW+sZt6b1W6aoYo9GOT9T45U+89TthTCstmbq8=
+X-Received: by 2002:a5b:b4d:: with SMTP id b13mr15071149ybr.318.1551703006622; 
+ Mon, 04 Mar 2019 04:36:46 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190304122331.GG3969@gate.crashing.org>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <20190218140321.19166-1-patrick.havelange@essensium.com>
+ <20190218140321.19166-5-patrick.havelange@essensium.com>
+ <20190220164154.00547a77@archlinux>
+In-Reply-To: <20190220164154.00547a77@archlinux>
+From: Patrick Havelange <patrick.havelange@essensium.com>
+Date: Mon, 4 Mar 2019 13:36:34 +0100
+Message-ID: <CAKKE0ZFs_N+StJ4MQ0peaTy=ADufSVW_tp5zSHsyua2myvMiHQ@mail.gmail.com>
+Subject: Re: [PATCH 5/8] iio/counter: add FlexTimer Module Quadrature decoder
+ counter driver
+To: Jonathan Cameron <jic23@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,60 +88,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Haibo Xu \(Arm Technology China\)" <Haibo.Xu@arm.com>,
- Steve Capper <Steve.Capper@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>,
- "jdike@addtoit.com" <jdike@addtoit.com>, "x86@kernel.org" <x86@kernel.org>,
- Will Deacon <Will.Deacon@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Weinberger <richard@nod.at>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Bin Lu \(Arm Technology China\)" <Bin.Lu@arm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Lars-Peter Clausen <lars@metafoo.de>, linux-pwm@vger.kernel.org,
+ linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ William Breathitt Gray <vilhelm.gray@gmail.com>, Li Yang <leoyang.li@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>,
+ Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Esben Haabendal <esben@haabendal.dk>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 04, 2019 at 06:23:32AM -0600, Segher Boessenkool wrote:
-> On Mon, Mar 04, 2019 at 10:46:43AM +0000, Sudeep Holla wrote:
-> > On Mon, Mar 04, 2019 at 08:03:47AM +0000, Haibo Xu (Arm Technology China) wrote:
-> > > On 2019/3/1 2:32, Sudeep Holla wrote:
-> > > > +long ptrace_syscall_enter(struct pt_regs *regs)
-> > > > +{
-> > > > +#ifdef TIF_SYSCALL_EMU
-> > > > +	if (test_thread_flag(TIF_SYSCALL_EMU)) {
-> > > > +		if (tracehook_report_syscall_entry(regs));
-> > >
-> > > Shall we remove the semi-colon at end of the above line?
-> >
-> > Added intentionally to keep GCC happy.
+On Wed, Feb 20, 2019 at 5:42 PM Jonathan Cameron <jic23@kernel.org> wrote:
+[skipped]
+> > +
+> > +struct ftm_quaddec {
+> > +     struct platform_device *pdev;
+> > +     void __iomem *ftm_base;
+> > +     bool big_endian;
 >
-> GCC warns because the user explicitly asked for it, with __must_check.
-> If you want to do things with an "if" like this, you should write e.g.
->
-> 		if (tracehook_report_syscall_entry(regs))
-> 			/*
-> 			 * We can ignore the return code here, because of
-> 			 * X and Y and Z.
-> 			 */
-> 			;
->
-> Or it probably is nicer to use a block:
->
-> 		if (tracehook_report_syscall_entry(regs)) {
-> 			/*
-> 			 * We can ignore the return code here, because of
-> 			 * X and Y and Z.
-> 			 */
-> 		}
->
-> The point is, you *always* should have a nice fat comment if you are
-> ignoring the return code of a __must_check function.
->
+> I'm curious. What is the benefit of running in big endian mode?
 
-Agreed, will add the comment.
+It is based on the same behaviour as in drivers/clocksource/timer-fsl-ftm.c
+The FlexTimer itself on the board I'm testing it with is working in
+big endian mode, so this mode is required.
 
---
-Regards,
-Sudeep
+> > +static ssize_t ftm_write_reset(struct iio_dev *indio_dev,
+> > +                             uintptr_t private,
+> > +                             struct iio_chan_spec const *chan,
+> > +                             const char *buf, size_t len)
+> > +{
+> > +     struct ftm_quaddec *ftm = iio_priv(indio_dev);
+> > +
+> > +     /* Only "counter reset" is supported for now */
+> > +     if (!sysfs_streq(buf, "0")) {
+> > +             dev_warn(&ftm->pdev->dev, "Reset only accepts '0'\n");
+> > +             return -EINVAL;
+>
+> Why not just make the channel attribute itself writeable given we are
+> setting it to 0?
+
+Good idea, I'll see if this can be applied in the new subsystem.
+
+[skipped]
+
+All other comments are Acked.
