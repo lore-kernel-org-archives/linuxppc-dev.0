@@ -4,24 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12908C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 14:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2EF8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 14:29:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 85EB920815
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 14:07:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2A29E20823
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 14:29:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="C6KVoUvN"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85EB920815
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="swgzuo9G"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A29E20823
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ChgF1xF7zDqGk
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 01:07:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Cj862GgLzDqJB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 01:29:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -29,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="C6KVoUvN"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="swgzuo9G"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44ChdT0rp4zDq6c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 01:06:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Cj6Q2JgKzDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 01:27:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44ChdJ4fXSz9v6wx;
- Mon,  4 Mar 2019 15:05:56 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44Cj6F6R09z9v4wW;
+ Mon,  4 Mar 2019 15:27:33 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=C6KVoUvN; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=swgzuo9G; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id OIukQzGi5Mhn; Mon,  4 Mar 2019 15:05:56 +0100 (CET)
+ with ESMTP id IOOkahzk2WU8; Mon,  4 Mar 2019 15:27:33 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44ChdJ3Whfz9v6wc;
- Mon,  4 Mar 2019 15:05:56 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Cj6F56kSz9v1QP;
+ Mon,  4 Mar 2019 15:27:33 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551708356; bh=Lou+LJudD27zNqGZxAvu/t8Cohg/CUFnGxJFrL8eCdM=;
+ t=1551709653; bh=74npQgHLavCFiHbVDB4xQO10uiwkD3vrFd5Z1BDGDTw=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=C6KVoUvN6Biazcs+pZ4lDVvlOfouSmVlkQdfVrZ81Z+WpOfF/32afBfqn9k5pB53s
- ZH7yNiwtRUvxJG6caaqSdpsRL2zaHaZPgLu3cDxsm5sN+EID1YZBX3mWhWMz7hKXgN
- B3yLu1vs62fEC1kC75AQWKf5i6CRr8BKfwB1PpHQ=
+ b=swgzuo9Gt81C1bPoiK3qAfhtSTv6UFhTVEw5RrCJH2tSsLCP9NOSQAe3Gg3xWTQjY
+ JhOkykm6w+I0v9I+Zq5Kigjy0su/vJzt9T92iPDpsToRTQucB9N7Jo3GAUhbWzKcy2
+ lhfyaP2ioJXlbcgVgKydoI1/MNwo3WJAdbQYeC9w=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 34AE38B82A;
- Mon,  4 Mar 2019 15:05:59 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id F2DB48B84E;
+ Mon,  4 Mar 2019 15:27:33 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id iYHro5p-Jckz; Mon,  4 Mar 2019 15:05:58 +0100 (CET)
+ with ESMTP id AqeOoWAo4L8F; Mon,  4 Mar 2019 15:27:33 +0100 (CET)
 Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B02718B84F;
- Mon,  4 Mar 2019 15:05:52 +0100 (CET)
-Subject: Re: [PATCH 1/3] add generic builtin command line
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id A612C8B876;
+ Mon,  4 Mar 2019 15:27:04 +0100 (CET)
+Subject: Re: [PATCH 2/3] powerpc: convert to generic builtin command line
 To: Daniel Walker <danielwa@cisco.com>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <1551469472-53043-2-git-send-email-danielwa@cisco.com>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+References: <1551469472-53043-3-git-send-email-danielwa@cisco.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <701a46a6-57e6-f8c7-1fee-18c50e72c38c@c-s.fr>
-Date: Mon, 4 Mar 2019 15:05:47 +0100
+Message-ID: <e6dc6500-0e33-da0c-c975-0d9125e38c0e@c-s.fr>
+Date: Mon, 4 Mar 2019 15:26:59 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <1551469472-53043-2-git-send-email-danielwa@cisco.com>
+In-Reply-To: <1551469472-53043-3-git-send-email-danielwa@cisco.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -91,9 +91,10 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, xe-linux-external@cisco.com,
- Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org
+Cc: xe-linux-external@cisco.com, linux-kernel@vger.kernel.org,
+ Maksym Kokhan <maksym.kokhan@globallogic.com>,
+ Daniel Walker <dwalker@fifo99.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
@@ -101,214 +102,159 @@ Sender: "Linuxppc-dev"
 
 
 Le 01/03/2019 à 20:44, Daniel Walker a écrit :
-> This code allows architectures to use a generic builtin command line.
-> The state of the builtin command line options across architecture is
-> diverse. On x86 and mips they have pretty much the same code and the
-> code prepends the builtin command line onto the boot loader provided
-> one. On powerpc there is only a builtin override and nothing else.
+> This updates the powerpc code to use the CONFIG_GENERIC_CMDLINE
+> option.
+
+Please explain more in details how each powerpc option is replaced by 
+one of the generic options.
+
 > 
-> The code in this commit unifies the mips and x86 code into a generic
-> header file under the CONFIG_GENERIC_CMDLINE option. When this
-> option is enabled the architecture can call the cmdline_add_builtin()
-> to add the builtin command line.
-> 
-> [maksym.kokhan@globallogic.com: fix cmdline_add_builtin() macro]
+> [maksym.kokhan@globallogic.com: add strlcat to prom_init_check.sh
+> whitelist]
 > Cc: Daniel Walker <dwalker@fifo99.com>
 > Cc: Daniel Walker <danielwa@cisco.com>
 > Cc: xe-linux-external@cisco.com
 > Signed-off-by: Daniel Walker <danielwa@cisco.com>
 > Signed-off-by: Maksym Kokhan <maksym.kokhan@globallogic.com>
 > ---
->   include/linux/cmdline.h | 72 +++++++++++++++++++++++++++++++++++++++++++++++++
->   init/Kconfig            | 69 +++++++++++++++++++++++++++++++++++++++++++++++
->   2 files changed, 141 insertions(+)
->   create mode 100644 include/linux/cmdline.h
+>   arch/powerpc/Kconfig                   | 23 +----------------------
+>   arch/powerpc/kernel/prom.c             |  4 ++++
+>   arch/powerpc/kernel/prom_init.c        |  8 ++++----
+>   arch/powerpc/kernel/prom_init_check.sh |  2 +-
+>   4 files changed, 10 insertions(+), 27 deletions(-)
 > 
-> diff --git a/include/linux/cmdline.h b/include/linux/cmdline.h
-> new file mode 100644
-> index 000000000000..126fa52f55d2
-> --- /dev/null
-> +++ b/include/linux/cmdline.h
-> @@ -0,0 +1,72 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +#ifndef _LINUX_CMDLINE_H
-> +#define _LINUX_CMDLINE_H
-> +
-> +/*
-> + *
-> + * Copyright (C) 2015. Cisco Systems, Inc.
-> + *
-> + * Generic Append/Prepend cmdline support.
-> + */
-> +
-> +#if defined(CONFIG_GENERIC_CMDLINE) && defined(CONFIG_CMDLINE_BOOL)
-> +
-> +#ifndef CONFIG_CMDLINE_OVERRIDE
-> +/*
-> + * This function will append or prepend a builtin command line to the command
-> + * line provided by the bootloader. Kconfig options can be used to alter
-> + * the behavior of this builtin command line.
-> + * @dest: The destination of the final appended/prepended string
-> + * @src: The starting string or NULL if there isn't one.
-> + * @tmp: temporary space used for prepending
-> + * @length: the maximum length of the strings above.
-> + */
-> +static inline void
-> +_cmdline_add_builtin(char *dest, char *src, char *tmp, unsigned long length)
-> +{
-> +	if (src != dest && src != NULL) {
-> +		strlcpy(dest, " ", length);
-
-Why prepend a space here ?
-
-> +		strlcat(dest, src, length);
-> +	}
-> +
-> +	strlcat(dest, " ", length);
-
-Why a space here ? When there is nothing to append, there is no need of 
-a space here. The space could simply be concatenated below in from of 
-CONFIG_CMDLINE_APPEND
-
-> +
-> +	if (sizeof(CONFIG_CMDLINE_APPEND) > 1)
-> +		strlcat(dest, CONFIG_CMDLINE_APPEND, length);
-> +
-> +	if (sizeof(CONFIG_CMDLINE_PREPEND) > 1) {
-> +		strlcpy(tmp, CONFIG_CMDLINE_PREPEND, length);
-> +		strlcat(tmp, " ", length);
-
-Why not concatenate the space to above, ie:
-strlcpy(tmp, CONFIG_CMDLINE_PREPEND " ", length);
-
-> +		strlcat(tmp, dest, length);
-> +		strlcpy(dest, tmp, length);
-> +	}
-> +}
-> +
-> +#define cmdline_add_builtin_section(dest, src, length, section) 	    \
-> +{									    \
-> +	if (sizeof(CONFIG_CMDLINE_PREPEND) > 1) {			    \
-> +		static char cmdline_tmp_space[length] section;	            \
-> +		_cmdline_add_builtin(dest, src, cmdline_tmp_space, length); \
-> +	} else {							    \
-> +		_cmdline_add_builtin(dest, src, NULL, length);		    \
-> +	}								    \
-> +}
-> +#else
-> +#define cmdline_add_builtin_section(dest, src, length, section) 	   \
-> +{									   \
-> +	strlcpy(dest, CONFIG_CMDLINE_PREPEND " " CONFIG_CMDLINE_APPEND,    \
-> +		length);						   \
-> +}
-> +#endif /* !CONFIG_CMDLINE_OVERRIDE */
-> +
-> +#else
-> +#define cmdline_add_builtin_section(dest, src, length, section) {          \
-> +	if (src != NULL)						   \
-> +		strlcpy(dest, src, length);				   \
-> +}
-> +#endif /* CONFIG_GENERIC_CMDLINE */
-> +
-> +#define cmdline_add_builtin(dest, src, length) \
-> +	cmdline_add_builtin_section(dest, src, length, __initdata)
-
-All those ifdefs are uggly, I don't think it is worth making something 
-so complex just for the fun of getting something generic. See my 
-comments to following patch.
-
-> +
-> +#endif /* _LINUX_CMDLINE_H */
-> diff --git a/init/Kconfig b/init/Kconfig
-> index a4112e95724a..b59e856511e1 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -1775,6 +1775,75 @@ config PROFILING
->   config TRACEPOINTS
->   	bool
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 8be31261aec8..6321b2a0b87b 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -172,6 +172,7 @@ config PPC
+>   	select GENERIC_STRNCPY_FROM_USER
+>   	select GENERIC_STRNLEN_USER
+>   	select GENERIC_TIME_VSYSCALL
+> +	select GENERIC_CMDLINE
+>   	select HAVE_ARCH_AUDITSYSCALL
+>   	select HAVE_ARCH_JUMP_LABEL
+>   	select HAVE_ARCH_KGDB
+> @@ -777,28 +778,6 @@ config PPC_DENORMALISATION
+>   	  Add support for handling denormalisation of single precision
+>   	  values.  Useful for bare metal only.  If unsure say Y here.
 >   
-> +config GENERIC_CMDLINE
-> +	bool
-> +
-> +if GENERIC_CMDLINE
-> +
-> +config CMDLINE_BOOL
-> +	bool "Built-in kernel command line"
-> +	help
-> +	  Allow for specifying boot arguments to the kernel at
-> +	  build time.  On some systems (e.g. embedded ones), it is
-> +	  necessary or convenient to provide some or all of the
-> +	  kernel boot arguments with the kernel itself (that is,
-> +	  to not rely on the boot loader to provide them.)
-> +
-> +	  To compile command line arguments into the kernel,
-> +	  set this option to 'Y', then fill in the
-> +	  the boot arguments in CONFIG_CMDLINE.
-> +
-> +	  Systems with fully functional boot loaders (i.e. non-embedded)
-> +	  should leave this option set to 'N'.
-> +
-> +config CMDLINE_APPEND
-> +	string "Built-in kernel command string append"
-> +	depends on CMDLINE_BOOL
-
-Would be better to remove this 'depends' and put the condition on the 
-previous line. That way we would always have CONFIG_CMDLINE_APPEND and 
-we could do something more simple in the code.
-
-> +	default ""
-> +	help
-> +	  Enter arguments here that should be compiled into the kernel
-> +	  image and used at boot time.  If the boot loader provides a
-> +	  command line at boot time, this string is appended to it to
-> +	  form the full kernel command line, when the system boots.
-> +
-> +	  However, you can use the CONFIG_CMDLINE_OVERRIDE option to
-> +	  change this behavior.
-> +
-> +	  In most cases, the command line (whether built-in or provided
-> +	  by the boot loader) should specify the device for the root
-> +	  file system.
-> +
-> +config CMDLINE_PREPEND
-> +	string "Built-in kernel command string prepend"
-> +	depends on CMDLINE_BOOL
-
-Would be better to remove this 'depends' and put the condition on the 
-previous line. That way we would always have CONFIG_CMDLINE_APPEND and 
-we could do something more simple in the code.
-
-> +	default ""
-> +	help
-> +	  Enter arguments here that should be compiled into the kernel
-> +	  image and used at boot time.  If the boot loader provides a
-> +	  command line at boot time, this string is prepended to it to
-> +	  form the full kernel command line, when the system boots.
-> +
-> +	  However, you can use the CONFIG_CMDLINE_OVERRIDE option to
-> +	  change this behavior.
-> +
-> +	  In most cases, the command line (whether built-in or provided
-> +	  by the boot loader) should specify the device for the root
-> +	  file system.
-> +
-> +config CMDLINE_OVERRIDE
-> +	bool "Built-in command line overrides boot loader arguments"
-> +	depends on CMDLINE_BOOL
-> +	help
-> +	  Set this option to 'Y' to have the kernel ignore the boot loader
-> +	  command line, and use ONLY the built-in command line. In this case
-> +	  append and prepend strings are concatenated to form the full
-> +	  command line.
-> +
-> +	  This is used to work around broken boot loaders.  This should
-> +	  be set to 'N' under normal conditions.
-> +
-> +endif
-> +
->   endmenu		# General setup
+> -config CMDLINE_BOOL
+> -	bool "Default bootloader kernel arguments"
+> -
+> -config CMDLINE
+> -	string "Initial kernel command string"
+> -	depends on CMDLINE_BOOL
+> -	default "console=ttyS0,9600 console=tty0 root=/dev/sda2"
+> -	help
+> -	  On some platforms, there is currently no way for the boot loader to
+> -	  pass arguments to the kernel. For these platforms, you can supply
+> -	  some command-line options at build time by entering them here.  In
+> -	  most cases you will need to specify the root device here.
+> -
+> -config CMDLINE_FORCE
+> -	bool "Always use the default kernel command string"
+> -	depends on CMDLINE_BOOL
+> -	help
+> -	  Always use the default kernel command string, even if the boot
+> -	  loader passes other arguments to the kernel.
+> -	  This is useful if you cannot or don't want to change the
+> -	  command-line options your boot loader passes to the kernel.
+> -
+>   config EXTRA_TARGETS
+>   	string "Additional default image types"
+>   	help
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index fe758cedb93f..d78b1d6fe1c8 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -34,6 +34,7 @@
+>   #include <linux/of_fdt.h>
+>   #include <linux/libfdt.h>
+>   #include <linux/cpu.h>
+> +#include <linux/cmdline.h>
 >   
->   source "arch/Kconfig"
+>   #include <asm/prom.h>
+>   #include <asm/rtas.h>
+> @@ -716,6 +717,9 @@ void __init early_init_devtree(void *params)
+>   	 */
+>   	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
+>   
+> +	/* append and prepend any arguments built into the kernel. */
+> +	cmdline_add_builtin(boot_command_line, NULL, COMMAND_LINE_SIZE);
+> +
+
+I don't think it is worth an implementation as complex as in the 
+previous patch just for the above line.
+Could easily define the temporary buffer in this file directely, then 
+just locally do:
+
+strlcpy(temp_buff, CONFIG_CMDLINE_PREPEND, COMMAND_LINE_SIZE);
+strlcat(temp_buff, boot_command_line, COMMAND_LINE_SIZE);
+strlcat(temp_buff, CONFIG_CMDLINE_APPEND, COMMAND_LINE_SIZE);
+strlcpy(boot_command_line, temp_buff, COMMAND_LINE_SIZE);
+
+
+
+>   	/* Scan memory nodes and rebuild MEMBLOCKs */
+>   	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+>   	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index f33ff4163a51..e8e9fca22470 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -30,6 +30,7 @@
+>   #include <linux/delay.h>
+>   #include <linux/initrd.h>
+>   #include <linux/bitops.h>
+> +#include <linux/cmdline.h>
+>   #include <asm/prom.h>
+>   #include <asm/rtas.h>
+>   #include <asm/page.h>
+> @@ -637,11 +638,10 @@ static void __init early_cmdline_parse(void)
+>   	p = prom_cmd_line;
+>   	if ((long)prom.chosen > 0)
+>   		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
+> -#ifdef CONFIG_CMDLINE
+> +
+>   	if (l <= 0 || p[0] == '\0') /* dbl check */
+> -		strlcpy(prom_cmd_line,
+> -			CONFIG_CMDLINE, sizeof(prom_cmd_line));
+> -#endif /* CONFIG_CMDLINE */
+> +		cmdline_add_builtin_section(prom_cmd_line, NULL, sizeof(prom_cmd_line), __prombss);
+> +
+
+You don't need something as complex as what your generic code does for 
+that. It could be done with the following simple line:
+
+strlcpy(prom_cmd_line, CONFIG_CMDLINE_PREPEND " " CONFIG_CMDLINE_APPEND, 
+sizeof(prom_cmd_line));
+
+>   	prom_printf("command line: %s\n", prom_cmd_line);
+>   
+>   #ifdef CONFIG_PPC64
+> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+> index 667df97d2595..ab2acc8d8b5a 100644
+> --- a/arch/powerpc/kernel/prom_init_check.sh
+> +++ b/arch/powerpc/kernel/prom_init_check.sh
+> @@ -18,7 +18,7 @@
+>   
+>   WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
+>   _end enter_prom memcpy memset reloc_offset __secondary_hold
+> -__secondary_hold_acknowledge __secondary_hold_spinloop __start
+> +__secondary_hold_acknowledge __secondary_hold_spinloop __start strlcat
+
+The above is a big issue. In the scope of KASAN implementation, we are 
+getting rid of generic string functions from prom_init because they are 
+KASAN instrumented and that's far too early for prom_init. See series 
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=94949 and 
+especially patch [v9,03/11] powerpc/prom_init: don't use string 
+functions from lib/
+
+>   strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
+>   reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+>   __prom_init_toc_start __prom_init_toc_end btext_setup_display TOC."
 > 
 
+Thanks
 Christophe
