@@ -2,81 +2,83 @@ Return-Path: <SRS0=bgOd=RH=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A7C3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05E87C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 13:57:31 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C733220830
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 12:39:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C5A28206B8
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 13:57:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=essensium-com.20150623.gappssmtp.com header.i=@essensium-com.20150623.gappssmtp.com header.b="smRGyYhe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C733220830
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=essensium.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="JxWGIw6L"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5A28206B8
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Cfhy66NSzDqHj
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Mar 2019 23:38:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ChRW2TqRzDqJj
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 00:57:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=essensium.com
- (client-ip=2607:f8b0:4864:20::c41; helo=mail-yw1-xc41.google.com;
- envelope-from=patrick.havelange@essensium.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=essensium.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=essensium-com.20150623.gappssmtp.com
- header.i=@essensium-com.20150623.gappssmtp.com header.b="smRGyYhe"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="JxWGIw6L"; 
  dkim-atps=neutral
-Received: from mail-yw1-xc41.google.com (mail-yw1-xc41.google.com
- [IPv6:2607:f8b0:4864:20::c41])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44CffW6B8qzDqFH
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Mar 2019 23:36:49 +1100 (AEDT)
-Received: by mail-yw1-xc41.google.com with SMTP id 189so3928989ywi.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Mar 2019 04:36:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=essensium-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=Ob8hWZ0HmNwlTXJo/mYlu29SYMoP0D3tHnTBPnurEpc=;
- b=smRGyYheoWgrKBxK4FySqe7WvjpakYuVvISB7ltoRJLyCeitME4JA6Qumxa88B+pn3
- 3nMM8Q3/KPrMQYpvcRbdPs2YqnadxOaHZYg2T/22WWiYGqVVsTN3pU76f0jDMIryPuHB
- I0gK0YdNvRO5lIhsF/5go4P5ER6AYkEFyz4b4ULzr8JnJ9TAkmjy/J8lzVBsWlvvXjKh
- HKGUt8hpBqB6Rldtz37WT9w2332qf7UlJjhqOQECmuRdq3b/F9cJ9nJ53MpMtnABxLTq
- INCm+C+cD6ogS8xeEsPy11CGnWCU0qXNSzCuMQTsGu2SFwRPlmKOu/KKzgnjt0id3KNF
- i/2A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=Ob8hWZ0HmNwlTXJo/mYlu29SYMoP0D3tHnTBPnurEpc=;
- b=CZ/hjZoFc+JY6gI3vaZMUp8OWh/fHABfqVjsRv9bv1bfelLFIomgVZlOm6yL1zR3+E
- 0Z9T5AmI/7iy8MecQinYOlsJj+xVBxBOKeoWddpXDGLDgLfxd8iLIGgMgvy16vllVxwf
- cT5PQxJB04SuqtqVZ/Psf88FQ/Ok+o4DYunsVGXkmY+UZ8LatketrXSEDTGHl2Efh1qE
- 6H3VsqNf0843OQnDpRL9lATOXH9Dv1ehU4z0n+HOcXXAoJrrv/luAwM79jQHnXpeedme
- hZWBsconYVSCW7A7bPBBRmSJlIxxBBSeVTVdhKjqMM8EkUJbKcMJ7BqAleT4Z4OoPN4R
- e5Lw==
-X-Gm-Message-State: APjAAAUmUznmlh6C24dz2+oYhcVk+/MAD4u7vDl5LDLw+6OC2FnrJBh8
- bTlaMF+u4AD6fUybuO0VN6g1E/LeGUwXCN2V4Hry5w==
-X-Google-Smtp-Source: APXvYqxVfOPCjAyP0ik8yPHGWa5ghB1GFgpMDODBfMk1sD3Il17SauW+sZt6b1W6aoYo9GOT9T45U+89TthTCstmbq8=
-X-Received: by 2002:a5b:b4d:: with SMTP id b13mr15071149ybr.318.1551703006622; 
- Mon, 04 Mar 2019 04:36:46 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44ChP72BZzzDq62
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Mar 2019 00:55:20 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44ChNs696tz9v4fD;
+ Mon,  4 Mar 2019 14:55:09 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=JxWGIw6L; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id WmAUoYQa360v; Mon,  4 Mar 2019 14:55:09 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44ChNs54PBz9v4dx;
+ Mon,  4 Mar 2019 14:55:09 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1551707709; bh=Aa0XKSQN+EWeMMM7AQTBGeBF408jUCk+J37X0eSfOPc=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=JxWGIw6L7axArpjX+SHXqWMLF+SkRJHiqHPXREbL7f1cMQ8zLXHC9tosKWhpzaASl
+ pD98RVoFlxDsKgO3uqpXI33zqkHW8Byhr8iVZlCcLwMwvTWWsxCDqyKmHZi8OShauz
+ INfRrUjqfXvDL0U5AvyfJ3OZyvNHJMIXqi+e7HhE=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 24F758B768;
+ Mon,  4 Mar 2019 14:55:14 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id ZUFDg7vxz4qp; Mon,  4 Mar 2019 14:55:14 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id B84928B792;
+ Mon,  4 Mar 2019 14:55:13 +0100 (CET)
+Subject: Re: [PULL REQUEST] powerpc generic command line
+To: Daniel Walker <danielwa@cisco.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <1551469472-53043-1-git-send-email-danielwa@cisco.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <e80b18e3-92fe-3726-a7d7-72f98cdd0b86@c-s.fr>
+Date: Mon, 4 Mar 2019 14:55:08 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-References: <20190218140321.19166-1-patrick.havelange@essensium.com>
- <20190218140321.19166-5-patrick.havelange@essensium.com>
- <20190220164154.00547a77@archlinux>
-In-Reply-To: <20190220164154.00547a77@archlinux>
-From: Patrick Havelange <patrick.havelange@essensium.com>
-Date: Mon, 4 Mar 2019 13:36:34 +0100
-Message-ID: <CAKKE0ZFs_N+StJ4MQ0peaTy=ADufSVW_tp5zSHsyua2myvMiHQ@mail.gmail.com>
-Subject: Re: [PATCH 5/8] iio/counter: add FlexTimer Module Quadrature decoder
- counter driver
-To: Jonathan Cameron <jic23@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1551469472-53043-1-git-send-email-danielwa@cisco.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,53 +90,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Lars-Peter Clausen <lars@metafoo.de>, linux-pwm@vger.kernel.org,
- linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
- Linus Walleij <linus.walleij@linaro.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- William Breathitt Gray <vilhelm.gray@gmail.com>, Li Yang <leoyang.li@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh+dt@kernel.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- linux-arm-kernel@lists.infradead.org,
- Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>,
- Thomas Gleixner <tglx@linutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- Esben Haabendal <esben@haabendal.dk>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Feb 20, 2019 at 5:42 PM Jonathan Cameron <jic23@kernel.org> wrote:
-[skipped]
-> > +
-> > +struct ftm_quaddec {
-> > +     struct platform_device *pdev;
-> > +     void __iomem *ftm_base;
-> > +     bool big_endian;
->
-> I'm curious. What is the benefit of running in big endian mode?
 
-It is based on the same behaviour as in drivers/clocksource/timer-fsl-ftm.c
-The FlexTimer itself on the board I'm testing it with is working in
-big endian mode, so this mode is required.
 
-> > +static ssize_t ftm_write_reset(struct iio_dev *indio_dev,
-> > +                             uintptr_t private,
-> > +                             struct iio_chan_spec const *chan,
-> > +                             const char *buf, size_t len)
-> > +{
-> > +     struct ftm_quaddec *ftm = iio_priv(indio_dev);
-> > +
-> > +     /* Only "counter reset" is supported for now */
-> > +     if (!sysfs_streq(buf, "0")) {
-> > +             dev_warn(&ftm->pdev->dev, "Reset only accepts '0'\n");
-> > +             return -EINVAL;
->
-> Why not just make the channel attribute itself writeable given we are
-> setting it to 0?
+Le 01/03/2019 à 20:44, Daniel Walker a écrit :
+> Here are the generic command line changes for powerpc.
+> 
+> These changes have been in linux-next for two cycles, with few problems reported.
+> It's also been used at Cisco Systems, Inc. in production products for many many
+> years with no problems.
+> 
+> Please pull these changes.
+> 
+> 
+> The following changes since commit ccda4af0f4b92f7b4c308d3acc262f4a7e3affad:
+> 
+>    Linux 4.20-rc2 (2018-11-11 17:12:31 -0600)
+> 
+> are available in the git repository at:
+> 
+>    https://github.com/daniel-walker/cisco-linux.git for-powerpc
+> 
+> for you to fetch changes up to 5d4514a9c291ecf19b0626695161673d35e5d549:
+> 
+>    powerpc: convert config files to generic cmdline (2018-11-16 07:32:26 -0800)
+> 
+> ----------------------------------------------------------------
+> Daniel Walker (3):
+>        add generic builtin command line
+>        powerpc: convert to generic builtin command line
+>        powerpc: convert config files to generic cmdline
 
-Good idea, I'll see if this can be applied in the new subsystem.
+Hello,
 
-[skipped]
+This series is in total contradiction with the work being done to add 
+KASAN support to powerpc.
 
-All other comments are Acked.
+It also modifies the behaviour for powerpc.
+
+Please do not apply this series as is, see my comments on the individual 
+patchs for details.
+
+Thanks
+Christophe
+
+> 
+>   arch/powerpc/Kconfig                          | 23 +--------
+>   arch/powerpc/configs/44x/fsp2_defconfig       | 29 ++++++-----
+>   arch/powerpc/configs/44x/iss476-smp_defconfig | 24 ++++-----
+>   arch/powerpc/configs/44x/warp_defconfig       | 12 ++---
+>   arch/powerpc/configs/holly_defconfig          | 12 ++---
+>   arch/powerpc/configs/mvme5100_defconfig       | 25 +++++-----
+>   arch/powerpc/configs/skiroot_defconfig        | 48 +++++++++---------
+>   arch/powerpc/configs/storcenter_defconfig     | 15 +++---
+>   arch/powerpc/kernel/prom.c                    |  4 ++
+>   arch/powerpc/kernel/prom_init.c               |  8 +--
+>   arch/powerpc/kernel/prom_init_check.sh        |  2 +-
+>   include/linux/cmdline.h                       | 72 +++++++++++++++++++++++++++
+>   init/Kconfig                                  | 69 +++++++++++++++++++++++++
+>   13 files changed, 231 insertions(+), 112 deletions(-)
+>   create mode 100644 include/linux/cmdline.h
+> 
