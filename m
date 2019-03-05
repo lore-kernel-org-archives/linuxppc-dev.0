@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FFFFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 15:17:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F349AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 16:52:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BA8020848
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 15:17:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 72DCE20661
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 16:52:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="SIaO/cK+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BA8020848
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="It4yqZ/w"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 72DCE20661
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44DL973bJ5zDqBb
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 02:17:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44DNGy6zHHzDqDP
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 03:52:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -28,44 +28,43 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="SIaO/cK+"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="It4yqZ/w"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44DL5S5RyjzDq99
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 02:14:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44DNF65sWyzDqCw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 03:50:50 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 1AEC3419E1;
- Tue,  5 Mar 2019 15:14:00 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id B4493419CF;
+ Tue,  5 Mar 2019 16:50:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:in-reply-to:mime-version:user-agent
  :date:date:message-id:from:from:references:subject:subject
- :received:received:received; s=mta-01; t=1551798838; x=
- 1553613239; bh=uYMkQriB119+stgXOCuC1DFL3wbkbVq2+Hi9zhP8IZY=; b=S
- IaO/cK+IHvUknoEXnIsgxMI9NFwAuKJawVJWVK+mAoaQhu9lJ+0YvVmT42YI2n0a
- fNQVGvmV6/CsaaHlqcwSQpK01bwJBUq7KAfgYM4PHSusMKOHOaGWoWFIYJjh46lS
- 4H6FSZeFFvGRa2WsV/hmtCumpPVwROyrTpNkDXMacY=
+ :received:received:received; s=mta-01; t=1551804644; x=
+ 1553619045; bh=TAewmVqMFNA+pWtjGytvKjuYKY2gWNm8DHJuP7oAZsQ=; b=I
+ t4yqZ/wz+H7sqMXH85ODxzUXjq/W1Q07jrnUkQC3C8j4UzxjpQReKqL+xuzkiIq/
+ m2duCHiqlKkhvjzYNcGTsCdYofzA3RYNF3yWvpc1XMRbuVN6akGcxm3239+SFFRi
+ 7G+0OcTTC5uTxq+BZ9JZ2KiWJxWnEuZC6fk1vfCFOo=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id hFOko1aIPHZ3; Tue,  5 Mar 2019 18:13:58 +0300 (MSK)
+ with ESMTP id xwqVK2ycyczW; Tue,  5 Mar 2019 19:50:44 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 834E641970;
- Tue,  5 Mar 2019 18:13:57 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 6A0524122E;
+ Tue,  5 Mar 2019 19:50:44 +0300 (MSK)
 Received: from [172.17.15.60] (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Tue, 5 Mar
- 2019 18:13:56 +0300
-Subject: Re: [PATCH RFC v4 2/9] powerpc/powernv/pci: Suppress an EEH error
- when reading an empty slot
+ 2019 19:50:43 +0300
+Subject: Re: [PATCH RFC v4 3/9] powerpc/pci: Create pci_dn on demand
 To: Oliver <oohall@gmail.com>
 References: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
- <20190301160440.26262-3-s.miroshnichenko@yadro.com>
- <CAOSf1CG0c_4jZQKanq7WHo-n9Urmx8NG8yVWbbx07ivZDu9e-A@mail.gmail.com>
+ <20190301160440.26262-4-s.miroshnichenko@yadro.com>
+ <CAOSf1CGZcy3N5-KztkakNSDD5w4kg5CL4ucMMbWyYxd=eEa5dw@mail.gmail.com>
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
@@ -112,15 +111,15 @@ Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
  Nwdozk9DY6wY9cMQ8coYTctox5VsvYEz2rJCRiIc40NO76gdMVutEORjdSoeZK32srVNoBo9
  L0EK2QCFFRDcslPDpZWE1uDZQPW+GC2Z/dmuEpaMzlrIgfZ8GLXxHbB+VdDQ7QE//lphXskF
  lHi50np+KDDPzZS51tw=
-Message-ID: <9482c29d-df9a-8970-c407-6f99649c9e78@yadro.com>
-Date: Tue, 5 Mar 2019 18:13:51 +0300
+Message-ID: <3d6f5dd1-2ed6-68e5-e5f1-2c39cc7b32ac@yadro.com>
+Date: Tue, 5 Mar 2019 19:50:43 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CG0c_4jZQKanq7WHo-n9Urmx8NG8yVWbbx07ivZDu9e-A@mail.gmail.com>
+In-Reply-To: <CAOSf1CGZcy3N5-KztkakNSDD5w4kg5CL4ucMMbWyYxd=eEa5dw@mail.gmail.com>
 Content-Type: multipart/signed; micalg=pgp-sha256;
  protocol="application/pgp-signature";
- boundary="PYy7ozVUL4W6vGOozM97POjmGFGKbk7vI"
+ boundary="QnQBAdG7SQyMr7pV3sFk3TADMckaw6bBW"
 X-Originating-IP: [172.17.15.60]
 X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
  T-EXCH-02.corp.yadro.com (172.17.10.102)
@@ -142,8 +141,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
---PYy7ozVUL4W6vGOozM97POjmGFGKbk7vI
-Content-Type: multipart/mixed; boundary="Hn8DeZVSoUMD9sxtTEDtYJd5HaSZty5aN";
+--QnQBAdG7SQyMr7pV3sFk3TADMckaw6bBW
+Content-Type: multipart/mixed; boundary="Wi1oEvz1CWfY5ZmWUywx9fFvPeGyBcs9G";
  protected-headers="v1"
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: Oliver <oohall@gmail.com>
@@ -152,177 +151,270 @@ Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux@yadro.com,
  Alexey Kardashevskiy <aik@ozlabs.ru>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Russell Currey <ruscur@russell.cc>
-Message-ID: <9482c29d-df9a-8970-c407-6f99649c9e78@yadro.com>
-Subject: Re: [PATCH RFC v4 2/9] powerpc/powernv/pci: Suppress an EEH error
- when reading an empty slot
+Message-ID: <3d6f5dd1-2ed6-68e5-e5f1-2c39cc7b32ac@yadro.com>
+Subject: Re: [PATCH RFC v4 3/9] powerpc/pci: Create pci_dn on demand
 References: <20190301160440.26262-1-s.miroshnichenko@yadro.com>
- <20190301160440.26262-3-s.miroshnichenko@yadro.com>
- <CAOSf1CG0c_4jZQKanq7WHo-n9Urmx8NG8yVWbbx07ivZDu9e-A@mail.gmail.com>
-In-Reply-To: <CAOSf1CG0c_4jZQKanq7WHo-n9Urmx8NG8yVWbbx07ivZDu9e-A@mail.gmail.com>
+ <20190301160440.26262-4-s.miroshnichenko@yadro.com>
+ <CAOSf1CGZcy3N5-KztkakNSDD5w4kg5CL4ucMMbWyYxd=eEa5dw@mail.gmail.com>
+In-Reply-To: <CAOSf1CGZcy3N5-KztkakNSDD5w4kg5CL4ucMMbWyYxd=eEa5dw@mail.gmail.com>
 
---Hn8DeZVSoUMD9sxtTEDtYJd5HaSZty5aN
+--Wi1oEvz1CWfY5ZmWUywx9fFvPeGyBcs9G
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-
-
-On 3/5/19 9:14 AM, Oliver wrote:
+On 3/5/19 11:04 AM, Oliver wrote:
 > On Sat, Mar 2, 2019 at 3:04 AM Sergey Miroshnichenko
 > <s.miroshnichenko@yadro.com> wrote:
 >>
->> Reading an empty slot returns all ones, which triggers a false
->> EEH error event on PowerNV. This patch unfreezes the bus where
->> it has happened.
+>> If a struct pci_dn hasn't yet been created for the PCIe device (there =
+was
+>> no DT node for it), allocate this structure and fill with info read fr=
+om
+>> the device directly.
 >>
 >> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 >> ---
->>  arch/powerpc/include/asm/ppc-pci.h   |  1 +
->>  arch/powerpc/kernel/pci_dn.c         |  2 +-
->>  arch/powerpc/platforms/powernv/pci.c | 34 ++++++++++++++++++++++++---=
+>>  arch/powerpc/kernel/pci_dn.c | 79 ++++++++++++++++++++++++++++++++---=
 -
->>  3 files changed, 32 insertions(+), 5 deletions(-)
+>>  1 file changed, 72 insertions(+), 7 deletions(-)
 >>
->> diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include=
-/asm/ppc-pci.h
->> index f67da277d652..737393c54f58 100644
->> --- a/arch/powerpc/include/asm/ppc-pci.h
->> +++ b/arch/powerpc/include/asm/ppc-pci.h
->> @@ -40,6 +40,7 @@ void *traverse_pci_dn(struct pci_dn *root,
->>                       void *(*fn)(struct pci_dn *, void *),
->>                       void *data);
->>  extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
->> +struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus);
->>
->>  /* From rtas_pci.h */
->>  extern void init_pci_config_tokens (void);
 >> diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn=
 =2Ec
->> index ab147a1909c8..341ed71250f1 100644
+>> index 341ed71250f1..67ccd7be8344 100644
 >> --- a/arch/powerpc/kernel/pci_dn.c
 >> +++ b/arch/powerpc/kernel/pci_dn.c
->> @@ -40,7 +40,7 @@
->>   * one of PF's bridge. For other devices, their firmware
->>   * data is linked to that of their bridge.
->>   */
->> -static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
->> +struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
->>  {
->>         struct pci_bus *pbus;
->>         struct device_node *dn;
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platf=
-orms/powernv/pci.c
->> index 3260250d2029..73c2d0aed996 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -761,6 +761,21 @@ static inline pnv_pci_cfg_check(struct pci_dn *pd=
-n)
+>> @@ -33,6 +33,8 @@
+>>  #include <asm/firmware.h>
+>>  #include <asm/eeh.h>
+>>
+>> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn =
+*parent);
+>> +
+>>  /*
+>>   * The function is used to find the firmware data of one
+>>   * specific PCI device, which is attached to the indicated
+>> @@ -65,6 +67,9 @@ struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
+>>         dn =3D pci_bus_to_OF_node(pbus);
+>>         pdn =3D dn ? PCI_DN(dn) : NULL;
+>>
+>> +       if (!pdn && pbus->self)
+>> +               pdn =3D pbus->self->dev.archdata.pci_data;
+>> +
+>>         return pdn;
 >>  }
->>  #endif /* CONFIG_EEH */
 >>
->> +static int get_bus_pe_number(struct pci_bus *bus)
->> +{
->> +       struct pci_dn *pdn =3D pci_bus_to_pdn(bus);
->> +       struct pci_dn *child;
->> +
->> +       if (!pdn)
->> +               return IODA_INVALID_PE;
->> +
->> +       list_for_each_entry(child, &pdn->child_list, list)
->> +               if (child->pe_number !=3D IODA_INVALID_PE)
->> +                       return child->pe_number;
->> +
->> +       return IODA_INVALID_PE;
->> +}
->> +
->>  static int pnv_pci_read_config(struct pci_bus *bus,
->>                                unsigned int devfn,
->>                                int where, int size, u32 *val)
->> @@ -769,12 +784,23 @@ static int pnv_pci_read_config(struct pci_bus *b=
-us,
->>         struct pci_controller *hose =3D pci_bus_to_host(bus);
->>         struct pnv_phb *phb =3D hose->private_data;
->>         int ret;
->> +       u32 empty_val =3D 0xFFFFFFFF;
+>> @@ -74,10 +79,13 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus=
+ *bus,
+>>         struct device_node *dn =3D NULL;
+>>         struct pci_dn *parent, *pdn;
+>>         struct pci_dev *pdev =3D NULL;
+>> +       bool pdev_found =3D false;
 >>
->> -       *val =3D 0xFFFFFFFF;
->> +       *val =3D empty_val;
->>         pdn =3D pci_get_pdn_by_devfn(bus, devfn);
->> -       if (!pdn)
->> -               return pnv_pci_cfg_read_raw(phb->opal_id, bus->number,=
- devfn,
->> -                                           where, size, val);
->> +       if (!pdn) {
->> +               int pe_number =3D get_bus_pe_number(bus);
+>>         /* Fast path: fetch from PCI device */
+>>         list_for_each_entry(pdev, &bus->devices, bus_list) {
+>>                 if (pdev->devfn =3D=3D devfn) {
+>> +                       pdev_found =3D true;
 >> +
->> +               ret =3D pnv_pci_cfg_read_raw(phb->opal_id, bus->number=
-, devfn,
->> +                                          where, size, val);
+>>                         if (pdev->dev.archdata.pci_data)
+>>                                 return pdev->dev.archdata.pci_data;
+>>
+>> @@ -86,6 +94,9 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *=
+bus,
+>>                 }
+>>         }
+>>
+>> +       if (!pdev_found)
+>> +               pdev =3D NULL;
 >> +
->> +               if (!ret && (*val =3D=3D empty_val) && phb->unfreeze_p=
-e)
+>>         /* Fast path: fetch from device node */
+>>         pdn =3D dn ? PCI_DN(dn) : NULL;
+>>         if (pdn)
+>> @@ -98,9 +109,12 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus=
+ *bus,
+>>
+>>         list_for_each_entry(pdn, &parent->child_list, list) {
+>>                 if (pdn->busno =3D=3D bus->number &&
+>> -                    pdn->devfn =3D=3D devfn)
+>> -                        return pdn;
+>> -        }
+>> +                   pdn->devfn =3D=3D devfn) {
+>> +                       if (pdev)
+>> +                               pdev->dev.archdata.pci_data =3D pdn;
+>> +                       return pdn;
+>> +               }
+>> +       }
+>>
+>>         return NULL;
+>>  }
+>> @@ -130,14 +144,15 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)=
+
+>>
+>>         list_for_each_entry(pdn, &parent->child_list, list) {
+>>                 if (pdn->busno =3D=3D pdev->bus->number &&
+>> -                   pdn->devfn =3D=3D pdev->devfn)
+>> +                   pdn->devfn =3D=3D pdev->devfn) {
+>> +                       pdev->dev.archdata.pci_data =3D pdn;
+>>                         return pdn;
+>> +               }
+>>         }
+>>
+>> -       return NULL;
+>> +       return create_pdn(pdev, parent);
+>>  }
 >=20
-> Do this empty val check work when using 1 or 2 byte cfg accesses?
+> Eh... If it works I guess it's fine? Killing pdn entirely (or at the
+> very least greatly restricting it's role) is something we should work
+> towards though since it doesn't make much sense on PNV.
 >=20
 
-That was intentional because 0xff and 0xffff are valid values, but the
-0xffffffff is the only reliable sign of an empty slot. And the kernel
-pokes a slot by the pci_bus_generic_read_dev_vendor_id() function, which
-in turn tries to pci_bus_read_config_dword(PCI_VENDOR_ID).
+As I can see, pdns are mostly used on PNV for the following:
+ - storing a pe_number;
+ - storing struct resource holes - to reserve memory for SR-IOV;
+ - IOMMU table_group;
+ - storing m64_map;
+ - storing struct eeh_dev *edev;
 
-But I haven't tried actually to read 1-2 bytes from an empty slot to
-test if that triggers an EEH. If it does, I'll change that to
-EEH_IO_ERROR_VALUE(size).
+Other fields (busno, devfn, etc.) are available in struct pci_dev.
 
->> +                       phb->unfreeze_pe(phb, (pe_number =3D=3D IODA_I=
-NVALID_PE) ?
->> +                                        0xff : pe_number,
->=20
-> Use phb->ioda.reserved_pe_idx rather than guessing that 0xff is safe
-> to use. On P9 we have PHBs with 512 PEs and some older P8 firmware
-> releases used 0 as the reserved PE rather than 0xff.
->=20
+The pe_numbers are probably can be somehow moved to struct pnv_phb, and
+they can be fetched from there by a bdfn. The same for other used
+fields. Or there could some new structure - shorter version of struct
+pci_dn, without .child_list etc.
 
-Thanks for the catch! I'll fix that in v5.
+Thanks for the review, all the issues you've pointed below will be fixed
+in v5!
 
 Best regards,
 Serge
 
->> +                                        OPAL_EEH_ACTION_CLEAR_FREEZE_=
-ALL);
->> +
->> +               return ret;
->> +       }
+>> -#ifdef CONFIG_PCI_IOV
+>>  static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+>>                                            int vf_index,
+>>                                            int busno, int devfn)
+>> @@ -156,7 +171,9 @@ static struct pci_dn *add_one_dev_pci_data(struct =
+pci_dn *parent,
+>>         pdn->parent =3D parent;
+>>         pdn->busno =3D busno;
+>>         pdn->devfn =3D devfn;
+>> +       #ifdef CONFIG_PCI_IOV
+>>         pdn->vf_index =3D vf_index;
+>> +       #endif /* CONFIG_PCI_IOV */
+>=20
+> This function is currently only used when adding VFs, so I'd move the
+> VF specific params from this and put them in the call site at
+> add_dev_pci_data(). Then you can drop the #ifdef hacks. It might be
+> worth renaming add_one_dev_pci_data() and add_one_dev_pci_data() since
+> their actual usage is limited to the VF init path, but their name seem
+> generic.
+>=20
+>>         pdn->pe_number =3D IODA_INVALID_PE;
+>>         INIT_LIST_HEAD(&pdn->child_list);
+>>         INIT_LIST_HEAD(&pdn->list);
+>> @@ -164,7 +181,55 @@ static struct pci_dn *add_one_dev_pci_data(struct=
+ pci_dn *parent,
 >>
->>         if (!pnv_pci_cfg_check(pdn))
->>                 return PCIBIOS_DEVICE_NOT_FOUND;
+>>         return pdn;
+>>  }
+>> -#endif
+>> +
+>> +static struct pci_dn *create_pdn(struct pci_dev *pdev, struct pci_dn =
+*parent)
+>> +{
+>> +       struct pci_dn *pdn =3D NULL;
+>> +
+>> +       if (!parent)
+>> +               return NULL;
+>> +
+>> +       pdn =3D add_one_dev_pci_data(parent, 0, pdev->bus->busn_res.st=
+art, pdev->devfn);
+>> +       dev_info(&pdev->dev, "Create a new pdn for devfn %2x\n", pdev-=
+>devfn / 8);
+>> +
+>=20
+>> +       if (pdn) {
+>=20
+> Check for !pdn and exit early. Stacking indentation levels just gets
+> kind of ugly.
+>=20
+>> +               #ifdef CONFIG_EEH
+>> +               struct eeh_dev *edev;
+>> +               #endif /* CONFIG_EEH */
+> You don't use the variable for anything. You can either switch this to
+> a void pointer or just check the return value of eeh_dev_init()
+> directly and drop this.
+>=20
+>> +               u32 class_code;
+>> +               u16 device_id;
+>> +               u16 vendor_id;
+>> +
+>=20
+>> +               #ifdef CONFIG_EEH
+>> +               edev =3D eeh_dev_init(pdn);
+>> +               if (!edev) {
+>> +                       kfree(pdn);
+>> +                       dev_err(&pdev->dev, "%s: Failed to allocate ed=
+ev\n", __func__);
+>> +                       return NULL;
+>> +               }
+>> +               #endif /* CONFIG_EEH */
+>> +
+>> +               pci_bus_read_config_word(pdev->bus, pdev->devfn,
+>> +                                        PCI_VENDOR_ID, &vendor_id);
+>> +               pdn->vendor_id =3D vendor_id;
+>> +
+>> +               pci_bus_read_config_word(pdev->bus, pdev->devfn,
+>> +                                        PCI_DEVICE_ID, &device_id);
+>> +               pdn->device_id =3D device_id;
+>> +
+>> +               pci_bus_read_config_dword(pdev->bus, pdev->devfn,
+>> +                                         PCI_CLASS_REVISION, &class_c=
+ode);
+>> +               class_code >>=3D 8;
+>> +               pdn->class_code =3D class_code;
+>> +
+>> +               pdn->pci_ext_config_space =3D 0;
+> Does this need to be explicitly initialised or can we rely on it being
+> allocated with kzalloc() or similar?
+>=20
+>> +               pdev->dev.archdata.pci_data =3D pdn;
+>> +       } else {
+>> +               dev_err(&pdev->dev, "%s: Failed to allocate pdn\n", __=
+func__);
+>> +       }
+>> +
+>> +       return pdn;
+>> +}
+>>
+>>  struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+>>  {
 >> --
 >> 2.20.1
 >>
 
 
---Hn8DeZVSoUMD9sxtTEDtYJd5HaSZty5aN--
+--Wi1oEvz1CWfY5ZmWUywx9fFvPeGyBcs9G--
 
---PYy7ozVUL4W6vGOozM97POjmGFGKbk7vI
+--QnQBAdG7SQyMr7pV3sFk3TADMckaw6bBW
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEHW7T7ovP/cFp8+b3DHQ+aNFTs7UFAlx+kjQACgkQDHQ+aNFT
-s7WCshAAgKl0mkjK1Yg5hActg6ct8SUfk2Amh+gnl1UOwuUeyAfAy4WsPnfKDc0v
-5OHhZRe9B9skdO5G1b4QJc0gRGK1B6s3tliVTt3Q1OjgiAFxu06Tg70gmpZ9eIYn
-zpWn7QSwZNItmE3YUtjrTvrKXFXZacIXzwsSLcjfVPUNNeKei4UBr3qOKrvQXn48
-PI/VgwvbbVUym+ewUNtvokZsPEAST0MGFqusArOeTNLBkWkJcK4taGcEpO9ouXGN
-335FGhXyLfoLrQStyo/qidq9yq3d89NKAQUOh8Hbs2rklB59VGpf31amQnf30FPT
-5lMxoDRmqPSMGtEKzP6Qzs305jVsksAqg5zEymiCTGwVzaTjV8e7wSd5yP8ogg+8
-lgrbf690Tn5iWqTbSKGKUlC9H+MTFdlJsYNs/2Tz9ARBhqApAD8u5lJwQ+MJHTir
-3O1SoyaYAWe3Hd3bfCk0Tcz17Ie/N3OfE/WzLKl4rL1PgAf7KX3PBs4QocUPMFwk
-FWboVccNEnkN4RnshY+3ob2JryDNwLY1JrI6HE2SrYbXadkQpuvwrizv6rKedzZh
-N2Kil95lrgGgdLu/pqe6qHkwjlG5vkZVTXQesi7SKj9XfeAk9PWMk4TGcaQNpj9l
-FmHohidyHFC0xj9Nx/xV9TuvpRV1Mo+sefXVUyKf2kAAkvLWl7U=
-=1QgC
+iQIzBAEBCAAdFiEEHW7T7ovP/cFp8+b3DHQ+aNFTs7UFAlx+qOMACgkQDHQ+aNFT
+s7VPNg//ZT4nozLTaQuAEGz7BY0jtJX8ok2mctnTkHPr650V71kcYZ57XPgMM3FM
+EPOiRzXdvOzmP+u/GGkEVWj3BTPNDE4rHEugd7H9rT6QoGQMDSesYoyBgrIHYL+n
+WNEKrIyGI5Y2ERDzy4u4DKVbF0gWUUK44PTGPrRlZ2DorHnv/zDACVVnBoKE4nU8
+38cb8IbfOpkzMk7NIlgIhOWpKwjeHbuFuzHz9dU9nfSTg+gb9fkzB/j6+DT0Dwy8
+HWYVA4bYJTcsERiBolhyVraxPKuWlBpJ3yFlj3fzuQY3prZxwWfVT0mAs1F/dl2C
+wt1cIvptl8NxXJK7ro7yH04X4U/Rr/quKqNo/A55qWAUpcij6qNDLj//rxrr8oQP
+tlhp/+y4Vw7v+GdBM/6Ow/0wntfbTRXR8J2HcCQOK5WpE13A+HtRrK2uvT/tea4i
+2SdUnoeuKewmnpEeVNu2EJks4O0OcEMcdVGm/zKpwBNbT2TRZs+sI2YFCat4N20N
+hR15Bl0nY4v8Z9Rvi7vgkakZXIGueJ1gLAObTNtjY+6OhPfpbuf8/sKCAcmud5bf
+V3erAhhvxcnJYNjgiAeSi9Wd6qqPrwyBYrZc71vwA8kTem5zfcZGL5JijO7J8GOy
+0ZmHKp4oIKp3qGaf/bka3I8AFwuc9eQ3zSssAVF3ERL+DkLM47I=
+=Bf88
 -----END PGP SIGNATURE-----
 
---PYy7ozVUL4W6vGOozM97POjmGFGKbk7vI--
+--QnQBAdG7SQyMr7pV3sFk3TADMckaw6bBW--
