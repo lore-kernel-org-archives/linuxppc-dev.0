@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FA1DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 633CDC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:28:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D1304204EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:26:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AF9EF2075B
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:28:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Z7M0kvGW"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1304204EC
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="LrQNcKDz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF9EF2075B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44DVMR579WzDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 08:26:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44DVP636jSzDqHk
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 08:28:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,54 +28,55 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Z7M0kvGW"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="LrQNcKDz"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44DV9p1xyGzDqD0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 08:18:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44DV9x1Lx3zDqCx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 08:18:29 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44DV9k2wBRz9v6HM;
- Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44DV9n0jtSz9v6LX;
+ Tue,  5 Mar 2019 22:18:21 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=Z7M0kvGW; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=LrQNcKDz; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id N0LAE-lh2hb5; Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ with ESMTP id CNNeqwAp82rK; Tue,  5 Mar 2019 22:18:21 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44DV9k1qyrz9v6LR;
- Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44DV9m6kQFz9v6LR;
+ Tue,  5 Mar 2019 22:18:20 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551820698; bh=Mktwf7OhG+phM8DeCSqyt4UzKMJEmTkYVGjGez7vSAw=;
+ t=1551820700; bh=XSZFAiXAvWAlQS1ejrFPi6x0pQ+Koy1bP3Glj4TzHRg=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=Z7M0kvGWWw2m5PXfE0QYSLmr7hRiom1kNKveHCJ9AXQut+7DdRS4n5pCLukgLqj3O
- /8Ys3hDAI1b8ATGovjj8KI53U/fEDaOj5NWX/VGutpDLGn9w+lGVeto5+uo5rnTj1/
- Ew3LsKFJPn8KU6vrYpDzGAWOp7KHY7McoV0UUcds=
+ b=LrQNcKDz4OpF6jTb53UFa30pqGKBz1qdxElrlbAPPb1xJDwcODE+xQ67fs834Sb1Y
+ NnL3pxDRcK5KmweDSAEX8ApHvyepBQtZk4vF7N0wZdxJ/rWpVZozdntFD0Eyb7Hz+i
+ 9LnUDGQmp1TibkUSdQbpvtsCfL7qxROA6bXjdPXI=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 68C958B860;
- Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1EE708B860;
+ Tue,  5 Mar 2019 22:18:21 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id HV8J2urAZzvE; Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ with ESMTP id ouNFNqaZUx8h; Tue,  5 Mar 2019 22:18:21 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 247CA8B83A;
- Tue,  5 Mar 2019 22:18:18 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DE7388B83A;
+ Tue,  5 Mar 2019 22:18:20 +0100 (CET)
 Received: by localhost.localdomain (Postfix, from userid 0)
- id D81436F8CD; Tue,  5 Mar 2019 21:18:17 +0000 (UTC)
-Message-Id: <e0f1c1f3fc6793fe2cca813cb4fe5adf7eea00d5.1551820475.git.christophe.leroy@c-s.fr>
+ id 558876F8CD; Tue,  5 Mar 2019 21:18:20 +0000 (UTC)
+Message-Id: <06ad54973913c3768896d9a21556a9e6fbc02761.1551820475.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1551820474.git.christophe.leroy@c-s.fr>
 References: <cover.1551820474.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 4/7] powerpc/32: Prepare for Kernel Userspace Access Protection
+Subject: [PATCH 6/7] powerpc/book3s32: Prepare Kernel Userspace Access
+ Protection
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
  ruscur@russell.cc
-Date: Tue,  5 Mar 2019 21:18:17 +0000 (UTC)
+Date: Tue,  5 Mar 2019 21:18:20 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,139 +93,149 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds ASM macros for saving, restoring and checking
-the KUAP state, and modifies setup_32 to call them on exceptions
-from kernel.
+This patch prepares Kernel Userspace Access Protection for
+book3s/32.
 
-The macros are defined as empty by default for when CONFIG_PPC_KUAP
-is not selected and/or for platforms which don't handle (yet) KUAP.
+Due to limitations of the processor page protection capabilities,
+the protection is only against writing. read protection cannot be
+achieved using page protection.
+
+book3s/32 provides the following values for PP bits:
+
+PP00 provides RW for Key 0 and NA for Key 1
+PP01 provides RW for Key 0 and RO for Key 1
+PP10 provides RW for all
+PP11 provides RO for all
+
+Today PP10 is used for RW pages and PP11 for RO pages, and user
+segment register's Kp and Ks are set to 1. This patch modifies
+page protection to use PP01 for RW pages and sets user segment
+registers to Kp 0 and Ks 0.
+
+This will allow to setup Userspace write access protection by
+settng Ks to 1 in the following patch.
+
+Kernel space segment registers remain unchanged.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/kup.h         | 15 ++++++++++++++-
- arch/powerpc/kernel/entry_32.S         | 16 ++++++++++++----
- arch/powerpc/platforms/Kconfig.cputype |  2 +-
- 3 files changed, 27 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |  4 ++++
+ arch/powerpc/kernel/head_32.S                 | 28 ++++++++++++++++-----------
+ arch/powerpc/mm/hash_low_32.S                 |  6 +++---
+ 3 files changed, 24 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index 082f50ad41a7..51a55be70cbc 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -6,7 +6,20 @@
- #include <asm/book3s/64/kup-radix.h>
- #endif
+diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+index 5cb588395fdc..82492dcfa81c 100644
+--- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+@@ -63,6 +63,10 @@ typedef pte_t *pgtable_t;
+ #define PP_RWRW 2	/* Supervisor read/write, User read/write */
+ #define PP_RXRX 3	/* Supervisor read,       User read */
  
--#ifndef __ASSEMBLY__
-+#ifdef __ASSEMBLY__
-+#ifndef CONFIG_PPC_KUAP
-+.macro kuap_save_and_lock	sp, thread, gpr1, gpr2, gpr3
-+.endm
++/* Values for Segment Registers */
++#define SR_KS	0x40000000	/* Supervisor key */
++#define SR_KP	0x20000000	/* User key */
 +
-+.macro kuap_restore	sp, current, gpr1, gpr2, gpr3
-+.endm
-+
-+.macro kuap_check	current, gpr
-+.endm
-+
-+#endif
-+
-+#else /* !__ASSEMBLY__ */
- 
- #include <asm/pgtable.h>
- 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index b61cfd29c76f..7b7752d6ab2f 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -36,6 +36,7 @@
- #include <asm/asm-405.h>
- #include <asm/feature-fixups.h>
- #include <asm/barrier.h>
-+#include <asm/kup.h>
+ #ifndef __ASSEMBLY__
  
  /*
-  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
-@@ -150,8 +151,8 @@ transfer_to_handler:
- 	stw	r12,_CTR(r11)
- 	stw	r2,_XER(r11)
- 	mfspr	r12,SPRN_SPRG_THREAD
--	addi	r2,r12,-THREAD
- 	beq	2f			/* if from user, fix up THREAD.regs */
-+	addi	r2, r12, -THREAD
- 	addi	r11,r1,STACK_FRAME_OVERHEAD
- 	stw	r11,PT_REGS(r12)
- #if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-@@ -186,6 +187,8 @@ transfer_to_handler:
- 2:	/* if from kernel, check interrupted DOZE/NAP mode and
-          * check for stack overflow
-          */
-+	kuap_save_and_lock r11, r12, r9, r2, r0
-+	addi	r2, r12, -THREAD
- 	lwz	r9,KSP_LIMIT(r12)
- 	cmplw	r1,r9			/* if r1 <= ksp_limit */
- 	ble-	stack_ovf		/* then the kernel stack overflowed */
-@@ -272,6 +275,7 @@ reenable_mmu:				/* re-enable mmu so we can */
- 	lwz	r9,_MSR(r11)		/* if sleeping, clear MSR.EE */
- 	rlwinm	r9,r9,0,~MSR_EE
- 	lwz	r12,_LINK(r11)		/* and return to address in LR */
-+	kuap_restore r11, r2, r3, r4, r5
- 	b	fast_exception_return
- #endif
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index ce6a972f2584..46b633514422 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -522,9 +522,9 @@ InstructionTLBMiss:
+ 	andc.	r1,r1,r0		/* check access & ~permission */
+ 	bne-	InstructionAddressInvalid /* return if access not permitted */
+ 	/* Convert linux-style PTE to low word of PPC-style PTE */
+-	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
+-	ori	r1, r1, 0xe05		/* clear out reserved bits */
+-	andc	r1, r0, r1		/* PP = user? 2 : 0 */
++	rlwimi	r0,r0,32-2,31,31	/* _PAGE_USER -> PP lsb */
++	ori	r1, r1, 0xe06		/* clear out reserved bits */
++	andc	r1, r0, r1		/* PP = user? 1 : 0 */
+ BEGIN_FTR_SECTION
+ 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+@@ -590,11 +590,11 @@ DataLoadTLBMiss:
+ 	 * we would need to update the pte atomically with lwarx/stwcx.
+ 	 */
+ 	/* Convert linux-style PTE to low word of PPC-style PTE */
+-	rlwinm	r1,r0,32-10,31,31	/* _PAGE_RW -> PP lsb */
++	rlwinm	r1,r0,32-9,30,30	/* _PAGE_RW -> PP msb */
+ 	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
+ 	rlwimi	r0,r0,32-1,31,31	/* _PAGE_USER -> PP lsb */
+ 	ori	r1,r1,0xe04		/* clear out reserved bits */
+-	andc	r1,r0,r1		/* PP = user? rw? 2: 3: 0 */
++	andc	r1,r0,r1		/* PP = user? rw? 1: 3: 0 */
+ BEGIN_FTR_SECTION
+ 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+@@ -670,9 +670,9 @@ DataStoreTLBMiss:
+ 	 * we would need to update the pte atomically with lwarx/stwcx.
+ 	 */
+ 	/* Convert linux-style PTE to low word of PPC-style PTE */
+-	rlwimi	r0,r0,32-1,30,30	/* _PAGE_USER -> PP msb */
+-	li	r1,0xe05		/* clear out reserved bits & PP lsb */
+-	andc	r1,r0,r1		/* PP = user? 2: 0 */
++	rlwimi	r0,r0,32-2,31,31	/* _PAGE_USER -> PP lsb */
++	li	r1,0xe06		/* clear out reserved bits & PP msb */
++	andc	r1,r0,r1		/* PP = user? 1: 0 */
+ BEGIN_FTR_SECTION
+ 	rlwinm	r1,r1,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
+@@ -897,14 +897,21 @@ load_up_mmu:
+ 	tophys(r6,r6)
+ 	lwz	r6,_SDR1@l(r6)
+ 	mtspr	SPRN_SDR1,r6
+-	li	r0,16		/* load up segment register values */
++	li	r0, NUM_USER_SEGMENTS /* load up user segment register values */
+ 	mtctr	r0		/* for context 0 */
+-	lis	r3,0x2000	/* Ku = 1, VSID = 0 */
++	li	r3, 0		/* Kp = 0, Ks = 0, VSID = 0 */
+ 	li	r4,0
+ 3:	mtsrin	r3,r4
+ 	addi	r3,r3,0x111	/* increment VSID */
+ 	addis	r4,r4,0x1000	/* address of next segment */
+ 	bdnz	3b
++	li	r0, 16 - NUM_USER_SEGMENTS /* load up kernel segment registers */
++	mtctr	r0			/* for context 0 */
++	oris	r3, r3, SR_KP@h		/* Kp = 1 */
++3:	mtsrin	r3, r4
++	addi	r3, r3, 0x111	/* increment VSID */
++	addis	r4, r4, 0x1000	/* address of next segment */
++	bdnz	3b
  
-@@ -428,6 +432,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	ACCOUNT_CPU_USER_EXIT(r2, r5, r7)
- 3:
- #endif
-+	kuap_check r2, r4
- 	lwz	r4,_LINK(r1)
- 	lwz	r5,_CCR(r1)
- 	mtlr	r4
-@@ -678,6 +683,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_SPE)
- 	stw	r10,_CCR(r1)
- 	stw	r1,KSP(r3)	/* Set old stack pointer */
+ /* Load the BAT registers with the values set up by MMU_init.
+    MMU_init takes care of whether we're on a 601 or not. */
+@@ -1008,7 +1015,6 @@ _ENTRY(switch_mmu_context)
+ 	blt-	4f
+ 	mulli	r3,r3,897	/* multiply context by skew factor */
+ 	rlwinm	r3,r3,4,8,27	/* VSID = (context & 0xfffff) << 4 */
+-	addis	r3,r3,0x6000	/* Set Ks, Ku bits */
+ 	li	r0,NUM_USER_SEGMENTS
+ 	mtctr	r0
  
-+	kuap_check r2, r4
- #ifdef CONFIG_SMP
- 	/* We need a sync somewhere here to make sure that if the
- 	 * previous task gets rescheduled on another CPU, it sees all
-@@ -866,12 +872,12 @@ resume_kernel:
- 	/* check current_thread_info->preempt_count */
- 	lwz	r0,TI_PREEMPT(r2)
- 	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
--	bne	restore
-+	bne	restore_kuap
- 	andi.	r8,r8,_TIF_NEED_RESCHED
--	beq+	restore
-+	beq+	restore_kuap
- 	lwz	r3,_MSR(r1)
- 	andi.	r0,r3,MSR_EE	/* interrupts off? */
--	beq	restore		/* don't schedule if so */
-+	beq	restore_kuap	/* don't schedule if so */
- #ifdef CONFIG_TRACE_IRQFLAGS
- 	/* Lockdep thinks irqs are enabled, we need to call
- 	 * preempt_schedule_irq with IRQs off, so we inform lockdep
-@@ -890,6 +896,8 @@ resume_kernel:
- 	bl	trace_hardirqs_on
- #endif
- #endif /* CONFIG_PREEMPT */
-+restore_kuap:
-+	kuap_restore r1, r2, r9, r10, r0
+diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
+index 1f13494efb2b..37964878e392 100644
+--- a/arch/powerpc/mm/hash_low_32.S
++++ b/arch/powerpc/mm/hash_low_32.S
+@@ -309,13 +309,13 @@ Hash_msk = (((1 << Hash_bits) - 1) * 64)
  
- 	/* interrupts are hard-disabled at this point */
- restore:
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 08966e3127bb..00fa0d110dcb 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -374,7 +374,7 @@ config PPC_KUAP
- 
- config PPC_KUAP_DEBUG
- 	bool "Extra debugging for Kernel Userspace Access Protection"
--	depends on PPC_HAVE_KUAP && PPC_RADIX_MMU
-+	depends on PPC_HAVE_KUAP && (PPC_RADIX_MMU || PPC_32)
- 	help
- 	  Add extra debugging for Kernel Userspace Access Protection (KUAP)
- 	  If you're unsure, say N.
+ _GLOBAL(create_hpte)
+ 	/* Convert linux-style PTE (r5) to low word of PPC-style PTE (r8) */
+-	rlwinm	r8,r5,32-10,31,31	/* _PAGE_RW -> PP lsb */
+-	rlwinm	r0,r5,32-7,31,31	/* _PAGE_DIRTY -> PP lsb */
++	rlwinm	r8,r5,32-9,30,30	/* _PAGE_RW -> PP msb */
++	rlwinm	r0,r5,32-6,30,30	/* _PAGE_DIRTY -> PP msb */
+ 	and	r8,r8,r0		/* writable if _RW & _DIRTY */
+ 	rlwimi	r5,r5,32-1,30,30	/* _PAGE_USER -> PP msb */
+ 	rlwimi	r5,r5,32-2,31,31	/* _PAGE_USER -> PP lsb */
+ 	ori	r8,r8,0xe04		/* clear out reserved bits */
+-	andc	r8,r5,r8		/* PP = user? (rw&dirty? 2: 3): 0 */
++	andc	r8,r5,r8		/* PP = user? (rw&dirty? 1: 3): 0 */
+ BEGIN_FTR_SECTION
+ 	rlwinm	r8,r8,0,~_PAGE_COHERENT	/* clear M (coherence not required) */
+ END_FTR_SECTION_IFCLR(CPU_FTR_NEED_COHERENT)
 -- 
 2.13.3
 
