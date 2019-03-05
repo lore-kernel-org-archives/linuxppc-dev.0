@@ -2,80 +2,63 @@ Return-Path: <SRS0=9sKl=RI=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E5F4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58176C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 23:18:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7D6692075B
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 21:31:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8B60620652
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Mar 2019 23:18:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="fWHZ+oCw"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7D6692075B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="fxU5oyTE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B60620652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44DVSl3xRszDqJB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 08:31:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44DXrd2ZZMzDqDL
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 10:18:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
+ dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="fWHZ+oCw"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="fxU5oyTE"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44DV9w6VFTzDqCt
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 08:18:28 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44DV9l4TCDz9v6LW;
- Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=fWHZ+oCw; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id PJ-NwG_4VolX; Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44DV9l3DHQz9v6LR;
- Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1551820699; bh=B5ZUuk5B0ViT0jtSlIqHgE+H7PpwgYJZJG3d3EAmQZU=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=fWHZ+oCw2nVvAC6CKstvYu3+p+LeQvOs0nbyd49jliya1w09J+JfBRuu4f0IuF/rd
- K/4fnOX14cM+5M8DhSgPvG6IMVvcQ+1b0pnMwkbqfz2mBZZg5xOOCyqLLOzhXCsnIg
- Axx+lSXd/Rmdbs1FcdyVN24mw+2VkcphKTTjWxLs=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 95B048B860;
- Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id bgHhWHW6OXtX; Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 62B638B83A;
- Tue,  5 Mar 2019 22:18:19 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id 068CC6F8CD; Tue,  5 Mar 2019 21:18:18 +0000 (UTC)
-Message-Id: <aed7c1fe3d3d738b2d0288b4d9f02ed6ea12e95c.1551820475.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1551820474.git.christophe.leroy@c-s.fr>
-References: <cover.1551820474.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 5/7] powerpc/8xx: Add Kernel Userspace Access Protection
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, 
- ruscur@russell.cc
-Date: Tue,  5 Mar 2019 21:18:18 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44DXpd1WDmzDqCq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Mar 2019 10:16:56 +1100 (AEDT)
+Received: from localhost (unknown [69.71.4.100])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 9B4E020652;
+ Tue,  5 Mar 2019 23:16:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1551827814;
+ bh=zwqZZsThZQ6nowJFulARgnU52hfdsiy0qYX3oid09v4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=fxU5oyTEoYzO/8/bDOiE3EDCuPG1CB3YOWzpuv75fOQtoIG+6Wr16ZiaOuqyz/UYw
+ v+HAMLS4Xc3RpgdMc2ZNPDKAeAcpVcC6ag4lYV4A7laDsMS/9kUvtqK6bXr9Ur29k7
+ oxuUoO0XzuFFr0L3IlxHxVpfk6CQW/qfxpxJti04=
+Date: Tue, 5 Mar 2019 17:16:51 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+Subject: Re: [PATCH 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Message-ID: <20190305231650.GC215617@google.com>
+References: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20181115231605.24352-1-mr.nuke.me@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,158 +70,68 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: alex_gagniuc@dellteam.com, helgaas@google.com,
+ Sam Bobroff <sbobroff@linux.ibm.com>, linux-pci@vger.kernel.org,
+ Shyam_Iyer@Dell.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, keith.busch@intel.com,
+ linux-acpi@vger.kernel.org, lukas@wunner.de,
+ Oliver O'Halloran <oohall@gmail.com>, austin_bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds Kernel Userspace Access Protection on the 8xx.
+On Thu, Nov 15, 2018 at 05:16:01PM -0600, Alexandru Gagniuc wrote:
+> Thanks to Keith for pointing out that it doesn't make sense to disable
+> AER services when only one device has a FIRMWARE_FIRST HEST.
+> 
+> AER ownership is an interesting issue brought in by FFS (firmware-first)
+> model. In a nutshell if FFS handles AER, then OS should not touch any
+> of the AER bits. FW might set things up so that it receives AER
+> notifications via SMI. It's theoretically possible to receive SCIs,
+> but the exact mechanism is platform-dependent. OS touching AER bits
+> when firmware owns them may interfere with these notifications.
+> 
+> The ACPI mechanism for negotiating control of AER is _OSC, and is
+> described in detail in ACPI 6.2 Ch. 6.2.11.3. _OSC is negotiated at
+> the root bus level. Any root port, switch, or endpoint under the bus
+> would have its AER ownership negotiated in one _OSC call.
+> 
+> Then there is HEST, which is part of ACPI Platform Error Interfaces
+> (APEI). HEST tables describe the errors that FW may report to the OS.
+> A types 6,7 and 7 HEST tables describe AER errors from PCIe devices.
+> As part of this description, we're told if the error source is FFS.
+> 
+> Information in HEST seems to be redundant, as each error reported by
+> FW will have a CPER table that describes it in detail.
+> 
+> Because HEST describes an error source as firmware-first or not, we've
+> taken this to mean ownership of AER. Because AER ownership and error
+> reporting are coupled, _OSC and HEST usually agree on the matter of
+> ownership. However, that doesn't seem to be required by ACPI.
+> 
+> I've asked around a few people at Dell and they unanimously agree that
+> _OSC is the correct way to determine ownership of AER. In linux, we
+> use the result of _OSC to enable AER services, but we use HEST to
+> determine AER ownership. That's inconsistent. This series drops the
+> use of HEST in favor of _OSC.
+> 
+> [1] https://lkml.org/lkml/2018/11/15/62
+> 
+> Alexandru Gagniuc (2):
+>   PCI/AER: Do not use APEI/HEST to disable AER services globally
+>   PCI/AER: Determine AER ownership based on _OSC instead of HEST
+> 
+>  drivers/acpi/pci_root.c  |  9 +----
+>  drivers/pci/pcie/aer.c   | 82 ++--------------------------------------
+>  include/linux/pci-acpi.h |  6 ---
+>  3 files changed, 5 insertions(+), 92 deletions(-)
 
-When a page is RO or RW, it is set RO or RW for Key 0 and NA
-for Key 1.
+I'm pretty sure we do need to do something here, but there was quite a
+lot of discussion that didn't seem to really get resolved, so I'm
+dropping these for now.
 
-Up to now, the User group is defined with Key 0 for both User and
-Supervisor.
+Please repost them with any relevant updates and we'll see if we can
+get a consensus that we're going the right direction.
 
-By changing the group to Key 0 for User and Key 1 for Supervisor,
-this patch prevents the Kernel from being able to access user data.
-
-At exception entry, the kernel saves SPRN_MD_AP in the regs struct,
-and reapply the protection. At exception exit it restores SPRN_MD_AP
-with the value saved on exception entry.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/kup.h               |  3 ++
- arch/powerpc/include/asm/nohash/32/kup-8xx.h | 52 ++++++++++++++++++++++++++++
- arch/powerpc/include/asm/nohash/32/mmu-8xx.h |  7 ++++
- arch/powerpc/mm/8xx_mmu.c                    | 12 +++++++
- arch/powerpc/platforms/Kconfig.cputype       |  1 +
- 5 files changed, 75 insertions(+)
- create mode 100644 arch/powerpc/include/asm/nohash/32/kup-8xx.h
-
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index 51a55be70cbc..2ab9e904c22c 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -5,6 +5,9 @@
- #ifdef CONFIG_PPC_BOOK3S_64
- #include <asm/book3s/64/kup-radix.h>
- #endif
-+#ifdef CONFIG_PPC_8xx
-+#include <asm/nohash/32/kup-8xx.h>
-+#endif
- 
- #ifdef __ASSEMBLY__
- #ifndef CONFIG_PPC_KUAP
-diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-new file mode 100644
-index 000000000000..dbf0d7d40e7e
---- /dev/null
-+++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
-@@ -0,0 +1,52 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_KUP_8XX_H_
-+#define _ASM_POWERPC_KUP_8XX_H_
-+
-+#include <asm/bug.h>
-+
-+#ifdef CONFIG_PPC_KUAP
-+
-+#ifdef __ASSEMBLY__
-+
-+.macro kuap_save_and_lock	sp, thread, gpr1, gpr2, gpr3
-+	lis	\gpr2, MD_APG_KUAP@h	/* only APG0 and APG1 are used */
-+	mfspr	\gpr1, SPRN_MD_AP
-+	mtspr	SPRN_MD_AP, \gpr2
-+	stw	\gpr1, STACK_REGS_KUAP(\sp)
-+.endm
-+
-+.macro kuap_restore	sp, current, gpr1, gpr2, gpr3
-+	lwz	\gpr1, STACK_REGS_KUAP(\sp)
-+	mtspr	SPRN_MD_AP, \gpr1
-+.endm
-+
-+.macro kuap_check	current, gpr
-+#ifdef CONFIG_PPC_KUAP_DEBUG
-+	mfspr	\gpr, SPRN_MD_AP
-+	rlwinm	\gpr, \gpr, 16, 0xffff
-+999:	twnei	\gpr, MD_APG_KUAP@h
-+	EMIT_BUG_ENTRY 999b, __FILE__, __LINE__, (BUGFLAG_WARNING | BUGFLAG_ONCE)
-+#endif
-+.endm
-+
-+#else /* !__ASSEMBLY__ */
-+
-+#include <asm/reg.h>
-+
-+static inline void allow_user_access(void __user *to, const void __user *from,
-+				     unsigned long size)
-+{
-+	mtspr(SPRN_MD_AP, MD_APG_INIT);
-+}
-+
-+static inline void prevent_user_access(void __user *to, const void __user *from,
-+				       unsigned long size)
-+{
-+	mtspr(SPRN_MD_AP, MD_APG_KUAP);
-+}
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+#endif /* CONFIG_PPC_KUAP */
-+
-+#endif /* _ASM_POWERPC_KUP_8XX_H_ */
-diff --git a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-index 3cb743284e09..f620adef54fc 100644
---- a/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/mmu-8xx.h
-@@ -121,6 +121,13 @@
-  */
- #define MD_APG_INIT	0x4fffffff
- 
-+/*
-+ * 0 => No user => 01 (all accesses performed according to page definition)
-+ * 1 => User => 10 (all accesses performed according to swaped page definition)
-+ * 2-16 => NA => 11 (all accesses performed as user iaw page definition)
-+ */
-+#define MD_APG_KUAP	0x6fffffff
-+
- /* The effective page number register.  When read, contains the information
-  * about the last instruction TLB miss.  When MD_RPN is written, bits in
-  * this register are used to create the TLB entry.
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index e257a0c9bd08..87648b58d295 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -225,3 +225,15 @@ void __init setup_kuep(bool disabled)
- 	mtspr(SPRN_MI_AP, MI_APG_KUEP);
- }
- #endif
-+
-+#ifdef CONFIG_PPC_KUAP
-+void __init setup_kuap(bool disabled)
-+{
-+	pr_info("Activating Kernel Userspace Access Protection\n");
-+
-+	if (disabled)
-+		pr_warn("KUAP cannot be disabled yet on 8xx when compiled in\n");
-+
-+	mtspr(SPRN_MD_AP, MD_APG_KUAP);
-+}
-+#endif
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 00fa0d110dcb..ab586963893a 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -35,6 +35,7 @@ config PPC_8xx
- 	select FSL_SOC
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select PPC_HAVE_KUEP
-+	select PPC_HAVE_KUAP
- 
- config 40x
- 	bool "AMCC 40x"
--- 
-2.13.3
-
+Bjorn
