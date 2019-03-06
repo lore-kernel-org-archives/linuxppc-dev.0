@@ -2,49 +2,80 @@ Return-Path: <SRS0=vgOh=RJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D08C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 15:53:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C4181C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 18:04:01 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E7CF20663
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 15:53:31 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E7CF20663
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1168420652
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 18:04:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HAshJijk"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1168420652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44DywS2jfbzDqBy
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 02:53:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44F1q26fTBzDqGM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 05:03:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::142; helo=mail-lf1-x142.google.com;
+ envelope-from=jrdr.linux@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44Dysj257GzDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 02:51:03 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6361C1596;
- Wed,  6 Mar 2019 07:51:01 -0800 (PST)
-Received: from e112269-lin.arm.com (e112269-lin.cambridge.arm.com
- [10.1.196.69])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6AC853F703;
- Wed,  6 Mar 2019 07:50:57 -0800 (PST)
-From: Steven Price <steven.price@arm.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v4 04/19] powerpc: mm: Add p?d_large() definitions
-Date: Wed,  6 Mar 2019 15:50:16 +0000
-Message-Id: <20190306155031.4291-5-steven.price@arm.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190306155031.4291-1-steven.price@arm.com>
-References: <20190306155031.4291-1-steven.price@arm.com>
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="HAshJijk"; 
+ dkim-atps=neutral
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
+ [IPv6:2a00:1450:4864:20::142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44F1nJ5zV1zDqB9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 05:02:27 +1100 (AEDT)
+Received: by mail-lf1-x142.google.com with SMTP id p1so9610975lfk.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Mar 2019 10:02:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=9NlTnV1RuRzxavxPyEzKIvYJ+VeCVW6++rTPCnXKsCM=;
+ b=HAshJijk36tRtXm9Ks//VLNIk4cZ58Xyu44Tm5mtYSIBKnp3XuHPmADtVTi+4RG7Lz
+ xGf3IR/MilgzzDGOrNX47XZPqTEySRmSPXLBnuYUruL1wxI5I3MW9G6vftLoYpjTK7zL
+ 0qxSG315vCeacS0c2PMRDGuZSNGxO6jmsA7BCxaePYLMpUNYqUW9gFXOFa61b5+zDmTo
+ rTJ2Z/n/O+r5Rc3OJhaV5qOXywZ+jBdvH4pmvPmPPnPAwunH/FY+EEaObkv95H3bigBB
+ iYMJ5Ein2UO6Jl53VFdw6QKXJp2Onb2LzFGG6U0b3doDvPDPD2eZHu9o+fN/MEsGQH/m
+ yP4Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=9NlTnV1RuRzxavxPyEzKIvYJ+VeCVW6++rTPCnXKsCM=;
+ b=PsieNvC4/61soz/SYTSWeynieUCSuV7togcapdCrOTYQwsOFAP7V3p6KEc7zp9r0ZP
+ J9gbz4vNG1vYf/XtF7DHTd3MCgo26sOZsKi5Hfp9X21kSh8s6aFCKslRgtcvRpQFQe2S
+ QCflwLx+6zHPkvf7gt43NlNDWQ0Exz5zZfLtnlyopPrUXrA91ZNxpfS3UJjyZPgs74/i
+ fq08/tooYzCUjZXLsUCsyGgRH0o1NgsZd/9fKF0E4bDv1XH37ELqT2B8mNLql9yuiApI
+ y9Z1yCgdDb8rFDTsxPHrra2m38CSCzTxTtP3qQsRw/8Vyg9tT6HxvM2DrNW81ZPHE6nD
+ n34Q==
+X-Gm-Message-State: APjAAAUz9yC4/7Di/9GkoR/ieP0Efdb/d08cjByIaM38fHpQpa5GD7Yx
+ QQPgk1G3ikUrwMtKWDDejZKk4A7ibbj6ynbQv9A=
+X-Google-Smtp-Source: APXvYqyES9Mlgsy3geuwbdoVhE5fLT2b9NOat0SfHRhOEn8gfrTNRFwrNYBWJ0BtwzSo1L8lrjQhc3hEhcNyxmQwAWU=
+X-Received: by 2002:a19:a417:: with SMTP id q23mr4872719lfc.27.1551895338862; 
+ Wed, 06 Mar 2019 10:02:18 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190223070901.GA10274@jordon-HP-15-Notebook-PC>
+ <87tvgr1fr4.fsf@concordia.ellerman.id.au>
+ <CAFqt6zY0HV7E+_6_s5A3eG+jEj+4hgQnAgJQm-Pc1gyX4Vnbpg@mail.gmail.com>
+ <CAFqt6zYqa6aCAcs51AdePtBSL58hMa1BSA87ZMLbwUJA=rWNLA@mail.gmail.com>
+In-Reply-To: <CAFqt6zYqa6aCAcs51AdePtBSL58hMa1BSA87ZMLbwUJA=rWNLA@mail.gmail.com>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Wed, 6 Mar 2019 23:36:38 +0530
+Message-ID: <CAFqt6zZcoe1fZF__h=zdKaWC7MHt4nVELCV07RspWjntHA94hg@mail.gmail.com>
+Subject: Re: [PATCH] tools: testing: selftests: Remove duplicate headers
+To: Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,150 +87,62 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, "Liang,
- Kan" <kan.liang@linux.intel.com>, x86@kernel.org,
- Steven Price <steven.price@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Catalin Marinas <catalin.marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- kvm-ppc@vger.kernel.org,
- =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
- Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
- James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ John Stultz <john.stultz@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-gpio@vger.kernel.org,
+ Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "David S. Miller" <davem@davemloft.net>, sboyd@kernel.org,
+ Sabyasachi Gupta <sabyasachi.linux@gmail.com>,
+ Bamvor Zhang <bamv2005@gmail.com>,
+ linux-kselftest <linux-kselftest@vger.kernel.org>, netdev@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Paul McKenney <paulmck@linux.ibm.com>, shuah <shuah@kernel.org>,
+ Alexey Dobriyan <adobriyan@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-walk_page_range() is going to be allowed to walk page tables other than
-those of user space. For this it needs to know when it has reached a
-'leaf' entry in the page tables. This information is provided by the
-p?d_large() functions/macros.
+On Mon, Mar 4, 2019 at 4:19 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
+>
+> On Tue, Feb 26, 2019 at 10:59 AM Souptick Joarder <jrdr.linux@gmail.com> wrote:
+> >
+> > On Tue, Feb 26, 2019 at 7:18 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > >
+> > > Souptick Joarder <jrdr.linux@gmail.com> writes:
+> > > > Remove duplicate headers which are included twice.
+> > > >
+> > > > Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+> > > > Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> > > > ---
+> > > ...
+> > > >  tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c | 1 -
+> > >
+> > > I took this hunk via the powerpc tree.
+> >
+> > How about taking this entirely through a single tree ?
+> > or Shall I send these changes in different patches ?
+>
+> If no comment, can we get this patch in queue for 5.1 ?
 
-For powerpc pmd_large() was already implemented, so hoist it out of the
-CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
+I will drop this patch as we have submitted these changes in
+different patches. ( Except the one picked by Michael).
 
-Also since we now have a pmd_large always implemented we can drop the
-pmd_is_leaf() function.
-
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org
-CC: kvm-ppc@vger.kernel.org
-Signed-off-by: Steven Price <steven.price@arm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
- arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 ++------
- 2 files changed, 24 insertions(+), 18 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index c9bfe526ca9d..c4b29caf2a3b 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -907,6 +907,12 @@ static inline int pud_present(pud_t pud)
- 	return (pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
- }
- 
-+#define pud_large	pud_large
-+static inline int pud_large(pud_t pud)
-+{
-+	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- extern struct page *pud_page(pud_t pud);
- extern struct page *pmd_page(pmd_t pmd);
- static inline pte_t pud_pte(pud_t pud)
-@@ -954,6 +960,12 @@ static inline int pgd_present(pgd_t pgd)
- 	return (pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
- }
- 
-+#define pgd_large	pgd_large
-+static inline int pgd_large(pgd_t pgd)
-+{
-+	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- static inline pte_t pgd_pte(pgd_t pgd)
- {
- 	return __pte_raw(pgd_raw(pgd));
-@@ -1107,6 +1119,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
- 	return pte_access_permitted(pmd_pte(pmd), write);
- }
- 
-+#define pmd_large	pmd_large
-+/*
-+ * returns true for pmd migration entries, THP, devmap, hugetlb
-+ */
-+static inline int pmd_large(pmd_t pmd)
-+{
-+	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
- extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
-@@ -1133,15 +1154,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
- 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
- }
- 
--/*
-- * returns true for pmd migration entries, THP, devmap, hugetlb
-- * But compile time dependent on THP config
-- */
--static inline int pmd_large(pmd_t pmd)
--{
--	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
--}
--
- static inline pmd_t pmd_mknotpresent(pmd_t pmd)
- {
- 	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 1b821c6efdef..040db20ac2ab 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -363,12 +363,6 @@ static void kvmppc_pte_free(pte_t *ptep)
- 	kmem_cache_free(kvm_pte_cache, ptep);
- }
- 
--/* Like pmd_huge() and pmd_large(), but works regardless of config options */
--static inline int pmd_is_leaf(pmd_t pmd)
--{
--	return !!(pmd_val(pmd) & _PAGE_PTE);
--}
--
- static pmd_t *kvmppc_pmd_alloc(void)
- {
- 	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
-@@ -455,7 +449,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full,
- 	for (im = 0; im < PTRS_PER_PMD; ++im, ++p) {
- 		if (!pmd_present(*p))
- 			continue;
--		if (pmd_is_leaf(*p)) {
-+		if (pmd_large(*p)) {
- 			if (full) {
- 				pmd_clear(p);
- 			} else {
-@@ -588,7 +582,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
- 	else if (level <= 1)
- 		new_pmd = kvmppc_pmd_alloc();
- 
--	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_is_leaf(*pmd)))
-+	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_large(*pmd)))
- 		new_ptep = kvmppc_pte_alloc();
- 
- 	/* Check if we might have been invalidated; let the guest retry if so */
-@@ -657,7 +651,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
- 		new_pmd = NULL;
- 	}
- 	pmd = pmd_offset(pud, gpa);
--	if (pmd_is_leaf(*pmd)) {
-+	if (pmd_large(*pmd)) {
- 		unsigned long lgpa = gpa & PMD_MASK;
- 
- 		/* Check if we raced and someone else has set the same thing */
--- 
-2.20.1
-
+>
+> >
+> > >
+> > > > diff --git a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
+> > > > index 167135b..af1b802 100644
+> > > > --- a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
+> > > > +++ b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
+> > > > @@ -11,7 +11,6 @@
+> > > >  #include <sys/wait.h>
+> > > >  #include <unistd.h>
+> > > >  #include <setjmp.h>
+> > > > -#include <signal.h>
+> > > >
+> > > >  #include "ebb.h"
+> > >
+> > >
+> > > cheers
