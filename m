@@ -2,80 +2,64 @@ Return-Path: <SRS0=vgOh=RJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4181C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 18:04:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86A4FC10F00
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 19:02:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1168420652
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 18:04:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="HAshJijk"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1168420652
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id 16F3D20645
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 19:02:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 16F3D20645
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44F1q26fTBzDqGM
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 05:03:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44F36P5YbpzDqCM
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 06:02:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::142; helo=mail-lf1-x142.google.com;
- envelope-from=jrdr.linux@gmail.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.183.193; helo=relay1-d.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="HAshJijk"; 
- dkim-atps=neutral
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com
- [IPv6:2a00:1450:4864:20::142])
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
+ [217.70.183.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44F1nJ5zV1zDqB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 05:02:27 +1100 (AEDT)
-Received: by mail-lf1-x142.google.com with SMTP id p1so9610975lfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Mar 2019 10:02:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=9NlTnV1RuRzxavxPyEzKIvYJ+VeCVW6++rTPCnXKsCM=;
- b=HAshJijk36tRtXm9Ks//VLNIk4cZ58Xyu44Tm5mtYSIBKnp3XuHPmADtVTi+4RG7Lz
- xGf3IR/MilgzzDGOrNX47XZPqTEySRmSPXLBnuYUruL1wxI5I3MW9G6vftLoYpjTK7zL
- 0qxSG315vCeacS0c2PMRDGuZSNGxO6jmsA7BCxaePYLMpUNYqUW9gFXOFa61b5+zDmTo
- rTJ2Z/n/O+r5Rc3OJhaV5qOXywZ+jBdvH4pmvPmPPnPAwunH/FY+EEaObkv95H3bigBB
- iYMJ5Ein2UO6Jl53VFdw6QKXJp2Onb2LzFGG6U0b3doDvPDPD2eZHu9o+fN/MEsGQH/m
- yP4Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=9NlTnV1RuRzxavxPyEzKIvYJ+VeCVW6++rTPCnXKsCM=;
- b=PsieNvC4/61soz/SYTSWeynieUCSuV7togcapdCrOTYQwsOFAP7V3p6KEc7zp9r0ZP
- J9gbz4vNG1vYf/XtF7DHTd3MCgo26sOZsKi5Hfp9X21kSh8s6aFCKslRgtcvRpQFQe2S
- QCflwLx+6zHPkvf7gt43NlNDWQ0Exz5zZfLtnlyopPrUXrA91ZNxpfS3UJjyZPgs74/i
- fq08/tooYzCUjZXLsUCsyGgRH0o1NgsZd/9fKF0E4bDv1XH37ELqT2B8mNLql9yuiApI
- y9Z1yCgdDb8rFDTsxPHrra2m38CSCzTxTtP3qQsRw/8Vyg9tT6HxvM2DrNW81ZPHE6nD
- n34Q==
-X-Gm-Message-State: APjAAAUz9yC4/7Di/9GkoR/ieP0Efdb/d08cjByIaM38fHpQpa5GD7Yx
- QQPgk1G3ikUrwMtKWDDejZKk4A7ibbj6ynbQv9A=
-X-Google-Smtp-Source: APXvYqyES9Mlgsy3geuwbdoVhE5fLT2b9NOat0SfHRhOEn8gfrTNRFwrNYBWJ0BtwzSo1L8lrjQhc3hEhcNyxmQwAWU=
-X-Received: by 2002:a19:a417:: with SMTP id q23mr4872719lfc.27.1551895338862; 
- Wed, 06 Mar 2019 10:02:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44F34F1SjdzDqB2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 06:00:25 +1100 (AEDT)
+X-Originating-IP: 79.86.19.127
+Received: from alex.numericable.fr (127.19.86.79.rev.sfr.net [79.86.19.127])
+ (Authenticated sender: alex@ghiti.fr)
+ by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id 8D8ED24000D;
+ Wed,  6 Mar 2019 19:00:06 +0000 (UTC)
+From: Alexandre Ghiti <alex@ghiti.fr>
+To: Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH v5 0/4] Fix free/allocation of runtime gigantic pages
+Date: Wed,  6 Mar 2019 14:00:01 -0500
+Message-Id: <20190306190005.7036-1-alex@ghiti.fr>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190223070901.GA10274@jordon-HP-15-Notebook-PC>
- <87tvgr1fr4.fsf@concordia.ellerman.id.au>
- <CAFqt6zY0HV7E+_6_s5A3eG+jEj+4hgQnAgJQm-Pc1gyX4Vnbpg@mail.gmail.com>
- <CAFqt6zYqa6aCAcs51AdePtBSL58hMa1BSA87ZMLbwUJA=rWNLA@mail.gmail.com>
-In-Reply-To: <CAFqt6zYqa6aCAcs51AdePtBSL58hMa1BSA87ZMLbwUJA=rWNLA@mail.gmail.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Wed, 6 Mar 2019 23:36:38 +0530
-Message-ID: <CAFqt6zZcoe1fZF__h=zdKaWC7MHt4nVELCV07RspWjntHA94hg@mail.gmail.com>
-Subject: Re: [PATCH] tools: testing: selftests: Remove duplicate headers
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,62 +71,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- John Stultz <john.stultz@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>, linux-gpio@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, sboyd@kernel.org,
- Sabyasachi Gupta <sabyasachi.linux@gmail.com>,
- Bamvor Zhang <bamv2005@gmail.com>,
- linux-kselftest <linux-kselftest@vger.kernel.org>, netdev@vger.kernel.org,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Paul McKenney <paulmck@linux.ibm.com>, shuah <shuah@kernel.org>,
- Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 4, 2019 at 4:19 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->
-> On Tue, Feb 26, 2019 at 10:59 AM Souptick Joarder <jrdr.linux@gmail.com> wrote:
-> >
-> > On Tue, Feb 26, 2019 at 7:18 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > >
-> > > Souptick Joarder <jrdr.linux@gmail.com> writes:
-> > > > Remove duplicate headers which are included twice.
-> > > >
-> > > > Signed-off-by: Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-> > > > Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
-> > > > ---
-> > > ...
-> > > >  tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c | 1 -
-> > >
-> > > I took this hunk via the powerpc tree.
-> >
-> > How about taking this entirely through a single tree ?
-> > or Shall I send these changes in different patches ?
->
-> If no comment, can we get this patch in queue for 5.1 ?
+This series fixes sh and sparc that did not advertise their gigantic page
+support and then were not able to allocate and free those pages at runtime.
+It renames MEMORY_ISOLATION && COMPACTION || CMA condition into the more
+accurate CONTIG_ALLOC, since it allows the definition of alloc_contig_range
+function.
+Finally, it then fixes the wrong definition of ARCH_HAS_GIGANTIC_PAGE config
+that, without MEMORY_ISOLATION && COMPACTION || CMA defined, did not allow
+architectures to free boottime allocated gigantic pages although unrelated.
 
-I will drop this patch as we have submitted these changes in
-different patches. ( Except the one picked by Michael).
+Changes in v5:
+- Fix bug in previous version thanks to Mike Kravetz
+- Fix block comments that did not respect coding style thanks to Dave Hensen
+- Define ARCH_HAS_GIGANTIC_PAGE only for sparc64 as advised by David Miller
+- Factorize "def_bool" and "depends on" thanks to Vlastimil Babka
 
->
-> >
-> > >
-> > > > diff --git a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
-> > > > index 167135b..af1b802 100644
-> > > > --- a/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
-> > > > +++ b/tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
-> > > > @@ -11,7 +11,6 @@
-> > > >  #include <sys/wait.h>
-> > > >  #include <unistd.h>
-> > > >  #include <setjmp.h>
-> > > > -#include <signal.h>
-> > > >
-> > > >  #include "ebb.h"
-> > >
-> > >
-> > > cheers
+Changes in v4 as suggested by Dave Hensen:
+- Split previous version into small patches
+- Do not compile alloc_gigantic** functions for architectures that do not
+  support those pages
+- Define correct ARCH_HAS_GIGANTIC_PAGE in all arch that support them to avoid
+  useless runtime check
+- Add comment in set_max_huge_pages to explain that freeing is possible even
+  without CONTIG_ALLOC defined
+- Remove gigantic_page_supported function across all archs
+
+Changes in v3 as suggested by Vlastimil Babka and Dave Hansen:
+- config definition was wrong and is now in mm/Kconfig
+- COMPACTION_CORE was renamed in CONTIG_ALLOC
+
+Changes in v2 as suggested by Vlastimil Babka:
+- Get rid of ARCH_HAS_GIGANTIC_PAGE
+- Get rid of architecture specific gigantic_page_supported
+- Factorize CMA or (MEMORY_ISOLATION && COMPACTION) into COMPACTION_CORE
+
+*** BLURB HERE ***
+
+Alexandre Ghiti (4):
+  sh: Advertise gigantic page support
+  sparc: Advertise gigantic page support
+  mm: Simplify MEMORY_ISOLATION && COMPACTION || CMA into CONTIG_ALLOC
+  hugetlb: allow to free gigantic pages regardless of the configuration
+
+ arch/arm64/Kconfig                           |  2 +-
+ arch/arm64/include/asm/hugetlb.h             |  4 --
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
+ arch/powerpc/platforms/Kconfig.cputype       |  2 +-
+ arch/s390/Kconfig                            |  2 +-
+ arch/s390/include/asm/hugetlb.h              |  3 --
+ arch/sh/Kconfig                              |  1 +
+ arch/sparc/Kconfig                           |  1 +
+ arch/x86/Kconfig                             |  2 +-
+ arch/x86/include/asm/hugetlb.h               |  4 --
+ arch/x86/mm/hugetlbpage.c                    |  2 +-
+ include/linux/gfp.h                          |  4 +-
+ mm/Kconfig                                   |  3 ++
+ mm/hugetlb.c                                 | 54 ++++++++++++--------
+ mm/page_alloc.c                              |  7 ++-
+ 15 files changed, 48 insertions(+), 50 deletions(-)
+
+-- 
+2.20.1
+
