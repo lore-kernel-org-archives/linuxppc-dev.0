@@ -2,96 +2,49 @@ Return-Path: <SRS0=vgOh=RJ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45C78C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 13:09:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D08C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 15:53:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B07BE20684
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 13:09:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="cLak+fkR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B07BE20684
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
+	by mail.kernel.org (Postfix) with ESMTPS id 6E7CF20663
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  6 Mar 2019 15:53:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E7CF20663
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44DvHP3lxKzDq6N
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 00:09:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44DywS2jfbzDqBy
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 02:53:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=shutemov.name
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
- envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=shutemov.name
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=shutemov-name.20150623.gappssmtp.com
- header.i=@shutemov-name.20150623.gappssmtp.com header.b="cLak+fkR"; 
- dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44DvCr5GRczDqB2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 00:06:30 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id u9so8381397pgo.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Mar 2019 05:06:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=shutemov-name.20150623.gappssmtp.com; s=20150623;
- h=date:from:to:cc:subject:message-id:references:mime-version
- :content-disposition:content-transfer-encoding:in-reply-to
- :user-agent; bh=lYFisdL+emxX/yjhRwvfei8UQc72RGGLjL/HzcIurDc=;
- b=cLak+fkRb0O9N36cRBXR0tIORoqVJxZ7ho2DOkLt9kahJGvAC87zHhp1EhS+FaCI6N
- 64Nca7nkQJmc8Ta4Xu5NycVUDhC+r0AdMVUYL3w+51kWq9QtPbdBEF2WaGRHDv03lA3V
- 0/b/Rf4n74LhnFC3Kksz+CwFlyn5hivfSwNhTuzAZU7m6SVWyix3v7rS4wyqjjZOlQuX
- zX1kyt/LbnnJgOYR9xb2o+9l5g/v3e371TkOhKxTCH3gTa3ftEUk55v9oRM+IqBC2dUn
- i9j2ihAYu03W9iivIo1u4bpyt44/sSHgVPZS+Sg9DcAbppyJSuoiEyGosF4XIvC4e9Zr
- KhEw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:content-transfer-encoding
- :in-reply-to:user-agent;
- bh=lYFisdL+emxX/yjhRwvfei8UQc72RGGLjL/HzcIurDc=;
- b=TfLMzjrE5mae3QdnOqRM257ky6ZVk/iYa6FFsv8pkkx+1JPpDo19WHeoBwdorLWtJV
- 9XBSCaOjlUF1Mz7Tfil++SvUudFIQWryARbovoSHgRoIa1LZU/Js/AL9yQbq0RD0wNPD
- eqa/TSjMF6NBmA22jnZWNhuK0CWMslsQXrV/HQcRUT0GsBDfiw1p2jibaz6un/SMBMKE
- fylHKmg6VUFvP1h8fcAf8UeyX8V62t2NHfPOtogSZT6WCsTZGJGF5NeyhqnnaXZlwpsL
- 8bZD2xQ/NtYfkVGRprv55iiwwZ4wycgup5KGPrpbxYHvOhFQ+drVQaXMPbRcBwsrAPel
- 3bcg==
-X-Gm-Message-State: APjAAAUmvqEa1f+MNqaUZVcJQtExjgaCaSJ53Stqgwj9G/81Xh2ySUO4
- QqFChSo6ZYKq2alxObu3UhoCIw==
-X-Google-Smtp-Source: APXvYqzAzhlyQEbt3pF4RlErlixy++ggRJiOcUf8oHOCw2kVjZAxkP62zfdXeK2RBjhWPna+/sKHbg==
-X-Received: by 2002:a62:4553:: with SMTP id s80mr7069624pfa.141.1551877586275; 
- Wed, 06 Mar 2019 05:06:26 -0800 (PST)
-Received: from kshutemo-mobl1.localdomain (fmdmzpr04-ext.fm.intel.com.
- [192.55.54.39])
- by smtp.gmail.com with ESMTPSA id h10sm3128992pfo.128.2019.03.06.05.06.25
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 06 Mar 2019 05:06:25 -0800 (PST)
-Received: by kshutemo-mobl1.localdomain (Postfix, from userid 1000)
- id 98357301186; Wed,  6 Mar 2019 16:06:21 +0300 (+03)
-Date: Wed, 6 Mar 2019 16:06:21 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
-Message-ID: <20190306130621.qrwybv5dpv3bzyym@kshutemo-mobl1>
-References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
- <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
- <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
- <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
- <87k1hc8iqa.fsf@linux.ibm.com>
- <20190306124453.126d36d8@naga.suse.cz>
- <df01bf6e-84a1-53fb-bf0c-0957af2f79e1@linux.ibm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44Dysj257GzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 02:51:03 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6361C1596;
+ Wed,  6 Mar 2019 07:51:01 -0800 (PST)
+Received: from e112269-lin.arm.com (e112269-lin.cambridge.arm.com
+ [10.1.196.69])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6AC853F703;
+ Wed,  6 Mar 2019 07:50:57 -0800 (PST)
+From: Steven Price <steven.price@arm.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v4 04/19] powerpc: mm: Add p?d_large() definitions
+Date: Wed,  6 Mar 2019 15:50:16 +0000
+Message-Id: <20190306155031.4291-5-steven.price@arm.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190306155031.4291-1-steven.price@arm.com>
+References: <20190306155031.4291-1-steven.price@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <df01bf6e-84a1-53fb-bf0c-0957af2f79e1@linux.ibm.com>
-User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,48 +56,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, Oliver <oohall@gmail.com>,
- Ross Zwisler <zwisler@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, "Liang,
+ Kan" <kan.liang@linux.intel.com>, x86@kernel.org,
+ Steven Price <steven.price@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+ kvm-ppc@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
+ James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 06, 2019 at 06:15:25PM +0530, Aneesh Kumar K.V wrote:
-> On 3/6/19 5:14 PM, Michal Suchánek wrote:
-> > On Wed, 06 Mar 2019 14:47:33 +0530
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
-> > 
-> > > Dan Williams <dan.j.williams@intel.com> writes:
-> > > 
-> > > > On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
-> > > > > 
-> > > > > On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
-> > > > > <aneesh.kumar@linux.ibm.com> wrote:
-> > > Also even if the user decided to not use THP, by
-> > > echo "never" > transparent_hugepage/enabled , we should continue to map
-> > > dax fault using huge page on platforms that can support huge pages.
-> > 
-> > Is this a good idea?
-> > 
-> > This knob is there for a reason. In some situations having huge pages
-> > can severely impact performance of the system (due to host-guest
-> > interaction or whatever) and the ability to really turn off all THP
-> > would be important in those cases, right?
-> > 
-> 
-> My understanding was that is not true for dax pages? These are not regular
-> memory that got allocated. They are allocated out of /dev/dax/ or
-> /dev/pmem*. Do we have a reason not to use hugepages for mapping pages in
-> that case?
+walk_page_range() is going to be allowed to walk page tables other than
+those of user space. For this it needs to know when it has reached a
+'leaf' entry in the page tables. This information is provided by the
+p?d_large() functions/macros.
 
-Yes. Like when you don't want dax to compete for TLB with mission-critical
-application (which uses hugetlb for instance).
+For powerpc pmd_large() was already implemented, so hoist it out of the
+CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
 
+Also since we now have a pmd_large always implemented we can drop the
+pmd_is_leaf() function.
+
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: kvm-ppc@vger.kernel.org
+Signed-off-by: Steven Price <steven.price@arm.com>
+---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
+ arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 ++------
+ 2 files changed, 24 insertions(+), 18 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index c9bfe526ca9d..c4b29caf2a3b 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -907,6 +907,12 @@ static inline int pud_present(pud_t pud)
+ 	return (pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
+ }
+ 
++#define pud_large	pud_large
++static inline int pud_large(pud_t pud)
++{
++	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
++}
++
+ extern struct page *pud_page(pud_t pud);
+ extern struct page *pmd_page(pmd_t pmd);
+ static inline pte_t pud_pte(pud_t pud)
+@@ -954,6 +960,12 @@ static inline int pgd_present(pgd_t pgd)
+ 	return (pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+ }
+ 
++#define pgd_large	pgd_large
++static inline int pgd_large(pgd_t pgd)
++{
++	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ static inline pte_t pgd_pte(pgd_t pgd)
+ {
+ 	return __pte_raw(pgd_raw(pgd));
+@@ -1107,6 +1119,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
+ 	return pte_access_permitted(pmd_pte(pmd), write);
+ }
+ 
++#define pmd_large	pmd_large
++/*
++ * returns true for pmd migration entries, THP, devmap, hugetlb
++ */
++static inline int pmd_large(pmd_t pmd)
++{
++	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
+ extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
+@@ -1133,15 +1154,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
+ 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
+ }
+ 
+-/*
+- * returns true for pmd migration entries, THP, devmap, hugetlb
+- * But compile time dependent on THP config
+- */
+-static inline int pmd_large(pmd_t pmd)
+-{
+-	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+ static inline pmd_t pmd_mknotpresent(pmd_t pmd)
+ {
+ 	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 1b821c6efdef..040db20ac2ab 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -363,12 +363,6 @@ static void kvmppc_pte_free(pte_t *ptep)
+ 	kmem_cache_free(kvm_pte_cache, ptep);
+ }
+ 
+-/* Like pmd_huge() and pmd_large(), but works regardless of config options */
+-static inline int pmd_is_leaf(pmd_t pmd)
+-{
+-	return !!(pmd_val(pmd) & _PAGE_PTE);
+-}
+-
+ static pmd_t *kvmppc_pmd_alloc(void)
+ {
+ 	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
+@@ -455,7 +449,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full,
+ 	for (im = 0; im < PTRS_PER_PMD; ++im, ++p) {
+ 		if (!pmd_present(*p))
+ 			continue;
+-		if (pmd_is_leaf(*p)) {
++		if (pmd_large(*p)) {
+ 			if (full) {
+ 				pmd_clear(p);
+ 			} else {
+@@ -588,7 +582,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 	else if (level <= 1)
+ 		new_pmd = kvmppc_pmd_alloc();
+ 
+-	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_is_leaf(*pmd)))
++	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_large(*pmd)))
+ 		new_ptep = kvmppc_pte_alloc();
+ 
+ 	/* Check if we might have been invalidated; let the guest retry if so */
+@@ -657,7 +651,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 		new_pmd = NULL;
+ 	}
+ 	pmd = pmd_offset(pud, gpa);
+-	if (pmd_is_leaf(*pmd)) {
++	if (pmd_large(*pmd)) {
+ 		unsigned long lgpa = gpa & PMD_MASK;
+ 
+ 		/* Check if we raced and someone else has set the same thing */
 -- 
- Kirill A. Shutemov
+2.20.1
+
