@@ -2,79 +2,105 @@ Return-Path: <SRS0=+pA4=RK=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90696C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 03:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2280FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 04:39:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 085B320835
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 03:50:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="H0t6WsJx"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 085B320835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 0011D20652
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 04:39:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0011D20652
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44FGqd4WYxzDqCc
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 14:50:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::743; helo=mail-qk1-x743.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.b="H0t6WsJx"; 
- dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44FHw74JQRzDqF0
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Mar 2019 15:39:19 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44FHtR1lQYzDqC5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 15:37:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44FHtQ1Q3Nz8t7p
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 15:37:50 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44FHtQ0YD2z9s47; Thu,  7 Mar 2019 15:37:50 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=sathnaga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44FGnl4mTTzDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Mar 2019 14:48:42 +1100 (AEDT)
-Received: by mail-qk1-x743.google.com with SMTP id y140so8235107qkb.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Mar 2019 19:48:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=from:to:cc:subject:date:message-id;
- bh=cfMkd7k5sfsoufvYvmOTamvmreEyC+E68UQtEbBo5qI=;
- b=H0t6WsJxPvqVTlR4Q3olCA72TjvAPUP+vKPl9pHZXpppxrE8Ns3we2BgNC0dTLc4os
- B9muEuGM7xEDfL7tanpS8Kwgcc9TmhwQ45G0ES/P0fjVNU7h1yf2Ae4vDOkvawcAIWH/
- wwzVnzUQFgOGqfLCG0GEGYgXEtzBx+SZYA9AXsviSIyhZ6/b5gFDWemapxo/KTDjuR2/
- bz6kxTpOJXYJW+0IzOjaI9zKDtlwNDjyODxSRpVsRdzVlmtmrSS0NnG4a8voiH6PQspM
- 3SaMYjyZqGxQDLKsUO57bbF1pq8/MYOXk2aqNcRq0lBF8ReXyyq0yAinonZ6iIeSbyKu
- nc9A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=cfMkd7k5sfsoufvYvmOTamvmreEyC+E68UQtEbBo5qI=;
- b=eVbvAGHz81hR2TsOpDXuNdjJp+whtNvgCROQUT2rfz4O/xmlclEvKRvrEKbbkF80iX
- QethGyZQVt6mpMGQX/3vWdmmBrVETeJXcux/A80DrdDVUYR5GYHjAUTC51K4M2auEYQf
- w85XxxPLiLIPtLnuh99EMcTZRwcTK+dZ1bp9lz/8rChCox/CXHWI0l8sH2bWBgzYJX8o
- Awxjbw1dGZgS4cFg1Ca+I49V1SfDQLMZZvyKY1dWwg2/tr8xp7YT2KTXJAj0szzqKg6P
- 3iNaJxGotSAaa8m/qDsu1JNRlpFj4YFmpjHL/4zn6BDwA8rn4Nvg3EyHiv5CzZ0RpcII
- cxjg==
-X-Gm-Message-State: APjAAAXysV7dHBKwwNv8MPAvI6EVjp/Uhz/0jTNlkpqxzQoAIl5tYB1k
- mvSNFH+qhnIrmmuRUoNpnJPE9A==
-X-Google-Smtp-Source: APXvYqwBvaruU+dvEpOiKiLSyAr5JJG0Xdp9CifuxSx7Xxz/lqhTZ12AZRaEKlSPq47iFlbTRT9Uag==
-X-Received: by 2002:a37:f507:: with SMTP id l7mr8630648qkk.302.1551930518976; 
- Wed, 06 Mar 2019 19:48:38 -0800 (PST)
-Received: from ovpn-121-103.rdu2.redhat.com
- (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
- by smtp.gmail.com with ESMTPSA id p127sm1726897qke.97.2019.03.06.19.48.37
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 06 Mar 2019 19:48:38 -0800 (PST)
-From: Qian Cai <cai@lca.pw>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH] powerpc: silence unused-but-set-variable warnings
-Date: Wed,  6 Mar 2019 22:48:21 -0500
-Message-Id: <20190307034821.48769-1-cai@lca.pw>
-X-Mailer: git-send-email 2.17.2 (Apple Git-113)
+ by ozlabs.org (Postfix) with ESMTPS id 44FHtP2DJ9z9s3q
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Mar 2019 15:37:47 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x274YGZK170221
+ for <linuxppc-dev@ozlabs.org>; Wed, 6 Mar 2019 23:37:45 -0500
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2r2t9nc86n-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 06 Mar 2019 23:37:44 -0500
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sathnaga@linux.vnet.ibm.com>;
+ Thu, 7 Mar 2019 04:37:43 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 7 Mar 2019 04:37:42 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x274bfYu32440360
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 7 Mar 2019 04:37:41 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1319FA405F;
+ Thu,  7 Mar 2019 04:37:41 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2318BA4054;
+ Thu,  7 Mar 2019 04:37:39 +0000 (GMT)
+Received: from sathnaga86 (unknown [9.199.45.226])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Thu,  7 Mar 2019 04:37:38 +0000 (GMT)
+Date: Thu, 7 Mar 2019 10:07:36 +0530
+From: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Disable kcov for slb routines.
+References: <155168793242.4372.10864050702181452671.stgit@jupiter.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <155168793242.4372.10864050702181452671.stgit@jupiter.in.ibm.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
+X-TM-AS-GCONF: 00
+x-cbid: 19030704-0020-0000-0000-0000031F9274
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19030704-0021-0000-0000-00002171A41D
+Message-Id: <20190307043736.GA1809@sathnaga86>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-07_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903070031
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,61 +112,39 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Qian Cai <cai@lca.pw>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Reply-To: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, syzkaller@googlegroups.com,
+ Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Donnellan <andonnel@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-pte_unmap() compiles away on some powerpc platforms, so silence the
-warnings below by using the argument to pte_unmap() as a nop. Also, fix
-checkpatch.pl warnings "Single statement macros should not use a do {}
-while (0) loop".
+On Mon, Mar 04, 2019 at 01:55:51PM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> The kcov instrumentation inside SLB routines causes duplicate SLB entries
+> to be added resulting into SLB multihit machine checks.
+> Disable kcov instrumentation on slb.o
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/Makefile |    1 +
+>  1 file changed, 1 insertion(+)
 
-mm/memory.c: In function 'copy_pte_range':
-mm/memory.c:820:24: warning: variable 'orig_dst_pte' set but not used
-[-Wunused-but-set-variable]
-mm/memory.c:820:9: warning: variable 'orig_src_pte' set but not used
-[-Wunused-but-set-variable]
-mm/madvise.c: In function 'madvise_free_pte_range':
-mm/madvise.c:318:9: warning: variable 'orig_pte' set but not used
-[-Wunused-but-set-variable]
-mm/swap_state.c: In function 'swap_ra_info':
-mm/swap_state.c:634:15: warning: variable 'orig_pte' set but not used
-[-Wunused-but-set-variable]
+Fixes: https://github.com/linuxppc/issues/issues/230
 
-Signed-off-by: Qian Cai <cai@lca.pw>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 2 +-
- arch/powerpc/include/asm/nohash/64/pgtable.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Tested-by: Satheesh Rajendran <sathnaga@linux.vent.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 868fcaf56f6b..ec00ce6dd312 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1006,7 +1006,7 @@ extern struct page *pgd_page(pgd_t pgd);
- 	(((pte_t *) pmd_page_vaddr(*(dir))) + pte_index(addr))
- 
- #define pte_offset_map(dir,addr)	pte_offset_kernel((dir), (addr))
--#define pte_unmap(pte)			do { } while(0)
-+#define pte_unmap(pte)			(void)(pte)
- 
- /* to find an entry in a kernel page-table-directory */
- /* This now only contains the vmalloc pages */
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index e77ed9761632..103071afab3d 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -205,7 +205,7 @@ static inline void pgd_set(pgd_t *pgdp, unsigned long val)
-   (((pte_t *) pmd_page_vaddr(*(dir))) + (((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1)))
- 
- #define pte_offset_map(dir,addr)	pte_offset_kernel((dir), (addr))
--#define pte_unmap(pte)			do { } while(0)
-+#define pte_unmap(pte)			(void)(pte)
- 
- /* to find an entry in a kernel page-table-directory */
- /* This now only contains the vmalloc pages */
--- 
-2.17.2 (Apple Git-113)
+> 
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index d4d32e229ace..f9cb40684746 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -60,3 +60,4 @@ obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
+>  # This is necessary for booting with kcov enabled on book3e machines
+>  KCOV_INSTRUMENT_tlb_nohash.o := n
+>  KCOV_INSTRUMENT_fsl_booke_mmu.o := n
+> +KCOV_INSTRUMENT_slb.o := n
+> 
 
