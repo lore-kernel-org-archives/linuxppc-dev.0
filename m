@@ -3,40 +3,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C34AAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 01:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DBC7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 01:23:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4F87420840
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 01:21:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4F87420840
+	by mail.kernel.org (Postfix) with ESMTPS id 20AE520840
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 01:23:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20AE520840
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44FqTF47TGzDqK1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 12:21:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44FqW62XNhzDqJ2
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 12:22:58 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44FqMf4zpCzDqDP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 12:16:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44FqMg5WQyzDqDP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 12:16:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
 Received: by ozlabs.org (Postfix)
- id 44FqMf3vXYz9ryj; Fri,  8 Mar 2019 12:16:30 +1100 (AEDT)
+ id 44FqMg48Dnz9ryj; Fri,  8 Mar 2019 12:16:31 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44FqMf3PVdz9sBb; Fri,  8 Mar 2019 12:16:30 +1100 (AEDT)
+ id 44FqMg2kCRz9sCJ; Fri,  8 Mar 2019 12:16:31 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 03/10] powerpc: Add framework for Kernel Userspace
- Protection
-Date: Fri,  8 Mar 2019 12:16:12 +1100
-Message-Id: <20190308011619.22402-3-mpe@ellerman.id.au>
+Subject: [PATCH v5 04/10] powerpc: Add skeleton for Kernel Userspace Execution
+ Prevention
+Date: Fri,  8 Mar 2019 12:16:13 +1100
+Message-Id: <20190308011619.22402-4-mpe@ellerman.id.au>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190308011619.22402-1-mpe@ellerman.id.au>
 References: <20190308011619.22402-1-mpe@ellerman.id.au>
@@ -60,111 +60,122 @@ Sender: "Linuxppc-dev"
 
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-This patch adds a skeleton for Kernel Userspace Protection
-functionnalities like Kernel Userspace Access Protection and Kernel
-Userspace Execution Prevention
+This patch adds a skeleton for Kernel Userspace Execution Prevention.
 
-The subsequent implementation of KUAP for radix makes use of a MMU
-feature in order to patch out assembly when KUAP is disabled or
-unsupported. This won't work unless there's an entry point for KUP
-support before the feature magic happens, so for PPC64 setup_kup() is
-called early in setup.
+Then subarches implementing it have to define CONFIG_PPC_HAVE_KUEP
+and provide setup_kuep() function.
 
-On PPC32, feature_fixup() is done too early to allow the same.
-
-Suggested-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+[mpe: Don't split strings, use pr_crit_ratelimited()]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
 v5: Unchanged.
-v4: Unchanged.
+v4: mpe: Don't split strings, use pr_crit_ratelimited()
 
- arch/powerpc/include/asm/kup.h | 11 +++++++++++
- arch/powerpc/kernel/setup_64.c |  7 +++++++
- arch/powerpc/mm/init-common.c  |  5 +++++
- arch/powerpc/mm/init_32.c      |  3 +++
- 4 files changed, 26 insertions(+)
- create mode 100644 arch/powerpc/include/asm/kup.h
+ Documentation/admin-guide/kernel-parameters.txt |  2 +-
+ arch/powerpc/include/asm/kup.h                  |  6 ++++++
+ arch/powerpc/mm/fault.c                         |  9 ++++-----
+ arch/powerpc/mm/init-common.c                   | 11 +++++++++++
+ arch/powerpc/platforms/Kconfig.cputype          | 12 ++++++++++++
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index b799bcf67d7b..f81d79de4de0 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2813,7 +2813,7 @@
+ 			Disable SMAP (Supervisor Mode Access Prevention)
+ 			even if it is supported by processor.
+ 
+-	nosmep		[X86]
++	nosmep		[X86,PPC]
+ 			Disable SMEP (Supervisor Mode Execution Prevention)
+ 			even if it is supported by processor.
+ 
 diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-new file mode 100644
-index 000000000000..7a88b8b9b54d
---- /dev/null
+index 7a88b8b9b54d..a2a959cb4e36 100644
+--- a/arch/powerpc/include/asm/kup.h
 +++ b/arch/powerpc/include/asm/kup.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_POWERPC_KUP_H_
-+#define _ASM_POWERPC_KUP_H_
-+
-+#ifndef __ASSEMBLY__
-+
-+void setup_kup(void);
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+#endif /* _ASM_POWERPC_KUP_H_ */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index daa361fc6a24..47ffa0885081 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -68,6 +68,7 @@
- #include <asm/cputhreads.h>
- #include <asm/hw_irq.h>
- #include <asm/feature-fixups.h>
-+#include <asm/kup.h>
+@@ -6,6 +6,12 @@
  
- #include "setup.h"
+ void setup_kup(void);
  
-@@ -331,6 +332,12 @@ void __init early_setup(unsigned long dt_ptr)
- 	 */
- 	configure_exceptions();
- 
-+	/*
-+	 * Configure Kernel Userspace Protection. This needs to happen before
-+	 * feature fixups for platforms that implement this using features.
-+	 */
-+	setup_kup();
++#ifdef CONFIG_PPC_KUEP
++void setup_kuep(bool disabled);
++#else
++static inline void setup_kuep(bool disabled) { }
++#endif /* CONFIG_PPC_KUEP */
 +
- 	/* Apply all the dynamic patching */
- 	apply_feature_fixups();
- 	setup_feature_keys();
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_KUP_H_ */
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 887f11bcf330..3384354abc1d 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -229,11 +229,10 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
+ 	/* NX faults set DSISR_PROTFAULT on the 8xx, DSISR_NOEXEC_OR_G on others */
+ 	if (is_exec && (error_code & (DSISR_NOEXEC_OR_G | DSISR_KEYFAULT |
+ 				      DSISR_PROTFAULT))) {
+-		printk_ratelimited(KERN_CRIT "kernel tried to execute"
+-				   " exec-protected page (%lx) -"
+-				   "exploit attempt? (uid: %d)\n",
+-				   address, from_kuid(&init_user_ns,
+-						      current_uid()));
++		pr_crit_ratelimited("kernel tried to execute %s page (%lx) - exploit attempt? (uid: %d)\n",
++				    address >= TASK_SIZE ? "exec-protected" : "user",
++				    address,
++				    from_kuid(&init_user_ns, current_uid()));
+ 	}
+ 	return is_exec || (address >= TASK_SIZE);
+ }
 diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index 1e6910eb70ed..36d28e872289 100644
+index 36d28e872289..83f95a5565d6 100644
 --- a/arch/powerpc/mm/init-common.c
 +++ b/arch/powerpc/mm/init-common.c
-@@ -24,6 +24,11 @@
- #include <linux/string.h>
- #include <asm/pgalloc.h>
+@@ -26,8 +26,19 @@
  #include <asm/pgtable.h>
-+#include <asm/kup.h>
+ #include <asm/kup.h>
+ 
++static bool disable_kuep = !IS_ENABLED(CONFIG_PPC_KUEP);
 +
-+void __init setup_kup(void)
++static int __init parse_nosmep(char *p)
 +{
++	disable_kuep = true;
++	pr_warn("Disabling Kernel Userspace Execution Prevention\n");
++	return 0;
 +}
++early_param("nosmep", parse_nosmep);
++
+ void __init setup_kup(void)
+ {
++	setup_kuep(disable_kuep);
+ }
  
  #define CTOR(shift) static void ctor_##shift(void *addr) \
- {							\
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 41a3513cadc9..80cc97cd8878 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -45,6 +45,7 @@
- #include <asm/tlb.h>
- #include <asm/sections.h>
- #include <asm/hugetlb.h>
-+#include <asm/kup.h>
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 842b2c7e156a..7d30bbbaa3c1 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -345,6 +345,18 @@ config PPC_RADIX_MMU_DEFAULT
  
- #include "mmu_decl.h"
+ 	  If you're unsure, say Y.
  
-@@ -178,6 +179,8 @@ void __init MMU_init(void)
- 	btext_unmap();
- #endif
- 
-+	setup_kup();
++config PPC_HAVE_KUEP
++	bool
 +
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
- }
++config PPC_KUEP
++	bool "Kernel Userspace Execution Prevention"
++	depends on PPC_HAVE_KUEP
++	default y
++	help
++	  Enable support for Kernel Userspace Execution Prevention (KUEP)
++
++	  If you're unsure, say Y.
++
+ config ARCH_ENABLE_HUGEPAGE_MIGRATION
+ 	def_bool y
+ 	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
 -- 
 2.20.1
 
