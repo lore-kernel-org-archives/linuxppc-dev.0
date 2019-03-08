@@ -2,98 +2,53 @@ Return-Path: <SRS0=I4jZ=RL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F9BAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 08:55:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 770A5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 10:52:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E92F120684
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 08:55:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="UMHWvkj0"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E92F120684
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id B57B320811
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 10:52:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B57B320811
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44G1Y25VzZzDqK1
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 19:55:18 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44G1W53g2JzDq63
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 19:53:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44G48G72CFzDqKL
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 21:52:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="UMHWvkj0"; 
- dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44G1W46FLtz8tCh
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 19:53:36 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44G1W450kWz9s70; Fri,  8 Mar 2019 19:53:36 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="UMHWvkj0"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44G1W34XMSz9sCJ
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Mar 2019 19:53:35 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44G1Vz3YgLz9txr0;
- Fri,  8 Mar 2019 09:53:31 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=UMHWvkj0; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 9FFFVYmIbOgt; Fri,  8 Mar 2019 09:53:31 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44G1Vz2Fv1z9txqm;
- Fri,  8 Mar 2019 09:53:31 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552035211; bh=RldyTJMw4dNwbm46G99bgaBDBGct38wIckScSYBk3tE=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=UMHWvkj05XjW1xhj3EuPUaeKPDdGnn+LcLTAj1PZMiBTX0/U1aOutDChpgafO7dUo
- szPpCf3tVU8SqZOOjm+cAeJbXkWPLOpPbQOFBuah3/bGc3vswi8yMpxjvo3dOuRmZB
- h/4Mfl1cBqgJlJn+H5420nxGJX1A2FnsM7bUmTnc=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 4BCCB8BF89;
- Fri,  8 Mar 2019 09:53:32 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id REwe2RYrQvLR; Fri,  8 Mar 2019 09:53:32 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1FEF38BF76;
- Fri,  8 Mar 2019 09:53:32 +0100 (CET)
-Subject: Re: [PATCH v5 10/10] powerpc/mm: Detect bad KUAP faults
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20190308011619.22402-1-mpe@ellerman.id.au>
- <20190308011619.22402-10-mpe@ellerman.id.au>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <f1332a90-4404-8226-baae-f586c3f21fbb@c-s.fr>
-Date: Fri, 8 Mar 2019 09:53:31 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44G46N3KYczDqHv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 21:50:50 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B3132A78;
+ Fri,  8 Mar 2019 02:50:47 -0800 (PST)
+Received: from [10.1.196.69] (e112269-lin.cambridge.arm.com [10.1.196.69])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CB00E3F706;
+ Fri,  8 Mar 2019 02:50:43 -0800 (PST)
+Subject: Re: [PATCH v4 04/19] powerpc: mm: Add p?d_large() definitions
+To: Mike Rapoport <rppt@linux.ibm.com>
+References: <20190306155031.4291-1-steven.price@arm.com>
+ <20190306155031.4291-5-steven.price@arm.com>
+ <20190308083744.GA6592@rapoport-lnx>
+From: Steven Price <steven.price@arm.com>
+Message-ID: <a2103947-4551-6f6d-4082-0dca4efd1d06@arm.com>
+Date: Fri, 8 Mar 2019 10:50:42 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <20190308011619.22402-10-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20190308083744.GA6592@rapoport-lnx>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -105,163 +60,49 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, "Liang, Kan" <kan.liang@linux.intel.com>,
+ x86@kernel.org, Ingo Molnar <mingo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ kvm-ppc@vger.kernel.org, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
+ James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 08/03/2019 à 02:16, Michael Ellerman a écrit :
-> When KUAP is enabled we have logic to detect page faults that occur
-> outside of a valid user access region and are blocked by the AMR.
+On 08/03/2019 08:37, Mike Rapoport wrote:
+> On Wed, Mar 06, 2019 at 03:50:16PM +0000, Steven Price wrote:
+>> walk_page_range() is going to be allowed to walk page tables other than
+>> those of user space. For this it needs to know when it has reached a
+>> 'leaf' entry in the page tables. This information is provided by the
+>> p?d_large() functions/macros.
+>>
+>> For powerpc pmd_large() was already implemented, so hoist it out of the
+>> CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
+>>
+>> Also since we now have a pmd_large always implemented we can drop the
+>> pmd_is_leaf() function.
+>>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Michael Ellerman <mpe@ellerman.id.au>
+>> CC: linuxppc-dev@lists.ozlabs.org
+>> CC: kvm-ppc@vger.kernel.org
+>> Signed-off-by: Steven Price <steven.price@arm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
 > 
-> What we don't have at the moment is logic to detect a fault *within* a
-> valid user access region, that has been incorrectly blocked by AMR.
-> This is not meant to ever happen, but it can if we incorrectly
-> save/restore the AMR, or if the AMR was overwritten for some other
-> reason.
-> 
-> Currently if that happens we assume it's just a regular fault that
-> will be corrected by handling the fault normally, so we just return.
-> But there is nothing the fault handling code can do to fix it, so the
-> fault just happens again and we spin forever, leading to soft lockups.
-> 
-> So add some logic to detect that case and WARN() if we ever see it.
-> Arguably it should be a BUG(), but it's more polite to fail the access
-> and let the kernel continue, rather than taking down the box. There
-> should be no data integrity issue with failing the fault rather than
-> BUG'ing, as we're just going to disallow an access that should have
-> been allowed.
-> 
-> To make the code a little easier to follow, unroll the condition at
-> the end of bad_kernel_fault() and comment each case, before adding the
-> call to bad_kuap_fault().
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
-> 
-> v5: New.
-> 
->   .../powerpc/include/asm/book3s/64/kup-radix.h | 12 +++++++++
->   arch/powerpc/include/asm/kup.h                |  1 +
->   arch/powerpc/mm/fault.c                       | 25 ++++++++++++++++---
->   3 files changed, 35 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-> index 3d60b04fc3f6..8d2ddc61e92e 100644
-> --- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
-> +++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
-> @@ -100,6 +100,18 @@ static inline void prevent_user_access(void __user *to, const void __user *from,
->   	set_kuap(AMR_KUAP_BLOCKED);
->   }
->   
-> +static inline bool bad_kuap_fault(struct pt_regs *regs, bool is_write)
-> +{
-> +	if (mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
-> +	    ((is_write && (regs->kuap & AMR_KUAP_BLOCK_WRITE)) ||
-> +	     (!is_write && (regs->kuap & AMR_KUAP_BLOCK_READ))))
-> +	{
+> There is one more definition of pmd_large() in
+> arch/powerpc/include/asm/pgtable.h
 
-Should this { go on the previous line ?
+True. That is a #define so will work correctly (it will override the
+generic version). Since it is only a dummy definition (always returns 0)
+it could be removed, but that would need to be in a separate patch after
+the asm-generic versions have been added to avoid breaking bisection.
 
-> +		WARN(true, "Bug: %s fault blocked by AMR!", is_write ? "Write" : "Read");
-> +		return true;
-
-Could just be
-	return WARN(true, ....)
-
-Or even
-	return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
-	    ((is_write && (regs->kuap & AMR_KUAP_BLOCK_WRITE)) ||
-	     (!is_write && (regs->kuap & AMR_KUAP_BLOCK_READ))), ...);
-
-> +	}
-> +
-> +	return false;
-> +}
->   #endif /* CONFIG_PPC_KUAP */
->   
->   #endif /* __ASSEMBLY__ */
-> diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-> index f79d4d970852..ccbd2a249575 100644
-> --- a/arch/powerpc/include/asm/kup.h
-> +++ b/arch/powerpc/include/asm/kup.h
-> @@ -28,6 +28,7 @@ static inline void prevent_user_access(void __user *to, const void __user *from,
->   				       unsigned long size) { }
->   static inline void allow_read_from_user(const void __user *from, unsigned long size) {}
->   static inline void allow_write_to_user(void __user *to, unsigned long size) {}
-> +static inline bool bad_kuap_fault(struct pt_regs *regs, bool is_write) { return false; }
->   #endif /* CONFIG_PPC_KUAP */
->   
->   static inline void prevent_read_from_user(const void __user *from, unsigned long size)
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> index 463d1e9d026e..b5d3578d9f65 100644
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -44,6 +44,7 @@
->   #include <asm/mmu_context.h>
->   #include <asm/siginfo.h>
->   #include <asm/debug.h>
-> +#include <asm/kup.h>
->   
->   static inline bool notify_page_fault(struct pt_regs *regs)
->   {
-> @@ -224,7 +225,7 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr,
->   
->   /* Is this a bad kernel fault ? */
->   static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
-> -			     unsigned long address)
-> +			     unsigned long address, bool is_write)
-
-We have regs, do we need is_write in addition ?
-
-Christophe
-
->   {
->   	int is_exec = TRAP(regs) == 0x400;
->   
-> @@ -235,6 +236,9 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
->   				    address >= TASK_SIZE ? "exec-protected" : "user",
->   				    address,
->   				    from_kuid(&init_user_ns, current_uid()));
-> +
-> +		// Kernel exec fault is always bad
-> +		return true;
->   	}
->   
->   	if (!is_exec && address < TASK_SIZE && (error_code & DSISR_PROTFAULT) &&
-> @@ -244,7 +248,22 @@ static bool bad_kernel_fault(struct pt_regs *regs, unsigned long error_code,
->   				    from_kuid(&init_user_ns, current_uid()));
->   	}
->   
-> -	return is_exec || (address >= TASK_SIZE) || !search_exception_tables(regs->nip);
-> +	// Kernel fault on kernel address is bad
-> +	if (address >= TASK_SIZE)
-> +		return true;
-> +
-> +	// Fault on user outside of certain regions (eg. copy_tofrom_user()) is bad
-> +	if (!search_exception_tables(regs->nip))
-> +		return true;
-> +
-> +	// Read/write fault in a valid region (the exception table search passed
-> +	// above), but blocked by KUAP is bad, it can never succeed.
-> +	if (bad_kuap_fault(regs, is_write))
-> +		return true;
-> +
-> +	// What's left? Kernel fault on user in well defined regions (extable
-> +	// matched), and allowed by KUAP in the faulting context.
-> +	return false;
->   }
->   
->   static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
-> @@ -467,7 +486,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->   	 * take a page fault to a kernel address or a page fault to a user
->   	 * address outside of dedicated places
->   	 */
-> -	if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address)))
-> +	if (unlikely(!is_user && bad_kernel_fault(regs, error_code, address, is_write)))
->   		return SIGSEGV;
->   
->   	/*
-> 
+Steve
