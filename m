@@ -2,59 +2,96 @@ Return-Path: <SRS0=I4jZ=RL=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57BE6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 10:58:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67414C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 15:35:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2F0D20851
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 10:58:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2F0D20851
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id E2B54208E4
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 15:35:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2B54208E4
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44G4HG5Nc9zDqJP
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Mar 2019 21:58:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44GBQk1RYRzDqHL
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 02:35:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=ego@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44G4DS0Z1lzDq64
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Mar 2019 21:56:08 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
- [10.5.11.14])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 1ADB830EBE80;
- Fri,  8 Mar 2019 10:56:06 +0000 (UTC)
-Received: from [10.40.204.24] (ovpn-204-24.brq.redhat.com [10.40.204.24])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 6C3D817D61;
- Fri,  8 Mar 2019 10:56:04 +0000 (UTC)
-Subject: Re: [PATCH v2] powerpc/mm: move warning from resize_hpt_for_hotplug()
-To: linux-kernel@vger.kernel.org
-References: <20190308105413.4302-1-lvivier@redhat.com>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <e94638bb-11b4-7a08-3aba-fd3610add0b5@redhat.com>
-Date: Fri, 8 Mar 2019 11:56:03 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.8.0
-MIME-Version: 1.0
-In-Reply-To: <20190308105413.4302-1-lvivier@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.46]); Fri, 08 Mar 2019 10:56:06 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44GBNn2WsxzDqJ3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2019 02:33:44 +1100 (AEDT)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x28FT6EI026216
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 Mar 2019 10:33:42 -0500
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r3s366x0a-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Mar 2019 10:33:41 -0500
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 8 Mar 2019 15:33:41 -0000
+Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
+ by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 8 Mar 2019 15:33:38 -0000
+Received: from b03ledav006.gho.boulder.ibm.com
+ (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x28FXb4025100504
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 8 Mar 2019 15:33:37 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 87FAFC6057;
+ Fri,  8 Mar 2019 15:33:37 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 38402C6059;
+ Fri,  8 Mar 2019 15:33:37 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.102.1.126])
+ by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Fri,  8 Mar 2019 15:33:37 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+ id 560D92E2D49; Fri,  8 Mar 2019 21:03:34 +0530 (IST)
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [PATCH] pseries/energy: Use OF accessor functions to read ibm,
+ drc-indexes
+Date: Fri,  8 Mar 2019 21:03:24 +0530
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+x-cbid: 19030815-0036-0000-0000-00000A95EEC4
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010727; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01171437; UDB=6.00612311; IPR=6.00952080; 
+ MB=3.00025893; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-08 15:33:40
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19030815-0037-0000-0000-00004AF751AD
+Message-Id: <1552059204-18626-1-git-send-email-ego@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-08_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903080108
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,126 +103,73 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: "Pavithra R. Prakash" <pavrampu@in.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I forgot the version change note:
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-  v2: add warning messages for H_PARAMETER and H_RESOURCE
+In cpu_to_drc_index() in the case when FW_FEATURE_DRC_INFO is absent,
+we currently use of_read_property() to obtain the pointer to the array
+corresponding to the property "ibm,drc-indexes". The elements of this
+array are of type __be32, but are accessed without any conversion to
+the OS-endianness, which is buggy on a Little Endian OS.
 
-Thanks,
-Laurent
+Fix this by using of_property_read_u32_index() accessor function to
+safely read the elements of the array.
 
-On 08/03/2019 11:54, Laurent Vivier wrote:
-> resize_hpt_for_hotplug() reports a warning when it cannot
-> resize the hash page table ("Unable to resize hash page
-> table to target order") but in some cases it's not a problem
-> and can make user thinks something has not worked properly.
-> 
-> This patch moves the warning to arch_remove_memory() to
-> only report the problem when it is needed.
-> 
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> ---
->  arch/powerpc/include/asm/sparsemem.h  |  4 ++--
->  arch/powerpc/mm/hash_utils_64.c       | 17 ++++++-----------
->  arch/powerpc/mm/mem.c                 |  3 ++-
->  arch/powerpc/platforms/pseries/lpar.c |  3 ++-
->  4 files changed, 12 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-> index 68da49320592..3192d454a733 100644
-> --- a/arch/powerpc/include/asm/sparsemem.h
-> +++ b/arch/powerpc/include/asm/sparsemem.h
-> @@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long start, unsigned long end, int ni
->  extern int remove_section_mapping(unsigned long start, unsigned long end);
->  
->  #ifdef CONFIG_PPC_BOOK3S_64
-> -extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
-> +extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
->  #else
-> -static inline void resize_hpt_for_hotplug(unsigned long new_mem_size) { }
-> +static inline int resize_hpt_for_hotplug(unsigned long new_mem_size) { return 0; }
->  #endif
->  
->  #ifdef CONFIG_NUMA
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 0cc7fbc3bd1c..40bb2a8326bb 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -755,12 +755,12 @@ static unsigned long __init htab_get_table_size(void)
->  }
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> -void resize_hpt_for_hotplug(unsigned long new_mem_size)
-> +int resize_hpt_for_hotplug(unsigned long new_mem_size)
->  {
->  	unsigned target_hpt_shift;
->  
->  	if (!mmu_hash_ops.resize_hpt)
-> -		return;
-> +		return 0;
->  
->  	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
->  
-> @@ -773,15 +773,10 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
->  	 * current shift
->  	 */
->  	if ((target_hpt_shift > ppc64_pft_size)
-> -	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
-> -		int rc;
-> -
-> -		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
-> -		if (rc && (rc != -ENODEV))
-> -			printk(KERN_WARNING
-> -			       "Unable to resize hash page table to target order %d: %d\n",
-> -			       target_hpt_shift, rc);
-> -	}
-> +	    || (target_hpt_shift < (ppc64_pft_size - 1)))
-> +		return mmu_hash_ops.resize_hpt(target_hpt_shift);
-> +
-> +	return 0;
->  }
->  
->  int hash__create_section_mapping(unsigned long start, unsigned long end, int nid)
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 33cc6f676fa6..0d40d970cf4a 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -169,7 +169,8 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
->  	 */
->  	vm_unmap_aliases();
->  
-> -	resize_hpt_for_hotplug(memblock_phys_mem_size());
-> +	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) == -ENOSPC)
-> +		pr_warn("Hash collision while resizing HPT\n");
->  
->  	return ret;
->  }
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index f2a9f0adc2d3..1034ef1fe2b4 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -901,8 +901,10 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
->  		break;
->  
->  	case H_PARAMETER:
-> +		pr_warn("Invalid argument from H_RESIZE_HPT_PREPARE\n");
->  		return -EINVAL;
->  	case H_RESOURCE:
-> +		pr_warn("Operation not permitted from H_RESIZE_HPT_PREPARE\n");
->  		return -EPERM;
->  	default:
->  		pr_warn("Unexpected error %d from H_RESIZE_HPT_PREPARE\n", rc);
-> @@ -918,7 +920,6 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
->  	if (rc != 0) {
->  		switch (state.commit_rc) {
->  		case H_PTEG_FULL:
-> -			pr_warn("Hash collision while resizing HPT\n");
->  			return -ENOSPC;
->  
->  		default:
-> 
+Fixes: commit e83636ac3334 ("pseries/drc-info: Search DRC properties for CPU indexes")
+Cc: <stable@vger.kernel.org> #v4.16+
+Reported-by: Pavithra R. Prakash <pavrampu@in.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/pseries_energy.c | 27 ++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index 6ed2212..1c4d1ba 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -77,18 +77,27 @@ static u32 cpu_to_drc_index(int cpu)
+ 
+ 		ret = drc.drc_index_start + (thread_index * drc.sequential_inc);
+ 	} else {
+-		const __be32 *indexes;
+-
+-		indexes = of_get_property(dn, "ibm,drc-indexes", NULL);
+-		if (indexes == NULL)
+-			goto err_of_node_put;
++		u32 nr_drc_indexes, thread_drc_index;
+ 
+ 		/*
+-		 * The first element indexes[0] is the number of drc_indexes
+-		 * returned in the list.  Hence thread_index+1 will get the
+-		 * drc_index corresponding to core number thread_index.
++		 * The first element of ibm,drc-indexes array is the
++		 * number of drc_indexes returned in the list.  Hence
++		 * thread_index+1 will get the drc_index corresponding
++		 * to core number thread_index.
+ 		 */
+-		ret = indexes[thread_index + 1];
++		rc = of_property_read_u32_index(dn, "ibm,drc-indexes",
++						0, &nr_drc_indexes);
++		if (rc)
++			goto err_of_node_put;
++
++		WARN_ON(thread_index > nr_drc_indexes);
++		rc = of_property_read_u32_index(dn, "ibm,drc-indexes",
++						thread_index + 1,
++						&thread_drc_index);
++		if (rc)
++			goto err_of_node_put;
++
++		ret = thread_drc_index;
+ 	}
+ 
+ 	rc = 0;
+-- 
+1.9.4
 
