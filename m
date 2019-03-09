@@ -2,94 +2,101 @@ Return-Path: <SRS0=JAc6=RM=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB0F9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 12:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E29AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 12:52:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 231A8207E0
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 12:09:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 231A8207E0
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D954B20836
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 12:51:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WujHpPdx"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D954B20836
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Gjpt6jQkzDqDM
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 23:09:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44GklZ4KD0zDqGZ
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  9 Mar 2019 23:51:54 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Gkj65zTGzDq6N
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2019 23:49:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WujHpPdx"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44Gkj61frpz8tPx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2019 23:49:46 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44Gkj60Nw7z9s70; Sat,  9 Mar 2019 23:49:46 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WujHpPdx"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44GjmZ5wQ7zDqCR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Mar 2019 23:07:40 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x29BsKsF102185
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 9 Mar 2019 07:07:37 -0500
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2r4ajmmd8w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 Mar 2019 07:07:37 -0500
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Sat, 9 Mar 2019 12:07:36 -0000
-Received: from b03cxnp08027.gho.boulder.ibm.com (9.17.130.19)
- by e32.co.us.ibm.com (192.168.1.132) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sat, 9 Mar 2019 12:07:33 -0000
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x29C7Wpv52822224
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sat, 9 Mar 2019 12:07:32 GMT
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EA445BE054;
- Sat,  9 Mar 2019 12:07:31 +0000 (GMT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 80886BE05A;
- Sat,  9 Mar 2019 12:07:28 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.71.67])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP;
- Sat,  9 Mar 2019 12:07:28 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: dan.j.williams@intel.com, Ross Zwisler <zwisler@kernel.org>,
- Jan Kara <jack@suse.cz>
-Subject: [PATCH v2] fs/dax: deposit pagetable even when installing zero page
-Date: Sat,  9 Mar 2019 17:37:21 +0530
-X-Mailer: git-send-email 2.20.1
+ by ozlabs.org (Postfix) with ESMTPS id 44Gkj30X9Xz9s71
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Mar 2019 23:49:41 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Gkhv4y4zz9vRZk;
+ Sat,  9 Mar 2019 13:49:35 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=WujHpPdx; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id SMLMKhzvKavW; Sat,  9 Mar 2019 13:49:35 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Gkhv3j6Wz9vRZj;
+ Sat,  9 Mar 2019 13:49:35 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1552135775; bh=AaNWkZW4ECHnz0Z8otSqEAsnWULXLIJaJlvb9cP2WTk=;
+ h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
+ b=WujHpPdxR+arhhL25rv6oVdz3inLHc1430+QTwBvZkZMord7/eshxtrOIc9rwwwY5
+ /F9LPb4vNvLIJ1xWEsOaIKZQAJxnL928KsSwuF4s0jMxjVP/5CE5wSD0E7TZTctMGp
+ jEhyZy4lGXtmNHoDudqVvSJuks8e9m+4iH2ETRvg=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C82F58BFBC;
+ Sat,  9 Mar 2019 13:49:36 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id xexg7uXxzVaI; Sat,  9 Mar 2019 13:49:36 +0100 (CET)
+Received: from [192.168.232.53] (unknown [192.168.232.53])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 605718B806;
+ Sat,  9 Mar 2019 13:49:36 +0100 (CET)
+Subject: Re: [PATCH v5 10/10] powerpc/mm: Detect bad KUAP faults
+From: christophe leroy <christophe.leroy@c-s.fr>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-10-mpe@ellerman.id.au>
+ <f1332a90-4404-8226-baae-f586c3f21fbb@c-s.fr>
+Message-ID: <8d24e5eb-7313-73d3-fd25-ec9e73e7abfc@c-s.fr>
+Date: Sat, 9 Mar 2019 13:49:31 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
+In-Reply-To: <f1332a90-4404-8226-baae-f586c3f21fbb@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19030912-0004-0000-0000-000014EC02DD
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010732; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01171848; UDB=6.00612557; IPR=6.00952491; 
- MB=3.00025905; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-09 12:07:35
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19030912-0005-0000-0000-00008AD90E02
-Message-Id: <20190309120721.21416-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-09_11:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903090092
+X-Antivirus: Avast (VPS 190309-0, 09/03/2019), Outbound message
+X-Antivirus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,106 +108,192 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-nvdimm@lists.01.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linux-mm@kvack.org, Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Architectures like ppc64 use the deposited page table to store hardware
-page table slot information. Make sure we deposit a page table when
-using zero page at the pmd level for hash.
 
-Without this we hit
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc000000000082a74
-Oops: Kernel access of bad area, sig: 11 [#1]
-....
+Le 08/03/2019 à 09:53, Christophe Leroy a écrit :
+> 
+> 
+> Le 08/03/2019 à 02:16, Michael Ellerman a écrit :
+>> When KUAP is enabled we have logic to detect page faults that occur
+>> outside of a valid user access region and are blocked by the AMR.
+>>
+>> What we don't have at the moment is logic to detect a fault *within* a
+>> valid user access region, that has been incorrectly blocked by AMR.
+>> This is not meant to ever happen, but it can if we incorrectly
+>> save/restore the AMR, or if the AMR was overwritten for some other
+>> reason.
+>>
+>> Currently if that happens we assume it's just a regular fault that
+>> will be corrected by handling the fault normally, so we just return.
+>> But there is nothing the fault handling code can do to fix it, so the
+>> fault just happens again and we spin forever, leading to soft lockups.
+>>
+>> So add some logic to detect that case and WARN() if we ever see it.
+>> Arguably it should be a BUG(), but it's more polite to fail the access
+>> and let the kernel continue, rather than taking down the box. There
+>> should be no data integrity issue with failing the fault rather than
+>> BUG'ing, as we're just going to disallow an access that should have
+>> been allowed.
+>>
+>> To make the code a little easier to follow, unroll the condition at
+>> the end of bad_kernel_fault() and comment each case, before adding the
+>> call to bad_kuap_fault().
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>
+>> v5: New.
+>>
+>>   .../powerpc/include/asm/book3s/64/kup-radix.h | 12 +++++++++
+>>   arch/powerpc/include/asm/kup.h                |  1 +
+>>   arch/powerpc/mm/fault.c                       | 25 ++++++++++++++++---
+>>   3 files changed, 35 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/book3s/64/kup-radix.h 
+>> b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+>> index 3d60b04fc3f6..8d2ddc61e92e 100644
+>> --- a/arch/powerpc/include/asm/book3s/64/kup-radix.h
+>> +++ b/arch/powerpc/include/asm/book3s/64/kup-radix.h
+>> @@ -100,6 +100,18 @@ static inline void prevent_user_access(void 
+>> __user *to, const void __user *from,
+>>       set_kuap(AMR_KUAP_BLOCKED);
+>>   }
+>> +static inline bool bad_kuap_fault(struct pt_regs *regs, bool is_write)
+>> +{
+>> +    if (mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
+>> +        ((is_write && (regs->kuap & AMR_KUAP_BLOCK_WRITE)) ||
+>> +         (!is_write && (regs->kuap & AMR_KUAP_BLOCK_READ))))
+>> +    {
+> 
+> Should this { go on the previous line ?
+> 
+>> +        WARN(true, "Bug: %s fault blocked by AMR!", is_write ? 
+>> "Write" : "Read");
+>> +        return true;
+> 
+> Could just be
+>      return WARN(true, ....)
+> 
+> Or even
+>      return WARN(mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
+>          ((is_write && (regs->kuap & AMR_KUAP_BLOCK_WRITE)) ||
+>           (!is_write && (regs->kuap & AMR_KUAP_BLOCK_READ))), ...);
 
-NIP [c000000000082a74] __hash_page_thp+0x224/0x5b0
-LR [c0000000000829a4] __hash_page_thp+0x154/0x5b0
-Call Trace:
- hash_page_mm+0x43c/0x740
- do_hash_page+0x2c/0x3c
- copy_from_iter_flushcache+0xa4/0x4a0
- pmem_copy_from_iter+0x2c/0x50 [nd_pmem]
- dax_copy_from_iter+0x40/0x70
- dax_iomap_actor+0x134/0x360
- iomap_apply+0xfc/0x1b0
- dax_iomap_rw+0xac/0x130
- ext4_file_write_iter+0x254/0x460 [ext4]
- __vfs_write+0x120/0x1e0
- vfs_write+0xd8/0x220
- SyS_write+0x6c/0x110
- system_call+0x3c/0x130
+Could also be simplified as follows since (is_write && ...) and 
+(!is_write && ...) are mutually exclusive:
 
-Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
-Reviewed-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+mmu_has_feature(MMU_FTR_RADIX_KUAP) &&
+(regs->kuap & (is_write ? AMR_KUAP_BLOCK_WRITE : AMR_KUAP_BLOCK_READ))
+
+Christophe
+
+> 
+>> +    }
+>> +
+>> +    return false;
+>> +}
+>>   #endif /* CONFIG_PPC_KUAP */
+>>   #endif /* __ASSEMBLY__ */
+>> diff --git a/arch/powerpc/include/asm/kup.h 
+>> b/arch/powerpc/include/asm/kup.h
+>> index f79d4d970852..ccbd2a249575 100644
+>> --- a/arch/powerpc/include/asm/kup.h
+>> +++ b/arch/powerpc/include/asm/kup.h
+>> @@ -28,6 +28,7 @@ static inline void prevent_user_access(void __user 
+>> *to, const void __user *from,
+>>                          unsigned long size) { }
+>>   static inline void allow_read_from_user(const void __user *from, 
+>> unsigned long size) {}
+>>   static inline void allow_write_to_user(void __user *to, unsigned 
+>> long size) {}
+>> +static inline bool bad_kuap_fault(struct pt_regs *regs, bool 
+>> is_write) { return false; }
+>>   #endif /* CONFIG_PPC_KUAP */
+>>   static inline void prevent_read_from_user(const void __user *from, 
+>> unsigned long size)
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index 463d1e9d026e..b5d3578d9f65 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -44,6 +44,7 @@
+>>   #include <asm/mmu_context.h>
+>>   #include <asm/siginfo.h>
+>>   #include <asm/debug.h>
+>> +#include <asm/kup.h>
+>>   static inline bool notify_page_fault(struct pt_regs *regs)
+>>   {
+>> @@ -224,7 +225,7 @@ static int mm_fault_error(struct pt_regs *regs, 
+>> unsigned long addr,
+>>   /* Is this a bad kernel fault ? */
+>>   static bool bad_kernel_fault(struct pt_regs *regs, unsigned long 
+>> error_code,
+>> -                 unsigned long address)
+>> +                 unsigned long address, bool is_write)
+> 
+> We have regs, do we need is_write in addition ?
+> 
+> Christophe
+> 
+>>   {
+>>       int is_exec = TRAP(regs) == 0x400;
+>> @@ -235,6 +236,9 @@ static bool bad_kernel_fault(struct pt_regs *regs, 
+>> unsigned long error_code,
+>>                       address >= TASK_SIZE ? "exec-protected" : "user",
+>>                       address,
+>>                       from_kuid(&init_user_ns, current_uid()));
+>> +
+>> +        // Kernel exec fault is always bad
+>> +        return true;
+>>       }
+>>       if (!is_exec && address < TASK_SIZE && (error_code & 
+>> DSISR_PROTFAULT) &&
+>> @@ -244,7 +248,22 @@ static bool bad_kernel_fault(struct pt_regs 
+>> *regs, unsigned long error_code,
+>>                       from_kuid(&init_user_ns, current_uid()));
+>>       }
+>> -    return is_exec || (address >= TASK_SIZE) || 
+>> !search_exception_tables(regs->nip);
+>> +    // Kernel fault on kernel address is bad
+>> +    if (address >= TASK_SIZE)
+>> +        return true;
+>> +
+>> +    // Fault on user outside of certain regions (eg. 
+>> copy_tofrom_user()) is bad
+>> +    if (!search_exception_tables(regs->nip))
+>> +        return true;
+>> +
+>> +    // Read/write fault in a valid region (the exception table search 
+>> passed
+>> +    // above), but blocked by KUAP is bad, it can never succeed.
+>> +    if (bad_kuap_fault(regs, is_write))
+>> +        return true;
+>> +
+>> +    // What's left? Kernel fault on user in well defined regions 
+>> (extable
+>> +    // matched), and allowed by KUAP in the faulting context.
+>> +    return false;
+>>   }
+>>   static bool bad_stack_expansion(struct pt_regs *regs, unsigned long 
+>> address,
+>> @@ -467,7 +486,7 @@ static int __do_page_fault(struct pt_regs *regs, 
+>> unsigned long address,
+>>        * take a page fault to a kernel address or a page fault to a user
+>>        * address outside of dedicated places
+>>        */
+>> -    if (unlikely(!is_user && bad_kernel_fault(regs, error_code, 
+>> address)))
+>> +    if (unlikely(!is_user && bad_kernel_fault(regs, error_code, 
+>> address, is_write)))
+>>           return SIGSEGV;
+>>       /*
+>>
+
 ---
-Changes from v1:
-* Add reviewed-by:
-* Add Fixes:
-
- fs/dax.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-diff --git a/fs/dax.c b/fs/dax.c
-index 6959837cc465..01bfb2ac34f9 100644
---- a/fs/dax.c
-+++ b/fs/dax.c
-@@ -33,6 +33,7 @@
- #include <linux/sizes.h>
- #include <linux/mmu_notifier.h>
- #include <linux/iomap.h>
-+#include <asm/pgalloc.h>
- #include "internal.h"
- 
- #define CREATE_TRACE_POINTS
-@@ -1410,7 +1411,9 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
- {
- 	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
- 	unsigned long pmd_addr = vmf->address & PMD_MASK;
-+	struct vm_area_struct *vma = vmf->vma;
- 	struct inode *inode = mapping->host;
-+	pgtable_t pgtable = NULL;
- 	struct page *zero_page;
- 	spinlock_t *ptl;
- 	pmd_t pmd_entry;
-@@ -1425,12 +1428,22 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
- 	*entry = dax_insert_entry(xas, mapping, vmf, *entry, pfn,
- 			DAX_PMD | DAX_ZERO_PAGE, false);
- 
-+	if (arch_needs_pgtable_deposit()) {
-+		pgtable = pte_alloc_one(vma->vm_mm);
-+		if (!pgtable)
-+			return VM_FAULT_OOM;
-+	}
-+
- 	ptl = pmd_lock(vmf->vma->vm_mm, vmf->pmd);
- 	if (!pmd_none(*(vmf->pmd))) {
- 		spin_unlock(ptl);
- 		goto fallback;
- 	}
- 
-+	if (pgtable) {
-+		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, pgtable);
-+		mm_inc_nr_ptes(vma->vm_mm);
-+	}
- 	pmd_entry = mk_pmd(zero_page, vmf->vma->vm_page_prot);
- 	pmd_entry = pmd_mkhuge(pmd_entry);
- 	set_pmd_at(vmf->vma->vm_mm, pmd_addr, vmf->pmd, pmd_entry);
-@@ -1439,6 +1452,8 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
- 	return VM_FAULT_NOPAGE;
- 
- fallback:
-+	if (pgtable)
-+		pte_free(vma->vm_mm, pgtable);
- 	trace_dax_pmd_load_hole_fallback(inode, vmf, zero_page, *entry);
- 	return VM_FAULT_FALLBACK;
- }
--- 
-2.20.1
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
 
