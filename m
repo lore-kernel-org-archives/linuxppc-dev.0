@@ -2,25 +2,26 @@ Return-Path: <SRS0=/OnI=RO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5FAAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 11:56:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC9CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 11:58:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36BC7206BA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 11:56:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BBE91206BA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 11:58:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="mzxnaLLr"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36BC7206BA
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="qpS1FwY0"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBE91206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44HxQk2bSkzDq8F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 22:56:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44HxSh469XzDqDf
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 22:58:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -28,45 +29,46 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="mzxnaLLr"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="qpS1FwY0"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44HxLR4BxNzDq8M
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44HxLR48nXzDq8F
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 22:52:47 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id CBD68419DA;
- Mon, 11 Mar 2019 11:52:42 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 2CB764193A;
+ Mon, 11 Mar 2019 11:52:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
- :x-mailer:message-id:date:date:subject:subject:from:from
- :received:received:received; s=mta-01; t=1552305161; x=
- 1554119562; bh=RBTt53yuCds8nwoB5wC7xfiR4F3PRY1w7pnv6OZB+k8=; b=m
- zxnaLLrRk/i/VrQxYxvQsAt1fi4vFl2oDz3fav3F+B4RnQOeAebC8oxL/9oPabTx
- 66YvL6/JrV00e6LIc+BmrE+KMwERaJ8rGAhyWuPDhJ1u8UN0OgYWTq/E3WYq8jKw
- alUbpCfulinuKJynVhbjhNdTw428E2iW2VGAyALpoU=
+ :references:in-reply-to:x-mailer:message-id:date:date:subject
+ :subject:from:from:received:received:received; s=mta-01; t=
+ 1552305163; x=1554119564; bh=1IMRsgwCAXCOMAa1/eZp+CJZbXa/pYIE6jw
+ jpgjSH2Y=; b=qpS1FwY0Qqrk1IwNn90iR9Y2+WfznLVQSpl/SI6mG3PF+h6nGIq
+ 89khg7wTCr1TF7pLl4Yq4EbzuFlmzoyXfs6zCF3nNMamDbSVqRkaY2i/CiQ+4JvG
+ 8rYi6tWI1oi0c4hegA63zqOUJ6+SXasQZe5wwrhcKVC7JsDPfuP6IZbM=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id AGNBNbt_2TEh; Mon, 11 Mar 2019 14:52:41 +0300 (MSK)
+ with ESMTP id DWS5X-y5FObW; Mon, 11 Mar 2019 14:52:43 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id A2E8E41200;
- Mon, 11 Mar 2019 14:52:40 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id A2B6541980;
+ Mon, 11 Mar 2019 14:52:41 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 11
  Mar 2019 14:52:40 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>
-Subject: [PATCH v5 0/8] powerpc/powernv/pci: Make hotplug self-sufficient,
- independent of FW and DT
-Date: Mon, 11 Mar 2019 14:52:25 +0300
-Message-ID: <20190311115233.6514-1-s.miroshnichenko@yadro.com>
+Subject: [PATCH v5 3/8] powerpc/pci: Create pci_dn on demand
+Date: Mon, 11 Mar 2019 14:52:28 +0300
+Message-ID: <20190311115233.6514-4-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190311115233.6514-1-s.miroshnichenko@yadro.com>
+References: <20190311115233.6514-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -92,86 +94,185 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patchset allows switching from the pnv_php module to the standard
-pciehp driver for PCIe hotplug functionality, if the platform supports it:
-PowerNV working on on top of the skiboot with the "core/pci: Sync VFs and
-the changes of bdfns between the firmware and the OS" [1] patch serie
-applied.
+If a struct pci_dn hasn't yet been created for the PCIe device (there was
+no DT node for it), allocate this structure and fill with info read from
+the device directly.
 
-The feature is activated by the "pci=realloc" command line argument.
+Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+---
+ arch/powerpc/kernel/pci_dn.c | 88 ++++++++++++++++++++++++++++++------
+ 1 file changed, 74 insertions(+), 14 deletions(-)
 
-The goal is ability to hotplug bridges full of devices in the future. The
-"Movable BARs" [2] is a platform-independent part of our work in this. The
-final part will be movable bus numbers to support inserting a bridge in the
-middle of an existing PCIe tree.
-
-Tested on POWER8 PowerNV+PHB3 ppc64le (our Vesnin server) with:
- - the pciehp driver active;
- - the pnv_php driver disabled;
- - The "pci=realloc" argument is passed;
- - surprise hotplug of an NVME disk works;
- - controlled hotplug of a network card with SR-IOV works;
- - activating of SR-IOV on a network card works;
- - [with extra patches] manually initiated (via sysfs) rescan has found
-   and turned on a hotplugged bridge;
- - Without "pci=realloc" works just as before.
-
-Changes since v4:
- - Fixed failing build when EEH is disabled in a kernel config;
- - Unfreeze the bus on EEH_IO_ERROR_VALUE(size), not only 0xffffffff;
- - Replaced the 0xff magic constant with phb->ioda.reserved_pe_idx;
- - Renamed create_pdn() -> pci_create_pdn_from_dev();
- - Renamed add_one_dev_pci_data(..., vf_index, ...) -> pci_alloc_pdn();
- - Renamed add_dev_pci_data() -> pci_create_vf_pdns();
- - Renamed remove_dev_pci_data() -> pci_destroy_vf_pdns();
- - Removed the patch fixing uninitialized IOMMU group - now it is fixed in
-   commit 8f5b27347e88 ("powerpc/powernv/sriov: Register IOMMU groups for
-   VFs")
-
-Changes since v3 [3]:
- - Subject changed;
- - Don't disable EEH during rescan anymore - instead just unfreeze the
-   target buses deliberately;
- - Add synchronization with the firmware when changing the PCIe topology;
- - Fixed for VFs;
- - Code cleanup.
-
-Changes since v2:
- - Don't reassign bus numbers on PowerNV by default (to retain the default
-   behavior), but only when pci=realloc is passed;
- - Less code affected;
- - pci_add_device_node_info is refactored with add_one_dev_pci_data;
- - Minor code cleanup.
-
-Changes since v1:
- - Fixed build for ppc64le and ppc64be when CONFIG_PCI_IOV is disabled;
- - Fixed build for ppc64e when CONFIG_EEH is disabled;
- - Fixed code style warnings.
-
-[1] https://lists.ozlabs.org/pipermail/skiboot/2019-March/013571.html
-[2] https://www.spinics.net/lists/linux-pci/msg79995.html
-[3] https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-September/178053.html
-
-Sergey Miroshnichenko (8):
-  powerpc/pci: Access PCI config space directly w/o pci_dn
-  powerpc/powernv/pci: Suppress an EEH error when reading an empty slot
-  powerpc/pci: Create pci_dn on demand
-  powerpc/pci: Reduce code duplication in pci_add_device_node_info
-  powerpc/pci/IOV: Add support for runtime enabling the VFs
-  powerpc/pci: Don't rely on DT is the PCI_REASSIGN_ALL_BUS is set
-  powerpc/powernv/pci: Hook up the writes to PCI_SECONDARY_BUS register
-  powerpc/powernv/pci: Enable reassigning the bus numbers
-
- arch/powerpc/include/asm/pci-bridge.h        |   4 +-
- arch/powerpc/include/asm/ppc-pci.h           |   1 +
- arch/powerpc/kernel/pci_dn.c                 | 170 ++++++++++-----
- arch/powerpc/kernel/rtas_pci.c               |  97 ++++++---
- arch/powerpc/platforms/powernv/eeh-powernv.c |   2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c    |   4 +-
- arch/powerpc/platforms/powernv/pci.c         | 205 +++++++++++++++++--
- arch/powerpc/platforms/pseries/pci.c         |   4 +-
- 8 files changed, 379 insertions(+), 108 deletions(-)
-
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 341ed71250f1..b594b055b2cf 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -33,6 +33,9 @@
+ #include <asm/firmware.h>
+ #include <asm/eeh.h>
+ 
++static struct pci_dn *pci_create_pdn_from_dev(struct pci_dev *pdev,
++					      struct pci_dn *parent);
++
+ /*
+  * The function is used to find the firmware data of one
+  * specific PCI device, which is attached to the indicated
+@@ -65,6 +68,9 @@ struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
+ 	dn = pci_bus_to_OF_node(pbus);
+ 	pdn = dn ? PCI_DN(dn) : NULL;
+ 
++	if (!pdn && pbus->self)
++		pdn = pbus->self->dev.archdata.pci_data;
++
+ 	return pdn;
+ }
+ 
+@@ -74,10 +80,13 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+ 	struct device_node *dn = NULL;
+ 	struct pci_dn *parent, *pdn;
+ 	struct pci_dev *pdev = NULL;
++	bool pdev_found = false;
+ 
+ 	/* Fast path: fetch from PCI device */
+ 	list_for_each_entry(pdev, &bus->devices, bus_list) {
+ 		if (pdev->devfn == devfn) {
++			pdev_found = true;
++
+ 			if (pdev->dev.archdata.pci_data)
+ 				return pdev->dev.archdata.pci_data;
+ 
+@@ -86,6 +95,9 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+ 		}
+ 	}
+ 
++	if (!pdev_found)
++		pdev = NULL;
++
+ 	/* Fast path: fetch from device node */
+ 	pdn = dn ? PCI_DN(dn) : NULL;
+ 	if (pdn)
+@@ -98,9 +110,12 @@ struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+ 
+ 	list_for_each_entry(pdn, &parent->child_list, list) {
+ 		if (pdn->busno == bus->number &&
+-                    pdn->devfn == devfn)
+-                        return pdn;
+-        }
++		    pdn->devfn == devfn) {
++			if (pdev)
++				pdev->dev.archdata.pci_data = pdn;
++			return pdn;
++		}
++	}
+ 
+ 	return NULL;
+ }
+@@ -130,17 +145,17 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+ 
+ 	list_for_each_entry(pdn, &parent->child_list, list) {
+ 		if (pdn->busno == pdev->bus->number &&
+-		    pdn->devfn == pdev->devfn)
++		    pdn->devfn == pdev->devfn) {
++			pdev->dev.archdata.pci_data = pdn;
+ 			return pdn;
++		}
+ 	}
+ 
+-	return NULL;
++	return pci_create_pdn_from_dev(pdev, parent);
+ }
+ 
+-#ifdef CONFIG_PCI_IOV
+-static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+-					   int vf_index,
+-					   int busno, int devfn)
++static struct pci_dn *pci_alloc_pdn(struct pci_dn *parent,
++				    int busno, int devfn)
+ {
+ 	struct pci_dn *pdn;
+ 
+@@ -156,7 +171,6 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 	pdn->parent = parent;
+ 	pdn->busno = busno;
+ 	pdn->devfn = devfn;
+-	pdn->vf_index = vf_index;
+ 	pdn->pe_number = IODA_INVALID_PE;
+ 	INIT_LIST_HEAD(&pdn->child_list);
+ 	INIT_LIST_HEAD(&pdn->list);
+@@ -164,7 +178,51 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+ 
+ 	return pdn;
+ }
+-#endif
++
++static struct pci_dn *pci_create_pdn_from_dev(struct pci_dev *pdev,
++					      struct pci_dn *parent)
++{
++	struct pci_dn *pdn = NULL;
++	u32 class_code;
++	u16 device_id;
++	u16 vendor_id;
++
++	if (!parent)
++		return NULL;
++
++	pdn = pci_alloc_pdn(parent, pdev->bus->busn_res.start, pdev->devfn);
++	pci_info(pdev, "Create a new pdn for devfn %2x\n", pdev->devfn / 8);
++
++	if (!pdn) {
++		pci_err(pdev, "%s: Failed to allocate pdn\n", __func__);
++		return NULL;
++	}
++
++	#ifdef CONFIG_EEH
++	if (!eeh_dev_init(pdn)) {
++		kfree(pdn);
++		pci_err(pdev, "%s: Failed to allocate edev\n", __func__);
++		return NULL;
++	}
++	#endif /* CONFIG_EEH */
++
++	pci_bus_read_config_word(pdev->bus, pdev->devfn,
++				 PCI_VENDOR_ID, &vendor_id);
++	pdn->vendor_id = vendor_id;
++
++	pci_bus_read_config_word(pdev->bus, pdev->devfn,
++				 PCI_DEVICE_ID, &device_id);
++	pdn->device_id = device_id;
++
++	pci_bus_read_config_dword(pdev->bus, pdev->devfn,
++				  PCI_CLASS_REVISION, &class_code);
++	class_code >>= 8;
++	pdn->class_code = class_code;
++
++	pdev->dev.archdata.pci_data = pdn;
++
++	return pdn;
++}
+ 
+ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ {
+@@ -189,15 +247,17 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+ 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
+ 		struct eeh_dev *edev __maybe_unused;
+ 
+-		pdn = add_one_dev_pci_data(parent, i,
+-					   pci_iov_virtfn_bus(pdev, i),
+-					   pci_iov_virtfn_devfn(pdev, i));
++		pdn = pci_alloc_pdn(parent,
++				    pci_iov_virtfn_bus(pdev, i),
++				    pci_iov_virtfn_devfn(pdev, i));
+ 		if (!pdn) {
+ 			dev_warn(&pdev->dev, "%s: Cannot create firmware data for VF#%d\n",
+ 				 __func__, i);
+ 			return NULL;
+ 		}
+ 
++		pdn->vf_index = i;
++
+ #ifdef CONFIG_EEH
+ 		/* Create the EEH device for the VF */
+ 		edev = eeh_dev_init(pdn);
 -- 
 2.20.1
 
