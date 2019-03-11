@@ -2,95 +2,54 @@ Return-Path: <SRS0=/OnI=RO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88F1EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 16:53:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F819C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 18:36:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id B81FC20643
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 16:53:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B81FC20643
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5D3EE20657
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 18:36:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D3EE20657
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44J41R6MW2zDqH1
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 03:53:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44J6Hk5SgszDqCx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 05:36:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44J3zb0l0bzDqGQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 03:51:54 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2BGn3Qo021212
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 12:51:52 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2r5tsvtecn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 12:51:52 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leonardo@linux.ibm.com>;
- Mon, 11 Mar 2019 16:51:51 -0000
-Received: from b03cxnp07028.gho.boulder.ibm.com (9.17.130.15)
- by e31.co.us.ibm.com (192.168.1.131) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 11 Mar 2019 16:51:48 -0000
-Received: from b03ledav006.gho.boulder.ibm.com
- (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2BGplxM28246044
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Mar 2019 16:51:47 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6A5D4C6055;
- Mon, 11 Mar 2019 16:51:47 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B7583C6057;
- Mon, 11 Mar 2019 16:51:45 +0000 (GMT)
-Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.41])
- by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
- Mon, 11 Mar 2019 16:51:45 +0000 (GMT)
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: kernel-team@lists.ubuntu.com
-Subject: [PATCH 19/20] KVM: PPC: Book3S HV: Don't use compound_order to
- determine host mapping size
-Date: Mon, 11 Mar 2019 13:50:50 -0300
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190311165051.1149-1-leonardo@linux.ibm.com>
-References: <20190311165051.1149-1-leonardo@linux.ibm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44J6Fj1dL7zDqGN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 05:34:16 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AD7E8374;
+ Mon, 11 Mar 2019 11:34:12 -0700 (PDT)
+Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B6A9F3F614;
+ Mon, 11 Mar 2019 11:34:09 -0700 (PDT)
+Date: Mon, 11 Mar 2019 18:34:03 +0000
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: "Haibo Xu (Arm Technology China)" <Haibo.Xu@arm.com>
+Subject: Re: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Message-ID: <20190311183403.GA31062@e107155-lin>
+References: <20190228183220.15626-1-sudeep.holla@arm.com>
+ <20190228183220.15626-4-sudeep.holla@arm.com>
+ <eb9ef619-4af8-71e1-5aee-0b6294ac488b@arm.com>
+ <20190304101205.GA1504@e107155-lin>
+ <96d59a68-e5e2-86d9-c707-a79aad438b76@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031116-8235-0000-0000-00000E6B63ED
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010739; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01172891; UDB=6.00613190; IPR=6.00953546; 
- MB=3.00025930; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-11 16:51:50
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031116-8236-0000-0000-000044BFB5DB
-Message-Id: <20190311165051.1149-20-leonardo@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-11_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=754 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903110120
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <96d59a68-e5e2-86d9-c707-a79aad438b76@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,160 +61,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Leonardo Bras <leonardo@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Steve Capper <Steve.Capper@arm.com>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ "jdike@addtoit.com" <jdike@addtoit.com>, "x86@kernel.org" <x86@kernel.org>,
+ Will Deacon <Will.Deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Bin Lu \(Arm Technology China\)" <Bin.Lu@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+(I thought I had sent this email, last Tuesday itself, but saw this in my
+draft today, something went wrong, sorry for the delay)
 
-THP paths can defer splitting compound pages until after the actual
-remap and TLB flushes to split a huge PMD/PUD. This causes radix
-partition scope page table mappings to get out of synch with the host
-qemu page table mappings.
+On Tue, Mar 05, 2019 at 02:14:47AM +0000, Haibo Xu (Arm Technology China) wrote:
+> On 2019/3/4 18:12, Sudeep Holla wrote:
+> > On Mon, Mar 04, 2019 at 08:25:28AM +0000, Haibo Xu (Arm Technology China) wrote:
+> >> On 2019/3/1 2:32, Sudeep Holla wrote:
+> >>> Now that we have a new hook ptrace_syscall_enter that can be called from
+> >>> syscall entry code and it handles PTRACE_SYSEMU in generic code, we
+> >>> can do some cleanup using the same in syscall_trace_enter.
+> >>>
+> >>> Further the extra logic to find single stepping PTRACE_SYSEMU_SINGLESTEP
+> >>> in syscall_slow_exit_work seems unnecessary. Let's remove the same.
+> >>
+> >> I think we should not change the logic here. Is so, it will double the report of syscall
+> >> when PTRACE_SYSEMU_SINGLESTEP is enabled.
+> >>
+> >
+> > I don't think that should happen, but I may be missing something.
+> > Can you explain how ?
+> >
+>
+> When PTRACE_SYSEMU_SINGLESTEP is enabled, both the _TIF_SYSCALL_EMU and
+> _TIF_SINGLESTEP flags are set, but ptrace only need to report(send SIGTRAP)
+> at the entry of a system call, no need to report at the exit of a system
+> call.
+>
+Sorry, but I still not get it, we have:
 
-This results in random memory corruption in the guest when running
-with THP. The easiest way to reproduce is use KVM balloon to free up
-a lot of memory in the guest and then shrink the balloon to give the
-memory back, while some work is being done in the guest.
+	step = ((flags & (_TIF_SINGLESTEP | _TIF_SYSCALL_EMU)) == _TIF_SINGLESTEP);
 
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 91 +++++++++++---------------
- 1 file changed, 37 insertions(+), 54 deletions(-)
+For me, this is same as:
+	step = ((flags & _TIF_SINGLESTEP) == _TIF_SINGLESTEP)
+	or
+	if (flags & _TIF_SINGLESTEP)
+		step = true;
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 7efc42538ccf..ae023d2256ef 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -538,8 +538,8 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 				   unsigned long ea, unsigned long dsisr)
- {
- 	struct kvm *kvm = vcpu->kvm;
--	unsigned long mmu_seq, pte_size;
--	unsigned long gpa, gfn, hva, pfn;
-+	unsigned long mmu_seq;
-+	unsigned long gpa, gfn, hva;
- 	struct kvm_memory_slot *memslot;
- 	struct page *page = NULL;
- 	long ret;
-@@ -636,9 +636,10 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	 */
- 	hva = gfn_to_hva_memslot(memslot, gfn);
- 	if (upgrade_p && __get_user_pages_fast(hva, 1, 1, &page) == 1) {
--		pfn = page_to_pfn(page);
- 		upgrade_write = true;
- 	} else {
-+		unsigned long pfn;
-+
- 		/* Call KVM generic code to do the slow-path check */
- 		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
- 					   writing, upgrade_p);
-@@ -652,63 +653,45 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		}
- 	}
- 
--	/* See if we can insert a 1GB or 2MB large PTE here */
--	level = 0;
--	if (page && PageCompound(page)) {
--		pte_size = PAGE_SIZE << compound_order(compound_head(page));
--		if (pte_size >= PUD_SIZE &&
--		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
--		    (hva & (PUD_SIZE - PAGE_SIZE))) {
--			level = 2;
--			pfn &= ~((PUD_SIZE >> PAGE_SHIFT) - 1);
--		} else if (pte_size >= PMD_SIZE &&
--			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
--			   (hva & (PMD_SIZE - PAGE_SIZE))) {
--			level = 1;
--			pfn &= ~((PMD_SIZE >> PAGE_SHIFT) - 1);
--		}
--	}
--
- 	/*
--	 * Compute the PTE value that we need to insert.
-+	 * Read the PTE from the process' radix tree and use that
-+	 * so we get the shift and attribute bits.
- 	 */
--	if (page) {
--		pgflags = _PAGE_READ | _PAGE_EXEC | _PAGE_PRESENT | _PAGE_PTE |
--			_PAGE_ACCESSED;
--		if (writing || upgrade_write)
--			pgflags |= _PAGE_WRITE | _PAGE_DIRTY;
--		pte = pfn_pte(pfn, __pgprot(pgflags));
-+	local_irq_disable();
-+	ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-+	pte = *ptep;
-+	local_irq_enable();
-+
-+	/* Get pte level from shift/size */
-+	if (shift == PUD_SHIFT &&
-+	    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
-+	    (hva & (PUD_SIZE - PAGE_SIZE))) {
-+		level = 2;
-+	} else if (shift == PMD_SHIFT &&
-+		   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
-+		   (hva & (PMD_SIZE - PAGE_SIZE))) {
-+		level = 1;
- 	} else {
--		/*
--		 * Read the PTE from the process' radix tree and use that
--		 * so we get the attribute bits.
--		 */
--		local_irq_disable();
--		ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
--		pte = *ptep;
--		local_irq_enable();
--		if (shift == PUD_SHIFT &&
--		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
--		    (hva & (PUD_SIZE - PAGE_SIZE))) {
--			level = 2;
--		} else if (shift == PMD_SHIFT &&
--			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
--			   (hva & (PMD_SIZE - PAGE_SIZE))) {
--			level = 1;
--		} else if (shift && shift != PAGE_SHIFT) {
--			/* Adjust PFN */
--			unsigned long mask = (1ul << shift) - PAGE_SIZE;
--			pte = __pte(pte_val(pte) | (hva & mask));
--		}
--		pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
--		if (writing || upgrade_write) {
--			if (pte_val(pte) & _PAGE_WRITE)
--				pte = __pte(pte_val(pte) | _PAGE_DIRTY);
--		} else {
--			pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-+		level = 0;
-+		if (shift > PAGE_SHIFT) {
-+			/*
-+			 * If the pte maps more than one page, bring over
-+			 * bits from the virtual address to get the real
-+			 * address of the specific single page we want.
-+			 */
-+			unsigned long rpnmask = (1ul << shift) - PAGE_SIZE;
-+			pte = __pte(pte_val(pte) | (hva & rpnmask));
- 		}
- 	}
- 
-+	pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
-+	if (writing || upgrade_write) {
-+		if (pte_val(pte) & _PAGE_WRITE)
-+			pte = __pte(pte_val(pte) | _PAGE_DIRTY);
-+	} else {
-+		pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-+	}
-+
- 	/* Allocate space in the tree and write the PTE */
- 	ret = kvmppc_create_pte(kvm, pte, gpa, level, mmu_seq);
- 
--- 
-2.20.1
+So when PTRACE_SYSEMU_SINGLESTEP, _TIF_SYSCALL_EMU and _TIF_SINGLESTEP
+are set and step evaluates to true.
 
+So dropping _TIF_SYSCALL_EMU here should be fine. Am I still missing
+something ?
+
+--
+Regards,
+Sudeep
