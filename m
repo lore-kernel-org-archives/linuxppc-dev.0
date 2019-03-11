@@ -2,70 +2,80 @@ Return-Path: <SRS0=/OnI=RO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAA9AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 12:54:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF772C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:35:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 69BFB2075C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 12:54:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 69BFB2075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=vault24.org
+	by mail.kernel.org (Postfix) with ESMTPS id E2D682087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:34:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="IB/CsufX"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E2D682087C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Hyj50rk3zDqCK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 23:54:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44HzcK68mQzDqGC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 00:34:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=vault24.org
- (client-ip=2600:3c03::f03c:91ff:fe96:b31a; helo=pinero.vault24.org;
- envelope-from=nuxi@vault24.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=yadro.com
+ (client-ip=89.207.88.251; helo=mta-01.yadro.com;
+ envelope-from=s.miroshnichenko@yadro.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=vault24.org
-X-Greylist: delayed 69419 seconds by postgrey-1.36 at bilbo;
- Mon, 11 Mar 2019 23:51:50 AEDT
-Received: from pinero.vault24.org (pinero.vault24.org
- [IPv6:2600:3c03::f03c:91ff:fe96:b31a])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ dmarc=pass (p=none dis=none) header.from=yadro.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="IB/CsufX"; 
+ dkim-atps=neutral
+Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44HyfZ0dpqzDqCH
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 23:51:48 +1100 (AEDT)
-Received: from feynman.vault24.org (c-98-243-50-21.hsd1.mi.comcast.net
- [98.243.50.21])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44HzXT26mRzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 00:31:36 +1100 (AEDT)
+Received: from localhost (unknown [127.0.0.1])
+ by mta-01.yadro.com (Postfix) with ESMTP id 9D7CF419DA;
+ Mon, 11 Mar 2019 13:31:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
+ content-type:content-type:content-transfer-encoding:mime-version
+ :references:in-reply-to:x-mailer:message-id:date:date:subject
+ :subject:from:from:received:received:received; s=mta-01; t=
+ 1552311091; x=1554125492; bh=A5ubc+8NetLWy7BN9IG3hEbaDHSG7hHtYX/
+ dxkrS/A4=; b=IB/CsufXEAgKUwkEXbUyAL/Nu4TAlf7imHHVfmEvHMYhlf6lc+G
+ 1Utqi53yvyxgidRUw8atJ7X1rgRPSJ7DKtz3JlGklB5D8FMXIxXjgSN3t8Ljq/8m
+ IcDZZo0dCFKqGkHWzInuprYRriTrHwH8Gqcpnfh2s8BasB0dJECipcko=
+X-Virus-Scanned: amavisd-new at yadro.com
+Received: from mta-01.yadro.com ([127.0.0.1])
+ by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id LYMd0zxOCJVY; Mon, 11 Mar 2019 16:31:31 +0300 (MSK)
+Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
+ [172.17.10.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by pinero.vault24.org (Postfix) with ESMTPS id DF4B4605E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 08:51:42 -0400 (EDT)
-Received: by feynman.vault24.org (Postfix, from userid 1000)
- id 30CB5302DD18; Mon, 11 Mar 2019 08:51:42 -0400 (EDT)
-Resent-From: Jon DeVree <nuxi@vault24.org>
-Resent-Date: Mon, 11 Mar 2019 08:51:42 -0400
-Resent-Message-ID: <20190311125142.GA3740@feynman.vault24.org>
-Resent-To: linuxppc-dev@lists.ozlabs.org
-Received: by feynman.vault24.org (Postfix, from userid 113)
- id 5322B3025B25; Sun, 10 Mar 2019 13:34:42 -0400 (EDT)
-Received: from nobel.vault24.org (nobel.vault24.org [10.222.173.3])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by feynman.vault24.org (Postfix) with ESMTPS id 37C00302DD18;
- Sun, 10 Mar 2019 13:34:42 -0400 (EDT)
-Received: by nobel.vault24.org (Postfix, from userid 1000)
- id 70B2E221DD1C; Sun, 10 Mar 2019 13:34:41 -0400 (EDT)
-From: Jon DeVree <nuxi@vault24.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: fix mistake in arch_get_random_seed_int()
-Date: Sun, 10 Mar 2019 13:33:20 -0400
-Message-Id: <20190310173319.15411-1-nuxi@vault24.org>
+ by mta-01.yadro.com (Postfix) with ESMTPS id 850994193F;
+ Mon, 11 Mar 2019 16:31:30 +0300 (MSK)
+Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
+ (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 11
+ Mar 2019 16:31:29 +0300
+From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH RFC v4 01/21] PCI: Fix writing invalid BARs during
+ pci_restore_state()
+Date: Mon, 11 Mar 2019 16:31:02 +0300
+Message-ID: <20190311133122.11417-2-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
+References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.2.4
+Content-Type: text/plain
+X-Originating-IP: [172.17.15.60]
+X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
+ T-EXCH-02.corp.yadro.com (172.17.10.102)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,33 +87,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jon DeVree <nuxi@vault24.org>
+Cc: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>,
+ Bjorn Helgaas <helgaas@kernel.org>, linux@yadro.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Way back in v4.3 the PPC hardware RNG stuff was changed to only provide
-the RNG seed functions, but this line was missed during the change.
+If BAR movement has happened (due to PCIe hotplug) after pci_save_state(),
+the saved addresses will become outdated. Restore them the most recently
+calculated values, not the ones stored in an arbitrary moment.
 
-Fixes: 01c9348c7620 ("powerpc: Use hardware RNG for arch_get_random_seed_* not arch_get_random_*")
-Signed-off-by: Jon DeVree <nuxi@vault24.org>
+Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- arch/powerpc/include/asm/archrandom.h | 2 +-
+ drivers/pci/pci.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
-index 9c63b596e6ce..a09595f00cab 100644
---- a/arch/powerpc/include/asm/archrandom.h
-+++ b/arch/powerpc/include/asm/archrandom.h
-@@ -28,7 +28,7 @@ static inline int arch_get_random_seed_int(unsigned int *v)
- 	unsigned long val;
- 	int rc;
- 
--	rc = arch_get_random_long(&val);
-+	rc = arch_get_random_seed_long(&val);
- 	if (rc)
- 		*v = val;
- 
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 7c1b362f599a..f006068be209 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1376,7 +1376,7 @@ static void pci_restore_config_space(struct pci_dev *pdev)
+ 	if (pdev->hdr_type == PCI_HEADER_TYPE_NORMAL) {
+ 		pci_restore_config_space_range(pdev, 10, 15, 0, false);
+ 		/* Restore BARs before the command register. */
+-		pci_restore_config_space_range(pdev, 4, 9, 10, false);
++		pci_restore_bars(pdev);
+ 		pci_restore_config_space_range(pdev, 0, 3, 0, false);
+ 	} else if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+ 		pci_restore_config_space_range(pdev, 12, 15, 0, false);
 -- 
 2.20.1
 
