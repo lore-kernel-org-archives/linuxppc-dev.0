@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0BF0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:36:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4929CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:38:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4FA072087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:36:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id BA7062087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:38:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="HY76VbSe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FA072087C
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="Vji5435/"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BA7062087C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44HzfF6FK8zDqGB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 00:36:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Hzhr3htHzDqFp
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 00:38:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -29,44 +29,44 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="HY76VbSe"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="Vji5435/"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44HzXY3zghzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 00:31:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44HzXZ1qCZzDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 00:31:42 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id D9CDC419E1;
- Mon, 11 Mar 2019 13:31:32 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id D0640419F0;
+ Mon, 11 Mar 2019 13:31:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1552311091; x=1554125492; bh=66s2kCOqq88zcimSppWGg7PR6QLy3zAR7m1
- vSMIMRF0=; b=HY76VbSeRpu59ojIX6F1rUTcaYZLq8lluzVmKUqdiLeZKrmvW4c
- igxcC1BMPFxdIYHHXxv0mPDtyppM8yiebzIJdiFODlyzCrIF6v3L/5ZhTA+hA3lI
- BzhEqKDDRjluDIV7LAgetuU4bgECK+a6GNi43Q2h+6waUk/m/xPw5D24=
+ 1552311093; x=1554125494; bh=JVyoC34eGmx5ip94yGCGHtFiL2Yb7i7wQdT
+ eL3g7f0E=; b=Vji5435/EYsHto3qxulaR3Fsu5a2VZenvqnsNfPgWrYntsRj4yP
+ 7bwlGxaXAdWPuNCa5Zl9ZmC8jZCiv2tcmgpKgVIBMecz4ZGZWdUoZ75c6QMJT5nf
+ rVeRwQMg+FdmWBmtOuQ0KNoKYWs3Rhz/wTzaMSIs6EfBVs1xX0oOd9oM=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Z-zh5dnGxCVe; Mon, 11 Mar 2019 16:31:31 +0300 (MSK)
+ with ESMTP id ng4E5I6HCMU9; Mon, 11 Mar 2019 16:31:33 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id B3FD341954;
- Mon, 11 Mar 2019 16:31:30 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 8F9674198C;
+ Mon, 11 Mar 2019 16:31:31 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 11
- Mar 2019 16:31:30 +0300
+ Mar 2019 16:31:31 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC v4 02/21] PCI: Fix race condition in
- pci_enable/disable_device()
-Date: Mon, 11 Mar 2019 16:31:03 +0300
-Message-ID: <20190311133122.11417-3-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC v4 06/21] PCI: Pause the devices with movable BARs during
+ rescan
+Date: Mon, 11 Mar 2019 16:31:07 +0300
+Message-ID: <20190311133122.11417-7-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
 References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
@@ -93,140 +93,100 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
- CPU0                                      CPU1
+Drivers indicate their support of movable BARs by implementing the
+new rescan_prepare() and rescan_done() hooks in the struct pci_driver.
 
- pci_enable_device_mem()                   pci_enable_device_mem()
-   pci_enable_bridge()                       pci_enable_bridge()
-     pci_is_enabled()
-       return false;
-     atomic_inc_return(enable_cnt)
-     Start actual enabling the bridge
-     ...                                       pci_is_enabled()
-     ...                                         return true;
-     ...                                   Start memory requests <-- FAIL
-     ...
-     Set the PCI_COMMAND_MEMORY bit <-- Must wait for this
-
-This patch protects the pci_enable/disable_device() and pci_enable_bridge()
-with mutexes.
+All device's activity must be stopped during a rescan, and iounmap()
++ioremap() must be applied to every used BAR.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/pci.c   | 26 ++++++++++++++++++++++----
- drivers/pci/probe.c |  1 +
- include/linux/pci.h |  1 +
- 3 files changed, 24 insertions(+), 4 deletions(-)
+ drivers/pci/probe.c | 51 +++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/pci.h |  2 ++
+ 2 files changed, 51 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index f006068be209..895201d4c9e6 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1615,6 +1615,8 @@ static void pci_enable_bridge(struct pci_dev *dev)
- 	struct pci_dev *bridge;
- 	int retval;
- 
-+	mutex_lock(&dev->enable_mutex);
-+
- 	bridge = pci_upstream_bridge(dev);
- 	if (bridge)
- 		pci_enable_bridge(bridge);
-@@ -1622,6 +1624,7 @@ static void pci_enable_bridge(struct pci_dev *dev)
- 	if (pci_is_enabled(dev)) {
- 		if (!dev->is_busmaster)
- 			pci_set_master(dev);
-+		mutex_unlock(&dev->enable_mutex);
- 		return;
- 	}
- 
-@@ -1630,11 +1633,14 @@ static void pci_enable_bridge(struct pci_dev *dev)
- 		pci_err(dev, "Error enabling bridge (%d), continuing\n",
- 			retval);
- 	pci_set_master(dev);
-+	mutex_unlock(&dev->enable_mutex);
- }
- 
- static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
- {
- 	struct pci_dev *bridge;
-+	/* Enable-locking of bridges is performed within the pci_enable_bridge() */
-+	bool need_lock = !dev->subordinate;
- 	int err;
- 	int i, bars = 0;
- 
-@@ -1650,8 +1656,13 @@ static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
- 		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
- 	}
- 
--	if (atomic_inc_return(&dev->enable_cnt) > 1)
-+	if (need_lock)
-+		mutex_lock(&dev->enable_mutex);
-+	if (pci_is_enabled(dev)) {
-+		if (need_lock)
-+			mutex_unlock(&dev->enable_mutex);
- 		return 0;		/* already enabled */
-+	}
- 
- 	bridge = pci_upstream_bridge(dev);
- 	if (bridge)
-@@ -1666,8 +1677,10 @@ static int pci_enable_device_flags(struct pci_dev *dev, unsigned long flags)
- 			bars |= (1 << i);
- 
- 	err = do_pci_enable_device(dev, bars);
--	if (err < 0)
--		atomic_dec(&dev->enable_cnt);
-+	if (err >= 0)
-+		atomic_inc(&dev->enable_cnt);
-+	if (need_lock)
-+		mutex_unlock(&dev->enable_mutex);
- 	return err;
- }
- 
-@@ -1910,15 +1923,20 @@ void pci_disable_device(struct pci_dev *dev)
- 	if (dr)
- 		dr->enabled = 0;
- 
-+	mutex_lock(&dev->enable_mutex);
- 	dev_WARN_ONCE(&dev->dev, atomic_read(&dev->enable_cnt) <= 0,
- 		      "disabling already-disabled device");
- 
--	if (atomic_dec_return(&dev->enable_cnt) != 0)
-+	if (atomic_dec_return(&dev->enable_cnt) != 0) {
-+		mutex_unlock(&dev->enable_mutex);
- 		return;
-+	}
- 
- 	do_pci_disable_device(dev);
- 
- 	dev->is_busmaster = 0;
-+
-+	mutex_unlock(&dev->enable_mutex);
- }
- EXPORT_SYMBOL(pci_disable_device);
- 
 diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 2ec0df04e0dc..977a127ce791 100644
+index 977a127ce791..88350dd56344 100644
 --- a/drivers/pci/probe.c
 +++ b/drivers/pci/probe.c
-@@ -2267,6 +2267,7 @@ struct pci_dev *pci_alloc_dev(struct pci_bus *bus)
- 	INIT_LIST_HEAD(&dev->bus_list);
- 	dev->dev.type = &pci_dev_type;
- 	dev->bus = pci_bus_get(bus);
-+	mutex_init(&dev->enable_mutex);
- 
- 	return dev;
+@@ -3248,6 +3248,38 @@ unsigned int pci_rescan_bus_bridge_resize(struct pci_dev *bridge)
+ 	return max;
  }
+ 
++static void pci_bus_rescan_prepare(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		struct pci_bus *child = dev->subordinate;
++
++		if (child) {
++			pci_bus_rescan_prepare(child);
++		} else if (dev->driver &&
++			   dev->driver->rescan_prepare) {
++			dev->driver->rescan_prepare(dev);
++		}
++	}
++}
++
++static void pci_bus_rescan_done(struct pci_bus *bus)
++{
++	struct pci_dev *dev;
++
++	list_for_each_entry(dev, &bus->devices, bus_list) {
++		struct pci_bus *child = dev->subordinate;
++
++		if (child) {
++			pci_bus_rescan_done(child);
++		} else if (dev->driver &&
++			   dev->driver->rescan_done) {
++			dev->driver->rescan_done(dev);
++		}
++	}
++}
++
+ /**
+  * pci_rescan_bus - Scan a PCI bus for devices
+  * @bus: PCI bus to scan
+@@ -3261,8 +3293,23 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
+ {
+ 	unsigned int max;
+ 
+-	max = pci_scan_child_bus(bus);
+-	pci_assign_unassigned_bus_resources(bus);
++	if (pci_movable_bars_enabled()) {
++		struct pci_bus *root = bus;
++
++		while (!pci_is_root_bus(root))
++			root = root->parent;
++
++		pci_bus_rescan_prepare(root);
++
++		max = pci_scan_child_bus(root);
++		pci_assign_unassigned_root_bus_resources(root);
++
++		pci_bus_rescan_done(root);
++	} else {
++		max = pci_scan_child_bus(bus);
++		pci_assign_unassigned_bus_resources(bus);
++	}
++
+ 	pci_bus_add_devices(bus);
+ 
+ 	return max;
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 77448215ef5b..cb2760a31fe2 100644
+index cbe661aff9f5..3d52f5538282 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -419,6 +419,7 @@ struct pci_dev {
- 	unsigned int	no_vf_scan:1;		/* Don't scan for VFs after IOV enablement */
- 	pci_dev_flags_t dev_flags;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
-+	struct mutex	enable_mutex;
- 
- 	u32		saved_config_space[16]; /* Config space saved at suspend time */
- 	struct hlist_head saved_cap_space;
+@@ -780,6 +780,8 @@ struct pci_driver {
+ 	int  (*resume)(struct pci_dev *dev);	/* Device woken up */
+ 	void (*shutdown)(struct pci_dev *dev);
+ 	int  (*sriov_configure)(struct pci_dev *dev, int num_vfs); /* On PF */
++	void (*rescan_prepare)(struct pci_dev *dev);
++	void (*rescan_done)(struct pci_dev *dev);
+ 	const struct pci_error_handlers *err_handler;
+ 	const struct attribute_group **groups;
+ 	struct device_driver	driver;
 -- 
 2.20.1
 
