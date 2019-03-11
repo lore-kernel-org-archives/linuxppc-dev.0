@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2D3C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 51C5CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:46:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C1173206BA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:44:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id C5BEA206BA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 13:46:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="n2mFSY5G"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C1173206BA
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="oM4pJG36"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C5BEA206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Hzpp0HRXzDqDl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 00:44:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44HzsF4gfvzDqB4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 00:46:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -29,44 +29,44 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="n2mFSY5G"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="oM4pJG36"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44HzXc49FXzDqDX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 00:31:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44HzXf0NLpzDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 00:31:46 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id D040C419E8;
- Mon, 11 Mar 2019 13:31:33 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 83F5F419F2;
+ Mon, 11 Mar 2019 13:31:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-type:content-type:content-transfer-encoding:mime-version
  :references:in-reply-to:x-mailer:message-id:date:date:subject
  :subject:from:from:received:received:received; s=mta-01; t=
- 1552311092; x=1554125493; bh=D+5t+XYJy2whiChmoUpciLcCd/RVrE0+9uo
- ha9o9Ma8=; b=n2mFSY5GApvd3DVC4xRrJJKCx8udjGs2eELsWla2kVeSoyNjMk1
- MN7MuXfiGJOBuIuXE4w6Aoaq0OQJpukJ4LsQnqhoRiI76y23CmIXey62WeLkTqeW
- aeF6F+t/4QrKbuSZJ3qK/c0rKZW++ZFANk53L8/FhaIFe29CBbZEO3NE=
+ 1552311094; x=1554125495; bh=gIXHQd009lpgxVuce3TuU6iKAvHLcp7oViQ
+ HqJBpuOY=; b=oM4pJG36orAJjiug6BYUzXbId0D5PFADFlr/4h8ZfTx38dKbx8l
+ EMvV+bQtqy/ucfBuD0pSq2BC9JUJ7HFTfJ++k373X8nyTvOjEDRBSZaiita/zvu+
+ 1uvac+IgDPNRR/OiYOFLb0zySjWKjRQ2VKIkYOqkzdqnPEHQCnMrFIh0=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id vN0iJy3olqB8; Mon, 11 Mar 2019 16:31:32 +0300 (MSK)
+ with ESMTP id 5w5el8JkOmmg; Mon, 11 Mar 2019 16:31:34 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 35CCB41987;
+ by mta-01.yadro.com (Postfix) with ESMTPS id BAC9D41992;
  Mon, 11 Mar 2019 16:31:31 +0300 (MSK)
 Received: from NB-148.yadro.com (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Mon, 11
- Mar 2019 16:31:30 +0300
+ Mar 2019 16:31:31 +0300
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 To: <linux-pci@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH RFC v4 04/21] PCI: Define PCI-specific version of the
- release_child_resources()
-Date: Mon, 11 Mar 2019 16:31:05 +0300
-Message-ID: <20190311133122.11417-5-s.miroshnichenko@yadro.com>
+Subject: [PATCH RFC v4 07/21] PCI: Wake up bridges during rescan when movable
+ BARs enabled
+Date: Mon, 11 Mar 2019 16:31:08 +0300
+Message-ID: <20190311133122.11417-8-s.miroshnichenko@yadro.com>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
 References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
@@ -93,81 +93,36 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Make the released resources of a bridge valid for later re-assignment:
-clear the STARTALIGN flag.
-
-Resources marked with PCI_FIXED must preserve their offset and size.
+Use the PM runtime methods to wake up the bridges before accessing
+their config space.
 
 Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 ---
- drivers/pci/setup-bus.c | 47 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 46 insertions(+), 1 deletion(-)
+ drivers/pci/probe.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index ec44a0f3a7ac..3644feb13179 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -1483,6 +1483,51 @@ static void __pci_bridge_assign_resources(const struct pci_dev *bridge,
- 	(IORESOURCE_IO | IORESOURCE_MEM | IORESOURCE_PREFETCH |\
- 	 IORESOURCE_MEM_64)
- 
-+/*
-+ * Similar to release_child_resources(), but aware of PCI_FIXED and STARTALIGN flags
-+ */
-+static void pci_release_child_resources(struct resource *r)
-+{
-+	struct resource *tmp, *p;
-+
-+	if (!r)
-+		return;
-+
-+	if (r->flags & IORESOURCE_PCI_FIXED)
-+		return;
-+
-+	p = r->child;
-+	r->child = NULL;
-+	while (p) {
-+		resource_size_t size = resource_size(p);
-+
-+		tmp = p;
-+		p = p->sibling;
-+
-+		tmp->parent = NULL;
-+		tmp->sibling = NULL;
-+		pci_release_child_resources(tmp);
-+
-+		if (!tmp->flags)
-+			continue;
-+
-+		if (tmp->flags & IORESOURCE_PCI_FIXED) {
-+			pr_debug("PCI: release fixed %pR (%s), keep its flags, base and size\n",
-+				 tmp, tmp->name);
-+			continue;
-+		}
-+
-+		pr_debug("PCI: release %pR (%s)\n", tmp, tmp->name);
-+
-+		/* need to restore size, and keep all the flags but STARTALIGN */
-+		tmp->start = 0;
-+		tmp->end = size - 1;
-+
-+		tmp->flags &= ~IORESOURCE_STARTALIGN;
-+		tmp->flags |= IORESOURCE_SIZEALIGN;
-+	}
-+}
-+
- static void pci_bridge_release_resources(struct pci_bus *bus,
- 					  unsigned long type)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 88350dd56344..dc935f82a595 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -3252,6 +3252,8 @@ static void pci_bus_rescan_prepare(struct pci_bus *bus)
  {
-@@ -1528,7 +1573,7 @@ static void pci_bridge_release_resources(struct pci_bus *bus,
- 	 * if there are children under that, we should release them
- 	 *  all
- 	 */
--	release_child_resources(r);
-+	pci_release_child_resources(r);
- 	if (!release_resource(r)) {
- 		type = old_flags = r->flags & PCI_RES_TYPE_MASK;
- 		pci_printk(KERN_DEBUG, dev, "resource %d %pR released\n",
+ 	struct pci_dev *dev;
+ 
++	pm_runtime_get_sync(&bus->dev);
++
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		struct pci_bus *child = dev->subordinate;
+ 
+@@ -3278,6 +3280,8 @@ static void pci_bus_rescan_done(struct pci_bus *bus)
+ 			dev->driver->rescan_done(dev);
+ 		}
+ 	}
++
++	pm_runtime_put(&bus->dev);
+ }
+ 
+ /**
 -- 
 2.20.1
 
