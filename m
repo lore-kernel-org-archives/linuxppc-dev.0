@@ -1,96 +1,78 @@
-Return-Path: <SRS0=/OnI=RO=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CFAB4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 21:43:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B39C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:25:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF743214AE
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Mar 2019 21:43:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF743214AE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AEB40214AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:25:57 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="PeDsZPvS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AEB40214AF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JBS95VptzDqFD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 08:43:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JHNg0pxBzDqFM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 12:25:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=leonardo@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="PeDsZPvS"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44JBPw0jBmzDqDK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 08:41:39 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2BLdNec112846
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 17:41:37 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2r5ybbs26x-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 17:41:37 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leonardo@linux.ibm.com>;
- Mon, 11 Mar 2019 21:41:36 -0000
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 11 Mar 2019 21:41:32 -0000
-Received: from b01ledav004.gho.pok.ibm.com (b01ledav004.gho.pok.ibm.com
- [9.57.199.109])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2BLfVkV14942346
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 11 Mar 2019 21:41:31 GMT
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1263411206F;
- Mon, 11 Mar 2019 21:41:31 +0000 (GMT)
-Received: from b01ledav004.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C7657112062;
- Mon, 11 Mar 2019 21:41:29 +0000 (GMT)
-Received: from LeoBras.aus.stglabs.ibm.com (unknown [9.18.235.41])
- by b01ledav004.gho.pok.ibm.com (Postfix) with ESMTP;
- Mon, 11 Mar 2019 21:41:29 +0000 (GMT)
-From: Leonardo Bras <leonardo@linux.ibm.com>
-To: kernel-team@lists.ubuntu.com
-Subject: [PATCH 19/20] [Bionic] (upstream) KVM: PPC: Book3S HV: Don't use
- compound_order to determine host mapping size
-Date: Mon, 11 Mar 2019 18:40:06 -0300
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190311214005.12083-1-leonardo@linux.ibm.com>
-References: <20190311214005.12083-1-leonardo@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JHLg3DpszDqDr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 12:24:08 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id r124so508256pgr.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 18:24:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=FmK5X23/h5mAYC9jtCtr64U65eKHiWBV32QbvgbCF70=;
+ b=PeDsZPvSzstzNRZb+SW6WJzrduwf7fPDNepjN0Ew0wHf+Rf7MLMOYqfTHaP8jIRAWd
+ Wx0a7dV7oRgFY8t4eVz9TqTS/gxZ6zQ8vtPxOeBlJ1qp9FeFhVTMmoDgNFCur5qmY9FL
+ fDfSDlPfovxhRIku/qie/ejGfQ89pp650b7QM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=FmK5X23/h5mAYC9jtCtr64U65eKHiWBV32QbvgbCF70=;
+ b=aUJo0aji1Gl3QQN5kuDbQwAjAvXPyyFTbye69LOXBtcujb2hHkPayd3VJmV9cqn2Lf
+ Zu/JlRRvOJhwqlHEYlWrz4fo3Kgy1lvVXcSmY4n/rz8n7O90ceh17+O3QSPMxSAXDcaf
+ TtKYdxvlEaSvgNnQvqIIG6xMUjtqBgj+KE3YCjW+I6b8L+9OAdD3mN5saN494U9Hn5Pj
+ EcT9nEnfFuc2/h4XFUEx1DpFyE8JETv7XkiBm7yLKCNRaVkh0LxQaYHvnUAN6dezSN6B
+ gXULGnjMa8DPeLfkauYtmU0dA1H48+AcgxE5GvFeFEDyq5FVgbQMAv+9gG5nEIBxNt2A
+ TTvg==
+X-Gm-Message-State: APjAAAXDtQisbdeGhSbI1f/UjlPrcTr5p+1CyWWAKTWFrkRVGU6L/hEO
+ tnSoRBPCDcgProNeHZNnnnOkyA==
+X-Google-Smtp-Source: APXvYqzCKcZsXFc134asCsJaa+E3uL68ATkI+UPLXa9BrnrYO8pgiKXaE0xGJx0PR1wuSK6yc2kP1A==
+X-Received: by 2002:a65:48c1:: with SMTP id o1mr10530019pgs.94.1552353846217; 
+ Mon, 11 Mar 2019 18:24:06 -0700 (PDT)
+Received: from localhost (124-171-102-1.dyn.iinet.net.au. [124.171.102.1])
+ by smtp.gmail.com with ESMTPSA id t185sm10890847pfd.165.2019.03.11.18.24.04
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 11 Mar 2019 18:24:05 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: aneesh.kumar@linux.ibm.com, christophe.leroy@c-s.fr, bsingharora@gmail.com
+Subject: [RFCv2 PATCH 0/4] powerpc: KASAN for 64-bit Book3E
+Date: Tue, 12 Mar 2019 12:23:44 +1100
+Message-Id: <20190312012348.4854-1-dja@axtens.net>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031121-0064-0000-0000-000003B84450
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010740; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01172988; UDB=6.00613248; IPR=6.00953643; 
- MB=3.00025935; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-11 21:41:34
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031121-0065-0000-0000-00003CB04420
-Message-Id: <20190311214005.12083-19-leonardo@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-11_16:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=915 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903110147
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,163 +84,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, kvm-ppc@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Leonardo Bras <leonardo@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kasan-dev@googlegroups.com,
+ Daniel Axtens <dja@axtens.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Nicholas Piggin <npiggin@gmail.com>
+Building on the work of Christophe, Aneesh and Balbir, I've ported
+KASAN to the e6500, a 64-bit Book3E processor which doesn't have a
+hashed page table. It applies on top of Christophe's series, v9, plus
+the proposed new version of patch 2.
 
-BugLink: https://bugs.launchpad.net/bugs/1788098
+It requires some changes to the KASAN core; we use the less ugly
+outline readiness check patch proposed by Christophe.
 
-THP paths can defer splitting compound pages until after the actual
-remap and TLB flushes to split a huge PMD/PUD. This causes radix
-partition scope page table mappings to get out of synch with the host
-qemu page table mappings.
+The KASAN shadow area is mapped into vmemmap space:
+0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
+To do this we require that vmemmap be disabled. (This is the default
+in the kernel config that QorIQ provides for the machine in their
+SDK anyway - they use flat memory.)
 
-This results in random memory corruption in the guest when running
-with THP. The easiest way to reproduce is use KVM balloon to free up
-a lot of memory in the guest and then shrink the balloon to give the
-memory back, while some work is being done in the guest.
+Only outline instrumentation is supported and only KASAN_MINIMAL works.
+Only the kernel linear mapping (0xc000...) is checked. The vmalloc and
+ioremap areas (also in 0x800...) are all mapped to a zero page. As
+with the Book3S hash series, this requires overriding the memory <->
+shadow mapping.
 
-Cc: David Gibson <david@gibson.dropbear.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-(cherry picked from commit 71d29f43b6332badc5598c656616a62575e83342 v4.19)
-Signed-off-by: Leonardo Bras <leonardo@linux.ibm.com>
----
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 91 +++++++++++---------------
- 1 file changed, 37 insertions(+), 54 deletions(-)
+Also, as with both previous 64-bit series, early instrumentation is not
+supported.
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 7efc42538ccf..ae023d2256ef 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -538,8 +538,8 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 				   unsigned long ea, unsigned long dsisr)
- {
- 	struct kvm *kvm = vcpu->kvm;
--	unsigned long mmu_seq, pte_size;
--	unsigned long gpa, gfn, hva, pfn;
-+	unsigned long mmu_seq;
-+	unsigned long gpa, gfn, hva;
- 	struct kvm_memory_slot *memslot;
- 	struct page *page = NULL;
- 	long ret;
-@@ -636,9 +636,10 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	 */
- 	hva = gfn_to_hva_memslot(memslot, gfn);
- 	if (upgrade_p && __get_user_pages_fast(hva, 1, 1, &page) == 1) {
--		pfn = page_to_pfn(page);
- 		upgrade_write = true;
- 	} else {
-+		unsigned long pfn;
-+
- 		/* Call KVM generic code to do the slow-path check */
- 		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
- 					   writing, upgrade_p);
-@@ -652,63 +653,45 @@ int kvmppc_book3s_radix_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		}
- 	}
+KVM, kexec and xmon have not been tested.
+
+Thanks to those who have done the heavy lifting over the past several years:
+ - Christophe's 32 bit series: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-February/185379.html
+ - Aneesh's Book3S hash series: https://lwn.net/Articles/655642/
+ - Balbir's Book3S radix series: https://patchwork.ozlabs.org/patch/795211/
+
+While useful if you have an Book3E device, this is mostly intended as
+a warm-up exercise for reviving Aneesh's series for book3s hash. I
+expect that the changes to the KASAN core will be required for that
+too, but I'll check against the book3s version before I send a non-RFC
+version. Once I do that I'll revisit the vmemmap decision as well.
+
+Changes from RFCv1:
+
+ - Use Christophe's new version of outline readiness check
  
--	/* See if we can insert a 1GB or 2MB large PTE here */
--	level = 0;
--	if (page && PageCompound(page)) {
--		pte_size = PAGE_SIZE << compound_order(compound_head(page));
--		if (pte_size >= PUD_SIZE &&
--		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
--		    (hva & (PUD_SIZE - PAGE_SIZE))) {
--			level = 2;
--			pfn &= ~((PUD_SIZE >> PAGE_SHIFT) - 1);
--		} else if (pte_size >= PMD_SIZE &&
--			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
--			   (hva & (PMD_SIZE - PAGE_SIZE))) {
--			level = 1;
--			pfn &= ~((PMD_SIZE >> PAGE_SHIFT) - 1);
--		}
--	}
--
- 	/*
--	 * Compute the PTE value that we need to insert.
-+	 * Read the PTE from the process' radix tree and use that
-+	 * so we get the shift and attribute bits.
- 	 */
--	if (page) {
--		pgflags = _PAGE_READ | _PAGE_EXEC | _PAGE_PRESENT | _PAGE_PTE |
--			_PAGE_ACCESSED;
--		if (writing || upgrade_write)
--			pgflags |= _PAGE_WRITE | _PAGE_DIRTY;
--		pte = pfn_pte(pfn, __pgprot(pgflags));
-+	local_irq_disable();
-+	ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
-+	pte = *ptep;
-+	local_irq_enable();
-+
-+	/* Get pte level from shift/size */
-+	if (shift == PUD_SHIFT &&
-+	    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
-+	    (hva & (PUD_SIZE - PAGE_SIZE))) {
-+		level = 2;
-+	} else if (shift == PMD_SHIFT &&
-+		   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
-+		   (hva & (PMD_SIZE - PAGE_SIZE))) {
-+		level = 1;
- 	} else {
--		/*
--		 * Read the PTE from the process' radix tree and use that
--		 * so we get the attribute bits.
--		 */
--		local_irq_disable();
--		ptep = __find_linux_pte(vcpu->arch.pgdir, hva, NULL, &shift);
--		pte = *ptep;
--		local_irq_enable();
--		if (shift == PUD_SHIFT &&
--		    (gpa & (PUD_SIZE - PAGE_SIZE)) ==
--		    (hva & (PUD_SIZE - PAGE_SIZE))) {
--			level = 2;
--		} else if (shift == PMD_SHIFT &&
--			   (gpa & (PMD_SIZE - PAGE_SIZE)) ==
--			   (hva & (PMD_SIZE - PAGE_SIZE))) {
--			level = 1;
--		} else if (shift && shift != PAGE_SHIFT) {
--			/* Adjust PFN */
--			unsigned long mask = (1ul << shift) - PAGE_SIZE;
--			pte = __pte(pte_val(pte) | (hva & mask));
--		}
--		pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
--		if (writing || upgrade_write) {
--			if (pte_val(pte) & _PAGE_WRITE)
--				pte = __pte(pte_val(pte) | _PAGE_DIRTY);
--		} else {
--			pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-+		level = 0;
-+		if (shift > PAGE_SHIFT) {
-+			/*
-+			 * If the pte maps more than one page, bring over
-+			 * bits from the virtual address to get the real
-+			 * address of the specific single page we want.
-+			 */
-+			unsigned long rpnmask = (1ul << shift) - PAGE_SIZE;
-+			pte = __pte(pte_val(pte) | (hva & rpnmask));
- 		}
- 	}
- 
-+	pte = __pte(pte_val(pte) | _PAGE_EXEC | _PAGE_ACCESSED);
-+	if (writing || upgrade_write) {
-+		if (pte_val(pte) & _PAGE_WRITE)
-+			pte = __pte(pte_val(pte) | _PAGE_DIRTY);
-+	} else {
-+		pte = __pte(pte_val(pte) & ~(_PAGE_WRITE | _PAGE_DIRTY));
-+	}
-+
- 	/* Allocate space in the tree and write the PTE */
- 	ret = kvmppc_create_pte(kvm, pte, gpa, level, mmu_seq);
- 
+ - Rebase on top of Christophe's v9 + the proposed changes to
+   string/memory functions
+
+Regards,
+Daniel
+
+Daniel Axtens (4):
+  kasan: do not open-code addr_has_shadow
+  kasan: allow architectures to manage the memory-to-shadow mapping
+  kasan: allow architectures to provide an outline readiness check
+  powerpc: KASAN for 64bit Book3E
+
+ arch/powerpc/Kconfig                         |  1 +
+ arch/powerpc/Kconfig.debug                   |  2 +-
+ arch/powerpc/include/asm/kasan.h             | 73 +++++++++++++++++++-
+ arch/powerpc/mm/Makefile                     |  2 +
+ arch/powerpc/mm/kasan/Makefile               |  1 +
+ arch/powerpc/mm/kasan/kasan_init_book3e_64.c | 53 ++++++++++++++
+ include/linux/kasan.h                        |  6 ++
+ mm/kasan/generic.c                           |  6 +-
+ mm/kasan/generic_report.c                    |  2 +-
+ mm/kasan/kasan.h                             |  6 +-
+ mm/kasan/report.c                            |  6 +-
+ mm/kasan/tags.c                              |  3 +-
+ 12 files changed, 149 insertions(+), 12 deletions(-)
+ create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
+
 -- 
-2.20.1
+2.19.1
 
