@@ -2,25 +2,25 @@ Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72472C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:24:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CF62C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:26:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DB80D20449
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:24:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E715F213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:26:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KOMrUZ4F"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DB80D20449
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="AovvVeWP"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E715F213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JqJh0NsCzDqHl
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:24:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JqLg5kTmzDqJk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:26:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,51 +28,48 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="KOMrUZ4F"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="AovvVeWP"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7K6XvQzDqDY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7K6xspzDqF6
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:16:11 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Jq7C05ytz9vRb3;
- Tue, 12 Mar 2019 23:16:07 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44Jq7B3Dnhz9vRb2;
+ Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=KOMrUZ4F; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=AovvVeWP; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id elEkdr7Q7Ccb; Tue, 12 Mar 2019 23:16:06 +0100 (CET)
+ with ESMTP id S10DCSwcv3pw; Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7B666bz9vRb0;
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7B1QQWz9vRb0;
  Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552428966; bh=OGZz0Q4R6Zdt3TK+8zOZmGmuwyLbFuizUxlVfu9yL9A=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=KOMrUZ4FKyn9Qx1LCGBi8JhdyFrSKh1AC5NYVUt4kLLKAUUMshB3pcEdeJe/MY8Ar
- x6dG2+UiC7TocRsy2IisyT4g135rUL8xdYwIiXsIJFWi4PX7IQjNBohPT0deK3LkXw
- gl4IRuc04fxu6pHHL1SfvxrWbTTKcopk05zMCiEY=
+ t=1552428966; bh=FZQI13aBzWBGnD58d1GdJzG/OYdAntgbNyDCLGhbjQk=;
+ h=From:Subject:To:Cc:Date:From;
+ b=AovvVeWPlLJAaj672x6zQARu/MwDQwcGeHEV6tDFnHUljJeWGVwYxoZtkjLfChWhg
+ yw/g7+f8DubLMv/Cb6wqbGT+r3+brc41RV8xc8wTIEDI0FV0Mn3Z4V0Er3emWboeCU
+ MAO8Ph0Y2AF/zxaRy/I90KNctSKszH0Q+R9TZzLc=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 119218B8B1;
- Tue, 12 Mar 2019 23:16:07 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 66E7A8B8B1;
+ Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id EYmmjq3CtNLR; Tue, 12 Mar 2019 23:16:06 +0100 (CET)
+ with ESMTP id nj8zLmmF5PdK; Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CD0438B8A7;
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 275EF8B8A7;
  Tue, 12 Mar 2019 23:16:06 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id A162C6FA15; Tue, 12 Mar 2019 22:16:06 +0000 (UTC)
-Message-Id: <5047ab5aaf0fd90887fa1e5f0369182d71dcf0f6.1552428161.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1552428161.git.christophe.leroy@c-s.fr>
-References: <cover.1552428161.git.christophe.leroy@c-s.fr>
+ id B10126FA15; Tue, 12 Mar 2019 22:16:05 +0000 (UTC)
+Message-Id: <cover.1552428161.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v10 01/18] powerpc/6xx: fix setup and use of SPRN_SPRG_PGDIR
- for hash32
+Subject: [PATCH v10 00/18] KASAN for powerpc/32 and RFC for 64bit Book3E
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -80,7 +77,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Tue, 12 Mar 2019 22:16:06 +0000 (UTC)
+Date: Tue, 12 Mar 2019 22:16:05 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,84 +95,148 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Not only the 603 but all 6xx need SPRN_SPRG_PGDIR to be initialised at
-startup. This patch move it from __setup_cpu_603() to start_here()
-and __secondary_start(), close to the initialisation of SPRN_THREAD.
+This series adds KASAN support to powerpc/32
 
-Previously, virt addr of PGDIR was retrieved from thread struct.
-Now that it is the phys addr which is stored in SPRN_SPRG_PGDIR,
-hash_page() shall not convert it to phys anymore.
-This patch removes the conversion.
+32 bits tested on nohash/32 (8xx), book3s/32 (mpc832x ie 603) and qemu mac99
+64bit Book3E tested by Daniel on e6500
 
-Fixes: 93c4a162b014("powerpc/6xx: Store PGDIR physical address in a SPRG")
-Reported-by: Guenter Roeck <linux@roeck-us.net>
-Tested-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/cpu_setup_6xx.S | 3 ---
- arch/powerpc/kernel/head_32.S       | 6 ++++++
- arch/powerpc/mm/hash_low_32.S       | 8 ++++----
- 3 files changed, 10 insertions(+), 7 deletions(-)
+Changes in v10:
+- Prepended the patch which fixes boot on hash32
+- Reduced ifdef mess related to CONFIG_CMDLINE in prom_init.c
+- Fixed strings preparation macros for ppc64 build (Reported by Daniel)
+- Fixed boot failure on hash32 when total amount of memory is above the initial amount mapped with BATs.
+- Reordered stuff in kasan.h to have a smoother patch when adding 64bit Book3E
+- Split the change to PAGE_READONLY out of the hash32 patch.
+- Appended Daniel's series for 64bit Book3E (with a build failure fix and a few cosmetic changes)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
-index 6f1c11e0691f..7534ecff5e92 100644
---- a/arch/powerpc/kernel/cpu_setup_6xx.S
-+++ b/arch/powerpc/kernel/cpu_setup_6xx.S
-@@ -24,9 +24,6 @@ BEGIN_MMU_FTR_SECTION
- 	li	r10,0
- 	mtspr	SPRN_SPRG_603_LRU,r10		/* init SW LRU tracking */
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_NEED_DTLB_SW_LRU)
--	lis	r10, (swapper_pg_dir - PAGE_OFFSET)@h
--	ori	r10, r10, (swapper_pg_dir - PAGE_OFFSET)@l
--	mtspr	SPRN_SPRG_PGDIR, r10
- 
- BEGIN_FTR_SECTION
- 	bl	__init_fpu_registers
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index ce6a972f2584..48051c8977c5 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -855,6 +855,9 @@ __secondary_start:
- 	li	r3,0
- 	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
- #endif
-+	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
-+	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
-+	mtspr	SPRN_SPRG_PGDIR, r4
- 
- 	/* enable MMU and jump to start_secondary */
- 	li	r4,MSR_KERNEL
-@@ -942,6 +945,9 @@ start_here:
- 	li	r3,0
- 	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
- #endif
-+	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
-+	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
-+	mtspr	SPRN_SPRG_PGDIR, r4
- 
- 	/* stack */
- 	lis	r1,init_thread_union@ha
-diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
-index 1f13494efb2b..a6c491f18a04 100644
---- a/arch/powerpc/mm/hash_low_32.S
-+++ b/arch/powerpc/mm/hash_low_32.S
-@@ -70,12 +70,12 @@ _GLOBAL(hash_page)
- 	lis	r0,KERNELBASE@h		/* check if kernel address */
- 	cmplw	0,r4,r0
- 	ori	r3,r3,_PAGE_USER|_PAGE_PRESENT /* test low addresses as user */
--	mfspr	r5, SPRN_SPRG_PGDIR	/* virt page-table root */
-+	mfspr	r5, SPRN_SPRG_PGDIR	/* phys page-table root */
- 	blt+	112f			/* assume user more likely */
--	lis	r5,swapper_pg_dir@ha	/* if kernel address, use */
--	addi	r5,r5,swapper_pg_dir@l	/* kernel page table */
-+	lis	r5, (swapper_pg_dir - PAGE_OFFSET)@ha	/* if kernel address, use */
-+	addi	r5 ,r5 ,(swapper_pg_dir - PAGE_OFFSET)@l	/* kernel page table */
- 	rlwimi	r3,r9,32-12,29,29	/* MSR_PR -> _PAGE_USER */
--112:	tophys(r5, r5)
-+112:
- #ifndef CONFIG_PTE_64BIT
- 	rlwimi	r5,r4,12,20,29		/* insert top 10 bits of address */
- 	lwz	r8,0(r5)		/* get pmd entry */
+Changes in v9:
+- Fixed fixmap IMMR alignment issue on 8xx with KASAN enabled.
+- Set up final shadow page tables before switching to the final hash table on hash32
+- Using PAGE_READONLY instead of PAGE_KERNEL_RO on hash32
+- Use flash_tlb_kernel_range() instead of flash_tlb_mm() which doesn't work for kernel on some subarches.
+- use __set_pte_at() instead of pte_update() to install final page tables
+
+Changes in v8:
+- Fixed circular issue between pgtable.h and fixmap.h
+- Added missing includes in ppc64 string files
+- Fixed kasan string related macro names for ppc64.
+- Fixed most checkpatch messages
+- build tested on kisskb (http://kisskb.ellerman.id.au/kisskb/head/6e65827de2fe71d21682dafd9084ed2cc6e06d4f/)
+- moved CONFIG_KASAN_SHADOW_OFFSET in Kconfig.debug
+
+Changes in v7:
+- split in several smaller patches
+- prom_init now has its own string functions
+- full deactivation of powerpc-optimised string functions when KASAN is active
+- shadow area now at a fixed place on very top of kernel virtual space.
+- Early static hash table for hash book3s/32.
+- Full support of both inline and outline instrumentation for both hash and nohash ppc32
+- Earlier full activation of kasan.
+
+Changes in v6:
+- Fixed oops on module loading (due to access to RO shadow zero area).
+- Added support for hash book3s/32, thanks to Daniel's patch to differ KASAN activation.
+- Reworked handling of optimised string functions (dedicated patch for it)
+- Reordered some files to ease adding of book3e/64 support.
+
+Changes in v5:
+- Added KASAN_SHADOW_OFFSET in Makefile, otherwise we fallback to KASAN_MINIMAL
+and some stuff like stack instrumentation is not performed
+- Moved calls to kasan_early_init() in head.S because stack instrumentation
+in machine_init was performed before the call to kasan_early_init()
+- Mapping kasan_early_shadow_page RW in kasan_early_init() and
+remaping RO later in kasan_init()
+- Allocating a big memblock() for shadow area, falling back to PAGE_SIZE blocks in case of failure.
+
+Changes in v4:
+- Comments from Andrey (DISABLE_BRANCH_PROFILING, Activation of reports)
+- Proper initialisation of shadow area in kasan_init()
+- Panic in case Hash table is required.
+- Added comments in patch one to explain why *t = *s becomes memcpy(t, s, ...)
+- Call of kasan_init_tags()
+
+Changes in v3:
+- Removed the printk() in kasan_early_init() to avoid build failure (see https://github.com/linuxppc/issues/issues/218)
+- Added necessary changes in asm/book3s/32/pgtable.h to get it work on powerpc 603 family
+- Added a few KASAN_SANITIZE_xxx.o := n to successfully boot on powerpc 603 family
+
+Changes in v2:
+- Rebased.
+- Using __set_pte_at() to build the early table.
+- Worked around and got rid of the patch adding asm/page.h in asm/pgtable-types.h
+    ==> might be fixed independently but not needed for this serie.
+
+Christophe Leroy (18):
+  powerpc/6xx: fix setup and use of SPRN_SPRG_PGDIR for hash32
+  powerpc/32: Move early_init() in a separate file
+  powerpc: prepare string/mem functions for KASAN
+  powerpc: remove CONFIG_CMDLINE #ifdef mess
+  powerpc/prom_init: don't use string functions from lib/
+  powerpc/mm: don't use direct assignation during early boot.
+  powerpc/32: use memset() instead of memset_io() to zero BSS
+  powerpc/32: make KVIRT_TOP dependent on FIXMAP_START
+  powerpc/32: prepare shadow area for KASAN
+  powerpc: disable KASAN instrumentation on early/critical files.
+  powerpc/32: Add KASAN support
+  powerpc/32s: move hash code patching out of MMU_init_hw()
+  powerpc/32s: set up an early static hash table for KASAN.
+  powerpc/32s: map kasan zero shadow with PAGE_READONLY instead of
+    PAGE_KERNEL_RO
+  kasan: do not open-code addr_has_shadow
+  kasan: allow architectures to manage the memory-to-shadow mapping
+  kasan: allow architectures to provide an outline readiness check
+  powerpc: KASAN for 64bit Book3E
+
+ arch/powerpc/Kconfig                         |   8 +-
+ arch/powerpc/Kconfig.debug                   |   5 +
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  13 +-
+ arch/powerpc/include/asm/fixmap.h            |   5 +
+ arch/powerpc/include/asm/kasan.h             | 111 ++++++++++++++
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  13 +-
+ arch/powerpc/include/asm/string.h            |  32 +++-
+ arch/powerpc/kernel/Makefile                 |  14 +-
+ arch/powerpc/kernel/cpu_setup_6xx.S          |   3 -
+ arch/powerpc/kernel/cputable.c               |  13 +-
+ arch/powerpc/kernel/early_32.c               |  36 +++++
+ arch/powerpc/kernel/head_32.S                |  52 +++++--
+ arch/powerpc/kernel/head_40x.S               |   3 +
+ arch/powerpc/kernel/head_44x.S               |   3 +
+ arch/powerpc/kernel/head_8xx.S               |   3 +
+ arch/powerpc/kernel/head_fsl_booke.S         |   3 +
+ arch/powerpc/kernel/prom_init.c              | 218 +++++++++++++++++++++------
+ arch/powerpc/kernel/prom_init_check.sh       |  12 +-
+ arch/powerpc/kernel/setup-common.c           |   3 +
+ arch/powerpc/kernel/setup_32.c               |  28 ----
+ arch/powerpc/lib/Makefile                    |  19 ++-
+ arch/powerpc/lib/copy_32.S                   |  12 +-
+ arch/powerpc/lib/mem_64.S                    |   9 +-
+ arch/powerpc/lib/memcpy_64.S                 |   4 +-
+ arch/powerpc/mm/Makefile                     |   9 ++
+ arch/powerpc/mm/hash_low_32.S                |   8 +-
+ arch/powerpc/mm/init_32.c                    |   3 +
+ arch/powerpc/mm/kasan/Makefile               |   6 +
+ arch/powerpc/mm/kasan/kasan_init_32.c        | 183 ++++++++++++++++++++++
+ arch/powerpc/mm/kasan/kasan_init_book3e_64.c |  50 ++++++
+ arch/powerpc/mm/mem.c                        |   4 +
+ arch/powerpc/mm/mmu_decl.h                   |   2 +
+ arch/powerpc/mm/ppc_mmu_32.c                 |  36 +++--
+ arch/powerpc/mm/ptdump/ptdump.c              |   8 +
+ arch/powerpc/platforms/powermac/Makefile     |   6 +
+ arch/powerpc/purgatory/Makefile              |   3 +
+ arch/powerpc/xmon/Makefile                   |   1 +
+ include/linux/kasan.h                        |   6 +
+ mm/kasan/generic.c                           |   6 +-
+ mm/kasan/generic_report.c                    |   2 +-
+ mm/kasan/kasan.h                             |   6 +-
+ mm/kasan/report.c                            |   6 +-
+ mm/kasan/tags.c                              |   3 +-
+ 43 files changed, 829 insertions(+), 141 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kasan.h
+ create mode 100644 arch/powerpc/kernel/early_32.c
+ create mode 100644 arch/powerpc/mm/kasan/Makefile
+ create mode 100644 arch/powerpc/mm/kasan/kasan_init_32.c
+ create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
+
 -- 
 2.13.3
 
