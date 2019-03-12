@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A84EEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:28:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2846C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:18:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E9F1213A2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:28:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 33992213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:18:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="WrGYXtij"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E9F1213A2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KftVIMVS"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 33992213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Jp3p05h9zDqDN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:28:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Jq9Q4MG1zDqDP
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:18:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,59 +28,58 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="WrGYXtij"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="KftVIMVS"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jp0y2pfgzDqJT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 08:25:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7L0LC7zDqFF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:16:12 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Jp0t5T2vz9v1TK;
- Tue, 12 Mar 2019 22:25:34 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44Jq7F12J4zB09ZD;
+ Tue, 12 Mar 2019 23:16:09 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=WrGYXtij; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=KftVIMVS; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id sZw7ZXtKIQX9; Tue, 12 Mar 2019 22:25:34 +0100 (CET)
+ with ESMTP id cwQcFsumXjKL; Tue, 12 Mar 2019 23:16:09 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Jp0t4G2cz9v1TJ;
- Tue, 12 Mar 2019 22:25:34 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7D6pGcz9vRb0;
+ Tue, 12 Mar 2019 23:16:08 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552425934; bh=L4e+tqePl6sj60tGcmH+D7neMPhy0vq6Tj88TMJuFro=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=WrGYXtijE6154/0e/iU5/F6mQZkp2PBzkx6i/Uu24p+CsPyxwSwkWyuBotXJJaFaE
- 5POqU1FhOhzanbTCNow9wQKFbNIqaBj9DihYKUS4pepfb8aeORFOtQlI6vp3cNu6Yl
- zrLWfMFj+m2zAF/8eqAF4p3WUnxhqaMzlwme2YSc=
+ t=1552428968; bh=9adWQ2eOTpeKwqD9lHYd+6T0EtP8IVztHNLFGdN0+Sk=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=KftVIMVSsoAcgchyq0G0S8dfd5e0GNKOH1T65UycrFrho1PK/W9dhL+5848YI8xkY
+ KMHuxCq9Xw+m92r45fDHWl33kDihY67fFmI14zcF/3/1gsMFj4Kb1tRKNc3Rv4tt2I
+ lIImF4c4UjmNa7GbU2faVhmAdbbRJBGiK8I/oTQU=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id B83BA8B8B1;
- Tue, 12 Mar 2019 22:25:34 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2EB018B8B1;
+ Tue, 12 Mar 2019 23:16:09 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 1Rwv6qYX61Tb; Tue, 12 Mar 2019 22:25:34 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 52E3B8B8A7;
- Tue, 12 Mar 2019 22:25:34 +0100 (CET)
-Subject: Re: [PATCH] powerpc: sstep: Mark variable `rc` as unused in function
- 'analyse_instr'
-To: Mathieu Malaterre <malat@debian.org>
-References: <20190312202008.29681-1-malat@debian.org>
- <57a0d93c-8784-d6af-a5fb-75e31455ae57@c-s.fr>
- <CA+7wUsyA698UtNLni7wi3=cKjbCd1V71YA0sxDtMD=MmQvQxTQ@mail.gmail.com>
+ with ESMTP id SSfg7OlvRRXa; Tue, 12 Mar 2019 23:16:09 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D89298B8A7;
+ Tue, 12 Mar 2019 23:16:08 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id ACE606FA15; Tue, 12 Mar 2019 22:16:08 +0000 (UTC)
+Message-Id: <1e6cd3250462be2939df67c4ee8ff53c3145de0a.1552428161.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1552428161.git.christophe.leroy@c-s.fr>
+References: <cover.1552428161.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <94d90740-c970-01b0-c430-bafc2e9eecd3@c-s.fr>
-Date: Tue, 12 Mar 2019 22:25:34 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.3
-MIME-Version: 1.0
-In-Reply-To: <CA+7wUsyA698UtNLni7wi3=cKjbCd1V71YA0sxDtMD=MmQvQxTQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v10 03/18] powerpc: prepare string/mem functions for KASAN
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+ Daniel Axtens <dja@axtens.net>
+Date: Tue, 12 Mar 2019 22:16:08 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,66 +91,314 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+CONFIG_KASAN implements wrappers for memcpy() memmove() and memset()
+Those wrappers are doing the verification then call respectively
+__memcpy() __memmove() and __memset(). The arches are therefore
+expected to rename their optimised functions that way.
 
+For files on which KASAN is inhibited, #defines are used to allow
+them to directly call optimised versions of the functions without
+going through the KASAN wrappers.
 
-Le 12/03/2019 à 22:12, Mathieu Malaterre a écrit :
-> On Tue, Mar 12, 2019 at 9:56 PM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->>
->>
->> Le 12/03/2019 à 21:20, Mathieu Malaterre a écrit :
->>> Add gcc attribute unused for `rc` variable.
->>>
->>> Fix warnings treated as errors with W=1:
->>>
->>>     arch/powerpc/lib/sstep.c:1172:31: error: variable 'rc' set but not used [-Werror=unused-but-set-variable]
->>>
->>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>> ---
->>>    arch/powerpc/lib/sstep.c | 2 +-
->>>    1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
->>> index 3d33fb509ef4..32d092f62ae0 100644
->>> --- a/arch/powerpc/lib/sstep.c
->>> +++ b/arch/powerpc/lib/sstep.c
->>> @@ -1169,7 +1169,7 @@ static nokprobe_inline int trap_compare(long v1, long v2)
->>>    int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
->>>                  unsigned int instr)
->>>    {
->>> -     unsigned int opcode, ra, rb, rc, rd, spr, u;
->>> +     unsigned int opcode, ra, rb, rc __maybe_unused, rd, spr, u;
->>
->> I think it would be better to enclose 'rc' inside a #ifdef CONFIG_PPC64
-> 
-> Hum odd, I would have bet you would have suggested me to use
-> IS_ENABLED with some crazy scheme (I was not able to mix it with the
-> switch case nicely).
+See commit 393f203f5fd5 ("x86_64: kasan: add interceptors for
+memset/memmove/memcpy functions") for details.
 
-Well I guess yes, you could also get rid of the #ifdef __powerpc64__ and 
-instead add the following just after the 'case 4:'
+Other string / mem functions do not (yet) have kasan wrappers,
+we therefore have to fallback to the generic versions when
+KASAN is active, otherwise KASAN checks will be skipped.
 
-if (!IS_ENABLED(CONFIG_64))
-	break;
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/kasan.h       | 15 +++++++++++++++
+ arch/powerpc/include/asm/string.h      | 32 +++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/prom_init_check.sh | 10 +++++++++-
+ arch/powerpc/lib/Makefile              | 11 ++++++++---
+ arch/powerpc/lib/copy_32.S             | 12 +++++++++---
+ arch/powerpc/lib/mem_64.S              |  9 +++++++--
+ arch/powerpc/lib/memcpy_64.S           |  4 +++-
+ 7 files changed, 80 insertions(+), 13 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/kasan.h
 
-That's less uggly than adding two #ifdef/#endif
+diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
+new file mode 100644
+index 000000000000..2c179a39d4ba
+--- /dev/null
++++ b/arch/powerpc/include/asm/kasan.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __ASM_KASAN_H
++#define __ASM_KASAN_H
++
++#ifdef CONFIG_KASAN
++#define _GLOBAL_KASAN(fn)	_GLOBAL(__##fn)
++#define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(__##fn)
++#define EXPORT_SYMBOL_KASAN(fn)	EXPORT_SYMBOL(__##fn)
++#else
++#define _GLOBAL_KASAN(fn)	_GLOBAL(fn)
++#define _GLOBAL_TOC_KASAN(fn)	_GLOBAL_TOC(fn)
++#define EXPORT_SYMBOL_KASAN(fn)
++#endif
++
++#endif
+diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
+index 1647de15a31e..9bf6dffb4090 100644
+--- a/arch/powerpc/include/asm/string.h
++++ b/arch/powerpc/include/asm/string.h
+@@ -4,14 +4,17 @@
+ 
+ #ifdef __KERNEL__
+ 
++#ifndef CONFIG_KASAN
+ #define __HAVE_ARCH_STRNCPY
+ #define __HAVE_ARCH_STRNCMP
++#define __HAVE_ARCH_MEMCHR
++#define __HAVE_ARCH_MEMCMP
++#define __HAVE_ARCH_MEMSET16
++#endif
++
+ #define __HAVE_ARCH_MEMSET
+ #define __HAVE_ARCH_MEMCPY
+ #define __HAVE_ARCH_MEMMOVE
+-#define __HAVE_ARCH_MEMCMP
+-#define __HAVE_ARCH_MEMCHR
+-#define __HAVE_ARCH_MEMSET16
+ #define __HAVE_ARCH_MEMCPY_FLUSHCACHE
+ 
+ extern char * strcpy(char *,const char *);
+@@ -27,7 +30,27 @@ extern int memcmp(const void *,const void *,__kernel_size_t);
+ extern void * memchr(const void *,int,__kernel_size_t);
+ extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
+ 
++void *__memset(void *s, int c, __kernel_size_t count);
++void *__memcpy(void *to, const void *from, __kernel_size_t n);
++void *__memmove(void *to, const void *from, __kernel_size_t n);
++
++#if defined(CONFIG_KASAN) && !defined(__SANITIZE_ADDRESS__)
++/*
++ * For files that are not instrumented (e.g. mm/slub.c) we
++ * should use not instrumented version of mem* functions.
++ */
++#define memcpy(dst, src, len) __memcpy(dst, src, len)
++#define memmove(dst, src, len) __memmove(dst, src, len)
++#define memset(s, c, n) __memset(s, c, n)
++
++#ifndef __NO_FORTIFY
++#define __NO_FORTIFY /* FORTIFY_SOURCE uses __builtin_memcpy, etc. */
++#endif
++
++#endif
++
+ #ifdef CONFIG_PPC64
++#ifndef CONFIG_KASAN
+ #define __HAVE_ARCH_MEMSET32
+ #define __HAVE_ARCH_MEMSET64
+ 
+@@ -49,8 +72,11 @@ static inline void *memset64(uint64_t *p, uint64_t v, __kernel_size_t n)
+ {
+ 	return __memset64(p, v, n * 8);
+ }
++#endif
+ #else
++#ifndef CONFIG_KASAN
+ #define __HAVE_ARCH_STRLEN
++#endif
+ 
+ extern void *memset16(uint16_t *, uint16_t, __kernel_size_t);
+ #endif
+diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
+index 667df97d2595..181fd10008ef 100644
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -16,8 +16,16 @@
+ # If you really need to reference something from prom_init.o add
+ # it to the list below:
+ 
++grep "^CONFIG_KASAN=y$" .config >/dev/null
++if [ $? -eq 0 ]
++then
++	MEM_FUNCS="__memcpy __memset"
++else
++	MEM_FUNCS="memcpy memset"
++fi
++
+ WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
+-_end enter_prom memcpy memset reloc_offset __secondary_hold
++_end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
+ __secondary_hold_acknowledge __secondary_hold_spinloop __start
+ strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
+ reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 79396e184bca..47a4de434c22 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -8,9 +8,14 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
+ CFLAGS_REMOVE_code-patching.o = $(CC_FLAGS_FTRACE)
+ CFLAGS_REMOVE_feature-fixups.o = $(CC_FLAGS_FTRACE)
+ 
+-obj-y += string.o alloc.o code-patching.o feature-fixups.o
++obj-y += alloc.o code-patching.o feature-fixups.o
+ 
+-obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o strlen_32.o
++ifndef CONFIG_KASAN
++obj-y	+=	string.o memcmp_$(BITS).o
++obj-$(CONFIG_PPC32)	+= strlen_32.o
++endif
++
++obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
+ 
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
+ 
+@@ -34,7 +39,7 @@ obj64-$(CONFIG_KPROBES_SANITY_TEST)	+= test_emulate_step.o \
+ 					   test_emulate_step_exec_instr.o
+ 
+ obj-y			+= checksum_$(BITS).o checksum_wrappers.o \
+-			   string_$(BITS).o memcmp_$(BITS).o
++			   string_$(BITS).o
+ 
+ obj-y			+= sstep.o ldstfp.o quad.o
+ obj64-y			+= quad.o
+diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+index ba66846fe973..d5642481fb98 100644
+--- a/arch/powerpc/lib/copy_32.S
++++ b/arch/powerpc/lib/copy_32.S
+@@ -14,6 +14,7 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/export.h>
+ #include <asm/code-patching-asm.h>
++#include <asm/kasan.h>
+ 
+ #define COPY_16_BYTES		\
+ 	lwz	r7,4(r4);	\
+@@ -68,6 +69,7 @@ CACHELINE_BYTES = L1_CACHE_BYTES
+ LG_CACHELINE_BYTES = L1_CACHE_SHIFT
+ CACHELINE_MASK = (L1_CACHE_BYTES-1)
+ 
++#ifndef CONFIG_KASAN
+ _GLOBAL(memset16)
+ 	rlwinm.	r0 ,r5, 31, 1, 31
+ 	addi	r6, r3, -4
+@@ -81,6 +83,7 @@ _GLOBAL(memset16)
+ 	sth	r4, 4(r6)
+ 	blr
+ EXPORT_SYMBOL(memset16)
++#endif
+ 
+ /*
+  * Use dcbz on the complete cache lines in the destination
+@@ -91,7 +94,7 @@ EXPORT_SYMBOL(memset16)
+  * We therefore skip the optimised bloc that uses dcbz. This jump is
+  * replaced by a nop once cache is active. This is done in machine_init()
+  */
+-_GLOBAL(memset)
++_GLOBAL_KASAN(memset)
+ 	cmplwi	0,r5,4
+ 	blt	7f
+ 
+@@ -151,6 +154,7 @@ _GLOBAL(memset)
+ 	bdnz	9b
+ 	blr
+ EXPORT_SYMBOL(memset)
++EXPORT_SYMBOL_KASAN(memset)
+ 
+ /*
+  * This version uses dcbz on the complete cache lines in the
+@@ -163,12 +167,12 @@ EXPORT_SYMBOL(memset)
+  * We therefore jump to generic_memcpy which doesn't use dcbz. This jump is
+  * replaced by a nop once cache is active. This is done in machine_init()
+  */
+-_GLOBAL(memmove)
++_GLOBAL_KASAN(memmove)
+ 	cmplw	0,r3,r4
+ 	bgt	backwards_memcpy
+ 	/* fall through */
+ 
+-_GLOBAL(memcpy)
++_GLOBAL_KASAN(memcpy)
+ 1:	b	generic_memcpy
+ 	patch_site	1b, patch__memcpy_nocache
+ 
+@@ -244,6 +248,8 @@ _GLOBAL(memcpy)
+ 65:	blr
+ EXPORT_SYMBOL(memcpy)
+ EXPORT_SYMBOL(memmove)
++EXPORT_SYMBOL_KASAN(memcpy)
++EXPORT_SYMBOL_KASAN(memmove)
+ 
+ generic_memcpy:
+ 	srwi.	r7,r5,3
+diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
+index 3c3be02f33b7..7f6bd031c306 100644
+--- a/arch/powerpc/lib/mem_64.S
++++ b/arch/powerpc/lib/mem_64.S
+@@ -12,7 +12,9 @@
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/export.h>
++#include <asm/kasan.h>
+ 
++#ifndef CONFIG_KASAN
+ _GLOBAL(__memset16)
+ 	rlwimi	r4,r4,16,0,15
+ 	/* fall through */
+@@ -29,8 +31,9 @@ _GLOBAL(__memset64)
+ EXPORT_SYMBOL(__memset16)
+ EXPORT_SYMBOL(__memset32)
+ EXPORT_SYMBOL(__memset64)
++#endif
+ 
+-_GLOBAL(memset)
++_GLOBAL_KASAN(memset)
+ 	neg	r0,r3
+ 	rlwimi	r4,r4,8,16,23
+ 	andi.	r0,r0,7			/* # bytes to be 8-byte aligned */
+@@ -96,8 +99,9 @@ _GLOBAL(memset)
+ 	stb	r4,0(r6)
+ 	blr
+ EXPORT_SYMBOL(memset)
++EXPORT_SYMBOL_KASAN(memset)
+ 
+-_GLOBAL_TOC(memmove)
++_GLOBAL_TOC_KASAN(memmove)
+ 	cmplw	0,r3,r4
+ 	bgt	backwards_memcpy
+ 	b	memcpy
+@@ -139,3 +143,4 @@ _GLOBAL(backwards_memcpy)
+ 	mtctr	r7
+ 	b	1b
+ EXPORT_SYMBOL(memmove)
++EXPORT_SYMBOL_KASAN(memmove)
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index 273ea67e60a1..25c3772c1dfb 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -11,6 +11,7 @@
+ #include <asm/export.h>
+ #include <asm/asm-compat.h>
+ #include <asm/feature-fixups.h>
++#include <asm/kasan.h>
+ 
+ #ifndef SELFTEST_CASE
+ /* For big-endian, 0 == most CPUs, 1 == POWER6, 2 == Cell */
+@@ -18,7 +19,7 @@
+ #endif
+ 
+ 	.align	7
+-_GLOBAL_TOC(memcpy)
++_GLOBAL_TOC_KASAN(memcpy)
+ BEGIN_FTR_SECTION
+ #ifdef __LITTLE_ENDIAN__
+ 	cmpdi	cr7,r5,0
+@@ -230,3 +231,4 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_LD_STD)
+ 	blr
+ #endif
+ EXPORT_SYMBOL(memcpy)
++EXPORT_SYMBOL_KASAN(memcpy)
+-- 
+2.13.3
 
-Christophe
-
-> 
-> Anyway I'll try your suggestion and post a v2.
-> 
->> Christophe
->>
->>>        unsigned long int imm;
->>>        unsigned long int val, val2;
->>>        unsigned int mb, me, sh;
->>>
