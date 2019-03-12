@@ -2,53 +2,80 @@ Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-12.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EE5BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:19:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF2B1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:21:03 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8776E2147C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:19:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8776E2147C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5D6EF2147C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 21:21:02 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5D6EF2147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ab.jp.nec.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Jnsg2gzTzDqJC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:19:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Jnvc0tznzDqGq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:21:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=valentin.schneider@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ab.jp.nec.com
+ (client-ip=114.179.232.185; helo=tyo185.gate.nec.co.jp;
+ envelope-from=k-hagio@ab.jp.nec.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44Jjsh4VdLzDqDF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 05:19:03 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 189C8A78;
- Tue, 12 Mar 2019 11:19:00 -0700 (PDT)
-Received: from [10.1.194.37] (e113632-lin.cambridge.arm.com [10.1.194.37])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F195A3F59C;
- Tue, 12 Mar 2019 11:18:56 -0700 (PDT)
-Subject: Re: [PATCH 00/14] entry: preempt_schedule_irq() callers scrub
-To: Vineet Gupta <vineet.gupta1@synopsys.com>, linux-kernel@vger.kernel.org
-References: <20190311224752.8337-1-valentin.schneider@arm.com>
- <e604601e-f8e1-a8b5-d364-69ca967996ce@synopsys.com>
-From: Valentin Schneider <valentin.schneider@arm.com>
-Message-ID: <a5b1605b-b3b3-7898-30ae-d993050e8c7a@arm.com>
-Date: Tue, 12 Mar 2019 18:18:55 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
-MIME-Version: 1.0
-In-Reply-To: <e604601e-f8e1-a8b5-d364-69ca967996ce@synopsys.com>
-Content-Type: text/plain; charset=utf-8
+ dmarc=none (p=none dis=none) header.from=ab.jp.nec.com
+X-Greylist: delayed 1361 seconds by postgrey-1.36 at bilbo;
+ Wed, 13 Mar 2019 07:19:45 AEDT
+Received: from tyo185.gate.nec.co.jp (tyo185.gate.nec.co.jp [114.179.232.185])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JmXx0St5zDqGq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 07:19:44 +1100 (AEDT)
+Received: from tyo161.gate.nec.co.jp (tyo161.gate.nec.co.jp [114.179.232.161])
+ by tyo185.gate.nec.co.jp (8.15.1/8.15.1) with ESMTPS id
+ x2CJv0YT028878
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 04:57:00 +0900
+Received: from mailgate01.nec.co.jp ([114.179.233.122])
+ by tyo161.gate.nec.co.jp (8.15.1/8.15.1) with ESMTPS id x2CJpSbo027851
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Wed, 13 Mar 2019 04:51:28 +0900
+Received: from mailsv02.nec.co.jp (mailgate-v.nec.co.jp [10.204.236.94])
+ by mailgate01.nec.co.jp (8.15.1/8.15.1) with ESMTP id x2CJpSeK016858;
+ Wed, 13 Mar 2019 04:51:28 +0900
+Received: from mail01b.kamome.nec.co.jp (mail01b.kamome.nec.co.jp [10.25.43.2])
+ by mailsv02.nec.co.jp (8.15.1/8.15.1) with ESMTP id x2CJpSQX006898;
+ Wed, 13 Mar 2019 04:51:28 +0900
+Received: from bpxc99gp.gisp.nec.co.jp ([10.38.151.136] [10.38.151.136]) by
+ mail03.kamome.nec.co.jp with ESMTP id BT-MMP-3278575;
+ Wed, 13 Mar 2019 04:47:38 +0900
+Received: from BPXM09GP.gisp.nec.co.jp ([10.38.151.201]) by
+ BPXC08GP.gisp.nec.co.jp ([10.38.151.136]) with mapi id 14.03.0319.002; Wed,
+ 13 Mar 2019 04:47:38 +0900
+From: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+To: Bhupesh Sharma <bhsharma@redhat.com>
+Subject: RE: [PATCH v2 2/2] crash_core, vmcoreinfo: Append
+ 'MAX_PHYSMEM_BITS' to vmcoreinfo
+Thread-Topic: [PATCH v2 2/2] crash_core, vmcoreinfo: Append
+ 'MAX_PHYSMEM_BITS' to vmcoreinfo
+Thread-Index: AQHU1yi7KXHpUX+rcU2iQwrK9lGXaKYIEatw
+Date: Tue, 12 Mar 2019 19:47:37 +0000
+Message-ID: <4AE2DC15AC0B8543882A74EA0D43DBEC03569E6D@BPXM09GP.gisp.nec.co.jp>
+References: <1552212242-9479-1-git-send-email-bhsharma@redhat.com>
+ <1552212242-9479-3-git-send-email-bhsharma@redhat.com>
+In-Reply-To: <1552212242-9479-3-git-send-email-bhsharma@redhat.com>
+Accept-Language: ja-JP, en-US
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Mailman-Approved-At: Wed, 13 Mar 2019 08:12:35 +1100
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [143.101.134.92]
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+X-TM-AS-MML: disable
+X-Mailman-Approved-At: Wed, 13 Mar 2019 08:12:34 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,40 +87,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
- linux-ia64@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- Julien Thierry <julien.thierry@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-mips@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, Ingo Molnar <mingo@redhat.com>,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- nios2-dev@lists.rocketboards.org, Thomas Gleixner <tglx@linutronix.de>,
- linux-snps-arc@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+ James Morse <james.morse@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ Dave Anderson <anderson@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 12/03/2019 18:03, Vineet Gupta wrote:
-[...]
->> Regarding that loop, archs seem to fall in 3 categories:
->> A) Those that don't have the loop
-> 
-> Please clarify that this is the right thing to do (since core code already has the
-> loop) hence no fixing is required for this "category"
-> 
+Hi Bhupesh,
 
-Right, those don't need any change. I had a brief look at them to double
-check they had the proper need_resched() gate before calling
-preempt_schedule_irq() (with no loop) and they all seem fine. Also...
+-----Original Message-----
+> Right now user-space tools like 'makedumpfile' and 'crash' need to rely
+> on a best-guess method of determining value of 'MAX_PHYSMEM_BITS'
+> supported by underlying kernel.
+>=20
+> This value is used in user-space code to calculate the bit-space
+> required to store a section for SPARESMEM (similar to the existing
+> calculation method used in the kernel implementation):
+>=20
+>   #define SECTIONS_SHIFT    (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
+>=20
+> Now, regressions have been reported in user-space utilities
+> like 'makedumpfile' and 'crash' on arm64, with the recently added
+> kernel support for 52-bit physical address space, as there is
+> no clear method of determining this value in user-space
+> (other than reading kernel CONFIG flags).
+>=20
+> As per suggestion from makedumpfile maintainer (Kazu), it makes more
+> sense to append 'MAX_PHYSMEM_BITS' to vmcoreinfo in the core code itself
+> rather than in arch-specific code, so that the user-space code for other
+> archs can also benefit from this addition to the vmcoreinfo and use it
+> as a standard way of determining 'SECTIONS_SHIFT' value in user-land.
+>=20
+> A reference 'makedumpfile' implementation which reads the
+> 'MAX_PHYSMEM_BITS' value from vmcoreinfo in a arch-independent fashion
+> is available here:
+>=20
+> [0]. https://github.com/bhupesh-sharma/makedumpfile/blob/remove-max-phys-=
+mem-bit-v1/arch/ppc64.c#L471
+>=20
+> Cc: Boris Petkov <bp@alien8.de>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: James Morse <james.morse@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Dave Anderson <anderson@redhat.com>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Cc: x86@kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: kexec@lists.infradead.org
+> Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+> ---
+>  kernel/crash_core.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 093c9f917ed0..44b90368e183 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -467,6 +467,7 @@ static int __init crash_save_vmcoreinfo_init(void)
+>  #define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
+>  	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
+>  #endif
+> +	VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
 
->> B) Those that have a small need_resched() loop around the
->>    preempt_schedule_irq() callsite
->> C) Those that branch to some more generic code further up the entry code
->>    and eventually branch back to preempt_schedule_irq()
->>
->> arc, m68k, nios2 fall in A)
-> 
+Some architectures define MAX_PHYSMEM_BITS only with CONFIG_SPARSEMEM,
+so we need to move this to the #ifdef section that exports some
+mem_section things.
 
-I forgot to include parisc in here.
+Thanks!
+Kazu
 
-[...]
+>=20
+>  	arch_crash_save_vmcoreinfo();
+>  	update_vmcoreinfo_note();
+> --
+> 2.7.4
+>=20
+
+
