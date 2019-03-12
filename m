@@ -2,81 +2,111 @@ Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D95A4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:32:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ECAC5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:36:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 55B32214D8
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:32:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 696982084F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 01:36:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="My1K5mvY"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 55B32214D8
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.b="DPU9JSEW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 696982084F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JHX82fB5zDqH3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 12:32:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JHdP24PyzDqGT
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 12:36:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=40.107.0.78; helo=eur02-am5-obe.outbound.protection.outlook.com;
+ envelope-from=haibo.xu@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
+ dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="My1K5mvY"; 
- dkim-atps=neutral
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
+ unprotected) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com
+ header.b="DPU9JSEW"; dkim-atps=neutral
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00078.outbound.protection.outlook.com [40.107.0.78])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44JHLv6pxYzDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 12:24:23 +1100 (AEDT)
-Received: by mail-pf1-x444.google.com with SMTP id j5so574920pfa.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Mar 2019 18:24:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=5MFf+Sv2MGhkMm701ULEhWcjMAOcrTqPNBZ2v20h180=;
- b=My1K5mvYDPkuoPBI/FF7yBgzauZjpseRxvHn0WkbzFw30qa4QC2mAdHumpUNCkT1h8
- 9Lpjis7M8CKraacC32VdD6VTL2Gm2IyLbPcyy72Yun4GrzT1kYrNws3BSczzWi+Dg75/
- YQDlfm5jzvCKoXfVWDrFPDpZ8cRPR2xLSWO6M=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=5MFf+Sv2MGhkMm701ULEhWcjMAOcrTqPNBZ2v20h180=;
- b=HQelJSiw8XN8o1rzZ7+p1/FsVKH7VPpbQ5l4e2L3RtWwJqev+uu1WeskUUx/bJpXy8
- GqUPpomZoA4/4WRx1TnL70tvh/1+aV2yQ0tU9tIV0tewj8LP0OWpyzS06/m+40lBspC5
- lQXgT8hw1pfsZNA62IsxR7PnFHYqMh9C0gbakQZCT5qbRbGAjEvLlgR2l57RiZCl2JBD
- rhqZPSeVSbj3eeECssNn123bwt4WHefCG3rNibpqL1jXAh7pTyX3egewhQrj3Au9n4Xj
- EcPW+2M41KsAtj1YRWsl00wx41IVb6+LAWalYpr8yjT3nAf+p8Ucod7rtTfdG5AoK+7+
- aBdg==
-X-Gm-Message-State: APjAAAX2wfvoHIKu772v2N2qQKG6bUCqrQz311GhbRQy0B51kzcGKR4L
- ACQnq25GvXM+FadZ6Hg1xCOx8f/AWN0=
-X-Google-Smtp-Source: APXvYqyY5CrOgsJ2WOrooZAEwwZ5BRvaqLFrTrcYnZ74N+OmxXAjW7L6gxJWNxUT6m5xzoZ0SGPGDg==
-X-Received: by 2002:a17:902:70c9:: with SMTP id
- l9mr11720517plt.131.1552353862236; 
- Mon, 11 Mar 2019 18:24:22 -0700 (PDT)
-Received: from localhost (124-171-102-1.dyn.iinet.net.au. [124.171.102.1])
- by smtp.gmail.com with ESMTPSA id i72sm20929571pfj.147.2019.03.11.18.24.20
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Mon, 11 Mar 2019 18:24:21 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: aneesh.kumar@linux.ibm.com, christophe.leroy@c-s.fr, bsingharora@gmail.com
-Subject: [RFCv2 PATCH 4/4] powerpc: KASAN for 64bit Book3E
-Date: Tue, 12 Mar 2019 12:23:48 +1100
-Message-Id: <20190312012348.4854-5-dja@axtens.net>
-X-Mailer: git-send-email 2.19.1
-In-Reply-To: <20190312012348.4854-1-dja@axtens.net>
-References: <20190312012348.4854-1-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JHbM2M5xzDq6J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 12:35:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com; 
+ s=selector1-arm-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=JtxqqtMg0mtNwODkrTI4yLRXkpzI+Ahn54L9/mLVH28=;
+ b=DPU9JSEWJMq3Zf0F/9XWBz7+QoBMHffDk0O1VPiRmgm7nCyO8vwTL/raDXLRQD8Rg3P6rU+//1jBH1j/fWdN75t90J0PnwDjsUOFWLkvaKZo06D2Y82CsYVgymPswS8+YzJQ01D7mfUeDgmUGtEjcQf/uRMf/Nfw+OWNCzOAjNM=
+Received: from AM4PR08MB2929.eurprd08.prod.outlook.com (10.171.190.138) by
+ AM4PR08MB0755.eurprd08.prod.outlook.com (10.164.82.145) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1686.18; Tue, 12 Mar 2019 01:34:44 +0000
+Received: from AM4PR08MB2929.eurprd08.prod.outlook.com
+ ([fe80::e522:c03f:3d0c:f4ce]) by AM4PR08MB2929.eurprd08.prod.outlook.com
+ ([fe80::e522:c03f:3d0c:f4ce%4]) with mapi id 15.20.1686.021; Tue, 12 Mar 2019
+ 01:34:44 +0000
+From: "Haibo Xu (Arm Technology China)" <Haibo.Xu@arm.com>
+To: Sudeep Holla <Sudeep.Holla@arm.com>
+Subject: Re: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Thread-Topic: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Thread-Index: AQHUz5P9ZKULSdDQbEW1h9vbYNE6xaX7KHCAgAAd14CAAQzrgIAKf6aAgAB1ewA=
+Date: Tue, 12 Mar 2019 01:34:44 +0000
+Message-ID: <65b00ea1-f784-4fb4-2a98-49fa44d9fa8f@arm.com>
+References: <20190228183220.15626-1-sudeep.holla@arm.com>
+ <20190228183220.15626-4-sudeep.holla@arm.com>
+ <eb9ef619-4af8-71e1-5aee-0b6294ac488b@arm.com>
+ <20190304101205.GA1504@e107155-lin>
+ <96d59a68-e5e2-86d9-c707-a79aad438b76@arm.com>
+ <20190311183403.GA31062@e107155-lin>
+In-Reply-To: <20190311183403.GA31062@e107155-lin>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: HK2PR0302CA0011.apcprd03.prod.outlook.com
+ (2603:1096:202::21) To AM4PR08MB2929.eurprd08.prod.outlook.com
+ (2603:10a6:205:c::10)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Haibo.Xu@arm.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [113.29.88.7]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: fef0931c-6e28-422a-8e2a-08d6a68ae7b3
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(7168020)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:AM4PR08MB0755; 
+x-ms-traffictypediagnostic: AM4PR08MB0755:
+x-microsoft-exchange-diagnostics: 1; AM4PR08MB0755;
+ 20:sa024CKCUP9ygamxCffnfnGzSUtIY6f71NbBS4cbExAALXdZzTEpUU3Jitcezf+FfwuyPYzDTZSK4GN3ZxKURSyQPZCBUYwPcsbg5NXGw71hzJtEV5FwMexLVgPh584dZJyHQ7uRvse+zsef87zDGz9FJVKv2pgDm/HAnl1Nnh8=
+x-microsoft-antispam-prvs: <AM4PR08MB07550371EA02A78BD313F3BE85490@AM4PR08MB0755.eurprd08.prod.outlook.com>
+x-forefront-prvs: 09749A275C
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(396003)(136003)(346002)(376002)(366004)(39860400002)(189003)(199004)(40434004)(52116002)(6506007)(386003)(71200400001)(99286004)(6636002)(76176011)(71190400001)(8936002)(53936002)(31686004)(229853002)(186003)(53546011)(6486002)(478600001)(72206003)(6436002)(6512007)(14454004)(256004)(26005)(55236004)(5024004)(14444005)(102836004)(7736002)(305945005)(25786009)(36756003)(4326008)(81156014)(81166006)(31696002)(8676002)(3846002)(6862004)(7416002)(68736007)(86362001)(5660300002)(106356001)(486006)(2616005)(11346002)(316002)(446003)(6116002)(105586002)(6246003)(476003)(37006003)(97736004)(54906003)(93886005)(2906002)(66066001);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM4PR08MB0755;
+ H:AM4PR08MB2929.eurprd08.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; MX:1; A:1; 
+received-spf: None (protection.outlook.com: arm.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: pEbiBfy7XcTMnKLK49xK9k03MxcDh+YzEFQsi4oQMddSssaIJp8zO2sb9H4KfM/KY5nC2SPtKVi4PBGkqWLIUW5PhP2oDqU2fJrPGJRLI7Mzd/hLwLqxO/Fcx3Qge7O8UQ3z3UyvJpEjglEdb+WiJUjPcEFLL7dG65Mx3um2d5bacDhDYQ1S5ZFqqq9wWd7xJNvTmUf6796hOlIoEJbUdsyR41MPz7eOtt+piXppZ4j3qmjrXokeZw1Oj5e506F90pAromPcgwy+h7jOMTNzdsF6PCjEjvhn9E3YZLUy781TgLOsllt6WKJ/hOKcVE6zlB5Uib3qnEg4G5hKZvbviXauGomKzBSAoRTPm8PGsFLGghf0ajj0mZ9KygXHrxZbdGvnigmpCruw4YZKD4uZKqB2aZVqr1zkufLB2RuysdQ=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <57866709C2BE224FA97105DAF41E7E6A@eurprd08.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fef0931c-6e28-422a-8e2a-08d6a68ae7b3
+X-MS-Exchange-CrossTenant-originalarrivaltime: 12 Mar 2019 01:34:44.4617 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM4PR08MB0755
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,280 +118,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- kasan-dev@googlegroups.com, Daniel Axtens <dja@axtens.net>
+Cc: Steve Capper <Steve.Capper@arm.com>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ "jdike@addtoit.com" <jdike@addtoit.com>, "x86@kernel.org" <x86@kernel.org>,
+ Will Deacon <Will.Deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Bin Lu \(Arm Technology China\)" <Bin.Lu@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Wire up KASAN. Only outline instrumentation is supported.
-
-The KASAN shadow area is mapped into vmemmap space:
-0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
-To do this we require that vmemmap be disabled. (This is the default
-in the kernel config that QorIQ provides for the machine in their
-SDK anyway - they use flat memory.)
-
-Only the kernel linear mapping (0xc000...) is checked. The vmalloc and
-ioremap areas (also in 0x800...) are all mapped to the zero page. As
-with the Book3S hash series, this requires overriding the memory <->
-shadow mapping.
-
-Also, as with both previous 64-bit series, early instrumentation is not
-supported.  It would allow us to drop the check_return_arch_not_ready()
-hook in the KASAN core, but it's tricky to get it set up early enough:
-we need it setup before the first call to instrumented code like printk().
-Perhaps in the future.
-
-Only KASAN_MINIMAL works.
-
-Tested on e6500. KVM, kexec and xmon have not been tested.
-
-The test_kasan module fires warnings as expected, except for the
-following tests:
-
- - Expected/by design:
-kasan test: memcg_accounted_kmem_cache allocate memcg accounted object
-
- - Due to only supporting KASAN_MINIMAL:
-kasan test: kasan_stack_oob out-of-bounds on stack
-kasan test: kasan_global_oob out-of-bounds global variable
-kasan test: kasan_alloca_oob_left out-of-bounds to left on alloca
-kasan test: kasan_alloca_oob_right out-of-bounds to right on alloca
-kasan test: use_after_scope_test use-after-scope on int
-kasan test: use_after_scope_test use-after-scope on array
-
-Thanks to those who have done the heavy lifting over the past several years:
- - Christophe's 32 bit series: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-February/185379.html
- - Aneesh's Book3S hash series: https://lwn.net/Articles/655642/
- - Balbir's Book3S radix series: https://patchwork.ozlabs.org/patch/795211/
-
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-
----
-
-While useful if you have a book3e device, this is mostly intended
-as a warm-up exercise for reviving Aneesh's series for book3s hash.
-In particular, changes to the kasan core are going to be required
-for hash and radix as well.
----
- arch/powerpc/Kconfig                         |  1 +
- arch/powerpc/Kconfig.debug                   |  2 +-
- arch/powerpc/include/asm/kasan.h             | 73 +++++++++++++++++++-
- arch/powerpc/mm/Makefile                     |  2 +
- arch/powerpc/mm/kasan/Makefile               |  1 +
- arch/powerpc/mm/kasan/kasan_init_book3e_64.c | 53 ++++++++++++++
- 6 files changed, 129 insertions(+), 3 deletions(-)
- create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 8d6108c83299..01540873a79f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -173,6 +173,7 @@ config PPC
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_JUMP_LABEL
- 	select HAVE_ARCH_KASAN			if PPC32
-+	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 && !SPARSEMEM_VMEMMAP
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 61febbbdd02b..fc1f5fa7554e 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -369,5 +369,5 @@ config PPC_FAST_ENDIAN_SWITCH
- 
- config KASAN_SHADOW_OFFSET
- 	hex
--	depends on KASAN
-+	depends on KASAN && PPC32
- 	default 0xe0000000
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index e4adc6bc1e8f..661a5700869b 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -15,14 +15,16 @@
- #ifndef __ASSEMBLY__
- 
- #include <asm/page.h>
-+#include <asm/pgtable.h>
- 
- #define KASAN_SHADOW_SCALE_SHIFT	3
- 
--#define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
--
- #define KASAN_SHADOW_START	(KASAN_SHADOW_OFFSET + \
- 				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
- 
-+#ifdef CONFIG_PPC32
-+#define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
-+
- #define KASAN_SHADOW_END	0UL
- 
- #define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
-@@ -30,6 +32,73 @@
- #ifdef CONFIG_KASAN
- void kasan_early_init(void);
- void kasan_mmu_init(void);
-+#endif
-+#endif /* CONFIG_PPC32 */
-+
-+#ifdef CONFIG_PPC_BOOK3E_64
-+
-+/* we don't put this in Kconfig as we only support KASAN_MINIMAL, and
-+ * that will be disabled if the symbol is availabe in Kconfig */
-+#define KASAN_SHADOW_OFFSET ASM_CONST(0x6800040000000000)
-+
-+#define KASAN_SHADOW_SIZE	(KERN_VIRT_SIZE >> KASAN_SHADOW_SCALE_SHIFT)
-+
-+extern struct static_key_false powerpc_kasan_enabled_key;
-+static inline bool kasan_arch_is_ready_book3e(void) {
-+	if (static_branch_likely(&powerpc_kasan_enabled_key))
-+				return true;
-+	return false;
-+}
-+#define kasan_arch_is_ready kasan_arch_is_ready_book3e
-+
-+extern unsigned char kasan_zero_page[PAGE_SIZE];
-+static inline void *kasan_mem_to_shadow_book3e(const void *addr)
-+{
-+	if ((unsigned long)addr >= KERN_VIRT_START &&
-+		(unsigned long)addr < (KERN_VIRT_START + KERN_VIRT_SIZE)) {
-+		return (void *)kasan_zero_page;
-+	}
-+
-+	return (void *)((unsigned long)addr >> KASAN_SHADOW_SCALE_SHIFT)
-+		+ KASAN_SHADOW_OFFSET;
-+}
-+#define kasan_mem_to_shadow kasan_mem_to_shadow_book3e
-+
-+static inline void *kasan_shadow_to_mem_book3e(const void *shadow_addr)
-+{
-+	/*
-+	 * We map the entire non-linear virtual mapping onto the zero page so if
-+	 * we are asked to map the zero page back just pick the beginning of that
-+	 * area.
-+	 */
-+	if (shadow_addr >= (void *)kasan_zero_page &&
-+		shadow_addr < (void *)(kasan_zero_page + PAGE_SIZE)) {
-+		return (void *)KERN_VIRT_START;
-+	}
-+
-+	return (void *)(((unsigned long)shadow_addr - KASAN_SHADOW_OFFSET)
-+		<< KASAN_SHADOW_SCALE_SHIFT);
-+}
-+#define kasan_shadow_to_mem kasan_shadow_to_mem_book3e
-+
-+static inline bool kasan_addr_has_shadow_book3e(const void *addr)
-+{
-+	/*
-+	 * We want to specifically assert that the addresses in the 0x8000...
-+	 * region have a shadow, otherwise they are considered by the kasan
-+	 * core to be wild pointers
-+	 */
-+	if ((unsigned long)addr >= KERN_VIRT_START &&
-+		(unsigned long)addr < (KERN_VIRT_START + KERN_VIRT_SIZE)) {
-+		return true;
-+	}
-+	return (addr >= kasan_shadow_to_mem((void *)KASAN_SHADOW_START));
-+}
-+#define kasan_addr_has_shadow kasan_addr_has_shadow_book3e
-+
-+#endif /* CONFIG_PPC_BOOK3E_64 */
-+
-+#ifdef CONFIG_KASAN
- void kasan_init(void);
- #else
- static inline void kasan_init(void) { }
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 80382a2d169b..fc49231f807c 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -8,9 +8,11 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
- CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
- 
- KASAN_SANITIZE_ppc_mmu_32.o := n
-+KASAN_SANITIZE_fsl_booke_mmu.o := n
- 
- ifdef CONFIG_KASAN
- CFLAGS_ppc_mmu_32.o  		+= -DDISABLE_BRANCH_PROFILING
-+CFLAGS_fsl_booke_mmu.o		+= -DDISABLE_BRANCH_PROFILING
- endif
- 
- obj-y				:= fault.o mem.o pgtable.o mmap.o \
-diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-index 6577897673dd..f8f164ad8ade 100644
---- a/arch/powerpc/mm/kasan/Makefile
-+++ b/arch/powerpc/mm/kasan/Makefile
-@@ -3,3 +3,4 @@
- KASAN_SANITIZE := n
- 
- obj-$(CONFIG_PPC32)           += kasan_init_32.o
-+obj-$(CONFIG_PPC_BOOK3E_64)   += kasan_init_book3e_64.o
-diff --git a/arch/powerpc/mm/kasan/kasan_init_book3e_64.c b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-new file mode 100644
-index 000000000000..93b9afcf1020
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-@@ -0,0 +1,53 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#define DISABLE_BRANCH_PROFILING
-+
-+#include <linux/kasan.h>
-+#include <linux/printk.h>
-+#include <linux/memblock.h>
-+#include <linux/sched/task.h>
-+#include <asm/pgalloc.h>
-+
-+DEFINE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
-+EXPORT_SYMBOL(powerpc_kasan_enabled_key);
-+unsigned char kasan_zero_page[PAGE_SIZE] __page_aligned_bss;
-+
-+static void __init kasan_init_region(struct memblock_region *reg)
-+{
-+	void *start = __va(reg->base);
-+	void *end = __va(reg->base + reg->size);
-+	unsigned long k_start, k_end, k_cur;
-+
-+	if (start >= end)
-+		return;
-+
-+	k_start = (unsigned long)kasan_mem_to_shadow(start);
-+	k_end = (unsigned long)kasan_mem_to_shadow(end);
-+
-+	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-+		void *va = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
-+		map_kernel_page(k_cur, __pa(va), PAGE_KERNEL);
-+	}
-+	flush_tlb_kernel_range(k_start, k_end);
-+}
-+
-+void __init kasan_init(void)
-+{
-+	struct memblock_region *reg;
-+
-+	for_each_memblock(memory, reg)
-+		kasan_init_region(reg);
-+
-+	/* map the zero page RO */
-+	map_kernel_page((unsigned long)kasan_zero_page,
-+					__pa(kasan_zero_page), PAGE_KERNEL_RO);
-+
-+	kasan_init_tags();
-+
-+	/* Turn on checking */
-+	static_branch_inc(&powerpc_kasan_enabled_key);
-+
-+	/* Enable error messages */
-+	init_task.kasan_depth = 0;
-+	pr_info("KASAN init done (64-bit Book3E)\n");
-+}
--- 
-2.19.1
-
+T24gMjAxOS8zLzEyIDI6MzQsIFN1ZGVlcCBIb2xsYSB3cm90ZToNCj4gKEkgdGhvdWdodCBJIGhh
+ZCBzZW50IHRoaXMgZW1haWwsIGxhc3QgVHVlc2RheSBpdHNlbGYsIGJ1dCBzYXcgdGhpcyBpbiBt
+eQ0KPiBkcmFmdCB0b2RheSwgc29tZXRoaW5nIHdlbnQgd3JvbmcsIHNvcnJ5IGZvciB0aGUgZGVs
+YXkpDQo+DQo+IE9uIFR1ZSwgTWFyIDA1LCAyMDE5IGF0IDAyOjE0OjQ3QU0gKzAwMDAsIEhhaWJv
+IFh1IChBcm0gVGVjaG5vbG9neSBDaGluYSkgd3JvdGU6DQo+PiBPbiAyMDE5LzMvNCAxODoxMiwg
+U3VkZWVwIEhvbGxhIHdyb3RlOg0KPj4+IE9uIE1vbiwgTWFyIDA0LCAyMDE5IGF0IDA4OjI1OjI4
+QU0gKzAwMDAsIEhhaWJvIFh1IChBcm0gVGVjaG5vbG9neSBDaGluYSkgd3JvdGU6DQo+Pj4+IE9u
+IDIwMTkvMy8xIDI6MzIsIFN1ZGVlcCBIb2xsYSB3cm90ZToNCj4+Pj4+IE5vdyB0aGF0IHdlIGhh
+dmUgYSBuZXcgaG9vayBwdHJhY2Vfc3lzY2FsbF9lbnRlciB0aGF0IGNhbiBiZSBjYWxsZWQgZnJv
+bQ0KPj4+Pj4gc3lzY2FsbCBlbnRyeSBjb2RlIGFuZCBpdCBoYW5kbGVzIFBUUkFDRV9TWVNFTVUg
+aW4gZ2VuZXJpYyBjb2RlLCB3ZQ0KPj4+Pj4gY2FuIGRvIHNvbWUgY2xlYW51cCB1c2luZyB0aGUg
+c2FtZSBpbiBzeXNjYWxsX3RyYWNlX2VudGVyLg0KPj4+Pj4NCj4+Pj4+IEZ1cnRoZXIgdGhlIGV4
+dHJhIGxvZ2ljIHRvIGZpbmQgc2luZ2xlIHN0ZXBwaW5nIFBUUkFDRV9TWVNFTVVfU0lOR0xFU1RF
+UA0KPj4+Pj4gaW4gc3lzY2FsbF9zbG93X2V4aXRfd29yayBzZWVtcyB1bm5lY2Vzc2FyeS4gTGV0
+J3MgcmVtb3ZlIHRoZSBzYW1lLg0KPj4+Pg0KPj4+PiBJIHRoaW5rIHdlIHNob3VsZCBub3QgY2hh
+bmdlIHRoZSBsb2dpYyBoZXJlLiBJcyBzbywgaXQgd2lsbCBkb3VibGUgdGhlIHJlcG9ydCBvZiBz
+eXNjYWxsDQo+Pj4+IHdoZW4gUFRSQUNFX1NZU0VNVV9TSU5HTEVTVEVQIGlzIGVuYWJsZWQuDQo+
+Pj4+DQo+Pj4NCj4+PiBJIGRvbid0IHRoaW5rIHRoYXQgc2hvdWxkIGhhcHBlbiwgYnV0IEkgbWF5
+IGJlIG1pc3Npbmcgc29tZXRoaW5nLg0KPj4+IENhbiB5b3UgZXhwbGFpbiBob3cgPw0KPj4+DQo+
+Pg0KPj4gV2hlbiBQVFJBQ0VfU1lTRU1VX1NJTkdMRVNURVAgaXMgZW5hYmxlZCwgYm90aCB0aGUg
+X1RJRl9TWVNDQUxMX0VNVSBhbmQNCj4+IF9USUZfU0lOR0xFU1RFUCBmbGFncyBhcmUgc2V0LCBi
+dXQgcHRyYWNlIG9ubHkgbmVlZCB0byByZXBvcnQoc2VuZCBTSUdUUkFQKQ0KPj4gYXQgdGhlIGVu
+dHJ5IG9mIGEgc3lzdGVtIGNhbGwsIG5vIG5lZWQgdG8gcmVwb3J0IGF0IHRoZSBleGl0IG9mIGEg
+c3lzdGVtDQo+PiBjYWxsLg0KPj4NCj4gU29ycnksIGJ1dCBJIHN0aWxsIG5vdCBnZXQgaXQsIHdl
+IGhhdmU6DQo+DQo+IHN0ZXAgPSAoKGZsYWdzICYgKF9USUZfU0lOR0xFU1RFUCB8IF9USUZfU1lT
+Q0FMTF9FTVUpKSA9PSBfVElGX1NJTkdMRVNURVApOw0KPg0KPiBGb3IgbWUsIHRoaXMgaXMgc2Ft
+ZSBhczoNCj4gc3RlcCA9ICgoZmxhZ3MgJiBfVElGX1NJTkdMRVNURVApID09IF9USUZfU0lOR0xF
+U1RFUCkNCj4gb3INCj4gaWYgKGZsYWdzICYgX1RJRl9TSU5HTEVTVEVQKQ0KPiBzdGVwID0gdHJ1
+ZTsNCj4NCg0KSSBkb24ndCB0aGluayBzbyEgQXMgSSBtZW50aW9uZWQgaW4gdGhlIGxhc3QgZW1h
+aWwgbG9vcCwgd2hlbiBQVFJBQ0VfU1lTRU1VX1NJTkdMRVNURVANCmlzIGVuYWJsZWQsIGJvdGgg
+dGhlIF9USUZfU1lTQ0FMTF9FTVUgYW5kIF9USUZfU0lOR0xFU1RFUCBmbGFncyBhcmUgc2V0LCBp
+biB3aGljaCBjYXNlDQp0aGUgc3RlcCBzaG91bGQgYmUgImZhbHNlIiBmb3IgdGhlIG9sZCBsb2dp
+Yy4gQnV0IHdpdGggdGhlIG5ldyBsb2dpYywgdGhlIHN0ZXAgaXMgInRydWUiLg0KDQo+IFNvIHdo
+ZW4gUFRSQUNFX1NZU0VNVV9TSU5HTEVTVEVQLCBfVElGX1NZU0NBTExfRU1VIGFuZCBfVElGX1NJ
+TkdMRVNURVANCj4gYXJlIHNldCBhbmQgc3RlcCBldmFsdWF0ZXMgdG8gdHJ1ZS4NCj4NCj4gU28g
+ZHJvcHBpbmcgX1RJRl9TWVNDQUxMX0VNVSBoZXJlIHNob3VsZCBiZSBmaW5lLiBBbSBJIHN0aWxs
+IG1pc3NpbmcNCj4gc29tZXRoaW5nID8NCj4NCj4gLS0NCj4gUmVnYXJkcywNCj4gU3VkZWVwDQo+
+DQoNCkZvciB0aGUgUFRSQUNFX1NZU0VNVV9TSU5HTEVTVEVQIHJlcXVlc3QsIHB0cmFjZSBvbmx5
+IG5lZWQgdG8gcmVwb3J0KHNlbmQgU0lHVFJBUCkNCmF0IHRoZSBlbnRyeSBvZiBhIHN5c3RlbSBj
+YWxsLCBubyBuZWVkIHRvIHJlcG9ydCBhdCB0aGUgZXhpdCBvZiBhIHN5c3RlbSBjYWxsLlRoYXQn
+cw0Kd2h5IHRoZSBvbGQgbG9naWMte3N0ZXAgPSAoKGZsYWdzICYgKF9USUZfU0lOR0xFU1RFUCB8
+IF9USUZfU1lTQ0FMTF9FTVUpKSA9PSBfVElGX1NJTkdMRVNURVApfQ0KaGVyZSB0cnkgdG8gZmls
+dGVyIG91dCB0aGUgc3BlY2lhbCBjYXNlKFBUUkFDRV9TWVNFTVVfU0lOR0xFU1RFUCkuDQoNCkFu
+b3RoZXIgd2F5IHRvIG1ha2Ugc3VyZSB0aGUgbG9naWMgaXMgZmluZSwgeW91IGNhbiBydW4gc29t
+ZSB0ZXN0cyB3aXRoIHJlc3BlY3QgdG8gYm90aCBsb2dpYywNCmFuZCB0byBjaGVjayB3aGV0aGVy
+IHRoZXkgaGF2ZSB0aGUgc2FtZSBiZWhhdmlvci4NCg0KUmVnYXJkcywNCg0KSGFpYm8NCklNUE9S
+VEFOVCBOT1RJQ0U6IFRoZSBjb250ZW50cyBvZiB0aGlzIGVtYWlsIGFuZCBhbnkgYXR0YWNobWVu
+dHMgYXJlIGNvbmZpZGVudGlhbCBhbmQgbWF5IGFsc28gYmUgcHJpdmlsZWdlZC4gSWYgeW91IGFy
+ZSBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwgcGxlYXNlIG5vdGlmeSB0aGUgc2VuZGVyIGlt
+bWVkaWF0ZWx5IGFuZCBkbyBub3QgZGlzY2xvc2UgdGhlIGNvbnRlbnRzIHRvIGFueSBvdGhlciBw
+ZXJzb24sIHVzZSBpdCBmb3IgYW55IHB1cnBvc2UsIG9yIHN0b3JlIG9yIGNvcHkgdGhlIGluZm9y
+bWF0aW9uIGluIGFueSBtZWRpdW0uIFRoYW5rIHlvdS4NCg==
