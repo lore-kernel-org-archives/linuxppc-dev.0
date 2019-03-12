@@ -2,70 +2,77 @@ Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89886C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 19:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06EB1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 19:16:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0C0482087C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 19:11:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0C0482087C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 722A52077B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 19:16:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="Y9l2Xk7Y"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 722A52077B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Jl2F2RnXzDqGL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 06:11:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Jl7c4B3hzDqGC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 06:16:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
- envelope-from=robherring2@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=lca.pw
+ (client-ip=2607:f8b0:4864:20::843; helo=mail-qt1-x843.google.com;
+ envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
- [209.85.167.196])
+ dmarc=none (p=none dis=none) header.from=lca.pw
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=lca.pw header.i=@lca.pw header.b="Y9l2Xk7Y"; 
+ dkim-atps=neutral
+Received: from mail-qt1-x843.google.com (mail-qt1-x843.google.com
+ [IPv6:2607:f8b0:4864:20::843])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jl0P1ymGzDqCq
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 06:09:56 +1100 (AEDT)
-Received: by mail-oi1-f196.google.com with SMTP id k11so2511551oic.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 12:09:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Jl5k63FNzDqD5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 06:14:32 +1100 (AEDT)
+Received: by mail-qt1-x843.google.com with SMTP id f11so3893538qti.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 12:14:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
+ h=from:to:cc:subject:date:message-id;
+ bh=DZ0zrk+Q+rSDOvWbVsPGd6SV907FycK77BA535duIaY=;
+ b=Y9l2Xk7YmcNPlU7pESh76E+NVmKWcjH/4XxSUYg2DmYLCBGlNF+ge8cXu7sMTges85
+ tmVdhk6QM3R8g2Y3wqE535Dzb3XbPxh+0ljDyqANxnNZq0U3wMcv3cSWoOuZbDCZyBto
+ DK/eNcWX9kyrN4fwmP2lRtWUlG8piY9B+k0WZotC+4pMVPqAGWxWCWfVDhJUCNTgHXE3
+ eRG0JLZPaKfIGk86wAK4d3RKwHcDSqO7zjo2NFY+D1HPg7y3qTQmOMJZsj9Of8KdH9eV
+ g0YoUUFEz2iOZrbIEeEbDZIFnCi5d4Xun6IvY49CuxHrkvaGEytpDGPiz2J7JJG7Tz3O
+ MQvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:date:from:to:cc:subject:message-id:references
- :mime-version:content-disposition:in-reply-to:user-agent;
- bh=jJKOnB1P9PKNpKShB0uPqUX+B71dLq4m19fT/OZ0LME=;
- b=iX6qczHQQYcJQTKiBxhmHM/A3O03ORWHQ25AGJV/BZr2aBC+zaSbvFCP8e+7e8XMHN
- b0FHszU0vt5pFb4wVB93FSYAHHhg3fcCI70ZEanjPqJdaDFbYxDvjz8H9XAM6fG8peZ2
- VA4TZsvokfnj7I7TPVwR91xhbxrp8Gk8yIXIdk6Lh2MMtxODkQsVynzKy+2x9MykWSHn
- FxU3FIlZtiDe6ibXeSl/1R0k8oMZF+U5xS/mcW/b/8ks/vBxCtUmlQGK4Yw/zqC/wp35
- D6PlypGu5Q86k0tuPF8tL2NAlRFRTrtS7vdu5K71MRt2t/MhPSKonNQBQ7TGN9NX3WmV
- E9qw==
-X-Gm-Message-State: APjAAAWcai3H3iN+bsSS0wIdN9Wsr8nCTt4it0Ox7V/lZ1V6iFoZHzes
- WiVl/XtmPjhq0vq32l463Q==
-X-Google-Smtp-Source: APXvYqzOmYiyevn4pfx/OmhV9QmJPBrm3c1cxWiC68YfOw7IRUa9Y5zI+wZ8qBznprpY0q72PHFdMw==
-X-Received: by 2002:aca:dec4:: with SMTP id v187mr2810071oig.92.1552417793942; 
- Tue, 12 Mar 2019 12:09:53 -0700 (PDT)
-Received: from localhost (24-155-109-49.dyn.grandenetworks.net.
- [24.155.109.49])
- by smtp.gmail.com with ESMTPSA id l93sm3981536otc.15.2019.03.12.12.09.53
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 12 Mar 2019 12:09:53 -0700 (PDT)
-Date: Tue, 12 Mar 2019 14:09:52 -0500
-From: Rob Herring <robh@kernel.org>
-To: Patrick Havelange <patrick.havelange@essensium.com>
-Subject: Re: [PATCH v2 4/7] dt-bindings: counter: ftm-quaddec
-Message-ID: <20190312190952.GA18547@bogus>
-References: <20190306111208.7454-1-patrick.havelange@essensium.com>
- <20190306111208.7454-5-patrick.havelange@essensium.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190306111208.7454-5-patrick.havelange@essensium.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=DZ0zrk+Q+rSDOvWbVsPGd6SV907FycK77BA535duIaY=;
+ b=ZTdpSNwqxTctA8kScEc3XrjhXIx9hBkVjXv8qyE7e8wNfooviEOhIwar6kgLiDtfQh
+ hWhRj/rauu2wWOJ3rWVY9aY0zysZdCq0FjdUS1u3ctqVuVIW9gztB9Ad3vJtQvj48A7j
+ IMOR7kMoYKYW5gSOO+km9/BkxAT4Gq6+wrfpjmrj9qwhucVnqtfa+SKd/1pv+JGJWD1x
+ aA/C+y5/5lrUcpMsBG6Iz0ye0UkETsuUN7nwaKqPAeq23ZJktVlHX7dIeBGG39Eiv8Jt
+ j3JqnvU33utzbC4Ont5eIZ1QGX5P8P6tcZijgFILhYRiV7d+XShZIrx5+e2YKmp+M8xm
+ 5Bsw==
+X-Gm-Message-State: APjAAAXgwpDcPEuguicE2PrsYx5hmM0kvQpAhJWCBw8XoFRsZ8xfMvLk
+ 5I+GlZiKtph3PVn63W27IWRRqA==
+X-Google-Smtp-Source: APXvYqyaKjuQ9G/lbn+bzG4co0WQXrOgZ88CnaC/q38aNxY5TbGX8BuaCucyZT/J32tQ96EM6dn6Zw==
+X-Received: by 2002:ac8:22ea:: with SMTP id g39mr20713118qta.73.1552418069670; 
+ Tue, 12 Mar 2019 12:14:29 -0700 (PDT)
+Received: from ovpn-121-103.rdu2.redhat.com
+ (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
+ by smtp.gmail.com with ESMTPSA id j9sm5083856qtb.30.2019.03.12.12.14.28
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 12 Mar 2019 12:14:29 -0700 (PDT)
+From: Qian Cai <cai@lca.pw>
+To: akpm@linux-foundation.org
+Subject: [PATCH] kmemleak: skip scanning holes in the .bss section
+Date: Tue, 12 Mar 2019 15:14:12 -0400
+Message-Id: <20190312191412.28656-1-cai@lca.pw>
+X-Mailer: git-send-email 2.17.2 (Apple Git-113)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,59 +84,155 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Jonathan Cameron <jic23@kernel.org>,
- linux-pwm@vger.kernel.org, linux-iio@vger.kernel.org,
- linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
- William Breathitt Gray <vilhelm.gray@gmail.com>, Li Yang <leoyang.li@nxp.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>,
- Shawn Guo <shawnguo@kernel.org>, Esben Haabendal <esben@haabendal.dk>
+Cc: catalin.marinas@arm.com, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, Qian Cai <cai@lca.pw>,
+ pe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 06, 2019 at 12:12:05PM +0100, Patrick Havelange wrote:
-> FlexTimer quadrature decoder driver.
-> 
-> Signed-off-by: Patrick Havelange <patrick.havelange@essensium.com>
-> Reviewed-by: Esben Haabendal <esben@haabendal.dk>
-> ---
-> Changes v2
->      - None
-> ---
->  .../bindings/counter/ftm-quaddec.txt           | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/counter/ftm-quaddec.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/counter/ftm-quaddec.txt b/Documentation/devicetree/bindings/counter/ftm-quaddec.txt
-> new file mode 100644
-> index 000000000000..4d18cd722074
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/counter/ftm-quaddec.txt
-> @@ -0,0 +1,18 @@
-> +FlexTimer Quadrature decoder counter
-> +
-> +This driver exposes a simple counter for the quadrature decoder mode.
+The commit 2d4f567103ff ("KVM: PPC: Introduce kvm_tmp framework") adds
+kvm_tmp[] into the .bss section and then free the rest of unused spaces
+back to the page allocator.
 
-Seems like this is more a mode of a h/w block than describing a h/w 
-block. Bindings should do the latter.
+kernel_init
+  kvm_guest_init
+    kvm_free_tmp
+      free_reserved_area
+        free_unref_page
+          free_unref_page_prepare
 
-> +
-> +Required properties:
-> +- compatible:		Must be "fsl,ftm-quaddec".
-> +- reg:			Must be set to the memory region of the flextimer.
-> +
-> +Optional property:
-> +- big-endian:		Access the device registers in big-endian mode.
-> +
-> +Example:
-> +		counter0: counter@29d0000 {
-> +			compatible = "fsl,ftm-quaddec";
-> +			reg = <0x0 0x29d0000 0x0 0x10000>;
-> +			big-endian;
-> +			status = "disabled";
-> +		};
-> -- 
-> 2.19.1
-> 
+With DEBUG_PAGEALLOC=y, it will unmap those pages from kernel. As the
+result, kmemleak scan will trigger a panic below when it scans the .bss
+section with unmapped pages.
+
+Since this is done way before the first kmemleak_scan(), just go
+lockless to make the implementation simple and skip those pages when
+scanning the .bss section. Later, those pages could be tracked by
+kmemleak again once allocated by the page allocator. Overall, this is
+such a special case, so no need to make it a generic to let kmemleak
+gain an ability to skip blocks in scan_large_block().
+
+BUG: Unable to handle kernel data access at 0xc000000001610000
+Faulting instruction address: 0xc0000000003cc178
+Oops: Kernel access of bad area, sig: 11 [#1]
+LE PAGE_SIZE=64K MMU=Hash SMP NR_CPUS=256 DEBUG_PAGEALLOC NUMA pSeries
+CPU: 3 PID: 130 Comm: kmemleak Kdump: loaded Not tainted 5.0.0+ #9
+REGS: c0000004b05bf940 TRAP: 0300   Not tainted  (5.0.0+)
+NIP [c0000000003cc178] scan_block+0xa8/0x190
+LR [c0000000003cc170] scan_block+0xa0/0x190
+Call Trace:
+[c0000004b05bfbd0] [c0000000003cc170] scan_block+0xa0/0x190 (unreliable)
+[c0000004b05bfc30] [c0000000003cc2c0] scan_large_block+0x60/0xa0
+[c0000004b05bfc70] [c0000000003ccc64] kmemleak_scan+0x254/0x960
+[c0000004b05bfd40] [c0000000003cdd50] kmemleak_scan_thread+0xec/0x12c
+[c0000004b05bfdb0] [c000000000104388] kthread+0x1b8/0x1c0
+[c0000004b05bfe20] [c00000000000b364] ret_from_kernel_thread+0x5c/0x78
+Instruction dump:
+7fa3eb78 4844667d 60000000 60000000 60000000 60000000 3bff0008 7fbcf840
+409d00b8 4bfffeed 2fa30000 409e00ac <e87f0000> e93e0128 7fa91840
+419dffdc
+
+Signed-off-by: Qian Cai <cai@lca.pw>
+---
+ arch/powerpc/kernel/kvm.c |  3 +++
+ include/linux/kmemleak.h  |  4 ++++
+ mm/kmemleak.c             | 25 ++++++++++++++++++++++++-
+ 3 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 683b5b3805bd..5cddc8fc56bb 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -26,6 +26,7 @@
+ #include <linux/slab.h>
+ #include <linux/of.h>
+ #include <linux/pagemap.h>
++#include <linux/kmemleak.h>
+ 
+ #include <asm/reg.h>
+ #include <asm/sections.h>
+@@ -712,6 +713,8 @@ static void kvm_use_magic_page(void)
+ 
+ static __init void kvm_free_tmp(void)
+ {
++	kmemleak_bss_hole(&kvm_tmp[kvm_tmp_index],
++			  &kvm_tmp[ARRAY_SIZE(kvm_tmp)]);
+ 	free_reserved_area(&kvm_tmp[kvm_tmp_index],
+ 			   &kvm_tmp[ARRAY_SIZE(kvm_tmp)], -1, NULL);
+ }
+diff --git a/include/linux/kmemleak.h b/include/linux/kmemleak.h
+index 5ac416e2d339..3d8949b9c6f5 100644
+--- a/include/linux/kmemleak.h
++++ b/include/linux/kmemleak.h
+@@ -46,6 +46,7 @@ extern void kmemleak_alloc_phys(phys_addr_t phys, size_t size, int min_count,
+ extern void kmemleak_free_part_phys(phys_addr_t phys, size_t size) __ref;
+ extern void kmemleak_not_leak_phys(phys_addr_t phys) __ref;
+ extern void kmemleak_ignore_phys(phys_addr_t phys) __ref;
++extern void kmemleak_bss_hole(void *start, void *stop);
+ 
+ static inline void kmemleak_alloc_recursive(const void *ptr, size_t size,
+ 					    int min_count, slab_flags_t flags,
+@@ -131,6 +132,9 @@ static inline void kmemleak_not_leak_phys(phys_addr_t phys)
+ static inline void kmemleak_ignore_phys(phys_addr_t phys)
+ {
+ }
++static inline void kmemleak_bss_hole(void *start, void *stop)
++{
++}
+ 
+ #endif	/* CONFIG_DEBUG_KMEMLEAK */
+ 
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 707fa5579f66..42349cd9ef7a 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -237,6 +237,10 @@ static int kmemleak_skip_disable;
+ /* If there are leaks that can be reported */
+ static bool kmemleak_found_leaks;
+ 
++/* Skip scanning of a range in the .bss section. */
++static void *bss_hole_start;
++static void *bss_hole_stop;
++
+ static bool kmemleak_verbose;
+ module_param_named(verbose, kmemleak_verbose, bool, 0600);
+ 
+@@ -1265,6 +1269,18 @@ void __ref kmemleak_ignore_phys(phys_addr_t phys)
+ }
+ EXPORT_SYMBOL(kmemleak_ignore_phys);
+ 
++/**
++ * kmemleak_bss_hole - skip scanning a range in the .bss section
++ *
++ * @start:	start of the range
++ * @stop:	end of the range
++ */
++void kmemleak_bss_hole(void *start, void *stop)
++{
++	bss_hole_start = start;
++	bss_hole_stop = stop;
++}
++
+ /*
+  * Update an object's checksum and return true if it was modified.
+  */
+@@ -1531,7 +1547,14 @@ static void kmemleak_scan(void)
+ 
+ 	/* data/bss scanning */
+ 	scan_large_block(_sdata, _edata);
+-	scan_large_block(__bss_start, __bss_stop);
++
++	if (bss_hole_start) {
++		scan_large_block(__bss_start, bss_hole_start);
++		scan_large_block(bss_hole_stop, __bss_stop);
++	} else {
++		scan_large_block(__bss_start, __bss_stop);
++	}
++
+ 	scan_large_block(__start_ro_after_init, __end_ro_after_init);
+ 
+ #ifdef CONFIG_SMP
+-- 
+2.17.2 (Apple Git-113)
+
