@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEEABC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:20:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 312D2C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:22:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4BC212175B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:20:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9832B213A2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:22:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="KQLanF/4"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4BC212175B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Y8gsJdMA"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9832B213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JqCf2hSdzDqHp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:19:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JqGB0zCCzDqFp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:22:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,50 +28,50 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="KQLanF/4"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Y8gsJdMA"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7K6vkVzDqDt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:16:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7K6Xc6zDqDP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:16:11 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Jq7G0syJzB09ZJ;
- Tue, 12 Mar 2019 23:16:10 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44Jq7D0GS6z9vRb5;
+ Tue, 12 Mar 2019 23:16:08 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=KQLanF/4; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=Y8gsJdMA; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qEKF0zGnhklk; Tue, 12 Mar 2019 23:16:10 +0100 (CET)
+ with ESMTP id eMIA2_JKQpuj; Tue, 12 Mar 2019 23:16:07 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7F6XsPzB09ZG;
- Tue, 12 Mar 2019 23:16:09 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7C69p1z9vRb0;
+ Tue, 12 Mar 2019 23:16:07 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552428969; bh=WruMu/BwAMo8I9a3LF55jCSVvG/Tocg3gOnV17/tBYE=;
+ t=1552428967; bh=fZn4Ngfk7JFea7diHSde6/p9kbdGl4xxyo9G2/zdnzw=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=KQLanF/4dftXRqC6GCD0M0L1NDv7Tk3uwmOLHYfcMbzeC+NVftLENFHGm877fbTEE
- IqUJ0eJji/7Ty9h8hcq5o7AKByQwIgnGz7GlXQDYuo0WJNsnh7JvHOi3x3QBcfrO/f
- 4Tu4y32RrhY61drJqkgYuM6v7mtP3CrHTGS+Yi7M=
+ b=Y8gsJdMA5GXDZeMcgNgsR7alt/mVnPZ6JaVQyWb/hBAIiQ4/3bPBWZRORtN/JZR2g
+ 6P0VwAKSHk0QsYNOc6mnJvYkRLLZDteEi4U6qhdwfqZcC4yiuqdDUHWoVXDnFzNiSx
+ pukj6CB1uVQSRYGUT8arvUIT0A3t1i4KQe0A0HIE=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F0638B8B1;
- Tue, 12 Mar 2019 23:16:10 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 153158B8B1;
+ Tue, 12 Mar 2019 23:16:08 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id jEDvnohJtjOg; Tue, 12 Mar 2019 23:16:10 +0100 (CET)
+ with ESMTP id 6NxrO2II63pO; Tue, 12 Mar 2019 23:16:07 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E58B48B8A7;
- Tue, 12 Mar 2019 23:16:09 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id CD5D58B8A7;
+ Tue, 12 Mar 2019 23:16:07 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id B3CFA6FA15; Tue, 12 Mar 2019 22:16:09 +0000 (UTC)
-Message-Id: <09fc2bc930197987745b937b3817b2563b0a42ab.1552428161.git.christophe.leroy@c-s.fr>
+ id A73A96FA15; Tue, 12 Mar 2019 22:16:07 +0000 (UTC)
+Message-Id: <3c64608cacd6706fc026575bdaf4f24a20ad1fc7.1552428161.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1552428161.git.christophe.leroy@c-s.fr>
 References: <cover.1552428161.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v10 04/18] powerpc: remove CONFIG_CMDLINE #ifdef mess
+Subject: [PATCH v10 02/18] powerpc/32: Move early_init() in a separate file
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -79,7 +79,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Tue, 12 Mar 2019 22:16:09 +0000 (UTC)
+Date: Tue, 12 Mar 2019 22:16:07 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,57 +97,111 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch makes CONFIG_CMDLINE defined at all time. It avoids
-having to enclose related code inside #ifdef CONFIG_CMDLINE
+In preparation of KASAN, move early_init() into a separate
+file in order to allow deactivation of KASAN for that function.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig            | 6 +++---
- arch/powerpc/kernel/prom_init.c | 9 +++------
- 2 files changed, 6 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/Makefile   |  2 +-
+ arch/powerpc/kernel/early_32.c | 36 ++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/setup_32.c | 28 ----------------------------
+ 3 files changed, 37 insertions(+), 29 deletions(-)
+ create mode 100644 arch/powerpc/kernel/early_32.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index b5dce13a6132..facaa6ba0d2a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -833,9 +833,9 @@ config CMDLINE_BOOL
- 	bool "Default bootloader kernel arguments"
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index cddadccf551d..45e47752b692 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -93,7 +93,7 @@ extra-y				+= vmlinux.lds
  
- config CMDLINE
--	string "Initial kernel command string"
--	depends on CMDLINE_BOOL
--	default "console=ttyS0,9600 console=tty0 root=/dev/sda2"
-+	string "Initial kernel command string" if CMDLINE_BOOL
-+	default "console=ttyS0,9600 console=tty0 root=/dev/sda2" if CMDLINE_BOOL
-+	default ""
- 	help
- 	  On some platforms, there is currently no way for the boot loader to
- 	  pass arguments to the kernel. For these platforms, you can supply
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f33ff4163a51..ecf083c46bdb 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -631,17 +631,14 @@ static void __init early_cmdline_parse(void)
- 	const char *opt;
+ obj-$(CONFIG_RELOCATABLE)	+= reloc_$(BITS).o
  
- 	char *p;
--	int l __maybe_unused = 0;
-+	int l = 0;
+-obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
++obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o early_32.o
+ obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+diff --git a/arch/powerpc/kernel/early_32.c b/arch/powerpc/kernel/early_32.c
+new file mode 100644
+index 000000000000..cf3cdd81dc47
+--- /dev/null
++++ b/arch/powerpc/kernel/early_32.c
+@@ -0,0 +1,36 @@
++// SPDX-License-Identifier: GPL-2.0
++
++/*
++ * Early init before relocation
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <asm/setup.h>
++#include <asm/sections.h>
++#include <asm/asm-prototypes.h>
++
++/*
++ * We're called here very early in the boot.
++ *
++ * Note that the kernel may be running at an address which is different
++ * from the address that it was linked at, so we must use RELOC/PTRRELOC
++ * to access static data (including strings).  -- paulus
++ */
++notrace unsigned long __init early_init(unsigned long dt_ptr)
++{
++	unsigned long offset = reloc_offset();
++
++	/* First zero the BSS -- use memset_io, some platforms don't have caches on yet */
++	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, __bss_stop - __bss_start);
++
++	/*
++	 * Identify the CPU type and fix up code sections
++	 * that depend on which cpu we have.
++	 */
++	identify_cpu(offset, mfspr(SPRN_PVR));
++
++	apply_feature_fixups();
++
++	return KERNELBASE + offset;
++}
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 4a65e08a6042..3fb9f64f88fd 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -64,34 +64,6 @@ EXPORT_SYMBOL(DMA_MODE_READ);
+ EXPORT_SYMBOL(DMA_MODE_WRITE);
  
- 	prom_cmd_line[0] = 0;
- 	p = prom_cmd_line;
- 	if ((long)prom.chosen > 0)
- 		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
--#ifdef CONFIG_CMDLINE
--	if (l <= 0 || p[0] == '\0') /* dbl check */
--		strlcpy(prom_cmd_line,
--			CONFIG_CMDLINE, sizeof(prom_cmd_line));
--#endif /* CONFIG_CMDLINE */
-+	if (IS_ENABLED(CONFIG_CMDLINE_BOOL) && (l <= 0 || p[0] == '\0')) /* dbl check */
-+		strlcpy(prom_cmd_line, CONFIG_CMDLINE, sizeof(prom_cmd_line));
- 	prom_printf("command line: %s\n", prom_cmd_line);
- 
- #ifdef CONFIG_PPC64
+ /*
+- * We're called here very early in the boot.
+- *
+- * Note that the kernel may be running at an address which is different
+- * from the address that it was linked at, so we must use RELOC/PTRRELOC
+- * to access static data (including strings).  -- paulus
+- */
+-notrace unsigned long __init early_init(unsigned long dt_ptr)
+-{
+-	unsigned long offset = reloc_offset();
+-
+-	/* First zero the BSS -- use memset_io, some platforms don't have
+-	 * caches on yet */
+-	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
+-			__bss_stop - __bss_start);
+-
+-	/*
+-	 * Identify the CPU type and fix up code sections
+-	 * that depend on which cpu we have.
+-	 */
+-	identify_cpu(offset, mfspr(SPRN_PVR));
+-
+-	apply_feature_fixups();
+-
+-	return KERNELBASE + offset;
+-}
+-
+-
+-/*
+  * This is run before start_kernel(), the kernel has been relocated
+  * and we are running with enough of the MMU enabled to have our
+  * proper kernel virtual addresses
 -- 
 2.13.3
 
