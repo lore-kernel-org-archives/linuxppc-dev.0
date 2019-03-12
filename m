@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCD2CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BDFFBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:39:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C6682077B
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:37:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 39DC32077B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 22:39:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="r8QdH1Yn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C6682077B
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="mslzkjz3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 39DC32077B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Jqc71ZwWzDqJR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:37:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Jqdp0d4qzDqJ8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:39:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,50 +28,51 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="r8QdH1Yn"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="mslzkjz3"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7T1lV9zDqFF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Jq7V0dFWzDqGP
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:16:21 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Jq7P3Zyvz9vRb0;
- Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44Jq7Q2VQKz9tylk;
+ Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=r8QdH1Yn; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=mslzkjz3; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id p7dWFWhAvf_h; Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ with ESMTP id kQJExDHdjdbS; Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7P2Pd7zB09ZG;
- Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Jq7Q1MdLzB09ZG;
+ Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552428977; bh=7elSQE3ASFtmFBbQ1baRFPz6iwmnjLE3NV7GCI8qFKM=;
+ t=1552428978; bh=acqG75nChdz0NKlCBaUDHivOgUFydlR1lE4J1UHbXOo=;
  h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=r8QdH1YnRJRmEclIjneD3mLM+a+NgAxLSa+QIcxrhhjWhEhJYaWv4G5pagiNMWnUs
- 2x2tAysmQZRb6Z8GBr78ARZ91iMYDQ3kO8Jwbx0rnFJrF4C2iPWtEhHw9IM7G8Ldt3
- sarWOsQ0WQmag1AIo6mlS1Y6o743NgdT0rJZ7Hak=
+ b=mslzkjz309VjCj2gAhQK7SJYEHF6BddifXNIuPsHQ3b1X4xhoBE5ORIif8L3IIDtO
+ jPRlBMjFLE80b9TqrnMAYfdk1NNLZBgcaMXKAqBTDpk5DJbsVUCRck+sZBkFwdUuGv
+ bl9RxuHXHiti1w1eN5COxl9Z68hYJWdXdo9VvZms=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 83D6F8B8B1;
- Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 677AE8B8B1;
+ Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id D_VLXvzfkmS2; Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ with ESMTP id zYRs_Sbl-S64; Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 291848B8A7;
- Tue, 12 Mar 2019 23:16:17 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D75D8B8A7;
+ Tue, 12 Mar 2019 23:16:18 +0100 (CET)
 Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id E64366FA15; Tue, 12 Mar 2019 22:16:16 +0000 (UTC)
-Message-Id: <7600ccac6eca9289244b7d1172a9525ef67b4822.1552428161.git.christophe.leroy@c-s.fr>
+ id EB7576FA15; Tue, 12 Mar 2019 22:16:17 +0000 (UTC)
+Message-Id: <0cbf282d566c67a3cded4f41f64fc29420b80aa8.1552428161.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1552428161.git.christophe.leroy@c-s.fr>
 References: <cover.1552428161.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v10 11/18] powerpc/32: Add KASAN support
+Subject: [PATCH v10 12/18] powerpc/32s: move hash code patching out of
+ MMU_init_hw()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -79,7 +80,7 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Andrey Ryabinin <aryabinin@virtuozzo.com>,
  Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
  Daniel Axtens <dja@axtens.net>
-Date: Tue, 12 Mar 2019 22:16:16 +0000 (UTC)
+Date: Tue, 12 Mar 2019 22:16:17 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,367 +98,121 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch adds KASAN support for PPC32. The following patch
-will add an early activation of hash table for book3s. Until
-then, a warning will be raised if trying to use KASAN on an
-hash 6xx.
+For KASAN, hash table handling will be activated early for
+accessing to KASAN shadow areas.
 
-To support KASAN, this patch initialises that MMU mapings for
-accessing to the KASAN shadow area defined in a previous patch.
-
-An early mapping is set as soon as the kernel code has been
-relocated at its definitive place.
-
-Then the definitive mapping is set once paging is initialised.
-
-For modules, the shadow area is allocated at module_alloc().
+In order to avoid any modification of the hash functions while
+they are still used with the early hash table, the code patching
+is moved out of MMU_init_hw() and put close to the big-bang switch
+to the final hash table.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig                  |   1 +
- arch/powerpc/include/asm/kasan.h      |   9 ++
- arch/powerpc/kernel/head_32.S         |   3 +
- arch/powerpc/kernel/head_40x.S        |   3 +
- arch/powerpc/kernel/head_44x.S        |   3 +
- arch/powerpc/kernel/head_8xx.S        |   3 +
- arch/powerpc/kernel/head_fsl_booke.S  |   3 +
- arch/powerpc/kernel/setup-common.c    |   3 +
- arch/powerpc/mm/Makefile              |   1 +
- arch/powerpc/mm/init_32.c             |   3 +
- arch/powerpc/mm/kasan/Makefile        |   5 ++
- arch/powerpc/mm/kasan/kasan_init_32.c | 156 ++++++++++++++++++++++++++++++++++
- 12 files changed, 193 insertions(+)
- create mode 100644 arch/powerpc/mm/kasan/Makefile
- create mode 100644 arch/powerpc/mm/kasan/kasan_init_32.c
+ arch/powerpc/kernel/head_32.S |  3 +++
+ arch/powerpc/mm/mmu_decl.h    |  1 +
+ arch/powerpc/mm/ppc_mmu_32.c  | 36 ++++++++++++++++++++++--------------
+ 3 files changed, 26 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index facaa6ba0d2a..d9364368329b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -173,6 +173,7 @@ config PPC
- 	select GENERIC_TIME_VSYSCALL
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_JUMP_LABEL
-+	select HAVE_ARCH_KASAN			if PPC32
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index 05274dea3109..296e51c2f066 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -27,5 +27,14 @@
- 
- #define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
- 
-+#ifdef CONFIG_KASAN
-+void kasan_early_init(void);
-+void kasan_mmu_init(void);
-+void kasan_init(void);
-+#else
-+static inline void kasan_init(void) { }
-+static inline void kasan_mmu_init(void) { }
-+#endif
-+
- #endif /* __ASSEMBLY */
- #endif
 diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 48051c8977c5..3ee42c0ada69 100644
+index 3ee42c0ada69..0bfaf64e67ee 100644
 --- a/arch/powerpc/kernel/head_32.S
 +++ b/arch/powerpc/kernel/head_32.S
-@@ -958,6 +958,9 @@ start_here:
-  * Do early platform-specific initialization,
-  * and set up the MMU.
-  */
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	li	r3,0
- 	mr	r4,r31
+@@ -966,6 +966,9 @@ start_here:
  	bl	machine_init
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index a9c934f2319b..efa219d2136e 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -848,6 +848,9 @@ start_here:
+ 	bl	__save_cpu_setup
+ 	bl	MMU_init
++BEGIN_MMU_FTR_SECTION
++	bl	MMU_init_hw_patch
++END_MMU_FTR_SECTION_IFSET(MMU_FTR_HPTE_TABLE)
+ 
  /*
-  * Decide what sort of machine this is and initialize the MMU.
+  * Go back to running unmapped so we can load up new values
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 74ff61dabcb1..d726ff776054 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -130,6 +130,7 @@ extern void wii_memory_fixups(void);
   */
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	li	r3,0
- 	mr	r4,r31
- 	bl	machine_init
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 37117ab11584..34a5df827b38 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -203,6 +203,9 @@ _ENTRY(_start);
- /*
-  * Decide what sort of machine this is and initialize the MMU.
-  */
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	li	r3,0
- 	mr	r4,r31
- 	bl	machine_init
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 03c73b4c6435..d25adb6ef235 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -853,6 +853,9 @@ start_here:
- /*
-  * Decide what sort of machine this is and initialize the MMU.
-  */
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	li	r3,0
- 	mr	r4,r31
- 	bl	machine_init
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 1881127682e9..0fc38eb957b7 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -275,6 +275,9 @@ set_ivor:
- /*
-  * Decide what sort of machine this is and initialize the MMU.
-  */
-+#ifdef CONFIG_KASAN
-+	bl	kasan_early_init
-+#endif
- 	mr	r3,r30
- 	mr	r4,r31
- 	bl	machine_init
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index e7534f306c8e..3c6c5a43901e 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -67,6 +67,7 @@
- #include <asm/livepatch.h>
- #include <asm/mmu_context.h>
- #include <asm/cpu_has_feature.h>
-+#include <asm/kasan.h>
- 
- #include "setup.h"
- 
-@@ -865,6 +866,8 @@ static void smp_setup_pacas(void)
-  */
- void __init setup_arch(char **cmdline_p)
- {
-+	kasan_init();
-+
- 	*cmdline_p = boot_command_line;
- 
- 	/* Set a half-reasonable default so udelay does something sensible */
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 240d73dce6bb..80382a2d169b 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -53,6 +53,7 @@ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
- obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_iommu.o
- obj-$(CONFIG_PPC_PTDUMP)	+= ptdump/
- obj-$(CONFIG_PPC_MEM_KEYS)	+= pkeys.o
-+obj-$(CONFIG_KASAN)		+= kasan/
- 
- # Disable kcov instrumentation on sensitive code
- # This is necessary for booting with kcov enabled on book3e machines
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 41a3513cadc9..0217d1b405f7 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -45,6 +45,7 @@
- #include <asm/tlb.h>
- #include <asm/sections.h>
- #include <asm/hugetlb.h>
-+#include <asm/kasan.h>
- 
- #include "mmu_decl.h"
- 
-@@ -178,6 +179,8 @@ void __init MMU_init(void)
- 	btext_unmap();
+ #ifdef CONFIG_PPC32
+ extern void MMU_init_hw(void);
++void MMU_init_hw_patch(void);
+ unsigned long mmu_mapin_ram(unsigned long base, unsigned long top);
  #endif
  
-+	kasan_mmu_init();
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index 2d5b0d50fb31..38c0e28c21e1 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -39,6 +39,7 @@
+ struct hash_pte *Hash, *Hash_end;
+ unsigned long Hash_size, Hash_mask;
+ unsigned long _SDR1;
++static unsigned int hash_mb, hash_mb2;
+ 
+ struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
+ 
+@@ -308,7 +309,6 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+  */
+ void __init MMU_init_hw(void)
+ {
+-	unsigned int hmask, mb, mb2;
+ 	unsigned int n_hpteg, lg_n_hpteg;
+ 
+ 	if (!mmu_has_feature(MMU_FTR_HPTE_TABLE))
+@@ -349,20 +349,30 @@ void __init MMU_init_hw(void)
+ 	       (unsigned long long)(total_memory >> 20), Hash_size >> 10, Hash);
+ 
+ 
+-	/*
+-	 * Patch up the instructions in hashtable.S:create_hpte
+-	 */
+-	if ( ppc_md.progress ) ppc_md.progress("hash:patch", 0x345);
+ 	Hash_mask = n_hpteg - 1;
+-	hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
+-	mb2 = mb = 32 - LG_HPTEG_SIZE - lg_n_hpteg;
++	hash_mb2 = hash_mb = 32 - LG_HPTEG_SIZE - lg_n_hpteg;
+ 	if (lg_n_hpteg > 16)
+-		mb2 = 16 - LG_HPTEG_SIZE;
++		hash_mb2 = 16 - LG_HPTEG_SIZE;
++}
 +
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
++void __init MMU_init_hw_patch(void)
++{
++	unsigned int hmask = Hash_mask >> (16 - LG_HPTEG_SIZE);
+ 
++	if (ppc_md.progress)
++		ppc_md.progress("hash:patch", 0x345);
++	if (ppc_md.progress)
++		ppc_md.progress("hash:done", 0x205);
++
++	/* WARNING: Make sure nothing can trigger a KASAN check past this point */
++
++	/*
++	 * Patch up the instructions in hashtable.S:create_hpte
++	 */
+ 	modify_instruction_site(&patch__hash_page_A0, 0xffff,
+ 				((unsigned int)Hash - PAGE_OFFSET) >> 16);
+-	modify_instruction_site(&patch__hash_page_A1, 0x7c0, mb << 6);
+-	modify_instruction_site(&patch__hash_page_A2, 0x7c0, mb2 << 6);
++	modify_instruction_site(&patch__hash_page_A1, 0x7c0, hash_mb << 6);
++	modify_instruction_site(&patch__hash_page_A2, 0x7c0, hash_mb2 << 6);
+ 	modify_instruction_site(&patch__hash_page_B, 0xffff, hmask);
+ 	modify_instruction_site(&patch__hash_page_C, 0xffff, hmask);
+ 
+@@ -371,11 +381,9 @@ void __init MMU_init_hw(void)
+ 	 */
+ 	modify_instruction_site(&patch__flush_hash_A0, 0xffff,
+ 				((unsigned int)Hash - PAGE_OFFSET) >> 16);
+-	modify_instruction_site(&patch__flush_hash_A1, 0x7c0, mb << 6);
+-	modify_instruction_site(&patch__flush_hash_A2, 0x7c0, mb2 << 6);
++	modify_instruction_site(&patch__flush_hash_A1, 0x7c0, hash_mb << 6);
++	modify_instruction_site(&patch__flush_hash_A2, 0x7c0, hash_mb2 << 6);
+ 	modify_instruction_site(&patch__flush_hash_B, 0xffff, hmask);
+-
+-	if ( ppc_md.progress ) ppc_md.progress("hash:done", 0x205);
  }
-diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-new file mode 100644
-index 000000000000..6577897673dd
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/Makefile
-@@ -0,0 +1,5 @@
-+# SPDX-License-Identifier: GPL-2.0
-+
-+KASAN_SANITIZE := n
-+
-+obj-$(CONFIG_PPC32)           += kasan_init_32.o
-diff --git a/arch/powerpc/mm/kasan/kasan_init_32.c b/arch/powerpc/mm/kasan/kasan_init_32.c
-new file mode 100644
-index 000000000000..42617fcad828
---- /dev/null
-+++ b/arch/powerpc/mm/kasan/kasan_init_32.c
-@@ -0,0 +1,156 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#define DISABLE_BRANCH_PROFILING
-+
-+#include <linux/kasan.h>
-+#include <linux/printk.h>
-+#include <linux/memblock.h>
-+#include <linux/sched/task.h>
-+#include <linux/vmalloc.h>
-+#include <asm/pgalloc.h>
-+#include <asm/code-patching.h>
-+#include <mm/mmu_decl.h>
-+
-+static void kasan_populate_pte(pte_t *ptep, pgprot_t prot)
-+{
-+	unsigned long va = (unsigned long)kasan_early_shadow_page;
-+	phys_addr_t pa = __pa(kasan_early_shadow_page);
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++, ptep++)
-+		__set_pte_at(&init_mm, va, ptep, pfn_pte(PHYS_PFN(pa), prot), 0);
-+}
-+
-+static int kasan_init_shadow_page_tables(unsigned long k_start, unsigned long k_end)
-+{
-+	pmd_t *pmd;
-+	unsigned long k_cur, k_next;
-+
-+	pmd = pmd_offset(pud_offset(pgd_offset_k(k_start), k_start), k_start);
-+
-+	for (k_cur = k_start; k_cur != k_end; k_cur = k_next, pmd++) {
-+		pte_t *new;
-+
-+		k_next = pgd_addr_end(k_cur, k_end);
-+		if ((void *)pmd_page_vaddr(*pmd) != kasan_early_shadow_pte)
-+			continue;
-+
-+		new = pte_alloc_one_kernel(&init_mm);
-+
-+		if (!new)
-+			return -ENOMEM;
-+		kasan_populate_pte(new, PAGE_KERNEL_RO);
-+		pmd_populate_kernel(&init_mm, pmd, new);
-+	}
-+	return 0;
-+}
-+
-+static void __ref *kasan_get_one_page(void)
-+{
-+	if (slab_is_available())
-+		return (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
-+
-+	return memblock_alloc(PAGE_SIZE, PAGE_SIZE);
-+}
-+
-+static int __ref kasan_init_region(void *start, size_t size)
-+{
-+	unsigned long k_start = (unsigned long)kasan_mem_to_shadow(start);
-+	unsigned long k_end = (unsigned long)kasan_mem_to_shadow(start + size);
-+	unsigned long k_cur;
-+	int ret;
-+	void *block = NULL;
-+
-+	ret = kasan_init_shadow_page_tables(k_start, k_end);
-+	if (ret)
-+		return ret;
-+
-+	if (!slab_is_available())
-+		block = memblock_alloc(k_end - k_start, PAGE_SIZE);
-+
-+	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-+		pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(k_cur), k_cur), k_cur);
-+		void *va = block ? block + k_cur - k_start : kasan_get_one_page();
-+		pte_t pte = pfn_pte(PHYS_PFN(__pa(va)), PAGE_KERNEL);
-+
-+		if (!va)
-+			return -ENOMEM;
-+
-+		__set_pte_at(&init_mm, k_cur, pte_offset_kernel(pmd, k_cur), pte, 0);
-+	}
-+	flush_tlb_kernel_range(k_start, k_end);
-+	return 0;
-+}
-+
-+static void __init kasan_remap_early_shadow_ro(void)
-+{
-+	kasan_populate_pte(kasan_early_shadow_pte, PAGE_KERNEL_RO);
-+
-+	flush_tlb_kernel_range(KASAN_SHADOW_START, KASAN_SHADOW_END);
-+}
-+
-+void __init kasan_mmu_init(void)
-+{
-+	int ret;
-+	struct memblock_region *reg;
-+
-+	for_each_memblock(memory, reg) {
-+		phys_addr_t base = reg->base;
-+		phys_addr_t top = min(base + reg->size, total_lowmem);
-+
-+		if (base >= top)
-+			continue;
-+
-+		ret = kasan_init_region(__va(base), top - base);
-+		if (ret)
-+			panic("kasan: kasan_init_region() failed");
-+	}
-+}
-+
-+void __init kasan_init(void)
-+{
-+	kasan_remap_early_shadow_ro();
-+
-+	clear_page(kasan_early_shadow_page);
-+
-+	/* At this point kasan is fully initialized. Enable error messages */
-+	init_task.kasan_depth = 0;
-+	pr_info("KASAN init done\n");
-+}
-+
-+#ifdef CONFIG_MODULES
-+void *module_alloc(unsigned long size)
-+{
-+	void *base = vmalloc_exec(size);
-+
-+	if (!base)
-+		return NULL;
-+
-+	if (!kasan_init_region(base, size))
-+		return base;
-+
-+	vfree(base);
-+
-+	return NULL;
-+}
-+#endif
-+
-+void __init kasan_early_init(void)
-+{
-+	unsigned long addr = KASAN_SHADOW_START;
-+	unsigned long end = KASAN_SHADOW_END;
-+	unsigned long next;
-+	pmd_t *pmd = pmd_offset(pud_offset(pgd_offset_k(addr), addr), addr);
-+
-+	BUILD_BUG_ON(KASAN_SHADOW_START & ~PGDIR_MASK);
-+
-+	kasan_populate_pte(kasan_early_shadow_pte, PAGE_KERNEL);
-+
-+	do {
-+		next = pgd_addr_end(addr, end);
-+		pmd_populate_kernel(&init_mm, pmd, kasan_early_shadow_pte);
-+	} while (pmd++, addr = next, addr != end);
-+
-+	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
-+		WARN(true, "KASAN not supported on hash 6xx");
-+}
+ 
+ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
 -- 
 2.13.3
 
