@@ -2,81 +2,84 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1A28C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:19:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF1A4C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:02:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CB4CB2075C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:19:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 0D3A22075C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:02:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="d+UWWuvs"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CB4CB2075C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AMgmYD2M"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D3A22075C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KM8t4zhWzDqKM
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 06:19:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KN6422h9zDqM1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 07:02:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="d+UWWuvs"; 
+ dmarc=none (p=none dis=none) header.from=debian.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="AMgmYD2M"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
+ [IPv6:2a00:1450:4864:20::341])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KM5z1SfPzDqKH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 06:16:49 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44KM5n0SfYz9v0vR;
- Wed, 13 Mar 2019 20:16:45 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=d+UWWuvs; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id bM_c9XnkjgWR; Wed, 13 Mar 2019 20:16:44 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44KM5m6DS6z9v0vF;
- Wed, 13 Mar 2019 20:16:44 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552504604; bh=LI3TBGguDUuLpwtPN7CVlLcbxS9s0qBjVoz/08ibyjI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=d+UWWuvslWjlxC0ax3RgMDVErFQPn9gvT0Bss8Ns8wGK890Fq3uDSkpWNRZVpUTty
- BaV1v8t0+ydWGsHROA/1g1+kNjtl+LQJRIw1mip9mnl/gHVgsTea834Atfq/MbRsqq
- 20VIP45An2EZMCon0fDlP3hPb6YqLM4xgQgK8bmg=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CAED98B915;
- Wed, 13 Mar 2019 20:16:44 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 3qqKLOlHcHGC; Wed, 13 Mar 2019 20:16:44 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 32F498B8EE;
- Wed, 13 Mar 2019 20:16:44 +0100 (CET)
-Subject: Re: [PATCH v3] powerpc/mm: move warning from resize_hpt_for_hotplug()
-To: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org
-References: <20190313102528.4632-1-lvivier@redhat.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <d0ee0f33-3218-288a-f5c8-d23143196f2e@c-s.fr>
-Date: Wed, 13 Mar 2019 20:16:44 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KN4Q672QzDqL5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 07:00:38 +1100 (AEDT)
+Received: by mail-wm1-x341.google.com with SMTP id t124so498776wma.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 13:00:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=GCHDAob2L2Ty8cKpbvR0K56/ZQonIWJzTExy3tCtNQ0=;
+ b=AMgmYD2M3KR8ZZlQiXI7NIS7Yub8S3tYNOIB4za9vqTL5u2+yWf1Bm7SdmxgcypTht
+ ECzhMQ6/9UTfsr1bnzOLHIfiu0x3HOjhIphrshRIRNZ2MJvO1TQisCW1nx2HoIzUuPSM
+ leX+AFydh2ekX3phK+rKfxA089LC5ZTRrDlcGYHeooPKrmLHZR5i27hnaVDhDgEt9Eu3
+ 4Wua+KkCz6qKmm9QnaBEKNGAFfUha7sg4swxfbQgh0jTJzm+lW28sRIbk3588M/umLq/
+ Jer+etUFn8NwfKN01+wCxcRTAHvRqN0OVdms+PkD51jkropRa8NfVJanbFrSjwAr64dw
+ yEnQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+ :in-reply-to:references:mime-version:content-transfer-encoding;
+ bh=GCHDAob2L2Ty8cKpbvR0K56/ZQonIWJzTExy3tCtNQ0=;
+ b=BJB+m1tVSYSPV/l1KOu6mKWRB3XSLZA7i44OQRbHluYGO8SHPZw6EK3nP5ZR2GCAj4
+ Ii9g3jHA5u2jOVrW6kQPppV6VP3K4IMzEYONC5ao26dj5z60SLyH9NeNk8SO/Oz0w5Q9
+ DNQBSsQPhvS/ApiqRv3dKAQf/PtQ+pxzyTDs6aUDoU8gXSQOU2NBjGxEDH6vXUKkLh52
+ a7qVyQfIPHrkmVy77bVL3rZiUykUBPWrHAbBVUl0fb5CHeyEw2Il47xAsuL9MGlwx+uX
+ 2wZk/U7X+WJBhOCGiqX0vL7YuJkFAKp0eCXnWWHuB42Us7UYFPaiu1FJQzgeiugBzlBB
+ YRPw==
+X-Gm-Message-State: APjAAAVcsKRn46hlT9yuiSCBhx2WSTv6ZLlN/VAHydVdHJCMJHjyZ92p
+ fkxM39E4ylTcLCX+b0mqi+c=
+X-Google-Smtp-Source: APXvYqxSAKrpYuccNZtrZ/rJwN6FCBUoES8meVdd7HDb1pZFOvQ4bB12ILPgd4b6s3IfwnM54r2DqQ==
+X-Received: by 2002:a1c:f20e:: with SMTP id s14mr3529639wmc.69.1552507234662; 
+ Wed, 13 Mar 2019 13:00:34 -0700 (PDT)
+Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
+ [78.225.224.134])
+ by smtp.gmail.com with ESMTPSA id 26sm4623926wmg.42.2019.03.13.13.00.33
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 13 Mar 2019 13:00:33 -0700 (PDT)
+Received: by macbookpro.malat.net (Postfix, from userid 1000)
+ id 787691140A07; Wed, 13 Mar 2019 21:00:32 +0100 (CET)
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v2] powerpc/64s: Remove 'dummy_copy_buffer'
+Date: Wed, 13 Mar 2019 21:00:30 +0100
+Message-Id: <20190313200030.19145-1-malat@debian.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190312202921.31331-1-malat@debian.org>
+References: <20190312202921.31331-1-malat@debian.org>
 MIME-Version: 1.0
-In-Reply-To: <20190313102528.4632-1-lvivier@redhat.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -89,131 +92,45 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+In commit 2bf1071a8d50 ("powerpc/64s: Remove POWER9 DD1 support") the
+function __switch_to remove usage for 'dummy_copy_buffer'. Since it is
+not used anywhere else, remove it completely.
 
+This remove the following warning:
 
-Le 13/03/2019 à 11:25, Laurent Vivier a écrit :
-> resize_hpt_for_hotplug() reports a warning when it cannot
-> resize the hash page table ("Unable to resize hash page
-> table to target order") but in some cases it's not a problem
-> and can make user thinks something has not worked properly.
-> 
-> This patch moves the warning to arch_remove_memory() to
-> only report the problem when it is needed.
-> 
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+  arch/powerpc/kernel/process.c:1156:17: error: 'dummy_copy_buffer' defined but not used [-Werror=unused-const-variable=]
 
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+v2: complely remove dummy_copy_buffer instead of marking it as used (since not anymore)
+ arch/powerpc/kernel/process.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-> ---
-> 
-> Notes:
->      v3: move "||" to above line and remove parenthesis
->      v2: add warning messages for H_PARAMETER and H_RESOURCE
-> 
->   arch/powerpc/include/asm/sparsemem.h  |  4 ++--
->   arch/powerpc/mm/hash_utils_64.c       | 19 +++++++------------
->   arch/powerpc/mm/mem.c                 |  3 ++-
->   arch/powerpc/platforms/pseries/lpar.c |  3 ++-
->   4 files changed, 13 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-> index 68da49320592..3192d454a733 100644
-> --- a/arch/powerpc/include/asm/sparsemem.h
-> +++ b/arch/powerpc/include/asm/sparsemem.h
-> @@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long start, unsigned long end, int ni
->   extern int remove_section_mapping(unsigned long start, unsigned long end);
->   
->   #ifdef CONFIG_PPC_BOOK3S_64
-> -extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
-> +extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
->   #else
-> -static inline void resize_hpt_for_hotplug(unsigned long new_mem_size) { }
-> +static inline int resize_hpt_for_hotplug(unsigned long new_mem_size) { return 0; }
->   #endif
->   
->   #ifdef CONFIG_NUMA
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index 0cc7fbc3bd1c..5aa7594ee71b 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -755,12 +755,12 @@ static unsigned long __init htab_get_table_size(void)
->   }
->   
->   #ifdef CONFIG_MEMORY_HOTPLUG
-> -void resize_hpt_for_hotplug(unsigned long new_mem_size)
-> +int resize_hpt_for_hotplug(unsigned long new_mem_size)
->   {
->   	unsigned target_hpt_shift;
->   
->   	if (!mmu_hash_ops.resize_hpt)
-> -		return;
-> +		return 0;
->   
->   	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
->   
-> @@ -772,16 +772,11 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
->   	 * reduce unless the target shift is at least 2 below the
->   	 * current shift
->   	 */
-> -	if ((target_hpt_shift > ppc64_pft_size)
-> -	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
-> -		int rc;
-> -
-> -		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
-> -		if (rc && (rc != -ENODEV))
-> -			printk(KERN_WARNING
-> -			       "Unable to resize hash page table to target order %d: %d\n",
-> -			       target_hpt_shift, rc);
-> -	}
-> +	if (target_hpt_shift > ppc64_pft_size ||
-> +	    target_hpt_shift < ppc64_pft_size - 1)
-> +		return mmu_hash_ops.resize_hpt(target_hpt_shift);
-> +
-> +	return 0;
->   }
->   
->   int hash__create_section_mapping(unsigned long start, unsigned long end, int nid)
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 33cc6f676fa6..0d40d970cf4a 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -169,7 +169,8 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
->   	 */
->   	vm_unmap_aliases();
->   
-> -	resize_hpt_for_hotplug(memblock_phys_mem_size());
-> +	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) == -ENOSPC)
-> +		pr_warn("Hash collision while resizing HPT\n");
->   
->   	return ret;
->   }
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-> index f2a9f0adc2d3..1034ef1fe2b4 100644
-> --- a/arch/powerpc/platforms/pseries/lpar.c
-> +++ b/arch/powerpc/platforms/pseries/lpar.c
-> @@ -901,8 +901,10 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
->   		break;
->   
->   	case H_PARAMETER:
-> +		pr_warn("Invalid argument from H_RESIZE_HPT_PREPARE\n");
->   		return -EINVAL;
->   	case H_RESOURCE:
-> +		pr_warn("Operation not permitted from H_RESIZE_HPT_PREPARE\n");
->   		return -EPERM;
->   	default:
->   		pr_warn("Unexpected error %d from H_RESIZE_HPT_PREPARE\n", rc);
-> @@ -918,7 +920,6 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
->   	if (rc != 0) {
->   		switch (state.commit_rc) {
->   		case H_PTEG_FULL:
-> -			pr_warn("Hash collision while resizing HPT\n");
->   			return -ENOSPC;
->   
->   		default:
-> 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 77e44275d025..b2f0daa2fcf1 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1151,11 +1151,6 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ 	thread_pkey_regs_restore(new_thread, old_thread);
+ }
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-#define CP_SIZE 128
+-static const u8 dummy_copy_buffer[CP_SIZE] __attribute__((aligned(CP_SIZE)));
+-#endif
+-
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
+-- 
+2.20.1
+
