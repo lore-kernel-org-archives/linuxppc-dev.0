@@ -2,95 +2,61 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19FE7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 04:32:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8792C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 04:34:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 90F052177E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 04:32:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 90F052177E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A2CBC2177E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 04:34:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="jLBv1CpF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A2CBC2177E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JzTP51gTzDq5v
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 15:32:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JzWl3XlGzDqDG
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 15:34:27 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Jz746RR0zDqH1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 15:16:32 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2D4DV5R093860
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 00:16:30 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2r6pqh17h2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 00:16:30 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 13 Mar 2019 04:16:28 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 13 Mar 2019 04:16:25 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2D4GODX50594024
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 13 Mar 2019 04:16:24 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 70EF6A405B;
- Wed, 13 Mar 2019 04:16:24 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id BF6EEA4040;
- Wed, 13 Mar 2019 04:16:23 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 13 Mar 2019 04:16:23 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 48506A01B5;
- Wed, 13 Mar 2019 15:16:22 +1100 (AEDT)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: 
-Subject: [PATCH 7/7] ocxl: move event_fd handling to frontend
-Date: Wed, 13 Mar 2019 15:15:22 +1100
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190313041524.14644-1-alastair@au1.ibm.com>
-References: <20190313041524.14644-1-alastair@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JzNl1bsvzDqJR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 15:28:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="jLBv1CpF"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 44JzNk5CMCz9s70; Wed, 13 Mar 2019 15:28:22 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1552451302;
+ bh=M3qL3fbDGGyoZrCtPJtPzuq8db4yuscTJPRjGD6lK6Q=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=jLBv1CpFmvSbVslLeKnbqDi4rv14ARyRftve5yWoG9naiXOmXPTbtEXeks//8Tjd2
+ K1KoLgABaErmFoYrPFeGlzp4ok1vVFvI3214/gcXBvrEu1HPe5rqrA1qUN5ukLzgI5
+ 5i8FPvDIqB8BNXqdRmLEUNbPBnC0OK4u+LYV0osQ=
+Date: Wed, 13 Mar 2019 15:05:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v2 03/16] KVM: PPC: Book3S HV: XIVE: introduce a new
+ capability KVM_CAP_PPC_IRQ_XIVE
+Message-ID: <20190313040542.GL9881@umbus.fritz.box>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-4-clg@kaod.org>
+ <20190225003527.GG7668@umbus.fritz.box>
+ <2f029721-0b20-2706-6627-0bac36afd03e@kaod.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031304-0028-0000-0000-0000035354FA
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031304-0029-0000-0000-00002411DB33
-Message-Id: <20190313041524.14644-8-alastair@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-13_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903130029
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="c8JyeaiReRNoiMDS"
+Content-Disposition: inline
+In-Reply-To: <2f029721-0b20-2706-6627-0bac36afd03e@kaod.org>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,266 +68,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Alastair D'Silva <alastair@d-silva.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
 
-Event_fd is only used in the driver frontend, so it does not
-need to exist in the backend code. Relocate it to the frontend
-and provide an opaque mechanism for consumers instead.
+--c8JyeaiReRNoiMDS
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- drivers/misc/ocxl/afu_irq.c       | 69 +++++++++++++++++--------------
- drivers/misc/ocxl/file.c          | 22 +++++++++-
- drivers/misc/ocxl/ocxl_internal.h |  5 ---
- include/misc/ocxl.h               | 44 ++++++++++++++++++++
- 4 files changed, 102 insertions(+), 38 deletions(-)
+On Tue, Mar 12, 2019 at 03:03:25PM +0100, C=E9dric Le Goater wrote:
+> On 2/25/19 1:35 AM, David Gibson wrote:
+> > On Fri, Feb 22, 2019 at 12:28:27PM +0100, C=E9dric Le Goater wrote:
+[snip]
+> >> +int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+> >> +				    struct kvm_vcpu *vcpu, u32 cpu)
+> >> +{
+> >> +	struct kvmppc_xive *xive =3D dev->private;
+> >> +	struct kvmppc_xive_vcpu *xc;
+> >> +	int rc;
+> >> +
+> >> +	pr_devel("native_connect_vcpu(cpu=3D%d)\n", cpu);
+> >> +
+> >> +	if (dev->ops !=3D &kvm_xive_native_ops) {
+> >> +		pr_devel("Wrong ops !\n");
+> >> +		return -EPERM;
+> >> +	}
+> >> +	if (xive->kvm !=3D vcpu->kvm)
+> >> +		return -EPERM;
+> >> +	if (vcpu->arch.irq_type !=3D KVMPPC_IRQ_DEFAULT)
+> >> +		return -EBUSY;
+> >> +	if (kvmppc_xive_find_server(vcpu->kvm, cpu)) {
+> >=20
+> > You haven't taken the kvm->lock yet, so couldn't a race mean a
+> > duplicate server gets inserted after you make this check?
+> >=20
+> >> +		pr_devel("Duplicate !\n");
+> >> +		return -EEXIST;
+> >> +	}
+> >> +	if (cpu >=3D KVM_MAX_VCPUS) {
+> >> +		pr_devel("Out of bounds !\n");
+> >> +		return -EINVAL;
+> >> +	}
+> >> +	xc =3D kzalloc(sizeof(*xc), GFP_KERNEL);
+> >> +	if (!xc)
+> >> +		return -ENOMEM;
+> >> +
+> >> +	mutex_lock(&vcpu->kvm->lock);
+> >> +	vcpu->arch.xive_vcpu =3D xc;
+> >=20
+> > Similarly you don't verify this is NULL after taking the lock, so
+> > couldn't another thread race and make a connect which gets clobbered
+> > here?
+>=20
+> Yes. this is not very safe ... We need to clean up all the KVM device=20
+> methods doing the connection of the presenter to the vCPU AFAICT.=20
+> I will fix the XIVE native one for now.=20
+>=20
+> And also, this CPU parameter is useless. There is no reason to connect=20
+> a vCPU from another vCPU.
 
-diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
-index 1885c472df58..bccb89085a29 100644
---- a/drivers/misc/ocxl/afu_irq.c
-+++ b/drivers/misc/ocxl/afu_irq.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0+
- // Copyright 2017 IBM Corp.
- #include <linux/interrupt.h>
--#include <linux/eventfd.h>
-+#include <asm/pnv-ocxl.h>
- #include "ocxl_internal.h"
- #include "trace.h"
- 
-@@ -11,7 +11,9 @@ struct afu_irq {
- 	unsigned int virq;
- 	char *name;
- 	u64 trigger_page;
--	struct eventfd_ctx *ev_ctx;
-+	irqreturn_t (*handler)(void *private);
-+	void (*free_private)(void *private);
-+	void *private;
- };
- 
- int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
-@@ -24,14 +26,42 @@ u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id)
- 	return ctx->afu->irq_base_offset + (irq_id << PAGE_SHIFT);
- }
- 
-+int ocxl_irq_set_handler(struct ocxl_context *ctx, int irq_id,
-+		irqreturn_t (*handler)(void *private),
-+		void (*free_private)(void *private),
-+		void *private)
-+{
-+	struct afu_irq *irq;
-+	int rc;
-+
-+	mutex_lock(&ctx->irq_lock);
-+	irq = idr_find(&ctx->irq_idr, irq_id);
-+	if (!irq) {
-+		rc = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	irq->handler = handler;
-+	irq->private = private;
-+
-+	rc = 0;
-+	goto unlock;
-+
-+unlock:
-+	mutex_unlock(&ctx->irq_lock);
-+	return rc;
-+}
-+
- static irqreturn_t afu_irq_handler(int virq, void *data)
- {
- 	struct afu_irq *irq = (struct afu_irq *) data;
- 
- 	trace_ocxl_afu_irq_receive(virq);
--	if (irq->ev_ctx)
--		eventfd_signal(irq->ev_ctx, 1);
--	return IRQ_HANDLED;
-+
-+	if (irq->handler)
-+		return irq->handler(irq->private);
-+
-+	return IRQ_HANDLED; // Just drop it on the ground
- }
- 
- static int setup_afu_irq(struct ocxl_context *ctx, struct afu_irq *irq)
-@@ -123,8 +153,8 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
- 				ocxl_irq_id_to_offset(ctx, irq->id),
- 				1 << PAGE_SHIFT, 1);
- 	release_afu_irq(irq);
--	if (irq->ev_ctx)
--		eventfd_ctx_put(irq->ev_ctx);
-+	if (irq->free_private)
-+		irq->free_private(irq->private);
- 	ocxl_link_free_irq(ctx->afu->fn->link, irq->hw_irq);
- 	kfree(irq);
- }
-@@ -157,31 +187,6 @@ void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
- 	mutex_unlock(&ctx->irq_lock);
- }
- 
--int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id, int eventfd)
--{
--	struct afu_irq *irq;
--	struct eventfd_ctx *ev_ctx;
--	int rc = 0;
--
--	mutex_lock(&ctx->irq_lock);
--	irq = idr_find(&ctx->irq_idr, irq_id);
--	if (!irq) {
--		rc = -EINVAL;
--		goto unlock;
--	}
--
--	ev_ctx = eventfd_ctx_fdget(eventfd);
--	if (IS_ERR(ev_ctx)) {
--		rc = -EINVAL;
--		goto unlock;
--	}
--
--	irq->ev_ctx = ev_ctx;
--unlock:
--	mutex_unlock(&ctx->irq_lock);
--	return rc;
--}
--
- u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id)
- {
- 	struct afu_irq *irq;
-diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-index d28618c161de..16833a5d47f0 100644
---- a/drivers/misc/ocxl/file.c
-+++ b/drivers/misc/ocxl/file.c
-@@ -3,6 +3,7 @@
- #include <linux/fs.h>
- #include <linux/poll.h>
- #include <linux/sched/signal.h>
-+#include <linux/eventfd.h>
- #include <linux/uaccess.h>
- #include <uapi/misc/ocxl.h>
- #include <asm/reg.h>
-@@ -192,11 +193,27 @@ static long afu_ioctl_get_features(struct ocxl_context *ctx,
- 			x == OCXL_IOCTL_GET_FEATURES ? "GET_FEATURES" :	\
- 			"UNKNOWN")
- 
-+static irqreturn_t irq_handler(void *private)
-+{
-+	struct eventfd_ctx *ev_ctx = private;
-+
-+	eventfd_signal(ev_ctx, 1);
-+	return IRQ_HANDLED;
-+}
-+
-+static void irq_free(void *private)
-+{
-+	struct eventfd_ctx *ev_ctx = private;
-+
-+	eventfd_ctx_put(ev_ctx);
-+}
-+
- static long afu_ioctl(struct file *file, unsigned int cmd,
- 		unsigned long args)
- {
- 	struct ocxl_context *ctx = file->private_data;
- 	struct ocxl_ioctl_irq_fd irq_fd;
-+	struct eventfd_ctx *ev_ctx;
- 	int irq_id;
- 	u64 irq_offset;
- 	long rc;
-@@ -248,7 +265,10 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
- 		if (irq_fd.reserved)
- 			return -EINVAL;
- 		irq_id = ocxl_irq_offset_to_id(ctx, irq_fd.irq_offset);
--		rc = ocxl_afu_irq_set_fd(ctx, irq_id, irq_fd.eventfd);
-+		ev_ctx = eventfd_ctx_fdget(irq_fd.eventfd);
-+		if (!ev_ctx)
-+			return -EFAULT;
-+		rc = ocxl_irq_set_handler(ctx, irq_id, irq_handler, irq_free, ev_ctx);
- 		break;
- 
- 	case OCXL_IOCTL_GET_METADATA:
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index 871155b464da..f3775223f4b1 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -142,12 +142,7 @@ void ocxl_sysfs_unregister_afu(struct ocxl_afu *afu);
- 
- int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset);
- u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id);
--int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
--int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
- void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
--int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id,
--			int eventfd);
--u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
- 
- /**
-  * Free an AFU
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index 54f8bafa3caa..3099c858093c 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -169,6 +169,50 @@ int ocxl_context_detach(struct ocxl_context *ctx);
- 
- // OpenCAPI MMIO accesses
- 
-+/**
-+ * Allocate an IRQ associated with an AFU context
-+ * @ctx: the AFU context
-+ * @irq_id: out, the IRQ ID
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
-+
-+/**
-+ * Frees an IRQ associated with an AFU context
-+ * @ctx: the AFU context
-+ * @irq_id: the IRQ ID
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+extern int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
-+
-+/**
-+ * Gets the address of the trigger page for an IRQ
-+ * This can then be provided to an AFU which will write to that
-+ * page to trigger the IRQ.
-+ * @ctx: The AFU context that the IRQ is associated with
-+ * @irq_id: The IRQ ID
-+ *
-+ * returns the trigger page address, or 0 if the IRQ is not valid
-+ */
-+extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
-+
-+/**
-+ * Provide a callback to be called when an IRQ is triggered
-+ * @ctx: The AFU context that the IRQ is associated with
-+ * @irq_id: The IRQ ID
-+ * @handler: the callback to be called when the IRQ is triggered
-+ * @free_private: the callback to be called when the IRQ is freed
-+ * @private: Private data to be passed to the callbacks
-+ *
-+ * Returns 0 on success, negative on failure
-+ */
-+int ocxl_irq_set_handler(struct ocxl_context *ctx, int irq_id,
-+		irqreturn_t (*handler)(void *private),
-+		void (*free_private)(void *private),
-+		void *private);
-+
- /**
-  * Read a 32 bit value from global MMIO
-  *
--- 
-2.20.1
+Hmm.. I thought the point of the 'cpu' parameter (not a great name) is
+that it lets userspace chose the guest visible irq server ID.  I think
+that's preferable to tying it to an existing cpu id, if possible.
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--c8JyeaiReRNoiMDS
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyIgZYACgkQbDjKyiDZ
+s5JZshAAlJTbgUEzm/PuGQSZ8a7JqBhImKIbcZgeM6ZMcPpWOMWluJ6PWM9qDRDl
+Wh9lGWxEneoPGbES7TWp5vVd43ro1ncHyE6WbyTOHFgSfjKjargr70pdW0vQTXz2
+sPV/5D3RfiuTs2kz4aOLF7KuVJH3ktCnSLIYSHDdSRTo38e5NVL06giRFRUugQvm
+lwQng7UOmkQji1EZ9wTtbjQ3DVOKdrMoRZSdqHxICmYREVuF17oDhRPHwkh6lMku
+FoC5SvPRWejI4PjDT3sxWwvezRgGInrW9oLiH/Y9hmf96uS+i+VqqvNcvuaPF+7v
+5FpafHUxEEyag4s6IvHl2jC6OGnVgbA6qtYm+o75whsEeohQNokRwbLzPuEgudi5
+XkuOkHkxf2lfHe0vXm3ivsG9LGVSePBJ2eVQ38Dzg5ZWu/Hs5ZiMXJTafb3BoTBq
+WknL/p48rxUcUM+r/pPzrx4pVD4AmQ5qvHS5rrMz+C5FhWV68p64UZWgCovUlzEB
+2dks3I6V5CQOKuQykxYP1kmMTQ/nReiInLHHsS4LzkGRmiiMQcVZGyANOT36L59j
+H9zOR/1rLV2KrvITrXloTpxz/YWWjmGBQBLLOVn/nn032aEYQiLtvYHAlJBSixAO
+KK40uB9XvfD6fBNXgsswax6cLidEBw/RWzNwj6WUVY0DCiiGhRE=
+=YaVr
+-----END PGP SIGNATURE-----
+
+--c8JyeaiReRNoiMDS--
