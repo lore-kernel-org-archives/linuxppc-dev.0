@@ -2,79 +2,81 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F423C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 15:48:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB463C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 16:04:05 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A7BB1206BA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 15:48:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 3168E20643
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 16:04:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="K6TPrF6G"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A7BB1206BA
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="y7/X111I"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3168E20643
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KGT20wdpzDqMW
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 02:48:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KGqQ3RdvzDqD4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:04:02 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::241; helo=mail-oi1-x241.google.com;
+ (client-ip=2607:f8b0:4864:20::242; helo=mail-oi1-x242.google.com;
  envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="K6TPrF6G"; 
+ header.i=@intel-com.20150623.gappssmtp.com header.b="y7/X111I"; 
  dkim-atps=neutral
-Received: from mail-oi1-x241.google.com (mail-oi1-x241.google.com
- [IPv6:2607:f8b0:4864:20::241])
+Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com
+ [IPv6:2607:f8b0:4864:20::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KGRD3l5yzDqL7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 02:46:25 +1100 (AEDT)
-Received: by mail-oi1-x241.google.com with SMTP id g16so1824069oib.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 08:46:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KGnV71w5zDq67
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 03:02:17 +1100 (AEDT)
+Received: by mail-oi1-x242.google.com with SMTP id m4so1848051oim.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:02:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=intel-com.20150623.gappssmtp.com; s=20150623;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=W+oPxX+piVpJ30lMLFWLXO5frI9ICTeBZDbNkkINo68=;
- b=K6TPrF6Gd0Rm8cnqAH4FSX4ju5kqgdcKWeArLF3aGlkb0COO9WtMkBFFqWX8vuBCC1
- 1Oh8FfmxaaVfNPqid3tlVqyGC0CXaNmDrxv1Bm+iFBSgkUq+i00Xr40a/+Rhdcmus0Tp
- Ue/QgklPhjO9XyX9oDRWrZ98rO5KJnn6yCWoA4qey9uEof4IQmZnl3HSOMNmU2yQbAQy
- 2SGJw6v5tfq0+7g5u/8dcDgm+SNhEPzr3++427mI5YjCNGHd3vioHbBD3Ue6zJJwZStg
- D76rbhciwPIu6TyS0LptOspjwLG0urszdpdESrAi3MpzIrfODP4ilNp5855L4KiF5vBI
- IiUA==
+ :cc; bh=CkHX/D6Gyspe7lRDGtgIrSuJ+M2kMCxh6Af+/gLSlLg=;
+ b=y7/X111Ih0XlFvwsxv16a+Tjs391cVrRbIsUC3mnj+Mm0qUMtN51FaB5lxBiCc118x
+ 376jJgarhHQvsy/V3septwJqefqHhb0cQ23r3YOFQrmojJ9aUNMM2lS4jburK7G8+GG8
+ gLX4nRQ0AcUV/EHv4PXGES90G+wP03J35zdNnVsfr9Sd8cDALnBGvmFcrlIdyd2oACC4
+ 6Vli7jf+MBtZb2zuBBWWNh60FRCFh3G++jIyEbSKMpRZYiW3U6H06nM+z0YT2rJezvdu
+ kISuyXLhhLUwFgCv7cTZwNyZ9U44tWtZX4l53equtM5zVwtwX0jcTZfkF0XQfcpPj1Md
+ xpew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=W+oPxX+piVpJ30lMLFWLXO5frI9ICTeBZDbNkkINo68=;
- b=jdbwWthiR6CNHV6fY464cKHaVGu7+LZCu49/g/f7gvfnlSX5TeZ6SkgoNVjYLhasWT
- Xm/0c+P5PnAs/36ulXxX6/THXrmt9zrHSQxWhW+75ROqt/DtdNNda9je6Q6r39RjXO2Z
- d7csAySo7WMgRxbLVY3MRS/zOmsY7obZsG0xcpGTmvapxJeN0oT8nFxCLILn27ifKZx9
- +PHhqa3pIzs24EOO2Q47sA1XBHGVVDB5f9mI5jLE4uTehXI3+8cH2Q5xGz+MGpzEp8u9
- 9OKHWJo12iO/qW26vd8xUcTBjIDT8aM1L10txUQ7czKr5E2SOYVGDRDbzbjiaGGs04ks
- ze7Q==
-X-Gm-Message-State: APjAAAWp+Xh03byGGFu563HACX1dCe5V/P6hCYb0j5NsbpqtUMIb0K6O
- 4gVCasR9TnRjtOjtmZFdhwT3MFeaWtnaMOAbxhJoEA==
-X-Google-Smtp-Source: APXvYqzeFUEG6z2e2O4tKclCB8I51BgRRqaAVbxJi1OegFmDCC35wG8DixTGq05LsFK9tKxgwi01c1gRidpmHJjcdKc=
-X-Received: by 2002:aca:54d8:: with SMTP id i207mr2145761oib.0.1552491981719; 
- Wed, 13 Mar 2019 08:46:21 -0700 (PDT)
+ bh=CkHX/D6Gyspe7lRDGtgIrSuJ+M2kMCxh6Af+/gLSlLg=;
+ b=lO3ZC7WxKIc0cLcdJt5Y7gnGW2mc8zlcyzkf0m/6SbsydzGb+SBszGJjF/UILbaGVe
+ uTQVwgby7Rt3wmAsWc1e/x+HwpyZMT3u/lMRl9WPMyppnt9+/Yjn9Kk4E1ZGyHmv5ivt
+ FsBKlS+dTgBiJX+ua5LkzwL6l43ljZdSlz8HuKg1v1Bo2m/dh7Lc9emjNImh+BQi4mWd
+ fNkWn+2V/nllEJJvZAkZ/YmhU9s+WBq0HNP8NORZ6Jjv3MPyjLQod+OIyV4zpEpaKQwn
+ LWcWAiWssv2bQGVH4FRsv/B0HtTsnuHlbqkbvY2zzOO8xW6gV0vLICMFfzpZIXQBIuaP
+ 3wRQ==
+X-Gm-Message-State: APjAAAVRI09hXYlVfSYVpV6sMEX0sF9fDSjiHzLtoSfVfNoCdcbNj4P1
+ NpGjWp8rGlmVtfE6HNOimOsU6xT7Oa+MVYKv2lP3fA==
+X-Google-Smtp-Source: APXvYqyPiA57rePYTQvH7o4E3jUa42PR2QtmxRflPF8xI9QygvSu8+9pFaw4Gvfpl6WMz1l8+jLwg2xYW8j6yUg7b3c=
+X-Received: by 2002:aca:54d8:: with SMTP id i207mr2191334oib.0.1552492933977; 
+ Wed, 13 Mar 2019 09:02:13 -0700 (PDT)
 MIME-Version: 1.0
-References: <20190309120721.21416-1-aneesh.kumar@linux.ibm.com>
- <8736nrnzxm.fsf@linux.ibm.com> <20190313095834.GF32521@quack2.suse.cz>
-In-Reply-To: <20190313095834.GF32521@quack2.suse.cz>
+References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
+ <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
+ <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
+ <87k1hc8iqa.fsf@linux.ibm.com>
+In-Reply-To: <87k1hc8iqa.fsf@linux.ibm.com>
 From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 13 Mar 2019 08:46:10 -0700
-Message-ID: <CAPcyv4irZP2F1acuco7UVbvTARzn5SXvCAWstFYtP7ygLRSXTg@mail.gmail.com>
-Subject: Re: [PATCH v2] fs/dax: deposit pagetable even when installing zero
- page
-To: Jan Kara <jack@suse.cz>
+Date: Wed, 13 Mar 2019 09:02:03 -0700
+Message-ID: <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
+Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -87,59 +89,138 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-nvdimm <linux-nvdimm@lists.01.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, Linux MM <linux-mm@kvack.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>, Ross Zwisler <zwisler@kernel.org>,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Oliver <oohall@gmail.com>,
+ Ross Zwisler <zwisler@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 13, 2019 at 2:58 AM Jan Kara <jack@suse.cz> wrote:
+On Wed, Mar 6, 2019 at 1:18 AM Aneesh Kumar K.V
+<aneesh.kumar@linux.ibm.com> wrote:
 >
-> On Wed 13-03-19 10:17:17, Aneesh Kumar K.V wrote:
-> >
-> > Hi Dan/Andrew/Jan,
-> >
-> > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> >
-> > > Architectures like ppc64 use the deposited page table to store hardware
-> > > page table slot information. Make sure we deposit a page table when
-> > > using zero page at the pmd level for hash.
-> > >
-> > > Without this we hit
-> > >
-> > > Unable to handle kernel paging request for data at address 0x00000000
-> > > Faulting instruction address: 0xc000000000082a74
-> > > Oops: Kernel access of bad area, sig: 11 [#1]
-> > > ....
-> > >
-> > > NIP [c000000000082a74] __hash_page_thp+0x224/0x5b0
-> > > LR [c0000000000829a4] __hash_page_thp+0x154/0x5b0
-> > > Call Trace:
-> > >  hash_page_mm+0x43c/0x740
-> > >  do_hash_page+0x2c/0x3c
-> > >  copy_from_iter_flushcache+0xa4/0x4a0
-> > >  pmem_copy_from_iter+0x2c/0x50 [nd_pmem]
-> > >  dax_copy_from_iter+0x40/0x70
-> > >  dax_iomap_actor+0x134/0x360
-> > >  iomap_apply+0xfc/0x1b0
-> > >  dax_iomap_rw+0xac/0x130
-> > >  ext4_file_write_iter+0x254/0x460 [ext4]
-> > >  __vfs_write+0x120/0x1e0
-> > >  vfs_write+0xd8/0x220
-> > >  SyS_write+0x6c/0x110
-> > >  system_call+0x3c/0x130
-> > >
-> > > Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
-> > > Reviewed-by: Jan Kara <jack@suse.cz>
-> > > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> >
-> > Any suggestion on which tree this patch should got to? Also since this
-> > fix a kernel crash, we may want to get this to 5.1?
+> Dan Williams <dan.j.williams@intel.com> writes:
 >
-> I think this should go through Dan's tree...
+> > On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
+> >>
+> >> On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
+> >> <aneesh.kumar@linux.ibm.com> wrote:
+> >> >
+> >> > Add a flag to indicate the ability to do huge page dax mapping. On architecture
+> >> > like ppc64, the hypervisor can disable huge page support in the guest. In
+> >> > such a case, we should not enable huge page dax mapping. This patch adds
+> >> > a flag which the architecture code will update to indicate huge page
+> >> > dax mapping support.
+> >>
+> >> *groan*
+> >>
+> >> > Architectures mostly do transparent_hugepage_flag = 0; if they can't
+> >> > do hugepages. That also takes care of disabling dax hugepage mapping
+> >> > with this change.
+> >> >
+> >> > Without this patch we get the below error with kvm on ppc64.
+> >> >
+> >> > [  118.849975] lpar: Failed hash pte insert with error -4
+> >> >
+> >> > NOTE: The patch also use
+> >> >
+> >> > echo never > /sys/kernel/mm/transparent_hugepage/enabled
+> >> > to disable dax huge page mapping.
+> >> >
+> >> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> >> > ---
+> >> > TODO:
+> >> > * Add Fixes: tag
+> >> >
+> >> >  include/linux/huge_mm.h | 4 +++-
+> >> >  mm/huge_memory.c        | 4 ++++
+> >> >  2 files changed, 7 insertions(+), 1 deletion(-)
+> >> >
+> >> > diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+> >> > index 381e872bfde0..01ad5258545e 100644
+> >> > --- a/include/linux/huge_mm.h
+> >> > +++ b/include/linux/huge_mm.h
+> >> > @@ -53,6 +53,7 @@ vm_fault_t vmf_insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+> >> >                         pud_t *pud, pfn_t pfn, bool write);
+> >> >  enum transparent_hugepage_flag {
+> >> >         TRANSPARENT_HUGEPAGE_FLAG,
+> >> > +       TRANSPARENT_HUGEPAGE_DAX_FLAG,
+> >> >         TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG,
+> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_DIRECT_FLAG,
+> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_KSWAPD_FLAG,
+> >> > @@ -111,7 +112,8 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
+> >> >         if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
+> >> >                 return true;
+> >> >
+> >> > -       if (vma_is_dax(vma))
+> >> > +       if (vma_is_dax(vma) &&
+> >> > +           (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_DAX_FLAG)))
+> >> >                 return true;
+> >>
+> >> Forcing PTE sized faults should be fine for fsdax, but it'll break
+> >> devdax. The devdax driver requires the fault size be >= the namespace
+> >> alignment since devdax tries to guarantee hugepage mappings will be
+> >> used and PMD alignment is the default. We can probably have devdax
+> >> fall back to the largest size the hypervisor has made available, but
+> >> it does run contrary to the design. Ah well, I suppose it's better off
+> >> being degraded rather than unusable.
+> >
+> > Given this is an explicit setting I think device-dax should explicitly
+> > fail to enable in the presence of this flag to preserve the
+> > application visible behavior.
+> >
+> > I.e. if device-dax was enabled after this setting was made then I
+> > think future faults should fail as well.
+>
+> Not sure I understood that. Now we are disabling the ability to map
+> pages as huge pages. I am now considering that this should not be
+> user configurable. Ie, this is something that platform can use to avoid
+> dax forcing huge page mapping, but if the architecture can enable huge
+> dax mapping, we should always default to using that.
 
-I'll merge this and let it soak in -next for a week and then submit for 5.1-rc2.
+No, that's an application visible behavior regression. The side effect
+of this setting is that all huge-page configured device-dax instances
+must be disabled.
+
+> Now w.r.t to failures, can device-dax do an opportunistic huge page
+> usage?
+
+device-dax explicitly disclaims the ability to do opportunistic mappings.
+
+> I haven't looked at the device-dax details fully yet. Do we make the
+> assumption of the mapping page size as a format w.r.t device-dax? Is that
+> derived from nd_pfn->align value?
+
+Correct.
+
+>
+> Here is what I am working on:
+> 1) If the platform doesn't support huge page and if the device superblock
+> indicated that it was created with huge page support, we fail the device
+> init.
+
+Ok.
+
+> 2) Now if we are creating a new namespace without huge page support in
+> the platform, then we force the align details to PAGE_SIZE. In such a
+> configuration when handling dax fault even with THP enabled during
+> the build, we should not try to use hugepage. This I think we can
+> achieve by using TRANSPARENT_HUGEPAEG_DAX_FLAG.
+
+How is this dynamic property communicated to the guest?
+
+>
+> Also even if the user decided to not use THP, by
+> echo "never" > transparent_hugepage/enabled , we should continue to map
+> dax fault using huge page on platforms that can support huge pages.
+>
+> This still doesn't cover the details of a device-dax created with
+> PAGE_SIZE align later booted with a kernel that can do hugepage dax.How
+> should we handle that? That makes me think, this should be a VMA flag
+> which got derived from device config? May be use VM_HUGEPAGE to indicate
+> if device should use a hugepage mapping or not?
+
+device-dax configured with PAGE_SIZE always gets PAGE_SIZE mappings.
