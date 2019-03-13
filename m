@@ -1,87 +1,115 @@
-Return-Path: <SRS0=8MIQ=RP=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7346AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 23:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 297D8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 01:05:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A709E2173C
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Mar 2019 23:40:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4A7E42063F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 01:05:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="SLbzoMMg"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A709E2173C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
+	dkim=pass (1024-bit key) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com header.b="k03hwOCz"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4A7E42063F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Js0674WXzDqHV
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:40:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Jtt85kGCzDqKL
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 12:05:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
- envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=40.107.5.72; helo=eur03-ve1-obe.outbound.protection.outlook.com;
+ envelope-from=haibo.xu@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=axtens.net
+ dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="SLbzoMMg"; 
- dkim-atps=neutral
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ unprotected) header.d=armh.onmicrosoft.com header.i=@armh.onmicrosoft.com
+ header.b="k03hwOCz"; dkim-atps=neutral
+Received: from EUR03-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr50072.outbound.protection.outlook.com [40.107.5.72])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44JryL4XmHzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 10:38:33 +1100 (AEDT)
-Received: by mail-pg1-x541.google.com with SMTP id b2so92460pgl.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 16:38:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=PU775P2DQwgKsZzzul90rUNaMx21fIcIS+/gjK9d6BA=;
- b=SLbzoMMgLWAiIe7bC31r+X1um1+wY2DBOLnI+dEY9sHH4wy2RVIxXaZSBIzDOzexUQ
- 7Z2CBD0ef96y9lnPZ4qDf+Obqnadt7MyvX7d5xsMJbP6ofYetdarHEurXowpORJrexno
- EeSakB6Bn+P5KO4vcdQpUZTPzOorxUMmvLl/0=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=PU775P2DQwgKsZzzul90rUNaMx21fIcIS+/gjK9d6BA=;
- b=J+LbaMalKK7KnxS1xklTlO0qhmJu1L7GJfAn/jtFdvVAoWAA4rLSwrlcuHNwchYO8t
- /Z5GACNaE/w4yGqueqhBSQvRCUogufxfgCa00lfNhXLyVU18JgjHinWj+fs9aSVE68To
- bAaJwyw3juSwS4BGy5AYglCi7fjUAEekFcv2mf4QMZSmPsZdGn6GUbh4untBDy4OBjhz
- 0arIJC0nwhXwdbhQdeY9SkGRvMf2DBG4iGdW1CNgEeyj+IH9LVCOA9JWaI46eGync4Cf
- fVGhZE9MtcAzAT1d0cBkmfkfW1FxYMcMDE+bTxf45tq+ginGHA5Awnwj0sgJVL2mpjjL
- m+Xg==
-X-Gm-Message-State: APjAAAUciZ2LTw88vudMF9gxTToqqPl1pV5KbRnXsd4BUtpBiTfqiUEJ
- 57imSOv/1YT5N1X6dgOj72agxA==
-X-Google-Smtp-Source: APXvYqzp7UKXp98ftxUglKEJfRtHdxAHPgmpIXl33ZlioVgoCRFi0CKcey5UC+rnKQMxMQ6nPNwjuw==
-X-Received: by 2002:a17:902:e192:: with SMTP id
- cd18mr43333055plb.309.1552433910704; 
- Tue, 12 Mar 2019 16:38:30 -0700 (PDT)
-Received: from localhost (124-171-102-1.dyn.iinet.net.au. [124.171.102.1])
- by smtp.gmail.com with ESMTPSA id j1sm12364911pgp.84.2019.03.12.16.38.29
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 12 Mar 2019 16:38:29 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>
-Subject: Re: [PATCH v10 05/18] powerpc/prom_init: don't use string functions
- from lib/
-In-Reply-To: <dc2eb0480f2c87316561435cfcf4c78254d2166b.1552428161.git.christophe.leroy@c-s.fr>
-References: <cover.1552428161.git.christophe.leroy@c-s.fr>
- <dc2eb0480f2c87316561435cfcf4c78254d2166b.1552428161.git.christophe.leroy@c-s.fr>
-Date: Wed, 13 Mar 2019 10:38:26 +1100
-Message-ID: <87ftrracjx.fsf@dja-thinkpad.axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JtrF4M0dzDqJP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 12:03:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=armh.onmicrosoft.com; 
+ s=selector1-arm-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=rHPSJU/XM4yra3LCjA7ISzyT4r4mmuSIFSb51ZqYjfw=;
+ b=k03hwOCzCV16jrfU88sbL00LCOKNJkdZkSaNpCm9N1dnHqfmdWCbyJApf103ZS1ASPtVXGZbHs0qwZ5DpzW0+7aqZAvM+zWCWwPFD6kFINFu8YbR+HowYk29hLHoEaPv/58veWGpPhbFFrHNzpoozQIlY21YMFGyp1AuomLZP0E=
+Received: from AM4PR08MB2929.eurprd08.prod.outlook.com (10.171.190.138) by
+ AM4PR08MB0786.eurprd08.prod.outlook.com (10.164.82.152) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1686.18; Wed, 13 Mar 2019 01:03:18 +0000
+Received: from AM4PR08MB2929.eurprd08.prod.outlook.com
+ ([fe80::e522:c03f:3d0c:f4ce]) by AM4PR08MB2929.eurprd08.prod.outlook.com
+ ([fe80::e522:c03f:3d0c:f4ce%4]) with mapi id 15.20.1686.021; Wed, 13 Mar 2019
+ 01:03:18 +0000
+From: "Haibo Xu (Arm Technology China)" <Haibo.Xu@arm.com>
+To: Sudeep Holla <Sudeep.Holla@arm.com>, Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Thread-Topic: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Thread-Index: AQHUz5P9ZKULSdDQbEW1h9vbYNE6xaX7KHCAgAAd14CAAQzrgIAKf6aAgAD7mAD//5MRgIAAmEsAgADYE4A=
+Date: Wed, 13 Mar 2019 01:03:18 +0000
+Message-ID: <5750cfac-14a7-8eed-09f4-0d53419bea6b@arm.com>
+References: <20190228183220.15626-1-sudeep.holla@arm.com>
+ <20190228183220.15626-4-sudeep.holla@arm.com>
+ <eb9ef619-4af8-71e1-5aee-0b6294ac488b@arm.com>
+ <20190304101205.GA1504@e107155-lin>
+ <96d59a68-e5e2-86d9-c707-a79aad438b76@arm.com>
+ <20190311183403.GA31062@e107155-lin>
+ <65b00ea1-f784-4fb4-2a98-49fa44d9fa8f@arm.com>
+ <CALCETrWiF5FKUTmt4jOZJxJr6B_66NFj9TaA3Tnv1uorfkwTMg@mail.gmail.com>
+ <20190312120944.GB13825@e107155-lin>
+In-Reply-To: <20190312120944.GB13825@e107155-lin>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-clientproxiedby: HK0PR03CA0037.apcprd03.prod.outlook.com
+ (2603:1096:203:2f::25) To AM4PR08MB2929.eurprd08.prod.outlook.com
+ (2603:10a6:205:c::10)
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=Haibo.Xu@arm.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [113.29.88.7]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: c83c4c13-ba38-4f2a-42b0-08d6a74fadc0
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: BCL:0; PCL:0;
+ RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(7168020)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);
+ SRVR:AM4PR08MB0786; 
+x-ms-traffictypediagnostic: AM4PR08MB0786:
+x-microsoft-exchange-diagnostics: 1; AM4PR08MB0786;
+ 20:BdnkpVSfCDkpLkBV+T6J2k0rcndxex7JXa+uwH45ZBNk380ZfiQH1rO9TtxRN8v/ezTB0cjUVdR0/3MAUA/69+PwYs+MShEEu/Mh16pTmu4V+rGxDhlAN5Q2q5siQM08K18CJ05RagcF42XAeXky9j6axLrlraXVVWIS6e0Uhlk=
+x-microsoft-antispam-prvs: <AM4PR08MB07869B621F2C0FC4CDB68EB7854A0@AM4PR08MB0786.eurprd08.prod.outlook.com>
+x-forefront-prvs: 09752BC779
+x-forefront-antispam-report: SFV:NSPM;
+ SFS:(10009020)(346002)(366004)(396003)(39860400002)(136003)(376002)(40434004)(199004)(189003)(31696002)(36756003)(72206003)(478600001)(52116002)(3846002)(6116002)(256004)(14454004)(7416002)(86362001)(2616005)(55236004)(68736007)(11346002)(8936002)(106356001)(53936002)(93886005)(6512007)(81166006)(105586002)(446003)(2906002)(8676002)(110136005)(6436002)(6486002)(486006)(5660300002)(102836004)(31686004)(66066001)(14444005)(54906003)(229853002)(5024004)(25786009)(26005)(53546011)(6506007)(386003)(186003)(305945005)(7736002)(76176011)(97736004)(99286004)(316002)(476003)(6246003)(71190400001)(71200400001)(4326008)(81156014);
+ DIR:OUT; SFP:1101; SCL:1; SRVR:AM4PR08MB0786;
+ H:AM4PR08MB2929.eurprd08.prod.outlook.com; FPR:; SPF:None; LANG:en;
+ PTR:InfoNoRecords; A:1; MX:1; 
+received-spf: None (protection.outlook.com: arm.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: k7CsVhxf5HY7vdzqIrg41lC1rUfVJhf92HGfQKD5HcKnTy2yc4SQlqetE+3D7DweBede0vFABBUSFDbL8/+jzZVz4d3GUW1A6Cbm1xgEVMPpkh4DsGh51HLFVGzmG2os46WzYWEk2R5epzGbpH5yLtIVJQ7t5w6jQMb6+hKnQGAwleZgDccFuZI6pHxv7OK7Bdlnda5PdHrxfp4wivQlnRT92ezcXhmjkmBXhy9U7DOwPuqkbtNw/EPKwXXRJodETQgKL41/0BE3yQXWIJOqwhq9cSq9rnnqyuclYMm7kY3Hh71bP36JEX7LCxeniTvdbLTkioFgVbooYqy5RH3pQD1f6WbfO4AtpFMf5tuJj2oT7vqD43lhEV7jXJtQmI9URG43k2GqrUeSGHnsGdB8K/8M0kKFg1+NlqtaoTF62lo=
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <C5B417A193AEF34B962ED5DF32A4EFB2@eurprd08.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain
+X-OriginatorOrg: arm.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: c83c4c13-ba38-4f2a-42b0-08d6a74fadc0
+X-MS-Exchange-CrossTenant-originalarrivaltime: 13 Mar 2019 01:03:18.1409 (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: f34e5979-57d9-4aaa-ad4d-b122a662184d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM4PR08MB0786
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -93,485 +121,53 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: Steve Capper <Steve.Capper@arm.com>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ "jdike@addtoit.com" <jdike@addtoit.com>, "x86@kernel.org" <x86@kernel.org>,
+ Will Deacon <Will.Deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "Bin Lu \(Arm Technology China\)" <Bin.Lu@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
-
-In trying to extend my KASAN implementation to Book3S 64bit, I found one
-other change needed to prom_init. I don't know if you think it should go
-in this patch, the next one, or somewhere else entirely - I will leave
-it up to you. Just let me know if you want me to carry it separately.
-
-Thanks again for all your work on this and the integration of my series.
-
-Regards,
-Daniel
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 7017156168e8..cebb3fc535ba 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1265,7 +1265,8 @@ static void __init prom_check_platform_support(void)
-                                       "ibm,arch-vec-5-platform-support");
- 
-        /* First copy the architecture vec template */
--       ibm_architecture_vec = ibm_architecture_vec_template;
-+       memcpy(&ibm_architecture_vec, &ibm_architecture_vec_template,
-+              sizeof(struct ibm_arch_vec));
- 
-        if (prop_len > 1) {
-                int i;
-
-> When KASAN is active, the string functions in lib/ are doing the
-> KASAN checks. This is too early for prom_init.
->
-> This patch implements dedicated string functions for prom_init,
-> which will be compiled in with KASAN disabled.
->
-> Size of prom_init before the patch:
->    text	   data	    bss	    dec	    hex	filename
->   12060	    488	   6960	  19508	   4c34	arch/powerpc/kernel/prom_init.o
->
-> Size of prom_init after the patch:
->    text	   data	    bss	    dec	    hex	filename
->   12460	    488	   6960	  19908	   4dc4	arch/powerpc/kernel/prom_init.o
->
-> This increases the size of prom_init a bit, but as prom_init is
-> in __init section, it is freed after boot anyway.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/kernel/prom_init.c        | 211 ++++++++++++++++++++++++++-------
->  arch/powerpc/kernel/prom_init_check.sh |   2 +-
->  2 files changed, 171 insertions(+), 42 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index ecf083c46bdb..7017156168e8 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -224,6 +224,135 @@ static bool  __prombss rtas_has_query_cpu_stopped;
->  #define PHANDLE_VALID(p)	((p) != 0 && (p) != PROM_ERROR)
->  #define IHANDLE_VALID(i)	((i) != 0 && (i) != PROM_ERROR)
->  
-> +/* Copied from lib/string.c and lib/kstrtox.c */
-> +
-> +static int __init prom_strcmp(const char *cs, const char *ct)
-> +{
-> +	unsigned char c1, c2;
-> +
-> +	while (1) {
-> +		c1 = *cs++;
-> +		c2 = *ct++;
-> +		if (c1 != c2)
-> +			return c1 < c2 ? -1 : 1;
-> +		if (!c1)
-> +			break;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static char __init *prom_strcpy(char *dest, const char *src)
-> +{
-> +	char *tmp = dest;
-> +
-> +	while ((*dest++ = *src++) != '\0')
-> +		/* nothing */;
-> +	return tmp;
-> +}
-> +
-> +static int __init prom_strncmp(const char *cs, const char *ct, size_t count)
-> +{
-> +	unsigned char c1, c2;
-> +
-> +	while (count) {
-> +		c1 = *cs++;
-> +		c2 = *ct++;
-> +		if (c1 != c2)
-> +			return c1 < c2 ? -1 : 1;
-> +		if (!c1)
-> +			break;
-> +		count--;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static size_t __init prom_strlen(const char *s)
-> +{
-> +	const char *sc;
-> +
-> +	for (sc = s; *sc != '\0'; ++sc)
-> +		/* nothing */;
-> +	return sc - s;
-> +}
-> +
-> +static int __init prom_memcmp(const void *cs, const void *ct, size_t count)
-> +{
-> +	const unsigned char *su1, *su2;
-> +	int res = 0;
-> +
-> +	for (su1 = cs, su2 = ct; 0 < count; ++su1, ++su2, count--)
-> +		if ((res = *su1 - *su2) != 0)
-> +			break;
-> +	return res;
-> +}
-> +
-> +static char __init *prom_strstr(const char *s1, const char *s2)
-> +{
-> +	size_t l1, l2;
-> +
-> +	l2 = prom_strlen(s2);
-> +	if (!l2)
-> +		return (char *)s1;
-> +	l1 = prom_strlen(s1);
-> +	while (l1 >= l2) {
-> +		l1--;
-> +		if (!prom_memcmp(s1, s2, l2))
-> +			return (char *)s1;
-> +		s1++;
-> +	}
-> +	return NULL;
-> +}
-> +
-> +static size_t __init prom_strlcpy(char *dest, const char *src, size_t size)
-> +{
-> +	size_t ret = prom_strlen(src);
-> +
-> +	if (size) {
-> +		size_t len = (ret >= size) ? size - 1 : ret;
-> +		memcpy(dest, src, len);
-> +		dest[len] = '\0';
-> +	}
-> +	return ret;
-> +}
-> +
-> +#ifdef CONFIG_PPC_PSERIES
-> +static int __init prom_strtobool(const char *s, bool *res)
-> +{
-> +	if (!s)
-> +		return -EINVAL;
-> +
-> +	switch (s[0]) {
-> +	case 'y':
-> +	case 'Y':
-> +	case '1':
-> +		*res = true;
-> +		return 0;
-> +	case 'n':
-> +	case 'N':
-> +	case '0':
-> +		*res = false;
-> +		return 0;
-> +	case 'o':
-> +	case 'O':
-> +		switch (s[1]) {
-> +		case 'n':
-> +		case 'N':
-> +			*res = true;
-> +			return 0;
-> +		case 'f':
-> +		case 'F':
-> +			*res = false;
-> +			return 0;
-> +		default:
-> +			break;
-> +		}
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +#endif
->  
->  /* This is the one and *ONLY* place where we actually call open
->   * firmware.
-> @@ -555,7 +684,7 @@ static int __init prom_setprop(phandle node, const char *nodename,
->  	add_string(&p, tohex((u32)(unsigned long) value));
->  	add_string(&p, tohex(valuelen));
->  	add_string(&p, tohex(ADDR(pname)));
-> -	add_string(&p, tohex(strlen(pname)));
-> +	add_string(&p, tohex(prom_strlen(pname)));
->  	add_string(&p, "property");
->  	*p = 0;
->  	return call_prom("interpret", 1, 1, (u32)(unsigned long) cmd);
-> @@ -638,23 +767,23 @@ static void __init early_cmdline_parse(void)
->  	if ((long)prom.chosen > 0)
->  		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
->  	if (IS_ENABLED(CONFIG_CMDLINE_BOOL) && (l <= 0 || p[0] == '\0')) /* dbl check */
-> -		strlcpy(prom_cmd_line, CONFIG_CMDLINE, sizeof(prom_cmd_line));
-> +		prom_strlcpy(prom_cmd_line, CONFIG_CMDLINE, sizeof(prom_cmd_line));
->  	prom_printf("command line: %s\n", prom_cmd_line);
->  
->  #ifdef CONFIG_PPC64
-> -	opt = strstr(prom_cmd_line, "iommu=");
-> +	opt = prom_strstr(prom_cmd_line, "iommu=");
->  	if (opt) {
->  		prom_printf("iommu opt is: %s\n", opt);
->  		opt += 6;
->  		while (*opt && *opt == ' ')
->  			opt++;
-> -		if (!strncmp(opt, "off", 3))
-> +		if (!prom_strncmp(opt, "off", 3))
->  			prom_iommu_off = 1;
-> -		else if (!strncmp(opt, "force", 5))
-> +		else if (!prom_strncmp(opt, "force", 5))
->  			prom_iommu_force_on = 1;
->  	}
->  #endif
-> -	opt = strstr(prom_cmd_line, "mem=");
-> +	opt = prom_strstr(prom_cmd_line, "mem=");
->  	if (opt) {
->  		opt += 4;
->  		prom_memory_limit = prom_memparse(opt, (const char **)&opt);
-> @@ -666,13 +795,13 @@ static void __init early_cmdline_parse(void)
->  
->  #ifdef CONFIG_PPC_PSERIES
->  	prom_radix_disable = !IS_ENABLED(CONFIG_PPC_RADIX_MMU_DEFAULT);
-> -	opt = strstr(prom_cmd_line, "disable_radix");
-> +	opt = prom_strstr(prom_cmd_line, "disable_radix");
->  	if (opt) {
->  		opt += 13;
->  		if (*opt && *opt == '=') {
->  			bool val;
->  
-> -			if (kstrtobool(++opt, &val))
-> +			if (prom_strtobool(++opt, &val))
->  				prom_radix_disable = false;
->  			else
->  				prom_radix_disable = val;
-> @@ -1025,7 +1154,7 @@ static int __init prom_count_smt_threads(void)
->  		type[0] = 0;
->  		prom_getprop(node, "device_type", type, sizeof(type));
->  
-> -		if (strcmp(type, "cpu"))
-> +		if (prom_strcmp(type, "cpu"))
->  			continue;
->  		/*
->  		 * There is an entry for each smt thread, each entry being
-> @@ -1472,7 +1601,7 @@ static void __init prom_init_mem(void)
->  			 */
->  			prom_getprop(node, "name", type, sizeof(type));
->  		}
-> -		if (strcmp(type, "memory"))
-> +		if (prom_strcmp(type, "memory"))
->  			continue;
->  
->  		plen = prom_getprop(node, "reg", regbuf, sizeof(regbuf));
-> @@ -1753,19 +1882,19 @@ static void __init prom_initialize_tce_table(void)
->  		prom_getprop(node, "device_type", type, sizeof(type));
->  		prom_getprop(node, "model", model, sizeof(model));
->  
-> -		if ((type[0] == 0) || (strstr(type, "pci") == NULL))
-> +		if ((type[0] == 0) || (prom_strstr(type, "pci") == NULL))
->  			continue;
->  
->  		/* Keep the old logic intact to avoid regression. */
->  		if (compatible[0] != 0) {
-> -			if ((strstr(compatible, "python") == NULL) &&
-> -			    (strstr(compatible, "Speedwagon") == NULL) &&
-> -			    (strstr(compatible, "Winnipeg") == NULL))
-> +			if ((prom_strstr(compatible, "python") == NULL) &&
-> +			    (prom_strstr(compatible, "Speedwagon") == NULL) &&
-> +			    (prom_strstr(compatible, "Winnipeg") == NULL))
->  				continue;
->  		} else if (model[0] != 0) {
-> -			if ((strstr(model, "ython") == NULL) &&
-> -			    (strstr(model, "peedwagon") == NULL) &&
-> -			    (strstr(model, "innipeg") == NULL))
-> +			if ((prom_strstr(model, "ython") == NULL) &&
-> +			    (prom_strstr(model, "peedwagon") == NULL) &&
-> +			    (prom_strstr(model, "innipeg") == NULL))
->  				continue;
->  		}
->  
-> @@ -1914,12 +2043,12 @@ static void __init prom_hold_cpus(void)
->  
->  		type[0] = 0;
->  		prom_getprop(node, "device_type", type, sizeof(type));
-> -		if (strcmp(type, "cpu") != 0)
-> +		if (prom_strcmp(type, "cpu") != 0)
->  			continue;
->  
->  		/* Skip non-configured cpus. */
->  		if (prom_getprop(node, "status", type, sizeof(type)) > 0)
-> -			if (strcmp(type, "okay") != 0)
-> +			if (prom_strcmp(type, "okay") != 0)
->  				continue;
->  
->  		reg = cpu_to_be32(-1); /* make sparse happy */
-> @@ -1995,9 +2124,9 @@ static void __init prom_find_mmu(void)
->  		return;
->  	version[sizeof(version) - 1] = 0;
->  	/* XXX might need to add other versions here */
-> -	if (strcmp(version, "Open Firmware, 1.0.5") == 0)
-> +	if (prom_strcmp(version, "Open Firmware, 1.0.5") == 0)
->  		of_workarounds = OF_WA_CLAIM;
-> -	else if (strncmp(version, "FirmWorks,3.", 12) == 0) {
-> +	else if (prom_strncmp(version, "FirmWorks,3.", 12) == 0) {
->  		of_workarounds = OF_WA_CLAIM | OF_WA_LONGTRAIL;
->  		call_prom("interpret", 1, 1, "dev /memory 0 to allow-reclaim");
->  	} else
-> @@ -2030,7 +2159,7 @@ static void __init prom_init_stdout(void)
->  	call_prom("instance-to-path", 3, 1, prom.stdout, path, 255);
->  	prom_printf("OF stdout device is: %s\n", of_stdout_device);
->  	prom_setprop(prom.chosen, "/chosen", "linux,stdout-path",
-> -		     path, strlen(path) + 1);
-> +		     path, prom_strlen(path) + 1);
->  
->  	/* instance-to-package fails on PA-Semi */
->  	stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
-> @@ -2040,7 +2169,7 @@ static void __init prom_init_stdout(void)
->  		/* If it's a display, note it */
->  		memset(type, 0, sizeof(type));
->  		prom_getprop(stdout_node, "device_type", type, sizeof(type));
-> -		if (strcmp(type, "display") == 0)
-> +		if (prom_strcmp(type, "display") == 0)
->  			prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
->  	}
->  }
-> @@ -2061,19 +2190,19 @@ static int __init prom_find_machine_type(void)
->  		compat[len] = 0;
->  		while (i < len) {
->  			char *p = &compat[i];
-> -			int sl = strlen(p);
-> +			int sl = prom_strlen(p);
->  			if (sl == 0)
->  				break;
-> -			if (strstr(p, "Power Macintosh") ||
-> -			    strstr(p, "MacRISC"))
-> +			if (prom_strstr(p, "Power Macintosh") ||
-> +			    prom_strstr(p, "MacRISC"))
->  				return PLATFORM_POWERMAC;
->  #ifdef CONFIG_PPC64
->  			/* We must make sure we don't detect the IBM Cell
->  			 * blades as pSeries due to some firmware issues,
->  			 * so we do it here.
->  			 */
-> -			if (strstr(p, "IBM,CBEA") ||
-> -			    strstr(p, "IBM,CPBW-1.0"))
-> +			if (prom_strstr(p, "IBM,CBEA") ||
-> +			    prom_strstr(p, "IBM,CPBW-1.0"))
->  				return PLATFORM_GENERIC;
->  #endif /* CONFIG_PPC64 */
->  			i += sl + 1;
-> @@ -2090,7 +2219,7 @@ static int __init prom_find_machine_type(void)
->  			   compat, sizeof(compat)-1);
->  	if (len <= 0)
->  		return PLATFORM_GENERIC;
-> -	if (strcmp(compat, "chrp"))
-> +	if (prom_strcmp(compat, "chrp"))
->  		return PLATFORM_GENERIC;
->  
->  	/* Default to pSeries. We need to know if we are running LPAR */
-> @@ -2152,7 +2281,7 @@ static void __init prom_check_displays(void)
->  	for (node = 0; prom_next_node(&node); ) {
->  		memset(type, 0, sizeof(type));
->  		prom_getprop(node, "device_type", type, sizeof(type));
-> -		if (strcmp(type, "display") != 0)
-> +		if (prom_strcmp(type, "display") != 0)
->  			continue;
->  
->  		/* It seems OF doesn't null-terminate the path :-( */
-> @@ -2256,9 +2385,9 @@ static unsigned long __init dt_find_string(char *str)
->  	s = os = (char *)dt_string_start;
->  	s += 4;
->  	while (s <  (char *)dt_string_end) {
-> -		if (strcmp(s, str) == 0)
-> +		if (prom_strcmp(s, str) == 0)
->  			return s - os;
-> -		s += strlen(s) + 1;
-> +		s += prom_strlen(s) + 1;
->  	}
->  	return 0;
->  }
-> @@ -2291,7 +2420,7 @@ static void __init scan_dt_build_strings(phandle node,
->  		}
->  
->   		/* skip "name" */
-> - 		if (strcmp(namep, "name") == 0) {
-> +		if (prom_strcmp(namep, "name") == 0) {
->   			*mem_start = (unsigned long)namep;
->   			prev_name = "name";
->   			continue;
-> @@ -2303,7 +2432,7 @@ static void __init scan_dt_build_strings(phandle node,
->  			namep = sstart + soff;
->  		} else {
->  			/* Trim off some if we can */
-> -			*mem_start = (unsigned long)namep + strlen(namep) + 1;
-> +			*mem_start = (unsigned long)namep + prom_strlen(namep) + 1;
->  			dt_string_end = *mem_start;
->  		}
->  		prev_name = namep;
-> @@ -2372,7 +2501,7 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
->  			break;
->  
->   		/* skip "name" */
-> - 		if (strcmp(pname, "name") == 0) {
-> +		if (prom_strcmp(pname, "name") == 0) {
->   			prev_name = "name";
->   			continue;
->   		}
-> @@ -2403,7 +2532,7 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
->  		call_prom("getprop", 4, 1, node, pname, valp, l);
->  		*mem_start = _ALIGN(*mem_start, 4);
->  
-> -		if (!strcmp(pname, "phandle"))
-> +		if (!prom_strcmp(pname, "phandle"))
->  			has_phandle = 1;
->  	}
->  
-> @@ -2473,8 +2602,8 @@ static void __init flatten_device_tree(void)
->  
->  	/* Add "phandle" in there, we'll need it */
->  	namep = make_room(&mem_start, &mem_end, 16, 1);
-> -	strcpy(namep, "phandle");
-> -	mem_start = (unsigned long)namep + strlen(namep) + 1;
-> +	prom_strcpy(namep, "phandle");
-> +	mem_start = (unsigned long)namep + prom_strlen(namep) + 1;
->  
->  	/* Build string array */
->  	prom_printf("Building dt strings...\n"); 
-> @@ -2796,7 +2925,7 @@ static void __init fixup_device_tree_efika(void)
->  	rv = prom_getprop(node, "model", prop, sizeof(prop));
->  	if (rv == PROM_ERROR)
->  		return;
-> -	if (strcmp(prop, "EFIKA5K2"))
-> +	if (prom_strcmp(prop, "EFIKA5K2"))
->  		return;
->  
->  	prom_printf("Applying EFIKA device tree fixups\n");
-> @@ -2804,13 +2933,13 @@ static void __init fixup_device_tree_efika(void)
->  	/* Claiming to be 'chrp' is death */
->  	node = call_prom("finddevice", 1, 1, ADDR("/"));
->  	rv = prom_getprop(node, "device_type", prop, sizeof(prop));
-> -	if (rv != PROM_ERROR && (strcmp(prop, "chrp") == 0))
-> +	if (rv != PROM_ERROR && (prom_strcmp(prop, "chrp") == 0))
->  		prom_setprop(node, "/", "device_type", "efika", sizeof("efika"));
->  
->  	/* CODEGEN,description is exposed in /proc/cpuinfo so
->  	   fix that too */
->  	rv = prom_getprop(node, "CODEGEN,description", prop, sizeof(prop));
-> -	if (rv != PROM_ERROR && (strstr(prop, "CHRP")))
-> +	if (rv != PROM_ERROR && (prom_strstr(prop, "CHRP")))
->  		prom_setprop(node, "/", "CODEGEN,description",
->  			     "Efika 5200B PowerPC System",
->  			     sizeof("Efika 5200B PowerPC System"));
-> diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-> index 181fd10008ef..4cac45cb5de5 100644
-> --- a/arch/powerpc/kernel/prom_init_check.sh
-> +++ b/arch/powerpc/kernel/prom_init_check.sh
-> @@ -27,7 +27,7 @@ fi
->  WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
->  _end enter_prom $MEM_FUNCS reloc_offset __secondary_hold
->  __secondary_hold_acknowledge __secondary_hold_spinloop __start
-> -strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
-> +logo_linux_clut224
->  reloc_got2 kernstart_addr memstart_addr linux_banner _stext
->  __prom_init_toc_start __prom_init_toc_end btext_setup_display TOC."
->  
-> -- 
-> 2.13.3
+T24gMjAxOS8zLzEyIDIwOjA5LCBTdWRlZXAgSG9sbGEgd3JvdGU6DQo+IE9uIE1vbiwgTWFyIDEx
+LCAyMDE5IGF0IDA4OjA0OjM5UE0gLTA3MDAsIEFuZHkgTHV0b21pcnNraSB3cm90ZToNCj4+IE9u
+IE1vbiwgTWFyIDExLCAyMDE5IGF0IDY6MzUgUE0gSGFpYm8gWHUgKEFybSBUZWNobm9sb2d5IENo
+aW5hKQ0KPj4gPEhhaWJvLlh1QGFybS5jb20+IHdyb3RlOg0KPj4+DQo+DQo+IFsuLi5dDQo+DQo+
+Pj4gRm9yIHRoZSBQVFJBQ0VfU1lTRU1VX1NJTkdMRVNURVAgcmVxdWVzdCwgcHRyYWNlIG9ubHkg
+bmVlZCB0byByZXBvcnQoc2VuZA0KPj4+IFNJR1RSQVApIGF0IHRoZSBlbnRyeSBvZiBhIHN5c3Rl
+bSBjYWxsLCBubyBuZWVkIHRvIHJlcG9ydCBhdCB0aGUgZXhpdCBvZiBhDQo+Pj4gc3lzdGVtIGNh
+bGwuVGhhdCdzIHdoeSB0aGUgb2xkIGxvZ2ljLXtzdGVwID0gKChmbGFncyAmIChfVElGX1NJTkdM
+RVNURVAgfA0KPj4+IF9USUZfU1lTQ0FMTF9FTVUpKSA9PSBfVElGX1NJTkdMRVNURVApfSBoZXJl
+IHRyeSB0byBmaWx0ZXIgb3V0IHRoZSBzcGVjaWFsDQo+Pj4gY2FzZShQVFJBQ0VfU1lTRU1VX1NJ
+TkdMRVNURVApLg0KPj4+DQo+Pj4gQW5vdGhlciB3YXkgdG8gbWFrZSBzdXJlIHRoZSBsb2dpYyBp
+cyBmaW5lLCB5b3UgY2FuIHJ1biBzb21lIHRlc3RzIHdpdGgNCj4+PiByZXNwZWN0IHRvIGJvdGgg
+bG9naWMsIGFuZCB0byBjaGVjayB3aGV0aGVyIHRoZXkgaGF2ZSB0aGUgc2FtZSBiZWhhdmlvci4N
+Cj4+DQo+PiB0b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy94ODYvcHRyYWNlX3N5c2NhbGwuYyBoYXMg
+YSB0ZXN0IGludGVuZGVkIHRvDQo+PiBleGVyY2lzZSB0aGlzLiAgQ2FuIG9uZSBvZiB5b3UgZWl0
+aGVyIGNvbmZpcm0gdGhhdCBpdCBkb2VzIGV4ZXJjaXNlIGl0DQo+PiBhbmQgdGhhdCBpdCBzdGls
+bCBwYXNzZXMgb3IgY2FuIHlvdSBpbXByb3ZlIHRoZSB0ZXN0Pw0KPj4NCj4gSSBkaWQgcnVuIHRo
+ZSB0ZXN0cyB3aGljaCBkaWRuJ3QgZmxhZyBhbnl0aGluZy4gSSBoYXZlbid0IGxvb2tlZCBhdCB0
+aGUNCj4gZGV0YWlscyBvZiB0ZXN0IGltcGxlbWVudGF0aW9uLCBidXQgc2VlbSB0byBtaXNzIHRo
+aXMgY2FzZS4gSSB3aWxsIHNlZQ0KPiB3aGF0IGNhbiBiZSBpbXByb3ZlZChpZiBpdCdzIHBvc3Np
+YmxlKS4gQWxzbyBJIHRoaW5rIHNpbmdsZV9zdGVwX3N5c2NhbGwNCj4gaXMgdGhlIG9uZSBJIG5l
+ZWQgdG8gbG9vayBmb3IgdGhpcyBwYXJ0aWN1bGFyIG9uZS4gQm90aCBzaW5nbGVfc3RlcF9zeXNj
+YWxsDQo+IHB0cmFjZV9zeXNjYWxsIHJlcG9ydGVkIG5vIGVycm9ycy4NCj4NCj4gLS0NCj4gUmVn
+YXJkcywNCj4gU3VkZWVwDQo+DQoNClNpbmNlIHB0cmFjZSgpIHN5c3RlbSBjYWxsIGRvIGhhdmUg
+c28gbWFueSByZXF1ZXN0IHR5cGUsIEknbSBub3Qgc3VyZSB3aGV0aGVyIHRoZQ0KdGVzdCBjYXNl
+cyBoYXZlIGNvdmVyZWQgYWxsIG9mIHRoYXQuIEJ1dCBoZXJlIHdlJ2QgYmV0dGVyIG1ha2Ugc3Vy
+ZSB0aGUgUFRSQUNFX1NZU0VNVQ0KYW5kIFBUUkFDRV9TWVNFTVVfU0lOR0xFU1RFUCByZXF1ZXN0
+cyBhcmUgd29yayBjb3JyZWN0bHkuIE1heSBiZSB5b3UgY2FuIHZlcmlmeSB0aGVtIHdpdGgNCnRl
+c3RzIGZyb20gQmluIEx1KGJpbi5sdUBhcm0uY29tKS4NCg0KUmVnYXJkcywNCkhhaWJvDQpJTVBP
+UlRBTlQgTk9USUNFOiBUaGUgY29udGVudHMgb2YgdGhpcyBlbWFpbCBhbmQgYW55IGF0dGFjaG1l
+bnRzIGFyZSBjb25maWRlbnRpYWwgYW5kIG1heSBhbHNvIGJlIHByaXZpbGVnZWQuIElmIHlvdSBh
+cmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHBsZWFzZSBub3RpZnkgdGhlIHNlbmRlciBp
+bW1lZGlhdGVseSBhbmQgZG8gbm90IGRpc2Nsb3NlIHRoZSBjb250ZW50cyB0byBhbnkgb3RoZXIg
+cGVyc29uLCB1c2UgaXQgZm9yIGFueSBwdXJwb3NlLCBvciBzdG9yZSBvciBjb3B5IHRoZSBpbmZv
+cm1hdGlvbiBpbiBhbnkgbWVkaXVtLiBUaGFuayB5b3UuDQo=
