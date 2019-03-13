@@ -6,88 +6,89 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2CC7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 03:43:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B43B0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 03:45:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0258D2077B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 03:43:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0258D2077B
+	by mail.kernel.org (Postfix) with ESMTPS id 3AAC82077B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 03:45:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3AAC82077B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44JyP21CDwzDqJN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 14:43:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44JyQf28VpzDqHJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 14:44:58 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44JyM63NpDzDqHJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 14:41:52 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2D3dK0b136736
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 23:41:50 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r6p5th8va-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44JyMv26LrzDqHZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 14:42:35 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2D3eOWD128302
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 23:42:32 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2r6ndc2sr9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 23:41:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Mar 2019 23:42:32 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 13 Mar 2019 03:41:48 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
+ Wed, 13 Mar 2019 03:42:30 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 13 Mar 2019 03:41:45 -0000
-Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
- [9.149.105.58])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2D3fi6W33423418
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 13 Mar 2019 03:41:44 GMT
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 04D044C040;
- Wed, 13 Mar 2019 03:41:44 +0000 (GMT)
-Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A6F404C04E;
- Wed, 13 Mar 2019 03:41:43 +0000 (GMT)
+ Wed, 13 Mar 2019 03:42:28 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2D3gRFL55967864
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 13 Mar 2019 03:42:27 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ECE05AE051;
+ Wed, 13 Mar 2019 03:42:26 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 55642AE04D;
+ Wed, 13 Mar 2019 03:42:26 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 13 Mar 2019 03:41:43 +0000 (GMT)
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 13 Mar 2019 03:42:26 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 50EF2A00D1;
- Wed, 13 Mar 2019 14:41:40 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3AB1AA00D1;
+ Wed, 13 Mar 2019 14:42:25 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: 
-Subject: [PATCH 1/1] arch/powerpc: Don't assume start_text & head_end align
-Date: Wed, 13 Mar 2019 14:38:51 +1100
+Subject: [PATCH 1/1] arch/powerpc: Rework local_paca to avoid LTO warnings
+Date: Wed, 13 Mar 2019 14:42:06 +1100
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19031303-0012-0000-0000-00000301E979
+x-cbid: 19031303-0028-0000-0000-000003535281
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031303-0013-0000-0000-000021390D73
-Message-Id: <20190313033852.13028-1-alastair@au1.ibm.com>
+x-cbparentid: 19031303-0029-0000-0000-00002411D8A6
+Message-Id: <20190313034208.13134-1-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-13_02:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=830 adultscore=0 classifier=spam adjust=0 reason=mlx
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1903130024
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -100,54 +101,114 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alastair D'Silva <alastair@d-silva.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Alastair D'Silva <alastair@d-silva.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-When building LTO kernels, the start_text symbol is not guaranteed to mark
-the end of the head section.
+When building an LTO kernel, the existing code generates warnings:
+    ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
+        ‘local_paca’ used for multiple global register variables
+     register struct paca_struct *local_paca asm("r13");
+                              ^
+    ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
+        ‘local_paca’
 
-Instead, look explicitly for __head_end.
+This patch reworks local_paca into an inline getter & setter function,
+which addresses the warning.
+
+Generated ASM from this patch is broadly similar (addresses have
+changed and the compiler uses different GPRs in some places).
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/tools/head_check.sh | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/paca.h | 44 +++++++++++++++++++++++----------
+ arch/powerpc/kernel/paca.c      |  2 +-
+ 2 files changed, 32 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/tools/head_check.sh b/arch/powerpc/tools/head_check.sh
-index ad9e57209aa4..1b0f634038c3 100644
---- a/arch/powerpc/tools/head_check.sh
-+++ b/arch/powerpc/tools/head_check.sh
-@@ -44,7 +44,7 @@ nm="$1"
- vmlinux="$2"
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index e843bc5d1a0f..9c9e2dea0f9b 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -34,19 +34,6 @@
+ #include <asm/cpuidle.h>
+ #include <asm/atomic.h>
  
- # gcc-4.6-era toolchain make _stext an A (absolute) symbol rather than T
--$nm "$vmlinux" | grep -e " [TA] _stext$" -e " t start_first_256B$" -e " a text_start$" -e " t start_text$" -m4 > .tmp_symbols.txt
-+$nm "$vmlinux" | grep -e " [TA] _stext$" -e " t start_first_256B$" -e " a text_start$" -e " T __head_end$" -m4 > .tmp_symbols.txt
+-register struct paca_struct *local_paca asm("r13");
+-
+-#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
+-extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
+-/*
+- * Add standard checks that preemption cannot occur when using get_paca():
+- * otherwise the paca_struct it points to may be the wrong one just after.
+- */
+-#define get_paca()	((void) debug_smp_processor_id(), local_paca)
+-#else
+-#define get_paca()	local_paca
+-#endif
+-
+ #ifdef CONFIG_PPC_PSERIES
+ #define get_lppaca()	(get_paca()->lppaca_ptr)
+ #endif
+@@ -266,6 +253,37 @@ struct paca_struct {
+ #endif
+ } ____cacheline_aligned;
  
++#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
++extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
++#endif
++
++static inline struct paca_struct *get_paca_no_preempt_check(void)
++{
++	register struct paca_struct *paca asm("r13");
++	return paca;
++}
++
++static inline struct paca_struct *get_paca(void)
++{
++#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
++	/*
++	 * Add standard checks that preemption cannot occur when using get_paca():
++	 * otherwise the paca_struct it points to may be the wrong one just after.
++	 */
++	debug_smp_processor_id();
++#endif
++	return get_paca_no_preempt_check();
++}
++
++#define local_paca	get_paca_no_preempt_check()
++
++static inline void set_paca(struct paca_struct *new)
++{
++	register struct paca_struct *paca asm("r13");
++	paca = new;
++}
++
++
+ extern void copy_mm_to_paca(struct mm_struct *mm);
+ extern struct paca_struct **paca_ptrs;
+ extern void initialise_paca(struct paca_struct *new_paca, int cpu);
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 913bfca09c4f..ae5c243f9d5a 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -172,7 +172,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ void setup_paca(struct paca_struct *new_paca)
+ {
+ 	/* Setup r13 */
+-	local_paca = new_paca;
++	set_paca(new_paca);
  
- vma=$(cat .tmp_symbols.txt | grep -e " [TA] _stext$" | cut -d' ' -f1)
-@@ -63,12 +63,12 @@ fi
- 
- top_vma=$(echo $vma | cut -d'0' -f1)
- 
--expected_start_text_addr=$(cat .tmp_symbols.txt | grep " a text_start$" | cut -d' ' -f1 | sed "s/^0/$top_vma/")
-+expected_head_end_addr=$(cat .tmp_symbols.txt | grep " a text_start$" | cut -d' ' -f1 | sed "s/^0/$top_vma/")
- 
--start_text_addr=$(cat .tmp_symbols.txt | grep " t start_text$" | cut -d' ' -f1)
-+head_end_addr=$(cat .tmp_symbols.txt | grep " T __head_end$" | cut -d' ' -f1)
- 
--if [ "$start_text_addr" != "$expected_start_text_addr" ]; then
--	echo "ERROR: start_text address is $start_text_addr, should be $expected_start_text_addr"
-+if [ "$head_end_addr" != "$expected_head_end_addr" ]; then
-+	echo "ERROR: __head_end address is $head_end_addr, should be $expected_head_end_addr"
- 	echo "ERROR: try to enable LD_HEAD_STUB_CATCH config option"
- 	echo "ERROR: see comments in arch/powerpc/tools/head_check.sh"
- 
+ #ifdef CONFIG_PPC_BOOK3E
+ 	/* On Book3E, initialize the TLB miss exception frames */
 -- 
 2.20.1
 
