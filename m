@@ -2,60 +2,106 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	URIBL_SBL,URIBL_SBL_A autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D02DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:12:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76FA9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:18:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 23CD72177E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:12:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 23CD72177E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id A0E722147C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:18:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0E722147C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K4MT6vWpzDqHZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:12:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.58.60; helo=3.mo68.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 3.mo68.mail-out.ovh.net (3.mo68.mail-out.ovh.net [46.105.58.60])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K4Ts18PQzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:18:09 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K4SC4slPzDqGL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44K4SC1zBkz8tHw
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44K4SC1bjqz9s55; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=akshay.adiga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K4Km6cdvzDqGQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:11:07 +1100 (AEDT)
-Received: from player793.ha.ovh.net (unknown [10.109.143.232])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id 9003711D643
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:02:25 +0100 (CET)
-Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
- (Authenticated sender: clg@kaod.org)
- by player793.ha.ovh.net (Postfix) with ESMTPSA id 03B693B2F201;
- Wed, 13 Mar 2019 08:02:11 +0000 (UTC)
-Subject: Re: [PATCH v2 15/16] KVM: introduce a KVM_DESTROY_DEVICE ioctl
-To: David Gibson <david@gibson.dropbear.id.au>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-16-clg@kaod.org>
- <20190225041507.GS7668@umbus.fritz.box>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <da4d5f04-87d9-1202-72e1-16cfed972d5e@kaod.org>
-Date: Wed, 13 Mar 2019 09:02:09 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by ozlabs.org (Postfix) with ESMTPS id 44K4SB5VyYz9s3l
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 19:16:42 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2D8GaSb054770
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 04:16:40 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r6ugvxx2c-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 04:16:39 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Wed, 13 Mar 2019 08:16:37 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 13 Mar 2019 08:16:34 -0000
+Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
+ [9.149.105.59])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2D8GX6J35389622
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Wed, 13 Mar 2019 08:16:33 GMT
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C2AB8A4059;
+ Wed, 13 Mar 2019 08:16:33 +0000 (GMT)
+Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 02966A4053;
+ Wed, 13 Mar 2019 08:16:33 +0000 (GMT)
+Received: from aks.ibm (unknown [9.124.35.29])
+ by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
+ Wed, 13 Mar 2019 08:16:32 +0000 (GMT)
+Date: Wed, 13 Mar 2019 13:46:30 +0530
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v5 02/10] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR
+ after idle
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-2-mpe@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190225041507.GS7668@umbus.fritz.box>
-Content-Type: text/plain; charset=windows-1252
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 13335439974972296142
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrgeelgdduudehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190308011619.22402-2-mpe@ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 19031308-0008-0000-0000-000002CC03D8
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031308-0009-0000-0000-0000223826FB
+Message-Id: <20190313081630.GB4047@aks.ibm>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-13_05:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=520 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903130061
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,159 +113,28 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/25/19 5:15 AM, David Gibson wrote:
-> On Fri, Feb 22, 2019 at 12:28:39PM +0100, Cédric Le Goater wrote:
->> The 'destroy' method is currently used to destroy all devices when the
->> VM is destroyed after the vCPUs have been freed.
->>
->> This new KVM ioctl exposes the same KVM device method. It acts as a
->> software reset of the VM to 'destroy' selected devices when necessary
->> and perform the required cleanups on the vCPUs. Called with the
->> kvm->lock.
->>
->> The 'destroy' method could be improved by returning an error code.
->>
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+On Fri, Mar 08, 2019 at 12:16:11PM +1100, Michael Ellerman wrote:
+> In order to implement KUAP (Kernel Userspace Access Protection) on
+> Power9 we will be using the AMR, and therefore indirectly the
+> UAMOR/AMOR.
 > 
-> Again, has this been discussed with Paolo and/or other KVM core
-> people?
-
-Not yet. Adding Paolo for feedback. 
-
->> ---
->>  include/uapi/linux/kvm.h          |  7 ++++++
->>  virt/kvm/kvm_main.c               | 38 +++++++++++++++++++++++++++++++
->>  Documentation/virtual/kvm/api.txt | 19 ++++++++++++++++
->>  3 files changed, 64 insertions(+)
->>
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index 52bf74a1616e..d78fafa54274 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -1183,6 +1183,11 @@ struct kvm_create_device {
->>  	__u32	flags;	/* in: KVM_CREATE_DEVICE_xxx */
->>  };
->>  
->> +struct kvm_destroy_device {
->> +	__u32	fd;	/* in: device handle */
->> +	__u32	flags;	/* in: unused */
->> +};
->> +
->>  struct kvm_device_attr {
->>  	__u32	flags;		/* no flags currently defined */
->>  	__u32	group;		/* device-defined */
->> @@ -1331,6 +1336,8 @@ struct kvm_s390_ucas_mapping {
->>  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
->>  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
->>  
->> +#define KVM_DESTROY_DEVICE	  _IOWR(KVMIO,  0xf0, struct kvm_destroy_device)
->> +
->>  /*
->>   * ioctls for vcpu fds
->>   */
->> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
->> index 84717d8cb5e4..983d5c37f710 100644
->> --- a/virt/kvm/kvm_main.c
->> +++ b/virt/kvm/kvm_main.c
->> @@ -3026,6 +3026,30 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
->>  	return 0;
->>  }
->>  
->> +static int kvm_ioctl_destroy_device(struct kvm *kvm,
->> +				    struct kvm_destroy_device *dd)
->> +{
->> +	struct fd f;
->> +	struct kvm_device *dev;
->> +
->> +	f = fdget(dd->fd);
->> +	if (!f.file)
->> +		return -EBADF;
->> +
->> +	dev = kvm_device_from_filp(f.file);
->> +	fdput(f);
->> +
->> +	if (!dev)
->> +		return -ENODEV;
+> So save/restore these regs in the idle code.
 > 
-> Don't you need to verify that the device belongs to this KVM instance?
-
-ah yes. I should at least check : dev->kvm == kvm
-
->> +	mutex_lock(&kvm->lock);
->> +	list_del(&dev->vm_node);
->> +	dev->ops->destroy(dev);
->> +	mutex_unlock(&kvm->lock);
-
-And there, I should problably drop a ref count on the VM. I am not sure 
-of that.
-
-Thanks,
-
-C.
-
->> +	return 0;
->> +}
->> +
->>  static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->>  {
->>  	switch (arg) {
->> @@ -3270,6 +3294,20 @@ static long kvm_vm_ioctl(struct file *filp,
->>  		r = 0;
->>  		break;
->>  	}
->> +	case KVM_DESTROY_DEVICE: {
->> +		struct kvm_destroy_device dd;
->> +
->> +		r = -EFAULT;
->> +		if (copy_from_user(&dd, argp, sizeof(dd)))
->> +			goto out;
->> +
->> +		r = kvm_ioctl_destroy_device(kvm, &dd);
->> +		if (r)
->> +			goto out;
->> +
->> +		r = 0;
->> +		break;
->> +	}
->>  	case KVM_CHECK_EXTENSION:
->>  		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
->>  		break;
->> diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
->> index 1db1435769b4..c2ba18279298 100644
->> --- a/Documentation/virtual/kvm/api.txt
->> +++ b/Documentation/virtual/kvm/api.txt
->> @@ -3857,6 +3857,25 @@ number of valid entries in the 'entries' array, which is then filled.
->>  'index' and 'flags' fields in 'struct kvm_cpuid_entry2' are currently reserved,
->>  userspace should not expect to get any particular value there.
->>  
->> +4.119 KVM_DESTROY_DEVICE
->> +
->> +Capability: KVM_CAP_DEVICE_CTRL
->> +Type: vm ioctl
->> +Parameters: struct kvm_destroy_device (in)
->> +Returns: 0 on success, -1 on error
->> +Errors:
->> +  ENODEV: The device type is unknown or unsupported
->> +
->> +  Other error conditions may be defined by individual device types or
->> +  have their standard meanings.
->> +
->> +Destroys an emulated device in the kernel.
->> +
->> +struct kvm_destroy_device {
->> +	__u32	fd;	/* in: device handle */
->> +	__u32	flags;	/* unused */
->> +};
->> +
->>  5. The kvm_run structure
->>  ------------------------
->>  
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+> v5: Unchanged.
+> v4: New.
 > 
+>  arch/powerpc/kernel/idle_book3s.S | 27 +++++++++++++++++++++++----
+>  1 file changed, 23 insertions(+), 4 deletions(-)
+
+Opps.. i posted a comment on the v4. 
+
+It would be good if we can make AMOR/UAMOR/AMR save-restore
+code power9 only.
 
