@@ -2,53 +2,53 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6146CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E6DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:27:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D880D2087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:00:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D880D2087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
+	by mail.kernel.org (Postfix) with ESMTPS id 2F85520449
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:27:00 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F85520449
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K6m05D5JzDqMq
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 21:00:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K7LT5nkPzDqLy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 21:26:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=suse.cz
- (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=suse.cz
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K6jr4BbkzDqMS
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 20:58:39 +1100 (AEDT)
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
- by mx1.suse.de (Postfix) with ESMTP id 148B8AF42;
- Wed, 13 Mar 2019 09:58:35 +0000 (UTC)
-Received: by quack2.suse.cz (Postfix, from userid 1000)
- id 5C8701E3FE8; Wed, 13 Mar 2019 10:58:34 +0100 (CET)
-Date: Wed, 13 Mar 2019 10:58:34 +0100
-From: Jan Kara <jack@suse.cz>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH v2] fs/dax: deposit pagetable even when installing zero
- page
-Message-ID: <20190313095834.GF32521@quack2.suse.cz>
-References: <20190309120721.21416-1-aneesh.kumar@linux.ibm.com>
- <8736nrnzxm.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K7Js3kJYzDqKb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 21:25:33 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
+ [10.5.11.23])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 652293087BD0;
+ Wed, 13 Mar 2019 10:25:31 +0000 (UTC)
+Received: from thinkpad.redhat.com (ovpn-116-28.ams2.redhat.com [10.36.116.28])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 38DAC27CB0;
+ Wed, 13 Mar 2019 10:25:29 +0000 (UTC)
+From: Laurent Vivier <lvivier@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3] powerpc/mm: move warning from resize_hpt_for_hotplug()
+Date: Wed, 13 Mar 2019 11:25:28 +0100
+Message-Id: <20190313102528.4632-1-lvivier@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8736nrnzxm.fsf@linux.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.45]); Wed, 13 Mar 2019 10:25:31 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,126 +60,128 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org, linux-mm@kvack.org,
- Alexander Viro <viro@zeniv.linux.org.uk>, Ross Zwisler <zwisler@kernel.org>,
- linux-fsdevel@vger.kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, Laurent Vivier <lvivier@redhat.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed 13-03-19 10:17:17, Aneesh Kumar K.V wrote:
-> 
-> Hi Dan/Andrew/Jan,
-> 
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> 
-> > Architectures like ppc64 use the deposited page table to store hardware
-> > page table slot information. Make sure we deposit a page table when
-> > using zero page at the pmd level for hash.
-> >
-> > Without this we hit
-> >
-> > Unable to handle kernel paging request for data at address 0x00000000
-> > Faulting instruction address: 0xc000000000082a74
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > ....
-> >
-> > NIP [c000000000082a74] __hash_page_thp+0x224/0x5b0
-> > LR [c0000000000829a4] __hash_page_thp+0x154/0x5b0
-> > Call Trace:
-> >  hash_page_mm+0x43c/0x740
-> >  do_hash_page+0x2c/0x3c
-> >  copy_from_iter_flushcache+0xa4/0x4a0
-> >  pmem_copy_from_iter+0x2c/0x50 [nd_pmem]
-> >  dax_copy_from_iter+0x40/0x70
-> >  dax_iomap_actor+0x134/0x360
-> >  iomap_apply+0xfc/0x1b0
-> >  dax_iomap_rw+0xac/0x130
-> >  ext4_file_write_iter+0x254/0x460 [ext4]
-> >  __vfs_write+0x120/0x1e0
-> >  vfs_write+0xd8/0x220
-> >  SyS_write+0x6c/0x110
-> >  system_call+0x3c/0x130
-> >
-> > Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
-> > Reviewed-by: Jan Kara <jack@suse.cz>
-> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> 
-> Any suggestion on which tree this patch should got to? Also since this
-> fix a kernel crash, we may want to get this to 5.1?
+resize_hpt_for_hotplug() reports a warning when it cannot
+resize the hash page table ("Unable to resize hash page
+table to target order") but in some cases it's not a problem
+and can make user thinks something has not worked properly.
 
-I think this should go through Dan's tree...
+This patch moves the warning to arch_remove_memory() to
+only report the problem when it is needed.
 
-								Honza
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+---
 
-> > ---
-> > Changes from v1:
-> > * Add reviewed-by:
-> > * Add Fixes:
-> >
-> >  fs/dax.c | 15 +++++++++++++++
-> >  1 file changed, 15 insertions(+)
-> >
-> > diff --git a/fs/dax.c b/fs/dax.c
-> > index 6959837cc465..01bfb2ac34f9 100644
-> > --- a/fs/dax.c
-> > +++ b/fs/dax.c
-> > @@ -33,6 +33,7 @@
-> >  #include <linux/sizes.h>
-> >  #include <linux/mmu_notifier.h>
-> >  #include <linux/iomap.h>
-> > +#include <asm/pgalloc.h>
-> >  #include "internal.h"
-> >  
-> >  #define CREATE_TRACE_POINTS
-> > @@ -1410,7 +1411,9 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
-> >  {
-> >  	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
-> >  	unsigned long pmd_addr = vmf->address & PMD_MASK;
-> > +	struct vm_area_struct *vma = vmf->vma;
-> >  	struct inode *inode = mapping->host;
-> > +	pgtable_t pgtable = NULL;
-> >  	struct page *zero_page;
-> >  	spinlock_t *ptl;
-> >  	pmd_t pmd_entry;
-> > @@ -1425,12 +1428,22 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
-> >  	*entry = dax_insert_entry(xas, mapping, vmf, *entry, pfn,
-> >  			DAX_PMD | DAX_ZERO_PAGE, false);
-> >  
-> > +	if (arch_needs_pgtable_deposit()) {
-> > +		pgtable = pte_alloc_one(vma->vm_mm);
-> > +		if (!pgtable)
-> > +			return VM_FAULT_OOM;
-> > +	}
-> > +
-> >  	ptl = pmd_lock(vmf->vma->vm_mm, vmf->pmd);
-> >  	if (!pmd_none(*(vmf->pmd))) {
-> >  		spin_unlock(ptl);
-> >  		goto fallback;
-> >  	}
-> >  
-> > +	if (pgtable) {
-> > +		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, pgtable);
-> > +		mm_inc_nr_ptes(vma->vm_mm);
-> > +	}
-> >  	pmd_entry = mk_pmd(zero_page, vmf->vma->vm_page_prot);
-> >  	pmd_entry = pmd_mkhuge(pmd_entry);
-> >  	set_pmd_at(vmf->vma->vm_mm, pmd_addr, vmf->pmd, pmd_entry);
-> > @@ -1439,6 +1452,8 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
-> >  	return VM_FAULT_NOPAGE;
-> >  
-> >  fallback:
-> > +	if (pgtable)
-> > +		pte_free(vma->vm_mm, pgtable);
-> >  	trace_dax_pmd_load_hole_fallback(inode, vmf, zero_page, *entry);
-> >  	return VM_FAULT_FALLBACK;
-> >  }
-> > -- 
-> > 2.20.1
-> 
-> -aneesh
-> 
+Notes:
+    v3: move "||" to above line and remove parenthesis
+    v2: add warning messages for H_PARAMETER and H_RESOURCE
+
+ arch/powerpc/include/asm/sparsemem.h  |  4 ++--
+ arch/powerpc/mm/hash_utils_64.c       | 19 +++++++------------
+ arch/powerpc/mm/mem.c                 |  3 ++-
+ arch/powerpc/platforms/pseries/lpar.c |  3 ++-
+ 4 files changed, 13 insertions(+), 16 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
+index 68da49320592..3192d454a733 100644
+--- a/arch/powerpc/include/asm/sparsemem.h
++++ b/arch/powerpc/include/asm/sparsemem.h
+@@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long start, unsigned long end, int ni
+ extern int remove_section_mapping(unsigned long start, unsigned long end);
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+-extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
++extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
+ #else
+-static inline void resize_hpt_for_hotplug(unsigned long new_mem_size) { }
++static inline int resize_hpt_for_hotplug(unsigned long new_mem_size) { return 0; }
+ #endif
+ 
+ #ifdef CONFIG_NUMA
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0cc7fbc3bd1c..5aa7594ee71b 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -755,12 +755,12 @@ static unsigned long __init htab_get_table_size(void)
+ }
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+-void resize_hpt_for_hotplug(unsigned long new_mem_size)
++int resize_hpt_for_hotplug(unsigned long new_mem_size)
+ {
+ 	unsigned target_hpt_shift;
+ 
+ 	if (!mmu_hash_ops.resize_hpt)
+-		return;
++		return 0;
+ 
+ 	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
+ 
+@@ -772,16 +772,11 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
+ 	 * reduce unless the target shift is at least 2 below the
+ 	 * current shift
+ 	 */
+-	if ((target_hpt_shift > ppc64_pft_size)
+-	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
+-		int rc;
+-
+-		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
+-		if (rc && (rc != -ENODEV))
+-			printk(KERN_WARNING
+-			       "Unable to resize hash page table to target order %d: %d\n",
+-			       target_hpt_shift, rc);
+-	}
++	if (target_hpt_shift > ppc64_pft_size ||
++	    target_hpt_shift < ppc64_pft_size - 1)
++		return mmu_hash_ops.resize_hpt(target_hpt_shift);
++
++	return 0;
+ }
+ 
+ int hash__create_section_mapping(unsigned long start, unsigned long end, int nid)
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 33cc6f676fa6..0d40d970cf4a 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -169,7 +169,8 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
+ 	 */
+ 	vm_unmap_aliases();
+ 
+-	resize_hpt_for_hotplug(memblock_phys_mem_size());
++	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) == -ENOSPC)
++		pr_warn("Hash collision while resizing HPT\n");
+ 
+ 	return ret;
+ }
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index f2a9f0adc2d3..1034ef1fe2b4 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -901,8 +901,10 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
+ 		break;
+ 
+ 	case H_PARAMETER:
++		pr_warn("Invalid argument from H_RESIZE_HPT_PREPARE\n");
+ 		return -EINVAL;
+ 	case H_RESOURCE:
++		pr_warn("Operation not permitted from H_RESIZE_HPT_PREPARE\n");
+ 		return -EPERM;
+ 	default:
+ 		pr_warn("Unexpected error %d from H_RESIZE_HPT_PREPARE\n", rc);
+@@ -918,7 +920,6 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
+ 	if (rc != 0) {
+ 		switch (state.commit_rc) {
+ 		case H_PTEG_FULL:
+-			pr_warn("Hash collision while resizing HPT\n");
+ 			return -ENOSPC;
+ 
+ 		default:
 -- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+2.20.1
+
