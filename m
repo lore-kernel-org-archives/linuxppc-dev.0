@@ -2,85 +2,67 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF1A4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:02:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE9ACC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:14:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0D3A22075C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:02:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AMgmYD2M"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0D3A22075C
+	by mail.kernel.org (Postfix) with ESMTPS id 327D220651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:14:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 327D220651
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=debian.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KN6422h9zDqM1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 07:02:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KNN75bKjzDqMX
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 07:14:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2a00:1450:4864:20::341; helo=mail-wm1-x341.google.com;
+ (client-ip=209.85.167.196; helo=mail-oi1-f196.google.com;
  envelope-from=mathieu.malaterre@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=debian.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="AMgmYD2M"; 
- dkim-atps=neutral
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com
- [IPv6:2a00:1450:4864:20::341])
+Received: from mail-oi1-f196.google.com (mail-oi1-f196.google.com
+ [209.85.167.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KN4Q672QzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 07:00:38 +1100 (AEDT)
-Received: by mail-wm1-x341.google.com with SMTP id t124so498776wma.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 13:00:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=GCHDAob2L2Ty8cKpbvR0K56/ZQonIWJzTExy3tCtNQ0=;
- b=AMgmYD2M3KR8ZZlQiXI7NIS7Yub8S3tYNOIB4za9vqTL5u2+yWf1Bm7SdmxgcypTht
- ECzhMQ6/9UTfsr1bnzOLHIfiu0x3HOjhIphrshRIRNZ2MJvO1TQisCW1nx2HoIzUuPSM
- leX+AFydh2ekX3phK+rKfxA089LC5ZTRrDlcGYHeooPKrmLHZR5i27hnaVDhDgEt9Eu3
- 4Wua+KkCz6qKmm9QnaBEKNGAFfUha7sg4swxfbQgh0jTJzm+lW28sRIbk3588M/umLq/
- Jer+etUFn8NwfKN01+wCxcRTAHvRqN0OVdms+PkD51jkropRa8NfVJanbFrSjwAr64dw
- yEnQ==
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KNL65FxbzDq77
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 07:12:30 +1100 (AEDT)
+Received: by mail-oi1-f196.google.com with SMTP id t206so2540832oib.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 13:12:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
- :in-reply-to:references:mime-version:content-transfer-encoding;
- bh=GCHDAob2L2Ty8cKpbvR0K56/ZQonIWJzTExy3tCtNQ0=;
- b=BJB+m1tVSYSPV/l1KOu6mKWRB3XSLZA7i44OQRbHluYGO8SHPZw6EK3nP5ZR2GCAj4
- Ii9g3jHA5u2jOVrW6kQPppV6VP3K4IMzEYONC5ao26dj5z60SLyH9NeNk8SO/Oz0w5Q9
- DNQBSsQPhvS/ApiqRv3dKAQf/PtQ+pxzyTDs6aUDoU8gXSQOU2NBjGxEDH6vXUKkLh52
- a7qVyQfIPHrkmVy77bVL3rZiUykUBPWrHAbBVUl0fb5CHeyEw2Il47xAsuL9MGlwx+uX
- 2wZk/U7X+WJBhOCGiqX0vL7YuJkFAKp0eCXnWWHuB42Us7UYFPaiu1FJQzgeiugBzlBB
- YRPw==
-X-Gm-Message-State: APjAAAVcsKRn46hlT9yuiSCBhx2WSTv6ZLlN/VAHydVdHJCMJHjyZ92p
- fkxM39E4ylTcLCX+b0mqi+c=
-X-Google-Smtp-Source: APXvYqxSAKrpYuccNZtrZ/rJwN6FCBUoES8meVdd7HDb1pZFOvQ4bB12ILPgd4b6s3IfwnM54r2DqQ==
-X-Received: by 2002:a1c:f20e:: with SMTP id s14mr3529639wmc.69.1552507234662; 
- Wed, 13 Mar 2019 13:00:34 -0700 (PDT)
-Received: from macbookpro.malat.net (bru31-1-78-225-224-134.fbx.proxad.net.
- [78.225.224.134])
- by smtp.gmail.com with ESMTPSA id 26sm4623926wmg.42.2019.03.13.13.00.33
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 13 Mar 2019 13:00:33 -0700 (PDT)
-Received: by macbookpro.malat.net (Postfix, from userid 1000)
- id 787691140A07; Wed, 13 Mar 2019 21:00:32 +0100 (CET)
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc/64s: Remove 'dummy_copy_buffer'
-Date: Wed, 13 Mar 2019 21:00:30 +0100
-Message-Id: <20190313200030.19145-1-malat@debian.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190312202921.31331-1-malat@debian.org>
-References: <20190312202921.31331-1-malat@debian.org>
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc:content-transfer-encoding;
+ bh=iI8a6LJ4CW9r1pdJ3NyV/ChlC2LdijtQmINha9gU4os=;
+ b=LyrkLZFTmD9GpO4CDbXeG4SQdLi+BXPQtrPaDh3SWq92wz5BvhjqFEdcSxNoppPEzG
+ LDpIKEiYJyNyqrEoVu+6b0yr9jOhFDvYkJlbVD/i+qooT0lPXosTwrB+MefOZnettLdW
+ btf3Wu0iSvFEFW6k5ocLg5JbXIrxH0v5X3Q6IfaWkOFGWMKLoZdwVcMGlcxuJn9bUKa2
+ QLiFIEqVbFuqFgK7f/pZ79MPw8v3ICz0IoOkv5HdNxbuKK+GuV18NCbck385A+3t8knd
+ LAq4k3eXjRqsXkvGNc5xX/FA+j3MKrFiIet/khPPlyugem2BL7Bnwsp8T0AiUUiWtKXN
+ LuNg==
+X-Gm-Message-State: APjAAAW4E76wL1C0vsu9TInyr/L1Yj4qtX4sFCGOPP6M5JihcgYtMAnk
+ T0q5YO/pBOt2zK0lPd5jPWH2puJQYO3evie8ihA=
+X-Google-Smtp-Source: APXvYqyC2OAQypyh5sX6ij0BneoZE29K00fYlhe4ZnHfUd3DAFnMmh2UITcwkT7CBecyFQRW34dGhjDQ9SzThbYvO3M=
+X-Received: by 2002:aca:3e8a:: with SMTP id l132mr253458oia.107.1552507947168; 
+ Wed, 13 Mar 2019 13:12:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20190312202008.29681-1-malat@debian.org>
+ <57a0d93c-8784-d6af-a5fb-75e31455ae57@c-s.fr>
+ <CA+7wUsyA698UtNLni7wi3=cKjbCd1V71YA0sxDtMD=MmQvQxTQ@mail.gmail.com>
+ <94d90740-c970-01b0-c430-bafc2e9eecd3@c-s.fr>
+In-Reply-To: <94d90740-c970-01b0-c430-bafc2e9eecd3@c-s.fr>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 13 Mar 2019 21:12:15 +0100
+Message-ID: <CA+7wUsw+pmeS-oG5MMMjKB34R98vqHf1jxT=Fmx5oxiGLnYzBQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: sstep: Mark variable `rc` as unused in function
+ 'analyse_instr'
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,45 +74,91 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-In commit 2bf1071a8d50 ("powerpc/64s: Remove POWER9 DD1 support") the
-function __switch_to remove usage for 'dummy_copy_buffer'. Since it is
-not used anywhere else, remove it completely.
+On Tue, Mar 12, 2019 at 10:26 PM Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+>
+>
+>
+> Le 12/03/2019 =C3=A0 22:12, Mathieu Malaterre a =C3=A9crit :
+> > On Tue, Mar 12, 2019 at 9:56 PM Christophe Leroy
+> > <christophe.leroy@c-s.fr> wrote:
+> >>
+> >>
+> >>
+> >> Le 12/03/2019 =C3=A0 21:20, Mathieu Malaterre a =C3=A9crit :
+> >>> Add gcc attribute unused for `rc` variable.
+> >>>
+> >>> Fix warnings treated as errors with W=3D1:
+> >>>
+> >>>     arch/powerpc/lib/sstep.c:1172:31: error: variable 'rc' set but no=
+t used [-Werror=3Dunused-but-set-variable]
+> >>>
+> >>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> >>> ---
+> >>>    arch/powerpc/lib/sstep.c | 2 +-
+> >>>    1 file changed, 1 insertion(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> >>> index 3d33fb509ef4..32d092f62ae0 100644
+> >>> --- a/arch/powerpc/lib/sstep.c
+> >>> +++ b/arch/powerpc/lib/sstep.c
+> >>> @@ -1169,7 +1169,7 @@ static nokprobe_inline int trap_compare(long v1=
+, long v2)
+> >>>    int analyse_instr(struct instruction_op *op, const struct pt_regs =
+*regs,
+> >>>                  unsigned int instr)
+> >>>    {
+> >>> -     unsigned int opcode, ra, rb, rc, rd, spr, u;
+> >>> +     unsigned int opcode, ra, rb, rc __maybe_unused, rd, spr, u;
+> >>
+> >> I think it would be better to enclose 'rc' inside a #ifdef CONFIG_PPC6=
+4
+> >
+> > Hum odd, I would have bet you would have suggested me to use
+> > IS_ENABLED with some crazy scheme (I was not able to mix it with the
+> > switch case nicely).
+>
+> Well I guess yes, you could also get rid of the #ifdef __powerpc64__ and
+> instead add the following just after the 'case 4:'
+>
+> if (!IS_ENABLED(CONFIG_64))
+>         break;
+>
+> That's less uggly than adding two #ifdef/#endif
 
-This remove the following warning:
+So you mean changing:
 
-  arch/powerpc/kernel/process.c:1156:17: error: 'dummy_copy_buffer' defined but not used [-Werror=unused-const-variable=]
+#ifdef __powerpc64__
+  case 4:
+    if (!cpu_has_feature(CPU_FTR_ARCH_300))
+      return -1;
 
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
-v2: complely remove dummy_copy_buffer instead of marking it as used (since not anymore)
- arch/powerpc/kernel/process.c | 5 -----
- 1 file changed, 5 deletions(-)
+into:
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 77e44275d025..b2f0daa2fcf1 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1151,11 +1151,6 @@ static inline void restore_sprs(struct thread_struct *old_thread,
- 	thread_pkey_regs_restore(new_thread, old_thread);
- }
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--#define CP_SIZE 128
--static const u8 dummy_copy_buffer[CP_SIZE] __attribute__((aligned(CP_SIZE)));
--#endif
--
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
--- 
-2.20.1
+  case 4:
+    if (!IS_ENABLED(CONFIG_PPC64))
+      break;
+    if (!cpu_has_feature(CPU_FTR_ARCH_300))
+      return -1;
 
+So suddenly case label '4' becomes visible for ppc32, is that really
+what you wanted ?
+
+> Christophe
+>
+> >
+> > Anyway I'll try your suggestion and post a v2.
+> >
+> >> Christophe
+> >>
+> >>>        unsigned long int imm;
+> >>>        unsigned long int val, val2;
+> >>>        unsigned int mb, me, sh;
+> >>>
