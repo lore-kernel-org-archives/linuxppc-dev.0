@@ -2,44 +2,62 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_SBL,
+	URIBL_SBL_A autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D9ADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 13:16:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2FF5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 13:21:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BFC82087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 13:16:29 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BFC82087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 170462087C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 13:21:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 170462087C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KC632S7tzDqLn
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 00:16:27 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KCCx6HD5zDqLj
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 00:21:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.39.61; helo=2.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 2.mo178.mail-out.ovh.net (2.mo178.mail-out.ovh.net
+ [46.105.39.61])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KC446x5yzDqKq
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:14:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44KC444bl6z9s3q; Thu, 14 Mar 2019 00:14:44 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 44KC4446Hfz9s4Y; Thu, 14 Mar 2019 00:14:44 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across
- Y2038
-Date: Thu, 14 Mar 2019 00:14:38 +1100
-Message-Id: <20190313131438.8212-1-mpe@ellerman.id.au>
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KCB54vSRzDqKh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:19:53 +1100 (AEDT)
+Received: from player787.ha.ovh.net (unknown [10.109.160.244])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 2C47E52C41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 14:19:48 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player787.ha.ovh.net (Postfix) with ESMTPSA id 776E53B95A5F;
+ Wed, 13 Mar 2019 13:19:15 +0000 (UTC)
+Subject: Re: [PATCH v2 10/16] KVM: PPC: Book3S HV: XIVE: add get/set accessors
+ for the VP XIVE state
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-11-clg@kaod.org>
+ <20190225033144.GN7668@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <d33a2cb1-5370-7e72-07d9-ed0028c85b8c@kaod.org>
+Date: Wed, 13 Mar 2019 14:19:13 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
+In-Reply-To: <20190225033144.GN7668@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 248823883603610503
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrhedtgdehtdcutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,134 +69,299 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, sboyd@kernel.org, linux-kernel@vger.kernel.org,
- john.stultz@linaro.org, tglx@linutronix.de, jaydee@email.cz
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Jakub Drnec reported:
-  Setting the realtime clock can sometimes make the monotonic clock go
-  back by over a hundred years. Decreasing the realtime clock across
-  the y2k38 threshold is one reliable way to reproduce. Allegedly this
-  can also happen just by running ntpd, I have not managed to
-  reproduce that other than booting with rtc at >2038 and then running
-  ntp. When this happens, anything with timers (e.g. openjdk) breaks
-  rather badly.
+On 2/25/19 4:31 AM, David Gibson wrote:
+> On Fri, Feb 22, 2019 at 12:28:34PM +0100, Cédric Le Goater wrote:
+>> At a VCPU level, the state of the thread interrupt management
+>> registers needs to be collected. These registers are cached under the
+>> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
+>> pulled from the HW thread. An OPAL call retrieves the backup of the
+>> IPB register in the underlying XIVE NVT structure and merges it in the
+>> KVM state.
+>>
+>> The structures of the interface between QEMU and KVM provisions some
+>> extra room (two u64) for further extensions if more state needs to be
+>> transferred back to QEMU.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/include/asm/kvm_ppc.h         | 11 +++
+>>  arch/powerpc/include/uapi/asm/kvm.h        |  2 +
+>>  arch/powerpc/kvm/book3s.c                  | 24 +++++++
+>>  arch/powerpc/kvm/book3s_xive_native.c      | 82 ++++++++++++++++++++++
+>>  Documentation/virtual/kvm/devices/xive.txt | 19 +++++
+>>  5 files changed, 138 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>> index 1e61877fe147..664c65051612 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -272,6 +272,7 @@ union kvmppc_one_reg {
+>>  		u64	addr;
+>>  		u64	length;
+>>  	}	vpaval;
+>> +	u64	xive_timaval[4];
+> 
+> This is doubling the size of the userspace visible one_reg union.  Is
+> that safe?
 
-And included a test case (slightly edited for brevity):
-  #define _POSIX_C_SOURCE 199309L
-  #include <stdio.h>
-  #include <time.h>
-  #include <stdlib.h>
-  #include <unistd.h>
+'safe' as in compatibility on an older KVM which would still use the old 
+kvmppc_one_reg definition ? 
 
-  long get_time(void) {
-    struct timespec tp;
-    clock_gettime(CLOCK_MONOTONIC, &tp);
-    return tp.tv_sec + tp.tv_nsec / 1000000000;
-  }
+It should be fine as KVM_REG_PPC_VP_STATE would not be handled. Am I wrong ?
 
-  int main(void) {
-    long last = get_time();
-    while(1) {
-      long now = get_time();
-      if (now < last) {
-        printf("clock went backwards by %ld seconds!\n", last - now);
-      }
-      last = now;
-      sleep(1);
-    }
-    return 0;
-  }
+>>  };
+>>  
+>>  struct kvmppc_ops {
+>> @@ -604,6 +605,10 @@ extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>>  extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
+>>  extern void kvmppc_xive_native_init_module(void);
+>>  extern void kvmppc_xive_native_exit_module(void);
+>> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
+>> +				     union kvmppc_one_reg *val);
+>> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
+>> +				     union kvmppc_one_reg *val);
+>>  
+>>  #else
+>>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
+>> @@ -636,6 +641,12 @@ static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>>  static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
+>>  static inline void kvmppc_xive_native_init_module(void) { }
+>>  static inline void kvmppc_xive_native_exit_module(void) { }
+>> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
+>> +					    union kvmppc_one_reg *val)
+>> +{ return 0; }
+>> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
+>> +					    union kvmppc_one_reg *val)
+>> +{ return -ENOENT; }
+>>  
+>>  #endif /* CONFIG_KVM_XIVE */
+>>  
+>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>> index cd78ad1020fe..42d4ef93ec2d 100644
+>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
+>>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
+>>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
+>>  
+>> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
+>> +
+>>  /* Device control API: PPC-specific devices */
+>>  #define KVM_DEV_MPIC_GRP_MISC		1
+>>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
+>> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+>> index 96d43f091255..f85a9211f30c 100644
+>> --- a/arch/powerpc/kvm/book3s.c
+>> +++ b/arch/powerpc/kvm/book3s.c
+>> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>  				*val = get_reg_val(id, kvmppc_xics_get_icp(vcpu));
+>>  			break;
+>>  #endif /* CONFIG_KVM_XICS */
+>> +#ifdef CONFIG_KVM_XIVE
+>> +		case KVM_REG_PPC_VP_STATE:
+>> +			if (!vcpu->arch.xive_vcpu) {
+>> +				r = -ENXIO;
+>> +				break;
+>> +			}
+>> +			if (xive_enabled())
+>> +				r = kvmppc_xive_native_get_vp(vcpu, val);
+>> +			else
+>> +				r = -ENXIO;
+>> +			break;
+>> +#endif /* CONFIG_KVM_XIVE */
+>>  		case KVM_REG_PPC_FSCR:
+>>  			*val = get_reg_val(id, vcpu->arch.fscr);
+>>  			break;
+>> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>  				r = kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
+>>  			break;
+>>  #endif /* CONFIG_KVM_XICS */
+>> +#ifdef CONFIG_KVM_XIVE
+>> +		case KVM_REG_PPC_VP_STATE:
+>> +			if (!vcpu->arch.xive_vcpu) {
+>> +				r = -ENXIO;
+>> +				break;
+>> +			}
+>> +			if (xive_enabled())
+>> +				r = kvmppc_xive_native_set_vp(vcpu, val);
+>> +			else
+>> +				r = -ENXIO;
+>> +			break;
+>> +#endif /* CONFIG_KVM_XIVE */
+>>  		case KVM_REG_PPC_FSCR:
+>>  			vcpu->arch.fscr = set_reg_val(id, *val);
+>>  			break;
+>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>> index 3debc876d5a0..132bff52d70a 100644
+>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>> @@ -845,6 +845,88 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
+>>  	return ret;
+>>  }
+>>  
+>> +/*
+>> + * Interrupt Pending Buffer (IPB) offset
+>> + */
+>> +#define TM_IPB_SHIFT 40
+>> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
+>> +
+>> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>> +{
+>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> +	u64 opal_state;
+>> +	int rc;
+>> +
+>> +	if (!kvmppc_xive_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>> +	if (!xc)
+>> +		return -ENOENT;
+>> +
+>> +	/* Thread context registers. We only care about IPB and CPPR */
+>> +	val->xive_timaval[0] = vcpu->arch.xive_saved_state.w01;
+>> +
+>> +	/*
+>> +	 * Return the OS CAM line to print out the VP identifier in
+>> +	 * the QEMU monitor. This is not restored.
+>> +	 */
+>> +	val->xive_timaval[1] = vcpu->arch.xive_cam_word;
+> 
+> I'm pretty dubious about this mixing of vital state information with
+> what's basically debug information. 
 
-Which when run concurrently with:
- # date -s 2040-1-1
- # date -s 2037-1-1
+I think QEMU deserves to know about the OS CAM line value. I was even 
+thinking about adding the POOL CAM line value for future use (nested) 
 
-Will detect the clock going backward.
+> Doubly so since it requires changing the ABI to increase 
+> the one_reg union's size.
 
-The root cause is that wtom_clock_sec in struct vdso_data is only a
-32-bit signed value, even though we set its value to be equal to
-tk->wall_to_monotonic.tv_sec which is 64-bits.
-
-Because the monotonic clock starts at zero when the system boots the
-wall_to_montonic.tv_sec offset is negative for current and future
-dates. Currently on a freshly booted system the offset will be in the
-vicinity of negative 1.5 billion seconds.
-
-However if the wall clock is set past the Y2038 boundary, the offset
-from wall to monotonic becomes less than negative 2^31, and no longer
-fits in 32-bits. When that value is assigned to wtom_clock_sec it is
-truncated and becomes positive, causing the VDSO assembly code to
-calculate CLOCK_MONOTONIC incorrectly.
-
-That causes CLOCK_MONOTONIC to jump ahead by ~4 billion seconds which
-it is not meant to do. Worse, if the time is then set back before the
-Y2038 boundary CLOCK_MONOTONIC will jump backward.
-
-We can fix it simply by storing the full 64-bit offset in the
-vdso_data, and using that in the VDSO assembly code. We also shuffle
-some of the fields in vdso_data to avoid creating a hole.
-
-The original commit that added the CLOCK_MONOTONIC support to the VDSO
-did actually use a 64-bit value for wtom_clock_sec, see commit
-a7f290dad32e ("[PATCH] powerpc: Merge vdso's and add vdso support to
-32 bits kernel") (Nov 2005). However just 3 days later it was
-converted to 32-bits in commit 0c37ec2aa88b ("[PATCH] powerpc: vdso
-fixes (take #2)"), and the bug has existed since then AFAICS.
-
-Fixes: 0c37ec2aa88b ("[PATCH] powerpc: vdso fixes (take #2)")
-Cc: stable@vger.kernel.org # v2.6.15+
-Link: http://lkml.kernel.org/r/HaC.ZfES.62bwlnvAvMP.1STMMj@seznam.cz
-Reported-by: Jakub Drnec <jaydee@email.cz>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/vdso_datapage.h  | 8 ++++----
- arch/powerpc/kernel/vdso64/gettimeofday.S | 4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/vdso_datapage.h b/arch/powerpc/include/asm/vdso_datapage.h
-index 1afe90ade595..bbc06bd72b1f 100644
---- a/arch/powerpc/include/asm/vdso_datapage.h
-+++ b/arch/powerpc/include/asm/vdso_datapage.h
-@@ -82,10 +82,10 @@ struct vdso_data {
- 	__u32 icache_block_size;		/* L1 i-cache block size     */
- 	__u32 dcache_log_block_size;		/* L1 d-cache log block size */
- 	__u32 icache_log_block_size;		/* L1 i-cache log block size */
--	__s32 wtom_clock_sec;			/* Wall to monotonic clock */
--	__s32 wtom_clock_nsec;
--	struct timespec stamp_xtime;	/* xtime as at tb_orig_stamp */
--	__u32 stamp_sec_fraction;	/* fractional seconds of stamp_xtime */
-+	__u32 stamp_sec_fraction;		/* fractional seconds of stamp_xtime */
-+	__s32 wtom_clock_nsec;			/* Wall to monotonic clock nsec */
-+	__s64 wtom_clock_sec;			/* Wall to monotonic clock sec */
-+	struct timespec stamp_xtime;		/* xtime as at tb_orig_stamp */
-    	__u32 syscall_map_64[SYSCALL_MAP_SIZE]; /* map of syscalls  */
-    	__u32 syscall_map_32[SYSCALL_MAP_SIZE]; /* map of syscalls */
- };
-diff --git a/arch/powerpc/kernel/vdso64/gettimeofday.S b/arch/powerpc/kernel/vdso64/gettimeofday.S
-index a4ed9edfd5f0..1f324c28705b 100644
---- a/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ b/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -92,7 +92,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	 * At this point, r4,r5 contain our sec/nsec values.
- 	 */
+OK. That's one argument.
  
--	lwa	r6,WTOM_CLOCK_SEC(r3)
-+	ld	r6,WTOM_CLOCK_SEC(r3)
- 	lwa	r9,WTOM_CLOCK_NSEC(r3)
+> Might be better to have this control only return the 0th and 2nd u64s
+> from the TIMA, with the CAM debug information returned via some other
+> mechanism.
+
+Like an extra reg : KVM_REG_PPC_VP_CAM ? 
+
+>> +
+>> +	/* Get the VP state from OPAL */
+>> +	rc = xive_native_get_vp_state(xc->vp_id, &opal_state);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	/*
+>> +	 * Capture the backup of IPB register in the NVT structure and
+>> +	 * merge it in our KVM VP state.
+>> +	 */
+>> +	val->xive_timaval[0] |= cpu_to_be64(opal_state & TM_IPB_MASK);
+>> +
+>> +	pr_devel("%s NSR=%02x CPPR=%02x IBP=%02x PIPR=%02x w01=%016llx w2=%08x opal=%016llx\n",
+>> +		 __func__,
+>> +		 vcpu->arch.xive_saved_state.nsr,
+>> +		 vcpu->arch.xive_saved_state.cppr,
+>> +		 vcpu->arch.xive_saved_state.ipb,
+>> +		 vcpu->arch.xive_saved_state.pipr,
+>> +		 vcpu->arch.xive_saved_state.w01,
+>> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
+> 
+> Hrm.. except you don't seem to be using the last half of the timaval
+> field anyway.
+
+Yes. The two u64 are extras. We can do without. 
+
+Would that be ok if I stored the w01 regs in the first u64, the CAM line(s) 
+in the second and remove the extra two u64 ?  
  
- 	/* We now have our result in r6,r9. We create a fake dependency
-@@ -125,7 +125,7 @@ V_FUNCTION_BEGIN(__kernel_clock_gettime)
- 	bne     cr6,75f
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>> +{
+>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> +	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
+>> +
+>> +	pr_devel("%s w01=%016llx vp=%016llx\n", __func__,
+>> +		 val->xive_timaval[0], val->xive_timaval[1]);
+>> +
+>> +	if (!kvmppc_xive_enabled(vcpu))
+>> +		return -EPERM;
+>> +
+>> +	if (!xc || !xive)
+>> +		return -ENOENT;
+>> +
+>> +	/* We can't update the state of a "pushed" VCPU	 */
+>> +	if (WARN_ON(vcpu->arch.xive_pushed))
+> 
+> What prevents userspace from tripping this WARN_ON()?
+
+if the vCPU is executing a vCPU ioctl, it means that it exited the guest 
+and that its interrupt context has been pulled out of XIVE.
  
- 	/* CLOCK_MONOTONIC_COARSE */
--	lwa     r6,WTOM_CLOCK_SEC(r3)
-+	ld	r6,WTOM_CLOCK_SEC(r3)
- 	lwa     r9,WTOM_CLOCK_NSEC(r3)
- 
- 	/* check if counter has updated */
--- 
-2.20.1
+>> +		return -EIO;
+> 
+> EBUSY might be more appropriate here.
+
+OK.
+
+Thanks,
+
+C. 
+
+> 
+>> +
+>> +	/*
+>> +	 * Restore the thread context registers. IPB and CPPR should
+>> +	 * be the only ones that matter.
+>> +	 */
+>> +	vcpu->arch.xive_saved_state.w01 = val->xive_timaval[0];
+>> +
+>> +	/*
+>> +	 * There is no need to restore the XIVE internal state (IPB
+>> +	 * stored in the NVT) as the IPB register was merged in KVM VP
+>> +	 * state when captured.
+>> +	 */
+>> +	return 0;
+>> +}
+>> +
+>>  static int xive_native_debug_show(struct seq_file *m, void *private)
+>>  {
+>>  	struct kvmppc_xive *xive = m->private;
+>> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
+>> index a26be635cff9..1b8957c50c53 100644
+>> --- a/Documentation/virtual/kvm/devices/xive.txt
+>> +++ b/Documentation/virtual/kvm/devices/xive.txt
+>> @@ -102,6 +102,25 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+>>      -EINVAL: Not initialized source number, invalid priority or
+>>               invalid CPU number.
+>>  
+>> +* VCPU state
+>> +
+>> +  The XIVE IC maintains VP interrupt state in an internal structure
+>> +  called the NVT. When a VP is not dispatched on a HW processor
+>> +  thread, this structure can be updated by HW if the VP is the target
+>> +  of an event notification.
+>> +
+>> +  It is important for migration to capture the cached IPB from the NVT
+>> +  as it synthesizes the priorities of the pending interrupts. We
+>> +  capture a bit more to report debug information.
+>> +
+>> +  KVM_REG_PPC_VP_STATE (4 * 64bits)
+>> +  bits:     |  63  ....  32  |  31  ....  0  |
+>> +  values:   |   TIMA word0   |   TIMA word1  |
+>> +  bits:     | 127       ..........       64  |
+>> +  values:   |         VP CAM Line            |
+>> +  bits:     | 255       ..........      128  |
+>> +  values:   |            unused              |
+>> +
+>>  * Migration:
+>>  
+>>    Saving the state of a VM using the XIVE native exploitation mode
+> 
 
