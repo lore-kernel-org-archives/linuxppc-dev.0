@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 353EEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:07:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21FC3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:12:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 576E22147C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:07:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 903F42183F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:12:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="VYwPvz2X"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 576E22147C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="GSc5AOH+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 903F42183F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K5bG4xZczDqM4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:07:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K5hG0ZSxzDqK3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:12:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=c-s.fr
  (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
@@ -28,53 +28,57 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="VYwPvz2X"; 
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="GSc5AOH+"; 
  dkim-atps=neutral
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K5Yb2xf3zDqGP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 20:06:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K5fV2KvQzDq6Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 20:10:42 +1100 (AEDT)
 Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44K5YV1MCZz9tyv3;
- Wed, 13 Mar 2019 10:06:22 +0100 (CET)
+ by localhost (Postfix) with ESMTP id 44K5fP37Q5z9v0NH;
+ Wed, 13 Mar 2019 10:10:37 +0100 (CET)
 Authentication-Results: localhost; dkim=pass
  reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=VYwPvz2X; dkim-adsp=pass;
+ header.d=c-s.fr header.i=@c-s.fr header.b=GSc5AOH+; dkim-adsp=pass;
  dkim-atps=neutral
 X-Virus-Scanned: Debian amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
  by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id b_ev4INDNGpo; Wed, 13 Mar 2019 10:06:22 +0100 (CET)
+ with ESMTP id J42xVLdnR4Pk; Wed, 13 Mar 2019 10:10:37 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44K5YV04knz9tyv2;
- Wed, 13 Mar 2019 10:06:22 +0100 (CET)
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44K5fP1spKz9v0N6;
+ Wed, 13 Mar 2019 10:10:37 +0100 (CET)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552467982; bh=IoijEz6VoS+nWaaMU7l1D1g3qs+lq9pKu9xC1BONTnI=;
+ t=1552468237; bh=AwOtVJKRSmLCc/uOSmPUkXnjvWBp1GwuwYrRyp7BnVA=;
  h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=VYwPvz2XwhnNCS3aPMJ0N6RFw1Da5OQ3sOREb3csmha2HFej7bNieEFkQS49zdeaR
- Bgyo+AwRe/DzAM5ZTiSkpbwXo0qSyOIUeNWR4PBJw6/sQ4jcQPUCN8DFYed5S47zMA
- AAE8b4vZUFrN+jF4CcsifEhTodFOyBboVvpCxJhY=
+ b=GSc5AOH+BF/r7BNN24RBbS0YJzNOZzKJItd5GTD0Y3Z9X3ebPKOp0N42Ze4+RAk/V
+ n64jzCduUW4O9EjPvivu8l+d9eA0yhH3AaJ1rYds+Zdz/KrpUnB3id5x4EB6Nq1p9+
+ 5hyXmy5ozLl8aise2tAWzLTCO6aZ6tNZvNvhWwro=
 Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EA9348B8F9;
- Wed, 13 Mar 2019 10:06:22 +0100 (CET)
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C2528B8FA;
+ Wed, 13 Mar 2019 10:10:38 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
  by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id PUXw9sD4EhAz; Wed, 13 Mar 2019 10:06:22 +0100 (CET)
+ with ESMTP id oBeo66qug2fX; Wed, 13 Mar 2019 10:10:38 +0100 (CET)
 Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 8C1128B8EE;
- Wed, 13 Mar 2019 10:06:21 +0100 (CET)
-Subject: Re: [PATCH 1/1] arch/powerpc: Rework local_paca to avoid LTO warnings
-To: Alastair D'Silva <alastair@au1.ibm.com>
-References: <20190313034208.13134-1-alastair@au1.ibm.com>
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C1D8E8B8EE;
+ Wed, 13 Mar 2019 10:10:37 +0100 (CET)
+Subject: Re: [PATCH v2] powerpc/mm: move warning from resize_hpt_for_hotplug()
+To: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org
+References: <20190308105413.4302-1-lvivier@redhat.com>
+ <3db6b64d-02d3-8aa7-80ca-3e469ea743ff@c-s.fr>
+ <1dfe1a2e-f6f9-2d5d-a38e-ba4517794bad@redhat.com>
+ <6f089371-29e6-6fa9-379d-76d3a87e2b8b@c-s.fr>
+ <8a22d3a7-f574-19f1-46d0-a54a5343dec8@redhat.com>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <bd858b12-7fab-057d-0065-2ccb98cbf648@c-s.fr>
-Date: Wed, 13 Mar 2019 10:06:21 +0100
+Message-ID: <86c23a4a-2545-2025-cd61-51f77f1c4393@c-s.fr>
+Date: Wed, 13 Mar 2019 10:10:37 +0100
 User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <20190313034208.13134-1-alastair@au1.ibm.com>
+In-Reply-To: <8a22d3a7-f574-19f1-46d0-a54a5343dec8@redhat.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
@@ -89,149 +93,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Alastair D'Silva <alastair@d-silva.org>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
 
-Le 13/03/2019 à 04:42, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
+
+Le 13/03/2019 à 09:50, Laurent Vivier a écrit :
+> On 13/03/2019 09:28, Christophe Leroy wrote:
+>>
+>>
+>> Le 13/03/2019 à 09:01, Laurent Vivier a écrit :
+>>> On 13/03/2019 07:03, Christophe Leroy wrote:
+>>>>
+>>>>
+>>>> Le 08/03/2019 à 11:54, Laurent Vivier a écrit :
+>>>>> resize_hpt_for_hotplug() reports a warning when it cannot
+>>>>> resize the hash page table ("Unable to resize hash page
+>>>>> table to target order") but in some cases it's not a problem
+>>>>> and can make user thinks something has not worked properly.
+>>>>>
+>>>>> This patch moves the warning to arch_remove_memory() to
+>>>>> only report the problem when it is needed.
+>>>>>
+>>>>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>>>>> ---
+>>>>>     arch/powerpc/include/asm/sparsemem.h  |  4 ++--
+>>>>>     arch/powerpc/mm/hash_utils_64.c       | 17 ++++++-----------
+>>>>>     arch/powerpc/mm/mem.c                 |  3 ++-
+>>>>>     arch/powerpc/platforms/pseries/lpar.c |  3 ++-
+>>>>>     4 files changed, 12 insertions(+), 15 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/powerpc/include/asm/sparsemem.h
+>>>>> b/arch/powerpc/include/asm/sparsemem.h
+>>>>> index 68da49320592..3192d454a733 100644
+>>>>> --- a/arch/powerpc/include/asm/sparsemem.h
+>>>>> +++ b/arch/powerpc/include/asm/sparsemem.h
+>>>>> @@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long
+>>>>> start, unsigned long end, int ni
+>>>>>     extern int remove_section_mapping(unsigned long start, unsigned long
+>>>>> end);
+>>>>>       #ifdef CONFIG_PPC_BOOK3S_64
+>>>>> -extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
+>>>>> +extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
+>>>>>     #else
+>>>>> -static inline void resize_hpt_for_hotplug(unsigned long new_mem_size)
+>>>>> { }
+>>>>> +static inline int resize_hpt_for_hotplug(unsigned long new_mem_size)
+>>>>> { return 0; }
+>>>>>     #endif
+>>>>>       #ifdef CONFIG_NUMA
+>>>>> diff --git a/arch/powerpc/mm/hash_utils_64.c
+>>>>> b/arch/powerpc/mm/hash_utils_64.c
+>>>>> index 0cc7fbc3bd1c..40bb2a8326bb 100644
+>>>>> --- a/arch/powerpc/mm/hash_utils_64.c
+>>>>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>>>>> @@ -755,12 +755,12 @@ static unsigned long __init
+>>>>> htab_get_table_size(void)
+>>>>>     }
+>>>>>       #ifdef CONFIG_MEMORY_HOTPLUG
+>>>>> -void resize_hpt_for_hotplug(unsigned long new_mem_size)
+>>>>> +int resize_hpt_for_hotplug(unsigned long new_mem_size)
+>>>>>     {
+>>>>>         unsigned target_hpt_shift;
+>>>>>           if (!mmu_hash_ops.resize_hpt)
+>>>>> -        return;
+>>>>> +        return 0;
+>>>>>           target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
+>>>>>     @@ -773,15 +773,10 @@ void resize_hpt_for_hotplug(unsigned long
+>>>>> new_mem_size)
+>>>>>          * current shift
+>>>>>          */
+>>>>>         if ((target_hpt_shift > ppc64_pft_size)
+>>>>> -        || (target_hpt_shift < (ppc64_pft_size - 1))) {
+>>>>> -        int rc;
+>>>>> -
+>>>>> -        rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
+>>>>> -        if (rc && (rc != -ENODEV))
+>>>>> -            printk(KERN_WARNING
+>>>>> -                   "Unable to resize hash page table to target order
+>>>>> %d: %d\n",
+>>>>> -                   target_hpt_shift, rc);
+>>>>> -    }
+>>>>> +        || (target_hpt_shift < (ppc64_pft_size - 1)))
+>>>>
+>>>> The || should go on the line above and the two (target_hpt... should be
+>>>> aligned, and the () after the < are superflous.
+>>>>
+>>>> And indeed, we should (in another patch) rename 'target_hpt_shift' with
+>>>> a shorter name, this would avoid multiple lines.
+>>>>
+>>>> Ref
+>>>> https://www.kernel.org/doc/html/latest/process/coding-style.html#naming
+>>>> :
+>>>>
+>>>> LOCAL variable names should be short, and to the point. If you have some
+>>>> random integer loop counter, it should probably be called i. Calling it
+>>>> loop_counter is non-productive, if there is no chance of it being
+>>>> mis-understood. Similarly, tmp can be just about any type of variable
+>>>> that is used to hold a temporary value.
+>>>>
+>>>> If you are afraid to mix up your local variable names, you have another
+>>>> problem, which is called the function-growth-hormone-imbalance syndrome.
+>>>> See chapter 6 (Functions).
+>>>>
+>>>
+>>> I'm only removing a warning. Do we really need to rewrite all the code
+>>> around for that?
+>>
+>> No, and that's the reason why I said it could be done in another
+>> (future) patch.
+>>
+>> Anyway, your patch should be clean regarding checkpatch
+>>
+>> See https://patchwork.ozlabs.org/patch/1052984/
+>> And
+>> https://openpower.xyz/job/snowpatch/job/snowpatch-linux-checkpatch/3298//artifact/linux/checkpatch.log
+>>
+>>
+>> CHECK:AVOID_EXTERNS: extern prototypes should be avoided in .h files
+>> #31: FILE: arch/powerpc/include/asm/sparsemem.h:20:
+>> +extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
+>>
+>> CHECK:LOGICAL_CONTINUATIONS: Logical continuations should be on the
+>> previous line
+>> #70: FILE: arch/powerpc/mm/hash_utils_64.c:776:
+>>       if ((target_hpt_shift > ppc64_pft_size)
+>> +        || (target_hpt_shift < (ppc64_pft_size - 1)))
+>>
 > 
-> When building an LTO kernel, the existing code generates warnings:
->      ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
->          ‘local_paca’ used for multiple global register variables
->       register struct paca_struct *local_paca asm("r13");
->                                ^
->      ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
->          ‘local_paca’
+> It's really strange, from linux directory:
+> 
+> ./scripts/checkpatch.pl 0001-powerpc-mm-move-warning-from-resize_hpt_for_hotplug.patch
 
-How do you build a LTO kernel ?
+Try with --strict
 
 > 
-> This patch reworks local_paca into an inline getter & setter function,
-> which addresses the warning.
+> doesn't output this error [1]. Why linux-ppc doesn't use the same script as in the kernel directory?
 
-This patch adds sparse warnings, see 
-https://patchwork.ozlabs.org/patch/1055875/
-
-> 
-> Generated ASM from this patch is broadly similar (addresses have
-> changed and the compiler uses different GPRs in some places).
-
-Your text might be confusion. When I read it the first time I thought 
-you were saying that the compiler was now using another GPR than r13.
+linux-ppc used it but with dedicated options, see 
+arch/powerpc/tools/checkpatch.sh
 
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-
-I guess the same has to be done for current, see 
-arch/powerpc/include/asm/current.h :
-
-/*
-  * We keep `current' in r2 for speed.
-  */
-register struct task_struct *current asm ("r2");
-
-> ---
->   arch/powerpc/include/asm/paca.h | 44 +++++++++++++++++++++++----------
->   arch/powerpc/kernel/paca.c      |  2 +-
->   2 files changed, 32 insertions(+), 14 deletions(-)
+> Anyway, I send a v3.
 > 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index e843bc5d1a0f..9c9e2dea0f9b 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -34,19 +34,6 @@
->   #include <asm/cpuidle.h>
->   #include <asm/atomic.h>
->   
-> -register struct paca_struct *local_paca asm("r13");
-> -
-> -#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-> -extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
-> -/*
-> - * Add standard checks that preemption cannot occur when using get_paca():
-> - * otherwise the paca_struct it points to may be the wrong one just after.
-> - */
-> -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
-> -#else
-> -#define get_paca()	local_paca
-> -#endif
-> -
->   #ifdef CONFIG_PPC_PSERIES
->   #define get_lppaca()	(get_paca()->lppaca_ptr)
->   #endif
-> @@ -266,6 +253,37 @@ struct paca_struct {
->   #endif
->   } ____cacheline_aligned;
->   
-> +#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-> +extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
-> +#endif
+> Thanks,
+> Laurent
+> 
+> [1] only:
+> 
+> WARNING: line over 80 characters
+> #34: FILE: arch/powerpc/include/asm/sparsemem.h:22:
+> +static inline int resize_hpt_for_hotplug(unsigned long new_mem_size) { return 0; }
 
-Why moving this down, why not leaving at the same place as before ?
+linux-ppc allows 90 characters.
 
-If you really need to move it, you should remove the 'extern' at the 
-same time to make checkpatch happy.
-
-> +
-> +static inline struct paca_struct *get_paca_no_preempt_check(void)
-> +{
-> +	register struct paca_struct *paca asm("r13");
-
-Should be a blank line there.
-
-> +	return paca;
-> +}
-> +
-> +static inline struct paca_struct *get_paca(void)
-> +{
-> +#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-> +	/*
-> +	 * Add standard checks that preemption cannot occur when using get_paca():
-> +	 * otherwise the paca_struct it points to may be the wrong one just after.
-> +	 */
-> +	debug_smp_processor_id();
-> +#endif
-> +	return get_paca_no_preempt_check();
-> +}
-> +
-> +#define local_paca	get_paca_no_preempt_check()
-> +
-> +static inline void set_paca(struct paca_struct *new)
-> +{
-> +	register struct paca_struct *paca asm("r13");
-
-Blank line should be added here.
-
-> +	paca = new;
-> +}
-> +
-> +
->   extern void copy_mm_to_paca(struct mm_struct *mm);
->   extern struct paca_struct **paca_ptrs;
->   extern void initialise_paca(struct paca_struct *new_paca, int cpu);
-> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-> index 913bfca09c4f..ae5c243f9d5a 100644
-> --- a/arch/powerpc/kernel/paca.c
-> +++ b/arch/powerpc/kernel/paca.c
-> @@ -172,7 +172,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
->   void setup_paca(struct paca_struct *new_paca)
->   {
->   	/* Setup r13 */
-> -	local_paca = new_paca;
-> +	set_paca(new_paca);
->   
->   #ifdef CONFIG_PPC_BOOK3E
->   	/* On Book3E, initialize the TLB miss exception frames */
+> 
+> total: 0 errors, 1 warnings, 70 lines checked
+> 
+> NOTE: For some of the reported defects, checkpatch may be able to
+>        mechanically convert to the typical style using --fix or --fix-inplace.
+> 
+> 0001-powerpc-mm-move-warning-from-resize_hpt_for_hotplug.patch has style problems, please review.
+> 
+> NOTE: If any of the errors are false positives, please report
+>        them to the maintainer, see CHECKPATCH in MAINTAINERS.
+> 
+> 
+> But I think it's cleaner to keep the over 80 characters line for the inline.
 > 
 
 Christophe
