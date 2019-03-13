@@ -2,106 +2,64 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	URIBL_SBL,URIBL_SBL_A autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76FA9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:18:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AFF2C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:19:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A0E722147C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:18:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A0E722147C
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 5EE9A2147C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:19:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5EE9A2147C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K4Ts18PQzDqHR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:18:09 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K4SC4slPzDqGL
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44K4SC1zBkz8tHw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44K4SC1bjqz9s55; Wed, 13 Mar 2019 19:16:43 +1100 (AEDT)
-Authentication-Results: ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=akshay.adiga@linux.vnet.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K4WT24r7zDqKN
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:19:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.61.149; helo=7.mo177.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 64840 seconds by postgrey-1.36 at bilbo;
+ Wed, 13 Mar 2019 19:17:39 AEDT
+Received: from 7.mo177.mail-out.ovh.net (7.mo177.mail-out.ovh.net
+ [46.105.61.149])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44K4SB5VyYz9s3l
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 19:16:42 +1100 (AEDT)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2D8GaSb054770
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 04:16:40 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r6ugvxx2c-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 13 Mar 2019 04:16:39 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Wed, 13 Mar 2019 08:16:37 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 13 Mar 2019 08:16:34 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2D8GX6J35389622
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Wed, 13 Mar 2019 08:16:33 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id C2AB8A4059;
- Wed, 13 Mar 2019 08:16:33 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 02966A4053;
- Wed, 13 Mar 2019 08:16:33 +0000 (GMT)
-Received: from aks.ibm (unknown [9.124.35.29])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTPS;
- Wed, 13 Mar 2019 08:16:32 +0000 (GMT)
-Date: Wed, 13 Mar 2019 13:46:30 +0530
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 02/10] powerpc/powernv/idle: Restore AMR/UAMOR/AMOR
- after idle
-References: <20190308011619.22402-1-mpe@ellerman.id.au>
- <20190308011619.22402-2-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K4TH2ZkfzDqLb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:17:36 +1100 (AEDT)
+Received: from player794.ha.ovh.net (unknown [10.109.146.86])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id A2C20EA3AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:17:31 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player794.ha.ovh.net (Postfix) with ESMTPSA id C0B8A399AEA7;
+ Wed, 13 Mar 2019 08:17:17 +0000 (UTC)
+Subject: Re: [PATCH v2 16/16] KVM: PPC: Book3S HV: XIVE: clear the vCPU
+ interrupt presenters
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-17-clg@kaod.org>
+ <20190225041858.GT7668@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <3604baf2-0a39-6990-968f-1222d32f9278@kaod.org>
+Date: Wed, 13 Mar 2019 09:17:17 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190308011619.22402-2-mpe@ellerman.id.au>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-TM-AS-GCONF: 00
-x-cbid: 19031308-0008-0000-0000-000002CC03D8
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031308-0009-0000-0000-0000223826FB
-Message-Id: <20190313081630.GB4047@aks.ibm>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-13_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=520 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903130061
+In-Reply-To: <20190225041858.GT7668@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 13590456301960268679
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrgeelgdduudekucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -113,28 +71,175 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, npiggin@gmail.com
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 08, 2019 at 12:16:11PM +1100, Michael Ellerman wrote:
-> In order to implement KUAP (Kernel Userspace Access Protection) on
-> Power9 we will be using the AMR, and therefore indirectly the
-> UAMOR/AMOR.
+On 2/25/19 5:18 AM, David Gibson wrote:
+> On Fri, Feb 22, 2019 at 12:28:40PM +0100, Cédric Le Goater wrote:
+>> When the VM boots, the CAS negotiation process determines which
+>> interrupt mode to use and invokes a machine reset. At that time, the
+>> previous KVM interrupt device is 'destroyed' before the chosen one is
+>> created. Upon destruction, the vCPU interrupt presenters using the KVM
+>> device should be cleared first, the machine will reconnect them later
+>> to the new device after it is created.
+>>
+>> When using the KVM device, there is still a race window with the early
+>> checks in kvmppc_native_connect_vcpu(). Yet to be fixed.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>> ---
+>>  arch/powerpc/kvm/book3s_xics.c        | 19 +++++++++++++
+>>  arch/powerpc/kvm/book3s_xive.c        | 39 +++++++++++++++++++++++++--
+>>  arch/powerpc/kvm/book3s_xive_native.c | 16 +++++++++++
+>>  3 files changed, 72 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+>> index f27ee57ab46e..81cdabf4295f 100644
+>> --- a/arch/powerpc/kvm/book3s_xics.c
+>> +++ b/arch/powerpc/kvm/book3s_xics.c
+>> @@ -1342,6 +1342,25 @@ static void kvmppc_xics_free(struct kvm_device *dev)
+>>  	struct kvmppc_xics *xics = dev->private;
+>>  	int i;
+>>  	struct kvm *kvm = xics->kvm;
+>> +	struct kvm_vcpu *vcpu;
+>> +
+>> +	/*
+>> +	 * When destroying the VM, the vCPUs are destroyed first and
+>> +	 * the vCPU list should be empty. If this is not the case,
+>> +	 * then we are simply destroying the device and we should
+>> +	 * clean up the vCPU interrupt presenters first.
+>> +	 */
+>> +	if (atomic_read(&kvm->online_vcpus) != 0) {
+>> +		/*
+>> +		 * call kick_all_cpus_sync() to ensure that all CPUs
+>> +		 * have executed any pending interrupts
+>> +		 */
+>> +		if (is_kvmppc_hv_enabled(kvm))
+>> +			kick_all_cpus_sync();
+>> +
+>> +		kvm_for_each_vcpu(i, vcpu, kvm)
+>> +			kvmppc_xics_free_icp(vcpu);
+>> +	}
+>>  
+>>  	debugfs_remove(xics->dentry);
+>>  
+>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>> index 7a14512b8944..0a1c11d6881c 100644
+>> --- a/arch/powerpc/kvm/book3s_xive.c
+>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>> @@ -1105,11 +1105,19 @@ void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
+>>  void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
+>>  {
+>>  	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>> -	struct kvmppc_xive *xive = xc->xive;
+>> +	struct kvmppc_xive *xive;
+>>  	int i;
+>>  
+>> +	if (!kvmppc_xics_enabled(vcpu))
 > 
-> So save/restore these regs in the idle code.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
-> v5: Unchanged.
-> v4: New.
-> 
->  arch/powerpc/kernel/idle_book3s.S | 27 +++++++++++++++++++++++----
->  1 file changed, 23 insertions(+), 4 deletions(-)
+> This should be kvmppc_xive_enabled(), no?
 
-Opps.. i posted a comment on the v4. 
+This is the KVM XICS-on-XIVE device and its IRQ type is KVMPPC_IRQ_XICS.
+So this is correct :/ 
 
-It would be good if we can make AMOR/UAMOR/AMR save-restore
-code power9 only.
+May be we should introduce a KVMPPC_IRQ_XICS_ON_XIVE macro to clarify.
+
+> 
+>> +		return;
+>> +
+>> +	if (!xc)
+>> +		return;
+>> +
+>>  	pr_devel("cleanup_vcpu(cpu=%d)\n", xc->server_num);
+>>  
+>> +	xive = xc->xive;
+>> +
+>>  	/* Ensure no interrupt is still routed to that VP */
+>>  	xc->valid = false;
+>>  	kvmppc_xive_disable_vcpu_interrupts(vcpu);
+>> @@ -1146,6 +1154,10 @@ void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
+>>  	}
+>>  	/* Free the VP */
+>>  	kfree(xc);
+>> +
+>> +	/* Cleanup the vcpu */
+>> +	vcpu->arch.irq_type = KVMPPC_IRQ_DEFAULT;
+>> +	vcpu->arch.xive_vcpu = NULL;
+>>  }
+>>  
+>>  int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>> @@ -1163,7 +1175,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>>  	}
+>>  	if (xive->kvm != vcpu->kvm)
+>>  		return -EPERM;
+>> -	if (vcpu->arch.irq_type)
+>> +	if (vcpu->arch.irq_type != KVMPPC_IRQ_DEFAULT)
+>>  		return -EBUSY;
+>>  	if (kvmppc_xive_find_server(vcpu->kvm, cpu)) {
+>>  		pr_devel("Duplicate !\n");
+>> @@ -1833,8 +1845,31 @@ static void kvmppc_xive_free(struct kvm_device *dev)
+>>  {
+>>  	struct kvmppc_xive *xive = dev->private;
+>>  	struct kvm *kvm = xive->kvm;
+>> +	struct kvm_vcpu *vcpu;
+>>  	int i;
+>>  
+>> +	/*
+>> +	 * When destroying the VM, the vCPUs are destroyed first and
+>> +	 * the vCPU list should be empty. If this is not the case,
+>> +	 * then we are simply destroying the device and we should
+>> +	 * clean up the vCPU interrupt presenters first.
+>> +	 */
+>> +	if (atomic_read(&kvm->online_vcpus) != 0) {
+>> +		/*
+>> +		 * call kick_all_cpus_sync() to ensure that all CPUs
+>> +		 * have executed any pending interrupts
+>> +		 */
+>> +		if (is_kvmppc_hv_enabled(kvm))
+>> +			kick_all_cpus_sync();
+>> +
+>> +		/*
+>> +		 * TODO: There is still a race window with the early
+>> +		 * checks in kvmppc_native_connect_vcpu()
+>> +		 */
+>> +		kvm_for_each_vcpu(i, vcpu, kvm)
+>> +			kvmppc_xive_cleanup_vcpu(vcpu);
+>> +	}
+>> +
+>>  	debugfs_remove(xive->dentry);
+>>  
+>>  	if (kvm)
+>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>> index bf60870144f1..c0655164d9af 100644
+>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>> @@ -909,8 +909,24 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
+>>  {
+>>  	struct kvmppc_xive *xive = dev->private;
+>>  	struct kvm *kvm = xive->kvm;
+>> +	struct kvm_vcpu *vcpu;
+>>  	int i;
+>>  
+>> +	/*
+>> +	 * When destroying the VM, the vCPUs are destroyed first and
+>> +	 * the vCPU list should be empty. If this is not the case,
+>> +	 * then we are simply destroying the device and we should
+>> +	 * clean up the vCPU interrupt presenters first.
+>> +	 */
+>> +	if (atomic_read(&kvm->online_vcpus) != 0) {
+>> +		/*
+>> +		 * TODO: There is still a race window with the early
+>> +		 * checks in kvmppc_xive_native_connect_vcpu()
+>> +		 */
+>> +		kvm_for_each_vcpu(i, vcpu, kvm)
+>> +			kvmppc_xive_native_cleanup_vcpu(vcpu);
+>> +	}
+>> +
+>>  	debugfs_remove(xive->dentry);
+>>  
+>>  	pr_devel("Destroying xive native device\n");
+> 
 
