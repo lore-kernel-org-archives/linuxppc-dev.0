@@ -2,90 +2,103 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0E4EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 07:03:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F11ACC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:03:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D94452171F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 07:03:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="gMw8Uwaf"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D94452171F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 1DB192173C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 08:03:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DB192173C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K2r35K8TzDqLs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 18:03:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K4942DmdzDqNJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 19:03:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="gMw8Uwaf"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K2pF0NMSzDq5h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 18:02:10 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44K2p31RBkz9v0Nk;
- Wed, 13 Mar 2019 08:02:03 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=gMw8Uwaf; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id Bfl16rsp6TDC; Wed, 13 Mar 2019 08:02:03 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44K2p30G10z9v0Nh;
- Wed, 13 Mar 2019 08:02:03 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552460523; bh=+7P6BYZrtYSLYvn/tWAWWa5/QIPpYRC8W2jSi7GUp8g=;
- h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
- b=gMw8UwafRZUPwmSFu8FCCI5eFft21NocPR/vMKhT+2gqSGlOstIv+siEXI14XLV4b
- tajBU8WReATbzO+rhkfPQh/7qyMz80QyE0jUmPeoCfVqpS4pP3LjbOReAUrRXjPuLm
- sHJ3ISTmM87sgAqNyjuJbUUXA0dIF/8xdvYOktQc=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id D91F58B8E3;
- Wed, 13 Mar 2019 08:02:03 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id RZiVQZa30r00; Wed, 13 Mar 2019 08:02:03 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id A6A1C8B75A;
- Wed, 13 Mar 2019 08:02:01 +0100 (CET)
-Subject: Re: [PATCH RFC v3 18/18] powerpc: KASAN for 64bit Book3E
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>,
- Daniel Axtens <dja@axtens.net>
-References: <cover.1552428161.git.christophe.leroy@c-s.fr>
- <3e97aba429c769bd99ccd8d6f16eda98f7d378a7.1552428161.git.christophe.leroy@c-s.fr>
-Message-ID: <62ba1b83-cc75-82a4-a1c0-5a54464c963b@c-s.fr>
-Date: Wed, 13 Mar 2019 08:02:01 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K47J6VF7zDqHY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 19:02:04 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 3D5A6C06A7F0;
+ Wed, 13 Mar 2019 08:02:02 +0000 (UTC)
+Received: from [10.36.116.28] (ovpn-116-28.ams2.redhat.com [10.36.116.28])
+ by smtp.corp.redhat.com (Postfix) with ESMTP id 9064E4149;
+ Wed, 13 Mar 2019 08:01:59 +0000 (UTC)
+Subject: Re: [PATCH v2] powerpc/mm: move warning from resize_hpt_for_hotplug()
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org
+References: <20190308105413.4302-1-lvivier@redhat.com>
+ <3db6b64d-02d3-8aa7-80ca-3e469ea743ff@c-s.fr>
+From: Laurent Vivier <lvivier@redhat.com>
+Openpgp: preference=signencrypt
+Autocrypt: addr=lvivier@redhat.com; prefer-encrypt=mutual; keydata=
+ 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
+Message-ID: <1dfe1a2e-f6f9-2d5d-a38e-ba4517794bad@redhat.com>
+Date: Wed, 13 Mar 2019 09:01:51 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-In-Reply-To: <3e97aba429c769bd99ccd8d6f16eda98f7d378a7.1552428161.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+In-Reply-To: <3db6b64d-02d3-8aa7-80ca-3e469ea743ff@c-s.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.32]); Wed, 13 Mar 2019 08:02:02 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -97,284 +110,107 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Why does snowpatch reports not being able to apply it to any branch ?
+On 13/03/2019 07:03, Christophe Leroy wrote:
+> 
+> 
+> Le 08/03/2019 à 11:54, Laurent Vivier a écrit :
+>> resize_hpt_for_hotplug() reports a warning when it cannot
+>> resize the hash page table ("Unable to resize hash page
+>> table to target order") but in some cases it's not a problem
+>> and can make user thinks something has not worked properly.
+>>
+>> This patch moves the warning to arch_remove_memory() to
+>> only report the problem when it is needed.
+>>
+>> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
+>> ---
+>>   arch/powerpc/include/asm/sparsemem.h  |  4 ++--
+>>   arch/powerpc/mm/hash_utils_64.c       | 17 ++++++-----------
+>>   arch/powerpc/mm/mem.c                 |  3 ++-
+>>   arch/powerpc/platforms/pseries/lpar.c |  3 ++-
+>>   4 files changed, 12 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/sparsemem.h
+>> b/arch/powerpc/include/asm/sparsemem.h
+>> index 68da49320592..3192d454a733 100644
+>> --- a/arch/powerpc/include/asm/sparsemem.h
+>> +++ b/arch/powerpc/include/asm/sparsemem.h
+>> @@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long
+>> start, unsigned long end, int ni
+>>   extern int remove_section_mapping(unsigned long start, unsigned long
+>> end);
+>>     #ifdef CONFIG_PPC_BOOK3S_64
+>> -extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
+>> +extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
+>>   #else
+>> -static inline void resize_hpt_for_hotplug(unsigned long new_mem_size)
+>> { }
+>> +static inline int resize_hpt_for_hotplug(unsigned long new_mem_size)
+>> { return 0; }
+>>   #endif
+>>     #ifdef CONFIG_NUMA
+>> diff --git a/arch/powerpc/mm/hash_utils_64.c
+>> b/arch/powerpc/mm/hash_utils_64.c
+>> index 0cc7fbc3bd1c..40bb2a8326bb 100644
+>> --- a/arch/powerpc/mm/hash_utils_64.c
+>> +++ b/arch/powerpc/mm/hash_utils_64.c
+>> @@ -755,12 +755,12 @@ static unsigned long __init
+>> htab_get_table_size(void)
+>>   }
+>>     #ifdef CONFIG_MEMORY_HOTPLUG
+>> -void resize_hpt_for_hotplug(unsigned long new_mem_size)
+>> +int resize_hpt_for_hotplug(unsigned long new_mem_size)
+>>   {
+>>       unsigned target_hpt_shift;
+>>         if (!mmu_hash_ops.resize_hpt)
+>> -        return;
+>> +        return 0;
+>>         target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
+>>   @@ -773,15 +773,10 @@ void resize_hpt_for_hotplug(unsigned long
+>> new_mem_size)
+>>        * current shift
+>>        */
+>>       if ((target_hpt_shift > ppc64_pft_size)
+>> -        || (target_hpt_shift < (ppc64_pft_size - 1))) {
+>> -        int rc;
+>> -
+>> -        rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
+>> -        if (rc && (rc != -ENODEV))
+>> -            printk(KERN_WARNING
+>> -                   "Unable to resize hash page table to target order
+>> %d: %d\n",
+>> -                   target_hpt_shift, rc);
+>> -    }
+>> +        || (target_hpt_shift < (ppc64_pft_size - 1)))
+> 
+> The || should go on the line above and the two (target_hpt... should be
+> aligned, and the () after the < are superflous.
+> 
+> And indeed, we should (in another patch) rename 'target_hpt_shift' with
+> a shorter name, this would avoid multiple lines.
+> 
+> Ref
+> https://www.kernel.org/doc/html/latest/process/coding-style.html#naming :
+> 
+> LOCAL variable names should be short, and to the point. If you have some
+> random integer loop counter, it should probably be called i. Calling it
+> loop_counter is non-productive, if there is no chance of it being
+> mis-understood. Similarly, tmp can be just about any type of variable
+> that is used to hold a temporary value.
+> 
+> If you are afraid to mix up your local variable names, you have another
+> problem, which is called the function-growth-hormone-imbalance syndrome.
+> See chapter 6 (Functions).
+> 
 
-I built the serie on top of merge branch, but it also cleanly applies on 
-next branch.
+I'm only removing a warning. Do we really need to rewrite all the code
+around for that?
 
-Could it be because the begining of the series is names 'v10' while the 
-end of it is 'RFC v3' as it comes from Daniel's RFC v2 ?
+Thanks,
+Laurent
 
-Christophe
-
-Le 12/03/2019 à 23:16, Christophe Leroy a écrit :
-> From: Daniel Axtens <dja@axtens.net>
-> 
-> Wire up KASAN. Only outline instrumentation is supported.
-> 
-> The KASAN shadow area is mapped into vmemmap space:
-> 0x8000 0400 0000 0000 to 0x8000 0600 0000 0000.
-> To do this we require that vmemmap be disabled. (This is the default
-> in the kernel config that QorIQ provides for the machine in their
-> SDK anyway - they use flat memory.)
-> 
-> Only the kernel linear mapping (0xc000...) is checked. The vmalloc and
-> ioremap areas (also in 0x800...) are all mapped to the zero page. As
-> with the Book3S hash series, this requires overriding the memory <->
-> shadow mapping.
-> 
-> Also, as with both previous 64-bit series, early instrumentation is not
-> supported.  It would allow us to drop the check_return_arch_not_ready()
-> hook in the KASAN core, but it's tricky to get it set up early enough:
-> we need it setup before the first call to instrumented code like printk().
-> Perhaps in the future.
-> 
-> Only KASAN_MINIMAL works.
-> 
-> Tested on e6500. KVM, kexec and xmon have not been tested.
-> 
-> The test_kasan module fires warnings as expected, except for the
-> following tests:
-> 
->   - Expected/by design:
-> kasan test: memcg_accounted_kmem_cache allocate memcg accounted object
-> 
->   - Due to only supporting KASAN_MINIMAL:
-> kasan test: kasan_stack_oob out-of-bounds on stack
-> kasan test: kasan_global_oob out-of-bounds global variable
-> kasan test: kasan_alloca_oob_left out-of-bounds to left on alloca
-> kasan test: kasan_alloca_oob_right out-of-bounds to right on alloca
-> kasan test: use_after_scope_test use-after-scope on int
-> kasan test: use_after_scope_test use-after-scope on array
-> 
-> Thanks to those who have done the heavy lifting over the past several
-> years:
->   - Christophe's 32 bit series: https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-February/185379.html
->   - Aneesh's Book3S hash series: https://lwn.net/Articles/655642/
->   - Balbir's Book3S radix series: https://patchwork.ozlabs.org/patch/795211/
-> 
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Cc: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> [- Removed EXPORT_SYMBOL of the static key
->   - Fixed most checkpatch problems
->   - Replaced kasan_zero_page[] by kasan_early_shadow_page[]
->   - Reduced casting mess by using intermediate locals
->   - Fixed build failure on pmac32_defconfig]
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->   arch/powerpc/Kconfig                         |  1 +
->   arch/powerpc/Kconfig.debug                   |  2 +-
->   arch/powerpc/include/asm/kasan.h             | 71 ++++++++++++++++++++++++++++
->   arch/powerpc/mm/Makefile                     |  2 +
->   arch/powerpc/mm/kasan/Makefile               |  1 +
->   arch/powerpc/mm/kasan/kasan_init_book3e_64.c | 50 ++++++++++++++++++++
->   6 files changed, 126 insertions(+), 1 deletion(-)
->   create mode 100644 arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index d9364368329b..51ef9fac6c5d 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -174,6 +174,7 @@ config PPC
->   	select HAVE_ARCH_AUDITSYSCALL
->   	select HAVE_ARCH_JUMP_LABEL
->   	select HAVE_ARCH_KASAN			if PPC32
-> +	select HAVE_ARCH_KASAN			if PPC_BOOK3E_64 && !SPARSEMEM_VMEMMAP
->   	select HAVE_ARCH_KGDB
->   	select HAVE_ARCH_MMAP_RND_BITS
->   	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-> index 61febbbdd02b..fc1f5fa7554e 100644
-> --- a/arch/powerpc/Kconfig.debug
-> +++ b/arch/powerpc/Kconfig.debug
-> @@ -369,5 +369,5 @@ config PPC_FAST_ENDIAN_SWITCH
->   
->   config KASAN_SHADOW_OFFSET
->   	hex
-> -	depends on KASAN
-> +	depends on KASAN && PPC32
->   	default 0xe0000000
-> diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-> index 296e51c2f066..ae410f0e060d 100644
-> --- a/arch/powerpc/include/asm/kasan.h
-> +++ b/arch/powerpc/include/asm/kasan.h
-> @@ -21,12 +21,15 @@
->   #define KASAN_SHADOW_START	(KASAN_SHADOW_OFFSET + \
->   				 (PAGE_OFFSET >> KASAN_SHADOW_SCALE_SHIFT))
->   
-> +#ifdef CONFIG_PPC32
->   #define KASAN_SHADOW_OFFSET	ASM_CONST(CONFIG_KASAN_SHADOW_OFFSET)
->   
->   #define KASAN_SHADOW_END	0UL
->   
->   #define KASAN_SHADOW_SIZE	(KASAN_SHADOW_END - KASAN_SHADOW_START)
->   
-> +#endif /* CONFIG_PPC32 */
-> +
->   #ifdef CONFIG_KASAN
->   void kasan_early_init(void);
->   void kasan_mmu_init(void);
-> @@ -36,5 +39,73 @@ static inline void kasan_init(void) { }
->   static inline void kasan_mmu_init(void) { }
->   #endif
->   
-> +#ifdef CONFIG_PPC_BOOK3E_64
-> +#include <asm/pgtable.h>
-> +#include <linux/jump_label.h>
-> +
-> +/*
-> + * We don't put this in Kconfig as we only support KASAN_MINIMAL, and
-> + * that will be disabled if the symbol is available in Kconfig
-> + */
-> +#define KASAN_SHADOW_OFFSET	ASM_CONST(0x6800040000000000)
-> +
-> +#define KASAN_SHADOW_SIZE	(KERN_VIRT_SIZE >> KASAN_SHADOW_SCALE_SHIFT)
-> +
-> +extern struct static_key_false powerpc_kasan_enabled_key;
-> +extern unsigned char kasan_early_shadow_page[];
-> +
-> +static inline bool kasan_arch_is_ready_book3e(void)
-> +{
-> +	if (static_branch_likely(&powerpc_kasan_enabled_key))
-> +		return true;
-> +	return false;
-> +}
-> +#define kasan_arch_is_ready kasan_arch_is_ready_book3e
-> +
-> +static inline void *kasan_mem_to_shadow_book3e(const void *ptr)
-> +{
-> +	unsigned long addr = (unsigned long)ptr;
-> +
-> +	if (addr >= KERN_VIRT_START && addr < KERN_VIRT_START + KERN_VIRT_SIZE)
-> +		return kasan_early_shadow_page;
-> +
-> +	return (void *)(addr >> KASAN_SHADOW_SCALE_SHIFT) + KASAN_SHADOW_OFFSET;
-> +}
-> +#define kasan_mem_to_shadow kasan_mem_to_shadow_book3e
-> +
-> +static inline void *kasan_shadow_to_mem_book3e(const void *shadow_addr)
-> +{
-> +	/*
-> +	 * We map the entire non-linear virtual mapping onto the zero page so if
-> +	 * we are asked to map the zero page back just pick the beginning of that
-> +	 * area.
-> +	 */
-> +	if (shadow_addr >= (void *)kasan_early_shadow_page &&
-> +	    shadow_addr < (void *)(kasan_early_shadow_page + PAGE_SIZE))
-> +		return (void *)KERN_VIRT_START;
-> +
-> +	return (void *)(((unsigned long)shadow_addr - KASAN_SHADOW_OFFSET) <<
-> +			KASAN_SHADOW_SCALE_SHIFT);
-> +}
-> +#define kasan_shadow_to_mem kasan_shadow_to_mem_book3e
-> +
-> +static inline bool kasan_addr_has_shadow_book3e(const void *ptr)
-> +{
-> +	unsigned long addr = (unsigned long)ptr;
-> +
-> +	/*
-> +	 * We want to specifically assert that the addresses in the 0x8000...
-> +	 * region have a shadow, otherwise they are considered by the kasan
-> +	 * core to be wild pointers
-> +	 */
-> +	if (addr >= KERN_VIRT_START && addr < (KERN_VIRT_START + KERN_VIRT_SIZE))
-> +		return true;
-> +
-> +	return (ptr >= kasan_shadow_to_mem((void *)KASAN_SHADOW_START));
-> +}
-> +#define kasan_addr_has_shadow kasan_addr_has_shadow_book3e
-> +
-> +#endif /* CONFIG_PPC_BOOK3E_64 */
-> +
->   #endif /* __ASSEMBLY */
->   #endif
-> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-> index 80382a2d169b..fc49231f807c 100644
-> --- a/arch/powerpc/mm/Makefile
-> +++ b/arch/powerpc/mm/Makefile
-> @@ -8,9 +8,11 @@ ccflags-$(CONFIG_PPC64)	:= $(NO_MINIMAL_TOC)
->   CFLAGS_REMOVE_slb.o = $(CC_FLAGS_FTRACE)
->   
->   KASAN_SANITIZE_ppc_mmu_32.o := n
-> +KASAN_SANITIZE_fsl_booke_mmu.o := n
->   
->   ifdef CONFIG_KASAN
->   CFLAGS_ppc_mmu_32.o  		+= -DDISABLE_BRANCH_PROFILING
-> +CFLAGS_fsl_booke_mmu.o		+= -DDISABLE_BRANCH_PROFILING
->   endif
->   
->   obj-y				:= fault.o mem.o pgtable.o mmap.o \
-> diff --git a/arch/powerpc/mm/kasan/Makefile b/arch/powerpc/mm/kasan/Makefile
-> index 6577897673dd..f8f164ad8ade 100644
-> --- a/arch/powerpc/mm/kasan/Makefile
-> +++ b/arch/powerpc/mm/kasan/Makefile
-> @@ -3,3 +3,4 @@
->   KASAN_SANITIZE := n
->   
->   obj-$(CONFIG_PPC32)           += kasan_init_32.o
-> +obj-$(CONFIG_PPC_BOOK3E_64)   += kasan_init_book3e_64.o
-> diff --git a/arch/powerpc/mm/kasan/kasan_init_book3e_64.c b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-> new file mode 100644
-> index 000000000000..f116c211d83c
-> --- /dev/null
-> +++ b/arch/powerpc/mm/kasan/kasan_init_book3e_64.c
-> @@ -0,0 +1,50 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +
-> +#define DISABLE_BRANCH_PROFILING
-> +
-> +#include <linux/kasan.h>
-> +#include <linux/printk.h>
-> +#include <linux/memblock.h>
-> +#include <linux/sched/task.h>
-> +#include <asm/pgalloc.h>
-> +
-> +DEFINE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
-> +
-> +static void __init kasan_init_region(struct memblock_region *reg)
-> +{
-> +	void *start = __va(reg->base);
-> +	void *end = __va(reg->base + reg->size);
-> +	unsigned long k_start, k_end, k_cur;
-> +
-> +	if (start >= end)
-> +		return;
-> +
-> +	k_start = (unsigned long)kasan_mem_to_shadow(start);
-> +	k_end = (unsigned long)kasan_mem_to_shadow(end);
-> +
-> +	for (k_cur = k_start; k_cur < k_end; k_cur += PAGE_SIZE) {
-> +		void *va = memblock_alloc(PAGE_SIZE, PAGE_SIZE);
-> +
-> +		map_kernel_page(k_cur, __pa(va), PAGE_KERNEL);
-> +	}
-> +	flush_tlb_kernel_range(k_start, k_end);
-> +}
-> +
-> +void __init kasan_init(void)
-> +{
-> +	struct memblock_region *reg;
-> +
-> +	for_each_memblock(memory, reg)
-> +		kasan_init_region(reg);
-> +
-> +	/* map the zero page RO */
-> +	map_kernel_page((unsigned long)kasan_early_shadow_page,
-> +			__pa(kasan_early_shadow_page), PAGE_KERNEL_RO);
-> +
-> +	/* Turn on checking */
-> +	static_branch_inc(&powerpc_kasan_enabled_key);
-> +
-> +	/* Enable error messages */
-> +	init_task.kasan_depth = 0;
-> +	pr_info("KASAN init done (64-bit Book3E)\n");
-> +}
-> 
