@@ -2,61 +2,61 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	URIBL_SBL,URIBL_SBL_A autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53973C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 11:04:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98F3AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 12:03:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6C0CA2177E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 11:04:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C0CA2177E
+	by mail.kernel.org (Postfix) with ESMTPS id C0E072171F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 12:03:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C0E072171F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K89W6XF6zDqMX
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 22:04:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K9TH3ZDdzDqN0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 23:02:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.43.140; helo=5.mo179.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ (client-ip=188.165.38.119; helo=11.mo6.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 5.mo179.mail-out.ovh.net (5.mo179.mail-out.ovh.net
- [46.105.43.140])
+X-Greylist: delayed 12599 seconds by postgrey-1.36 at bilbo;
+ Wed, 13 Mar 2019 23:00:35 AEDT
+Received: from 11.mo6.mail-out.ovh.net (11.mo6.mail-out.ovh.net
+ [188.165.38.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K87Y3ZJyzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 22:02:32 +1100 (AEDT)
-Received: from player687.ha.ovh.net (unknown [10.109.143.249])
- by mo179.mail-out.ovh.net (Postfix) with ESMTP id ECE8E11B26E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:35:04 +0100 (CET)
-Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
- (Authenticated sender: clg@kaod.org)
- by player687.ha.ovh.net (Postfix) with ESMTPSA id D3D373959943;
- Wed, 13 Mar 2019 08:34:53 +0000 (UTC)
-Subject: Re: [PATCH v2 03/16] KVM: PPC: Book3S HV: XIVE: introduce a new
- capability KVM_CAP_PPC_IRQ_XIVE
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-4-clg@kaod.org> <20190225043551.GA20501@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <a736c1b9-6406-2afa-d126-d0073fcd096e@kaod.org>
-Date: Wed, 13 Mar 2019 09:34:53 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K9QW64VpzDqHY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:00:29 +1100 (AEDT)
+Received: from player158.ha.ovh.net (unknown [10.109.159.35])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 44A5B1B806B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:24:37 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player158.ha.ovh.net (Postfix) with ESMTPSA id 8BF873845CCD;
+ Wed, 13 Mar 2019 08:24:29 +0000 (UTC)
+Date: Wed, 13 Mar 2019 09:24:28 +0100
+From: Greg Kurz <groug@kaod.org>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: Re: [PATCH 2/5] ocxl: Clean up printf formats
+Message-ID: <20190313092428.747cc671@bahia.lan>
+In-Reply-To: <20190313040702.14276-3-alastair@au1.ibm.com>
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190313040702.14276-1-alastair@au1.ibm.com>
+ <20190313040702.14276-3-alastair@au1.ibm.com>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-In-Reply-To: <20190225043551.GA20501@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 13886849453406129031
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 13710364644560574795
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrgeelgdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrgeelgdduudelucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,70 +68,109 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Alastair D'Silva <alastair@d-silva.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/25/19 5:35 AM, Paul Mackerras wrote:
-> On Fri, Feb 22, 2019 at 12:28:27PM +0100, Cédric Le Goater wrote:
->> The user interface exposes a new capability to let QEMU connect the
->> vCPU to the XIVE KVM device if required. The capability is only
->> advertised on a PowerNV Hypervisor as support for nested guests
->> (pseries KVM Hypervisor) is not yet available.
+On Wed, 13 Mar 2019 15:06:58 +1100
+"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
+
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> If a bisection happened to land on this commit, we would have KVM
-> saying it had the ability to support guests using XIVE natively, but
-> it wouldn't actually work since we don't have all the code that is in
-> the following patches.
-
-OK. I didn't think migration was a must-have for bisection. I will move
-the enablement at end.
-
-> Thus, in order to avoid breaking bisection, you should either add the
-> capability now but have it always return false until the rest of the
-> code is in place, or else defer the addition of the capability until
-> the end of the patch series.
-
-I will introduce the capability early in the patchset and return false
-as you are proposing. It seems to be the best approach.
-
->> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->> index 8c69af10f91d..a38a643a24dd 100644
->> --- a/arch/powerpc/kvm/powerpc.c
->> +++ b/arch/powerpc/kvm/powerpc.c
->> @@ -570,6 +570,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->>  	case KVM_CAP_PPC_GET_CPU_CHAR:
->>  		r = 1;
->>  		break;
->> +#ifdef CONFIG_KVM_XIVE
->> +	case KVM_CAP_PPC_IRQ_XIVE:
->> +		/* only for PowerNV */
->> +		r = !!cpu_has_feature(CPU_FTR_HVMODE);
+> Use %# instead of using a literal '0x'
 > 
-> Shouldn't this be r = xive_enabled() && !!cpu_has_feature(CPU_FTR_HVMODE)
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
 
-yes. we need the '__xive_enabled' toggle to be set also :/ 
+Reviewed-by: Greg Kurz <groug@kaod.org>
 
-It can set to off with the "xive=off" on the command line and on old P9 
-skiboot. That could be simplified one day.
+>  drivers/misc/ocxl/config.c  |  6 +++---
+>  drivers/misc/ocxl/context.c |  2 +-
+>  drivers/misc/ocxl/trace.h   | 10 +++++-----
+>  3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 8f2c5d8bd2ee..0ee7856b033d 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+>  	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
+>  
+>  	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
+> -	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+> -	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+> -	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
+> +	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
+> +	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
+> +	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+> index c10a940e3b38..3498a0199bde 100644
+> --- a/drivers/misc/ocxl/context.c
+> +++ b/drivers/misc/ocxl/context.c
+> @@ -134,7 +134,7 @@ static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
+>  	vm_fault_t ret;
+>  
+>  	offset = vmf->pgoff << PAGE_SHIFT;
+> -	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
+> +	pr_debug("%s: pasid %d address %#lx offset %#llx\n", __func__,
+>  		ctx->pasid, vmf->address, offset);
+>  
+>  	if (offset < ctx->afu->irq_base_offset)
+> diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+> index bcb7ff330c1e..68bf2f173a1a 100644
+> --- a/drivers/misc/ocxl/trace.h
+> +++ b/drivers/misc/ocxl/trace.h
+> @@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(ocxl_context,
+>  		__entry->tidr = tidr;
+>  	),
+>  
+> -	TP_printk("linux pid=%d spa=0x%p pasid=0x%x pidr=0x%x tidr=0x%x",
+> +	TP_printk("linux pid=%d spa=%p pasid=%#x pidr=%#x tidr=%#x",
+>  		__entry->pid,
+>  		__entry->spa,
+>  		__entry->pasid,
+> @@ -61,7 +61,7 @@ TRACE_EVENT(ocxl_terminate_pasid,
+>  		__entry->rc = rc;
+>  	),
+>  
+> -	TP_printk("pasid=0x%x rc=%d",
+> +	TP_printk("pasid=%#x rc=%d",
+>  		__entry->pasid,
+>  		__entry->rc
+>  	)
+> @@ -87,7 +87,7 @@ DECLARE_EVENT_CLASS(ocxl_fault_handler,
+>  		__entry->tfc = tfc;
+>  	),
+>  
+> -	TP_printk("spa=%p pe=0x%llx dsisr=0x%llx dar=0x%llx tfc=0x%llx",
+> +	TP_printk("spa=%p pe=%#llx dsisr=%#llx dar=%#llx tfc=%#llx",
+>  		__entry->spa,
+>  		__entry->pe,
+>  		__entry->dsisr,
+> @@ -127,7 +127,7 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
+>  		__entry->irq_offset = irq_offset;
+>  	),
+>  
+> -	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
+> +	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d irq_offset=%#llx",
+>  		__entry->pasid,
+>  		__entry->irq_id,
+>  		__entry->virq,
+> @@ -150,7 +150,7 @@ TRACE_EVENT(ocxl_afu_irq_free,
+>  		__entry->irq_id = irq_id;
+>  	),
+>  
+> -	TP_printk("pasid=0x%x irq_id=%d",
+> +	TP_printk("pasid=%#x irq_id=%d",
+>  		__entry->pasid,
+>  		__entry->irq_id
+>  	)
 
-> (or alternatively r = xics_on_xive(), though that would be confusing
-> to the reader)?
-
-This is correct. I didn't want to use the xics_on_xive() which is not
-the capability we are activating. 
-
-I will keep the open-coded version.
-
-> As it stands this would report true on POWER8, unless I'm missing
-> something.
-
-Ah yes. I forgot this combination also. 
-
-This should not be too complex to fix.
-
-Thanks,
-
-C.
