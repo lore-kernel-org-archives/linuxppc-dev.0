@@ -2,53 +2,61 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E6DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:27:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53973C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 11:04:19 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2F85520449
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:27:00 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2F85520449
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6C0CA2177E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 11:04:18 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C0CA2177E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K7LT5nkPzDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 21:26:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K89W6XF6zDqMX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 22:04:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.43.140; helo=5.mo179.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 5.mo179.mail-out.ovh.net (5.mo179.mail-out.ovh.net
+ [46.105.43.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K7Js3kJYzDqKb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 21:25:33 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 652293087BD0;
- Wed, 13 Mar 2019 10:25:31 +0000 (UTC)
-Received: from thinkpad.redhat.com (ovpn-116-28.ams2.redhat.com [10.36.116.28])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 38DAC27CB0;
- Wed, 13 Mar 2019 10:25:29 +0000 (UTC)
-From: Laurent Vivier <lvivier@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3] powerpc/mm: move warning from resize_hpt_for_hotplug()
-Date: Wed, 13 Mar 2019 11:25:28 +0100
-Message-Id: <20190313102528.4632-1-lvivier@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K87Y3ZJyzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 22:02:32 +1100 (AEDT)
+Received: from player687.ha.ovh.net (unknown [10.109.143.249])
+ by mo179.mail-out.ovh.net (Postfix) with ESMTP id ECE8E11B26E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 09:35:04 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player687.ha.ovh.net (Postfix) with ESMTPSA id D3D373959943;
+ Wed, 13 Mar 2019 08:34:53 +0000 (UTC)
+Subject: Re: [PATCH v2 03/16] KVM: PPC: Book3S HV: XIVE: introduce a new
+ capability KVM_CAP_PPC_IRQ_XIVE
+To: Paul Mackerras <paulus@ozlabs.org>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-4-clg@kaod.org> <20190225043551.GA20501@blackberry>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <a736c1b9-6406-2afa-d126-d0073fcd096e@kaod.org>
+Date: Wed, 13 Mar 2019 09:34:53 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
+In-Reply-To: <20190225043551.GA20501@blackberry>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.45]); Wed, 13 Mar 2019 10:25:31 +0000 (UTC)
+X-Ovh-Tracer-Id: 13886849453406129031
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrgeelgdduvdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -60,128 +68,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Laurent Vivier <lvivier@redhat.com>,
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-resize_hpt_for_hotplug() reports a warning when it cannot
-resize the hash page table ("Unable to resize hash page
-table to target order") but in some cases it's not a problem
-and can make user thinks something has not worked properly.
+On 2/25/19 5:35 AM, Paul Mackerras wrote:
+> On Fri, Feb 22, 2019 at 12:28:27PM +0100, Cédric Le Goater wrote:
+>> The user interface exposes a new capability to let QEMU connect the
+>> vCPU to the XIVE KVM device if required. The capability is only
+>> advertised on a PowerNV Hypervisor as support for nested guests
+>> (pseries KVM Hypervisor) is not yet available.
+> 
+> If a bisection happened to land on this commit, we would have KVM
+> saying it had the ability to support guests using XIVE natively, but
+> it wouldn't actually work since we don't have all the code that is in
+> the following patches.
 
-This patch moves the warning to arch_remove_memory() to
-only report the problem when it is needed.
+OK. I didn't think migration was a must-have for bisection. I will move
+the enablement at end.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-Signed-off-by: Laurent Vivier <lvivier@redhat.com>
----
+> Thus, in order to avoid breaking bisection, you should either add the
+> capability now but have it always return false until the rest of the
+> code is in place, or else defer the addition of the capability until
+> the end of the patch series.
 
-Notes:
-    v3: move "||" to above line and remove parenthesis
-    v2: add warning messages for H_PARAMETER and H_RESOURCE
+I will introduce the capability early in the patchset and return false
+as you are proposing. It seems to be the best approach.
 
- arch/powerpc/include/asm/sparsemem.h  |  4 ++--
- arch/powerpc/mm/hash_utils_64.c       | 19 +++++++------------
- arch/powerpc/mm/mem.c                 |  3 ++-
- arch/powerpc/platforms/pseries/lpar.c |  3 ++-
- 4 files changed, 13 insertions(+), 16 deletions(-)
+>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index 8c69af10f91d..a38a643a24dd 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -570,6 +570,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>>  	case KVM_CAP_PPC_GET_CPU_CHAR:
+>>  		r = 1;
+>>  		break;
+>> +#ifdef CONFIG_KVM_XIVE
+>> +	case KVM_CAP_PPC_IRQ_XIVE:
+>> +		/* only for PowerNV */
+>> +		r = !!cpu_has_feature(CPU_FTR_HVMODE);
+> 
+> Shouldn't this be r = xive_enabled() && !!cpu_has_feature(CPU_FTR_HVMODE)
 
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index 68da49320592..3192d454a733 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -17,9 +17,9 @@ extern int create_section_mapping(unsigned long start, unsigned long end, int ni
- extern int remove_section_mapping(unsigned long start, unsigned long end);
- 
- #ifdef CONFIG_PPC_BOOK3S_64
--extern void resize_hpt_for_hotplug(unsigned long new_mem_size);
-+extern int resize_hpt_for_hotplug(unsigned long new_mem_size);
- #else
--static inline void resize_hpt_for_hotplug(unsigned long new_mem_size) { }
-+static inline int resize_hpt_for_hotplug(unsigned long new_mem_size) { return 0; }
- #endif
- 
- #ifdef CONFIG_NUMA
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0cc7fbc3bd1c..5aa7594ee71b 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -755,12 +755,12 @@ static unsigned long __init htab_get_table_size(void)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
--void resize_hpt_for_hotplug(unsigned long new_mem_size)
-+int resize_hpt_for_hotplug(unsigned long new_mem_size)
- {
- 	unsigned target_hpt_shift;
- 
- 	if (!mmu_hash_ops.resize_hpt)
--		return;
-+		return 0;
- 
- 	target_hpt_shift = htab_shift_for_mem_size(new_mem_size);
- 
-@@ -772,16 +772,11 @@ void resize_hpt_for_hotplug(unsigned long new_mem_size)
- 	 * reduce unless the target shift is at least 2 below the
- 	 * current shift
- 	 */
--	if ((target_hpt_shift > ppc64_pft_size)
--	    || (target_hpt_shift < (ppc64_pft_size - 1))) {
--		int rc;
--
--		rc = mmu_hash_ops.resize_hpt(target_hpt_shift);
--		if (rc && (rc != -ENODEV))
--			printk(KERN_WARNING
--			       "Unable to resize hash page table to target order %d: %d\n",
--			       target_hpt_shift, rc);
--	}
-+	if (target_hpt_shift > ppc64_pft_size ||
-+	    target_hpt_shift < ppc64_pft_size - 1)
-+		return mmu_hash_ops.resize_hpt(target_hpt_shift);
-+
-+	return 0;
- }
- 
- int hash__create_section_mapping(unsigned long start, unsigned long end, int nid)
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 33cc6f676fa6..0d40d970cf4a 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -169,7 +169,8 @@ int __meminit arch_remove_memory(int nid, u64 start, u64 size,
- 	 */
- 	vm_unmap_aliases();
- 
--	resize_hpt_for_hotplug(memblock_phys_mem_size());
-+	if (resize_hpt_for_hotplug(memblock_phys_mem_size()) == -ENOSPC)
-+		pr_warn("Hash collision while resizing HPT\n");
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index f2a9f0adc2d3..1034ef1fe2b4 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -901,8 +901,10 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
- 		break;
- 
- 	case H_PARAMETER:
-+		pr_warn("Invalid argument from H_RESIZE_HPT_PREPARE\n");
- 		return -EINVAL;
- 	case H_RESOURCE:
-+		pr_warn("Operation not permitted from H_RESIZE_HPT_PREPARE\n");
- 		return -EPERM;
- 	default:
- 		pr_warn("Unexpected error %d from H_RESIZE_HPT_PREPARE\n", rc);
-@@ -918,7 +920,6 @@ static int pseries_lpar_resize_hpt(unsigned long shift)
- 	if (rc != 0) {
- 		switch (state.commit_rc) {
- 		case H_PTEG_FULL:
--			pr_warn("Hash collision while resizing HPT\n");
- 			return -ENOSPC;
- 
- 		default:
--- 
-2.20.1
+yes. we need the '__xive_enabled' toggle to be set also :/ 
 
+It can set to off with the "xive=off" on the command line and on old P9 
+skiboot. That could be simplified one day.
+
+> (or alternatively r = xics_on_xive(), though that would be confusing
+> to the reader)?
+
+This is correct. I didn't want to use the xics_on_xive() which is not
+the capability we are activating. 
+
+I will keep the open-coded version.
+
+> As it stands this would report true on POWER8, unless I'm missing
+> something.
+
+Ah yes. I forgot this combination also. 
+
+This should not be too complex to fix.
+
+Thanks,
+
+C.
