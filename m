@@ -2,62 +2,53 @@ Return-Path: <SRS0=wHv8=RQ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24015C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:58:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6146CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:00:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 478292087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 09:58:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 478292087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id D880D2087C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 10:00:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D880D2087C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=suse.cz
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44K6k352JSzDqLB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 20:58:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44K6m05D5JzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Mar 2019 21:00:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=87.98.173.157; helo=11.mo7.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=suse.cz
+ (client-ip=195.135.220.15; helo=mx1.suse.de; envelope-from=jack@suse.cz;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 598 seconds by postgrey-1.36 at bilbo;
- Wed, 13 Mar 2019 20:57:17 AEDT
-Received: from 11.mo7.mail-out.ovh.net (11.mo7.mail-out.ovh.net
- [87.98.173.157])
+ dmarc=none (p=none dis=none) header.from=suse.cz
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44K6hF5W0fzDqHZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 20:57:14 +1100 (AEDT)
-Received: from player714.ha.ovh.net (unknown [10.109.143.145])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id BC63E109017
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 10:40:30 +0100 (CET)
-Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
- (Authenticated sender: clg@kaod.org)
- by player714.ha.ovh.net (Postfix) with ESMTPSA id 1964A38DDCC7;
- Wed, 13 Mar 2019 09:40:19 +0000 (UTC)
-Subject: Re: [PATCH v2 06/16] KVM: PPC: Book3S HV: XIVE: add controls for the
- EQ configuration
-To: Paul Mackerras <paulus@ozlabs.org>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-7-clg@kaod.org> <20190226052429.GC28015@blackberry>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <33aeb002-39b2-1015-9923-613781c08fd6@kaod.org>
-Date: Wed, 13 Mar 2019 10:40:19 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44K6jr4BbkzDqMS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 20:58:39 +1100 (AEDT)
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+ by mx1.suse.de (Postfix) with ESMTP id 148B8AF42;
+ Wed, 13 Mar 2019 09:58:35 +0000 (UTC)
+Received: by quack2.suse.cz (Postfix, from userid 1000)
+ id 5C8701E3FE8; Wed, 13 Mar 2019 10:58:34 +0100 (CET)
+Date: Wed, 13 Mar 2019 10:58:34 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v2] fs/dax: deposit pagetable even when installing zero
+ page
+Message-ID: <20190313095834.GF32521@quack2.suse.cz>
+References: <20190309120721.21416-1-aneesh.kumar@linux.ibm.com>
+ <8736nrnzxm.fsf@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20190226052429.GC28015@blackberry>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 14991920211918031751
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrhedtgddtiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8736nrnzxm.fsf@linux.ibm.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,93 +60,126 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm@lists.01.org, linux-mm@kvack.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>, Ross Zwisler <zwisler@kernel.org>,
+ linux-fsdevel@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 2/26/19 6:24 AM, Paul Mackerras wrote:
-> On Fri, Feb 22, 2019 at 12:28:30PM +0100, Cédric Le Goater wrote:
->> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
->> H_INT_GET_QUEUE_CONFIG hcalls from QEMU. They will also be used to
->> restore the configuration of the XIVE EQs in the KVM device and to
->> capture the internal runtime state of the EQs. Both 'get' and 'set'
->> rely on an OPAL call to access from the XIVE interrupt controller the
->> EQ toggle bit and EQ index which are updated by the HW when event
->> notifications are enqueued in the EQ.
->>
->> The value of the guest physical address of the event queue is saved in
->> the XIVE internal xive_q structure for later use. That is when
->> migration needs to mark the EQ pages dirty to capture a consistent
->> memory state of the VM.
->>
->> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
->> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
->> but restoring the EQ state will.
+On Wed 13-03-19 10:17:17, Aneesh Kumar K.V wrote:
 > 
-> [snip]
+> Hi Dan/Andrew/Jan,
 > 
->> +/* Layout of 64-bit eq attribute */
->> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
->> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
->> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
->> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
->> +
->> +/* Layout of 64-bit eq attribute values */
->> +struct kvm_ppc_xive_eq {
->> +	__u32 flags;
->> +	__u32 qsize;
->> +	__u64 qpage;
->> +	__u32 qtoggle;
->> +	__u32 qindex;
->> +	__u8  pad[40];
->> +};
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 > 
-> This is confusing.  What's the difference between an "eq attribute"
-> and an "eq attribute value"?  Is the first actually a queue index or
-> a queue identifier?
-
-The "attribute" qualifier comes from the {get,set,has}_addr methods 
-of the KVM device. But it is not a well chosen name for the group 
-KVM_DEV_XIVE_GRP_EQ_CONFIG.
-
-I should be using "eq identifier" and "eq values" or "eq state". 
-
-> Also, the kvm_ppc_xive_eq is not 64 bits, so the comment above it is
-> wrong.  Maybe you meant "64-byte"?
-
-That was a bad copy paste. I have padded the structure to twice the size
-of the XIVE END (the XIVE EQ descriptor in HW) which size is 32 bytes. 
-I thought that one extra u64 was not enough room for future.
-
+> > Architectures like ppc64 use the deposited page table to store hardware
+> > page table slot information. Make sure we deposit a page table when
+> > using zero page at the pmd level for hash.
+> >
+> > Without this we hit
+> >
+> > Unable to handle kernel paging request for data at address 0x00000000
+> > Faulting instruction address: 0xc000000000082a74
+> > Oops: Kernel access of bad area, sig: 11 [#1]
+> > ....
+> >
+> > NIP [c000000000082a74] __hash_page_thp+0x224/0x5b0
+> > LR [c0000000000829a4] __hash_page_thp+0x154/0x5b0
+> > Call Trace:
+> >  hash_page_mm+0x43c/0x740
+> >  do_hash_page+0x2c/0x3c
+> >  copy_from_iter_flushcache+0xa4/0x4a0
+> >  pmem_copy_from_iter+0x2c/0x50 [nd_pmem]
+> >  dax_copy_from_iter+0x40/0x70
+> >  dax_iomap_actor+0x134/0x360
+> >  iomap_apply+0xfc/0x1b0
+> >  dax_iomap_rw+0xac/0x130
+> >  ext4_file_write_iter+0x254/0x460 [ext4]
+> >  __vfs_write+0x120/0x1e0
+> >  vfs_write+0xd8/0x220
+> >  SyS_write+0x6c/0x110
+> >  system_call+0x3c/0x130
+> >
+> > Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
+> > Reviewed-by: Jan Kara <jack@suse.cz>
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 > 
-> [snip]
+> Any suggestion on which tree this patch should got to? Also since this
+> fix a kernel crash, we may want to get this to 5.1?
+
+I think this should go through Dan's tree...
+
+								Honza
+
+> > ---
+> > Changes from v1:
+> > * Add reviewed-by:
+> > * Add Fixes:
+> >
+> >  fs/dax.c | 15 +++++++++++++++
+> >  1 file changed, 15 insertions(+)
+> >
+> > diff --git a/fs/dax.c b/fs/dax.c
+> > index 6959837cc465..01bfb2ac34f9 100644
+> > --- a/fs/dax.c
+> > +++ b/fs/dax.c
+> > @@ -33,6 +33,7 @@
+> >  #include <linux/sizes.h>
+> >  #include <linux/mmu_notifier.h>
+> >  #include <linux/iomap.h>
+> > +#include <asm/pgalloc.h>
+> >  #include "internal.h"
+> >  
+> >  #define CREATE_TRACE_POINTS
+> > @@ -1410,7 +1411,9 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
+> >  {
+> >  	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
+> >  	unsigned long pmd_addr = vmf->address & PMD_MASK;
+> > +	struct vm_area_struct *vma = vmf->vma;
+> >  	struct inode *inode = mapping->host;
+> > +	pgtable_t pgtable = NULL;
+> >  	struct page *zero_page;
+> >  	spinlock_t *ptl;
+> >  	pmd_t pmd_entry;
+> > @@ -1425,12 +1428,22 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
+> >  	*entry = dax_insert_entry(xas, mapping, vmf, *entry, pfn,
+> >  			DAX_PMD | DAX_ZERO_PAGE, false);
+> >  
+> > +	if (arch_needs_pgtable_deposit()) {
+> > +		pgtable = pte_alloc_one(vma->vm_mm);
+> > +		if (!pgtable)
+> > +			return VM_FAULT_OOM;
+> > +	}
+> > +
+> >  	ptl = pmd_lock(vmf->vma->vm_mm, vmf->pmd);
+> >  	if (!pmd_none(*(vmf->pmd))) {
+> >  		spin_unlock(ptl);
+> >  		goto fallback;
+> >  	}
+> >  
+> > +	if (pgtable) {
+> > +		pgtable_trans_huge_deposit(vma->vm_mm, vmf->pmd, pgtable);
+> > +		mm_inc_nr_ptes(vma->vm_mm);
+> > +	}
+> >  	pmd_entry = mk_pmd(zero_page, vmf->vma->vm_page_prot);
+> >  	pmd_entry = pmd_mkhuge(pmd_entry);
+> >  	set_pmd_at(vmf->vma->vm_mm, pmd_addr, vmf->pmd, pmd_entry);
+> > @@ -1439,6 +1452,8 @@ static vm_fault_t dax_pmd_load_hole(struct xa_state *xas, struct vm_fault *vmf,
+> >  	return VM_FAULT_NOPAGE;
+> >  
+> >  fallback:
+> > +	if (pgtable)
+> > +		pte_free(vma->vm_mm, pgtable);
+> >  	trace_dax_pmd_load_hole_fallback(inode, vmf, zero_page, *entry);
+> >  	return VM_FAULT_FALLBACK;
+> >  }
+> > -- 
+> > 2.20.1
 > 
->> +	page = gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
->> +	if (is_error_page(page)) {
->> +		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
->> +		return -ENOMEM;
->> +	}
->> +	qaddr = page_to_virt(page) + (kvm_eq.qpage & ~PAGE_MASK);
+> -aneesh
 > 
-> Isn't this assuming that we can map the whole queue with a single
-> gfn_to_page?  That would only be true if kvm_eq.qsize <= PAGE_SHIFT.
-> What happens if kvm_eq.qsize > PAGE_SHIFT?
-
-Ah yes. Theoretically, it should not happen because we only advertise
-64K in the DT for the moment. I should at least add a check. So I will 
-change the helper xive_native_validate_queue_size() to return -EINVAL
-for other page sizes.
-
-Do you think it would be complex to support XIVE EQs using a page larger 
-than the default one on the guest ? 
-
-Thanks,
-
-C.
-
-> 
-> Paul.
-> 
-
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
