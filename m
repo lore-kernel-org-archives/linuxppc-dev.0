@@ -2,95 +2,63 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8922BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:47:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49BBFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:53:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBE672085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:47:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBE672085A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id B0E4D2085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:53:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="lOmGdj/v"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B0E4D2085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KZQj2K2kzDqKh
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:47:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KZZR32yBzDqKP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:53:51 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KZNY53BbzDqKJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:45:17 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2E3cnBN065146
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:45:15 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r7c2jy0qc-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:45:14 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 14 Mar 2019 03:45:12 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
- by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 14 Mar 2019 03:45:08 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2E3j7Wo20906200
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 14 Mar 2019 03:45:07 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7388F11C050;
- Thu, 14 Mar 2019 03:45:07 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9704311C04A;
- Thu, 14 Mar 2019 03:45:04 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.199.45.189])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 14 Mar 2019 03:45:04 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
-In-Reply-To: <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
-References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
- <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
- <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
- <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
- <87k1hc8iqa.fsf@linux.ibm.com>
- <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
-Date: Thu, 14 Mar 2019 09:15:02 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KZXg2CqczDq67
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:52:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="lOmGdj/v"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 44KZXg0vZ2z9s4Y; Thu, 14 Mar 2019 14:52:19 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1552535539;
+ bh=hM7O1q7KFrc9lGQGaqRbo8O1YEuG2oAoCf7j6mHEuA4=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=lOmGdj/v7i0OVWnVKA/XUpqfmeSglgNSrrYlFlI5MH5mZY6MNIthc+tqApOg5xD3h
+ eZSwkRzIAzANFUdXw5gEDqDqrpi3odvBRJnVV7y0wX3nIeESswretZJ4QCLeUBmNSH
+ Jq5FsqLcRWmjCQW/Mu+962Y0TZLd7h+fvJUC5hR4=
+Date: Thu, 14 Mar 2019 14:29:27 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH v2 06/16] KVM: PPC: Book3S HV: XIVE: add controls for the
+ EQ configuration
+Message-ID: <20190314032927.GP8211@umbus.fritz.box>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-7-clg@kaod.org>
+ <20190225023955.GJ7668@umbus.fritz.box>
+ <9e732140-b2c0-dfb7-d753-ba0ec7f3b930@kaod.org>
+ <20190313040327.GK9881@umbus.fritz.box>
+ <badcd1dc-2eef-590e-b362-0d3dfdf52d34@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19031403-0008-0000-0000-000002CD0D89
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031403-0009-0000-0000-000022390DF9
-Message-Id: <871s3aqfup.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-14_01:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903140023
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="yEbVe0JFHWhrOjGA"
+Content-Disposition: inline
+In-Reply-To: <badcd1dc-2eef-590e-b362-0d3dfdf52d34@kaod.org>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,161 +70,90 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, Ross Zwisler <zwisler@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Dan Williams <dan.j.williams@intel.com> writes:
 
-> On Wed, Mar 6, 2019 at 1:18 AM Aneesh Kumar K.V
-> <aneesh.kumar@linux.ibm.com> wrote:
->>
->> Dan Williams <dan.j.williams@intel.com> writes:
->>
->> > On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
->> >>
->> >> On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
->> >> <aneesh.kumar@linux.ibm.com> wrote:
->> >> >
->> >> > Add a flag to indicate the ability to do huge page dax mapping. On architecture
->> >> > like ppc64, the hypervisor can disable huge page support in the guest. In
->> >> > such a case, we should not enable huge page dax mapping. This patch adds
->> >> > a flag which the architecture code will update to indicate huge page
->> >> > dax mapping support.
->> >>
->> >> *groan*
->> >>
->> >> > Architectures mostly do transparent_hugepage_flag = 0; if they can't
->> >> > do hugepages. That also takes care of disabling dax hugepage mapping
->> >> > with this change.
->> >> >
->> >> > Without this patch we get the below error with kvm on ppc64.
->> >> >
->> >> > [  118.849975] lpar: Failed hash pte insert with error -4
->> >> >
->> >> > NOTE: The patch also use
->> >> >
->> >> > echo never > /sys/kernel/mm/transparent_hugepage/enabled
->> >> > to disable dax huge page mapping.
->> >> >
->> >> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->> >> > ---
->> >> > TODO:
->> >> > * Add Fixes: tag
->> >> >
->> >> >  include/linux/huge_mm.h | 4 +++-
->> >> >  mm/huge_memory.c        | 4 ++++
->> >> >  2 files changed, 7 insertions(+), 1 deletion(-)
->> >> >
->> >> > diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
->> >> > index 381e872bfde0..01ad5258545e 100644
->> >> > --- a/include/linux/huge_mm.h
->> >> > +++ b/include/linux/huge_mm.h
->> >> > @@ -53,6 +53,7 @@ vm_fault_t vmf_insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
->> >> >                         pud_t *pud, pfn_t pfn, bool write);
->> >> >  enum transparent_hugepage_flag {
->> >> >         TRANSPARENT_HUGEPAGE_FLAG,
->> >> > +       TRANSPARENT_HUGEPAGE_DAX_FLAG,
->> >> >         TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG,
->> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_DIRECT_FLAG,
->> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_KSWAPD_FLAG,
->> >> > @@ -111,7 +112,8 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
->> >> >         if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
->> >> >                 return true;
->> >> >
->> >> > -       if (vma_is_dax(vma))
->> >> > +       if (vma_is_dax(vma) &&
->> >> > +           (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_DAX_FLAG)))
->> >> >                 return true;
->> >>
->> >> Forcing PTE sized faults should be fine for fsdax, but it'll break
->> >> devdax. The devdax driver requires the fault size be >= the namespace
->> >> alignment since devdax tries to guarantee hugepage mappings will be
->> >> used and PMD alignment is the default. We can probably have devdax
->> >> fall back to the largest size the hypervisor has made available, but
->> >> it does run contrary to the design. Ah well, I suppose it's better off
->> >> being degraded rather than unusable.
->> >
->> > Given this is an explicit setting I think device-dax should explicitly
->> > fail to enable in the presence of this flag to preserve the
->> > application visible behavior.
->> >
->> > I.e. if device-dax was enabled after this setting was made then I
->> > think future faults should fail as well.
->>
->> Not sure I understood that. Now we are disabling the ability to map
->> pages as huge pages. I am now considering that this should not be
->> user configurable. Ie, this is something that platform can use to avoid
->> dax forcing huge page mapping, but if the architecture can enable huge
->> dax mapping, we should always default to using that.
->
-> No, that's an application visible behavior regression. The side effect
-> of this setting is that all huge-page configured device-dax instances
-> must be disabled.
+--yEbVe0JFHWhrOjGA
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So if the device was created with a nd_pfn->align value of PMD_SIZE, that is
-an indication that we would map the pages in PMD_SIZE?
+On Wed, Mar 13, 2019 at 09:46:08AM +0100, C=E9dric Le Goater wrote:
+> On 3/13/19 5:03 AM, David Gibson wrote:
+> > On Tue, Mar 12, 2019 at 06:00:38PM +0100, C=E9dric Le Goater wrote:
+> >> On 2/25/19 3:39 AM, David Gibson wrote:
+> >>> On Fri, Feb 22, 2019 at 12:28:30PM +0100, C=E9dric Le Goater wrote:
+> >>>> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
+> >>>> H_INT_GET_QUEUE_CONFIG hcalls from QEMU. They will also be used to
+> >>>> restore the configuration of the XIVE EQs in the KVM device and to
+> >>>> capture the internal runtime state of the EQs. Both 'get' and 'set'
+> >>>> rely on an OPAL call to access from the XIVE interrupt controller the
+> >>>> EQ toggle bit and EQ index which are updated by the HW when event
+> >>>> notifications are enqueued in the EQ.
+> >>>>
+> >>>> The value of the guest physical address of the event queue is saved =
+in
+> >>>> the XIVE internal xive_q structure for later use. That is when
+> >>>> migration needs to mark the EQ pages dirty to capture a consistent
+> >>>> memory state of the VM.
+> >>>>
+> >>>> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
+> >>>> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
+> >>>> but restoring the EQ state will.
+> >>
+> >> I think we need to add some kind of flags to differentiate the hcall
+> >> H_INT_SET_QUEUE_CONFIG from the restore of the EQ. The hcall does
+> >> not need OPAL support call and this could help in the code
+> >> transition.
+> >=20
+> > Hrm.  What's the actual difference in the semantics between the two
+> > cases. =20
+>=20
+> None.=20
+>=20
+> But we don't need to set the EQ state in the case of the HCALL and it's=
+=20
+> (very) practical to run guests with XIVE enabled without the OPAL support=
+=2E=20
+> The latter is the main reason clearly.
+>=20
+> Thinking of it, I could test the EQ toggle bit and index passed to KVM=20
+> and skip the OPAL call which restores the EQ state if they are zero.=20
+> This is because I know that the OPAL call configuring the EQ resets them.=
+=20
+>=20
+> That will do. No need for a flag.
 
-Ok with that understanding, If the align value is not a supported
-mapping size, we fail initializing the device. 
+That's a much better idea.
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
->
->> Now w.r.t to failures, can device-dax do an opportunistic huge page
->> usage?
->
-> device-dax explicitly disclaims the ability to do opportunistic mappings.
->
->> I haven't looked at the device-dax details fully yet. Do we make the
->> assumption of the mapping page size as a format w.r.t device-dax? Is that
->> derived from nd_pfn->align value?
->
-> Correct.
->
->>
->> Here is what I am working on:
->> 1) If the platform doesn't support huge page and if the device superblock
->> indicated that it was created with huge page support, we fail the device
->> init.
->
-> Ok.
->
->> 2) Now if we are creating a new namespace without huge page support in
->> the platform, then we force the align details to PAGE_SIZE. In such a
->> configuration when handling dax fault even with THP enabled during
->> the build, we should not try to use hugepage. This I think we can
->> achieve by using TRANSPARENT_HUGEPAEG_DAX_FLAG.
->
-> How is this dynamic property communicated to the guest?
+--yEbVe0JFHWhrOjGA
+Content-Type: application/pgp-signature; name="signature.asc"
 
-via device tree on powerpc. We have a device tree node indicating
-supported page sizes.
+-----BEGIN PGP SIGNATURE-----
 
->
->>
->> Also even if the user decided to not use THP, by
->> echo "never" > transparent_hugepage/enabled , we should continue to map
->> dax fault using huge page on platforms that can support huge pages.
->>
->> This still doesn't cover the details of a device-dax created with
->> PAGE_SIZE align later booted with a kernel that can do hugepage dax.How
->> should we handle that? That makes me think, this should be a VMA flag
->> which got derived from device config? May be use VM_HUGEPAGE to indicate
->> if device should use a hugepage mapping or not?
->
-> device-dax configured with PAGE_SIZE always gets PAGE_SIZE mappings.
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyJypcACgkQbDjKyiDZ
+s5KCxw//WNmsL5h8dPdmmkHFiUwiEnh4vShQ/u8lpyi/gEx6ML50BxS58Qxgnd3H
+uyeQK009V3kM9rNr5gjg0rt3IaRBFiuUgh7avt+bvb9DJj9wwRdJJ2pyUgZVwBT2
+o8T62qJQ5nAHAlCZRGbHtxNcorglkZbdiewWG94gc5CHTvLT+bokFzffP0HppszS
+6xKewtxTeQRmsnpMnKX6l45CDvFgdJlcsLOsd5jpao+43hqqR9A9hMbkDS3CLurn
+fkyrrGNheCuE8o/4wRW+Lino9hI2jzxEpfYt3GAWSTGwbP8FQKuwj4vyzJ3s14jR
+uAS6O48R6xuSAXfwbIpEcEDhyerhyC5EspIscqFb2B9YGw0vdqjbnrJjDkN6y+7S
+IcnPx+VwO7GR2YMMJUAdHs4LI6E1GIwIEYCD5l0bePjf632dsG1p3cehdUvDIoj1
+j2o/ts8NHeCGxMQ26Ro09LpL/Fzi/k8zmS8hwF6ph4MJiPTbzMHeWx6lUcLlYFMu
+gu+yAVs7rD3z8eJXcKdKsPYiK8W/xV0jeWeqPGlo7DeXmV/S6ZJ+stQ9FszqVlWS
+Emc31bRcZ/djf1RQqfmPYHMIVBhv1GS3fYQyrKjOEq4djgLJDDqUlFGlznuNmgSC
+wyzZR90VzjzRfMSYkGI4vEsmhwJCXkClMgnSsqHHCR8Ra+ovvoQ=
+=+zOv
+-----END PGP SIGNATURE-----
 
-Now what will be page size used for mapping vmemmap? Architectures
-possibly will use PMD_SIZE mapping if supported for vmemmap. Now a
-device-dax with struct page in the device will have pfn reserve area aligned
-to PAGE_SIZE with the above example? We can't map that using
-PMD_SIZE page size?
-
--aneesh
-
+--yEbVe0JFHWhrOjGA--
