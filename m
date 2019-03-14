@@ -2,61 +2,98 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0E7CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:09:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03F2DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:11:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6B151206BA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:09:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="hyLnCi/+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6B151206BA
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 3961C2085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:11:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3961C2085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KYbP2lXQzDqMp
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:09:37 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KYdp0cb9zDqPT
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:11:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KYQY19F6zDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:01:57 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="hyLnCi/+"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44KYQX47JPz9s7h; Thu, 14 Mar 2019 14:01:56 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1552532516;
- bh=AmA7h0PF2maHIB2nMzJ2iMkdGPyEuQBSK3lTmGtm6xc=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=hyLnCi/+LhN5MIgdgD0FSb0n6eNc3vhMgbkBxaf/K6YlXj5feeqK+1ZWNp4md4Z0M
- aKz2+DCsfUCags0X7gw1jx2KY6Y2D9XwFjZ7++rkUWLpgOfdYyFUE6PTvbM4ZbYUlA
- tsUcIcMSpvM+DUFqEYDqgTkJzF5xesdTUhhZ4aHA=
-Date: Thu, 14 Mar 2019 13:29:21 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 03/16] KVM: PPC: Book3S HV: XIVE: introduce a new
- capability KVM_CAP_PPC_IRQ_XIVE
-Message-ID: <20190314022921.GK8211@umbus.fritz.box>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-4-clg@kaod.org>
- <20190225043551.GA20501@blackberry>
- <a736c1b9-6406-2afa-d126-d0073fcd096e@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KYbM1WhqzDqNv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:09:34 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2E39LhU133910
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:09:30 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2r7dcjjvq6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:09:30 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Thu, 14 Mar 2019 03:09:28 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 14 Mar 2019 03:09:24 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2E39NKx26935382
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 14 Mar 2019 03:09:24 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id CE9FC4C04A;
+ Thu, 14 Mar 2019 03:09:23 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7C5E34C046;
+ Thu, 14 Mar 2019 03:09:23 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Mar 2019 03:09:23 +0000 (GMT)
+Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 39986A00E2;
+ Thu, 14 Mar 2019 14:09:22 +1100 (AEDT)
+Subject: Re: [PATCH 1/1] arch/powerpc: Rework local_paca to avoid LTO warnings
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Date: Thu, 14 Mar 2019 14:09:22 +1100
+In-Reply-To: <87ef7atjnk.fsf@dja-thinkpad.axtens.net>
+References: <20190313034208.13134-1-alastair@au1.ibm.com>
+ <87ef7atjnk.fsf@dja-thinkpad.axtens.net>
+Organization: IBM Australia
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="45wMVEkw4XUbiYON"
-Content-Disposition: inline
-In-Reply-To: <a736c1b9-6406-2afa-d126-d0073fcd096e@kaod.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19031403-0008-0000-0000-000002CD0BE3
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031403-0009-0000-0000-000022390C35
+Message-Id: <07a2633c1264db39d2ef91d6824c319f57027c26.camel@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-14_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903140019
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,62 +105,66 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, "Naveen
+ N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Thu, 2019-03-14 at 10:54 +1100, Daniel Axtens wrote:
+> "Alastair D'Silva" <alastair@au1.ibm.com> writes:
+> 
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> > 
+> > When building an LTO kernel, the existing code generates warnings:
+> >     ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
+> >         ‘local_paca’ used for multiple global register variables
+> >      register struct paca_struct *local_paca asm("r13");
+> >                               ^
+> >     ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
+> >         ‘local_paca’
+> > 
+> > This patch reworks local_paca into an inline getter & setter
+> > function,
+> > which addresses the warning.
+> > 
+> > Generated ASM from this patch is broadly similar (addresses have
+> > changed and the compiler uses different GPRs in some places).
+> 
+> Ditto to Christophe's comment; I'd love to know how to build this so
+> I
+> can actually see the differences. Perhaps you could bundle up all the
+> required changes and send it as a patch series with a cover letter
+> explaining this?
 
---45wMVEkw4XUbiYON
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The differences are visible in a normal build, but if you want to play
+with LTO, see my comments to Christophe.
 
-On Wed, Mar 13, 2019 at 09:34:53AM +0100, C=E9dric Le Goater wrote:
-> On 2/25/19 5:35 AM, Paul Mackerras wrote:
-> > On Fri, Feb 22, 2019 at 12:28:27PM +0100, C=E9dric Le Goater wrote:
-> >> The user interface exposes a new capability to let QEMU connect the
-> >> vCPU to the XIVE KVM device if required. The capability is only
-> >> advertised on a PowerNV Hypervisor as support for nested guests
-> >> (pseries KVM Hypervisor) is not yet available.
-> >=20
-> > If a bisection happened to land on this commit, we would have KVM
-> > saying it had the ability to support guests using XIVE natively, but
-> > it wouldn't actually work since we don't have all the code that is in
-> > the following patches.
->=20
-> OK. I didn't think migration was a must-have for bisection. I will move
-> the enablement at end.
+> 
+> > +static inline struct paca_struct *get_paca_no_preempt_check(void)
+> > +{
+> > +	register struct paca_struct *paca asm("r13");
+> > +	return paca;
+> > +}
+> 
+> Isn't the convention to have the { on the same line as the function,
+> or
+> am I horrible mis-remembering things?
+> 
+You are :)
 
-Any temporary feature regression potentially breaks bisection, because
-you don't know what we'll want to bisect for.  Obviously we're never
-going to get that perfectly right, but that doesn't mean we shouldn't
-try when we do see the problem in advance.
+> Should these functions be __always_inline?
+> 
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Yes, they should, I'll add that to V3.
 
---45wMVEkw4XUbiYON
-Content-Type: application/pgp-signature; name="signature.asc"
+-- 
+Alastair D'Silva
+Open Source Developer
+Linux Technology Centre, IBM Australia
+mob: 0423 762 819
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyJvIEACgkQbDjKyiDZ
-s5K/fA/9HVXwiMV7ZGg/YTkKCWDnhXC9X7k/RXhZS01U8jk0iSYIGRfExw6cGcwU
-ZxZt2ENgHXl8dtUCcBf6WGBtX+jsBLCmG3Bb8wBr69UotKNdyqI4ob1AKfxw+/uk
-cU2fuLl74Jch163M/82O2+jcQJu+HW8ou7med38L34fBi1Z9ezkVFlWkvGHWS0MN
-Ly/DqRf2TZjJhLDXqsQEf+Zl2CV4450ALa4+2TV2Qi/QuOkODSC3wnU525Ujao50
-Xglc7fAQJ/wCgc6cGQCC0A8EVkfTqBovPLuBbvw2ZGSDLuVFZez6lYV1e1Q+h/q+
-keWw/dN+f5ZJBstWWUewL/ZSXYrd+XKwBI8Qz/oXZ3eU3mTPh9bcKre1cjSTzp8r
-bXkpKo4pBxy446wuFekqnYXm4suBlGamdcPgKxtzLH9wlDbWBPiFL2aFCf6/Br9e
-30FNjpOirmID8sCIQcaV+EkA5LlVZjMHYU9Ijv3DISVsGyUFZ7wxc3ruQNj4agFH
-2bYnWsM1LXByuh7m6uu6/yOPLIRZapMBecAES2tBZ9a/mjVDOFbcT2cN/B5iTAJj
-+Nn+6WhbuWI3th0OQffL81LwSMawPp9EyG+aC60swlCdXzr8PuIXnrp29zVRJDs1
-Dohadfa3i0lC7bn/PHoXsjsedJ7cp/UvB5ecYijsX5HX6DJyOyY=
-=pWKO
------END PGP SIGNATURE-----
-
---45wMVEkw4XUbiYON--
