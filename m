@@ -2,83 +2,109 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61ED0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0A23C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:54:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D742B217F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:47:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="pzUjqjfB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D742B217F5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 37C12217F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:54:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C12217F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Kd614zyvzDqC8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 16:47:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KdFz09T8zDqMK
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 16:54:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="pzUjqjfB"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Kd4G4qBczDqHH
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 16:46:21 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44Kd476LHyz9tyvj;
- Thu, 14 Mar 2019 06:46:15 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=pzUjqjfB; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QVhScbPFhy31; Thu, 14 Mar 2019 06:46:15 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44Kd47599hz9tyvg;
- Thu, 14 Mar 2019 06:46:15 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552542375; bh=aDIk8/hnkdKEojmbeEOk2Wak98qNGcNYj/PbnsmyxC4=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=pzUjqjfBozoYw+FEosznude4NAYAVL4uGSjrBy1ypISwnp/Q0/fgLab0qBgctOWcZ
- 0Gn3EIO4lCRgtikcX8z6xz8Q0RDG9xiaH01oKyfk6p1fWXDmJcAWY/8vTR8ovzLHYa
- j+RnD8FhUMvoreJgp8kK5XfBYM5zEKmqTGpnnnFk=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 7231E8B74F;
- Thu, 14 Mar 2019 06:46:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id 34z0MuP418fP; Thu, 14 Mar 2019 06:46:15 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B7B58B781;
- Thu, 14 Mar 2019 06:46:14 +0100 (CET)
-Subject: Re: [PATCH v2] arch/powerpc: Rework local_paca to avoid LTO warnings
-To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190313034208.13134-1-alastair@au1.ibm.com>
- <20190314023125.10076-1-alastair@au1.ibm.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <38922e32-3048-e45b-203e-63704a78e7d0@c-s.fr>
-Date: Thu, 14 Mar 2019 06:46:13 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KdCy2w5nzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 16:53:02 +1100 (AEDT)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2E5nGw8077230
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 01:52:59 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2r7gv40pp1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 01:52:59 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 14 Mar 2019 05:52:57 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 14 Mar 2019 05:52:49 -0000
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2E5qmkN29294708
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 14 Mar 2019 05:52:48 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 689BBAE05D;
+ Thu, 14 Mar 2019 05:52:48 +0000 (GMT)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A5193AE056;
+ Thu, 14 Mar 2019 05:52:43 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.124.31.88])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Mar 2019 05:52:43 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Alexandre Ghiti <alex@ghiti.fr>, Andrew Morton <akpm@linux-foundation.org>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH v6 4/4] hugetlb: allow to free gigantic pages regardless
+ of the configuration
+In-Reply-To: <20190307132015.26970-5-alex@ghiti.fr>
+References: <20190307132015.26970-1-alex@ghiti.fr>
+ <20190307132015.26970-5-alex@ghiti.fr>
+Date: Thu, 14 Mar 2019 11:22:42 +0530
 MIME-Version: 1.0
-In-Reply-To: <20190314023125.10076-1-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19031405-0028-0000-0000-00000353D00E
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031405-0029-0000-0000-000024125AE4
+Message-Id: <87va0movdh.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-14_02:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903140038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,109 +116,93 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexandre Ghiti <alex@ghiti.fr>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Alexandre Ghiti <alex@ghiti.fr> writes:
 
-
-Le 14/03/2019 à 03:31, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> When building an LTO kernel, the existing code generates warnings:
->      ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
->          ‘local_paca’ used for multiple global register variables
->       register struct paca_struct *local_paca asm("r13");
->                                    ^
->      ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
->          ‘local_paca’
-> 
-> This patch reworks local_paca into an inline getter & setter function,
-> which addresses the warning.
-> 
-> Changelog:
-> V2
->    - Address whitespace issues
->    - keep new implementation close to where the old implementation was
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@c-s.fr>
-
+> On systems without CONTIG_ALLOC activated but that support gigantic pages,
+> boottime reserved gigantic pages can not be freed at all. This patch
+> simply enables the possibility to hand back those pages to memory
+> allocator.
+>
+> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+> Acked-by: David S. Miller <davem@davemloft.net> [sparc]
 > ---
->   arch/powerpc/include/asm/paca.h | 37 +++++++++++++++++++++++++--------
->   arch/powerpc/kernel/paca.c      |  2 +-
->   2 files changed, 29 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index e843bc5d1a0f..2fa0b43357c9 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -34,19 +34,38 @@
->   #include <asm/cpuidle.h>
->   #include <asm/atomic.h>
->   
-> -register struct paca_struct *local_paca asm("r13");
+>  arch/arm64/Kconfig                           |  2 +-
+>  arch/arm64/include/asm/hugetlb.h             |  4 --
+>  arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
+>  arch/powerpc/platforms/Kconfig.cputype       |  2 +-
+>  arch/s390/Kconfig                            |  2 +-
+>  arch/s390/include/asm/hugetlb.h              |  3 --
+>  arch/sh/Kconfig                              |  2 +-
+>  arch/sparc/Kconfig                           |  2 +-
+>  arch/x86/Kconfig                             |  2 +-
+>  arch/x86/include/asm/hugetlb.h               |  4 --
+>  include/linux/gfp.h                          |  2 +-
+>  mm/hugetlb.c                                 | 57 ++++++++++++--------
+>  mm/page_alloc.c                              |  4 +-
+>  13 files changed, 44 insertions(+), 49 deletions(-)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 091a513b93e9..af687eff884a 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -18,7 +18,7 @@ config ARM64
+>  	select ARCH_HAS_FAST_MULTIPLIER
+>  	select ARCH_HAS_FORTIFY_SOURCE
+>  	select ARCH_HAS_GCOV_PROFILE_ALL
+> -	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
+> +	select ARCH_HAS_GIGANTIC_PAGE
+>  	select ARCH_HAS_KCOV
+>  	select ARCH_HAS_MEMBARRIER_SYNC_CORE
+>  	select ARCH_HAS_PTE_SPECIAL
+> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+> index fb6609875455..59893e766824 100644
+> --- a/arch/arm64/include/asm/hugetlb.h
+> +++ b/arch/arm64/include/asm/hugetlb.h
+> @@ -65,8 +65,4 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
+>  
+>  #include <asm-generic/hugetlb.h>
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void) { return true; }
+> -#endif
 > -
->   #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
->   extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
-> -/*
-> - * Add standard checks that preemption cannot occur when using get_paca():
-> - * otherwise the paca_struct it points to may be the wrong one just after.
-> - */
-> -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
-> -#else
-> -#define get_paca()	local_paca
->   #endif
->   
-> +static inline struct paca_struct *get_paca_no_preempt_check(void)
-> +{
-> +	register struct paca_struct *paca asm("r13");
-> +
-> +	return paca;
-> +}
-> +
-> +static inline struct paca_struct *get_paca(void)
-> +{
-> +#if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
-> +	/*
-> +	 * Add standard checks that preemption cannot occur when using get_paca():
-> +	 * otherwise the paca_struct it points to may be the wrong one just after.
-> +	 */
-> +	debug_smp_processor_id();
-> +#endif
-> +	return get_paca_no_preempt_check();
-> +}
-> +
-> +#define local_paca	get_paca_no_preempt_check()
-> +
-> +static inline void set_paca(struct paca_struct *new)
-> +{
-> +	register struct paca_struct *paca asm("r13");
-> +
-> +	paca = new;
-> +}
-> +
->   #ifdef CONFIG_PPC_PSERIES
->   #define get_lppaca()	(get_paca()->lppaca_ptr)
->   #endif
-> diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-> index 913bfca09c4f..ae5c243f9d5a 100644
-> --- a/arch/powerpc/kernel/paca.c
-> +++ b/arch/powerpc/kernel/paca.c
-> @@ -172,7 +172,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
->   void setup_paca(struct paca_struct *new_paca)
->   {
->   	/* Setup r13 */
-> -	local_paca = new_paca;
-> +	set_paca(new_paca);
->   
->   #ifdef CONFIG_PPC_BOOK3E
->   	/* On Book3E, initialize the TLB miss exception frames */
-> 
+>  #endif /* __ASM_HUGETLB_H */
+> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> index 5b0177733994..d04a0bcc2f1c 100644
+> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+> @@ -32,13 +32,6 @@ static inline int hstate_get_psize(struct hstate *hstate)
+>  	}
+>  }
+>  
+> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+> -static inline bool gigantic_page_supported(void)
+> -{
+> -	return true;
+> -}
+> -#endif
+> -
+>  /* hugepd entry valid bit */
+>  #define HUGEPD_VAL_BITS		(0x8000000000000000UL)
+>  
+
+As explained in https://patchwork.ozlabs.org/patch/1047003/
+architectures like ppc64 have a hypervisor assisted mechanism to indicate
+where to find gigantic huge pages(16G pages). At this point, we don't use this
+reserved pages for anything other than hugetlb backing and hence there
+is no runtime free of this pages needed ( Also we don't do
+runtime allocation of them).
+
+I guess you can still achieve what you want to do in this patch by
+keeping gigantic_page_supported()?
+
+NOTE: We should rename gigantic_page_supported to be more specific to
+support for runtime_alloc/free of gigantic pages
+
+-aneesh
+
