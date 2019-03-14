@@ -3,60 +3,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5539C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:48:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 222E0C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:49:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41F6B217F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:48:01 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41F6B217F5
+	by mail.kernel.org (Postfix) with ESMTPS id 91B15217F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:49:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91B15217F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L54G5m9gzDqKK
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:47:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L56L5zCzzDqRG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:49:46 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.75; helo=mout.kundenserver.de;
+ (client-ip=212.227.17.13; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3b464fJzDqPM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:41:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3bP6BZ3zDq9C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:41:21 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1N6c0W-1gyKKL0286-018294; Thu, 14 Mar 2019 23:35:15 +0100
+ 1MwxNF-1gofgK3Mlv-00yNe3; Thu, 14 Mar 2019 23:34:55 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 45/45] drivers: tty: serial: mux: use devm_* functions
-Date: Thu, 14 Mar 2019 23:34:15 +0100
-Message-Id: <1552602855-26086-46-git-send-email-info@metux.net>
+Subject: [PATCH v2 25/45] drivers: tty: serial: pxa: use devm_* functions
+Date: Thu, 14 Mar 2019 23:33:55 +0100
+Message-Id: <1552602855-26086-26-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:z+/rx4MhVeeVcG08TBj8jDGh8jFYW4zOBRqesRKWryiDcRo/5/R
- leJZXEwA5A8UHumYCGBKoEZd/n6lwwxGYVqhYppL++hnQWZn4i/9gvdyfWaGun1q+60/N+h
- 4z5cuuKGwvNPqZvAl+9UM3D2gQWTn1V1WdXgynLWTTiAImQFWYw+bzULiWFqNFoMAcBU45M
- KH5Wa0+N6J6kBEfXsWzLQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:95HGvReJ3+E=:GP0eGFDhBOT1QANJWEzSqE
- AXq7yqS1M4rX7O6MOrZZ4Fz3MRUHR9yPFQyQeKg2dkHPQ0iWnNwJuYaCFUsWAiMIzkls7Kj8e
- KrxkXcVpinffvTdvy+OC4d7KcNQxcChE516uir2nyO35IhJzzfsCllyTRt3mKqRL8Q/peJNqU
- 6iy3FLVraHqO/MaQOGbWWm1YdwF1EuaguBw1EYt85+R4sTppsDTaFzrlA4/8E92tiTq5nRl0H
- jWfhIW3H1281q1YGjVF47qk5+JESKzHf86k5VDX2zZDkwmEE5y/A+NP2EmZRweYYfw1YduoYg
- ln4++mv8m2CF95TVFZcbecrnjjVAhxKGXDxSR7Ofp1Rn7G4niBjLqFeMNf5zEe8pSIsXJQYe1
- d15HwsZMt+gTP05wovtspahwNKCX00xqW8pezQm7keMwRPe8pYBWEbvzVRVQCrAi/QUMP/JYq
- OGJwxH33bYNs2I0QbLQWh4SBSSTF1LeiqhZ/JIYPxHu5fnFFtr6PSl8o8fq54N200kRxRkRVo
- MJ6RyxF+5FONRRgY0S8yWA1EXGq8brfLmy7uUP2nwgvdZKOZQCgbusXB/VqPyUUARWbl0WApb
- wup4LabYbAMH13OnlrKpsdCyM+6gtPcPQ8o9QYkkCzpcJheoloAHj5uAwaR1+jVe4koW2CqkG
- TdrRkXBmkG06oQonrk2IQA9ZFa91sbuQ24ktoQMS3xhoW8MdfvW1v5eapwDghvF0cC4ruKR1y
- 1gfPLDVqTW1pS5DUSEvWViVA/bwpGKIuz728Ng==
+X-Provags-ID: V03:K1:60DXqGwgLJWFsCZvkpoZ3QggwHDJ/uIXy3f3YRehQJVpABewDLA
+ ylyhjLr11n1jRWmWSPHY0KZvNvYOy7/B/iK7E5CLy7CWtnbBNqpZPPVTBN0HsMrX2JZItkf
+ kroXRWFISEFKkKHcnW5EdUqpCB9J7LhdY0VKPKSUvvM6UGSs0wivkYluza0oSYAOQjx0Xef
+ Bm61uIHV7LjqLzXIPW3zQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:6tD+h53bsL8=:Dj1PYVDcG8hmORzptbQLze
+ QMpGPWRDwiFxi28aA7R2ks7zpy9oS4HttXbNIOnKYYbpMqVks9NJd1o7GNM7D2S63hqLVqdd8
+ 5I10m1T0Iwo1v14Yygegp2NXoI1a75tznvw6C5cS4IYD/jPp1MU5wSMENHFtoOstH57X78Teg
+ KlUkFsrPhkviIHCAUWwNBdoUFLlTxyb2DTgDNNW43N/hRB/iTAFHYjsJLSbgQRWZrfUpKqwG/
+ DsMF76E11WJSmZYd9IdotSMu0Wpw+1Q3RCsONwBUR131b7osqCvKgTWhw/e6fyOlhJnlQzjqN
+ KrxeUOlonj3cZo38+GM8UmO0QokeFBkWNdhSICC47+ogpKWkvExKu9EW/aK9Ktovf+zdKE4un
+ aP1gTP0zWzEvVJHZBXd85zCDOji+a0F/TbYOEZJZcmjbBaDTPvCoD7SDDlcXlT0RkQAPe09E+
+ YLcQ5VzV0E8Vah6snjk5LJy/VQeCbHZoRXlEmH4JKnIn3+fexD2n535wQOgJwDZiyDpWKdjf5
+ +WfwBRaP6OxMDXZM50LllA8fWU7Xl618Stn5H51Mh5bv7r0EfJnh+p2V5TtKN9p1cLCfdFSdp
+ LrkQpuUN6nBVoFKHD0Hp8vVAaYz8ufkAT4gEJme4amY3tRjlP7ZlqXLA902S3AqB4Xa7hZXhG
+ N7LuuZVuH5/O6q1CIgHalVNvKyauiJ1SbXOXlrZxhm3nh/FSSY5CrmKYG8FVFFcfZ4YjV1zUm
+ WTKmPgYPwOpVA+8FiCMEgifayh0H0a9aRtOF2g==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,51 +87,22 @@ Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/mux.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/tty/serial/pxa.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/mux.c b/drivers/tty/serial/mux.c
-index 00ce31e..cd08f0f 100644
---- a/drivers/tty/serial/mux.c
-+++ b/drivers/tty/serial/mux.c
-@@ -456,8 +456,9 @@ static int __init mux_probe(struct parisc_device *dev)
- 	printk(KERN_INFO "Serial mux driver (%d ports) Revision: 0.6\n", port_count);
- 
- 	dev_set_drvdata(&dev->dev, (void *)(long)port_count);
--	request_mem_region(dev->hpa.start + MUX_OFFSET,
--                           port_count * MUX_LINE_OFFSET, "Mux");
-+	devm_request_mem_region(&dev->dev,
-+				dev->hpa.start + MUX_OFFSET,
-+				port_count * MUX_LINE_OFFSET, "Mux");
- 
- 	if(!port_cnt) {
- 		mux_driver.cons = MUX_CONSOLE;
-@@ -474,7 +475,9 @@ static int __init mux_probe(struct parisc_device *dev)
- 		port->iobase	= 0;
- 		port->mapbase	= dev->hpa.start + MUX_OFFSET +
- 						(i * MUX_LINE_OFFSET);
--		port->membase	= ioremap_nocache(port->mapbase, MUX_LINE_OFFSET);
-+		port->membase	= devm_ioremap_nocache(port->dev,
-+						       port->mapbase,
-+						       MUX_LINE_OFFSET);
- 		port->iotype	= UPIO_MEM;
- 		port->type	= PORT_MUX;
- 		port->irq	= 0;
-@@ -517,10 +520,12 @@ static int __exit mux_remove(struct parisc_device *dev)
- 
- 		uart_remove_one_port(&mux_driver, port);
- 		if(port->membase)
--			iounmap(port->membase);
-+			devm_iounmap(port->dev, port->membase);
+diff --git a/drivers/tty/serial/pxa.c b/drivers/tty/serial/pxa.c
+index 4932b67..9512a9f 100644
+--- a/drivers/tty/serial/pxa.c
++++ b/drivers/tty/serial/pxa.c
+@@ -892,7 +892,7 @@ static int serial_pxa_probe(struct platform_device *dev)
  	}
+ 	snprintf(sport->name, PXA_NAME_LEN - 1, "UART%d", sport->port.line + 1);
  
--	release_mem_region(dev->hpa.start + MUX_OFFSET, port_count * MUX_LINE_OFFSET);
-+	devm_release_mem_region(&dev->dev,
-+				dev->hpa.start + MUX_OFFSET,
-+				port_count * MUX_LINE_OFFSET);
- 	return 0;
- }
- 
+-	sport->port.membase = ioremap(mmres->start, resource_size(mmres));
++	sport->port.membase = devm_ioremap_resource(sport->port.dev, mmres);
+ 	if (!sport->port.membase) {
+ 		ret = -ENOMEM;
+ 		goto err_clk;
 -- 
 1.9.1
 
