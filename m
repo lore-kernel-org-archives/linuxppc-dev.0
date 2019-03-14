@@ -2,60 +2,61 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36769C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:05:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72722C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:06:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA681213A2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:05:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E0EC8213A2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:06:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="gv2l5RYo"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA681213A2
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fSM7bp9R"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E0EC8213A2
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KYVQ3bzSzDqMg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:05:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KYXB11hQzDqMr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:06:50 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KYQX6LVGzDqLf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:01:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KYQY093tzDqLk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:01:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=gibson.dropbear.id.au
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="gv2l5RYo"; dkim-atps=neutral
+ header.b="fSM7bp9R"; dkim-atps=neutral
 Received: by ozlabs.org (Postfix, from userid 1007)
- id 44KYQX5587z9sLt; Thu, 14 Mar 2019 14:01:56 +1100 (AEDT)
+ id 44KYQX5tZdz9sMM; Thu, 14 Mar 2019 14:01:56 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
  d=gibson.dropbear.id.au; s=201602; t=1552532516;
- bh=1QI2ppa436cK4avMgUIAlxwsDRJQr7K5Wi2XTlp5y7A=;
+ bh=xOEo0JesKsdWYH87xScLDRjzWsJp7x2a84eWgGExJsg=;
  h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=gv2l5RYogeH6BXpE6jNCvCQIkSAzXmHAF0EGnJSsvIFtSJ3otwK3AV6oCD+eFkGI1
- dIqWijKwLPiQXRLmRNXe0aqNgjf9RDbiKaTQs4fxS/gRsh5iz2AbZ+yRUrzGJULZxM
- Vg6u66C/jzQr8YHZKNWNkkAj4OIT+jJFgJJUKyPA=
-Date: Thu, 14 Mar 2019 13:32:10 +1100
+ b=fSM7bp9RE5JjL/raYJRqUO0a6fvpCouko7F2sKmaINBPwk66gYZOwBpq7CbwKBcu4
+ i9C+kfu3cIUYruSp7TkaGfZT7SQMsonVUE+usq40TwNfqxDmOFq4BVIO0YgbquYdP6
+ XIzvskW4bcsyo4BQ34epP/G2cgVvr6hxZDnPAxp4=
+Date: Thu, 14 Mar 2019 13:26:09 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 06/16] KVM: PPC: Book3S HV: XIVE: add controls for the
- EQ configuration
-Message-ID: <20190314023210.GL8211@umbus.fritz.box>
+Subject: Re: [PATCH v2 16/16] KVM: PPC: Book3S HV: XIVE: clear the vCPU
+ interrupt presenters
+Message-ID: <20190314022609.GJ8211@umbus.fritz.box>
 References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-7-clg@kaod.org>
- <20190226052429.GC28015@blackberry>
- <33aeb002-39b2-1015-9923-613781c08fd6@kaod.org>
+ <20190222112840.25000-17-clg@kaod.org>
+ <20190225041858.GT7668@umbus.fritz.box>
+ <3604baf2-0a39-6990-968f-1222d32f9278@kaod.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="E6lVPAHcXg6biC3t"
+ protocol="application/pgp-signature"; boundary="I/5syFLg1Ed7r+1G"
 Content-Disposition: inline
-In-Reply-To: <33aeb002-39b2-1015-9923-613781c08fd6@kaod.org>
+In-Reply-To: <3604baf2-0a39-6990-968f-1222d32f9278@kaod.org>
 User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -68,103 +69,97 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---E6lVPAHcXg6biC3t
+--I/5syFLg1Ed7r+1G
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Mar 13, 2019 at 10:40:19AM +0100, C=E9dric Le Goater wrote:
-> On 2/26/19 6:24 AM, Paul Mackerras wrote:
-> > On Fri, Feb 22, 2019 at 12:28:30PM +0100, C=E9dric Le Goater wrote:
-> >> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
-> >> H_INT_GET_QUEUE_CONFIG hcalls from QEMU. They will also be used to
-> >> restore the configuration of the XIVE EQs in the KVM device and to
-> >> capture the internal runtime state of the EQs. Both 'get' and 'set'
-> >> rely on an OPAL call to access from the XIVE interrupt controller the
-> >> EQ toggle bit and EQ index which are updated by the HW when event
-> >> notifications are enqueued in the EQ.
+On Wed, Mar 13, 2019 at 09:17:17AM +0100, C=E9dric Le Goater wrote:
+> On 2/25/19 5:18 AM, David Gibson wrote:
+> > On Fri, Feb 22, 2019 at 12:28:40PM +0100, C=E9dric Le Goater wrote:
+> >> When the VM boots, the CAS negotiation process determines which
+> >> interrupt mode to use and invokes a machine reset. At that time, the
+> >> previous KVM interrupt device is 'destroyed' before the chosen one is
+> >> created. Upon destruction, the vCPU interrupt presenters using the KVM
+> >> device should be cleared first, the machine will reconnect them later
+> >> to the new device after it is created.
 > >>
-> >> The value of the guest physical address of the event queue is saved in
-> >> the XIVE internal xive_q structure for later use. That is when
-> >> migration needs to mark the EQ pages dirty to capture a consistent
-> >> memory state of the VM.
+> >> When using the KVM device, there is still a race window with the early
+> >> checks in kvmppc_native_connect_vcpu(). Yet to be fixed.
 > >>
-> >> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
-> >> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
-> >> but restoring the EQ state will.
-> >=20
-> > [snip]
-> >=20
-> >> +/* Layout of 64-bit eq attribute */
-> >> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
-> >> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
-> >> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
-> >> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
+> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
+> >> ---
+> >>  arch/powerpc/kvm/book3s_xics.c        | 19 +++++++++++++
+> >>  arch/powerpc/kvm/book3s_xive.c        | 39 +++++++++++++++++++++++++--
+> >>  arch/powerpc/kvm/book3s_xive_native.c | 16 +++++++++++
+> >>  3 files changed, 72 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_=
+xics.c
+> >> index f27ee57ab46e..81cdabf4295f 100644
+> >> --- a/arch/powerpc/kvm/book3s_xics.c
+> >> +++ b/arch/powerpc/kvm/book3s_xics.c
+> >> @@ -1342,6 +1342,25 @@ static void kvmppc_xics_free(struct kvm_device =
+*dev)
+> >>  	struct kvmppc_xics *xics =3D dev->private;
+> >>  	int i;
+> >>  	struct kvm *kvm =3D xics->kvm;
+> >> +	struct kvm_vcpu *vcpu;
 > >> +
-> >> +/* Layout of 64-bit eq attribute values */
-> >> +struct kvm_ppc_xive_eq {
-> >> +	__u32 flags;
-> >> +	__u32 qsize;
-> >> +	__u64 qpage;
-> >> +	__u32 qtoggle;
-> >> +	__u32 qindex;
-> >> +	__u8  pad[40];
-> >> +};
-> >=20
-> > This is confusing.  What's the difference between an "eq attribute"
-> > and an "eq attribute value"?  Is the first actually a queue index or
-> > a queue identifier?
->=20
-> The "attribute" qualifier comes from the {get,set,has}_addr methods=20
-> of the KVM device. But it is not a well chosen name for the group=20
-> KVM_DEV_XIVE_GRP_EQ_CONFIG.
->=20
-> I should be using "eq identifier" and "eq values" or "eq state".=20
-
-Yeah, that seems clearer.
-
-> > Also, the kvm_ppc_xive_eq is not 64 bits, so the comment above it is
-> > wrong.  Maybe you meant "64-byte"?
->=20
-> That was a bad copy paste. I have padded the structure to twice the size
-> of the XIVE END (the XIVE EQ descriptor in HW) which size is 32 bytes.=20
-> I thought that one extra u64 was not enough room for future.
->=20
-> >=20
-> > [snip]
-> >=20
-> >> +	page =3D gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
-> >> +	if (is_error_page(page)) {
-> >> +		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
-> >> +		return -ENOMEM;
+> >> +	/*
+> >> +	 * When destroying the VM, the vCPUs are destroyed first and
+> >> +	 * the vCPU list should be empty. If this is not the case,
+> >> +	 * then we are simply destroying the device and we should
+> >> +	 * clean up the vCPU interrupt presenters first.
+> >> +	 */
+> >> +	if (atomic_read(&kvm->online_vcpus) !=3D 0) {
+> >> +		/*
+> >> +		 * call kick_all_cpus_sync() to ensure that all CPUs
+> >> +		 * have executed any pending interrupts
+> >> +		 */
+> >> +		if (is_kvmppc_hv_enabled(kvm))
+> >> +			kick_all_cpus_sync();
+> >> +
+> >> +		kvm_for_each_vcpu(i, vcpu, kvm)
+> >> +			kvmppc_xics_free_icp(vcpu);
 > >> +	}
-> >> +	qaddr =3D page_to_virt(page) + (kvm_eq.qpage & ~PAGE_MASK);
+> >> =20
+> >>  	debugfs_remove(xics->dentry);
+> >> =20
+> >> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_=
+xive.c
+> >> index 7a14512b8944..0a1c11d6881c 100644
+> >> --- a/arch/powerpc/kvm/book3s_xive.c
+> >> +++ b/arch/powerpc/kvm/book3s_xive.c
+> >> @@ -1105,11 +1105,19 @@ void kvmppc_xive_disable_vcpu_interrupts(struc=
+t kvm_vcpu *vcpu)
+> >>  void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
+> >>  {
+> >>  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
+> >> -	struct kvmppc_xive *xive =3D xc->xive;
+> >> +	struct kvmppc_xive *xive;
+> >>  	int i;
+> >> =20
+> >> +	if (!kvmppc_xics_enabled(vcpu))
 > >=20
-> > Isn't this assuming that we can map the whole queue with a single
-> > gfn_to_page?  That would only be true if kvm_eq.qsize <=3D PAGE_SHIFT.
-> > What happens if kvm_eq.qsize > PAGE_SHIFT?
+> > This should be kvmppc_xive_enabled(), no?
 >=20
-> Ah yes. Theoretically, it should not happen because we only advertise
-> 64K in the DT for the moment. I should at least add a check. So I will=20
-> change the helper xive_native_validate_queue_size() to return -EINVAL
-> for other page sizes.
+> This is the KVM XICS-on-XIVE device and its IRQ type is KVMPPC_IRQ_XICS.
+> So this is correct :/=20
 
-Ok.
+Ah, right, sorry.
 
-> Do you think it would be complex to support XIVE EQs using a page larger=
-=20
-> than the default one on the guest ?
+> May be we should introduce a KVMPPC_IRQ_XICS_ON_XIVE macro to
+> clarify.
 
-Hm.  The queue has to be physically contiguous from the host point of
-view, in order for the XIVE hardware to write to it, doesn't it?  If
-so then supporting queues bigger than the guest page size would be
-very difficult.
+Yeah, maybe.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -172,24 +167,24 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---E6lVPAHcXg6biC3t
+--I/5syFLg1Ed7r+1G
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyJvSkACgkQbDjKyiDZ
-s5Lf9g//S93aKzpjv5WGrJt67ReJfp0MRfoc0ghgM8GcjrbA7Sap/AIlEJCzHVxo
-25mUQ7nXk3V66pZIrljvyR+jtvJ1lvly4WHGYe5xhz9SrdqVtAbX7tHz3qkqSH86
-/fp/Tc1CpmnaXWUYjkOEqkzRDqknljl3MnCvWTkoSk3vKP0foQzx6kYixv7y7Bkz
-lgcnok7wmiOTrRMxTjzhcVgOS7LDuUO4oB07LDTOfMItdqNV6W6laULAr01fUANx
-5KblZkqLFwKV2hAqnhPj1NhiGUhOld6bJyoZwwvrO/QS8HP8zHGTPaTSZZlWeOgg
-HR22Gd+YBY1C7YYFoeFElL53CjP/MMBkHQqKqBEmcKGM95Do0FsGcfuj4FMMwIr0
-MfRWXE+OtrQxBgC4YvhWpCdhqL1A5pI4KIwPaNnUz/xY4hH7p1utU1xuS8hkFRNP
-acTvBISaLOYK18CnJqmcCkQhJJYJZGuD9SR7wWyHskOTEHwFIwafrSVdsbo+vTk1
-+Bs6rVrV2fA4/gQngqC3l0y//sAFVXnmpSqTj2kKFRNHAJ6oxMW1VPJ7PRPZsNpG
-OktEx6DgOrRkZbZlRm0WQptKF9gnvAdwApJXDZe/h2qdLqj1ZZD0fzlhiFmWJGeq
-UObd8egqNXOINWm4gsk0lMNOGl8Sko4zPOUZnMn+EYhEalJC++o=
-=EQW+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyJu74ACgkQbDjKyiDZ
+s5LKFA/+LzfjqE5drr5Ofe5gBMqFYKtgh2EfJOxxudjr+clIpCccJZp3esC7sXLD
+JUHWUlPd+k+LRc99ekNtv0XiGqix2zovuKzeaMIVVouNEF/WZO/i1waZUG8jfMdN
+7KW6JOQjxphIwXEmcbg0A7WXj8du7Uh6bpABjw2F+a6l8I1cxXrNyH1a97Ju2F99
+2dUEdzBehptrgnDHRd/srNI9Q4BFLxSKw3xVpGCyHWP1i+KVhZvTDKQJZzdWnpc9
+85X22q7WPSLG4Us8oJQ42vmVTygyDA2kIRZMQoLzvlFAfYEjUgrXiO/mroCezKmL
+5vIW2SLIA5wPJYkWuCOaM2VT1/2CMeEdkKiN/CkYOrllsGUUTQzfgFLWxVl4yt1R
+B17sq1fVHqGQGYeNNJPfhnGFNTd0P4FqvlJSHx0eJO8LZxEM74NR16zGqlhqGZMC
+96/jtP9Fj3YEYlwflmwh3QniXwqRaH78sJRjgJ88DdPQHqgFfRj8QSGrcAXDLAUH
+26A5E58lIQSSHH21KPMqlKVhWWaXCRps5AfQC1jwb/TKXaB6sGsR1NBZr+jQIsWl
+/p7TR1VHTQc1cTQs1pfp0eR8cLKqZyzCr0S/1dTnQSs2u34jQLiYfDKxfNdYSg82
+s6H2B5kJx6v1tRwWNJdVK81zxqpLnU/bEgZ2+XdtZA5fORy45Os=
+=rBt5
 -----END PGP SIGNATURE-----
 
---E6lVPAHcXg6biC3t--
+--I/5syFLg1Ed7r+1G--
