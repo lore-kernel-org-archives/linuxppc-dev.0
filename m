@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B014EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:59:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BA57C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:01:14 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 34FBE2186A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:59:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 34FBE2186A
+	by mail.kernel.org (Postfix) with ESMTPS id CE4F321874
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:01:13 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE4F321874
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L40P6jybzDqQN
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:59:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L42J0hvjzDq6X
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:01:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.73; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SV5P5dzDqNw
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SW3WqmzDqNP
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:22 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MN4qp-1hNSje1uh3-00Iz9V; Thu, 14 Mar 2019 23:34:59 +0100
+ 1MDPuq-1hDwLE2JGA-00AYq2; Thu, 14 Mar 2019 23:34:58 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 29/45] drivers: tty: serial: serial_txx9: use devm_*
+Subject: [PATCH v2 28/45] drivers: tty: serial: netx-serial: use devm_*
  functions
-Date: Thu, 14 Mar 2019 23:33:59 +0100
-Message-Id: <1552602855-26086-30-git-send-email-info@metux.net>
+Date: Thu, 14 Mar 2019 23:33:58 +0100
+Message-Id: <1552602855-26086-29-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:VL1BlqoS/qDU3bzWyA7BH1huZou7/8Mut+MUsbHNTMpTAAEtqPZ
- ftPZ7q/mPL1um8eNPfkU2DKtwigb7nNh5lLepfXXALah59ePSLXqGeTBEJuefyxDPAbZzWK
- xVtVCn090VOIS5TmMjMsvsuBHLVBGgsLpxCMKeXKT/iGq7Dbvrce5nKFw6BT8dZc40w26Sb
- 0wTGSKBtQIWVk8DhlfK8w==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:8xn0xJ7FwJo=:GcBJ94TBKRgKVgf4Gk7vZr
- QJc5XF5PP+G74Iue7vaxZ6xPSaosx53WBcV6ewSe5mDfpbyKeWDs1YlfOgYVKOhcmR7iJcMdn
- 4CnPv15JJQRHIdsG3kua1O+7Lo/7zmp9jB0UH9BUjFDN6AD0Z1d0udOsTBtv/er3K4/GjjlVa
- eq5fF2joFgxOyRjq4IyUWe9ryixe+Jp86Jfie9e/0ACiOjHtSDKLAR6NfvLfoI6fV6mwtDJCA
- t3giM0SrrXoNGOccbTCxu5AO1T8ukamzGfD9sBCZfwSBcmX8b4aWdKlfB/CrbrBOvp0+gsI1B
- VPJmQdFvM9vg7TmqFh3KmNyRAxC4QS1E3B/CAwPpDXLpYBx0rBgeJt6EF1XwZJHpAXS/P7gso
- dvJt1006vYfvqvzi7cDuzpVRWqd6VZx9d8K5g+mKdI46k06utzgZGLZWobGr2ARuGeDnqJOXI
- R8gLgxhJokh//jSHTbY9VrqEzyQuFG5NklKhCn4EfvhV5FUCvcmovh9CpzHZab3+FaEQCJshZ
- YGYKwAbgo7ez+MxdU3w7ic/PhyfpRGqcT/IfRTFdtfdTiETL1EBAjccuHzksQ2nlC4ab9Xe5U
- 3j/f9CxXTaSqyb3QefWGy+fikLwiVoJ0xEM6/b1tfp/9fvkq1YkR8Z6Q2Gyk/tfs+U5OMfV7x
- euGgz0BuluFGLZDqWNUmU/K14RC/5BGJLjujEEvsbSal34UiswA2ygLzEOtAfYmxf6JPUb1Ax
- pHe6FQQ0IvhD0bgmhCcTuO2L6ZDhaPTSGP9vAw==
+X-Provags-ID: V03:K1:S82o8HU0azrcFmsU0hMEHnzXNmoSRV38Q8v139dSDyjMCjNHRgG
+ gpg1q0wC1fyBgLaNGyH3hpzthti4AQA35ByJC1bg2yUKfS5hxGWLbcYB/Q5/j7O7Tol+G4z
+ iVnAFah9ndfwmZRK2Bn+pHwWFwkjbjukHr+DvquWYfqqxOVuQp2hQ3DcIHPNbiaD75nj1BO
+ P9FAatFokQrA/3sPbgTag==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:oJJnwzqad2E=:CoCCoGy8+8bRDWcEU5PXRj
+ 8RpKSJQ0nBsQqFPVecwJfdyIVGmUDKP9+XHriOKFqT4rta7/qmTIejzASlNtr1yuTCuDcF8VN
+ nHQ7TqvpVffLKWnqbzrvtOuYSgwv8TweDQUtFP63/l6Qj/D3bSBLpzAeQJMYus8vF7O5wxfZF
+ UeNISWB1JjgBkBp7OhD7nt3Qve69/ZV1spQC2wd+1p6s3NLHBI+ERNoOrdhKrv5IWK9AFjNsl
+ h21CKn/NPdmQCB1uCggpwNaiwJKbVSC9cD/H2BvXGaCIEhQsC4BY80BppjXh6VUvGJi+uggdC
+ M5V2rhZvZIZHE0Tcd52pNMTL5xMFBfpaU+ZPb5srDkecv3G/5M1+Qc9Hhrd3POanFtv7yY8R8
+ 3zm7BRuW2Sy0v1KE8TvQFfzvfr9XovYQugKIu6m+gmNr0ox1YE7SO2Ghbeuno11binj4ZN7YH
+ gI5Zn4mIy44wH5l4OLuLARmUJ+yggPFA9SuHQJIgC0NFepCRAVhFCn+vm9fQPBKvH2FFGWqcE
+ 0NAjL20p56IMCxFG6bqnH4UFZWED4Fn1VeRTKjJGAolie0JErzDLMs+a6y5GFjTX9gHKAkcsE
+ nba3BWZYwOcUQv8cQNKESliPsHQx8zdjEBMSO5i770u6FbGp1Z2Q9ZK2W4HK/XtSCsMQtqtp7
+ gxUa/rJNgjs5tzyjvmHz8o6jqljaWDCxQb3l3MK20rxgWm+RLGplMhnjxBRw3WLKkn75iSF7N
+ up7op/z6RgKIElnHRs8lgMO6siowH80C3MwW0A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -88,53 +88,29 @@ Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/serial_txx9.c | 17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ drivers/tty/serial/netx-serial.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/serial_txx9.c b/drivers/tty/serial/serial_txx9.c
-index 1b4008d..aa01349 100644
---- a/drivers/tty/serial/serial_txx9.c
-+++ b/drivers/tty/serial/serial_txx9.c
-@@ -757,15 +757,22 @@ static int serial_txx9_request_resource(struct uart_txx9_port *up)
- 		if (!up->port.mapbase)
- 			break;
+diff --git a/drivers/tty/serial/netx-serial.c b/drivers/tty/serial/netx-serial.c
+index b355686..a696d96 100644
+--- a/drivers/tty/serial/netx-serial.c
++++ b/drivers/tty/serial/netx-serial.c
+@@ -424,12 +424,13 @@ static const char *netx_type(struct uart_port *port)
  
--		if (!request_mem_region(up->port.mapbase, size, "serial_txx9")) {
-+		if (!devm_request_mem_region(up->port.dev,
-+					     up->port.mapbase,
-+					     size,
-+					     "serial_txx9")) {
- 			ret = -EBUSY;
- 			break;
- 		}
+ static void netx_release_port(struct uart_port *port)
+ {
+-	release_mem_region(port->mapbase, UART_PORT_SIZE);
++	devm_release_mem_region(port->dev, port->mapbase, UART_PORT_SIZE);
+ }
  
- 		if (up->port.flags & UPF_IOREMAP) {
--			up->port.membase = ioremap(up->port.mapbase, size);
-+			up->port.membase = devm_ioremap(up->port.dev,
-+							up->port.mapbase,
-+							size);
- 			if (!up->port.membase) {
--				release_mem_region(up->port.mapbase, size);
-+				devm_release_mem_region(up->port.dev,
-+							up->port.mapbase,
-+							size);
- 				ret = -ENOMEM;
- 			}
- 		}
-@@ -789,11 +796,11 @@ static void serial_txx9_release_resource(struct uart_txx9_port *up)
- 			break;
+ static int netx_request_port(struct uart_port *port)
+ {
+-	return request_mem_region(port->mapbase, UART_PORT_SIZE,
++	return devm_request_mem_region(port->dev,
++				       port->mapbase, UART_PORT_SIZE,
+ 			DRIVER_NAME) != NULL ? 0 : -EBUSY;
+ }
  
- 		if (up->port.flags & UPF_IOREMAP) {
--			iounmap(up->port.membase);
-+			devm_iounmap(up->port.dev, up->port.membase);
- 			up->port.membase = NULL;
- 		}
- 
--		release_mem_region(up->port.mapbase, size);
-+		devm_release_mem_region(up->port.dev, up->port.mapbase, size);
- 		break;
- 
- 	case UPIO_PORT:
 -- 
 1.9.1
 
