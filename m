@@ -2,62 +2,95 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2977C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8922BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:47:12 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E989620854
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:17:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="LQo48Eds"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E989620854
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id BBE672085A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 03:47:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBE672085A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KYmx4SxDzDqLy
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:17:53 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KZQj2K2kzDqKh
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 14:47:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KYlG03P0zDq7k
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:16:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="LQo48Eds"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44KYlF4PKJz9sD4; Thu, 14 Mar 2019 14:16:25 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1552533385;
- bh=7VC/mSCv3i3ROM/E72mBo4zvzxSnJWyKoBCeAJK+ANw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=LQo48Eds4j/FnMLVuC/5Gu/LJAlK+KE+JXhGEXVMvQ9CqrIZ3W14EKomrTcTcIBKN
- IiIqQq0SRMSZMdLeWGFcayhASLwZIQ7RwPkn6h7HjXsz8MUhwRDJKFV377Z8Y5ReI0
- gDOol5meDhDcIX1d0VEeJgYXNwTb0g4E60lqtOBE=
-Date: Thu, 14 Mar 2019 14:09:14 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 10/16] KVM: PPC: Book3S HV: XIVE: add get/set
- accessors for the VP XIVE state
-Message-ID: <20190314030914.GN8211@umbus.fritz.box>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-11-clg@kaod.org>
- <20190225033144.GN7668@umbus.fritz.box>
- <d33a2cb1-5370-7e72-07d9-ed0028c85b8c@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KZNY53BbzDqKJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 14:45:17 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2E3cnBN065146
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:45:15 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r7c2jy0qc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Mar 2019 23:45:14 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 14 Mar 2019 03:45:12 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Thu, 14 Mar 2019 03:45:08 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2E3j7Wo20906200
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Thu, 14 Mar 2019 03:45:07 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7388F11C050;
+ Thu, 14 Mar 2019 03:45:07 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9704311C04A;
+ Thu, 14 Mar 2019 03:45:04 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.199.45.189])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Mar 2019 03:45:04 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
+In-Reply-To: <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
+References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
+ <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
+ <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
+ <87k1hc8iqa.fsf@linux.ibm.com>
+ <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
+Date: Thu, 14 Mar 2019 09:15:02 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="rFUhhEVnhEf/dYhU"
-Content-Disposition: inline
-In-Reply-To: <d33a2cb1-5370-7e72-07d9-ed0028c85b8c@kaod.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19031403-0008-0000-0000-000002CD0D89
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031403-0009-0000-0000-000022390DF9
+Message-Id: <871s3aqfup.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-14_01:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903140023
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,370 +102,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Ross Zwisler <zwisler@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Dan Williams <dan.j.williams@intel.com> writes:
 
---rFUhhEVnhEf/dYhU
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Mar 6, 2019 at 1:18 AM Aneesh Kumar K.V
+> <aneesh.kumar@linux.ibm.com> wrote:
+>>
+>> Dan Williams <dan.j.williams@intel.com> writes:
+>>
+>> > On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
+>> >>
+>> >> On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
+>> >> <aneesh.kumar@linux.ibm.com> wrote:
+>> >> >
+>> >> > Add a flag to indicate the ability to do huge page dax mapping. On architecture
+>> >> > like ppc64, the hypervisor can disable huge page support in the guest. In
+>> >> > such a case, we should not enable huge page dax mapping. This patch adds
+>> >> > a flag which the architecture code will update to indicate huge page
+>> >> > dax mapping support.
+>> >>
+>> >> *groan*
+>> >>
+>> >> > Architectures mostly do transparent_hugepage_flag = 0; if they can't
+>> >> > do hugepages. That also takes care of disabling dax hugepage mapping
+>> >> > with this change.
+>> >> >
+>> >> > Without this patch we get the below error with kvm on ppc64.
+>> >> >
+>> >> > [  118.849975] lpar: Failed hash pte insert with error -4
+>> >> >
+>> >> > NOTE: The patch also use
+>> >> >
+>> >> > echo never > /sys/kernel/mm/transparent_hugepage/enabled
+>> >> > to disable dax huge page mapping.
+>> >> >
+>> >> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> >> > ---
+>> >> > TODO:
+>> >> > * Add Fixes: tag
+>> >> >
+>> >> >  include/linux/huge_mm.h | 4 +++-
+>> >> >  mm/huge_memory.c        | 4 ++++
+>> >> >  2 files changed, 7 insertions(+), 1 deletion(-)
+>> >> >
+>> >> > diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+>> >> > index 381e872bfde0..01ad5258545e 100644
+>> >> > --- a/include/linux/huge_mm.h
+>> >> > +++ b/include/linux/huge_mm.h
+>> >> > @@ -53,6 +53,7 @@ vm_fault_t vmf_insert_pfn_pud(struct vm_area_struct *vma, unsigned long addr,
+>> >> >                         pud_t *pud, pfn_t pfn, bool write);
+>> >> >  enum transparent_hugepage_flag {
+>> >> >         TRANSPARENT_HUGEPAGE_FLAG,
+>> >> > +       TRANSPARENT_HUGEPAGE_DAX_FLAG,
+>> >> >         TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG,
+>> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_DIRECT_FLAG,
+>> >> >         TRANSPARENT_HUGEPAGE_DEFRAG_KSWAPD_FLAG,
+>> >> > @@ -111,7 +112,8 @@ static inline bool __transparent_hugepage_enabled(struct vm_area_struct *vma)
+>> >> >         if (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_FLAG))
+>> >> >                 return true;
+>> >> >
+>> >> > -       if (vma_is_dax(vma))
+>> >> > +       if (vma_is_dax(vma) &&
+>> >> > +           (transparent_hugepage_flags & (1 << TRANSPARENT_HUGEPAGE_DAX_FLAG)))
+>> >> >                 return true;
+>> >>
+>> >> Forcing PTE sized faults should be fine for fsdax, but it'll break
+>> >> devdax. The devdax driver requires the fault size be >= the namespace
+>> >> alignment since devdax tries to guarantee hugepage mappings will be
+>> >> used and PMD alignment is the default. We can probably have devdax
+>> >> fall back to the largest size the hypervisor has made available, but
+>> >> it does run contrary to the design. Ah well, I suppose it's better off
+>> >> being degraded rather than unusable.
+>> >
+>> > Given this is an explicit setting I think device-dax should explicitly
+>> > fail to enable in the presence of this flag to preserve the
+>> > application visible behavior.
+>> >
+>> > I.e. if device-dax was enabled after this setting was made then I
+>> > think future faults should fail as well.
+>>
+>> Not sure I understood that. Now we are disabling the ability to map
+>> pages as huge pages. I am now considering that this should not be
+>> user configurable. Ie, this is something that platform can use to avoid
+>> dax forcing huge page mapping, but if the architecture can enable huge
+>> dax mapping, we should always default to using that.
+>
+> No, that's an application visible behavior regression. The side effect
+> of this setting is that all huge-page configured device-dax instances
+> must be disabled.
 
-On Wed, Mar 13, 2019 at 02:19:13PM +0100, C=E9dric Le Goater wrote:
-> On 2/25/19 4:31 AM, David Gibson wrote:
-> > On Fri, Feb 22, 2019 at 12:28:34PM +0100, C=E9dric Le Goater wrote:
-> >> At a VCPU level, the state of the thread interrupt management
-> >> registers needs to be collected. These registers are cached under the
-> >> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
-> >> pulled from the HW thread. An OPAL call retrieves the backup of the
-> >> IPB register in the underlying XIVE NVT structure and merges it in the
-> >> KVM state.
-> >>
-> >> The structures of the interface between QEMU and KVM provisions some
-> >> extra room (two u64) for further extensions if more state needs to be
-> >> transferred back to QEMU.
-> >>
-> >> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> >> ---
-> >>  arch/powerpc/include/asm/kvm_ppc.h         | 11 +++
-> >>  arch/powerpc/include/uapi/asm/kvm.h        |  2 +
-> >>  arch/powerpc/kvm/book3s.c                  | 24 +++++++
-> >>  arch/powerpc/kvm/book3s_xive_native.c      | 82 ++++++++++++++++++++++
-> >>  Documentation/virtual/kvm/devices/xive.txt | 19 +++++
-> >>  5 files changed, 138 insertions(+)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include=
-/asm/kvm_ppc.h
-> >> index 1e61877fe147..664c65051612 100644
-> >> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> >> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> >> @@ -272,6 +272,7 @@ union kvmppc_one_reg {
-> >>  		u64	addr;
-> >>  		u64	length;
-> >>  	}	vpaval;
-> >> +	u64	xive_timaval[4];
-> >=20
-> > This is doubling the size of the userspace visible one_reg union.  Is
-> > that safe?
->=20
-> 'safe' as in compatibility on an older KVM which would still use the old=
-=20
-> kvmppc_one_reg definition ?
+So if the device was created with a nd_pfn->align value of PMD_SIZE, that is
+an indication that we would map the pages in PMD_SIZE?
 
-I was more thinking of old qemu with a new kernel.
+Ok with that understanding, If the align value is not a supported
+mapping size, we fail initializing the device. 
 
-> It should be fine as KVM_REG_PPC_VP_STATE would not be handled. Am I
-> wrong ?
 
-Looks like it should be ok, because we only partially copy the
-structure to/from userspace due to the one_reg_size() logic.  If the
-whole union was always copied, it would be hilariously unsafe.
+>
+>> Now w.r.t to failures, can device-dax do an opportunistic huge page
+>> usage?
+>
+> device-dax explicitly disclaims the ability to do opportunistic mappings.
+>
+>> I haven't looked at the device-dax details fully yet. Do we make the
+>> assumption of the mapping page size as a format w.r.t device-dax? Is that
+>> derived from nd_pfn->align value?
+>
+> Correct.
+>
+>>
+>> Here is what I am working on:
+>> 1) If the platform doesn't support huge page and if the device superblock
+>> indicated that it was created with huge page support, we fail the device
+>> init.
+>
+> Ok.
+>
+>> 2) Now if we are creating a new namespace without huge page support in
+>> the platform, then we force the align details to PAGE_SIZE. In such a
+>> configuration when handling dax fault even with THP enabled during
+>> the build, we should not try to use hugepage. This I think we can
+>> achieve by using TRANSPARENT_HUGEPAEG_DAX_FLAG.
+>
+> How is this dynamic property communicated to the guest?
 
->=20
-> >>  };
-> >> =20
-> >>  struct kvmppc_ops {
-> >> @@ -604,6 +605,10 @@ extern int kvmppc_xive_native_connect_vcpu(struct=
- kvm_device *dev,
-> >>  extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
-> >>  extern void kvmppc_xive_native_init_module(void);
-> >>  extern void kvmppc_xive_native_exit_module(void);
-> >> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
-> >> +				     union kvmppc_one_reg *val);
-> >> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
-> >> +				     union kvmppc_one_reg *val);
-> >> =20
-> >>  #else
-> >>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 =
-server,
-> >> @@ -636,6 +641,12 @@ static inline int kvmppc_xive_native_connect_vcpu=
-(struct kvm_device *dev,
-> >>  static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *v=
-cpu) { }
-> >>  static inline void kvmppc_xive_native_init_module(void) { }
-> >>  static inline void kvmppc_xive_native_exit_module(void) { }
-> >> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
-> >> +					    union kvmppc_one_reg *val)
-> >> +{ return 0; }
-> >> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
-> >> +					    union kvmppc_one_reg *val)
-> >> +{ return -ENOENT; }
-> >> =20
-> >>  #endif /* CONFIG_KVM_XIVE */
-> >> =20
-> >> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/includ=
-e/uapi/asm/kvm.h
-> >> index cd78ad1020fe..42d4ef93ec2d 100644
-> >> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> >> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> >> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
-> >>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
-> >>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
-> >> =20
-> >> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
-> >> +
-> >>  /* Device control API: PPC-specific devices */
-> >>  #define KVM_DEV_MPIC_GRP_MISC		1
-> >>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
-> >> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> >> index 96d43f091255..f85a9211f30c 100644
-> >> --- a/arch/powerpc/kvm/book3s.c
-> >> +++ b/arch/powerpc/kvm/book3s.c
-> >> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64=
- id,
-> >>  				*val =3D get_reg_val(id, kvmppc_xics_get_icp(vcpu));
-> >>  			break;
-> >>  #endif /* CONFIG_KVM_XICS */
-> >> +#ifdef CONFIG_KVM_XIVE
-> >> +		case KVM_REG_PPC_VP_STATE:
-> >> +			if (!vcpu->arch.xive_vcpu) {
-> >> +				r =3D -ENXIO;
-> >> +				break;
-> >> +			}
-> >> +			if (xive_enabled())
-> >> +				r =3D kvmppc_xive_native_get_vp(vcpu, val);
-> >> +			else
-> >> +				r =3D -ENXIO;
-> >> +			break;
-> >> +#endif /* CONFIG_KVM_XIVE */
-> >>  		case KVM_REG_PPC_FSCR:
-> >>  			*val =3D get_reg_val(id, vcpu->arch.fscr);
-> >>  			break;
-> >> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64=
- id,
-> >>  				r =3D kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
-> >>  			break;
-> >>  #endif /* CONFIG_KVM_XICS */
-> >> +#ifdef CONFIG_KVM_XIVE
-> >> +		case KVM_REG_PPC_VP_STATE:
-> >> +			if (!vcpu->arch.xive_vcpu) {
-> >> +				r =3D -ENXIO;
-> >> +				break;
-> >> +			}
-> >> +			if (xive_enabled())
-> >> +				r =3D kvmppc_xive_native_set_vp(vcpu, val);
-> >> +			else
-> >> +				r =3D -ENXIO;
-> >> +			break;
-> >> +#endif /* CONFIG_KVM_XIVE */
-> >>  		case KVM_REG_PPC_FSCR:
-> >>  			vcpu->arch.fscr =3D set_reg_val(id, *val);
-> >>  			break;
-> >> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/=
-book3s_xive_native.c
-> >> index 3debc876d5a0..132bff52d70a 100644
-> >> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> >> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> >> @@ -845,6 +845,88 @@ static int kvmppc_xive_native_create(struct kvm_d=
-evice *dev, u32 type)
-> >>  	return ret;
-> >>  }
-> >> =20
-> >> +/*
-> >> + * Interrupt Pending Buffer (IPB) offset
-> >> + */
-> >> +#define TM_IPB_SHIFT 40
-> >> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
-> >> +
-> >> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one=
-_reg *val)
-> >> +{
-> >> +	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> >> +	u64 opal_state;
-> >> +	int rc;
-> >> +
-> >> +	if (!kvmppc_xive_enabled(vcpu))
-> >> +		return -EPERM;
-> >> +
-> >> +	if (!xc)
-> >> +		return -ENOENT;
-> >> +
-> >> +	/* Thread context registers. We only care about IPB and CPPR */
-> >> +	val->xive_timaval[0] =3D vcpu->arch.xive_saved_state.w01;
-> >> +
-> >> +	/*
-> >> +	 * Return the OS CAM line to print out the VP identifier in
-> >> +	 * the QEMU monitor. This is not restored.
-> >> +	 */
-> >> +	val->xive_timaval[1] =3D vcpu->arch.xive_cam_word;
-> >=20
-> > I'm pretty dubious about this mixing of vital state information with
-> > what's basically debug information.=20
->=20
-> I think QEMU deserves to know about the OS CAM line value. I was even=20
-> thinking about adding the POOL CAM line value for future use (nested)=20
->=20
-> > Doubly so since it requires changing the ABI to increase=20
-> > the one_reg union's size.
->=20
-> OK. That's one argument.
-> =20
-> > Might be better to have this control only return the 0th and 2nd u64s
-> > from the TIMA, with the CAM debug information returned via some other
-> > mechanism.
->=20
-> Like an extra reg : KVM_REG_PPC_VP_CAM ?=20
+via device tree on powerpc. We have a device tree node indicating
+supported page sizes.
 
-That would be the obvious choice, yes.
+>
+>>
+>> Also even if the user decided to not use THP, by
+>> echo "never" > transparent_hugepage/enabled , we should continue to map
+>> dax fault using huge page on platforms that can support huge pages.
+>>
+>> This still doesn't cover the details of a device-dax created with
+>> PAGE_SIZE align later booted with a kernel that can do hugepage dax.How
+>> should we handle that? That makes me think, this should be a VMA flag
+>> which got derived from device config? May be use VM_HUGEPAGE to indicate
+>> if device should use a hugepage mapping or not?
+>
+> device-dax configured with PAGE_SIZE always gets PAGE_SIZE mappings.
 
-> >> +
-> >> +	/* Get the VP state from OPAL */
-> >> +	rc =3D xive_native_get_vp_state(xc->vp_id, &opal_state);
-> >> +	if (rc)
-> >> +		return rc;
-> >> +
-> >> +	/*
-> >> +	 * Capture the backup of IPB register in the NVT structure and
-> >> +	 * merge it in our KVM VP state.
-> >> +	 */
-> >> +	val->xive_timaval[0] |=3D cpu_to_be64(opal_state & TM_IPB_MASK);
-> >> +
-> >> +	pr_devel("%s NSR=3D%02x CPPR=3D%02x IBP=3D%02x PIPR=3D%02x w01=3D%01=
-6llx w2=3D%08x opal=3D%016llx\n",
-> >> +		 __func__,
-> >> +		 vcpu->arch.xive_saved_state.nsr,
-> >> +		 vcpu->arch.xive_saved_state.cppr,
-> >> +		 vcpu->arch.xive_saved_state.ipb,
-> >> +		 vcpu->arch.xive_saved_state.pipr,
-> >> +		 vcpu->arch.xive_saved_state.w01,
-> >> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
-> >=20
-> > Hrm.. except you don't seem to be using the last half of the timaval
-> > field anyway.
->=20
-> Yes. The two u64 are extras. We can do without.=20
->=20
-> Would that be ok if I stored the w01 regs in the first u64, the CAM line(=
-s)=20
-> in the second and remove the extra two u64 ?
+Now what will be page size used for mapping vmemmap? Architectures
+possibly will use PMD_SIZE mapping if supported for vmemmap. Now a
+device-dax with struct page in the device will have pfn reserve area aligned
+to PAGE_SIZE with the above example? We can't map that using
+PMD_SIZE page size?
 
-I'd still prefer them in separate regs.  They kind of belong to
-different categories of information, and I can't think of any
-particular reason you'd have to update or fetch them as a unit.
+-aneesh
 
-> =20
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one=
-_reg *val)
-> >> +{
-> >> +	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> >> +	struct kvmppc_xive *xive =3D vcpu->kvm->arch.xive;
-> >> +
-> >> +	pr_devel("%s w01=3D%016llx vp=3D%016llx\n", __func__,
-> >> +		 val->xive_timaval[0], val->xive_timaval[1]);
-> >> +
-> >> +	if (!kvmppc_xive_enabled(vcpu))
-> >> +		return -EPERM;
-> >> +
-> >> +	if (!xc || !xive)
-> >> +		return -ENOENT;
-> >> +
-> >> +	/* We can't update the state of a "pushed" VCPU	 */
-> >> +	if (WARN_ON(vcpu->arch.xive_pushed))
-> >=20
-> > What prevents userspace from tripping this WARN_ON()?
->=20
-> if the vCPU is executing a vCPU ioctl, it means that it exited the guest=
-=20
-> and that its interrupt context has been pulled out of XIVE.
-
-But couldn't one user thread call the vcpu ioctl() while another is
-inside the guest?
-
-> >> +		return -EIO;
-> >=20
-> > EBUSY might be more appropriate here.
->=20
-> OK.
->=20
-> Thanks,
->=20
-> C.=20
->=20
-> >=20
-> >> +
-> >> +	/*
-> >> +	 * Restore the thread context registers. IPB and CPPR should
-> >> +	 * be the only ones that matter.
-> >> +	 */
-> >> +	vcpu->arch.xive_saved_state.w01 =3D val->xive_timaval[0];
-> >> +
-> >> +	/*
-> >> +	 * There is no need to restore the XIVE internal state (IPB
-> >> +	 * stored in the NVT) as the IPB register was merged in KVM VP
-> >> +	 * state when captured.
-> >> +	 */
-> >> +	return 0;
-> >> +}
-> >> +
-> >>  static int xive_native_debug_show(struct seq_file *m, void *private)
-> >>  {
-> >>  	struct kvmppc_xive *xive =3D m->private;
-> >> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentatio=
-n/virtual/kvm/devices/xive.txt
-> >> index a26be635cff9..1b8957c50c53 100644
-> >> --- a/Documentation/virtual/kvm/devices/xive.txt
-> >> +++ b/Documentation/virtual/kvm/devices/xive.txt
-> >> @@ -102,6 +102,25 @@ the legacy interrupt mode, referred as XICS (POWE=
-R7/8).
-> >>      -EINVAL: Not initialized source number, invalid priority or
-> >>               invalid CPU number.
-> >> =20
-> >> +* VCPU state
-> >> +
-> >> +  The XIVE IC maintains VP interrupt state in an internal structure
-> >> +  called the NVT. When a VP is not dispatched on a HW processor
-> >> +  thread, this structure can be updated by HW if the VP is the target
-> >> +  of an event notification.
-> >> +
-> >> +  It is important for migration to capture the cached IPB from the NVT
-> >> +  as it synthesizes the priorities of the pending interrupts. We
-> >> +  capture a bit more to report debug information.
-> >> +
-> >> +  KVM_REG_PPC_VP_STATE (4 * 64bits)
-> >> +  bits:     |  63  ....  32  |  31  ....  0  |
-> >> +  values:   |   TIMA word0   |   TIMA word1  |
-> >> +  bits:     | 127       ..........       64  |
-> >> +  values:   |         VP CAM Line            |
-> >> +  bits:     | 255       ..........      128  |
-> >> +  values:   |            unused              |
-> >> +
-> >>  * Migration:
-> >> =20
-> >>    Saving the state of a VM using the XIVE native exploitation mode
-> >=20
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---rFUhhEVnhEf/dYhU
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyJxdgACgkQbDjKyiDZ
-s5IaOg/+IbPYS01NJAXqfG8WK2QVcm1od6rh00eb/HtK/PfCXHKo/g/gq/slilv1
-T/PxJ336w2w81H52fYHJi6XNJOz6iANSFMOZXx/W1QwvSz3+a026vHpcXce/gi6U
-PfGzwhUk/nrT3nZKerbvSAO9wBT21ITm5K/YexVOdesF9+AR+cCBJ+wxP0GNK8yd
-RtdDpvI7EvBGmA9lbyOIhYva/5CLOdY8aCLIYhs3vyIql1PlfuxpZAYOa14/1TUK
-K2L8RJaaDbbDntL597wE/SoRX+sQDwpFkCgGbVhSrfDm3pNDZHS93SQfMMKY4v2w
-jHxwM3YYtTAWXzug44EQEl/QoUChF+Znc2wBu2VkMzlhN5BDVj4JH6fxjgVCbtOl
-hbLm8itcnJldLEiM4sgohY3vAYD5eBcN3paxizZh4QTVa3amAVu+ObQDbcbX1+h8
-e31exqmi/VP5jQ8oF59A5fnP46XB+oI71/USI55pMNj30kb6ahQPbSNEu5Ri0E51
-5ZMdiCPhn7Hb/65XcR+KegUU4h8mYSENh1EIUjNe2LGYHmgPprD1tH+plCTqXqWt
-vjvvRWyRlB2KgEfLyWm9XW1BBZOJjoaC55xIk7tt097Fpr1n+DRIiBphDp+n4GD4
-gK9Nm/iCPD94fHwH4qiburYCikTClpoDGdLy4bBqtyMVt+HjCf8=
-=ogLS
------END PGP SIGNATURE-----
-
---rFUhhEVnhEf/dYhU--
