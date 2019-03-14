@@ -2,91 +2,100 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E4D7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 04:37:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFD57C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:00:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C4522085A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 04:37:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C4522085A
+	by mail.kernel.org (Postfix) with ESMTPS id 30C3E217F5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:00:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30C3E217F5
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KbXq4czhzDqN0
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 15:37:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Kc3P3H73zDqMP
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 16:00:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KbW11kgRzDqMK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 15:35:56 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2E4Y1ox034238
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:35:54 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r78u8g468-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Kc1N0hYTzDqKL
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 15:58:47 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2E4nIg8032416
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:58:45 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2r7d5nq2gm-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:35:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 00:58:44 -0400
 Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 14 Mar 2019 04:35:51 -0000
+ Thu, 14 Mar 2019 04:58:43 -0000
 Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 14 Mar 2019 04:35:49 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
+ Thu, 14 Mar 2019 04:58:41 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
  by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2E4ZmYB59048074
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 14 Mar 2019 04:35:48 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id ABA8911C058;
- Thu, 14 Mar 2019 04:35:48 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 65C7211C050;
- Thu, 14 Mar 2019 04:35:48 +0000 (GMT)
+ x2E4weJP46268556
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Thu, 14 Mar 2019 04:58:40 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1A3714C044;
+ Thu, 14 Mar 2019 04:58:40 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 79A5A4C050;
+ Thu, 14 Mar 2019 04:58:39 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 14 Mar 2019 04:35:48 +0000 (GMT)
-Received: from intelligence.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Thu, 14 Mar 2019 04:58:39 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D8889A00D1;
- Thu, 14 Mar 2019 15:35:46 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 6DE37A00D1;
+ Thu, 14 Mar 2019 15:58:38 +1100 (AEDT)
+Subject: Re: [PATCH 2/5] ocxl: Clean up printf formats
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190313040702.14276-1-alastair@au1.ibm.com>
+ <20190313040702.14276-3-alastair@au1.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
-Subject: [PATCH] powerpc/powernv: Squash sparse warnings in opal-call.c
-Date: Thu, 14 Mar 2019 15:27:27 +1100
-X-Mailer: git-send-email 2.11.0
+Date: Thu, 14 Mar 2019 15:58:38 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
+MIME-Version: 1.0
+In-Reply-To: <20190313040702.14276-3-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-AU
+Content-Transfer-Encoding: 7bit
 X-TM-AS-GCONF: 00
-x-cbid: 19031404-0016-0000-0000-0000026214DB
+x-cbid: 19031404-0020-0000-0000-0000032312E5
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031404-0017-0000-0000-000032BD164B
-Message-Id: <20190314042727.3404-1-andrew.donnellan@au1.ibm.com>
+x-cbparentid: 19031404-0021-0000-0000-0000217514E6
+Message-Id: <84392561-168e-11c6-f348-11b2e929d5c6@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-14_01:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=726 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903140029
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903140031
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -98,38 +107,111 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Alastair D'Silva <alastair@d-silva.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-sparse complains a lot about opal-call.c:
+On 13/3/19 3:06 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> Use %# instead of using a literal '0x'
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-  arch/powerpc/platforms/powernv/opal-call.c:128:1: warning: symbol 'opal_invalid_call' was not declared. Should it be static?
-  arch/powerpc/platforms/powernv/opal-call.c:129:1: warning: symbol 'opal_console_write' was not declared. Should it be static?
-  arch/powerpc/platforms/powernv/opal-call.c:130:1: warning: symbol 'opal_console_read' was not declared. Should it be static?
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Those symbols are forward declared in opal.h, but we can't include that
-because the function signatures in opal.h are different. So instead, just
-add an extra forward declaration to the OPAL_CALL macro to shut sparse up.
+> ---
+>   drivers/misc/ocxl/config.c  |  6 +++---
+>   drivers/misc/ocxl/context.c |  2 +-
+>   drivers/misc/ocxl/trace.h   | 10 +++++-----
+>   3 files changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 8f2c5d8bd2ee..0ee7856b033d 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
+>   	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
+>   
+>   	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
+> -	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
+> -	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
+> -	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
+> +	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
+> +	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
+> +	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
+>   	return 0;
+>   }
+>   
+> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+> index c10a940e3b38..3498a0199bde 100644
+> --- a/drivers/misc/ocxl/context.c
+> +++ b/drivers/misc/ocxl/context.c
+> @@ -134,7 +134,7 @@ static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
+>   	vm_fault_t ret;
+>   
+>   	offset = vmf->pgoff << PAGE_SHIFT;
+> -	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
+> +	pr_debug("%s: pasid %d address %#lx offset %#llx\n", __func__,
+>   		ctx->pasid, vmf->address, offset);
+>   
+>   	if (offset < ctx->afu->irq_base_offset)
+> diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+> index bcb7ff330c1e..68bf2f173a1a 100644
+> --- a/drivers/misc/ocxl/trace.h
+> +++ b/drivers/misc/ocxl/trace.h
+> @@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(ocxl_context,
+>   		__entry->tidr = tidr;
+>   	),
+>   
+> -	TP_printk("linux pid=%d spa=0x%p pasid=0x%x pidr=0x%x tidr=0x%x",
+> +	TP_printk("linux pid=%d spa=%p pasid=%#x pidr=%#x tidr=%#x",
+>   		__entry->pid,
+>   		__entry->spa,
+>   		__entry->pasid,
+> @@ -61,7 +61,7 @@ TRACE_EVENT(ocxl_terminate_pasid,
+>   		__entry->rc = rc;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x rc=%d",
+> +	TP_printk("pasid=%#x rc=%d",
+>   		__entry->pasid,
+>   		__entry->rc
+>   	)
+> @@ -87,7 +87,7 @@ DECLARE_EVENT_CLASS(ocxl_fault_handler,
+>   		__entry->tfc = tfc;
+>   	),
+>   
+> -	TP_printk("spa=%p pe=0x%llx dsisr=0x%llx dar=0x%llx tfc=0x%llx",
+> +	TP_printk("spa=%p pe=%#llx dsisr=%#llx dar=%#llx tfc=%#llx",
+>   		__entry->spa,
+>   		__entry->pe,
+>   		__entry->dsisr,
+> @@ -127,7 +127,7 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
+>   		__entry->irq_offset = irq_offset;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
+> +	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d irq_offset=%#llx",
+>   		__entry->pasid,
+>   		__entry->irq_id,
+>   		__entry->virq,
+> @@ -150,7 +150,7 @@ TRACE_EVENT(ocxl_afu_irq_free,
+>   		__entry->irq_id = irq_id;
+>   	),
+>   
+> -	TP_printk("pasid=0x%x irq_id=%d",
+> +	TP_printk("pasid=%#x irq_id=%d",
+>   		__entry->pasid,
+>   		__entry->irq_id
+>   	)
+> 
 
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-call.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
-index 578757d403ab..9d8e43b2ebfd 100644
---- a/arch/powerpc/platforms/powernv/opal-call.c
-+++ b/arch/powerpc/platforms/powernv/opal-call.c
-@@ -120,6 +120,8 @@ static int64_t opal_call(int64_t a0, int64_t a1, int64_t a2, int64_t a3,
- 
- #define OPAL_CALL(name, opcode)					\
- int64_t name(int64_t a0, int64_t a1, int64_t a2, int64_t a3,	\
-+	     int64_t a4, int64_t a5, int64_t a6, int64_t a7);	\
-+int64_t name(int64_t a0, int64_t a1, int64_t a2, int64_t a3,	\
- 	     int64_t a4, int64_t a5, int64_t a6, int64_t a7)	\
- {								\
- 	return opal_call(a0, a1, a2, a3, a4, a5, a6, a7, opcode); \
 -- 
-2.11.0
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
