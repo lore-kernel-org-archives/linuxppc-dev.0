@@ -4,107 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0A23C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:54:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A96EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 07:10:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 37C12217F5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 05:54:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 37C12217F5
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1C7C92184E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 07:10:30 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C7C92184E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KdFz09T8zDqMK
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 16:54:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44KfxJ43F0zDqMw
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 18:10:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.51.53; helo=5.mo178.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+Received: from 5.mo178.mail-out.ovh.net (5.mo178.mail-out.ovh.net
+ [46.105.51.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KdCy2w5nzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 16:53:02 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2E5nGw8077230
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 01:52:59 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2r7gv40pp1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 01:52:59 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 14 Mar 2019 05:52:57 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 14 Mar 2019 05:52:49 -0000
-Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
- [9.149.105.62])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2E5qmkN29294708
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
- Thu, 14 Mar 2019 05:52:48 GMT
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 689BBAE05D;
- Thu, 14 Mar 2019 05:52:48 +0000 (GMT)
-Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A5193AE056;
- Thu, 14 Mar 2019 05:52:43 +0000 (GMT)
-Received: from skywalker.linux.ibm.com (unknown [9.124.31.88])
- by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Thu, 14 Mar 2019 05:52:43 +0000 (GMT)
-X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Alexandre Ghiti <alex@ghiti.fr>, Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Mike Kravetz <mike.kravetz@oracle.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v6 4/4] hugetlb: allow to free gigantic pages regardless
- of the configuration
-In-Reply-To: <20190307132015.26970-5-alex@ghiti.fr>
-References: <20190307132015.26970-1-alex@ghiti.fr>
- <20190307132015.26970-5-alex@ghiti.fr>
-Date: Thu, 14 Mar 2019 11:22:42 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44KfvP1YbMzDqMg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 18:08:45 +1100 (AEDT)
+Received: from player688.ha.ovh.net (unknown [10.109.146.163])
+ by mo178.mail-out.ovh.net (Postfix) with ESMTP id 6EA3F58771
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 08:08:42 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player688.ha.ovh.net (Postfix) with ESMTPSA id 5D1EE38F98D5;
+ Thu, 14 Mar 2019 07:08:33 +0000 (UTC)
+Subject: Re: [PATCH v2 10/16] KVM: PPC: Book3S HV: XIVE: add get/set accessors
+ for the VP XIVE state
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190222112840.25000-1-clg@kaod.org>
+ <20190222112840.25000-11-clg@kaod.org>
+ <20190225033144.GN7668@umbus.fritz.box>
+ <d33a2cb1-5370-7e72-07d9-ed0028c85b8c@kaod.org>
+ <20190314030914.GN8211@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <298a5a6d-ea8c-8bd3-aae8-5632585621fe@kaod.org>
+Date: Thu, 14 Mar 2019 08:08:32 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19031405-0028-0000-0000-00000353D00E
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031405-0029-0000-0000-000024125AE4
-Message-Id: <87va0movdh.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-14_02:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903140038
+In-Reply-To: <20190314030914.GN8211@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 18300940038894029703
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrhedugddutdefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -116,93 +71,336 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexandre Ghiti <alex@ghiti.fr> writes:
+On 3/14/19 4:09 AM, David Gibson wrote:
+> On Wed, Mar 13, 2019 at 02:19:13PM +0100, Cédric Le Goater wrote:
+>> On 2/25/19 4:31 AM, David Gibson wrote:
+>>> On Fri, Feb 22, 2019 at 12:28:34PM +0100, Cédric Le Goater wrote:
+>>>> At a VCPU level, the state of the thread interrupt management
+>>>> registers needs to be collected. These registers are cached under the
+>>>> 'xive_saved_state.w01' field of the VCPU when the VPCU context is
+>>>> pulled from the HW thread. An OPAL call retrieves the backup of the
+>>>> IPB register in the underlying XIVE NVT structure and merges it in the
+>>>> KVM state.
+>>>>
+>>>> The structures of the interface between QEMU and KVM provisions some
+>>>> extra room (two u64) for further extensions if more state needs to be
+>>>> transferred back to QEMU.
+>>>>
+>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>> ---
+>>>>  arch/powerpc/include/asm/kvm_ppc.h         | 11 +++
+>>>>  arch/powerpc/include/uapi/asm/kvm.h        |  2 +
+>>>>  arch/powerpc/kvm/book3s.c                  | 24 +++++++
+>>>>  arch/powerpc/kvm/book3s_xive_native.c      | 82 ++++++++++++++++++++++
+>>>>  Documentation/virtual/kvm/devices/xive.txt | 19 +++++
+>>>>  5 files changed, 138 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>>>> index 1e61877fe147..664c65051612 100644
+>>>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>>>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>>>> @@ -272,6 +272,7 @@ union kvmppc_one_reg {
+>>>>  		u64	addr;
+>>>>  		u64	length;
+>>>>  	}	vpaval;
+>>>> +	u64	xive_timaval[4];
+>>>
+>>> This is doubling the size of the userspace visible one_reg union.  Is
+>>> that safe?
+>>
+>> 'safe' as in compatibility on an older KVM which would still use the old 
+>> kvmppc_one_reg definition ?
+> 
+> I was more thinking of old qemu with a new kernel.
+> 
+>> It should be fine as KVM_REG_PPC_VP_STATE would not be handled. Am I
+>> wrong ?
+> 
+> Looks like it should be ok, because we only partially copy the
+> structure to/from userspace due to the one_reg_size() logic.  If the
+> whole union was always copied, it would be hilariously unsafe.
+> 
+>>
+>>>>  };
+>>>>  
+>>>>  struct kvmppc_ops {
+>>>> @@ -604,6 +605,10 @@ extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>>>>  extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
+>>>>  extern void kvmppc_xive_native_init_module(void);
+>>>>  extern void kvmppc_xive_native_exit_module(void);
+>>>> +extern int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
+>>>> +				     union kvmppc_one_reg *val);
+>>>> +extern int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
+>>>> +				     union kvmppc_one_reg *val);
+>>>>  
+>>>>  #else
+>>>>  static inline int kvmppc_xive_set_xive(struct kvm *kvm, u32 irq, u32 server,
+>>>> @@ -636,6 +641,12 @@ static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+>>>>  static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
+>>>>  static inline void kvmppc_xive_native_init_module(void) { }
+>>>>  static inline void kvmppc_xive_native_exit_module(void) { }
+>>>> +static inline int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu,
+>>>> +					    union kvmppc_one_reg *val)
+>>>> +{ return 0; }
+>>>> +static inline int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu,
+>>>> +					    union kvmppc_one_reg *val)
+>>>> +{ return -ENOENT; }
+>>>>  
+>>>>  #endif /* CONFIG_KVM_XIVE */
+>>>>  
+>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>>>> index cd78ad1020fe..42d4ef93ec2d 100644
+>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>>> @@ -480,6 +480,8 @@ struct kvm_ppc_cpu_char {
+>>>>  #define  KVM_REG_PPC_ICP_PPRI_SHIFT	16	/* pending irq priority */
+>>>>  #define  KVM_REG_PPC_ICP_PPRI_MASK	0xff
+>>>>  
+>>>> +#define KVM_REG_PPC_VP_STATE	(KVM_REG_PPC | KVM_REG_SIZE_U256 | 0x8d)
+>>>> +
+>>>>  /* Device control API: PPC-specific devices */
+>>>>  #define KVM_DEV_MPIC_GRP_MISC		1
+>>>>  #define   KVM_DEV_MPIC_BASE_ADDR	0	/* 64-bit */
+>>>> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+>>>> index 96d43f091255..f85a9211f30c 100644
+>>>> --- a/arch/powerpc/kvm/book3s.c
+>>>> +++ b/arch/powerpc/kvm/book3s.c
+>>>> @@ -641,6 +641,18 @@ int kvmppc_get_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>>>  				*val = get_reg_val(id, kvmppc_xics_get_icp(vcpu));
+>>>>  			break;
+>>>>  #endif /* CONFIG_KVM_XICS */
+>>>> +#ifdef CONFIG_KVM_XIVE
+>>>> +		case KVM_REG_PPC_VP_STATE:
+>>>> +			if (!vcpu->arch.xive_vcpu) {
+>>>> +				r = -ENXIO;
+>>>> +				break;
+>>>> +			}
+>>>> +			if (xive_enabled())
+>>>> +				r = kvmppc_xive_native_get_vp(vcpu, val);
+>>>> +			else
+>>>> +				r = -ENXIO;
+>>>> +			break;
+>>>> +#endif /* CONFIG_KVM_XIVE */
+>>>>  		case KVM_REG_PPC_FSCR:
+>>>>  			*val = get_reg_val(id, vcpu->arch.fscr);
+>>>>  			break;
+>>>> @@ -714,6 +726,18 @@ int kvmppc_set_one_reg(struct kvm_vcpu *vcpu, u64 id,
+>>>>  				r = kvmppc_xics_set_icp(vcpu, set_reg_val(id, *val));
+>>>>  			break;
+>>>>  #endif /* CONFIG_KVM_XICS */
+>>>> +#ifdef CONFIG_KVM_XIVE
+>>>> +		case KVM_REG_PPC_VP_STATE:
+>>>> +			if (!vcpu->arch.xive_vcpu) {
+>>>> +				r = -ENXIO;
+>>>> +				break;
+>>>> +			}
+>>>> +			if (xive_enabled())
+>>>> +				r = kvmppc_xive_native_set_vp(vcpu, val);
+>>>> +			else
+>>>> +				r = -ENXIO;
+>>>> +			break;
+>>>> +#endif /* CONFIG_KVM_XIVE */
+>>>>  		case KVM_REG_PPC_FSCR:
+>>>>  			vcpu->arch.fscr = set_reg_val(id, *val);
+>>>>  			break;
+>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>>>> index 3debc876d5a0..132bff52d70a 100644
+>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>>>> @@ -845,6 +845,88 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
+>>>>  	return ret;
+>>>>  }
+>>>>  
+>>>> +/*
+>>>> + * Interrupt Pending Buffer (IPB) offset
+>>>> + */
+>>>> +#define TM_IPB_SHIFT 40
+>>>> +#define TM_IPB_MASK  (((u64) 0xFF) << TM_IPB_SHIFT)
+>>>> +
+>>>> +int kvmppc_xive_native_get_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>>>> +{
+>>>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>>>> +	u64 opal_state;
+>>>> +	int rc;
+>>>> +
+>>>> +	if (!kvmppc_xive_enabled(vcpu))
+>>>> +		return -EPERM;
+>>>> +
+>>>> +	if (!xc)
+>>>> +		return -ENOENT;
+>>>> +
+>>>> +	/* Thread context registers. We only care about IPB and CPPR */
+>>>> +	val->xive_timaval[0] = vcpu->arch.xive_saved_state.w01;
+>>>> +
+>>>> +	/*
+>>>> +	 * Return the OS CAM line to print out the VP identifier in
+>>>> +	 * the QEMU monitor. This is not restored.
+>>>> +	 */
+>>>> +	val->xive_timaval[1] = vcpu->arch.xive_cam_word;
+>>>
+>>> I'm pretty dubious about this mixing of vital state information with
+>>> what's basically debug information. 
+>>
+>> I think QEMU deserves to know about the OS CAM line value. I was even 
+>> thinking about adding the POOL CAM line value for future use (nested) 
+>>
+>>> Doubly so since it requires changing the ABI to increase 
+>>> the one_reg union's size.
+>>
+>> OK. That's one argument.
+>>  
+>>> Might be better to have this control only return the 0th and 2nd u64s
+>>> from the TIMA, with the CAM debug information returned via some other
+>>> mechanism.
+>>
+>> Like an extra reg : KVM_REG_PPC_VP_CAM ? 
+> 
+> That would be the obvious choice, yes.
 
-> On systems without CONTIG_ALLOC activated but that support gigantic pages,
-> boottime reserved gigantic pages can not be freed at all. This patch
-> simply enables the possibility to hand back those pages to memory
-> allocator.
->
-> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-> Acked-by: David S. Miller <davem@davemloft.net> [sparc]
-> ---
->  arch/arm64/Kconfig                           |  2 +-
->  arch/arm64/include/asm/hugetlb.h             |  4 --
->  arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
->  arch/powerpc/platforms/Kconfig.cputype       |  2 +-
->  arch/s390/Kconfig                            |  2 +-
->  arch/s390/include/asm/hugetlb.h              |  3 --
->  arch/sh/Kconfig                              |  2 +-
->  arch/sparc/Kconfig                           |  2 +-
->  arch/x86/Kconfig                             |  2 +-
->  arch/x86/include/asm/hugetlb.h               |  4 --
->  include/linux/gfp.h                          |  2 +-
->  mm/hugetlb.c                                 | 57 ++++++++++++--------
->  mm/page_alloc.c                              |  4 +-
->  13 files changed, 44 insertions(+), 49 deletions(-)
->
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 091a513b93e9..af687eff884a 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -18,7 +18,7 @@ config ARM64
->  	select ARCH_HAS_FAST_MULTIPLIER
->  	select ARCH_HAS_FORTIFY_SOURCE
->  	select ARCH_HAS_GCOV_PROFILE_ALL
-> -	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-> +	select ARCH_HAS_GIGANTIC_PAGE
->  	select ARCH_HAS_KCOV
->  	select ARCH_HAS_MEMBARRIER_SYNC_CORE
->  	select ARCH_HAS_PTE_SPECIAL
-> diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-> index fb6609875455..59893e766824 100644
-> --- a/arch/arm64/include/asm/hugetlb.h
-> +++ b/arch/arm64/include/asm/hugetlb.h
-> @@ -65,8 +65,4 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
->  
->  #include <asm-generic/hugetlb.h>
->  
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void) { return true; }
-> -#endif
-> -
->  #endif /* __ASM_HUGETLB_H */
-> diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> index 5b0177733994..d04a0bcc2f1c 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-> @@ -32,13 +32,6 @@ static inline int hstate_get_psize(struct hstate *hstate)
->  	}
->  }
->  
-> -#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-> -static inline bool gigantic_page_supported(void)
-> -{
-> -	return true;
-> -}
-> -#endif
-> -
->  /* hugepd entry valid bit */
->  #define HUGEPD_VAL_BITS		(0x8000000000000000UL)
->  
+OK. Let's keep that in mind but I think it is overkill. I would rather
+have one reg per ring instead.
 
-As explained in https://patchwork.ozlabs.org/patch/1047003/
-architectures like ppc64 have a hypervisor assisted mechanism to indicate
-where to find gigantic huge pages(16G pages). At this point, we don't use this
-reserved pages for anything other than hugetlb backing and hence there
-is no runtime free of this pages needed ( Also we don't do
-runtime allocation of them).
+>>>> +
+>>>> +	/* Get the VP state from OPAL */
+>>>> +	rc = xive_native_get_vp_state(xc->vp_id, &opal_state);
+>>>> +	if (rc)
+>>>> +		return rc;
+>>>> +
+>>>> +	/*
+>>>> +	 * Capture the backup of IPB register in the NVT structure and
+>>>> +	 * merge it in our KVM VP state.
+>>>> +	 */
+>>>> +	val->xive_timaval[0] |= cpu_to_be64(opal_state & TM_IPB_MASK);
+>>>> +
+>>>> +	pr_devel("%s NSR=%02x CPPR=%02x IBP=%02x PIPR=%02x w01=%016llx w2=%08x opal=%016llx\n",
+>>>> +		 __func__,
+>>>> +		 vcpu->arch.xive_saved_state.nsr,
+>>>> +		 vcpu->arch.xive_saved_state.cppr,
+>>>> +		 vcpu->arch.xive_saved_state.ipb,
+>>>> +		 vcpu->arch.xive_saved_state.pipr,
+>>>> +		 vcpu->arch.xive_saved_state.w01,
+>>>> +		 (u32) vcpu->arch.xive_cam_word, opal_state);
+>>>
+>>> Hrm.. except you don't seem to be using the last half of the timaval
+>>> field anyway.
+>>
+>> Yes. The two u64 are extras. We can do without. 
+>>
+>> Would that be ok if I stored the w01 regs in the first u64, the CAM line(s) 
+>> in the second and remove the extra two u64 ?
+> 
+> I'd still prefer them in separate regs.  They kind of belong to
+> different categories of information, and I can't think of any
+> particular reason you'd have to update or fetch them as a unit.
 
-I guess you can still achieve what you want to do in this patch by
-keeping gigantic_page_supported()?
+Because they belong to the same thread interrupt context and the same 
+ring (OS) even if only the hypervisor can set the OS CAM line. The OS 
+can only set the CPPR. QEMU operates at the hypervisor level so it is 
+not violating any privilege level.  
 
-NOTE: We should rename gigantic_page_supported to be more specific to
-support for runtime_alloc/free of gigantic pages
+>>  
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>> +int kvmppc_xive_native_set_vp(struct kvm_vcpu *vcpu, union kvmppc_one_reg *val)
+>>>> +{
+>>>> +	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>>>> +	struct kvmppc_xive *xive = vcpu->kvm->arch.xive;
+>>>> +
+>>>> +	pr_devel("%s w01=%016llx vp=%016llx\n", __func__,
+>>>> +		 val->xive_timaval[0], val->xive_timaval[1]);
+>>>> +
+>>>> +	if (!kvmppc_xive_enabled(vcpu))
+>>>> +		return -EPERM;
+>>>> +
+>>>> +	if (!xc || !xive)
+>>>> +		return -ENOENT;
+>>>> +
+>>>> +	/* We can't update the state of a "pushed" VCPU	 */
+>>>> +	if (WARN_ON(vcpu->arch.xive_pushed))
+>>>
+>>> What prevents userspace from tripping this WARN_ON()?
+>>
+>> if the vCPU is executing a vCPU ioctl, it means that it exited the guest 
+>> and that its interrupt context has been pulled out of XIVE.
+> 
+> But couldn't one user thread call the vcpu ioctl() while another is
+> inside the guest? 
 
--aneesh
+Not while setting the VP state. The guest is not resumed.
+
+Thanks,
+
+C.
+ 
+> 
+>>>> +		return -EIO;
+>>>
+>>> EBUSY might be more appropriate here.
+>>
+>> OK.
+>>
+>> Thanks,
+>>
+>> C. 
+>>
+>>>
+>>>> +
+>>>> +	/*
+>>>> +	 * Restore the thread context registers. IPB and CPPR should
+>>>> +	 * be the only ones that matter.
+>>>> +	 */
+>>>> +	vcpu->arch.xive_saved_state.w01 = val->xive_timaval[0];
+>>>> +
+>>>> +	/*
+>>>> +	 * There is no need to restore the XIVE internal state (IPB
+>>>> +	 * stored in the NVT) as the IPB register was merged in KVM VP
+>>>> +	 * state when captured.
+>>>> +	 */
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>>  static int xive_native_debug_show(struct seq_file *m, void *private)
+>>>>  {
+>>>>  	struct kvmppc_xive *xive = m->private;
+>>>> diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
+>>>> index a26be635cff9..1b8957c50c53 100644
+>>>> --- a/Documentation/virtual/kvm/devices/xive.txt
+>>>> +++ b/Documentation/virtual/kvm/devices/xive.txt
+>>>> @@ -102,6 +102,25 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+>>>>      -EINVAL: Not initialized source number, invalid priority or
+>>>>               invalid CPU number.
+>>>>  
+>>>> +* VCPU state
+>>>> +
+>>>> +  The XIVE IC maintains VP interrupt state in an internal structure
+>>>> +  called the NVT. When a VP is not dispatched on a HW processor
+>>>> +  thread, this structure can be updated by HW if the VP is the target
+>>>> +  of an event notification.
+>>>> +
+>>>> +  It is important for migration to capture the cached IPB from the NVT
+>>>> +  as it synthesizes the priorities of the pending interrupts. We
+>>>> +  capture a bit more to report debug information.
+>>>> +
+>>>> +  KVM_REG_PPC_VP_STATE (4 * 64bits)
+>>>> +  bits:     |  63  ....  32  |  31  ....  0  |
+>>>> +  values:   |   TIMA word0   |   TIMA word1  |
+>>>> +  bits:     | 127       ..........       64  |
+>>>> +  values:   |         VP CAM Line            |
+>>>> +  bits:     | 255       ..........      128  |
+>>>> +  values:   |            unused              |
+>>>> +
+>>>>  * Migration:
+>>>>  
+>>>>    Saving the state of a VM using the XIVE native exploitation mode
+>>>
+>>
+> 
 
