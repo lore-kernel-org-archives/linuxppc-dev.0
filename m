@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA35BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:40:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 417EFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:41:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3F4372184C
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:40:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3F4372184C
+	by mail.kernel.org (Postfix) with ESMTPS id B01C02184C
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:41:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B01C02184C
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L3Z253bKzDqPX
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:40:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L3c06ZQnzDqPV
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:41:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=217.72.192.73; helo=mout.kundenserver.de;
@@ -28,36 +28,36 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SF1YXPzDqNN
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SF3S2dzDqNP
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:08 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MGQzj-1hGxW80hpt-00Gth3; Thu, 14 Mar 2019 23:34:33 +0100
+ 1N3sRi-1gvalv2zSq-00zmY0; Thu, 14 Mar 2019 23:34:43 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 01/45] drivers: tty: serial: 8250_bcm2835aux: use
- devm_platform_ioremap_resource()
-Date: Thu, 14 Mar 2019 23:33:31 +0100
-Message-Id: <1552602855-26086-2-git-send-email-info@metux.net>
+Subject: [PATCH v2 12/45] drivers: tty: serial: xilinx_uartps: use devm_*
+ functions
+Date: Thu, 14 Mar 2019 23:33:42 +0100
+Message-Id: <1552602855-26086-13-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:DWomIpNJmnbGMJQk8l3rsTOlr4+4BvTNMZUwMVWlUlx4l1A2znd
- FZ06j4Nm/7i1n6knMrNlmcS8b2UGcpWLaGAOLu2exNCVqqaAR69sM6VL9oRfxiDIETnSEr6
- vG67ameVMqEVG4Ep54DONR4viwdf1xr2IZ9/zClZAWUmVEkKlOkns5kWFmUwhFU3tvBEsJT
- Nvp1SrUnsQFsF7xpM+LsA==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:UVdoO/YHweE=:DzgY/PEP0n/Au7FaBcOVtB
- 9mIFLSFBAwG1hm8RdL79Epk+/FrvTjBTMoJxmIDTeyE6qQrsoxsxWfDiQRaP8vz9Vs3R9Tn+Z
- BcEueiXdTQ8SBKCIXPN2ICcQC926VzgJIamKPNyCmuKnR2L4vNQlv7BBbOlCK6hyfofmg5KSh
- Brm78xihl3WwM17H71ymPyt8jL//pUoY/KJO5QK9Nb36Mx4SY8N0v2hlsMeLSM8cPecBPafFU
- YyCIbIqaZFWbMTrkmMyG3Iwm25infwQKu1r3iUALCnu9XRPpd2oUqCIk/PL0JjRKSxidTcnsZ
- erIrmcUKsc1eY9vain4zUXIQ8J2cEqOIvMYm62XgCGJSjAtLttfB9Q7AlD7OS/9EqlOrCESrl
- gvHG3t3Va4SPAQC6AMlTzgsgLYCJIPDklCpyvI0Vq1kvxtZAlTPLjwGGRp2GONqvxQpQb49wz
- /p1+ycVmQ2HW/qPHZ/rY0do4ijrYh9qlH0U2+g47Lhog6ZRvZ59zVkEyVbyhu4ByQGqblcSle
- C5gBLyo8x6vZPiUimpJ17hUpheR7y7BeNm64hOZ50G3kJeM0k19s/RmATJMeRzqBBhl5hXeMq
- EfLBQRTyeULuMtGJKGowLpAPnhZA+lM8zB7Jj/oAUOm4n6zc8H1xQVKO/vxVrVF1PfmTFZO+a
- D1LtFweyrVVyWNm32R2QeKj2a0VEVArvwsYAdk+04GFqLeVXQfrplse1vhrFm0UbK1r2olAYa
- w/WLMvG8vVGYMLqeUvtSScKx3QNkWUixPOWVrA==
+X-Provags-ID: V03:K1:D6vqc6/SMpMwV3Mjm1p7xwRTR72HMVZBBVh1/FCbNDWkp8P3g2W
+ TrOQ87bVPA7kZwpyl4ktqhFPS0EHPzrsjJIhjUlp5PE8BrbbZWJkU1r+OdPzwIb+4IuKGu8
+ qTaAipHSCwQ95WbNCyDsmAXV+n3scqPBNNtGSqPBn9yAKY29csLqZoxzRV+w7cCK1CTqMJt
+ srxJ7oLeNS4PEbiQgosVQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:dQYoeogF+gM=:+v5tmVFISov78Xbvh9iZWd
+ +upmxph7jKFEYXmvk+036QcWGCaBMGC4wGaE3YoW8226iiUEqZCy0tCZE4//CTfsZlYfXBIGD
+ jEGMIOXU4rvKB2NR0rJzpIpCH2Jlz9U4Ri8KL6Ae3Nd6n3D6E6l/rjfIZ+HdZVEGDWFvMLNNW
+ hSD/aOk99A1r/xJb+clK1/e70LznqkzsFj3mfkp9Q0hbPnJ0ytnaiONyW0ZSPe3QhFOzSA+F1
+ /vP4Wi9Ghxc5+teU3KNPolONOKVbwpzIYVk4CzZ18tbnxil8nosXH0PoMlbsRKA0p65myyigy
+ qUQcN9E8jchRS08fDImRAWZEBlj1bcEuLq/wvzzE2w6stKJeo9LWDylJXF4/UA/Xv43rVauY7
+ Jy/t1QiO2zSmF39CpPkDN+x761trSt3rU+zCZxc+vjH6DIURsynyMWONBkGumyLEW9MmyvkTw
+ F9WRIcYiT3BUP3RmzycQb56UcT8yz3b2w6uUiKQKiW7Fj7kW607xGWGMxKeIwMfp1qPjUjSn1
+ Y2MrNOOPKqIZ25Lj90rVDUboOBWh07kvUTnpK9zRTHgdrzSOL8C7IpTxCzGXIXubVb0NQYmPN
+ 9abhyKD7BY2nDDo5Va52UH2qhTmNv13ENTShkP60bQnP6Fi8FXWhPQPUvJd4/2oVLai2FFhbC
+ hnOtc6GA2K0p+e90KmRseGL5sTZtwPyHnXAGmJWM2JutSjpd8hG0NGbwfHaAGEzqMkRA8O9l7
+ 9ccXjW99SDXU0FLLE9VvHYFZ/hdZ1wZXaHrbdw==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,46 +84,56 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-For the common platform_get_resource()+devm_platform_ioremap() combination,
-there is a helper, so use it and make the code a bit more compact.
+Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/8250/8250_bcm2835aux.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/tty/serial/xilinx_uartps.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_bcm2835aux.c b/drivers/tty/serial/8250/8250_bcm2835aux.c
-index bd53661..0738d14 100644
---- a/drivers/tty/serial/8250/8250_bcm2835aux.c
-+++ b/drivers/tty/serial/8250/8250_bcm2835aux.c
-@@ -25,7 +25,6 @@ struct bcm2835aux_data {
- static int bcm2835aux_serial_probe(struct platform_device *pdev)
+diff --git a/drivers/tty/serial/xilinx_uartps.c b/drivers/tty/serial/xilinx_uartps.c
+index 74089f5..6684ed7 100644
+--- a/drivers/tty/serial/xilinx_uartps.c
++++ b/drivers/tty/serial/xilinx_uartps.c
+@@ -953,15 +953,21 @@ static int cdns_uart_verify_port(struct uart_port *port,
+  */
+ static int cdns_uart_request_port(struct uart_port *port)
  {
- 	struct bcm2835aux_data *data;
--	struct resource *res;
- 	int ret;
+-	if (!request_mem_region(port->mapbase, CDNS_UART_REGISTER_SPACE,
+-					 CDNS_UART_NAME)) {
++	if (!devm_request_mem_region(port->dev,
++				     port->mapbase,
++				     CDNS_UART_REGISTER_SPACE,
++				     CDNS_UART_NAME)) {
+ 		return -ENOMEM;
+ 	}
  
- 	/* allocate the custom structure */
-@@ -63,15 +62,12 @@ static int bcm2835aux_serial_probe(struct platform_device *pdev)
- 	data->uart.port.irq = ret;
+-	port->membase = ioremap(port->mapbase, CDNS_UART_REGISTER_SPACE);
++	port->membase = devm_ioremap(port->dev,
++				     port->mapbase,
++				     CDNS_UART_REGISTER_SPACE);
+ 	if (!port->membase) {
+ 		dev_err(port->dev, "Unable to map registers\n");
+-		release_mem_region(port->mapbase, CDNS_UART_REGISTER_SPACE);
++		devm_release_mem_region(port->dev,
++					port->mapbase,
++					CDNS_UART_REGISTER_SPACE);
+ 		return -ENOMEM;
+ 	}
+ 	return 0;
+@@ -976,8 +982,10 @@ static int cdns_uart_request_port(struct uart_port *port)
+  */
+ static void cdns_uart_release_port(struct uart_port *port)
+ {
+-	release_mem_region(port->mapbase, CDNS_UART_REGISTER_SPACE);
+-	iounmap(port->membase);
++	devm_release_mem_region(port->dev,
++				port->mapbase,
++				CDNS_UART_REGISTER_SPACE);
++	devm_iounmap(port->dev, port->membase);
+ 	port->membase = NULL;
+ }
  
- 	/* map the main registers */
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		dev_err(&pdev->dev, "memory resource not found");
--		return -EINVAL;
--	}
--	data->uart.port.membase = devm_ioremap_resource(&pdev->dev, res);
-+	data->uart.port.membase = devm_platform_ioremap_resource(pdev, 0);
- 	ret = PTR_ERR_OR_ZERO(data->uart.port.membase);
--	if (ret)
-+	if (ret) {
-+		dev_err(&pdev->dev, "could not map memory resource");
- 		return ret;
-+	}
- 
- 	/* Check for a fixed line number */
- 	ret = of_alias_get_id(pdev->dev.of_node, "serial");
 -- 
 1.9.1
 
