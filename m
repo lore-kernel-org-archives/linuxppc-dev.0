@@ -6,58 +6,58 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BF7DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:56:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D608AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:58:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1D2D321873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:56:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D2D321873
+	by mail.kernel.org (Postfix) with ESMTPS id 54E4D2186A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:58:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 54E4D2186A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L3xB20XGzDqP7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:56:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L3yn2w7WzDqQK
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:58:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3ST0N6GzDqP2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3ST4JJ5zDqNb
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:19 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1M8xwu-1h9ULI3npG-0068zi; Thu, 14 Mar 2019 23:34:39 +0100
+ 1MnZwp-1gfQqZ046X-00jcjx; Thu, 14 Mar 2019 23:34:38 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 07/45] drivers: tty: serial: 8250_uniphier: use
+Subject: [PATCH v2 06/45] drivers: tty: serial: samsung: use
  devm_ioremap_resource()
-Date: Thu, 14 Mar 2019 23:33:37 +0100
-Message-Id: <1552602855-26086-8-git-send-email-info@metux.net>
+Date: Thu, 14 Mar 2019 23:33:36 +0100
+Message-Id: <1552602855-26086-7-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:HcULVpvjlPvPuUEkGombDx6Lq0TzXgQINZcbt9v0F4IVw3gvfDU
- ue5jWD4gA8wP1LsZ1ucMXRfehaO85dVyZr4F+33vEb/+OE8H5eHMGwes+HogG5qug9JrO8J
- 7oabaolb7Wozqlw9bGe/y7tClhrPNMmFUx/bGTknMrKxLOQyDBqevKo6OkgNPmcIwooD2n9
- pp/LAHbGltK7rNTIffR5Q==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:4uPRC96/ixw=:MVIF+epBtx1bRwzaXem0UT
- ZjVpUy+qBWEVewbWf6tEZyqn8SuuO3a+V/jPrPOu/iQS0nuZ0509ATVN+iIBW3U3kCanvh8av
- Quo4grx9tQzJ3G0g3tgWvM5k0XnvlkZnRNJNY7T20C/l9ICnhM9FXYnNs+bKNefKxQ4Amlzqm
- NqFKewDr71+dbTBm8YtoSjAHfepFA8gn8bQvlo7pYeHz5glc8GdPIgyT2S5CfGnoAV3ZtLcKB
- YzCBA9v/AdXGcNpoUgIApdqb2Np8GOIz051SjR7raVwPWLpPnF9WXcoGcUXHMdvZ9EqULthsq
- HadKjLE+6KJ4PymgsJYSK1kDXBZnhQmDx7Ugm12lDXaehNQyq3abOwDUAyRsmsiSmLXNWA1z4
- YY5v1QZ/tyBxJEko8MCjbeteZMzHCzryHzfjWH/6+X932muk3bfGFejAIWcUZpYy/rIDPOWVo
- Gv+snZCm+zNSlLEk61q+xVFIQnTAvNoxHCGsC02+JcAjF6cIsvRwGdqsYgaeSf1us0uXHyZmE
- lQTTUCjdhuv0zreVE/Xak6OdKMZ7r4BF2stYLwH+BEuVwpc+3+cQKJToo8nGAF4RF94QrSOa1
- OIRV/e0vybyVH+ToU9oNm2lE/njB2kcCusqeCy2ybJmdXBGZyBi5N0mXJ1cRAZX3va5V+e80W
- Ap+F3nrbULbPZ2uI1OoQpSz4mDHvzpb1Stbw7mvxNW5W9rSE9OeFSSJTgSnDzsBIJPtWdaeu6
- 8uDDvt+uabZO6SKvQpcU+te6p4hwJRe/JhTbNg==
+X-Provags-ID: V03:K1:biPYKTkboYb/1OcCYoABqLwj1O505ksU/PyTR3LJ7Da35VWUqJk
+ KaLZ2YHPrK+MwI0vSMJbRK2E3/v/XiYFWvv74iQVL1ADferdn+dvJmjrKVVTOtQGW9LHINY
+ pYkp6FZIW2ft1INaMVS460EQaeKy7jQqTy12j0ZJ0Qb+sLxC5h+erEeWrmtopbd4om5ulZ5
+ /5eWv8ekIAvi+Ut3e1bvQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:QkSB6AzkaFA=:/04NccFh0LgsEP9J2BJ72q
+ B1eFmVEwPpMjYm749dnhjlR1rmq+dnbhS6j1MXeV82rBiAi26ThL9pAAc7klQcrBlTg+hkxu8
+ h1rJLzQ/4yonbiJVN6eV4GUs3aA1WldGeFNX3MyrNaGjcDvKrgDaf92xZ3GjkVlxMznHPwgBu
+ gorsROrsJc3QPP05pvlrxMcoB8Odwxr/OOInZYZ1C8+7iJGYltXL+homHLriVX2jA4ZRjrwbO
+ iz5G+tXjg0v4D3B/kBij3/OsX4pNtdNL2e0s9P+at5Tm1wAQFNb+/c0POxcgyoplqD2JoeoMs
+ pUu27HM70pR+0N6EtOCi0mQOFd2p3OkgwemsL69XOYPm/La/tKOs1xZKj1G4dpxC0IQHXuFR9
+ bEV6dEwTq5AgGjNTs4l+xEl3Wsp4guxJObrvwleGgxuo9fBmOykncZQxvcZwazG7u9EVYIZAN
+ ZmSt4oaQYJaHNFvKNAjUfcz0OwDd9BSt7BAEmhy006a9MCW7ol88W+fQ9eqj0Bspk8Ap/2zHt
+ oWG0svr6rviYWfub8FWEsOoQfavzOW8eEzn8Kg71fNi8NLLmJDHbocxubhmKWsODbTO3Ns9PU
+ twaMKF7mHGFdqfjwXzeDqMUPwvvjX/tAWETSvK9Uyly9LwBTcWZDnARxTOHT6WdMHl55Dr8lK
+ 2X3WCBPEkivrB4HiM9zjH19trWcXVULV7kI3OG/2ZThodsdZk/jgKz8GwO1He91bKQOtyQJwo
+ D01Eu3eXeIA/cG/JFR2C/6WCsl7Bv0pmQa7DCA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,22 +89,22 @@ it to devm_ioremap(), directly use devm_ioremap_resource()
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/8250/8250_uniphier.c | 2 +-
+ drivers/tty/serial/samsung.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/8250/8250_uniphier.c b/drivers/tty/serial/8250/8250_uniphier.c
-index 164ba13..9c1244e 100644
---- a/drivers/tty/serial/8250/8250_uniphier.c
-+++ b/drivers/tty/serial/8250/8250_uniphier.c
-@@ -171,7 +171,7 @@ static int uniphier_uart_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
+diff --git a/drivers/tty/serial/samsung.c b/drivers/tty/serial/samsung.c
+index 83fd516..a49cf15 100644
+--- a/drivers/tty/serial/samsung.c
++++ b/drivers/tty/serial/samsung.c
+@@ -1775,7 +1775,7 @@ static int s3c24xx_serial_init_port(struct s3c24xx_uart_port *ourport,
  
--	membase = devm_ioremap(dev, regs->start, resource_size(regs));
-+	membase = devm_ioremap_resource(dev, regs);
- 	if (!membase)
- 		return -ENOMEM;
+ 	dbg("resource %pR)\n", res);
  
+-	port->membase = devm_ioremap(port->dev, res->start, resource_size(res));
++	port->membase = devm_ioremap_resource(port->dev, res);
+ 	if (!port->membase) {
+ 		dev_err(port->dev, "failed to remap controller address\n");
+ 		return -EBUSY;
 -- 
 1.9.1
 
