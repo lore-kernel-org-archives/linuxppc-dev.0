@@ -2,61 +2,59 @@ Return-Path: <SRS0=OgF1=RR=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CC73C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 08:11:26 +0000 (UTC)
-Received: from lists.ozlabs.org (unknown [203.11.71.2])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19E89C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 10:53:45 +0000 (UTC)
+Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B8C121019
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 08:11:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B8C121019
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8BB9020449
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 10:53:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8BB9020449
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44KhHZ5n1SzDqNj
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 19:11:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Kltt0VhdzDq9J
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 21:53:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.53; helo=1.mo178.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 1.mo178.mail-out.ovh.net (1.mo178.mail-out.ovh.net
- [178.33.251.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44KhFB4FrzzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 19:09:14 +1100 (AEDT)
-Received: from player731.ha.ovh.net (unknown [10.109.146.137])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id AC24D58677
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 07:52:22 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player731.ha.ovh.net (Postfix) with ESMTPSA id 939E538B7730;
- Thu, 14 Mar 2019 06:51:35 +0000 (UTC)
-Date: Thu, 14 Mar 2019 07:50:55 +0100
-From: Greg Kurz <groug@kaod.org>
-To: "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: Re: [PATCH 5/5] ocxl: Remove some unused exported symbols
-Message-ID: <20190314075055.6c4eb970@bahia.lan>
-In-Reply-To: <1dd6d24f3ee5a2029ee6fbb2890356197e881101.camel@au1.ibm.com>
-References: <20190227045741.21412-1-alastair@au1.ibm.com>
- <20190313040702.14276-1-alastair@au1.ibm.com>
- <20190313040702.14276-6-alastair@au1.ibm.com>
- <20190313101045.6712f156@bahia.lan>
- <1dd6d24f3ee5a2029ee6fbb2890356197e881101.camel@au1.ibm.com>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44Klrs4Fz9zDq5g
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 21:51:56 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4586780D;
+ Thu, 14 Mar 2019 03:51:53 -0700 (PDT)
+Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 514E83F71D;
+ Thu, 14 Mar 2019 03:51:50 -0700 (PDT)
+Date: Thu, 14 Mar 2019 10:51:44 +0000
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: "Haibo Xu (Arm Technology China)" <Haibo.Xu@arm.com>
+Subject: Re: [PATCH 3/6] x86: clean up _TIF_SYSCALL_EMU handling using
+ ptrace_syscall_enter hook
+Message-ID: <20190314105143.GA15410@e107155-lin>
+References: <20190228183220.15626-1-sudeep.holla@arm.com>
+ <20190228183220.15626-4-sudeep.holla@arm.com>
+ <eb9ef619-4af8-71e1-5aee-0b6294ac488b@arm.com>
+ <20190304101205.GA1504@e107155-lin>
+ <96d59a68-e5e2-86d9-c707-a79aad438b76@arm.com>
+ <20190311183403.GA31062@e107155-lin>
+ <65b00ea1-f784-4fb4-2a98-49fa44d9fa8f@arm.com>
+ <CALCETrWiF5FKUTmt4jOZJxJr6B_66NFj9TaA3Tnv1uorfkwTMg@mail.gmail.com>
+ <20190312120944.GB13825@e107155-lin>
+ <5750cfac-14a7-8eed-09f4-0d53419bea6b@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 18025094560251812171
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrhedugddutddtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5750cfac-14a7-8eed-09f4-0d53419bea6b@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -68,104 +66,33 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Steve Capper <Steve.Capper@arm.com>,
+ Catalin Marinas <Catalin.Marinas@arm.com>,
+ "jdike@addtoit.com" <jdike@addtoit.com>, "x86@kernel.org" <x86@kernel.org>,
+ Will Deacon <Will.Deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Oleg Nesterov <oleg@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Bin Lu \(Arm Technology China\)" <Bin.Lu@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 14 Mar 2019 13:23:21 +1100
-"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
+On Wed, Mar 13, 2019 at 01:03:18AM +0000, Haibo Xu (Arm Technology China) wrote:
+[...]
 
-> On Wed, 2019-03-13 at 10:10 +0100, Greg Kurz wrote:
-> > On Wed, 13 Mar 2019 15:07:01 +1100
-> > "Alastair D'Silva" <alastair@au1.ibm.com> wrote:
-> >   
-> > > From: Alastair D'Silva <alastair@d-silva.org>
-> > > 
-> > > Remove some unused exported symbols.
-> > > 
-> > > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> > > ---
-> > >  drivers/misc/ocxl/config.c        |  2 --
-> > >  drivers/misc/ocxl/ocxl_internal.h | 23 +++++++++++++++++++++++
-> > >  include/misc/ocxl.h               | 23 -----------------------
-> > >  3 files changed, 23 insertions(+), 25 deletions(-)
-> > > 
-> > > diff --git a/drivers/misc/ocxl/config.c
-> > > b/drivers/misc/ocxl/config.c
-> > > index 026ac2ac4f9c..c90c2e4875bf 100644
-> > > --- a/drivers/misc/ocxl/config.c
-> > > +++ b/drivers/misc/ocxl/config.c
-> > > @@ -299,7 +299,6 @@ int ocxl_config_check_afu_index(struct pci_dev
-> > > *dev,
-> > >  	}
-> > >  	return 1;
-> > >  }
-> > > -EXPORT_SYMBOL_GPL(ocxl_config_check_afu_index);
-> > >  
-> > >  static int read_afu_name(struct pci_dev *dev, struct
-> > > ocxl_fn_config *fn,
-> > >  			struct ocxl_afu_config *afu)
-> > > @@ -535,7 +534,6 @@ int ocxl_config_get_pasid_info(struct pci_dev
-> > > *dev, int *count)
-> > >  {
-> > >  	return pnv_ocxl_get_pasid_count(dev, count);
-> > >  }
-> > > -EXPORT_SYMBOL_GPL(ocxl_config_get_pasid_info);
-> > >  
-> > >  void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int
-> > > pasid_base,
-> > >  			u32 pasid_count_log)
-> > > diff --git a/drivers/misc/ocxl/ocxl_internal.h
-> > > b/drivers/misc/ocxl/ocxl_internal.h
-> > > index 321b29e77f45..06fd98c989c8 100644
-> > > --- a/drivers/misc/ocxl/ocxl_internal.h
-> > > +++ b/drivers/misc/ocxl/ocxl_internal.h
-> > > @@ -107,6 +107,29 @@ void ocxl_pasid_afu_free(struct ocxl_fn *fn,
-> > > u32 start, u32 size);
-> > >  int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
-> > >  void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-> > >  
-> > > +/*
-> > > + * Get the max PASID value that can be used by the function
-> > > + */
-> > > +int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-> > > +
-> > > +/*
-> > > + * Check if an AFU index is valid for the given function.
-> > > + *
-> > > + * AFU indexes can be sparse, so a driver should check all indexes
-> > > up
-> > > + * to the maximum found in the function description
-> > > + */
-> > > +int ocxl_config_check_afu_index(struct pci_dev *dev,
-> > > +				struct ocxl_fn_config *fn, int
-> > > afu_idx);
-> > > +
-> > > +/**  
-> > 
-> > Two *s ?
-> >   
-> 
-> These are Sphinx formatted comments (similar, but not quite the same as
-> Doxygen).
-> 
+> Since ptrace() system call do have so many request type, I'm not sure
+> whether the test cases have covered all of that. But here we'd better make
+> sure the PTRACE_SYSEMU and PTRACE_SYSEMU_SINGLESTEP requests are work
+> correctly. May be you can verify them with tests from Bin Lu(bin.lu@arm.com).
 
-Oh... should the other comments be converted to this format for consistency ?
+Sure happy to try them. Can you point me to them ?
+I did end up writing few more tests.
 
-> > Also, this results in an ocxl_internal.h header file where only these
-> > three functions are documented... which looks a bit weird IMHO. Since
-> > these are ocxl internals, do we _really_ need to keep the comments ?  
-> 
-> I believe we should, it's a courtesy to the next person who has to work
-> in the area.
-> 
-> There are more documentation comments coming in further series.
-> 
-
-Fair enough.
-
-Reviewed-by: Greg Kurz <groug@kaod.org>
+--
+Regards,
+Sudeep
