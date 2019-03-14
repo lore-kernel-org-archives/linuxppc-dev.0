@@ -3,63 +3,60 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A69B0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:31:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28A0CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:33:32 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1DA9D2070D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:31:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DA9D2070D
+	by mail.kernel.org (Postfix) with ESMTPS id 9FFE72070D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:33:31 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9FFE72070D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L4jc5tvWzDqQr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:31:48 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L4lY56wNzDq5j
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:33:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3Zq3rP9zDq6Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:40:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3Zt3WNVzDqBX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:40:54 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1Mdv2u-1gVlt40Nfy-00b3ty; Thu, 14 Mar 2019 23:35:08 +0100
+ 1MZk1p-1ha7vI0XKR-00WmeJ; Thu, 14 Mar 2019 23:35:07 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 38/45] drivers: tty: serial: samsung: use devm_* functions
-Date: Thu, 14 Mar 2019 23:34:08 +0100
-Message-Id: <1552602855-26086-39-git-send-email-info@metux.net>
+Subject: [PATCH v2 37/45] drivers: tty: serial: apbuart: use devm_* functions
+Date: Thu, 14 Mar 2019 23:34:07 +0100
+Message-Id: <1552602855-26086-38-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:6UXVHHSN/pSBbNy6AuA8qQkx6AtLHwlQl48BR55G72r4iZNdygr
- 41CzcU0EUEiy9E8U/gKNs9RKX+r0+HDvVNw9phNXgBrTiysdxISUDMeZYutFSVuwHc+siq8
- KCu3fiiqgRtnherFTgfS+lKex81+mnGAWOWPNUrRrnz7bpSbnDHsTqH7IVgMQKsxi699gu7
- Tg3YiWSOGXDVfYsd8iUeQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:ObE/PlRuh3I=:wFS1yVyKx0TlD+6WLLWZ81
- 3Nn8hHtNUfTYXf0mTFUoJYsEb7YR5dQ+XvdJAJ/XV2autBy3Vi9XDFTvc/tRvzeShdppVzk/0
- 8Datf16Iig9pA9WQCsZnPi7xF7G/v2ykPHiij83szmsL6yZW/r0gnttvTGEzmsy5Gd9LpzhwA
- hVX+OEqRfBvnS/I8/Fy+e/qipyOrJnarpnv7aryJlZdrMPRYxXi7V6pnzXfgFZEMs2OJ6AskI
- AKicdal+VljhO51nOEhC+2RyNz108jdNROlZdQbGCQfTQoV17cVWHQtbE7S0CUWmpOGm6wJau
- NRN0ww2aj7pNfa6mKxwS3OjB3OUxkzmgImiw4kHiIH5wtRPEWnuzXL/PsRINJfBbJZkGyN8ei
- tMS2RN2oBpN6HozAtlNNTbufvF6Y17KfRvlUQNqMC4DQwCl0zzPnjN22N+V31IUTD3vY5GF7r
- BCY/9jCCjrqUqEfGtvIOiYZdePZgd3DR4TwrF9RRIwhXMQ24jJ/o2Z8omiTHZg0Cfrer9J2sW
- sypTuPQTfnMP33k3nW3M3WGe4f26FfMan/XmbRhf/JPvYCvZtUSQrG5tyiKQ2SSMXQL4kkyuD
- 5DJsqBGdc212FO9wIDG+jibFNUCK5SQUR8VL/QHikQuFUVd1YDHi4ijuXBDRXx4iTHjmmR+P4
- +kvzvy0ydadjDnH/4x1yHX1SFCMaAGLyj8rBKMIjCC1IUZOvQo0tTU8z1USdiq7DQI2hWiFY8
- xmqds6v+UuQTqFuWBs2FCZVA4AQ+ZN4//FeO9S7m/u2/FNzNV9wv+RtG9z7PSQKza1eeaXmS7
- n/0HYRSYpvnp5edVbZt+eEew08EGgx2PajIAx+7rCQINvlMuH/hKzx7KrfE2wdIfDCjqnAGzU
- fsA4tpib64Ld9Riml2ND2Li5dXeNK0aPp1G71VlxpjzAhrG9ITaPFMwvl2fjIJP5HbV0Yz7KF
- /rF6s9IbFmw==
+X-Provags-ID: V03:K1:2dk2jESpJv/HEfcNhm6LprNXtUCqzVx1Rvdfnjmt87/bGDbVsf/
+ n6IJXGpfOh+ytlsw3dFBHYudgyuS1XDPdOT3eQYpN7QrEUJ5zFh4jnOO9OqQ2oHIhZfyLL4
+ qnqLTDRTXuIfKvf0gzGuMPkPi3Z4BrPcuHcKwYjrIS+IbAxFB1cehvHku5NKfqbqPZdYaSb
+ GBkxJfegQWU/hAuuGRPaw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:6IL+xuev150=:H4fER6STo8ZVxjpNp19Frk
+ /kIZ8ps9dXY0LQB1WY1bLfaanSR2HrMztwn7txpv2hRpQes8ABU7DxA10fZ6b0mhLCGJPwjYO
+ NN1AOl3x/4P08F+zQ9MJEsWpWErOOJqPZzltezxAmWwCIckaGIS2Wi+bKab6/GL8Arb1CcfYJ
+ iZDNWg2VBh2EIXxDEJhFZvyR5fG4rwbXxsaOTCCficEeIjNvIDvmxKvqRp5IidiIzarjuyHkM
+ 12a0ouNxtu5yjI9GwiheAQf8BeaOsTZ5+/mR1G04Bz2W6NV4DBoepi9xeHeCdAqjchnRd08Qt
+ t2LZ1P9oYPmXREISnBH0TdR/pD2+vgRAUeUbWTv2OVAfDEd0AnnWeepQXN2zi6fnPGbseIB2O
+ dxFMmG04mkIxXXyr5aw8DSH5ITouSPKgRFS5gvgAcyS1/IyU0sgbvBX0XHln9AWnjW56gV1/7
+ Olg/GoI6PL/tfFGraF49ZG0pB/uQe7whwpLwjUuqwJ70IHmTmB97fljtWRaMLPtN03A8yFN5J
+ z0VCJ/AVt7cr4EVst++NopamXzxRus2En1SwI29qxzw2u/nWwXfEWX6p3ICcLT2t3dTKD/FI6
+ XUx+798jYRjlZnXOxCdmz+w1ZUkyrZ7N+lMHC6EZist1vOGn/ck7IedL9WOAlbYBRm5RpvoYT
+ QpKjm+TL7w2MvymxtMlIk4UGChW47GiNaDO2uKlCykiX67q0jQwc/kVUECVy0Xh8KtUS8f+I4
+ Z6NmBuf/Xb/zibUEc3HF+/bzuZZ+Ox9M4RV26A==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,32 +87,42 @@ Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/samsung.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/tty/serial/apbuart.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tty/serial/samsung.c b/drivers/tty/serial/samsung.c
-index a49cf15..e0bab87 100644
---- a/drivers/tty/serial/samsung.c
-+++ b/drivers/tty/serial/samsung.c
-@@ -1436,13 +1436,16 @@ static const char *s3c24xx_serial_type(struct uart_port *port)
+diff --git a/drivers/tty/serial/apbuart.c b/drivers/tty/serial/apbuart.c
+index 60cd133..5eaaee9 100644
+--- a/drivers/tty/serial/apbuart.c
++++ b/drivers/tty/serial/apbuart.c
+@@ -293,12 +293,15 @@ static const char *apbuart_type(struct uart_port *port)
  
- static void s3c24xx_serial_release_port(struct uart_port *port)
+ static void apbuart_release_port(struct uart_port *port)
  {
--	release_mem_region(port->mapbase, MAP_SIZE);
-+	devm_release_mem_region(port->dev, port->mapbase, MAP_SIZE);
+-	release_mem_region(port->mapbase, 0x100);
++	devm_release_mem_region(port->dev, port->mapbase, 0x100);
  }
  
- static int s3c24xx_serial_request_port(struct uart_port *port)
+ static int apbuart_request_port(struct uart_port *port)
  {
- 	const char *name = s3c24xx_serial_portname(port);
--	return request_mem_region(port->mapbase, MAP_SIZE, name) ? 0 : -EBUSY;
+-	return request_mem_region(port->mapbase, 0x100, "grlib-apbuart")
 +	return devm_request_mem_region(port->dev,
 +				       port->mapbase,
-+				       MAP_SIZE,
-+				       name) ? 0 : -EBUSY;
++				       0x100,
++				       "grlib-apbuart")
+ 	    != NULL ? 0 : -EBUSY;
+ 	return 0;
  }
+@@ -622,7 +625,9 @@ static int __init grlib_apbuart_configure(void)
+ 		port = &grlib_apbuart_ports[line];
  
- static void s3c24xx_serial_config_port(struct uart_port *port, int flags)
+ 		port->mapbase = addr;
+-		port->membase = ioremap(addr, sizeof(struct grlib_apbuart_regs_map));
++		port->membase = devm_ioremap(port->dev,
++					     addr,
++					     sizeof(struct grlib_apbuart_regs_map));
+ 		port->irq = 0;
+ 		port->iotype = UPIO_MEM;
+ 		port->ops = &grlib_apbuart_ops;
 -- 
 1.9.1
 
