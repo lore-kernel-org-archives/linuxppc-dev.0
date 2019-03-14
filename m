@@ -6,58 +6,57 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BA0AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:43:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EFEB5C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:44:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE6BB20854
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:43:22 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE6BB20854
+	by mail.kernel.org (Postfix) with ESMTPS id 7353A20854
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:44:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7353A20854
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L3dj0FV6zDq6t
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:43:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L3gM4L84zDqQ4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:44:47 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.75; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SF3V7fzDqNQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SH4tcwzDqNG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:11 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MD9CZ-1hDfjf0Jv7-009C3p; Thu, 14 Mar 2019 23:34:34 +0100
+ 1N7RDn-1gz9Y43qLl-017lIP; Thu, 14 Mar 2019 23:34:42 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 02/45] drivers: tty: serial: 8250_dw: use
- devm_ioremap_resource()
-Date: Thu, 14 Mar 2019 23:33:32 +0100
-Message-Id: <1552602855-26086-3-git-send-email-info@metux.net>
+Subject: [PATCH v2 10/45] drivers: tty: serial: zs: use devm_* functions
+Date: Thu, 14 Mar 2019 23:33:40 +0100
+Message-Id: <1552602855-26086-11-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:Mb1aUiA004kr2uSah9d4wlExLRcQhipnWCVS4BAcbnoPRYa/bss
- oD79K7HFQLndrlsEJ9Of/JgeFlbQKlOZCP8e7yjRHKTfSWITjQmzqYj409eAlymUCAYoH4o
- AdlkKdRz/SQvcjgvoCKtzVLvitt8JRmKd8ZYJeJOTpsGVYP+m+lx+195F8YLDvZ9CH1a+Gx
- E1SsaYN4GON7eQmGjxLOg==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:Bz/JnTN5/Cg=:pzgRLkhM8Dp7W4fhrMgzkV
- 9y9qX9W2gK8YS0DbuZNBaFXI3+xB/cfm5J1jCxFpDpdEHrc8YmVY0dCSp97Rqh99TJlHsGRYY
- SyncdxE+2AMlWM6CJ7UOIS3YhuNXwxQ9s2ryMnTo1uTDeHEkaqmNuBgFNyNf46cDcxyvGPHO0
- 6ZDv2vZHtJakrEGw0jdB6yqO4l7DGKJbRU5strhw9ou8U37CGbTbDoPYCqRRDgr3uo2dZ9o9r
- dRPkd5eU9Kg0PiiG6QIK9L41SLEvJIFQR6Zhr/mOHcz34UJvkr7/qLS/20PgocfBB1nnkU77a
- k912N7WV147R6JPfTPoQmbQEtOnowIg1ZrAKKRcTVzpuRiLglLu28iGkIfbyu8wQAX21OV656
- 3azpbykOf0omdEi9pEH7Nv1AHUUDvFcyTqaTitlZ2N9I40RJ0SOTy1HgcesFZ6zoeJSB+WAoE
- +ckp9PF5hitnxGLhMzVEmyCSF4Iw7SuBIab4rmgFhDKaUWgxxO0CmtglDPc8hTsWGU89Wuun5
- dswUy8L0a6sRkeQs278qRnZo3C30ZZcOotsulUmCPVb9V46HMbTQT3kaovmyZAu5bHflTFJge
- etFCpGHjEYHLixWt2IfKLYb2i2DgjZoXT+asuiQLcj3nIlyimPNf5dNWEOQRJtjGNjNhAguEx
- jlWBC/cQbi6D9BYs4lxl0Zl+hSnGeck62Togmf7Sx9LOt+T6pNIDHjkrUYOBddX4x7ay9/szs
- WgjMsq5NQgdJhjjH9lILaBokEfTnqr63bGHlJQ==
+X-Provags-ID: V03:K1:e+xsu2rGR431BJ53y517tmlE8W5jQaZDjF0ZISqDlpAzK97CtT0
+ xeQZCrkd5R5Ivwkzp7lEouW7Y7YOlQJoliVOYw8iloOq/yWBz6n7a+V2hMrabK07Eb0QXxQ
+ 1MPrP5enzRic6Mkdczn4Cc2XzpHPGquEUKOxM6kM80+WrurZJ8Q2BdX46Kfc0f79mk6+KFl
+ EEfIMjpNhLo9d2lgkHFxQ==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:e6eQEqMXi+Y=:BD2rZtjclkb8YnsgV6olHo
+ vTXKLtIRwU6gePZ/fRrTXd1sL8nXzr/GcgAkb7VjRu5OvrQpNPaHeGjveWsz9E2vMe/QpYsBg
+ B+UARM0HRe0F0DAJr26kYMSeLGnt4kK1XClgfFfSeTt2C7dUpTzmZX0cB5YgTHRJXJZSntRSA
+ rpYmyNsD26UM+uUTyOjLtw5nlD7q+zxt/M/45ZdYKqqyViQjqjdT2SYSZnglwRM7AGOyu5DGy
+ GcL6ilSN2wWijlnhoye44xdNPrdqRrtyMhJCoMrz6O0Dq5ZxWOdRJCNDlx1ZCDGG/2L755hMg
+ JDC/o78hN8P9AxV20Kcp1JKORwM5ZZ6hG4xWtwLKm+W3namK23kCv/2HgH0umWrhqniM6ZKQ4
+ f9ZCGGNYL9TRkIkuIjTEztKVgrGNri6bCVlmsF1SeSAbpF0PASOhN8Pc1Px4zzbbNcPUgdleh
+ i/bWxROK/FVYOZccZtvvL7IhNI4I080wIyQt5lbD8OHkMF4cj8aP+RgXcHeT0Kw3RShah+Zlx
+ W/ulsxqClhZqYK1rmMkkzwf9muBp4ptBYAE8RIDNdQdD2gcSIVB4hl91fn4Av0j8TGSJUHYt1
+ XVU6sHJOXf4Nzh+YWjCgQ6Uc9xsZOodcGvuZ680+nOZ4VNRKGWWmGiQGk93w42XHD3T+FbgwY
+ m0PBDPifsFSMRHjXWcfFD1xAKMXqd7jQVYz7nNkdiiNMFPswEefzP71lFqJFF41PQoDz+QVax
+ 5PdQwC5SD2pRDJf4/2lwPMvxtJgpUwrkZmQG3Q==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,27 +83,58 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Instead of fetching out data from a struct resource for passing
-it to devm_ioremap(), directly use devm_ioremap_resource()
+Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/8250/8250_dw.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/tty/serial/zs.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/tty/serial/8250/8250_dw.c b/drivers/tty/serial/8250/8250_dw.c
-index d31b975..f0a294d 100644
---- a/drivers/tty/serial/8250/8250_dw.c
-+++ b/drivers/tty/serial/8250/8250_dw.c
-@@ -526,7 +526,7 @@ static int dw8250_probe(struct platform_device *pdev)
- 	p->set_ldisc	= dw8250_set_ldisc;
- 	p->set_termios	= dw8250_set_termios;
+diff --git a/drivers/tty/serial/zs.c b/drivers/tty/serial/zs.c
+index b03d3e4..0b1ec2f 100644
+--- a/drivers/tty/serial/zs.c
++++ b/drivers/tty/serial/zs.c
+@@ -984,16 +984,17 @@ static const char *zs_type(struct uart_port *uport)
  
--	p->membase = devm_ioremap(dev, regs->start, resource_size(regs));
-+	p->membase = devm_ioremap_resource(dev, regs);
- 	if (!p->membase)
+ static void zs_release_port(struct uart_port *uport)
+ {
+-	iounmap(uport->membase);
++	devm_iounmap(uport->dev, uport->membase);
+ 	uport->membase = 0;
+-	release_mem_region(uport->mapbase, ZS_CHAN_IO_SIZE);
++	devm_release_mem_region(uport->dev, uport->mapbase, ZS_CHAN_IO_SIZE);
+ }
+ 
+ static int zs_map_port(struct uart_port *uport)
+ {
+ 	if (!uport->membase)
+-		uport->membase = ioremap_nocache(uport->mapbase,
+-						 ZS_CHAN_IO_SIZE);
++		uport->membase = devm_ioremap_nocache(uport->dev,
++						      uport->mapbase,
++						      ZS_CHAN_IO_SIZE);
+ 	if (!uport->membase) {
+ 		printk(KERN_ERR "zs: Cannot map MMIO\n");
  		return -ENOMEM;
+@@ -1005,13 +1006,16 @@ static int zs_request_port(struct uart_port *uport)
+ {
+ 	int ret;
  
+-	if (!request_mem_region(uport->mapbase, ZS_CHAN_IO_SIZE, "scc")) {
++	if (!devm_request_mem_region(uport->mapbase,
++				     ZS_CHAN_IO_SIZE, "scc")) {
+ 		printk(KERN_ERR "zs: Unable to reserve MMIO resource\n");
+ 		return -EBUSY;
+ 	}
+ 	ret = zs_map_port(uport);
+ 	if (ret) {
+-		release_mem_region(uport->mapbase, ZS_CHAN_IO_SIZE);
++		devm_release_mem_region(uport-dev,
++					uport->mapbase,
++					ZS_CHAN_IO_SIZE);
+ 		return ret;
+ 	}
+ 	return 0;
 -- 
 1.9.1
 
