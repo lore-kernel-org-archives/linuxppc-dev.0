@@ -6,57 +6,58 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2631DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:53:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A0DAFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:55:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5042121873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:53:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5042121873
+	by mail.kernel.org (Postfix) with ESMTPS id 24A1D21873
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 22:55:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24A1D21873
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L3sl3nyQzDqP7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:53:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L3vR0TV3zDq6Q
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:55:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.75; helo=mout.kundenserver.de;
+ (client-ip=217.72.192.73; helo=mout.kundenserver.de;
  envelope-from=info@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SS55kzzDqNg
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3SS55m9zDqNm
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:35:18 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MK3mS-1hKRez1baA-00LRrW; Thu, 14 Mar 2019 23:34:47 +0100
+ 1MsZeX-1gkHxf0is7-00txnj; Thu, 14 Mar 2019 23:34:52 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 16/45] drivers: tty: serial: uartlite: use devm_* functions
-Date: Thu, 14 Mar 2019 23:33:46 +0100
-Message-Id: <1552602855-26086-17-git-send-email-info@metux.net>
+Subject: [PATCH v2 21/45] drivers: tty: serial: altera_jtaguart: use devm_*
+ functions
+Date: Thu, 14 Mar 2019 23:33:51 +0100
+Message-Id: <1552602855-26086-22-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:SlzeGhHlOuxFduqp5QuUml5rOBQzKNh69j7CDj7Ua0DFA/PwUiw
- 1lhjZUG18/PBNkuKf+0Ltm8rhlvh77rYT5Hwow7OUXX/JTdcUgQZh/oKi5/EsA2RFNKzX47
- UrPJmeeH1jZk48JBFb1CyoHx7Cu4A3gTsWPn/T7TGVztCN2KHvV4sDeNv+Iiyeh4eQltg7e
- p9J66Ais57XCJGu26Su2g==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:S3GpsMXKkd8=:18iZLGQUyS/zWRDlmeJy1l
- t+CUbbf7JicHBp9EJh5e/ge6UxEsJBFnHeFriW9pXaNeQk9y7UMIvZlK/WxDYPLxs7Z8T+vlp
- UJmdkA8z2wEl7aOWq+zC52paCNg9uiRwydirnMv4QxQusIR48nyZfe2UKcWpXn99jtVQzhnrL
- L1K5XO4WxYMCOqaOKL1EfQd69BCunSgT3DsGqP08X0lClf2fhdB1hGT5V49TBvrEAoQ+DhiA+
- zfBDR3I3PDq0b0W4oi11+SZDLA8mgnD9Q4jR3XV+Im04Qd7Px7N5jjW8FcrAxEtRlcsCkOSvw
- 5Yjsl0RJVzmdLdA/y6beeeN8xoyff16M6UNDEp290o4TJ3bnAVT1FEO1HL2B994SNxfrQMPy1
- k7+6S0B78z+VQPRThV0hABwx0X0k+L/nuzYoHdhhgeKiSSC7FHfEeYM/bKd73mhuRoihT2tY/
- AWwRGa/UejhwRpXUqHqYN3paVYS2uwbHam7aqscs2rwfd+bygDQTQQQSGTjTCp0RaLcicv+TT
- rAxojJeLPEk8x4NoPz9BdjumexSv27cwtiqNWmDl/YkisO7gavxnakRMt45QBmlrNrUOsn2LF
- nfFQ9k+mabqGs9eC9OVGzFsu5mC7PLm+GpPCUvHAfcC2rNEcmZiKOaXP7aZPbnqkAo5t5zJmM
- ZcUXg0utXbXRUpOHU9d3axMc2LXLTx1zFWdmMkEsbSBQCeKSjKvIyttaet8ejhl1Hour8g5EC
- vKnDtaCzqmclKRrrQNiTCIpzP6RM2skLaFdHqQ==
+X-Provags-ID: V03:K1:/7N3Y15yubt1Hp/mjw3zs7TBCGDbpCWoamybrySXM7TWT1iiZ5r
+ 2R8qGWtT++LJJEcxQpELQ8gkj3HbqZ0eXBmEHjMtZDtMbIQlKSH4mB2MapOJmflPOvkQlJH
+ NKjJApxMquO+xfL6lXyipXMxU89N9c6JrlVMWKHy2OyBKhNKp3c99Rkevx9rKdNWXzDu9gW
+ fZGjlLuF87u52WfoatMxA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:ZOxp4iW/df8=:suctqOpq3a/nVrfdf/e1hw
+ MNoCU4SRZ7HWSprUjLQV7I3v2UgGm+YHZbGfV/V7DGZPk4exNA7H4Ei+tLgG6ZposG0O2RWam
+ cYOsNjUoZI3yuwm8shOQjmuBJAZmNqA4/Yeor7sMVJvA1OnfZqurxmfHlcc814DxLrqN6XCi9
+ x0pO3bw30vLUDh0jCjvRFCMr3IOf2/x8wpcn7P4kwPAMTMa2XJj7/azpzikkrVPMqYZlquyBu
+ +deD1Lii4JlDPATXMSHb+TP0GWBbKHF3IvnOrIyqXG2M/59fPgJcoaraM8OqEz4ZB93WC1v4d
+ zmO+g103p+K848F4RiqTbKYbKJfd3YHoyYd7YC9KI6wjAh4U64kPjDSIz77cL/RpqXH7G3UGo
+ leuLZFF4Z7PaAhQu2VipOsGfxdPVQi4z90j1cUPzHiahjRZ15Wwtq359R2uNyzLWZo/sPQYgN
+ SaPjsot9Z1lK6NZF5nLV39mmBOeDmPsuyRmFd0IpH0bgWDfoRQy6Z1BDpOa1qLJ3USOuRqH41
+ 1QlXnWFrMfaCa1pjU6MX9Ov+DuE1Ez4o530TumHkNxa/0IAwj2tKf6HrS+D9XsDDsFwRlrnSa
+ Yni/M4O+NGtSg4gQ/2aj+mVJWUI6z3Vfdk/lRrk+/gRVAHjw77VQMjjJxpTefXqB4KVqBvyx+
+ ajrOBFamJ9xRSN0qEICe4myxxQs1wbP6O0XgjPHHpiRE5urnj2GS6wj+1pAJVioPA5MO1kS1Q
+ LKfM83cdawIT1kmG8V4p3VA4GYckcO8YKaTCUA==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,48 +88,33 @@ Use the safer devm versions of memory mapping functions.
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/uartlite.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/tty/serial/altera_jtaguart.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/uartlite.c b/drivers/tty/serial/uartlite.c
-index aa461b8..f068d00 100644
---- a/drivers/tty/serial/uartlite.c
-+++ b/drivers/tty/serial/uartlite.c
-@@ -342,8 +342,8 @@ static const char *ulite_type(struct uart_port *port)
+diff --git a/drivers/tty/serial/altera_jtaguart.c b/drivers/tty/serial/altera_jtaguart.c
+index c90e503..13cab5d 100644
+--- a/drivers/tty/serial/altera_jtaguart.c
++++ b/drivers/tty/serial/altera_jtaguart.c
+@@ -448,7 +448,9 @@ static int altera_jtaguart_probe(struct platform_device *pdev)
+ 	else
+ 		return -ENODEV;
  
- static void ulite_release_port(struct uart_port *port)
- {
--	release_mem_region(port->mapbase, ULITE_REGION);
--	iounmap(port->membase);
-+	devm_release_mem_region(port->dev, port->mapbase, ULITE_REGION);
-+	devm_iounmap(port->dev, port->membase);
- 	port->membase = NULL;
- }
- 
-@@ -355,15 +355,20 @@ static int ulite_request_port(struct uart_port *port)
- 	dev_dbg(port->dev, "ulite console: port=%p; port->mapbase=%llx\n",
- 		 port, (unsigned long long) port->mapbase);
- 
--	if (!request_mem_region(port->mapbase, ULITE_REGION, "uartlite")) {
-+	if (!devm_request_mem_region(port->dev,
+-	port->membase = ioremap(port->mapbase, ALTERA_JTAGUART_SIZE);
++	port->membase = devm_ioremap(port->dev,
 +				     port->mapbase,
-+				     ULITE_REGION,
-+				     "uartlite")) {
- 		dev_err(port->dev, "Memory region busy\n");
- 		return -EBUSY;
- 	}
++				     ALTERA_JTAGUART_SIZE);
+ 	if (!port->membase)
+ 		return -ENOMEM;
  
--	port->membase = ioremap(port->mapbase, ULITE_REGION);
-+	port->membase = devm_ioremap(port->dev, port->mapbase, ULITE_REGION);
- 	if (!port->membase) {
- 		dev_err(port->dev, "Unable to map registers\n");
--		release_mem_region(port->mapbase, ULITE_REGION);
-+		devm_release_mem_region(port->dev,
-+					port->mapbase,
-+					ULITE_REGION);
- 		return -EBUSY;
- 	}
+@@ -474,7 +476,7 @@ static int altera_jtaguart_remove(struct platform_device *pdev)
  
+ 	port = &altera_jtaguart_ports[i].port;
+ 	uart_remove_one_port(&altera_jtaguart_driver, port);
+-	iounmap(port->membase);
++	devm_iounmap(port->dev, port->membase);
+ 
+ 	return 0;
+ }
 -- 
 1.9.1
 
