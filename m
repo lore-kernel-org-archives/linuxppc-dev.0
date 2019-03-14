@@ -3,22 +3,22 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1618EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:28:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9FBBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:30:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 861EA21873
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:28:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 861EA21873
+	by mail.kernel.org (Postfix) with ESMTPS id 57E392070D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Mar 2019 23:30:11 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 57E392070D
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L4f34W5pzDqK3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:28:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L4gj4rvzzDqQr
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:30:09 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=metux.net
  (client-ip=212.227.17.10; helo=mout.kundenserver.de;
@@ -28,36 +28,39 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L3Zl2MVlzDqD2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:40:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L3Zq21SszDqPV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:40:50 +1100 (AEDT)
 Received: from orion.localdomain ([95.117.89.18]) by mrelayeu.kundenserver.de
  (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1M8hEd-1h9DdJ2voX-004mDV; Thu, 14 Mar 2019 23:34:56 +0100
+ 1M2fM1-1h3Bl93DKR-004C7v; Thu, 14 Mar 2019 23:34:40 +0100
 From: "Enrico Weigelt, metux IT consult" <info@metux.net>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 26/45] drivers: tty: serial: dz: use dev_err() instead of
- printk()
-Date: Thu, 14 Mar 2019 23:33:56 +0100
-Message-Id: <1552602855-26086-27-git-send-email-info@metux.net>
+Subject: [PATCH v2 09/45] drivers: tty: serial: 8250_mtk: use
+ devm_ioremap_resource()
+Date: Thu, 14 Mar 2019 23:33:39 +0100
+Message-Id: <1552602855-26086-10-git-send-email-info@metux.net>
 X-Mailer: git-send-email 1.9.1
 In-Reply-To: <1552602855-26086-1-git-send-email-info@metux.net>
 References: <1552602855-26086-1-git-send-email-info@metux.net>
-X-Provags-ID: V03:K1:t0vfwJPx9NfL4tq35ATbtyhLGWVbWI4RcxTsENYe1aYWbwSsoQZ
- 1Z5+0lsUwBrQI7AvTa0DeKSahSaDtX9EbAWLqXqLNZMfq07W52PHspP/T3ruOaZhqKhbg36
- SyPtbHYVTyLU4wK5aeHInuw34Vnn/lEwuANVrVxVGZ8fog4g2BnfXSESTzTIdRpQTGieYG4
- 7gKVMzlBXkmqTuf2x4gDw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:zsv3d5hXaoQ=:4WTAOT0nLxFUAsZDcalQQx
- 2P7kBJS6IoPhUgGuQcPaZeTbzvNCK+spQhtpDtfqmOL5ph3W06/QNhH7lHmJU+rPWPOT8RB+h
- wRUnirGBU3hMtI9YfCjj/oflA+A8p4JgdC8yYV+ROrXNOPXKYQQC3Zclokc4j28Hi0GE8KDFa
- 4/OTdGw1NthO4l/nGEQRdzqNH6uowitJkzkC6+/o7e0S7y2ZYj3jZEsK8FSgrcGYKEmDu/dxX
- utEzQJ3LNO5I2wtla4ONpmTyLQBDTX2SDBn6a2RcQHgjMTdgK0vPy2HnENk374NVXEZSZpSi3
- cVWsiou46wjcZVo4pRzg3XX64k39vDVp1pC+UT8DvlELiwSJEidVv1nIbLiuKgPsZJckxg3+x
- BEpiJKFCt5AipAqB876lPPlyMpCN9jqY/NosgUxJuJ9Oav3GHPccU53S7C2pWG1JA1OuH99ZQ
- KAn1hULLfSHabpc7swmy8y87g0LhfNFHAeStHXzl78opDUvbTZ2qNJAQFz8E1cyM8+RiUdLwJ
- k8wBErRydPGc3hfIvvd3L3ebRupOIdd2Pw/efp8eVMaLvX01UhmItzTs5n9q047AME0fyKY6X
- PssdlYylqBdCDlfxhfQzeMWZ18pgmMB/nj+Q3tNZIbMuFbd4C6SOvrAVd44/djUL849wpjKoM
- gOUVxZd2JlykgTlxyAqUl3VQ0hDytb2KPXeaJX54XMP6s5yPlL+qcyr3O6HUP+aDgWlZr96Ce
- giTNlHBtVCgECtBTTTgMA2gzcq3JhKe21PdAhA==
+X-Provags-ID: V03:K1:tq46V5HkrKkArgmZSws3car69JUj8undTbtBhIc70QwufTd1mZL
+ sWiBwGH86COST0US8abTbeTb+YuOxrd+ByPEkwf/3SUkGlon3TFUmogQpGmbYbN/Dfqd/m7
+ scOAUvc5wsVofgiem9lmqwyaaNquTW8jzLZVbee2wrjJYMuaEh5tI2/4lwJL8McPMlhNDpW
+ Wl1Zwfy3og3RCloZTQzWA==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:BW1eKWC833I=:Mx+/m5bgyBIbmKn/ObGw0G
+ GSkbKqQUYdWw8EshopTRko/BbxnwqsizfLK11iMU0pf4Xf71yWnEZMI8qIo9S4AuJ0IwKHMaD
+ 7yj90Fc2VI0zm3aLfgTO4HkCJFYsGr9ZDxajC3jrr6hptD1W+zKvYNyFlfnXosGIpWWafral/
+ 7+qJNSTIMadjggVHqg8UxHLR+HqrGi3DdVPgUm7sFqz1qQDvGFIQKCFf90B9jkJZ29456tKMM
+ zL4Pd6Kp3n15G0xN8sGzp5mshGD198vX5xfSrBCKjMGHTyP7YseUECmkJ2HaSDCPfjm0Nj9j/
+ UxSN3uQa8nVoirOnhiK98wCYwMElgbmtXxP/73aCkY9zaexwehmsJiZtHEtXOi9EegC/O0kLD
+ 0Aez/wnbCXCz31HUa5CFY6fRTFhimhjSv3d/o86h4rKO0nJklpvLMTr/AIJ5HIg4TYL9ILdzd
+ 8ICC/gCERziOIkQlZtzK+igIHgWm+iTlXFKduUfiQEYz24MxpqCiiuoLysyGFdDWKpy8bpBqf
+ b9hTuwz5SmIhfGsUDqMlEmjU9Tq8Xn4U78tY3P1AYo6LPnioKhRTgMwy94XDBr710q69bDMlb
+ ENJZYCeQ4d726UwujBAfJBHnkVMgTkTDbvjRO4alWeE6NpnB+Im/To1wQf8+mmC2mK/Uutd0z
+ Hr6/iCmFKqYabEn7WQoemyk+Z9NezGFN2WXIx2AEZI2z9wpv2qSNgQyjCzZxcrLHgCeY5H3oR
+ mRXO8QJ/rJKtOHrjeB/WSxuOHW/a9JXZnsxCoZyFpcVNIwm9eTuzvQMQILL8t2i17KbpRyz33
+ iKbYAyW5tVM7cUaDaXERpJYpz5e1j2DmdXKSUPR7g3AlPfaplOWATjZ1EvJo7Yj7NWQ0uSfFl
+ Rjh5iq/H6o3ZF7UApT8X01zg8KU6368tKqAy5pamuGd/xfPGhMTKR1fEgm70XsPyzufnL7pjW
+ Svc+tYNKuXQ==
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,47 +87,28 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Using dev_err() instead of printk() for more consistent output.
-(prints device name, etc).
+Instead of fetching out data from a struct resource for passing
+it to devm_ioremap(), directly use devm_ioremap_resource()
 
 Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 ---
- drivers/tty/serial/dz.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/tty/serial/8250/8250_mtk.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/dz.c b/drivers/tty/serial/dz.c
-index 7b57e84..96e35af 100644
---- a/drivers/tty/serial/dz.c
-+++ b/drivers/tty/serial/dz.c
-@@ -416,7 +416,7 @@ static int dz_startup(struct uart_port *uport)
- 			  IRQF_SHARED, "dz", mux);
- 	if (ret) {
- 		atomic_add(-1, &mux->irq_guard);
--		printk(KERN_ERR "dz: Cannot get IRQ %d!\n", dport->port.irq);
-+		dev_err(uport->dev, "Cannot get IRQ %d!\n", dport->port.irq);
- 		return ret;
+diff --git a/drivers/tty/serial/8250/8250_mtk.c b/drivers/tty/serial/8250/8250_mtk.c
+index c1fdbc0..bf6eb8d 100644
+--- a/drivers/tty/serial/8250/8250_mtk.c
++++ b/drivers/tty/serial/8250/8250_mtk.c
+@@ -383,8 +383,7 @@ static int mtk8250_probe(struct platform_device *pdev)
+ 		return -EINVAL;
  	}
  
-@@ -680,7 +680,7 @@ static int dz_map_port(struct uart_port *uport)
- 		uport->membase = ioremap_nocache(uport->mapbase,
- 						 dec_kn_slot_size);
- 	if (!uport->membase) {
--		printk(KERN_ERR "dz: Cannot map MMIO\n");
-+		dev_err(uport->dev, "Cannot map MMIO\n");
+-	uart.port.membase = devm_ioremap(&pdev->dev, regs->start,
+-					 resource_size(regs));
++	uart.port.membase = devm_ioremap_resource(&pdev->dev, regs);
+ 	if (!uart.port.membase)
  		return -ENOMEM;
- 	}
- 	return 0;
-@@ -697,8 +697,8 @@ static int dz_request_port(struct uart_port *uport)
- 		if (!request_mem_region(uport->mapbase, dec_kn_slot_size,
- 					"dz")) {
- 			atomic_add(-1, &mux->map_guard);
--			printk(KERN_ERR
--			       "dz: Unable to reserve MMIO resource\n");
-+			dev_err(uport->dev,
-+				"Unable to reserve MMIO resource\n");
- 			return -EBUSY;
- 		}
- 	}
+ 
 -- 
 1.9.1
 
