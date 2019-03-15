@@ -2,58 +2,59 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86A71C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59F74C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:58:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0AC3820854
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:30:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0AC3820854
+	by mail.kernel.org (Postfix) with ESMTPS id 811C0217F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:58:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 811C0217F5
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LRKs640vzDqRc
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:30:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LRy30r3ZzDqJg
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:58:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=188.165.53.149; helo=2.mo2.mail-out.ovh.net;
- envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
+ (client-ip=46.105.39.65; helo=12.mo5.mail-out.ovh.net;
+ envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 2395 seconds by postgrey-1.36 at bilbo;
- Sat, 16 Mar 2019 00:28:02 AEDT
-Received: from 2.mo2.mail-out.ovh.net (2.mo2.mail-out.ovh.net [188.165.53.149])
+X-Greylist: delayed 110862 seconds by postgrey-1.36 at bilbo;
+ Sat, 16 Mar 2019 00:56:56 AEDT
+Received: from 12.mo5.mail-out.ovh.net (12.mo5.mail-out.ovh.net [46.105.39.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LRGV71WdzDqRW
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:28:01 +1100 (AEDT)
-Received: from player793.ha.ovh.net (unknown [10.109.146.168])
- by mo2.mail-out.ovh.net (Postfix) with ESMTP id 7D66518A1B6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 13:09:12 +0100 (CET)
-Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
- (Authenticated sender: clg@kaod.org)
- by player793.ha.ovh.net (Postfix) with ESMTPSA id 503713CD20E6;
- Fri, 15 Mar 2019 12:09:01 +0000 (UTC)
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v3 14/17] KVM: PPC: Book3S HV: XIVE: add passthrough support
-Date: Fri, 15 Mar 2019 13:06:06 +0100
-Message-Id: <20190315120609.25910-15-clg@kaod.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190315120609.25910-1-clg@kaod.org>
-References: <20190315120609.25910-1-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LRvr3LnRzDqRr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:56:52 +1100 (AEDT)
+Received: from player793.ha.ovh.net (unknown [10.109.143.201])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 91A5E2250CC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 14:56:48 +0100 (CET)
+Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
+ [82.253.208.248]) (Authenticated sender: groug@kaod.org)
+ by player793.ha.ovh.net (Postfix) with ESMTPSA id 600B43CE633C;
+ Fri, 15 Mar 2019 13:56:40 +0000 (UTC)
+Date: Fri, 15 Mar 2019 14:56:39 +0100
+From: Greg Kurz <groug@kaod.org>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Subject: Re: [PATCH 6/7] ocxl: afu_irq only deals with IRQ IDs, not offsets
+Message-ID: <20190315145639.4ae9e257@bahia.lab.toulouse-stg.fr.ibm.com>
+In-Reply-To: <20190313041524.14644-7-alastair@au1.ibm.com>
+References: <20190313041524.14644-1-alastair@au1.ibm.com>
+ <20190313041524.14644-7-alastair@au1.ibm.com>
+X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 10801883708500184023
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Ovh-Tracer-Id: 12619086156981049675
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrheehgdefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrheehgdehlecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,246 +66,283 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Alastair D'Silva <alastair@d-silva.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The KVM XICS-over-XIVE device and the proposed KVM XIVE native device
-implement an IRQ space for the guest using the generic IPI interrupts
-of the XIVE IC controller. These interrupts are allocated at the OPAL
-level and "mapped" into the guest IRQ number space in the range 0-0x1FFF.
-Interrupt management is performed in the XIVE way: using loads and
-stores on the addresses of the XIVE IPI interrupt ESB pages.
+On Wed, 13 Mar 2019 15:15:21 +1100
+"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
 
-Both KVM devices share the same internal structure caching information
-on the interrupts, among which the xive_irq_data struct containing the
-addresses of the IPI ESB pages and an extra one in case of pass-through.
-The later contains the addresses of the ESB pages of the underlying HW
-controller interrupts, PHB4 in all cases for now.
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> The use of offsets is required only in the frontend, so alter
+> the IRQ API to only work with IRQ IDs in the backend.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
+>  drivers/misc/ocxl/afu_irq.c       | 31 +++++++++++++------------------
+>  drivers/misc/ocxl/context.c       |  7 +++++--
+>  drivers/misc/ocxl/file.c          | 13 ++++++++-----
+>  drivers/misc/ocxl/ocxl_internal.h | 10 ++++++----
+>  drivers/misc/ocxl/trace.h         | 12 ++++--------
+>  5 files changed, 36 insertions(+), 37 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
+> index 11ab996657a2..1885c472df58 100644
+> --- a/drivers/misc/ocxl/afu_irq.c
+> +++ b/drivers/misc/ocxl/afu_irq.c
+> @@ -14,14 +14,14 @@ struct afu_irq {
+>  	struct eventfd_ctx *ev_ctx;
+>  };
+>  
+> -static int irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
+> +int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
+>  {
+>  	return (offset - ctx->afu->irq_base_offset) >> PAGE_SHIFT;
+>  }
+>  
+> -static u64 irq_id_to_offset(struct ocxl_context *ctx, int id)
+> +u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id)
+>  {
+> -	return ctx->afu->irq_base_offset + (id << PAGE_SHIFT);
+> +	return ctx->afu->irq_base_offset + (irq_id << PAGE_SHIFT);
+>  }
+>  
+>  static irqreturn_t afu_irq_handler(int virq, void *data)
+> @@ -69,7 +69,7 @@ static void release_afu_irq(struct afu_irq *irq)
+>  	kfree(irq->name);
+>  }
+>  
+> -int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
+> +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id)
+>  {
+>  	struct afu_irq *irq;
+>  	int rc;
+> @@ -101,10 +101,7 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
+>  	if (rc)
+>  		goto err_alloc;
+>  
+> -	*irq_offset = irq_id_to_offset(ctx, irq->id);
 
-A guest, when running in the XICS legacy interrupt mode, lets the KVM
-XICS-over-XIVE device "handle" interrupt management, that is to
-perform the loads and stores on the addresses of the ESB pages of the
-guest interrupts. However, when running in XIVE native exploitation
-mode, the KVM XIVE native device exposes the interrupt ESB pages to
-the guest and lets the guest perform directly the loads and stores.
+This should be replaced by:
 
-The VMA exposing the ESB pages make use of a custom VM fault handler
-which role is to populate the VMA with appropriate pages. When a fault
-occurs, the guest IRQ number is deduced from the offset, and the ESB
-pages of associated XIVE IPI interrupt are inserted in the VMA (using
-the internal structure caching information on the interrupts).
+	*irq_id = irq->id;
 
-Supporting device passthrough in the guest running in XIVE native
-exploitation mode adds some extra refinements because the ESB pages
-of a different HW controller (PHB4) need to be exposed to the guest
-along with the initial IPI ESB pages of the XIVE IC controller. But
-the overall mechanic is the same.
-
-When the device HW irqs are mapped into or unmapped from the guest
-IRQ number space, the passthru_irq helpers, kvmppc_xive_set_mapped()
-and kvmppc_xive_clr_mapped(), are called to record or clear the
-passthrough interrupt information and to perform the switch.
-
-The approach taken by this patch is to clear the ESB pages of the
-guest IRQ number being mapped and let the VM fault handler repopulate.
-The handler will insert the ESB page corresponding to the HW interrupt
-of the device being passed-through or the initial IPI ESB page if the
-device is being removed.
-
-Signed-off-by: Cédric Le Goater <clg@kaod.org>
----
-
- Changes since v2 :
-
- - extra comment in documentation
-
- arch/powerpc/kvm/book3s_xive.h             |  9 +++++
- arch/powerpc/kvm/book3s_xive.c             | 15 ++++++++
- arch/powerpc/kvm/book3s_xive_native.c      | 41 ++++++++++++++++++++++
- Documentation/virtual/kvm/devices/xive.txt | 19 ++++++++++
- 4 files changed, 84 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
-index 622f594d93e1..e011622dc038 100644
---- a/arch/powerpc/kvm/book3s_xive.h
-+++ b/arch/powerpc/kvm/book3s_xive.h
-@@ -94,6 +94,11 @@ struct kvmppc_xive_src_block {
- 	struct kvmppc_xive_irq_state irq_state[KVMPPC_XICS_IRQ_PER_ICS];
- };
- 
-+struct kvmppc_xive;
-+
-+struct kvmppc_xive_ops {
-+	int (*reset_mapped)(struct kvm *kvm, unsigned long guest_irq);
-+};
- 
- struct kvmppc_xive {
- 	struct kvm *kvm;
-@@ -132,6 +137,10 @@ struct kvmppc_xive {
- 
- 	/* Flags */
- 	u8	single_escalation;
-+
-+	struct kvmppc_xive_ops *ops;
-+	struct address_space   *mapping;
-+	struct mutex mapping_lock;
- };
- 
- #define KVMPPC_XIVE_Q_COUNT	8
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index c1b7aa7dbc28..480a3fc6b9fd 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -937,6 +937,13 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
- 	/* Turn the IPI hard off */
- 	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
- 
-+	/*
-+	 * Reset ESB guest mapping. Needed when ESB pages are exposed
-+	 * to the guest in XIVE native mode
-+	 */
-+	if (xive->ops && xive->ops->reset_mapped)
-+		xive->ops->reset_mapped(kvm, guest_irq);
-+
- 	/* Grab info about irq */
- 	state->pt_number = hw_irq;
- 	state->pt_data = irq_data_get_irq_handler_data(host_data);
-@@ -1022,6 +1029,14 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
- 	state->pt_number = 0;
- 	state->pt_data = NULL;
- 
-+	/*
-+	 * Reset ESB guest mapping. Needed when ESB pages are exposed
-+	 * to the guest in XIVE native mode
-+	 */
-+	if (xive->ops && xive->ops->reset_mapped) {
-+		xive->ops->reset_mapped(kvm, guest_irq);
-+	}
-+
- 	/* Reconfigure the IPI */
- 	xive_native_configure_irq(state->ipi_number,
- 				  kvmppc_xive_vp(xive, state->act_server),
-diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index e465d4c53f5c..67a1bb26a4cc 100644
---- a/arch/powerpc/kvm/book3s_xive_native.c
-+++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -14,6 +14,7 @@
- #include <linux/delay.h>
- #include <linux/percpu.h>
- #include <linux/cpumask.h>
-+#include <linux/file.h>
- #include <asm/uaccess.h>
- #include <asm/kvm_book3s.h>
- #include <asm/kvm_ppc.h>
-@@ -170,6 +171,35 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
- 	return rc;
- }
- 
-+/*
-+ * Device passthrough support
-+ */
-+static int kvmppc_xive_native_reset_mapped(struct kvm *kvm, unsigned long irq)
-+{
-+	struct kvmppc_xive *xive = kvm->arch.xive;
-+
-+	if (irq >= KVMPPC_XIVE_NR_IRQS)
-+		return -EINVAL;
-+
-+	/*
-+	 * Clear the ESB pages of the IRQ number being mapped (or
-+	 * unmapped) into the guest and let the the VM fault handler
-+	 * repopulate with the appropriate ESB pages (device or IC)
-+	 */
-+	pr_debug("clearing esb pages for girq 0x%lx\n", irq);
-+	mutex_lock(&xive->mapping_lock);
-+	if (xive->mapping)
-+		unmap_mapping_range(xive->mapping,
-+				    irq * (2ull << PAGE_SHIFT),
-+				    2ull << PAGE_SHIFT, 1);
-+	mutex_unlock(&xive->mapping_lock);
-+	return 0;
-+}
-+
-+static struct kvmppc_xive_ops kvmppc_xive_native_ops =  {
-+	.reset_mapped = kvmppc_xive_native_reset_mapped,
-+};
-+
- static int xive_native_esb_fault(struct vm_fault *vmf)
- {
- 	struct vm_area_struct *vma = vmf->vma;
-@@ -247,6 +277,8 @@ static const struct vm_operations_struct xive_native_tima_vmops = {
- static int kvmppc_xive_native_mmap(struct kvm_device *dev,
- 				   struct vm_area_struct *vma)
- {
-+	struct kvmppc_xive *xive = dev->private;
-+
- 	/* We only allow mappings at fixed offset for now */
- 	if (vma->vm_pgoff == KVM_XIVE_TIMA_PAGE_OFFSET) {
- 		if (vma_pages(vma) > 4)
-@@ -262,6 +294,13 @@ static int kvmppc_xive_native_mmap(struct kvm_device *dev,
- 
- 	vma->vm_flags |= VM_IO | VM_PFNMAP;
- 	vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
-+
-+	/*
-+	 * Grab the KVM device file address_space to be able to clear
-+	 * the ESB pages mapping when a device is passed-through into
-+	 * the guest.
-+	 */
-+	xive->mapping = vma->vm_file->f_mapping;
- 	return 0;
- }
- 
-@@ -959,6 +998,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
- 	xive->dev = dev;
- 	xive->kvm = kvm;
- 	kvm->arch.xive = xive;
-+	mutex_init(&xive->mapping_lock);
- 
- 	/*
- 	 * Allocate a bunch of VPs. KVM_MAX_VCPUS is a large value for
-@@ -972,6 +1012,7 @@ static int kvmppc_xive_native_create(struct kvm_device *dev, u32 type)
- 		ret = -ENXIO;
- 
- 	xive->single_escalation = xive_native_has_single_escalation();
-+	xive->ops = &kvmppc_xive_native_ops;
- 
- 	if (ret)
- 		kfree(xive);
-diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
-index 686cca450f9f..9aa48efca1cb 100644
---- a/Documentation/virtual/kvm/devices/xive.txt
-+++ b/Documentation/virtual/kvm/devices/xive.txt
-@@ -43,6 +43,25 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
-   manage the source: to trigger, to EOI, to turn off the source for
-   instance.
- 
-+  3. Device pass-through
-+
-+  When a device is passed-through into the guest, the source
-+  interrupts are from a different HW controller (PHB4) and the ESB
-+  pages exposed to the guest should accommadate this change.
-+
-+  The passthru_irq helpers, kvmppc_xive_set_mapped() and
-+  kvmppc_xive_clr_mapped() are called when the device HW irqs are
-+  mapped into or unmapped from the guest IRQ number space. The KVM
-+  device extends these helpers to clear the ESB pages of the guest IRQ
-+  number being mapped and then lets the VM fault handler repopulate.
-+  The handler will insert the ESB page corresponding to the HW
-+  interrupt of the device being passed-through or the initial IPI ESB
-+  page if the device has being removed.
-+
-+  The ESB remapping is fully transparent to the guest and the OS
-+  device driver. All handling is done within VFIO and the above
-+  helpers in KVM-PPC.
-+
- * Groups:
- 
-   1. KVM_DEV_XIVE_GRP_CTRL
--- 
-2.20.1
+> -
+> -	trace_ocxl_afu_irq_alloc(ctx->pasid, irq->id, irq->virq, irq->hw_irq,
+> -				*irq_offset);
+> +	trace_ocxl_afu_irq_alloc(ctx->pasid, irq->id, irq->virq, irq->hw_irq);
+>  	mutex_unlock(&ctx->irq_lock);
+>  	return 0;
+>  
+> @@ -123,7 +120,7 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
+>  	trace_ocxl_afu_irq_free(ctx->pasid, irq->id);
+>  	if (ctx->mapping)
+>  		unmap_mapping_range(ctx->mapping,
+> -				irq_id_to_offset(ctx, irq->id),
+> +				ocxl_irq_id_to_offset(ctx, irq->id),
+>  				1 << PAGE_SHIFT, 1);
+>  	release_afu_irq(irq);
+>  	if (irq->ev_ctx)
+> @@ -132,14 +129,13 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
+>  	kfree(irq);
+>  }
+>  
+> -int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset)
+> +int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id)
+>  {
+>  	struct afu_irq *irq;
+> -	int id = irq_offset_to_id(ctx, irq_offset);
+>  
+>  	mutex_lock(&ctx->irq_lock);
+>  
+> -	irq = idr_find(&ctx->irq_idr, id);
+> +	irq = idr_find(&ctx->irq_idr, irq_id);
+>  	if (!irq) {
+>  		mutex_unlock(&ctx->irq_lock);
+>  		return -EINVAL;
+> @@ -161,14 +157,14 @@ void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
+>  	mutex_unlock(&ctx->irq_lock);
+>  }
+>  
+> -int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset, int eventfd)
+> +int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id, int eventfd)
+>  {
+>  	struct afu_irq *irq;
+>  	struct eventfd_ctx *ev_ctx;
+> -	int rc = 0, id = irq_offset_to_id(ctx, irq_offset);
+> +	int rc = 0;
+>  
+>  	mutex_lock(&ctx->irq_lock);
+> -	irq = idr_find(&ctx->irq_idr, id);
+> +	irq = idr_find(&ctx->irq_idr, irq_id);
+>  	if (!irq) {
+>  		rc = -EINVAL;
+>  		goto unlock;
+> @@ -186,14 +182,13 @@ int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset, int eventfd)
+>  	return rc;
+>  }
+>  
+> -u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset)
+> +u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id)
+>  {
+>  	struct afu_irq *irq;
+> -	int id = irq_offset_to_id(ctx, irq_offset);
+>  	u64 addr = 0;
+>  
+>  	mutex_lock(&ctx->irq_lock);
+> -	irq = idr_find(&ctx->irq_idr, id);
+> +	irq = idr_find(&ctx->irq_idr, irq_id);
+>  	if (irq)
+>  		addr = irq->trigger_page;
+>  	mutex_unlock(&ctx->irq_lock);
+> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+> index 9a37e9632cd9..c04887591837 100644
+> --- a/drivers/misc/ocxl/context.c
+> +++ b/drivers/misc/ocxl/context.c
+> @@ -93,8 +93,9 @@ static vm_fault_t map_afu_irq(struct vm_area_struct *vma, unsigned long address,
+>  		u64 offset, struct ocxl_context *ctx)
+>  {
+>  	u64 trigger_addr;
+> +	int irq_id = ocxl_irq_offset_to_id(ctx, offset);
+>  
+> -	trigger_addr = ocxl_afu_irq_get_addr(ctx, offset);
+> +	trigger_addr = ocxl_afu_irq_get_addr(ctx, irq_id);
+>  	if (!trigger_addr)
+>  		return VM_FAULT_SIGBUS;
+>  
+> @@ -154,12 +155,14 @@ static const struct vm_operations_struct ocxl_vmops = {
+>  static int check_mmap_afu_irq(struct ocxl_context *ctx,
+>  			struct vm_area_struct *vma)
+>  {
+> +	int irq_id = ocxl_irq_offset_to_id(ctx, vma->vm_pgoff << PAGE_SHIFT);
+> +
+>  	/* only one page */
+>  	if (vma_pages(vma) != 1)
+>  		return -EINVAL;
+>  
+>  	/* check offset validty */
+> -	if (!ocxl_afu_irq_get_addr(ctx, vma->vm_pgoff << PAGE_SHIFT))
+> +	if (!ocxl_afu_irq_get_addr(ctx, irq_id))
+>  		return -EINVAL;
+>  
+>  	/*
+> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+> index 424bb0b40afb..d28618c161de 100644
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -197,6 +197,7 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+>  {
+>  	struct ocxl_context *ctx = file->private_data;
+>  	struct ocxl_ioctl_irq_fd irq_fd;
+> +	int irq_id;
+>  	u64 irq_offset;
+>  	long rc;
+>  	bool closed;
+> @@ -218,12 +219,13 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+>  		break;
+>  
+>  	case OCXL_IOCTL_IRQ_ALLOC:
+> -		rc = ocxl_afu_irq_alloc(ctx, &irq_offset);
+> +		rc = ocxl_afu_irq_alloc(ctx, &irq_id);
+>  		if (!rc) {
+> +			irq_offset = ocxl_irq_id_to_offset(ctx, irq_id);
+>  			rc = copy_to_user((u64 __user *) args, &irq_offset,
+>  					sizeof(irq_offset));
+>  			if (rc) {
+> -				ocxl_afu_irq_free(ctx, irq_offset);
+> +				ocxl_afu_irq_free(ctx, irq_id);
+>  				return -EFAULT;
+>  			}
+>  		}
+> @@ -234,7 +236,8 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+>  				sizeof(irq_offset));
+>  		if (rc)
+>  			return -EFAULT;
+> -		rc = ocxl_afu_irq_free(ctx, irq_offset);
+> +		irq_id = ocxl_irq_offset_to_id(ctx, irq_offset);
+> +		rc = ocxl_afu_irq_free(ctx, irq_id);
+>  		break;
+>  
+>  	case OCXL_IOCTL_IRQ_SET_FD:
+> @@ -244,8 +247,8 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+>  			return -EFAULT;
+>  		if (irq_fd.reserved)
+>  			return -EINVAL;
+> -		rc = ocxl_afu_irq_set_fd(ctx, irq_fd.irq_offset,
+> -					irq_fd.eventfd);
+> +		irq_id = ocxl_irq_offset_to_id(ctx, irq_fd.irq_offset);
+> +		rc = ocxl_afu_irq_set_fd(ctx, irq_id, irq_fd.eventfd);
+>  		break;
+>  
+>  	case OCXL_IOCTL_GET_METADATA:
+> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+> index 4fc7e9597ede..871155b464da 100644
+> --- a/drivers/misc/ocxl/ocxl_internal.h
+> +++ b/drivers/misc/ocxl/ocxl_internal.h
+> @@ -140,12 +140,14 @@ void ocxl_context_detach_all(struct ocxl_afu *afu);
+>  int ocxl_sysfs_register_afu(struct ocxl_afu *afu);
+>  void ocxl_sysfs_unregister_afu(struct ocxl_afu *afu);
+>  
+> -int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
+> -int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
+> +int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset);
+> +u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id);
+> +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
+> +int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
+>  void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
+> -int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
+> +int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id,
+>  			int eventfd);
+> -u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
+> +u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
+>  
+>  /**
+>   * Free an AFU
+> diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
+> index 68bf2f173a1a..a081e644f5f3 100644
+> --- a/drivers/misc/ocxl/trace.h
+> +++ b/drivers/misc/ocxl/trace.h
+> @@ -107,16 +107,14 @@ DEFINE_EVENT(ocxl_fault_handler, ocxl_fault_ack,
+>  );
+>  
+>  TRACE_EVENT(ocxl_afu_irq_alloc,
+> -	TP_PROTO(int pasid, int irq_id, unsigned int virq, int hw_irq,
+> -		u64 irq_offset),
+> -	TP_ARGS(pasid, irq_id, virq, hw_irq, irq_offset),
+> +	TP_PROTO(int pasid, int irq_id, unsigned int virq, int hw_irq),
+> +	TP_ARGS(pasid, irq_id, virq, hw_irq),
+>  
+>  	TP_STRUCT__entry(
+>  		__field(int, pasid)
+>  		__field(int, irq_id)
+>  		__field(unsigned int, virq)
+>  		__field(int, hw_irq)
+> -		__field(u64, irq_offset)
+>  	),
+>  
+>  	TP_fast_assign(
+> @@ -124,15 +122,13 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
+>  		__entry->irq_id = irq_id;
+>  		__entry->virq = virq;
+>  		__entry->hw_irq = hw_irq;
+> -		__entry->irq_offset = irq_offset;
+>  	),
+>  
+> -	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d irq_offset=%#llx",
+> +	TP_printk("pasid=%#x irq_id=%d virq=%u hw_irq=%d",
+>  		__entry->pasid,
+>  		__entry->irq_id,
+>  		__entry->virq,
+> -		__entry->hw_irq,
+> -		__entry->irq_offset
+> +		__entry->hw_irq
+>  	)
+>  );
+>  
 
