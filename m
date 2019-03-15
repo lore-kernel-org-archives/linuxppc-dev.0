@@ -4,76 +4,74 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-0.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEAD0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:06:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25A3FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:09:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B6782184C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:06:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 870242184C
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:09:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dcxtl8g+"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B6782184C
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hNFMk+gL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 870242184C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LKSC1n9gzDqSM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 20:06:03 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LKXQ2NfBzDqRy
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 20:09:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::441; helo=mail-pf1-x441.google.com;
+ (client-ip=2607:f8b0:4864:20::444; helo=mail-pf1-x444.google.com;
  envelope-from=andy.shevchenko@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="dcxtl8g+"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="hNFMk+gL"; 
  dkim-atps=neutral
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LKQQ51RjzDqRc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 20:04:27 +1100 (AEDT)
-Received: by mail-pf1-x441.google.com with SMTP id n22so5894158pfa.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 02:04:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LKVm3Xn3zDqRc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 20:08:16 +1100 (AEDT)
+Received: by mail-pf1-x444.google.com with SMTP id j5so5906871pfa.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 02:08:15 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=bPoiQV0RRGf1/dW+RIXf3iiaL38X7KkyBkK+7RIVa40=;
- b=dcxtl8g+lrfPLERPW4HkAAo8N0vEmh39tLrGJtUhBXWu1yTN/oHiNP/gu1J9l2QRHg
- CeNvzzJxXKSed/ixjcdJVT2jnPLJNRpmGs9g1GS5zHgOU+s10yiOx0XHI1g2lpiBAJv8
- iL5cQ83mjEMIUhL1urLzrkuhmSKWxQPJphy1Zap861LM3J0PKGfYf5oV7eTxP6An22Yq
- EzO7YMnqgUn9x5bu3/0/QjWjl6INn2s9JHXBcRWodNptc6d/8MzJ5vC+aIosk+qIWoif
- Oa4jLQHWPBkVjC0/07IFloUSUv4TgcpZqM4E2+9z3gXIWV6Dm/pLgPnSSdbTo9cCxlnu
- VKUg==
+ :cc; bh=FQuWJiaahoVGruZwKY+4GHvBiDxUpo5ZETYkLiKhcXY=;
+ b=hNFMk+gLWKwV7otyRME333Rh0w4aXpbdIli9zhjpDTnxgPt6aHIoYS8YtLGgvrDHc3
+ DYQD7mjl+MRE11GWoHQws0xx4vQhLH6N/pZuRHNnWZWE8yf+E3CQL0PF7XUJ9PHaDW1m
+ nijqSt6w4U3rGkqWyVRK+cM2qa/n9Xx9D35w3453EXaEEKRD1rCC6Is/oMkaFcVtYVOd
+ RxZGP6hGuzNJAlsCoKgpkr5dtEIQAQ05mZYj96g87+wyHcM2mVCWdvJmoLWPA0Rp5glh
+ C0A7O/mVBb8t2sKmekMaAKswAWq492zzoHCzZf8XuE6/M2EwKGABpJPzXgJUOu7vUxU2
+ Ex9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=bPoiQV0RRGf1/dW+RIXf3iiaL38X7KkyBkK+7RIVa40=;
- b=h5cJRMj/WUb/+MCt5ytjHCP3ShTSQoBYeQXdV7dAt2FueR4xsq2FGhyGBT1ahKicp3
- aIkAjFu8bMCFse9j9VNIBTlx498cH/OYnImTafuLRbWynFyWK4iCkF9IRHkLZGUXRF+T
- x/hNdCQllt7Hvdai9tdaQNy8rCZJ7ScKmGvGyjIVhgxbqexkUmrLhSXY1NWe1k8IqK4v
- qoy7DtWv8+tZrm2NvmgFnSxsaapeqpo3TCXtpo8zrVEKZl0Nk7Mwbox+n0YUiHhaGSh0
- KLLTDbnFu1TTEXzgRuEWOJ2Gxj+CTh1syzTMnA3UdJelVqr+tZEyKDcCR2fE5oR2EkMm
- qIHw==
-X-Gm-Message-State: APjAAAVqcHfLXnRvD+GAin7Gs7JfOrAR+N50NY75NysS3Jhah5j7TVfv
- E1b33z23Dwq7Hf4TkIZQ12qxq9AQu43+0IuqlZw=
-X-Google-Smtp-Source: APXvYqzOwi/B7Zkr+Lw3gDbTdHv03frg8D0ZKIR7kpZxhfs335MCtKi3ngN7V8nVoqfXP8mfpPgACfQGguUGbeJR9IE=
-X-Received: by 2002:a17:902:7289:: with SMTP id
- d9mr3048159pll.314.1552640664120; 
- Fri, 15 Mar 2019 02:04:24 -0700 (PDT)
+ bh=FQuWJiaahoVGruZwKY+4GHvBiDxUpo5ZETYkLiKhcXY=;
+ b=gWkObnkXderKxqmufgGFJGcfo0uMWq90AuaFkV0K9CyD3VEGYBU+FPkoYGMGmoQIMj
+ kd4V4ALWeoJ2m0xkotITjtgpulqmzhlzHFnZqWeRt0iNrmK0UnhNLCS568q1EuPHmlPN
+ pzdJxLuoXO69ZIoTOjnBNA6W9kGx+9TZBSnLTnBGPu+FaFOJTBCAA6Ci/ewAqSmKY5Pd
+ kwkPwIC3bbmeE3gEOWXPf8Ks+GpDKLuAop7qsmdpu4ZHZf+2GTq+7qzyUIxMoMipCS6q
+ 6aKbiWLrt6U1NaARqA8dicz5/cgzhcpPOUL5McmJScWrih10rKis491u26//Cm9CpgGE
+ kiYg==
+X-Gm-Message-State: APjAAAXcztNLboAq/UIkNJ8D6Z4v2YOOpZPRG9uoMsszlAhkGl9gl4vT
+ dvGvLDxu5glAPeFD+FkMSe95XfkGF/v5hPHP5iw=
+X-Google-Smtp-Source: APXvYqyqmh4mImfByZPHBrLJaiK+jU2dsJ9f8DkNpWlgA9COO6KNpGptzJ78do0+5C9IVfr8HhX+40bnccX+xKcIde0=
+X-Received: by 2002:aa7:930b:: with SMTP id 11mr2926855pfj.49.1552640892802;
+ Fri, 15 Mar 2019 02:08:12 -0700 (PDT)
 MIME-Version: 1.0
 References: <1552602855-26086-1-git-send-email-info@metux.net>
- <1552602855-26086-3-git-send-email-info@metux.net>
-In-Reply-To: <1552602855-26086-3-git-send-email-info@metux.net>
+ <1552602855-26086-46-git-send-email-info@metux.net>
+In-Reply-To: <1552602855-26086-46-git-send-email-info@metux.net>
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Fri, 15 Mar 2019 11:04:12 +0200
-Message-ID: <CAHp75VegzKNhH1Uza9gwQMOAEOdh57WTzsHUx7vPdVs7XvJROQ@mail.gmail.com>
-Subject: Re: [PATCH v2 02/45] drivers: tty: serial: 8250_dw: use
- devm_ioremap_resource()
+Date: Fri, 15 Mar 2019 11:08:01 +0200
+Message-ID: <CAHp75Vf1F_WQxNRiya=aTqFTEGWDVrD9JTr1VB4pOW0RayDmoA@mail.gmail.com>
+Subject: Re: [PATCH v2 45/45] drivers: tty: serial: mux: use devm_* functions
 To: "Enrico Weigelt, metux IT consult" <info@metux.net>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -112,29 +110,60 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 15, 2019 at 12:41 AM Enrico Weigelt, metux IT consult
+On Fri, Mar 15, 2019 at 12:37 AM Enrico Weigelt, metux IT consult
 <info@metux.net> wrote:
 >
-> Instead of fetching out data from a struct resource for passing
-> it to devm_ioremap(), directly use devm_ioremap_resource()
+> Use the safer devm versions of memory mapping functions.
 
-I don't see any advantage of this change.
-See also below.
+If you are going to use devm_*_free(), what's the point to have this
+change from the beginning?
 
-> --- a/drivers/tty/serial/8250/8250_dw.c
-> +++ b/drivers/tty/serial/8250/8250_dw.c
-> @@ -526,7 +526,7 @@ static int dw8250_probe(struct platform_device *pdev)
->         p->set_ldisc    = dw8250_set_ldisc;
->         p->set_termios  = dw8250_set_termios;
+P.S. Disregard that this is untested series...
+
+> --- a/drivers/tty/serial/mux.c
+> +++ b/drivers/tty/serial/mux.c
+> @@ -456,8 +456,9 @@ static int __init mux_probe(struct parisc_device *dev)
+>         printk(KERN_INFO "Serial mux driver (%d ports) Revision: 0.6\n", port_count);
 >
-> -       p->membase = devm_ioremap(dev, regs->start, resource_size(regs));
-> +       p->membase = devm_ioremap_resource(dev, regs);
->         if (!p->membase)
+>         dev_set_drvdata(&dev->dev, (void *)(long)port_count);
+> -       request_mem_region(dev->hpa.start + MUX_OFFSET,
+> -                           port_count * MUX_LINE_OFFSET, "Mux");
 
-And how did you test this? devm_ioremap_resource() returns error
-pointer in case of error.
+> +       devm_request_mem_region(&dev->dev,
+> +                               dev->hpa.start + MUX_OFFSET,
+> +                               port_count * MUX_LINE_OFFSET, "Mux");
 
->                 return -ENOMEM;
+...and on top of this where is error checking?
+
+>
+>         if(!port_cnt) {
+>                 mux_driver.cons = MUX_CONSOLE;
+> @@ -474,7 +475,9 @@ static int __init mux_probe(struct parisc_device *dev)
+>                 port->iobase    = 0;
+>                 port->mapbase   = dev->hpa.start + MUX_OFFSET +
+>                                                 (i * MUX_LINE_OFFSET);
+> -               port->membase   = ioremap_nocache(port->mapbase, MUX_LINE_OFFSET);
+> +               port->membase   = devm_ioremap_nocache(port->dev,
+> +                                                      port->mapbase,
+> +                                                      MUX_LINE_OFFSET);
+>                 port->iotype    = UPIO_MEM;
+>                 port->type      = PORT_MUX;
+>                 port->irq       = 0;
+> @@ -517,10 +520,12 @@ static int __exit mux_remove(struct parisc_device *dev)
+>
+>                 uart_remove_one_port(&mux_driver, port);
+>                 if(port->membase)
+> -                       iounmap(port->membase);
+> +                       devm_iounmap(port->dev, port->membase);
+>         }
+>
+> -       release_mem_region(dev->hpa.start + MUX_OFFSET, port_count * MUX_LINE_OFFSET);
+> +       devm_release_mem_region(&dev->dev,
+> +                               dev->hpa.start + MUX_OFFSET,
+> +                               port_count * MUX_LINE_OFFSET);
+>         return 0;
+>  }
+
 
 -- 
 With Best Regards,
