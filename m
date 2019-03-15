@@ -2,84 +2,58 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B3A3CC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:21:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91FD2C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:29:20 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2A193206DF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:21:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="cSzORSS3"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A193206DF
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id D08DF20854
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:29:19 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D08DF20854
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LR7P0rmGzDqS9
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:21:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LRHx3yspzDqT7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:29:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=178.32.116.78; helo=8.mo5.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="cSzORSS3"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LR5Q1N8mzDqN0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:20:09 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44LR5H0SdNzB09Zj;
- Fri, 15 Mar 2019 14:20:03 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=cSzORSS3; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id uBRCu8vMd-vG; Fri, 15 Mar 2019 14:20:02 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44LR5G6JxczB09Zg;
- Fri, 15 Mar 2019 14:20:02 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1552656002; bh=yqt9unfFV3OXa8uYQsP+5NOpDusQGk9tbLXzGF+g1Ps=;
- h=Subject:From:To:Cc:References:Date:In-Reply-To:From;
- b=cSzORSS3T9vhdVxTLUW4MgpgWhIVOzXYC0pFcaw9FXOAElMOyO3eNLVXQ145ta0Qc
- n9wRbKc7pSBz0zbmlZtmOaeANIJufM0XPHgTy0fpMtiijq5GocQhjwM+bem/EHHtTN
- JYCIB/EMgQjBxD7xIdENizKhrBlcVrzTbCba2LZs=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CB478BF53;
- Fri, 15 Mar 2019 14:20:04 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id mdEm6Dq-Ewph; Fri, 15 Mar 2019 14:20:04 +0100 (CET)
-Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 168178BF48;
- Fri, 15 Mar 2019 14:20:04 +0100 (CET)
-Subject: Re: [PATCH] powerpc/6xx: fix setup and use of SPRN_PGDIR for hash32
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <7e45ca3f0283fb24c2642e5b91bd75c55f2ba96f.1552028583.git.christophe.leroy@c-s.fr>
- <20190308160334.GZ3969@gate.crashing.org>
- <7681ad2b-35d4-6e43-f727-21545e3bb223@c-s.fr>
-Message-ID: <72bac00c-d2e3-515e-3ab1-99f20c058ea1@c-s.fr>
-Date: Fri, 15 Mar 2019 14:20:03 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.3
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 4709 seconds by postgrey-1.36 at bilbo;
+ Sat, 16 Mar 2019 00:27:27 AEDT
+Received: from 8.mo5.mail-out.ovh.net (8.mo5.mail-out.ovh.net [178.32.116.78])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LRFq37XDzDq5d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:27:24 +1100 (AEDT)
+Received: from player793.ha.ovh.net (unknown [10.109.143.208])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 79A8B224ED7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 13:08:51 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player793.ha.ovh.net (Postfix) with ESMTPSA id 64CA83CD2031;
+ Fri, 15 Mar 2019 12:08:38 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v3 12/17] KVM: PPC: Book3S HV: XIVE: add a TIMA mapping
+Date: Fri, 15 Mar 2019 13:06:04 +0100
+Message-Id: <20190315120609.25910-13-clg@kaod.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190315120609.25910-1-clg@kaod.org>
+References: <20190315120609.25910-1-clg@kaod.org>
 MIME-Version: 1.0
-In-Reply-To: <7681ad2b-35d4-6e43-f727-21545e3bb223@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 10795972732990294999
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrheehgdefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -91,35 +65,183 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Michael,
+Each thread has an associated Thread Interrupt Management context
+composed of a set of registers. These registers let the thread handle
+priority management and interrupt acknowledgment. The most important
+are :
 
-Are you able to get this merged before 5.1-rc1 comes out ?
+    - Interrupt Pending Buffer     (IPB)
+    - Current Processor Priority   (CPPR)
+    - Notification Source Register (NSR)
 
-Thanks
-Christophe
+They are exposed to software in four different pages each proposing a
+view with a different privilege. The first page is for the physical
+thread context and the second for the hypervisor. Only the third
+(operating system) and the fourth (user level) are exposed the guest.
 
-Le 08/03/2019 à 17:06, Christophe Leroy a écrit :
-> 
-> 
-> Le 08/03/2019 à 17:03, Segher Boessenkool a écrit :
->> On Fri, Mar 08, 2019 at 07:05:22AM +0000, Christophe Leroy wrote:
->>> Not only the 603 but all 6xx need SPRN_PGDIR to be initialised at
->>> startup. This patch move it from __setup_cpu_603() to start_here()
->>> and __secondary_start(), close to the initialisation of SPRN_THREAD.
->>
->> I thought you meant an SPR I did not know about.  But you just misspelled
->> SPRN_SPRG_PGDIR :-)
->>
-> 
-> Oops.
-> 
-> Michael, can you fix the commit text (and subject) when applying ?
-> 
+A custom VM fault handler will populate the VMA with the appropriate
+pages, which should only be the OS page for now.
 
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/include/asm/xive.h            |  1 +
+ arch/powerpc/include/uapi/asm/kvm.h        |  2 ++
+ arch/powerpc/kvm/book3s_xive_native.c      | 39 ++++++++++++++++++++++
+ arch/powerpc/sysdev/xive/native.c          | 11 ++++++
+ Documentation/virtual/kvm/devices/xive.txt | 23 +++++++++++++
+ 5 files changed, 76 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 46891f321606..eb6d302082da 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -23,6 +23,7 @@
+  * same offset regardless of where the code is executing
+  */
+ extern void __iomem *xive_tima;
++extern unsigned long xive_tima_os;
+ 
+ /*
+  * Offset in the TM area of our current execution level (provided by
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 3de0d1395c01..6836d38a517c 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -720,4 +720,6 @@ struct kvm_ppc_xive_eq {
+ #define KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY	0x00000002
+ #define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
+ 
++#define KVM_XIVE_TIMA_PAGE_OFFSET	0
++
+ #endif /* __LINUX_KVM_POWERPC_H */
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index 675c209cf570..f10087dbcac2 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -170,6 +170,44 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+ 	return rc;
+ }
+ 
++static int xive_native_tima_fault(struct vm_fault *vmf)
++{
++	struct vm_area_struct *vma = vmf->vma;
++
++	switch (vmf->pgoff - vma->vm_pgoff) {
++	case 0: /* HW - forbid access */
++	case 1: /* HV - forbid access */
++		return VM_FAULT_SIGBUS;
++	case 2: /* OS */
++		vmf_insert_pfn(vma, vmf->address, xive_tima_os >> PAGE_SHIFT);
++		return VM_FAULT_NOPAGE;
++	case 3: /* USER - TODO */
++	default:
++		return VM_FAULT_SIGBUS;
++	}
++}
++
++static const struct vm_operations_struct xive_native_tima_vmops = {
++	.fault = xive_native_tima_fault,
++};
++
++static int kvmppc_xive_native_mmap(struct kvm_device *dev,
++				   struct vm_area_struct *vma)
++{
++	/* We only allow mappings at fixed offset for now */
++	if (vma->vm_pgoff == KVM_XIVE_TIMA_PAGE_OFFSET) {
++		if (vma_pages(vma) > 4)
++			return -EINVAL;
++		vma->vm_ops = &xive_native_tima_vmops;
++	} else {
++		return -EINVAL;
++	}
++
++	vma->vm_flags |= VM_IO | VM_PFNMAP;
++	vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
++	return 0;
++}
++
+ static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long irq,
+ 					 u64 addr)
+ {
+@@ -1038,6 +1076,7 @@ struct kvm_device_ops kvm_xive_native_ops = {
+ 	.set_attr = kvmppc_xive_native_set_attr,
+ 	.get_attr = kvmppc_xive_native_get_attr,
+ 	.has_attr = kvmppc_xive_native_has_attr,
++	.mmap = kvmppc_xive_native_mmap,
+ };
+ 
+ void kvmppc_xive_native_init_module(void)
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 0c037e933e55..7782201e5fe8 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -521,6 +521,9 @@ u32 xive_native_default_eq_shift(void)
+ }
+ EXPORT_SYMBOL_GPL(xive_native_default_eq_shift);
+ 
++unsigned long xive_tima_os;
++EXPORT_SYMBOL_GPL(xive_tima_os);
++
+ bool __init xive_native_init(void)
+ {
+ 	struct device_node *np;
+@@ -573,6 +576,14 @@ bool __init xive_native_init(void)
+ 	for_each_possible_cpu(cpu)
+ 		kvmppc_set_xive_tima(cpu, r.start, tima);
+ 
++	/* Resource 2 is OS window */
++	if (of_address_to_resource(np, 2, &r)) {
++		pr_err("Failed to get thread mgmnt area resource\n");
++		return false;
++	}
++
++	xive_tima_os = r.start;
++
+ 	/* Grab size of provisionning pages */
+ 	xive_parse_provisioning(np);
+ 
+diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
+index eb864d72ddc3..fbb51c4798fe 100644
+--- a/Documentation/virtual/kvm/devices/xive.txt
++++ b/Documentation/virtual/kvm/devices/xive.txt
+@@ -13,6 +13,29 @@ requires a POWER9 host and the guest OS should have support for the
+ XIVE native exploitation interrupt mode. If not, it should run using
+ the legacy interrupt mode, referred as XICS (POWER7/8).
+ 
++* Device Mappings
++
++  The KVM device exposes different MMIO ranges of the XIVE HW which
++  are required for interrupt management. These are exposed to the
++  guest in VMAs populated with a custom VM fault handler.
++
++  1. Thread Interrupt Management Area (TIMA)
++
++  Each thread has an associated Thread Interrupt Management context
++  composed of a set of registers. These registers let the thread
++  handle priority management and interrupt acknowledgment. The most
++  important are :
++
++      - Interrupt Pending Buffer     (IPB)
++      - Current Processor Priority   (CPPR)
++      - Notification Source Register (NSR)
++
++  They are exposed to software in four different pages each proposing
++  a view with a different privilege. The first page is for the
++  physical thread context and the second for the hypervisor. Only the
++  third (operating system) and the fourth (user level) are exposed the
++  guest.
++
+ * Groups:
+ 
+   1. KVM_DEV_XIVE_GRP_CTRL
+-- 
+2.20.1
 
