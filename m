@@ -2,64 +2,100 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E842C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F21EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:50:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9D90321871
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:30:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="H8j93Bmn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9D90321871
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id D42AC217F5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:50:53 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D42AC217F5
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LCLc53GbzDqR0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 15:30:48 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LCnk64HSzDqRY
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 15:50:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LCJk2yWVzDq5j
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 15:29:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="H8j93Bmn"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44LCJj549xz9s9T; Fri, 15 Mar 2019 15:29:09 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1552624149;
- bh=ZAI344mw/VFIepTI6G0rrf75eyH9vaaisTPUbgCvPW8=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=H8j93BmnAzTM+v1WLnjj7PkTpDu9Dm1e8ShAba4MbjOypvv6e304MvGEhQ25Xv/K8
- n3c/HYMPwlawYf9PmUTMuCFTIewK9Klyrf9mnEnE8zpGBbPnNomTB93lkOTuxO3uyY
- ArmWBX5df/NFaWKV62r4BgDbTBAoGnIyuKn1+to4=
-Date: Fri, 15 Mar 2019 11:29:11 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v2 06/16] KVM: PPC: Book3S HV: XIVE: add controls for the
- EQ configuration
-Message-ID: <20190315002911.GV8211@umbus.fritz.box>
-References: <20190222112840.25000-1-clg@kaod.org>
- <20190222112840.25000-7-clg@kaod.org>
- <20190226052429.GC28015@blackberry>
- <33aeb002-39b2-1015-9923-613781c08fd6@kaod.org>
- <20190314023210.GL8211@umbus.fritz.box>
- <5fd4dd85-5bf0-dd95-546b-ddc7a3efdb45@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LClt2sdkzDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 15:49:13 +1100 (AEDT)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2F4hoG8070056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 00:49:11 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r83935crm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 00:49:11 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 15 Mar 2019 04:49:09 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 15 Mar 2019 04:49:07 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2F4n6O841156646
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 15 Mar 2019 04:49:06 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 84B9A11C05B;
+ Fri, 15 Mar 2019 04:49:06 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id ED6DE11C05C;
+ Fri, 15 Mar 2019 04:49:05 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 15 Mar 2019 04:49:05 +0000 (GMT)
+Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 35EF8A00E9;
+ Fri, 15 Mar 2019 15:49:03 +1100 (AEDT)
+Subject: Re: [PATCH 5/5] ocxl: Remove some unused exported symbols
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+References: <20190227045741.21412-1-alastair@au1.ibm.com>
+ <20190313040702.14276-1-alastair@au1.ibm.com>
+ <20190313040702.14276-6-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 15 Mar 2019 15:49:02 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="IgDDV5QArAYIxtdK"
-Content-Disposition: inline
-In-Reply-To: <5fd4dd85-5bf0-dd95-546b-ddc7a3efdb45@kaod.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+In-Reply-To: <20190313040702.14276-6-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-AU
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19031504-0020-0000-0000-0000032386CC
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031504-0021-0000-0000-000021758E07
+Message-Id: <c563cc4c-0bfd-6fa3-3919-63a1306e621e@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-15_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=945 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903150034
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,140 +107,134 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Alastair D'Silva <alastair@d-silva.org>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 13/3/19 3:07 pm, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> Remove some unused exported symbols.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
---IgDDV5QArAYIxtdK
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+See comments on v1
 
-On Thu, Mar 14, 2019 at 08:11:17AM +0100, C=E9dric Le Goater wrote:
-> On 3/14/19 3:32 AM, David Gibson wrote:
-> > On Wed, Mar 13, 2019 at 10:40:19AM +0100, C=E9dric Le Goater wrote:
-> >> On 2/26/19 6:24 AM, Paul Mackerras wrote:
-> >>> On Fri, Feb 22, 2019 at 12:28:30PM +0100, C=E9dric Le Goater wrote:
-> >>>> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
-> >>>> H_INT_GET_QUEUE_CONFIG hcalls from QEMU. They will also be used to
-> >>>> restore the configuration of the XIVE EQs in the KVM device and to
-> >>>> capture the internal runtime state of the EQs. Both 'get' and 'set'
-> >>>> rely on an OPAL call to access from the XIVE interrupt controller the
-> >>>> EQ toggle bit and EQ index which are updated by the HW when event
-> >>>> notifications are enqueued in the EQ.
-> >>>>
-> >>>> The value of the guest physical address of the event queue is saved =
-in
-> >>>> the XIVE internal xive_q structure for later use. That is when
-> >>>> migration needs to mark the EQ pages dirty to capture a consistent
-> >>>> memory state of the VM.
-> >>>>
-> >>>> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
-> >>>> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
-> >>>> but restoring the EQ state will.
-> >>>
-> >>> [snip]
-> >>>
-> >>>> +/* Layout of 64-bit eq attribute */
-> >>>> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
-> >>>> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
-> >>>> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
-> >>>> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
-> >>>> +
-> >>>> +/* Layout of 64-bit eq attribute values */
-> >>>> +struct kvm_ppc_xive_eq {
-> >>>> +	__u32 flags;
-> >>>> +	__u32 qsize;
-> >>>> +	__u64 qpage;
-> >>>> +	__u32 qtoggle;
-> >>>> +	__u32 qindex;
-> >>>> +	__u8  pad[40];
-> >>>> +};
-> >>>
-> >>> This is confusing.  What's the difference between an "eq attribute"
-> >>> and an "eq attribute value"?  Is the first actually a queue index or
-> >>> a queue identifier?
-> >>
-> >> The "attribute" qualifier comes from the {get,set,has}_addr methods=20
-> >> of the KVM device. But it is not a well chosen name for the group=20
-> >> KVM_DEV_XIVE_GRP_EQ_CONFIG.
-> >>
-> >> I should be using "eq identifier" and "eq values" or "eq state".=20
-> >=20
-> > Yeah, that seems clearer.
-> >=20
-> >>> Also, the kvm_ppc_xive_eq is not 64 bits, so the comment above it is
-> >>> wrong.  Maybe you meant "64-byte"?
-> >>
-> >> That was a bad copy paste. I have padded the structure to twice the si=
-ze
-> >> of the XIVE END (the XIVE EQ descriptor in HW) which size is 32 bytes.=
-=20
-> >> I thought that one extra u64 was not enough room for future.
-> >>
-> >>>
-> >>> [snip]
-> >>>
-> >>>> +	page =3D gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
-> >>>> +	if (is_error_page(page)) {
-> >>>> +		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
-> >>>> +		return -ENOMEM;
-> >>>> +	}
-> >>>> +	qaddr =3D page_to_virt(page) + (kvm_eq.qpage & ~PAGE_MASK);
-> >>>
-> >>> Isn't this assuming that we can map the whole queue with a single
-> >>> gfn_to_page?  That would only be true if kvm_eq.qsize <=3D PAGE_SHIFT.
-> >>> What happens if kvm_eq.qsize > PAGE_SHIFT?
-> >>
-> >> Ah yes. Theoretically, it should not happen because we only advertise
-> >> 64K in the DT for the moment. I should at least add a check. So I will=
-=20
-> >> change the helper xive_native_validate_queue_size() to return -EINVAL
-> >> for other page sizes.
-> >=20
-> > Ok.
-> >=20
-> >> Do you think it would be complex to support XIVE EQs using a page larg=
-er=20
-> >> than the default one on the guest ?
-> >=20
-> > Hm.  The queue has to be physically contiguous from the host point of
-> > view, in order for the XIVE hardware to write to it, doesn't it?  If
-> > so then supporting queues bigger than the guest page size would be
-> > very difficult.
->=20
-> The queue is only *one* page.
+> ---
+>   drivers/misc/ocxl/config.c        |  2 --
+>   drivers/misc/ocxl/ocxl_internal.h | 23 +++++++++++++++++++++++
+>   include/misc/ocxl.h               | 23 -----------------------
+>   3 files changed, 23 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 026ac2ac4f9c..c90c2e4875bf 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -299,7 +299,6 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
+>   	}
+>   	return 1;
+>   }
+> -EXPORT_SYMBOL_GPL(ocxl_config_check_afu_index);
+>   
+>   static int read_afu_name(struct pci_dev *dev, struct ocxl_fn_config *fn,
+>   			struct ocxl_afu_config *afu)
+> @@ -535,7 +534,6 @@ int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count)
+>   {
+>   	return pnv_ocxl_get_pasid_count(dev, count);
+>   }
+> -EXPORT_SYMBOL_GPL(ocxl_config_get_pasid_info);
+>   
+>   void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int pasid_base,
+>   			u32 pasid_count_log)
+> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+> index 321b29e77f45..06fd98c989c8 100644
+> --- a/drivers/misc/ocxl/ocxl_internal.h
+> +++ b/drivers/misc/ocxl/ocxl_internal.h
+> @@ -107,6 +107,29 @@ void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+>   int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
+>   void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
+>   
+> +/*
+> + * Get the max PASID value that can be used by the function
+> + */
+> +int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+> +
+> +/*
+> + * Check if an AFU index is valid for the given function.
+> + *
+> + * AFU indexes can be sparse, so a driver should check all indexes up
+> + * to the maximum found in the function description
+> + */
+> +int ocxl_config_check_afu_index(struct pci_dev *dev,
+> +				struct ocxl_fn_config *fn, int afu_idx);
+> +
+> +/**
+> + * Update values within a Process Element
+> + *
+> + * link_handle: the link handle associated with the process element
+> + * pasid: the PASID for the AFU context
+> + * tid: the new thread id for the process element
+> + */
+> +int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
+> +
+>   struct ocxl_context *ocxl_context_alloc(void);
+>   int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
+>   			struct address_space *mapping);
+> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+> index 4544573cc93c..9530d3be1b30 100644
+> --- a/include/misc/ocxl.h
+> +++ b/include/misc/ocxl.h
+> @@ -56,15 +56,6 @@ struct ocxl_fn_config {
+>   int ocxl_config_read_function(struct pci_dev *dev,
+>   				struct ocxl_fn_config *fn);
+>   
+> -/*
+> - * Check if an AFU index is valid for the given function.
+> - *
+> - * AFU indexes can be sparse, so a driver should check all indexes up
+> - * to the maximum found in the function description
+> - */
+> -int ocxl_config_check_afu_index(struct pci_dev *dev,
+> -				struct ocxl_fn_config *fn, int afu_idx);
+> -
+>   /*
+>    * Read the configuration space of a function for the AFU specified by
+>    * the index 'afu_idx'. Fills in a ocxl_afu_config structure
+> @@ -74,11 +65,6 @@ int ocxl_config_read_afu(struct pci_dev *dev,
+>   				struct ocxl_afu_config *afu,
+>   				u8 afu_idx);
+>   
+> -/*
+> - * Get the max PASID value that can be used by the function
+> - */
+> -int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
+> -
+>   /*
+>    * Tell an AFU, by writing in the configuration space, the PASIDs that
+>    * it can use. Range starts at 'pasid_base' and its size is a multiple
+> @@ -188,15 +174,6 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>   		void *xsl_err_data);
+>   
+> -/**
+> - * Update values within a Process Element
+> - *
+> - * link_handle: the link handle associated with the process element
+> - * pasid: the PASID for the AFU context
+> - * tid: the new thread id for the process element
+> - */
+> -int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
+> -
+>   /*
+>    * Remove a Process Element from the Shared Process Area for a link
+>    */
+> 
 
-Right, but it's one *host* page, right, which is by nature host
-physically contiguous.  If the guest page size is different a single
-guest page might not be host physically contiguous.
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---IgDDV5QArAYIxtdK
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyK8dYACgkQbDjKyiDZ
-s5LBnRAA4IjL4eX1FugzPg/4jaRuOogHkKlDg+xpItTkSqVcffv+j+hQIY9SSyjY
-ytKb8GIqJEp5+zYh3s3HSB1+dJtlEcugqnToGbNErKwUnWFhFuAbo224fGsh13ar
-1aG4cBfJzb9SzODCO0uGJtUz4lFpjrEKIsSYRcBAEH3YeneSqX0hvDN0PnNptS3x
-15nPvKtbiOrTN+DK1UiTVNU80VnvcfuBv1eLDDyDdnLMqkmQaf/7N0KSsnITx3pj
-8Y6hJvmlAGbo6Y8NcQG6XjW10raTy68Hp8oaYvYlIvgVM8CYNLECRvxLuohuGd2q
-Q6y40m8iSNJvcCI8ILzLpmjfjL6nkcb55XgwH3tXASHuuc9wIRFvN5OK6IMwRxT/
-51SxrAd+haDjUIi5WzlvwFXIA/XormHywxti2CjiLfkHYVMVAQ1+Idd2tNWzP9eX
-OXyMDhiQENW7b0P3WS5TLnP5vCIfwbqqA8gPqtZbnMsnBHLjsAD21NEaRhR6pewc
-0eTEEIOlGSZ0ed4wfjC3b0iZvLaymj5DDBMerzcrSND3Pt0GZvEeJLeczZSA0BKG
-V8NGpWxtHDQiiFMtms9iSkC69eVsuVAXv87czxaQzKV/H7NyPq/AEQ1qMw/TuATX
-9Ocn7UnJSMt3tg389L36rZdeqnlIhFJX68lB3WageTf3pI9CWQs=
-=B6nD
------END PGP SIGNATURE-----
-
---IgDDV5QArAYIxtdK--
