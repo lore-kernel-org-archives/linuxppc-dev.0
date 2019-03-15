@@ -2,82 +2,66 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4691C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 14:07:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D36C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 14:28:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C910217F5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 14:07:59 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C910217F5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 6F77F2186A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 14:28:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="SIuQIDiW"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6F77F2186A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LS8X6tf3zDqPw
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 01:07:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LScG1Z8BzDqQS
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 01:28:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
- (client-ip=46.43.2.167; helo=mail.default.ilande.uk0.bigv.io;
- envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ilande.co.uk
-X-Greylist: delayed 1430 seconds by postgrey-1.36 at bilbo;
- Sat, 16 Mar 2019 01:06:06 AEDT
-Received: from mail.default.ilande.uk0.bigv.io (mail.ilande.co.uk
- [46.43.2.167])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org;
+ envelope-from=gregkh@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="SIuQIDiW"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LS6Q6ZxVzDqNB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 01:06:06 +1100 (AEDT)
-Received: from host86-184-243-17.range86-184.btcentralplus.com
- ([86.184.243.17] helo=[192.168.1.65])
- by mail.default.ilande.uk0.bigv.io with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.89)
- (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1h4n1v-0004UF-5L; Fri, 15 Mar 2019 13:37:47 +0000
-To: linuxppc-dev@lists.ozlabs.org
-From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
- mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
- 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
- E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
- PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
- PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
- AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
- OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
- NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
- mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
- z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
- T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
- DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
- y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
- 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
- 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
- YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
- Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
- BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
- opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
- NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
- Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
- KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
- imgcU9TTGC5qd9g=
-Message-ID: <cf3327d8-3e04-2f37-4734-5525a5b638b2@ilande.co.uk>
-Date: Fri, 15 Mar 2019 13:37:47 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LSZ229PCzDqPc
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 01:26:32 +1100 (AEDT)
+Received: from localhost (unknown [76.14.1.154])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A291921872;
+ Fri, 15 Mar 2019 14:26:29 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1552659989;
+ bh=5NfJ9fNP7IYxIHE36OaxvdtPmt81EtaYZPuMMYyW4QU=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=SIuQIDiWMWkB77idLoA1H5mfil5KfFK7yg+KM3bH5NvBxug45WYf69EHqC7o+mWSh
+ Sqo0ZfAy747Mzl1VPCUsoU/GuXIVorVi9kLEN2/Tfv/2+aoi/XDOq1B0MgqbjtfYZk
+ 8uZDIMzTqFBvWqreZvB8jiluoRiifRtPoedTL8ps=
+Date: Fri, 15 Mar 2019 07:26:28 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
+Subject: Re: [PATCH v2 10/45] drivers: tty: serial: zs: use devm_* functions
+Message-ID: <20190315142628.GA30650@kroah.com>
+References: <1552602855-26086-1-git-send-email-info@metux.net>
+ <1552602855-26086-11-git-send-email-info@metux.net>
+ <20190314225204.GB1795@kroah.com>
+ <3734d588-6b9c-29e2-45b6-82e778f47602@metux.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 86.184.243.17
-X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
-Subject: Mac Mini G4 hang on boot with git master
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on mail.default.ilande.uk0.bigv.io)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3734d588-6b9c-29e2-45b6-82e778f47602@metux.net>
+User-Agent: Mutt/1.11.4 (2019-03-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -89,25 +73,110 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org
+Cc: linux-arm-msm@vger.kernel.org, yamada.masahiro@socionext.com,
+ macro@linux-mips.org, jacmet@sunsite.dk, festevam@gmail.com,
+ stefan.wahren@i2se.com, f.fainelli@gmail.com,
+ bcm-kernel-feedback-list@broadcom.com, linux-imx@nxp.com,
+ linux-serial@vger.kernel.org, slemieux.tyco@gmail.com, andy.gross@linaro.org,
+ tklauser@distanz.ch, david.brown@linaro.org, rjui@broadcom.com,
+ s.hauer@pengutronix.de, u.kleine-koenig@pengutronix.de,
+ linuxppc-dev@lists.ozlabs.org, vz@mleia.com, matthias.bgg@gmail.com,
+ andriy.shevchenko@linux.intel.com, baohua@kernel.org, sbranden@broadcom.com,
+ eric@anholt.net, richard.genoud@gmail.com, "Enrico Weigelt,
+ metux IT consult" <info@metux.net>, linux-kernel@vger.kernel.org,
+ kernel@pengutronix.de, shawnguo@kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+On Fri, Mar 15, 2019 at 10:06:16AM +0100, Enrico Weigelt, metux IT consult wrote:
+> On 14.03.19 23:52, Greg KH wrote:
+> > On Thu, Mar 14, 2019 at 11:33:40PM +0100, Enrico Weigelt, metux IT consult wrote:
+> >> Use the safer devm versions of memory mapping functions.
+> > 
+> > What is "safer" about them?
+> 
+> Garbage collection :)
 
-I've just done a git pull and rebuilt master on my Mac Mini G4 in order to test
-Michael's merge of my KVM PR fix, and unfortunately my kernel now hangs on boot :(
+At times, but not when you do not use the api correctly :)
 
-My last working git checkout was somewhere around the 5.0-rc stage, so I suspect it's
-something that's been merged for 5.1.
+> Several drivers didn't seem to clean up properly (maybe these're just
+> used compiled-in, so nobody noticed yet).
 
-The hang occurs just after the boot console is disabled which makes me wonder if
-something is going wrong during PCI bus enumeration. Does anyone have an idea as to
-what may be causing this? I can obviously bisect it down, but on slow hardware it can
-take some time...
+Yes, there are lots of drivers for devices that are never unloaded or
+removed from the system.  The fact that no one has reported any problems
+with them means that they are never used in situations like this.
 
+> In general, I think devm_* should be the standard case, unless there's
+> a really good reason to do otherwise.
 
-ATB,
+No, you need to have a good reason why it needs to be changed, when you
+can not verify that this actually resolves a problem.  As this patch
+shows, you just replaced one api call with another, so nothing changed
+at all, except you actually took up more memory and logic to do the same
+thing :(
 
-Mark.
+> > Isn't the whole goal of the devm* functions such that you are not
+> > required to call "release" on them?
+> 
+> Looks that one slipped through, when I was doing that big bulk change
+> in the middle of the night and not enough coffe ;-)
+> 
+> One problem here is that many drivers do this stuff in request/release
+> port, instead of probe/remove. I'm not sure yet, whether we should
+> rewrite that. There're also cases which do request/release, but no
+> ioremap (doing hardcoded register accesses), others do ioremap w/o
+> request/release.
+> 
+> IMHO, we should have a closer look at those and check whether that's
+> really okay (just adding request/release blindly could cause trouble)
+
+I agree, please feel free to audit these to verify they are all correct.
+But that's not what you did here, so that's not a valid justification
+for these patches to be accepted.
+
+> > And also, why make the change, you aren't changing any functionality for
+> > these old drivers at all from what I can tell (for the devm calls).
+> > What am I missing here?
+> 
+> Okay, there's a bigger story behind, you can't know yet. Finally, I'd
+> like to move everything to using struct resource and corresponding
+> helpers consistently, so most of the drivers would be pretty simple
+> at that point. (there're of course special cases, like devices w/
+> multiple register spaces, etc)
+> 
+> Here's my wip branch:
+> 
+> https://github.com/metux/linux/commits/wip/serial-res
+> 
+> In this consolidation process, I'm trying to move everything to
+> devm_*, to have it more generic (for now, I still need two versions
+> of the request/release/ioremap/iounmap helpers - one w/ and one
+> w/o devm).
+
+Move everything in what part of the kernel?  The whole kernel or just
+one subsystem?
+
+> My idea was moving to devm first, so it can be reviewed/tested
+> independently, before moving forward. Smaller, easily digestable
+> pieces should minimize the risk of breaking anything. But if you
+> prefer having this things squashed together, just let me know.
+
+Small pieces are required, that's fine, but those pieces need to have a
+justification for why they should be accepted at all points along the
+way.
+
+> In the queue are also other minor cleanups like using dev_err()
+> instead of printk(), etc. Should I send these separately ?
+
+Of course.
+
+> By the way: do you have some public branch where you're collecting
+> accepted patches, which I could base mine on ? (tty.git/tty-next ?)
+
+Yes, that is the tree and branch, but remember that none of my trees can
+open up until after -rc1 is out.
+
+thanks,
+
+greg k-h
