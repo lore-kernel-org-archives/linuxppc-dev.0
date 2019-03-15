@@ -2,66 +2,104 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FE99C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 05:06:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3696AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 05:07:56 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 928CC2186A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 05:06:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="yAUUs08a"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 928CC2186A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id B40352186A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 05:07:55 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B40352186A
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LD7S2yfNzDqRC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 16:06:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=ebiggers@kernel.org; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="yAUUs08a"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LD9P696DzDqS1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 16:07:53 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LD2c0H99zDqRj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 16:02:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44LD2b4S8Dz8tFS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 16:01:59 +1100 (AEDT)
+Received: by ozlabs.org (Postfix)
+ id 44LD2b3p9qz9s6w; Fri, 15 Mar 2019 16:01:59 +1100 (AEDT)
+Authentication-Results: ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=mahesh@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LCR34r5DzDqR0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 15:34:39 +1100 (AEDT)
-Received: from sol.localdomain (c-107-3-167-184.hsd1.ca.comcast.net
- [107.3.167.184])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C8D9321871;
- Fri, 15 Mar 2019 04:34:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1552624476;
- bh=bH12L59769d7W/9o6609SayNbxP6NGE7lhYdGRVdHy0=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=yAUUs08a4qxEJPOgiiQWB5UEkR7zEhphOBCfrAsDS3J8fzd+5cOh1RQfYNiifRBC8
- 1U0B2akoE6DsigAfnX6yAd5lJYrTZmRcec+/k1YBu1/f37tyAvqN7Xqnh/upeOnnmk
- hG04B9XrIjtnP3wnP57Z+PD4fiVbsQJaacBwlP2U=
-Date: Thu, 14 Mar 2019 21:34:34 -0700
-From: Eric Biggers <ebiggers@kernel.org>
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
-Message-ID: <20190315043433.GC1671@sol.localdomain>
-References: <20190315020901.16509-1-dja@axtens.net>
- <20190315022414.GA1671@sol.localdomain>
- <875zsku5mk.fsf@dja-thinkpad.axtens.net>
+ by ozlabs.org (Postfix) with ESMTPS id 44LD2Z707Qz9s4Y
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Mar 2019 16:01:58 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2F4wndZ016877
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Mar 2019 01:01:52 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r80xb3hc4-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 15 Mar 2019 01:01:42 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 15 Mar 2019 05:01:35 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 15 Mar 2019 05:01:33 -0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com
+ [9.149.105.232])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2F51WDv35586086
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Fri, 15 Mar 2019 05:01:32 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1BFED52052;
+ Fri, 15 Mar 2019 05:01:32 +0000 (GMT)
+Received: from [9.199.46.90] (unknown [9.199.46.90])
+ by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1A08952054;
+ Fri, 15 Mar 2019 05:01:27 +0000 (GMT)
+Subject: Re: Disable kcov for slb routines.
+To: Michael Ellerman <patch-notifications@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <44Kn0q0xN3z9s71@ozlabs.org>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 15 Mar 2019 10:31:25 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <875zsku5mk.fsf@dja-thinkpad.axtens.net>
-User-Agent: Mutt/1.11.3 (2019-02-01)
-X-Mailman-Approved-At: Fri, 15 Mar 2019 16:01:23 +1100
+In-Reply-To: <44Kn0q0xN3z9s71@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-MW
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19031505-4275-0000-0000-0000031B354B
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031505-4276-0000-0000-00003829A99D
+Message-Id: <3e0bd37b-5e34-f056-250c-c36bd495ea94@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-15_04:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=681 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903150036
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,55 +111,35 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: leo.barbosa@canonical.com, Herbert Xu <herbert@gondor.apana.org.au>,
- Stephan Mueller <smueller@chronox.de>, nayna@linux.ibm.com,
- omosnacek@gmail.com, leitao@debian.org, pfsmorigo@gmail.com,
- linux-crypto@vger.kernel.org, marcelo.cerri@canonical.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: syzkaller@googlegroups.com, Paul Mackerras <paulus@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Andrew Donnellan <andonnel@au1.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Daniel,
+On 3/14/19 5:13 PM, Michael Ellerman wrote:
+> On Mon, 2019-03-04 at 08:25:51 UTC, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> The kcov instrumentation inside SLB routines causes duplicate SLB entries
+>> to be added resulting into SLB multihit machine checks.
+>> Disable kcov instrumentation on slb.o
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>> Tested-by: Satheesh Rajendran <sathnaga@linux.vent.ibm.com>
+> 
+> Applied to powerpc next, thanks.
+> 
+> https://git.kernel.org/powerpc/c/19d6907521b04206676741b26e05a152
+> 
+> cheers
+> 
 
-On Fri, Mar 15, 2019 at 03:24:35PM +1100, Daniel Axtens wrote:
-> Hi Eric,
-> 
-> >> The original assembly imported from OpenSSL has two copy-paste
-> >> errors in handling CTR mode. When dealing with a 2 or 3 block tail,
-> >> the code branches to the CBC decryption exit path, rather than to
-> >> the CTR exit path.
-> >
-> > So does this need to be fixed in OpenSSL too?
-> 
-> Yes, I'm getting in touch with some people internally (at IBM) about
-> doing that.
-> 
-> >> This leads to corruption of the IV, which leads to subsequent blocks
-> >> being corrupted.
-> >> 
-> >> This can be detected with libkcapi test suite, which is available at
-> >> https://github.com/smuellerDD/libkcapi
-> >> 
-> >
-> > Is this also detected by the kernel's crypto self-tests, and if not why not?
-> > What about with the new option CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=y?
-> 
-> It seems the self-tests do not catch it. To catch it, there has to be a
-> test where the blkcipher_walk creates a walk.nbytes such that
-> [(the number of AES blocks) mod 8] is either 2 or 3. This happens with
-> AF_ALG pretty frequently, but when I booted with self-tests it only hit
-> 1, 4, 5, 6 and 7 - it missed 0, 2 and 3.
-> 
-> I don't have the EXTRA_TESTS option - I'm testing with 5.0-rc6. Is it in
-> -next?
-> 
-> Regards,
-> Daniel
+There was a v2 at http://patchwork.ozlabs.org/patch/1051718/, looks like
+v1 got picked up. But I see the applied commit does address Andrew's
+comments.
 
-The improvements I recently made to the self-tests are intended to catch exactly
-this sort of bug.  They were just merged for v5.1, so try the latest mainline.
-This almost certainly would be caught by EXTRA_TESTS (and if not I'd want to
-know), but it may be caught by the regular self-tests now too.
+Thanks,
+-Mahesh.
 
-- Eric
