@@ -2,79 +2,80 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D286C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 01:29:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 234F7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 02:10:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EEAA21872
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 01:29:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 4446F2186A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 02:10:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="F+732QtM"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EEAA21872
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="MYzwGELu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4446F2186A
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44L7Jz0SPbzDqRW
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 12:29:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44L8Dz33GxzDqQl
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:10:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=axtens.net
- (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com;
+ (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
  envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=axtens.net header.i=@axtens.net header.b="F+732QtM"; 
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="MYzwGELu"; 
  dkim-atps=neutral
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com
- [IPv6:2607:f8b0:4864:20::436])
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44L7Gh1DbgzDqQs
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 12:27:06 +1100 (AEDT)
-Received: by mail-pf1-x436.google.com with SMTP id a3so5073121pff.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 18:27:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44L8CC5JmJzDqQS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 13:09:09 +1100 (AEDT)
+Received: by mail-pf1-x443.google.com with SMTP id n22so5164458pfa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 19:09:09 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
- h=from:to:cc:subject:in-reply-to:references:date:message-id
- :mime-version; bh=0Wlef7QlJVRBWt94bY3O0T0yq0oH1GDzoCO3EpkQNTQ=;
- b=F+732QtMoBzCT63zkmlyoqY9YGDTFXA/U8bWwR3haWtl5BaqGeEO/a/sw2BvAp2Hwp
- DBMHb/W4SQ/6Ykg6/DBbfp6PiGfbgZpU0O3t3lWZJAgzdvgRtdfQtIGw+hqoTyIkzQsq
- n7wJnYbtUmTHxgtGycZIK3BUd5mcjCofK/Wdc=
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Y3kqJQ5xsOjs4aV1pFM0MeGV8X4Abqf24LZEIyvcPnE=;
+ b=MYzwGELu/d1daXHH5m38Tz2y+m+vS0t/i7J7G1Tba0K6lEAE1PBJZrOKdMR1yR4H/y
+ mdkh1NivJ7Ank2bMvpzjQrDN/Mhv0A2QHmxk6EdoM02KQIh6Wr44rBzDsevU2xTExpnb
+ 2uaERrNyy/xu+lragW9+cvIOaTuD2/XDPYSCM=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
- :message-id:mime-version;
- bh=0Wlef7QlJVRBWt94bY3O0T0yq0oH1GDzoCO3EpkQNTQ=;
- b=qowvuYirBRfH6y+y/I7IEOChmYwvLNNQCclGmTNy6JcoTJiNX8p9UeB2brZoMfFi3C
- zwjhhOUPVbiu2j2lA7VuiUfYJDCel8p6tdIWPs8PTUCrbwHam199T+iFz0QTlSRPZG5c
- wcgqJX7JmfM2jAAG9S8mA6JZzRSSJMSPUJxPKnlrU7LkYAeCzp0cCIYitQyOzLC9EcIU
- yyZbKVtnXZpbRm9F9FjuezIcu372jtg+rYqxJlgNsINdXOsWBEVoNxJgOpr4afIhxKnX
- 55+43n3M6DvA1trMvRS4f3FIqHE3M5A6rg+GJeuXdeaY6dgZ8VaGYx/D8nb7UVd3LwDY
- sr3Q==
-X-Gm-Message-State: APjAAAX3+Tk/fr1QNrzoeAlc8gSgz7IFSCu3jhb6mY00Z9F0DB6jxYp+
- NYVgr27/Rm/8/2xREUjhMOYOTw==
-X-Google-Smtp-Source: APXvYqwZY3/PkTVn1luNO/pBnSC/DG7EX+foGnzMJsvwOjZca2d88oNOrgHhxkB76IW3GbmUGhVxJw==
-X-Received: by 2002:a62:54c5:: with SMTP id i188mr1292962pfb.188.1552613223946; 
- Thu, 14 Mar 2019 18:27:03 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=Y3kqJQ5xsOjs4aV1pFM0MeGV8X4Abqf24LZEIyvcPnE=;
+ b=BgQ/WS7bvE/c/Wb5fXcOMtL6wGcXRpJteEyEfW2bhSBbRHOcIME5TGhiqcRBVGxXLw
+ eCUpntB7PkafvoAcRSAEDRSsfOIbXxlbI2s9YfqG5mjLPxYQX4BWWttHsewieSbEYiOH
+ Cfb3Viw11w8LqZEZhFKcLzhihxUs5+KoXFJmoKETLqDEFPsU6dfx1TRfUT9DMXY1/Giu
+ 25ZmxHfk0fVeV8dqw8WlVng8kQEhU6t/JiMAoT5b7rfxUlJhOiOYnkuZR0hSWUWTnI5q
+ PbP+20Bh3dDUqo08ZyvD85BOI8edy++aDtmNfRkBRaeChaHNIx5U+W65ZC2uySC/keXK
+ l6xw==
+X-Gm-Message-State: APjAAAWYTw1Wi3Kh8//R7Rs+mlvPPRTn0AvQ+pJKCCIZjAc9pe7KoRV+
+ cecj9K4g7jqbNyRsD+xUwATY8w==
+X-Google-Smtp-Source: APXvYqz4OAteB7F0UWElJ5HD5WmtiImAfV0WL0obe2SGPZSKJk4sI0S2qI7wlcwxjHcOlARBq8cw2w==
+X-Received: by 2002:a65:534d:: with SMTP id w13mr1025397pgr.186.1552615745775; 
+ Thu, 14 Mar 2019 19:09:05 -0700 (PDT)
 Received: from localhost (124-171-209-25.dyn.iinet.net.au. [124.171.209.25])
- by smtp.gmail.com with ESMTPSA id v9sm440373pfg.130.2019.03.14.18.27.02
+ by smtp.gmail.com with ESMTPSA id j20sm472815pfh.141.2019.03.14.19.09.04
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Thu, 14 Mar 2019 18:27:02 -0700 (PDT)
+ Thu, 14 Mar 2019 19:09:04 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
-To: Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>,
- linux-crypto@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: BUG: p8_aes_ctr randomly returns wrong results
-In-Reply-To: <CAAUqJDtsx6Sdv=6xAb1VWWjDF08y8wh2nsAypR8_x_e99a1Uwg@mail.gmail.com>
-References: <CAAUqJDtsx6Sdv=6xAb1VWWjDF08y8wh2nsAypR8_x_e99a1Uwg@mail.gmail.com>
-Date: Fri, 15 Mar 2019 12:26:59 +1100
-Message-ID: <878sxhsza4.fsf@dja-thinkpad.axtens.net>
+To: omosnacek@gmail.com, linux-crypto@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
+Date: Fri, 15 Mar 2019 13:09:01 +1100
+Message-Id: <20190315020901.16509-1-dja@axtens.net>
+X-Mailer: git-send-email 2.19.1
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,40 +87,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: marcelo.cerri@canonical.com, Stephan Mueller <smueller@chronox.de>,
- leo.barbosa@canonical.com, linuxppc-dev@lists.ozlabs.org,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+Cc: leo.barbosa@canonical.com, Stephan Mueller <smueller@chronox.de>,
+ nayna@linux.ibm.com, leitao@debian.org, pfsmorigo@gmail.com,
+ marcelo.cerri@canonical.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Ondrej,
+The original assembly imported from OpenSSL has two copy-paste
+errors in handling CTR mode. When dealing with a 2 or 3 block tail,
+the code branches to the CBC decryption exit path, rather than to
+the CTR exit path.
 
-> When I run 'rmmod vmx_crypto' before running the reproducer, I get
-> only one (correct) checksum, so this is definitely a bug in the
-> driver. Other ciphers (cbc(aes), xts(aes)) are not affected, even
-> though the glue code is very similar. That leads me to believe the
-> problem is somewhere in the assembly code.
+This leads to corruption of the IV, which leads to subsequent blocks
+being corrupted.
 
-It appears that under certain circumstances, aes_p8_ctr32_encrypt_blocks
-changes walk.iv. If this is done when
-  while ((nbytes = walk.nbytes) >= AES_BLOCK_SIZE) {
-is not in its final iteration, it will corrupt the future blocks.
+This can be detected with libkcapi test suite, which is available at
+https://github.com/smuellerDD/libkcapi
 
-I am not yet sure why this is. Clearly it's pretty late in the assembly
-because it doesn't seem to affect the blocks being processed in that
-call, only future calls.
+Reported-by: Ondrej Mosnáček <omosnacek@gmail.com>
+Fixes: 5c380d623ed3 ("crypto: vmx - Add support for VMS instructions by ASM")
+Cc: stable@vger.kernel.org
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ drivers/crypto/vmx/aesp8-ppc.pl | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Saving and restoring the IV makes the test case pass.
+diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-ppc.pl
+index d6a9f63d65ba..de78282b8f44 100644
+--- a/drivers/crypto/vmx/aesp8-ppc.pl
++++ b/drivers/crypto/vmx/aesp8-ppc.pl
+@@ -1854,7 +1854,7 @@ Lctr32_enc8x_three:
+ 	stvx_u		$out1,$x10,$out
+ 	stvx_u		$out2,$x20,$out
+ 	addi		$out,$out,0x30
+-	b		Lcbc_dec8x_done
++	b		Lctr32_enc8x_done
+ 
+ .align	5
+ Lctr32_enc8x_two:
+@@ -1866,7 +1866,7 @@ Lctr32_enc8x_two:
+ 	stvx_u		$out0,$x00,$out
+ 	stvx_u		$out1,$x10,$out
+ 	addi		$out,$out,0x20
+-	b		Lcbc_dec8x_done
++	b		Lctr32_enc8x_done
+ 
+ .align	5
+ Lctr32_enc8x_one:
+-- 
+2.19.1
 
-I'll have a look at the asm.
-
-Regards,
-Daniel
-
-
->
-> [1] http://github.com/smuellerDD/libkcapi
->
-> Cheers,
-> Ondrej
