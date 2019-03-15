@@ -2,69 +2,58 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 015EAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 12:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA9F6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 12:44:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2420821871
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 12:41:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ebGH4hCE"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2420821871
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 4FC1820854
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 12:44:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4FC1820854
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LQDz6Lz6zDqJM
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 23:41:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LQHn5Mh6zDqTF
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 23:44:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2607:7c80:54:e::133; helo=bombadil.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=46.105.50.32; helo=7.mo69.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 597 seconds by postgrey-1.36 at bilbo;
+ Fri, 15 Mar 2019 23:27:39 AEDT
+Received: from 7.mo69.mail-out.ovh.net (7.mo69.mail-out.ovh.net [46.105.50.32])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LPv16Dt3zDqSP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 23:26:05 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=bombadil.20170209; h=In-Reply-To:Content-Type:MIME-Version
- :References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=IFl7tyDTxxjlEDrkxvda1xuKJBo+PzJ9ZHHegjIR54c=; b=ebGH4hCEm2810H85vbAXgXuei
- RLVEaFn7oSgEb/Zn7VBY5DEunlt33RUHDW5kHouJngY37aCll9nYQoyAq9Ws+CsFihYPdbU9Fa+mN
- StmingCxk5Kn1tsKY/79Fx+cx6HqqQG2rUUfvOlggHY4Gr0o0/9HtXzV2k0zFz0Wz4y2ef4C12uBv
- 33/vTOGVQl4v5c14uDBqnnghJBq/aJjxfzIxLdPuB/9NaQkexXH1aLI8rywWIJuFpks4S2nu1NgZH
- DJLlTs+mEOOu5WNoReTBvSs0txqNHjxZw5J1GojE9EdZa9f79HjYiE1i2w1co6jGWMzYSI1+YOBIr
- bL9HlwQ+w==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by bombadil.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1h4luP-0006CR-Qd; Fri, 15 Mar 2019 12:25:58 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 49BE321419E57; Fri, 15 Mar 2019 13:25:56 +0100 (CET)
-Date: Fri, 15 Mar 2019 13:25:56 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Laurent Vivier <lvivier@redhat.com>
-Subject: Re: [RFC v3] sched/topology: fix kernel crash when a CPU is
- hotplugged in a memoryless node
-Message-ID: <20190315122556.GE6058@hirez.programming.kicks-ass.net>
-References: <20190304195952.16879-1-lvivier@redhat.com>
- <77b142fe-0886-1510-28bd-d432ea2c796a@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LPwq6607zDqHZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 23:27:37 +1100 (AEDT)
+Received: from player793.ha.ovh.net (unknown [10.109.146.32])
+ by mo69.mail-out.ovh.net (Postfix) with ESMTP id 3B2164B2F5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 13:09:35 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player793.ha.ovh.net (Postfix) with ESMTPSA id 4ACC93CD21A7;
+ Fri, 15 Mar 2019 12:09:21 +0000 (UTC)
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH v3 16/17] KVM: introduce a KVM_DESTROY_DEVICE ioctl
+Date: Fri, 15 Mar 2019 13:06:08 +0100
+Message-Id: <20190315120609.25910-17-clg@kaod.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190315120609.25910-1-clg@kaod.org>
+References: <20190315120609.25910-1-clg@kaod.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <77b142fe-0886-1510-28bd-d432ea2c796a@redhat.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 10808357632757173207
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrheehgdefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,55 +65,153 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 15, 2019 at 12:12:45PM +0100, Laurent Vivier wrote:
+The 'destroy' method is currently used to destroy all devices when the
+VM is destroyed after the vCPUs have been freed.
 
-> Another way to avoid the nodes overlapping for the offline nodes at
-> startup is to ensure the default values don't define a distance that
-> merge all offline nodes into node 0.
-> 
-> A powerpc specific patch can workaround the kernel crash by doing this:
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 87f0dd0..3ba29bb 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -623,6 +623,7 @@ static int __init parse_numa_properties(void)
->         struct device_node *memory;
->         int default_nid = 0;
->         unsigned long i;
-> +       int nid, dist;
-> 
->         if (numa_enabled == 0) {
->                 printk(KERN_WARNING "NUMA disabled by user\n");
-> @@ -636,6 +637,10 @@ static int __init parse_numa_properties(void)
-> 
->         dbg("NUMA associativity depth for CPU/Memory: %d\n",
-> min_common_depth);
-> 
-> +       for (nid = 0; nid < MAX_NUMNODES; nid ++)
-> +               for (dist = 0; dist < MAX_DISTANCE_REF_POINTS; dist++)
-> +                       distance_lookup_table[nid][dist] = nid;
-> +
->         /*
->          * Even though we connect cpus to numa domains later in SMP
->          * init, we need to know the node ids now. This is because
+This new KVM ioctl exposes the same KVM device method. It acts as a
+software reset of the VM to 'destroy' selected devices when necessary
+and perform the required cleanups on the vCPUs. Called with the
+kvm->lock.
 
-What does that actually do? That is, what does it make the distance
-table look like before and after you bring up the CPUs?
+The 'destroy' method could be improved by returning an error code.
 
-> Any comment?
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+---
 
-Well, I had a few questions here:
+  Changes since v2 :
 
-  20190305115952.GH32477@hirez.programming.kicks-ass.net
+ - checked that device is owned by VM
+ 
+ include/uapi/linux/kvm.h          |  7 ++++++
+ virt/kvm/kvm_main.c               | 42 +++++++++++++++++++++++++++++++
+ Documentation/virtual/kvm/api.txt | 20 +++++++++++++++
+ 3 files changed, 69 insertions(+)
 
-that I've not yet seen answers to.
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 52bf74a1616e..d78fafa54274 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1183,6 +1183,11 @@ struct kvm_create_device {
+ 	__u32	flags;	/* in: KVM_CREATE_DEVICE_xxx */
+ };
+ 
++struct kvm_destroy_device {
++	__u32	fd;	/* in: device handle */
++	__u32	flags;	/* in: unused */
++};
++
+ struct kvm_device_attr {
+ 	__u32	flags;		/* no flags currently defined */
+ 	__u32	group;		/* device-defined */
+@@ -1331,6 +1336,8 @@ struct kvm_s390_ucas_mapping {
+ #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
+ #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
+ 
++#define KVM_DESTROY_DEVICE	  _IOWR(KVMIO,  0xf0, struct kvm_destroy_device)
++
+ /*
+  * ioctls for vcpu fds
+  */
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index e4881a8c2a6f..7b616a1d48cf 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3026,6 +3026,34 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
+ 	return 0;
+ }
+ 
++static int kvm_ioctl_destroy_device(struct kvm *kvm,
++				    struct kvm_destroy_device *dd)
++{
++	struct fd f;
++	struct kvm_device *dev;
++
++	f = fdget(dd->fd);
++	if (!f.file)
++		return -EBADF;
++
++	dev = kvm_device_from_filp(f.file);
++	fdput(f);
++
++	if (!dev)
++		return -ENODEV;
++
++	if (dev->kvm != kvm)
++		return -EPERM;
++
++	mutex_lock(&kvm->lock);
++	list_del(&dev->vm_node);
++	dev->ops->destroy(dev);
++	mutex_unlock(&kvm->lock);
++
++	/* TODO: kvm_put_kvm() crashes the host on some occasion ? */
++	return 0;
++}
++
+ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ {
+ 	switch (arg) {
+@@ -3270,6 +3298,20 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = 0;
+ 		break;
+ 	}
++	case KVM_DESTROY_DEVICE: {
++		struct kvm_destroy_device dd;
++
++		r = -EFAULT;
++		if (copy_from_user(&dd, argp, sizeof(dd)))
++			goto out;
++
++		r = kvm_ioctl_destroy_device(kvm, &dd);
++		if (r)
++			goto out;
++
++		r = 0;
++		break;
++	}
+ 	case KVM_CHECK_EXTENSION:
+ 		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
+ 		break;
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index 1db1435769b4..914471494602 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -3857,6 +3857,26 @@ number of valid entries in the 'entries' array, which is then filled.
+ 'index' and 'flags' fields in 'struct kvm_cpuid_entry2' are currently reserved,
+ userspace should not expect to get any particular value there.
+ 
++4.119 KVM_DESTROY_DEVICE
++
++Capability: KVM_CAP_DEVICE_CTRL
++Type: vm ioctl
++Parameters: struct kvm_destroy_device (in)
++Returns: 0 on success, -1 on error
++Errors:
++  ENODEV: The device type is unknown or unsupported
++  EPERM: The device does not belong to the VM
++
++  Other error conditions may be defined by individual device types or
++  have their standard meanings.
++
++Destroys an emulated device in the kernel.
++
++struct kvm_destroy_device {
++	__u32	fd;	/* in: device handle */
++	__u32	flags;	/* unused */
++};
++
+ 5. The kvm_run structure
+ ------------------------
+ 
+-- 
+2.20.1
+
