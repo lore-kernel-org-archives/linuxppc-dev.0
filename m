@@ -2,62 +2,92 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79A31C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:07:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3E0BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:18:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BB7E72186A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:07:13 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BB7E72186A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 591F921871
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 13:18:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 591F921871
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LQpR36WfzDqRR
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:07:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LR3f6j5PzDqRX
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 00:18:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=lvivier@redhat.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=naveen.n.rao@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LQm64GxqzDqRR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:05:10 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
- [10.5.11.11])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 88ECB7D7BB;
- Fri, 15 Mar 2019 13:05:07 +0000 (UTC)
-Received: from [10.36.117.12] (ovpn-117-12.ams2.redhat.com [10.36.117.12])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 2E130601AE;
- Fri, 15 Mar 2019 13:05:00 +0000 (UTC)
-Subject: Re: [RFC v3] sched/topology: fix kernel crash when a CPU is
- hotplugged in a memoryless node
-To: Peter Zijlstra <peterz@infradead.org>
-References: <20190304195952.16879-1-lvivier@redhat.com>
- <77b142fe-0886-1510-28bd-d432ea2c796a@redhat.com>
- <20190315122556.GE6058@hirez.programming.kicks-ass.net>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <18d517b6-0554-f241-abf8-ed085998c6d8@redhat.com>
-Date: Fri, 15 Mar 2019 14:05:00 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
- Thunderbird/52.8.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LR1n0RxSzDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 00:17:00 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2FDF2c0066973
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:16:58 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r8bqvbwyw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 09:16:57 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.ibm.com>;
+ Fri, 15 Mar 2019 13:16:55 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Fri, 15 Mar 2019 13:16:50 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2FDGn7M30015550
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Fri, 15 Mar 2019 13:16:49 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A49F411C054;
+ Fri, 15 Mar 2019 13:16:49 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4DECA11C064;
+ Fri, 15 Mar 2019 13:16:49 +0000 (GMT)
+Received: from localhost (unknown [9.78.193.169])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 15 Mar 2019 13:16:49 +0000 (GMT)
+Date: Fri, 15 Mar 2019 18:46:45 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.ibm.com>
+Subject: Re: bpf jit PPC64 (BE) test_verifier PTR_TO_STACK store/load failure
+To: Segher Boessenkool <segher@kernel.crashing.org>, Yauheni Kaliuta
+ <yauheni.kaliuta@redhat.com>
+References: <xuny4l87qc2v.fsf@redhat.com>
+ <20190313221436.GO3969@gate.crashing.org>
+In-Reply-To: <20190313221436.GO3969@gate.crashing.org>
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
 MIME-Version: 1.0
-In-Reply-To: <20190315122556.GE6058@hirez.programming.kicks-ass.net>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.27]); Fri, 15 Mar 2019 13:05:08 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+X-TM-AS-GCONF: 00
+x-cbid: 19031513-4275-0000-0000-0000031B6412
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031513-4276-0000-0000-00003829D9E0
+Message-Id: <1552655762.yswcan0ziz.naveen@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-15_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=689 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903150094
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,80 +99,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Daniel Borkmann <daniel@iogearbox.net>, netdev@vger.kernel.org,
+ Jiri Olsa <jolsa@redhat.com>, Sandipan Das <sandipan@linux.ibm.com>,
+ bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/03/2019 13:25, Peter Zijlstra wrote:
-> On Fri, Mar 15, 2019 at 12:12:45PM +0100, Laurent Vivier wrote:
-> 
->> Another way to avoid the nodes overlapping for the offline nodes at
->> startup is to ensure the default values don't define a distance that
->> merge all offline nodes into node 0.
->>
->> A powerpc specific patch can workaround the kernel crash by doing this:
->>
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index 87f0dd0..3ba29bb 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -623,6 +623,7 @@ static int __init parse_numa_properties(void)
->>         struct device_node *memory;
->>         int default_nid = 0;
->>         unsigned long i;
->> +       int nid, dist;
->>
->>         if (numa_enabled == 0) {
->>                 printk(KERN_WARNING "NUMA disabled by user\n");
->> @@ -636,6 +637,10 @@ static int __init parse_numa_properties(void)
->>
->>         dbg("NUMA associativity depth for CPU/Memory: %d\n",
->> min_common_depth);
->>
->> +       for (nid = 0; nid < MAX_NUMNODES; nid ++)
->> +               for (dist = 0; dist < MAX_DISTANCE_REF_POINTS; dist++)
->> +                       distance_lookup_table[nid][dist] = nid;
->> +
->>         /*
->>          * Even though we connect cpus to numa domains later in SMP
->>          * init, we need to know the node ids now. This is because
-> 
-> What does that actually do? That is, what does it make the distance
-> table look like before and after you bring up the CPUs?
+Segher Boessenkool wrote:
+> Hi!
+>=20
+> On Wed, Mar 13, 2019 at 12:54:16PM +0200, Yauheni Kaliuta wrote:
+>> This is because of the handling of the +2 offset.
+>=20
+> The low two bits of instructions with primary opcodes 58 and 62 are part
+> of the opcode, not the offset.  These instructions can not have offsets
+> with the low two bits non-zero.
+>=20
+>> For stores it is:
+>> #define PPC_STD(r, base, i)	EMIT(PPC_INST_STD | ___PPC_RS(r) |	      \
+>> 				     ___PPC_RA(base) | ((i) & 0xfffc))
+>>=20
+>> and for loads
+>> #define PPC_LD(r, base, i)	EMIT(PPC_INST_LD | ___PPC_RT(r) |	      \
+>> 				     ___PPC_RA(base) | IMM_L(i))
+>> #define IMM_L(i)		((uintptr_t)(i) & 0xffff)
+>>=20
+>> So, in the load case the offset +2 (immediate value) is not
+>> masked and turns the instruction to lwa instead of ld.
+>>=20
+>> Would it be correct to & 0xfffc the immediate value as well?
+>=20
+> That is only part of it.  The other thing is you have to make sure those
+> low bits are zero *already* (and then you do not need the mask anymore).
+> For example, if the low two bits are not zero load the offset into a
+> register instead (and then do ldx or lwax).
 
-By default the table is full of 0. When a CPU is brought up the value is
-read from the device-tree and the table is updated. What I've seen is
-this value is common for 2 nodes at a given level if they share the level.
-So as the table is initialized with 0, all offline nodes (no memory no
-cpu) are merged with node 0.
-My fix initializes the table with unique values for each node, so by
-default no nodes are mixed.
+Thanks for pointing that out, Segher. That is a detail that is easily=20
+missed.
 
-> 
->> Any comment?
-> 
-> Well, I had a few questions here:
-> 
->   20190305115952.GH32477@hirez.programming.kicks-ass.net
-> 
-> that I've not yet seen answers to.
+- Naveen
 
-I didn't answer because:
-
-- I thought this was not the good way to fix the problem as you said "it
-seems very fragile and unfortunate",
-
-- I don't have the answers, I'd really like someone from IBM that knows
-well the NUMA part of powerpc answers to these questions... and perhaps
-find a better solution.
-
-Thanks,
-Laurent
-
-
+=
 
