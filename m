@@ -2,100 +2,82 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 612E2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4A61C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:26:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9E3432186A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:13:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9E3432186A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 2A4902186A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 04:26:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="oaHYdJGb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2A4902186A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LBy55cMHzDqRd
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 15:13:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LCFR0hJdzDqRd
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 15:26:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=andrew.donnellan@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::541; helo=mail-pg1-x541.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="oaHYdJGb"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LBwH5hBqzDqR0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 15:11:27 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2F48uuq003921
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 00:11:25 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r84bg93va-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 00:11:24 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 15 Mar 2019 04:11:22 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 15 Mar 2019 04:11:19 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2F4BIxg43909250
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 15 Mar 2019 04:11:18 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 25461A405F;
- Fri, 15 Mar 2019 04:11:18 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 869EFA405B;
- Fri, 15 Mar 2019 04:11:17 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 15 Mar 2019 04:11:17 +0000 (GMT)
-Received: from [10.61.2.125] (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3F7E0A00E2;
- Fri, 15 Mar 2019 15:11:16 +1100 (AEDT)
-Subject: Re: [PATCH 1/7] ocxl: Provide global MMIO accessors for external
- drivers
-To: "Alastair D'Silva" <alastair@au1.ibm.com>
-References: <20190313041524.14644-1-alastair@au1.ibm.com>
- <20190313041524.14644-2-alastair@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 15 Mar 2019 15:11:16 +1100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LCCf4v1xzDqQv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 15:24:44 +1100 (AEDT)
+Received: by mail-pg1-x541.google.com with SMTP id u9so5494121pgo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Mar 2019 21:24:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version:content-transfer-encoding;
+ bh=Ns2BikTimGEvj26ADZRD9DW1O6qtk4kZmoPLUHoIyE8=;
+ b=oaHYdJGbcL/e5pFQGi/YqJlyopqeZK7aSPQAPEMJM7FGBwodkFNIlkwbrJ7kIS70+H
+ 8Q8EmNLObLC3/UtRMMPH33vGtKLItzUntzBXhpzItUxouC6Lx0HqI7puROd7wctSktnT
+ bGKOb/COx0Aq2mbBiLGwfl0NmrX7Jv3vWRjt8=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version:content-transfer-encoding;
+ bh=Ns2BikTimGEvj26ADZRD9DW1O6qtk4kZmoPLUHoIyE8=;
+ b=WiCO8XTc/VCw4XG7INmzb9H5yZiOdagqpietC9ci31r12RzuJwLVvYSEMFAlG0MDj7
+ pjHH4UsZC1jD3hgRlR0MSrYgtEqFrLMijvSDfjIdf2NuzCoPsdlQsxJjyvqWvCr04Be2
+ lEZfmPJgAZKO+VqH3AwOd38KiqIjlB3fl1vJCNpMAMxpSEfLAMExHovdDeDsbtqcfb8s
+ 2TND0FsAkAbCIdSZ7WHcbXa05JwvVYDYCjdM7GlJUnn/wi8siKaK3eS+m/Fw0FkDKSOU
+ s5yIdtHt4qqtmHhWNL/8GQS2jcAx+A3AAZgiSczLzmmx92lZXaX0TuhUZCmTtt8OYyri
+ CG0w==
+X-Gm-Message-State: APjAAAXqLlvwPzuXSnzfaWU+MsFEFDUwP7y90L1fq05G9WhbW+VZ8o8E
+ xTb3lawJPN4a1S8kbXCTnxujHg==
+X-Google-Smtp-Source: APXvYqwWbnwSChy35tVzJGS+KlwlLNOVfU1P3UPtX/FUYAXf29sStZ4Wm0ZVcPhIMh4WqpnwXcQKBQ==
+X-Received: by 2002:a17:902:2a89:: with SMTP id
+ j9mr1385525plb.272.1552623880527; 
+ Thu, 14 Mar 2019 21:24:40 -0700 (PDT)
+Received: from localhost (124-171-209-25.dyn.iinet.net.au. [124.171.209.25])
+ by smtp.gmail.com with ESMTPSA id z6sm1323087pgo.31.2019.03.14.21.24.38
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 14 Mar 2019 21:24:39 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Eric Biggers <ebiggers@kernel.org>
+Subject: Re: [PATCH] crypto: vmx - fix copy-paste error in CTR mode
+In-Reply-To: <20190315022414.GA1671@sol.localdomain>
+References: <20190315020901.16509-1-dja@axtens.net>
+ <20190315022414.GA1671@sol.localdomain>
+Date: Fri, 15 Mar 2019 15:24:35 +1100
+Message-ID: <875zsku5mk.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-In-Reply-To: <20190313041524.14644-2-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-AU
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031504-0028-0000-0000-000003543B70
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031504-0029-0000-0000-00002412CA54
-Message-Id: <0930a60a-05e1-ab6d-6568-2384bd1782ca@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-15_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=780 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903150029
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -107,412 +89,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Greg Kurz <groug@kaod.org>, Alastair D'Silva <alastair@d-silva.org>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: leo.barbosa@canonical.com, Herbert Xu <herbert@gondor.apana.org.au>,
+ Stephan Mueller <smueller@chronox.de>, nayna@linux.ibm.com,
+ omosnacek@gmail.com, leitao@debian.org, pfsmorigo@gmail.com,
+ linux-crypto@vger.kernel.org, marcelo.cerri@canonical.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 13/3/19 3:15 pm, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> External drivers that communicate via OpenCAPI will need to make
-> MMIO calls to interact with the devices.
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
+Hi Eric,
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+>> The original assembly imported from OpenSSL has two copy-paste
+>> errors in handling CTR mode. When dealing with a 2 or 3 block tail,
+>> the code branches to the CBC decryption exit path, rather than to
+>> the CTR exit path.
+>
+> So does this need to be fixed in OpenSSL too?
 
-> ---
->   drivers/misc/ocxl/Makefile |   2 +-
->   drivers/misc/ocxl/mmio.c   | 234 +++++++++++++++++++++++++++++++++++++
->   include/misc/ocxl.h        | 113 ++++++++++++++++++
->   3 files changed, 348 insertions(+), 1 deletion(-)
->   create mode 100644 drivers/misc/ocxl/mmio.c
-> 
-> diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
-> index 5229dcda8297..922e47cd4f0d 100644
-> --- a/drivers/misc/ocxl/Makefile
-> +++ b/drivers/misc/ocxl/Makefile
-> @@ -1,7 +1,7 @@
->   # SPDX-License-Identifier: GPL-2.0+
->   ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
->   
-> -ocxl-y				+= main.o pci.o config.o file.o pasid.o
-> +ocxl-y				+= main.o pci.o config.o file.o pasid.o mmio.o
->   ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
->   obj-$(CONFIG_OCXL)		+= ocxl.o
->   
-> diff --git a/drivers/misc/ocxl/mmio.c b/drivers/misc/ocxl/mmio.c
-> new file mode 100644
-> index 000000000000..7f6ebae1c6c7
-> --- /dev/null
-> +++ b/drivers/misc/ocxl/mmio.c
-> @@ -0,0 +1,234 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright 2017 IBM Corp.
-> +#include <linux/sched/mm.h>
-> +#include "trace.h"
-> +#include "ocxl_internal.h"
-> +
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readl((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read32);
-> +
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readq((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read64);
-> +
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writel_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writel(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write32);
-> +
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writeq_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writeq(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write64);
-> +
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set32);
-> +
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set64);
-> +
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear32);
-> +
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear64);
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index 9530d3be1b30..3b320c39f0af 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -49,6 +49,119 @@ struct ocxl_fn_config {
->   	s8 max_afu_index;
->   };
->   
-> +// These are opaque outside the ocxl driver
-> +struct ocxl_afu;
-> +
-> +enum ocxl_endian {
-> +	OCXL_BIG_ENDIAN = 0,    /**< AFU data is big-endian */
-> +	OCXL_LITTLE_ENDIAN = 1, /**< AFU data is little-endian */
-> +	OCXL_HOST_ENDIAN = 2,   /**< AFU data is the same endianness as the host */
-> +};
-> +
-> +/**
-> + * Read a 32 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val);
-> +
-> +/**
-> + * Read a 64 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val);
-> +
-> +/**
-> + * Write a 32 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val);
-> +
-> +/**
-> + * Write a 64 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
-> +
->   /*
->    * Read the configuration space of a function and fill in a
->    * ocxl_fn_config structure with all the function details
-> 
+Yes, I'm getting in touch with some people internally (at IBM) about
+doing that.
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+>> This leads to corruption of the IV, which leads to subsequent blocks
+>> being corrupted.
+>>=20
+>> This can be detected with libkcapi test suite, which is available at
+>> https://github.com/smuellerDD/libkcapi
+>>=20
+>
+> Is this also detected by the kernel's crypto self-tests, and if not why n=
+ot?
+> What about with the new option CONFIG_CRYPTO_MANAGER_EXTRA_TESTS=3Dy?
 
+It seems the self-tests do not catch it. To catch it, there has to be a
+test where the blkcipher_walk creates a walk.nbytes such that
+[(the number of AES blocks) mod 8] is either 2 or 3. This happens with
+AF_ALG pretty frequently, but when I booted with self-tests it only hit
+1, 4, 5, 6 and 7 - it missed 0, 2 and 3.
+
+I don't have the EXTRA_TESTS option - I'm testing with 5.0-rc6. Is it in
+-next?
+
+Regards,
+Daniel
+
+>> Reported-by: Ondrej Mosn=C3=A1=C4=8Dek <omosnacek@gmail.com>
+>> Fixes: 5c380d623ed3 ("crypto: vmx - Add support for VMS instructions by =
+ASM")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Daniel Axtens <dja@axtens.net>
+>> ---
+>>  drivers/crypto/vmx/aesp8-ppc.pl | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>=20
+>> diff --git a/drivers/crypto/vmx/aesp8-ppc.pl b/drivers/crypto/vmx/aesp8-=
+ppc.pl
+>> index d6a9f63d65ba..de78282b8f44 100644
+>> --- a/drivers/crypto/vmx/aesp8-ppc.pl
+>> +++ b/drivers/crypto/vmx/aesp8-ppc.pl
+>> @@ -1854,7 +1854,7 @@ Lctr32_enc8x_three:
+>>  	stvx_u		$out1,$x10,$out
+>>  	stvx_u		$out2,$x20,$out
+>>  	addi		$out,$out,0x30
+>> -	b		Lcbc_dec8x_done
+>> +	b		Lctr32_enc8x_done
+>>=20=20
+>>  .align	5
+>>  Lctr32_enc8x_two:
+>> @@ -1866,7 +1866,7 @@ Lctr32_enc8x_two:
+>>  	stvx_u		$out0,$x00,$out
+>>  	stvx_u		$out1,$x10,$out
+>>  	addi		$out,$out,0x20
+>> -	b		Lcbc_dec8x_done
+>> +	b		Lctr32_enc8x_done
+>>=20=20
+>>  .align	5
+>>  Lctr32_enc8x_one:
+>> --=20
+>> 2.19.1
+>>=20
