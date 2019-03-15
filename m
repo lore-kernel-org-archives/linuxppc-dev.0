@@ -2,64 +2,43 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_NEOMUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 24C3FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 08:03:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0723EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 08:20:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 24B52218A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 08:03:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24B52218A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=pengutronix.de
+	by mail.kernel.org (Postfix) with ESMTPS id 1D71721871
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 08:20:20 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1D71721871
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LJ4K5M61zDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 19:03:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LJRQ5RtXzDqSJ
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 19:20:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=pengutronix.de
- (client-ip=2001:67c:670:201:290:27ff:fe1d:cc33; helo=metis.ext.pengutronix.de;
- envelope-from=ukl@pengutronix.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=pengutronix.de
-X-Greylist: delayed 922 seconds by postgrey-1.36 at bilbo;
- Fri, 15 Mar 2019 19:02:09 AEDT
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LJ2T2tmjzDqRL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 19:02:08 +1100 (AEDT)
-Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
- by metis.ext.pengutronix.de with esmtps
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <ukl@pengutronix.de>)
- id 1h4hXm-0003dG-9L; Fri, 15 Mar 2019 08:46:18 +0100
-Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
- (envelope-from <ukl@pengutronix.de>)
- id 1h4hXg-0002pd-7H; Fri, 15 Mar 2019 08:46:12 +0100
-Date: Fri, 15 Mar 2019 08:46:12 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-To: "Enrico Weigelt, metux IT consult" <info@metux.net>
-Subject: Re: [PATCH v2 39/45] drivers: tty: serial: efm32-uart: use devm_*
- functions
-Message-ID: <20190315074612.i6hxyrxs4lhbn6d5@pengutronix.de>
-References: <1552602855-26086-1-git-send-email-info@metux.net>
- <1552602855-26086-40-git-send-email-info@metux.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1552602855-26086-40-git-send-email-info@metux.net>
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de);
- SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linuxppc-dev@lists.ozlabs.org
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=107.173.13.209; helo=ozlabs.ru; envelope-from=aik@ozlabs.ru;
+ receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Received: from ozlabs.ru (ozlabs.ru [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44LJPd5J21zDqRX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 19:18:43 +1100 (AEDT)
+Received: from fstn1-p1.ozlabs.ibm.com (localhost [IPv6:::1])
+ by ozlabs.ru (Postfix) with ESMTP id D841CAE80022;
+ Fri, 15 Mar 2019 04:18:39 -0400 (EDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel RFC 1/2] vfio_pci: Allow device specific error handlers
+Date: Fri, 15 Mar 2019 19:18:34 +1100
+Message-Id: <20190315081835.14083-2-aik@ozlabs.ru>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20190315081835.14083-1-aik@ozlabs.ru>
+References: <20190315081835.14083-1-aik@ozlabs.ru>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,43 +50,79 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-msm@vger.kernel.org, yamada.masahiro@socionext.com,
- macro@linux-mips.org, jacmet@sunsite.dk, festevam@gmail.com,
- stefan.wahren@i2se.com, f.fainelli@gmail.com,
- bcm-kernel-feedback-list@broadcom.com, linux-imx@nxp.com,
- linux-serial@vger.kernel.org, slemieux.tyco@gmail.com, andy.gross@linaro.org,
- tklauser@distanz.ch, david.brown@linaro.org, rjui@broadcom.com,
- s.hauer@pengutronix.de, linuxppc-dev@lists.ozlabs.org, vz@mleia.com,
- matthias.bgg@gmail.com, andriy.shevchenko@linux.intel.com, baohua@kernel.org,
- sbranden@broadcom.com, eric@anholt.net, richard.genoud@gmail.com,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- kernel@pengutronix.de, shawnguo@kernel.org
+Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Daniel Henrique Barboza <danielhb413@gmail.com>,
+ Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org,
+ Piotr Jaroszynski <pjaroszynski@nvidia.com>,
+ =?UTF-8?q?Leonardo=20Augusto=20Guimar=C3=A3es=20Garcia?= <lagarcia@br.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello Enrico,
+PCI device drivers can define own pci_error_handlers which are called
+on errors or before/after reset. The VFIO PCI driver defines one as well.
 
-On Thu, Mar 14, 2019 at 11:34:09PM +0100, Enrico Weigelt, metux IT consult wrote:
-> Use the safer devm versions of memory mapping functions.
+This adds a vfio_pci_error_handlers struct for VFIO PCI which is a wrapper
+on top of vfio_err_handlers. At the moment it defines reset_done() -
+this hook is called right after the device reset and it can be used to do
+some device tweaking before the userspace gets a chance to use the device.
 
-In which aspect is devm_ioremap safer than ioremap?
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/vfio/pci/vfio_pci_private.h |  5 +++++
+ drivers/vfio/pci/vfio_pci.c         | 17 +++++++++++++++++
+ 2 files changed, 22 insertions(+)
 
-The only upside I'm aware of is that the memory is automatically
-unmapped on device unbind. But we don't benefit from this because an
-UART port is "released" before the device is unbound and we call
-devm_iounmap() then anyhow. So this patch just adds a memory allocation
-(side note: on a platform that is quite tight on RAM) with no added
-benefit.
-
-I didn't look at the other patches in this series, but assuming that
-they are similar in spirit, the same question applies for them.
-
-Do I miss anything?
-
-Best regards
-Uwe
-
+diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+index 1812cf22fc4f..aff96fa28726 100644
+--- a/drivers/vfio/pci/vfio_pci_private.h
++++ b/drivers/vfio/pci/vfio_pci_private.h
+@@ -87,8 +87,13 @@ struct vfio_pci_reflck {
+ 	struct mutex		lock;
+ };
+ 
++struct vfio_pci_error_handlers {
++	void (*reset_done)(struct vfio_pci_device *vdev);
++};
++
+ struct vfio_pci_device {
+ 	struct pci_dev		*pdev;
++	struct vfio_pci_error_handlers *error_handlers;
+ 	void __iomem		*barmap[PCI_STD_RESOURCE_END + 1];
+ 	bool			bar_mmap_supported[PCI_STD_RESOURCE_END + 1];
+ 	u8			*pci_config_map;
+diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+index 5bd97fa632d3..6ebc441d91c3 100644
+--- a/drivers/vfio/pci/vfio_pci.c
++++ b/drivers/vfio/pci/vfio_pci.c
+@@ -1434,8 +1434,25 @@ static pci_ers_result_t vfio_pci_aer_err_detected(struct pci_dev *pdev,
+ 	return PCI_ERS_RESULT_CAN_RECOVER;
+ }
+ 
++static void vfio_pci_reset_done(struct pci_dev *dev)
++{
++	struct vfio_pci_device *vdev;
++	struct vfio_device *device;
++
++	device = vfio_device_get_from_dev(&dev->dev);
++	if (device == NULL)
++		return;
++
++	vdev = vfio_device_data(device);
++	if (vdev && vdev->error_handlers && vdev->error_handlers->reset_done)
++		vdev->error_handlers->reset_done(vdev);
++
++	vfio_device_put(device);
++}
++
+ static const struct pci_error_handlers vfio_err_handlers = {
+ 	.error_detected = vfio_pci_aer_err_detected,
++	.reset_done = vfio_pci_reset_done,
+ };
+ 
+ static struct pci_driver vfio_pci_driver = {
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+2.17.1
+
