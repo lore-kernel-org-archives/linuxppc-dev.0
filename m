@@ -2,93 +2,69 @@ Return-Path: <SRS0=ejpM=RS=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99A89C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11CCAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:38:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EFD1E21872
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 09:45:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EFD1E21872
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4E86421872
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 10:38:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E86421872
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LLKV5y1xzDqSk
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 20:45:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44LMVg5JYFzDqSv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 15 Mar 2019 21:38:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=metux.net
+ (client-ip=217.72.192.74; helo=mout.kundenserver.de;
+ envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=metux.net
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LLHt44RdzDqRn
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 20:43:54 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2F9fEql099655
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 05:43:51 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r87vbw2y7-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 05:43:50 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 15 Mar 2019 09:43:49 -0000
-Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
- by e16.ny.us.ibm.com (146.89.104.203) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 15 Mar 2019 09:43:47 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2F9hkhE18088186
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 15 Mar 2019 09:43:46 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1605DB2066;
- Fri, 15 Mar 2019 09:43:46 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id EF9E4B205F;
- Fri, 15 Mar 2019 09:43:43 +0000 (GMT)
-Received: from skywalker.in.ibm.com (unknown [9.124.31.99])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Fri, 15 Mar 2019 09:43:43 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, "Oliver O'Halloran" <oohall@gmail.com>
-Subject: [PATCH] arch/powerpc/dax: Add MAP_SYNC mmap flag
-Date: Fri, 15 Mar 2019 15:13:35 +0530
-X-Mailer: git-send-email 2.20.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44LMT34PSlzDqRj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Mar 2019 21:36:53 +1100 (AEDT)
+Received: from [192.168.1.110] ([77.2.38.11]) by mrelayeu.kundenserver.de
+ (mreue108 [212.227.15.183]) with ESMTPSA (Nemesis) id
+ 1MJmCV-1hJwlE0Za5-00KAx2; Fri, 15 Mar 2019 11:36:09 +0100
+Subject: Re: serial driver cleanups v2
+To: Andy Shevchenko <andy.shevchenko@gmail.com>,
+ "Enrico Weigelt, metux IT consult" <info@metux.net>
+References: <1552602855-26086-1-git-send-email-info@metux.net>
+ <CAHp75VeH9isvFkp+AECgsN8du__8tBBp_4zZEVXJ083BdFweeg@mail.gmail.com>
+From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
+Organization: metux IT consult
+Message-ID: <afc51d27-3312-cdf4-68a5-4486db1d006b@metux.net>
+Date: Fri, 15 Mar 2019 11:36:04 +0100
+User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.2.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031509-0072-0000-0000-0000040B8D57
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010762; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01174639; UDB=6.00614246; IPR=6.00955307; 
- MB=3.00025988; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-15 09:43:49
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031509-0073-0000-0000-00004B7EFDF9
-Message-Id: <20190315094335.30970-1-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-15_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=720 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903150071
+In-Reply-To: <CAHp75VeH9isvFkp+AECgsN8du__8tBBp_4zZEVXJ083BdFweeg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V03:K1:KM4NkyrC0BtJXbtB/FaU127xam16aUiyiPVIgxJxFT7tWcR+oZW
+ XGh7IJUhgJv+eo0D3ftF9P5QE6bhrj2VYLI1BQRmTyrkhECuJ7tqsw52KfXxpz7tcp9zrSU
+ GJY4s+gsSge9406QsaC/OC345jBCHUdMZEur89Us2eN8rRsZLiQHwfKxA7HLEqry9oNu5cn
+ JTbDaq3Kd5tD1sCcqTTWw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:3eokONbwW5Q=:4c+53yi6qdmDtEvyPvangv
+ pVai4FdNpGIWm7REjtzOotiOrB6TPmSzvyRrVc8ylgHdOjQnKZLqofHtK1UcOrsX0+FmLE22O
+ tA5duOs7PHgMraKTTenoPbr4XyBSBndLOnmHOfbLLIawrPgS47JA86u5ghEDYUCcdZBeuO4pB
+ FgEitoVG4DEFJBlXICeTObjRCJSJAmnTwGUmfMwaVCW0ig0633c5z9dlrjlxQNYiJSHEzZYxC
+ nzS/mq5FsncNwgy+jFy5G00NOPSLugEaVU/gsfwgDHa/7c/8lmq5160WS6u8HLA7CYFw+rSgg
+ /LFRk5iKfg3gLjxMGsmdtUlss/UTxuXQzrAJF3rbWhIfdSBsHTYgDv3bwL1rHBhJ196aHai3+
+ 5ncqNDYGDjpNbq52MzeO0loIJi3Np3TRlQE8bDyoy63YlMidEqxzUUNqsWdjpjBtU4kQ1mcED
+ OTSn5dI8BwxBKOR3jxDRjEw/f7tKmRnZVbyZXLBPtWWdECsEGAHb2hF1fPPygpSj4hmBo4Dtd
+ oMKVQd6WJDC5jdrjbttmJeO1mXoSfqg0xAbBz8wN/QoUWNxS9JqfW1RLMw15dFInk2dy+OYD5
+ cA6KWxtuEbCytOjCQ5fTVcUTx00yAdYnvRs7F2LpCzpcOhLotHbPFG09W8cDL9/U2w2tAYuX7
+ rRUDAtrNpTcEjuOOQ2hr3lP8l9NG5jawTV6YPxjGN7NjSeCeiMXHCirPSOoWOfQiYtp5DLjx7
+ 1sE5Ngb5Uacblm6r9pHLl5ULWJ8fAZTR6uHgmWCL6KiwiUHMTTliwxxfkBA=
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -100,38 +76,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>
+Cc: linux-arm-msm@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>, macro@linux-mips.org,
+ Peter Korsgaard <jacmet@sunsite.dk>, Fabio Estevam <festevam@gmail.com>,
+ Stefan Wahren <stefan.wahren@i2se.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>,
+ dl-linux-imx <linux-imx@nxp.com>,
+ "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+ =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
+ Andy Gross <andy.gross@linaro.org>, Tobias Klauser <tklauser@distanz.ch>,
+ David Brown <david.brown@linaro.org>, Ray Jui <rjui@broadcom.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, slemieux.tyco@gmail.com,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>, Vladimir Zapolskiy <vz@mleia.com>,
+ Matthias Brugger <matthias.bgg@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>, baohua@kernel.org,
+ Scott Branden <sbranden@broadcom.com>, Eric Anholt <eric@anholt.net>,
+ Richard Genoud <richard.genoud@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This enables support for synchronous DAX fault on powerpc
+On 15.03.19 10:12, Andy Shevchenko wrote:
 
-The generic changes are added as part of
-commit b6fb293f2497 ("mm: Define MAP_SYNC and VM_SYNC flags")
+>> Part II will be about moving the mmio range from mapbase and
+>> mapsize (which are used quite inconsistently) to a struct resource
+>> and using helpers for that. But this one isn't finished yet.
+>> (if somebody likes to have a look at it, I can send it, too)
+> 
+> Let's do that way you are preparing a branch somewhere and anounce
+> here as an RFC, since this was neither tested nor correct.
 
-Without this, mmap returns EOPNOTSUPP for MAP_SYNC with MAP_SHARED_VALIDATE
+Okay, here it is:
 
-Fixes: b5beae5e224f ("powerpc/pseries: Add driver for PAPR SCM regions")
-Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/uapi/asm/mman.h | 1 +
- 1 file changed, 1 insertion(+)
+I. https://github.com/metux/linux/tree/submit/serial-clean-v3
+   --> general cleanups, as basis for II
 
-diff --git a/arch/powerpc/include/uapi/asm/mman.h b/arch/powerpc/include/uapi/asm/mman.h
-index 65065ce32814..e08cc5fc9d2f 100644
---- a/arch/powerpc/include/uapi/asm/mman.h
-+++ b/arch/powerpc/include/uapi/asm/mman.h
-@@ -29,6 +29,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_SYNC	0x80000		/* perform synchronous page faults for the mapping */
- 
- /* Override any generic PKEY permission defines */
- #define PKEY_DISABLE_EXECUTE   0x4
+II. https://github.com/metux/linux/tree/wip/serial-res
+   --> moving towards using struct resource consistently
+
+III. https://github.com/metux/linux/tree/hack/serial
+    --> the final steps, which are yet completely broken
+    (more a notepad for things still to do :o)
+
+The actual goal is generalizing the whole iomem handling, so individual
+usually just need to call some helpers that do most of the things.
+Finally, I also wanted to have all io region information consolidated
+in struct resource.
+
+Meanwhile I've learned that I probably was a bit too eager w/ that.
+Guess I'll have to rethink my strategy.
+
+> And selling point for many of them is not true: it doesn't make any
+> difference in the size in code, but increases a time to run
+> (devm_ioremap_resource() does more than plain devm_iomap() call).
+
+Okay, just seen it. Does the the runtime overhead cause any problems ?
+
+
+--mtx
+
 -- 
-2.20.1
-
+Enrico Weigelt, metux IT consult
+Free software and Linux embedded engineering
+info@metux.net -- +49-151-27565287
