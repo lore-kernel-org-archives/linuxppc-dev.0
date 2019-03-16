@@ -2,73 +2,45 @@ Return-Path: <SRS0=JrXR=RT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 506ADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 09:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 312DFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 11:31:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6E19D2087C
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 09:19:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6E19D2087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=metux.net
+	by mail.kernel.org (Postfix) with ESMTPS id A570221871
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 11:31:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A570221871
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44LxjG4DdJzDqVr
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 20:19:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=metux.net
- (client-ip=217.72.192.73; helo=mout.kundenserver.de;
- envelope-from=lkml@metux.net; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=metux.net
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44M0d813KfzDqTj
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 22:31:08 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44LxgW6XXGzDqM4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 20:17:57 +1100 (AEDT)
-Received: from [192.168.1.110] ([95.117.13.126]) by mrelayeu.kundenserver.de
- (mreue107 [212.227.15.183]) with ESMTPSA (Nemesis) id
- 1MMFdY-1hMCLq1ldW-00JGKe; Sat, 16 Mar 2019 10:17:16 +0100
-Subject: Re: [PATCH v2 10/45] drivers: tty: serial: zs: use devm_* functions
-To: Greg KH <gregkh@linuxfoundation.org>
-References: <1552602855-26086-1-git-send-email-info@metux.net>
- <1552602855-26086-11-git-send-email-info@metux.net>
- <20190314225204.GB1795@kroah.com>
- <3734d588-6b9c-29e2-45b6-82e778f47602@metux.net>
- <20190315142628.GA30650@kroah.com>
- <d81364fc-c5da-c1b2-f38a-3a23c701c50d@metux.net>
- <20190316032630.GB2499@kroah.com>
-From: "Enrico Weigelt, metux IT consult" <lkml@metux.net>
-Organization: metux IT consult
-Message-ID: <fd8d6a9b-3e85-9904-2195-1f1bbc42bd2d@metux.net>
-Date: Sat, 16 Mar 2019 10:17:11 +0100
-User-Agent: Mozilla/5.0 (X11; Linux i686 on x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.2.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44M0Zp0kxDzDqBH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 22:29:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44M0Zk1Lqkz9ryj;
+ Sat, 16 Mar 2019 22:29:02 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-5.1-2 tag
+Date: Sat, 16 Mar 2019 22:28:48 +1100
+Message-ID: <87y35f6osv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20190316032630.GB2499@kroah.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V03:K1:EeDIdx/ZofCsDCjDCqDBdwJVn2vFx/eYFegD5Ya7VFYNybfet1J
- 3wxuCJlxu9QfJi1PtUMeEtTgSfAdwo4QO+us5aMtiqM63gXLmhu7Y9FeqCw0/ZHUNjQmemp
- C+M1lQ4UgmbcYBlv1Ft+qZ1DiSjF0yDMNnl6HfdPyGE2GSeQvnFmC3+EH51ObeMhGujIb8v
- q2aiqoqoSmDh9MGiT+XQQ==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:P9NI7bTY56M=:R3xN1Mqy2RRkBDf8qpUd8m
- 6/ilptxmqeSdfhOojd3Oahqhbhc6SzWzY+i5d/zfWYaHMc0zfdkJ7XCF7+V49T6NOtZt0BOmP
- DBYLB+kfLWYDq6RaMeQYMvpo6ZsMqCWb/dRz70YPAHQ4LdA26tPwF/2vWX+jUm/2QV4yihzU4
- M1nXjxZwuXO9RPRolDYhQARZzV8L5N4zj6ZFO+IjbAH5iR3K9eoXjRCF7PS+fK7rhyBpFuucq
- tA3wk6A7Ljl08ltvGopfnrVI20CbziAEybIxtH/yD/S6M6DhJB5KPKSbT8AS1yTcOGMcIxCdU
- HNh/bz2+K17NsPZVOf5wPXq52T26etgaXDr6KoXxdavqPWuPIgtwVmtRro6hF+9nfvpbrtvc2
- n/ICtcs7yzPa7/UwM4ZDrkKLtOdsjTluh6XrUOxvtZ9h2ZHXxtxg3BO7BigBSgKBBDQBRTOyN
- No9uFS95NCNrGnU0o/k7a0s9JTse+R+qlbXwUnCVSPGc25SiHjrVaGt7+X42Nlp3nBGbBpI5I
- mkfEfBoOQtY6EynGZ8qS9leCGqtmJHNDMHZG3cyMuaYiB13F7btHRSVXGhIexVpOap2ZJmxMr
- PMiCx/93wXhGGerfju0CVrSizsycdc0Hi9pL/dQxIX2HpIn0aaRnPjm1ZBAWLn6omBEbCYzqH
- Di/UUQpmP+VFA90CmDyBFGKVeXyclpBWmNtCOivhu8hLgPc/2f7x7bXINYrXZzgZXnuojlhcO
- B6Bu7sxkRzPEcQxerG1ThvTnKgVxBfmRL8DOzXh6volzOn88FG5DaEHFq5g=
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,77 +52,88 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arm-msm@vger.kernel.org, yamada.masahiro@socionext.com,
- macro@linux-mips.org, jacmet@sunsite.dk, festevam@gmail.com,
- stefan.wahren@i2se.com, f.fainelli@gmail.com,
- bcm-kernel-feedback-list@broadcom.com, linux-imx@nxp.com,
- linux-serial@vger.kernel.org, slemieux.tyco@gmail.com, andy.gross@linaro.org,
- tklauser@distanz.ch, david.brown@linaro.org, rjui@broadcom.com,
- s.hauer@pengutronix.de, u.kleine-koenig@pengutronix.de,
- linuxppc-dev@lists.ozlabs.org, vz@mleia.com, matthias.bgg@gmail.com,
- andriy.shevchenko@linux.intel.com, baohua@kernel.org, sbranden@broadcom.com,
- eric@anholt.net, richard.genoud@gmail.com, "Enrico Weigelt,
- metux IT consult" <info@metux.net>, linux-kernel@vger.kernel.org,
- kernel@pengutronix.de, shawnguo@kernel.org
+Cc: yanaijie@huawei.com, aik@ozlabs.ru, aneesh.kumar@linux.ibm.com,
+ linux-kernel@vger.kernel.org, malat@debian.org, joel@jms.id.au,
+ andrew.donnellan@au1.ibm.com, mahesh@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 16.03.19 04:26, Greg KH wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> No, it's just that those systems do not allow those devices to be
-> removed because they are probably not on a removable bus.
+Hi Linus,
 
-Ok, devices (hw) might not be removable - that also the case for uarts
-builtin some SoCs, or the good old PC w/ 8250. But does that also mean
-that the driver should not be removable ?
+Please pull a few small powerpc updates for 5.1:
 
-IMHO, even if that's the case, it's still inconsistent. The driver then
-shouldn't support a remove at all (or even builtin only), not just
-incomplete remove.
+The following changes since commit 9580b71b5a7863c24a9bd18bcd2ad759b86b1eff:
 
->> Okay, I was on a wrong track here - I had the silly idea that it would
->> make things easier if we'd do it the same way everywhere.
-> 
-> "Consistent" is good, and valid, but touching old drivers that have few
-> users is always risky, and you need a solid reason to do so.
+  powerpc/32: Clear on-stack exception marker upon exception return (2019-03-04 00:37:23 +1100)
 
-Understood.
+are available in the git repository at:
 
-By the way: do we have some people who have those old hw and could test?
-Should we (try to) create some ? Perhaps some "tester" entry in
-MAINTAINERS file ? (I could ask around several people who might have
-lots of old / rare hardware.)
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-5.1-2
 
->> Understood. Assuming I've found some of these cases, shall I use devm
->> oder just add the missing release ?
-> 
-> If it actually makes the code "simpler" or "more obvious", sure, that's
-> fine.  But churn for churns sake is not ok.
+for you to fetch changes up to de3c83c2fd2b87cf68214eda76dfa66989d78cb6:
 
-Ok.
+  powerpc/64s: Include <asm/nmi.h> header file to fix a warning (2019-03-13 15:03:13 +1100)
 
-> I put the review of new patch submissions on hold, yes.  Almost all
-> maintainers do that as we can not add new patches to our trees at that
-> point in time.
+- ------------------------------------------------------------------
+powerpc fixes for 5.1 #2
 
-hmm, looks like a pipeline stall ;-)
-why not collecting in a separate branch, which later gets rebased to
-mainline when rc is out ?
+One fix to prevent runtime allocation of 16GB pages when running in a VM (as
+opposed to bare metal), because it doesn't work.
 
-> And I do have other things I do during that period so it's not like I'm
-> just sitting around doing nothing :)
+A small fix to our recently added KCOV support to exempt some more code from
+being instrumented.
 
-So it's also a fixed schedule for your other work. Understood.
+Plus a few minor build fixes, a small dead code removal and a defconfig update.
 
-It seems that this workflow can confuse people. Few days ago, somebody
-became nervous about missing reactions on patches. Your autoresponder
-worked for me, but maybe not for everybody.
+Thanks to:
+  Alexey Kardashevskiy, Aneesh Kumar K.V, Christophe Leroy, Jason Yan, Joel
+  Stanley, Mahesh Salgaonkar, Mathieu Malaterre.
+
+- ------------------------------------------------------------------
+Alexey Kardashevskiy (1):
+      powerpc/powernv: Fix compile without CONFIG_TRACEPOINTS
+
+Aneesh Kumar K.V (1):
+      powerpc/hugetlb: Don't do runtime allocation of 16G pages in LPAR configuration
+
+Jason Yan (1):
+      powerpc: remove dead code in head_fsl_booke.S
+
+Joel Stanley (1):
+      powerpc/configs: Sync skiroot defconfig
+
+Mahesh Salgaonkar (1):
+      powerpc/mm: Disable kcov for SLB routines
+
+Mathieu Malaterre (1):
+      powerpc/64s: Include <asm/nmi.h> header file to fix a warning
 
 
---mtx
+ arch/powerpc/configs/skiroot_defconfig       | 12 +++++++++---
+ arch/powerpc/include/asm/book3s/64/hugetlb.h |  8 ++++++++
+ arch/powerpc/kernel/head_fsl_booke.S         |  7 -------
+ arch/powerpc/kernel/traps.c                  |  1 +
+ arch/powerpc/mm/Makefile                     |  3 +++
+ arch/powerpc/platforms/powernv/opal-call.c   |  1 +
+ 6 files changed, 22 insertions(+), 10 deletions(-)
+-----BEGIN PGP SIGNATURE-----
 
--- 
-Enrico Weigelt, metux IT consult
-Free software and Linux embedded engineering
-info@metux.net -- +49-151-27565287
+iQIcBAEBAgAGBQJcjN2tAAoJEFHr6jzI4aWA/jIQAK4J2VQD8Sw+2kSm3h7wW18U
++BDyc7fbbigQyBHFkMAdybRKsXMSCbco7jK12yUbh5xqYlo8Hc40DbKI32f0D3WE
+7rRotjalxR9tF+u0+m8Pdge42bPmEyt6p/7w5Ys+wVj/KXqlwTJinqSvp5Qmrilk
+19qOTaTCXEMJ7dFTXqlFNpBW+0kaahCZ6f767dPPKkiYSm/qMZjKG/KCejLDAGQL
+x5ouTpPos8sOjts7dwJuBGCxTfU7usKpy1EbguIklzYjedk1MSh5sg6STTQsH8Y4
+kAgd8T12Wo4cQPaBmjwTkD7BrCdWbjNcK5U61kKAByshM3ZyPo+xARyQMdIWVZJQ
+pX51tjmKwzGk3nf1UiMP/jdx55Cj6rhr3EsfQepjocMa9t6IWNVpasAvFRPlw8ca
+Xmhbqsjwy9wKroAYgITq1L+VfeDe+dXBgK7yrChpqSdU89iOYgjoUbnwI+OeSCbk
+Hm8w1p5+7CNxRxNzBieqBCtYUIlEwjP3rOwuNEpb0dJ4USD4jEr/8Mk0YXWJj4yg
+mplyFwUXBrWVQHlKRI2tabO8rY7KN8H+SC/EczvERxpLRc3m7dH3DIlMi8A4a9Lk
+QyvoQY7n9fZw1lm+/6ORMCNSc8lkIrsDu44rgn7WpaZDbN1woia0q5AtsNDU9jr2
+HwUoI/HIHq5FWRu4m6LN
+=TNMo
+-----END PGP SIGNATURE-----
