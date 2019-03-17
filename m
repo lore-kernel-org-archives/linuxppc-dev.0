@@ -2,95 +2,86 @@ Return-Path: <SRS0=npwJ=RU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73C17C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 15:58:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5812C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 16:26:48 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EE1BB2087F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 15:58:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EE1BB2087F
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 91C7920651
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 16:26:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="beYzAjhY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 91C7920651
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44MkWG0hWkzDq7j
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 02:58:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Ml7n2rhTzDqN2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 03:26:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="beYzAjhY"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44MkJQ0w55zDqPK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 02:49:09 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2HFn89C005542
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 11:49:08 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2r9em0rw3q-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 11:49:08 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Sun, 17 Mar 2019 15:49:07 -0000
-Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
- by e11.ny.us.ibm.com (146.89.104.198) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Sun, 17 Mar 2019 15:49:05 -0000
-Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
- [9.57.199.108])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2HFn4lq16253044
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Sun, 17 Mar 2019 15:49:04 GMT
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1F8E3B2064;
- Sun, 17 Mar 2019 15:49:04 +0000 (GMT)
-Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A42AEB205F;
- Sun, 17 Mar 2019 15:49:01 +0000 (GMT)
-Received: from skywalker.ibmuc.com (unknown [9.85.84.106])
- by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
- Sun, 17 Mar 2019 15:49:01 +0000 (GMT)
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Subject: [PATCH v2 5/5] powerpc/mm/hash: Simplify the region id calculation.
-Date: Sun, 17 Mar 2019 21:18:27 +0530
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190317154827.9188-1-aneesh.kumar@linux.ibm.com>
-References: <20190317154827.9188-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Ml650ZZqzDqMn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 03:25:16 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Ml5w4sLVz9vRZm;
+ Sun, 17 Mar 2019 17:25:08 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=beYzAjhY; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id ZUQumd2YIwKe; Sun, 17 Mar 2019 17:25:08 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Ml5w3cDgz9vRZl;
+ Sun, 17 Mar 2019 17:25:08 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1552839908; bh=IO+4tvFGfsNhpj2HjtRCDv9bYpXWcyHaNjhj3qhwv08=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=beYzAjhYfA+LazPU+SJSTEf9S4LolWjnMwKqDFkbTEcRtDCqw7Unlv1PxMqWAipXV
+ vS6km6NoyuPhxVeIg7uedgnKYWoF6JRrj3jZhtixH6w3qA1zSG6x4RpRkDfiHoWWsH
+ aV5VYlPrsg/kGdmgthESNKI3euSe9SNnX37EGS54=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D2BC98B84D;
+ Sun, 17 Mar 2019 17:25:11 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id KnYMSvzySkn3; Sun, 17 Mar 2019 17:25:11 +0100 (CET)
+Received: from [192.168.232.53] (unknown [192.168.232.53])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 35B138B750;
+ Sun, 17 Mar 2019 17:25:11 +0100 (CET)
+Subject: Re: Mac Mini G4 hang on boot with git master
+To: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>,
+ linuxppc-dev@lists.ozlabs.org
+References: <cf3327d8-3e04-2f37-4734-5525a5b638b2@ilande.co.uk>
+ <f5ded479-7008-7b81-a5d9-84f4b3724fe9@ilande.co.uk>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <926e0e0b-c54c-13ed-f2ec-be22bef92538@c-s.fr>
+Date: Sun, 17 Mar 2019 17:25:10 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.3
 MIME-Version: 1.0
+In-Reply-To: <f5ded479-7008-7b81-a5d9-84f4b3724fe9@ilande.co.uk>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19031715-2213-0000-0000-000003660E15
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010774; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01175713; UDB=6.00614895; IPR=6.00956389; 
- MB=3.00026018; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-17 15:49:06
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19031715-2214-0000-0000-00005DB484D9
-Message-Id: <20190317154827.9188-6-aneesh.kumar@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-17_12:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903170124
+X-Antivirus: Avast (VPS 190317-2, 17/03/2019), Outbound message
+X-Antivirus-Status: Clean
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,136 +93,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This reduces multiple comparisons in get_region_id to a bit shift operation.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+
+Le 17/03/2019 à 15:15, Mark Cave-Ayland a écrit :
+> On 15/03/2019 13:37, Mark Cave-Ayland wrote:
+> 
+>> Hi all,
+>>
+>> I've just done a git pull and rebuilt master on my Mac Mini G4 in order to test
+>> Michael's merge of my KVM PR fix, and unfortunately my kernel now hangs on boot :(
+>>
+>> My last working git checkout was somewhere around the 5.0-rc stage, so I suspect it's
+>> something that's been merged for 5.1.
+>>
+>> The hang occurs just after the boot console is disabled which makes me wonder if
+>> something is going wrong during PCI bus enumeration. Does anyone have an idea as to
+>> what may be causing this? I can obviously bisect it down, but on slow hardware it can
+>> take some time...
+> 
+> This was a weird one: bisecting directly from git master gave a nonsense result,
+> however by manually rebasing Michael's PR onto my last known good commit from master
+> I was able to finally pin it down to this commit:
+> 
+> 
+> 7a0d6955f3f7a4250da63d528bfff7a9c91b5725 is the first bad commit
+> commit 7a0d6955f3f7a4250da63d528bfff7a9c91b5725
+> Author: Christophe Leroy <christophe.leroy@c-s.fr>
+> Date:   Thu Feb 21 10:37:55 2019 +0000
+> 
+>      powerpc/6xx: Store PGDIR physical address in a SPRG
+> 
+>      Use SPRN_SPRG2 to store the current thread PGDIR and
+>      avoid reading thread_struct.pgdir at every TLB miss.
+> 
+>      Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> 
+
+Hi,
+
+The fix is there:
+
+https://patchwork.ozlabs.org/patch/1053385/
+
+Christophe
+
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h  |  4 ++-
- arch/powerpc/include/asm/book3s/64/hash-64k.h |  1 +
- arch/powerpc/include/asm/book3s/64/hash.h     | 31 +++++++++----------
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
- 4 files changed, 20 insertions(+), 18 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 0dd62287f56c..64eaf187f891 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -13,12 +13,14 @@
-  */
- #define MAX_EA_BITS_PER_CONTEXT		46
- 
-+#define REGION_SHIFT		(MAX_EA_BITS_PER_CONTEXT - 2)
-+
- /*
-  * Our page table limit us to 64TB. Hence for the kernel mapping,
-  * each MAP area is limited to 16 TB.
-  * The four map areas are:  linear mapping, vmap, IO and vmemmap
-  */
--#define H_KERN_MAP_SIZE		(ASM_CONST(1) << (MAX_EA_BITS_PER_CONTEXT - 2))
-+#define H_KERN_MAP_SIZE		(ASM_CONST(1) << REGION_SHIFT)
- 
- /*
-  * Define the address range of the kernel non-linear virtual area
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index e392cf17b457..24ca63beba14 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -12,6 +12,7 @@
-  * is handled in the hotpath.
-  */
- #define MAX_EA_BITS_PER_CONTEXT		49
-+#define REGION_SHIFT		MAX_EA_BITS_PER_CONTEXT
- 
- /*
-  * We use one context for each MAP area.
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index 523b9191a1e2..d1f0d7332b84 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -87,26 +87,26 @@
- #define H_VMEMMAP_SIZE		H_KERN_MAP_SIZE
- #define H_VMEMMAP_END		(H_VMEMMAP_START + H_VMEMMAP_SIZE)
- 
-+#define REGION_ID(ea)	((((unsigned long)ea - H_KERN_VIRT_START) >> REGION_SHIFT) + 2)
-+
- /*
-  * Region IDs
-  */
--#define USER_REGION_ID		1
--#define KERNEL_REGION_ID	2
--#define VMALLOC_REGION_ID	3
--#define IO_REGION_ID		4
--#define VMEMMAP_REGION_ID	5
-+#define USER_REGION_ID		0
-+#define KERNEL_REGION_ID	1
-+#define VMALLOC_REGION_ID	REGION_ID(H_VMALLOC_START)
-+#define IO_REGION_ID		REGION_ID(H_KERN_IO_START)
-+#define VMEMMAP_REGION_ID	REGION_ID(H_VMEMMAP_START)
- 
- /*
-  * Defines the address of the vmemap area, in its own region on
-  * hash table CPUs.
-  */
--
- #ifdef CONFIG_PPC_MM_SLICES
- #define HAVE_ARCH_UNMAPPED_AREA
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
- #endif /* CONFIG_PPC_MM_SLICES */
- 
--
- /* PTEIDX nibble */
- #define _PTEIDX_SECONDARY	0x8
- #define _PTEIDX_GROUP_IX	0x7
-@@ -117,22 +117,21 @@
- #ifndef __ASSEMBLY__
- static inline int get_region_id(unsigned long ea)
- {
-+	int region_id;
- 	int id = (ea >> 60UL);
- 
- 	if (id == 0)
- 		return USER_REGION_ID;
- 
--	VM_BUG_ON(id != 0xc);
--	VM_BUG_ON(ea >= H_VMEMMAP_END);
-+	if (ea < H_KERN_VIRT_START)
-+		return KERNEL_REGION_ID;
- 
--	if (ea >= H_VMEMMAP_START)
--		return VMEMMAP_REGION_ID;
--	else if (ea >= H_KERN_IO_START)
--		return IO_REGION_ID;
--	else if (ea >= H_VMALLOC_START)
--		return VMALLOC_REGION_ID;
-+	VM_BUG_ON(id != 0xc);
-+	BUILD_BUG_ON(REGION_ID(H_VMALLOC_START) != 2);
- 
--	return KERNEL_REGION_ID;
-+	region_id = REGION_ID(ea);
-+	VM_BUG_ON(region_id > VMEMMAP_REGION_ID);
-+	return region_id;
- }
- 
- #define	hash__pmd_bad(pmd)		(pmd_val(pmd) & H_PMD_BAD_BITS)
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index b3f256c042aa..b146448109fd 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -794,7 +794,7 @@ static inline unsigned long get_kernel_context(unsigned long ea)
- 		 */
- 		ctx =  1 + ((ea & EA_MASK) >> MAX_EA_BITS_PER_CONTEXT);
- 	} else
--		ctx = region_id + MAX_KERNEL_CTX_CNT - 2;
-+		ctx = region_id + MAX_KERNEL_CTX_CNT - 1;
- 	return ctx;
- }
- 
--- 
-2.20.1
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
 
