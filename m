@@ -2,70 +2,85 @@ Return-Path: <SRS0=npwJ=RU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80170C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 16:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18FEBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 18:31:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05E6020835
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 16:50:02 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05E6020835
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 4267C206DF
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 18:31:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4267C206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Mlfc6yjpzDqN1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 03:50:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44MnvC2zMNzDqQ8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 05:31:03 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.178.242; helo=mslow2.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
+ (client-ip=46.43.2.167; helo=mail.default.ilande.uk0.bigv.io;
+ envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from mslow2.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44MlbS56n5zDq6l
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 03:47:16 +1100 (AEDT)
-Received: from relay12.mail.gandi.net (unknown [217.70.178.232])
- by mslow2.mail.gandi.net (Postfix) with ESMTP id 0F4BE3A1216
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 16:34:06 +0000 (UTC)
-Received: from alex.numericable.fr (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay12.mail.gandi.net (Postfix) with ESMTPSA id 52E2A200003;
- Sun, 17 Mar 2019 16:33:33 +0000 (UTC)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: aneesh.kumar@linux.ibm.com, mpe@ellerman.id.au,
- Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Mike Kravetz <mike.kravetz@oracle.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v7 4/4] hugetlb: allow to free gigantic pages regardless of
- the configuration
-Date: Sun, 17 Mar 2019 12:28:47 -0400
-Message-Id: <20190317162847.14107-5-alex@ghiti.fr>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190317162847.14107-1-alex@ghiti.fr>
-References: <20190317162847.14107-1-alex@ghiti.fr>
+ dmarc=none (p=none dis=none) header.from=ilande.co.uk
+Received: from mail.default.ilande.uk0.bigv.io (mail.ilande.co.uk
+ [46.43.2.167])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44MnsQ19lNzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 05:29:28 +1100 (AEDT)
+Received: from host86-184-243-17.range86-184.btcentralplus.com
+ ([86.184.243.17] helo=[192.168.1.65])
+ by mail.default.ilande.uk0.bigv.io with esmtpsa
+ (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.89)
+ (envelope-from <mark.cave-ayland@ilande.co.uk>)
+ id 1h5aXB-0008LL-0P; Sun, 17 Mar 2019 18:29:21 +0000
+To: christophe leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+References: <cf3327d8-3e04-2f37-4734-5525a5b638b2@ilande.co.uk>
+ <f5ded479-7008-7b81-a5d9-84f4b3724fe9@ilande.co.uk>
+ <926e0e0b-c54c-13ed-f2ec-be22bef92538@c-s.fr>
+From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
+Openpgp: preference=signencrypt
+Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
+ mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
+ 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
+ E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
+ PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
+ PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
+ AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
+ OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
+ NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
+ mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
+ z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
+ T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
+ DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
+ y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
+ 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
+ 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
+ YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
+ Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
+ BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
+ opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
+ NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
+ Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
+ KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
+ imgcU9TTGC5qd9g=
+Message-ID: <b2249998-eb46-e62c-75d2-a1d7057653c9@ilande.co.uk>
+Date: Sun, 17 Mar 2019 18:29:22 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
+In-Reply-To: <926e0e0b-c54c-13ed-f2ec-be22bef92538@c-s.fr>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
 Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 86.184.243.17
+X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
+Subject: Re: Mac Mini G4 hang on boot with git master
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on mail.default.ilande.uk0.bigv.io)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,354 +92,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexandre Ghiti <alex@ghiti.fr>
+Cc: paulus@samba.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On systems without CONTIG_ALLOC activated but that support gigantic pages,
-boottime reserved gigantic pages can not be freed at all. This patch
-simply enables the possibility to hand back those pages to memory
-allocator.
+On 17/03/2019 16:25, christophe leroy wrote:
 
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Acked-by: David S. Miller <davem@davemloft.net> [sparc]
----
- arch/arm64/Kconfig                           |  2 +-
- arch/arm64/include/asm/hugetlb.h             |  4 --
- arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
- arch/powerpc/platforms/Kconfig.cputype       |  2 +-
- arch/s390/Kconfig                            |  2 +-
- arch/s390/include/asm/hugetlb.h              |  3 --
- arch/sh/Kconfig                              |  2 +-
- arch/sparc/Kconfig                           |  2 +-
- arch/x86/Kconfig                             |  2 +-
- arch/x86/include/asm/hugetlb.h               |  4 --
- include/asm-generic/hugetlb.h                | 14 +++++
- include/linux/gfp.h                          |  2 +-
- mm/hugetlb.c                                 | 54 ++++++++++++++------
- mm/page_alloc.c                              |  4 +-
- 14 files changed, 61 insertions(+), 43 deletions(-)
+>> This was a weird one: bisecting directly from git master gave a nonsense result,
+>> however by manually rebasing Michael's PR onto my last known good commit from master
+>> I was able to finally pin it down to this commit:
+>>
+>>
+>> 7a0d6955f3f7a4250da63d528bfff7a9c91b5725 is the first bad commit
+>> commit 7a0d6955f3f7a4250da63d528bfff7a9c91b5725
+>> Author: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Date:   Thu Feb 21 10:37:55 2019 +0000
+>>
+>>      powerpc/6xx: Store PGDIR physical address in a SPRG
+>>
+>>      Use SPRN_SPRG2 to store the current thread PGDIR and
+>>      avoid reading thread_struct.pgdir at every TLB miss.
+>>
+>>      Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>
+>>
+> 
+> Hi,
+> 
+> The fix is there:
+> 
+> https://patchwork.ozlabs.org/patch/1053385/
+> 
+> Christophe
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 091a513b93e9..af687eff884a 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -18,7 +18,7 @@ config ARM64
- 	select ARCH_HAS_FAST_MULTIPLIER
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 	select ARCH_HAS_KCOV
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
- 	select ARCH_HAS_PTE_SPECIAL
-diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-index fb6609875455..59893e766824 100644
---- a/arch/arm64/include/asm/hugetlb.h
-+++ b/arch/arm64/include/asm/hugetlb.h
-@@ -65,8 +65,4 @@ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
- 
- #include <asm-generic/hugetlb.h>
- 
--#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
--static inline bool gigantic_page_supported(void) { return true; }
--#endif
--
- #endif /* __ASM_HUGETLB_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 5b0177733994..d04a0bcc2f1c 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -32,13 +32,6 @@ static inline int hstate_get_psize(struct hstate *hstate)
- 	}
- }
- 
--#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
--static inline bool gigantic_page_supported(void)
--{
--	return true;
--}
--#endif
--
- /* hugepd entry valid bit */
- #define HUGEPD_VAL_BITS		(0x8000000000000000UL)
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f677c8974212..dc0328de20cd 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -319,7 +319,7 @@ config ARCH_ENABLE_SPLIT_PMD_PTLOCK
- config PPC_RADIX_MMU
- 	bool "Radix MMU Support"
- 	depends on PPC_BOOK3S_64
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 	default y
- 	help
- 	  Enable support for the Power ISA 3.0 Radix style MMU. Currently this
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 1c57b83c76f5..d84e536796b1 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -69,7 +69,7 @@ config S390
- 	select ARCH_HAS_ELF_RANDOMIZE
- 	select ARCH_HAS_FORTIFY_SOURCE
- 	select ARCH_HAS_GCOV_PROFILE_ALL
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 	select ARCH_HAS_KCOV
- 	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_SET_MEMORY
-diff --git a/arch/s390/include/asm/hugetlb.h b/arch/s390/include/asm/hugetlb.h
-index 2d1afa58a4b6..bd191560efcf 100644
---- a/arch/s390/include/asm/hugetlb.h
-+++ b/arch/s390/include/asm/hugetlb.h
-@@ -116,7 +116,4 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
- 	return pte_modify(pte, newprot);
- }
- 
--#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
--static inline bool gigantic_page_supported(void) { return true; }
--#endif
- #endif /* _ASM_S390_HUGETLB_H */
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index c7266302691c..404b12a0d871 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -53,7 +53,7 @@ config SUPERH
- 	select HAVE_FUTEX_CMPXCHG if FUTEX
- 	select HAVE_NMI
- 	select NEED_SG_DMA_LENGTH
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 
- 	help
- 	  The SuperH is a RISC processor targeted for use in embedded systems
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index ca33c80870e2..234a6bd46e89 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -90,7 +90,7 @@ config SPARC64
- 	select ARCH_CLOCKSOURCE_DATA
- 	select ARCH_HAS_PTE_SPECIAL
- 	select PCI_DOMAINS if PCI
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 8ba90f3e0038..ff24eaeef211 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -23,7 +23,7 @@ config X86_64
- 	def_bool y
- 	depends on 64BIT
- 	# Options that are inherently 64-bit kernel only:
--	select ARCH_HAS_GIGANTIC_PAGE if CONTIG_ALLOC
-+	select ARCH_HAS_GIGANTIC_PAGE
- 	select ARCH_SUPPORTS_INT128
- 	select ARCH_USE_CMPXCHG_LOCKREF
- 	select HAVE_ARCH_SOFT_DIRTY
-diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-index 7469d321f072..f65cfb48cfdd 100644
---- a/arch/x86/include/asm/hugetlb.h
-+++ b/arch/x86/include/asm/hugetlb.h
-@@ -17,8 +17,4 @@ static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
- 
--#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
--static inline bool gigantic_page_supported(void) { return true; }
--#endif
--
- #endif /* _ASM_X86_HUGETLB_H */
-diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
-index 71d7b77eea50..aaf14974ee5f 100644
---- a/include/asm-generic/hugetlb.h
-+++ b/include/asm-generic/hugetlb.h
-@@ -126,4 +126,18 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
- }
- #endif
- 
-+#ifndef __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
-+#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
-+static inline bool gigantic_page_runtime_supported(void)
-+{
-+	return true;
-+}
-+#else
-+static inline bool gigantic_page_runtime_supported(void)
-+{
-+	return false;
-+}
-+#endif /* CONFIG_ARCH_HAS_GIGANTIC_PAGE */
-+#endif /* __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED */
-+
- #endif /* _ASM_GENERIC_HUGETLB_H */
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 1f1ad9aeebb9..58ea44bf75de 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
- /* The below functions must be run on a range from a single zone. */
- extern int alloc_contig_range(unsigned long start, unsigned long end,
- 			      unsigned migratetype, gfp_t gfp_mask);
--extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
- #endif
-+extern void free_contig_range(unsigned long pfn, unsigned int nr_pages);
- 
- #ifdef CONFIG_CMA
- /* CMA stuff */
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index afef61656c1e..4e55aa38704f 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -1058,6 +1058,7 @@ static void free_gigantic_page(struct page *page, unsigned int order)
- 	free_contig_range(page_to_pfn(page), 1 << order);
- }
- 
-+#ifdef CONFIG_CONTIG_ALLOC
- static int __alloc_gigantic_page(unsigned long start_pfn,
- 				unsigned long nr_pages, gfp_t gfp_mask)
- {
-@@ -1142,11 +1143,20 @@ static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
- 
- static void prep_new_huge_page(struct hstate *h, struct page *page, int nid);
- static void prep_compound_gigantic_page(struct page *page, unsigned int order);
-+#else /* !CONFIG_CONTIG_ALLOC */
-+static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
-+					int nid, nodemask_t *nodemask)
-+{
-+	return NULL;
-+}
-+#endif /* CONFIG_CONTIG_ALLOC */
- 
- #else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
--static inline bool gigantic_page_supported(void) { return false; }
- static struct page *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
--		int nid, nodemask_t *nodemask) { return NULL; }
-+					int nid, nodemask_t *nodemask)
-+{
-+	return NULL;
-+}
- static inline void free_gigantic_page(struct page *page, unsigned int order) { }
- static inline void destroy_compound_gigantic_page(struct page *page,
- 						unsigned int order) { }
-@@ -1156,7 +1166,7 @@ static void update_and_free_page(struct hstate *h, struct page *page)
- {
- 	int i;
- 
--	if (hstate_is_gigantic(h) && !gigantic_page_supported())
-+	if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported())
- 		return;
- 
- 	h->nr_huge_pages--;
-@@ -2276,13 +2286,27 @@ static int adjust_pool_surplus(struct hstate *h, nodemask_t *nodes_allowed,
- }
- 
- #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
--static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
--						nodemask_t *nodes_allowed)
-+static int set_max_huge_pages(struct hstate *h, unsigned long count,
-+			      nodemask_t *nodes_allowed)
- {
- 	unsigned long min_count, ret;
- 
--	if (hstate_is_gigantic(h) && !gigantic_page_supported())
--		return h->max_huge_pages;
-+	spin_lock(&hugetlb_lock);
-+
-+	/*
-+	 * Gigantic pages runtime allocation depend on the capability for large
-+	 * page range allocation.
-+	 * If the system does not provide this feature, return an error when
-+	 * the user tries to allocate gigantic pages but let the user free the
-+	 * boottime allocated gigantic pages.
-+	 */
-+	if (hstate_is_gigantic(h) && !IS_ENABLED(CONFIG_CONTIG_ALLOC)) {
-+		if (count > persistent_huge_pages(h)) {
-+			spin_unlock(&hugetlb_lock);
-+			return -EINVAL;
-+		}
-+		/* Fall through to decrease pool */
-+	}
- 
- 	/*
- 	 * Increase the pool size
-@@ -2295,7 +2319,6 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
- 	 * pool might be one hugepage larger than it needs to be, but
- 	 * within all the constraints specified by the sysctls.
- 	 */
--	spin_lock(&hugetlb_lock);
- 	while (h->surplus_huge_pages && count > persistent_huge_pages(h)) {
- 		if (!adjust_pool_surplus(h, nodes_allowed, -1))
- 			break;
-@@ -2350,9 +2373,10 @@ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count,
- 			break;
- 	}
- out:
--	ret = persistent_huge_pages(h);
-+	h->max_huge_pages = persistent_huge_pages(h);
- 	spin_unlock(&hugetlb_lock);
--	return ret;
-+
-+	return 0;
- }
- 
- #define HSTATE_ATTR_RO(_name) \
-@@ -2404,7 +2428,7 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
- 	int err;
- 	NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | __GFP_NORETRY);
- 
--	if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
-+	if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported()) {
- 		err = -EINVAL;
- 		goto out;
- 	}
-@@ -2428,15 +2452,13 @@ static ssize_t __nr_hugepages_store_common(bool obey_mempolicy,
- 	} else
- 		nodes_allowed = &node_states[N_MEMORY];
- 
--	h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
-+	err = set_max_huge_pages(h, count, nodes_allowed);
- 
-+out:
- 	if (nodes_allowed != &node_states[N_MEMORY])
- 		NODEMASK_FREE(nodes_allowed);
- 
--	return len;
--out:
--	NODEMASK_FREE(nodes_allowed);
--	return err;
-+	return err ? err : len;
- }
- 
- static ssize_t nr_hugepages_store_common(bool obey_mempolicy,
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ac9c45ffb344..a4547d90fa7a 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -8234,8 +8234,9 @@ int alloc_contig_range(unsigned long start, unsigned long end,
- 				pfn_max_align_up(end), migratetype);
- 	return ret;
- }
-+#endif /* CONFIG_CONTIG_ALLOC */
- 
--void free_contig_range(unsigned long pfn, unsigned nr_pages)
-+void free_contig_range(unsigned long pfn, unsigned int nr_pages)
- {
- 	unsigned int count = 0;
- 
-@@ -8247,7 +8248,6 @@ void free_contig_range(unsigned long pfn, unsigned nr_pages)
- 	}
- 	WARN(count != 0, "%d pages are still in use!\n", count);
- }
--#endif
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
- /*
--- 
-2.20.1
+Hi Christophe,
 
+Thank you! I've tried the patch here and have confirmed that it fixes the problem
+with the hang on boot.
+
+
+ATB,
+
+Mark.
