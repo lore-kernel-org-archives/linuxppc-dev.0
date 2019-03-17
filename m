@@ -2,83 +2,94 @@ Return-Path: <SRS0=npwJ=RU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A9AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 14:21:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0AA2C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 15:50:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2453120896
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 14:21:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2453120896
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id F0E0A20896
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 15:50:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org F0E0A20896
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44MhM343RzzDqPn
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 01:21:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44MkLD2k0fzDqQ0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 02:50:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
- (client-ip=46.43.2.167; helo=mail.default.ilande.uk0.bigv.io;
- envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ilande.co.uk
-Received: from mail.default.ilande.uk0.bigv.io (mail.ilande.co.uk
- [46.43.2.167])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44MhKG5wZCzDqKh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 01:19:46 +1100 (AEDT)
-Received: from host86-184-243-17.range86-184.btcentralplus.com
- ([86.184.243.17] helo=[192.168.1.65])
- by mail.default.ilande.uk0.bigv.io with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.89)
- (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1h5WZ9-0007hu-E1; Sun, 17 Mar 2019 14:15:08 +0000
-From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-To: linuxppc-dev@lists.ozlabs.org
-References: <cf3327d8-3e04-2f37-4734-5525a5b638b2@ilande.co.uk>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
- mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
- 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
- E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
- PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
- PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
- AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
- OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
- NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
- mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
- z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
- T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
- DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
- y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
- 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
- 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
- YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
- Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
- BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
- opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
- NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
- Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
- KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
- imgcU9TTGC5qd9g=
-Message-ID: <f5ded479-7008-7b81-a5d9-84f4b3724fe9@ilande.co.uk>
-Date: Sun, 17 Mar 2019 14:15:06 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44MkJ50RgNzDqDL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 02:48:51 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2HFiVJO013220
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 11:48:49 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2r9e87he87-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 11:48:48 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Sun, 17 Mar 2019 15:48:47 -0000
+Received: from b01cxnp22036.gho.pok.ibm.com (9.57.198.26)
+ by e17.ny.us.ibm.com (146.89.104.204) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Sun, 17 Mar 2019 15:48:44 -0000
+Received: from b01ledav003.gho.pok.ibm.com (b01ledav003.gho.pok.ibm.com
+ [9.57.199.108])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2HFmh7W22675588
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Sun, 17 Mar 2019 15:48:43 GMT
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 629E5B205F;
+ Sun, 17 Mar 2019 15:48:43 +0000 (GMT)
+Received: from b01ledav003.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id DC87FB2066;
+ Sun, 17 Mar 2019 15:48:40 +0000 (GMT)
+Received: from skywalker.ibmuc.com (unknown [9.85.84.106])
+ by b01ledav003.gho.pok.ibm.com (Postfix) with ESMTP;
+ Sun, 17 Mar 2019 15:48:40 +0000 (GMT)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Subject: [PATCH v2 0/5] Update hash MMU kernel mapping to be in sync with
+ radix.
+Date: Sun, 17 Mar 2019 21:18:22 +0530
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-In-Reply-To: <cf3327d8-3e04-2f37-4734-5525a5b638b2@ilande.co.uk>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 86.184.243.17
-X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
-Subject: Re: Mac Mini G4 hang on boot with git master
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on mail.default.ilande.uk0.bigv.io)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19031715-0040-0000-0000-000004D35957
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010774; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01175713; UDB=6.00606765; IPR=6.00956389; 
+ MB=3.00026018; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-17 15:48:46
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031715-0041-0000-0000-000008DE7239
+Message-Id: <20190317154827.9188-1-aneesh.kumar@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-17_12:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=653 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903170123
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -90,45 +101,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 15/03/2019 13:37, Mark Cave-Ayland wrote:
+This patch series map all the kernel regions (vmalloc, IO and vmemmap) using
+0xc top nibble address. This brings hash translation kernel mapping in sync with radix.
+Each of these regions can now map 512TB. We use one context to map these
+regions and hence the 512TB limit. We also update radix to use the same limit even though
+we don't have context related restrictions there.
 
-> Hi all,
-> 
-> I've just done a git pull and rebuilt master on my Mac Mini G4 in order to test
-> Michael's merge of my KVM PR fix, and unfortunately my kernel now hangs on boot :(
-> 
-> My last working git checkout was somewhere around the 5.0-rc stage, so I suspect it's
-> something that's been merged for 5.1.
-> 
-> The hang occurs just after the boot console is disabled which makes me wonder if
-> something is going wrong during PCI bus enumeration. Does anyone have an idea as to
-> what may be causing this? I can obviously bisect it down, but on slow hardware it can
-> take some time...
+Aneesh Kumar K.V (5):
+  powerpc/mm/hash64: Add a variable to track the end of IO mapping
+  powerpc/mm/hash64: Map all the kernel regions in the same 0xc range
+  powerpc/mm: Validate address values against different region limits
+  powerpc/mm: Drop the unnecessary region check
+  powerpc/mm/hash: Simplify the region id calculation.
 
-This was a weird one: bisecting directly from git master gave a nonsense result,
-however by manually rebasing Michael's PR onto my last known good commit from master
-I was able to finally pin it down to this commit:
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 15 +++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 12 +++
+ arch/powerpc/include/asm/book3s/64/hash.h     | 97 ++++++++++++-------
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h | 31 +++---
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  9 +-
+ arch/powerpc/include/asm/book3s/64/radix.h    | 40 ++++----
+ arch/powerpc/include/asm/page.h               | 11 ---
+ arch/powerpc/kvm/book3s_hv_rm_xics.c          |  2 +-
+ arch/powerpc/mm/copro_fault.c                 | 14 ++-
+ arch/powerpc/mm/hash_utils_64.c               | 45 ++++++---
+ arch/powerpc/mm/pgtable-hash64.c              | 13 ++-
+ arch/powerpc/mm/pgtable-radix.c               | 20 +++-
+ arch/powerpc/mm/pgtable_64.c                  |  9 +-
+ arch/powerpc/mm/ptdump/hashpagetable.c        |  2 +-
+ arch/powerpc/mm/ptdump/ptdump.c               |  3 +-
+ arch/powerpc/mm/slb.c                         | 22 +++--
+ arch/powerpc/platforms/cell/spu_base.c        |  4 +-
+ drivers/misc/cxl/fault.c                      |  2 +-
+ drivers/misc/ocxl/link.c                      |  2 +-
+ 19 files changed, 227 insertions(+), 126 deletions(-)
 
+-- 
+2.20.1
 
-7a0d6955f3f7a4250da63d528bfff7a9c91b5725 is the first bad commit
-commit 7a0d6955f3f7a4250da63d528bfff7a9c91b5725
-Author: Christophe Leroy <christophe.leroy@c-s.fr>
-Date:   Thu Feb 21 10:37:55 2019 +0000
-
-    powerpc/6xx: Store PGDIR physical address in a SPRG
-
-    Use SPRN_SPRG2 to store the current thread PGDIR and
-    avoid reading thread_struct.pgdir at every TLB miss.
-
-    Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-    Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-
-ATB,
-
-Mark.
