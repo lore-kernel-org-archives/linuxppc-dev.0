@@ -1,93 +1,57 @@
-Return-Path: <SRS0=JrXR=RT=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=npwJ=RU=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_NEOMUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 989BEC43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 22:49:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB05CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 02:03:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C8DA8218AC
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 16 Mar 2019 22:49:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MNHMhyXv"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C8DA8218AC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
+	by mail.kernel.org (Postfix) with ESMTPS id A19142184C
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 02:03:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A19142184C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44MHgG4SMSzDqRr
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 09:48:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44MMzl5fc0zDqQP
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Mar 2019 13:03:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::443; helo=mail-pf1-x443.google.com;
- envelope-from=groeck7@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="MNHMhyXv"; 
- dkim-atps=neutral
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+ spf=pass (mailfrom) smtp.mailfrom=decadent.org.uk
+ (client-ip=88.96.1.126; helo=shadbolt.e.decadent.org.uk;
+ envelope-from=ben@decadent.org.uk; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=decadent.org.uk
+X-Greylist: delayed 2634 seconds by postgrey-1.36 at bilbo;
+ Sun, 17 Mar 2019 13:02:05 AEDT
+Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
+ [88.96.1.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44MHdW4nWCzDqDS
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 09:47:27 +1100 (AEDT)
-Received: by mail-pf1-x443.google.com with SMTP id 8so5324934pfr.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Mar 2019 15:47:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=sender:subject:to:cc:references:from:message-id:date:user-agent
- :mime-version:in-reply-to:content-language:content-transfer-encoding;
- bh=Vh9QpzVJ1GnogVWkgaXISddHjcJKCi1xFYlnKtK9wOE=;
- b=MNHMhyXvftpQW8gv5WoQbgRbKVm1TayLyZziA2ArrhZflHNcY438MGg/vRNDuJQ7Dq
- STfudT7sgRJZZlV03hoDE2m6MaLL1E3VTXDd1ha2OPmfWGESbSmPuhQ6ONZcGVptwkVm
- Krnv1y8DRl4aCSgHlCvTmZEcQN95GTiPRZ7lglJlVw+McD5q0XEx6CG4DG2C0fH0Yz/3
- EafB1GR41nAeUs5HLH9d8qrX9j90MuPJxXuTDIT62I0+jRtoe5p7qHgPnpYlS7eQlmIu
- sS40RVIb9IVlz0MtQFOltLgOwO6VlMpDoWV5Ll9RuJXPoS5x/+v6Qih+0ySfqigsQcj9
- Ph7w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
- :date:user-agent:mime-version:in-reply-to:content-language
- :content-transfer-encoding;
- bh=Vh9QpzVJ1GnogVWkgaXISddHjcJKCi1xFYlnKtK9wOE=;
- b=JKh8zg/2fWZiogJYBLUW+OZ4u5BU+WXuwY2UOEz7Tsd+jGQAGxcPCgI10VOZ64fY20
- t3wO3HuOW8C3d+sxnBnnEm8zVNksKIEEabuA3/dLz4GfcmOwggC+OdMiOcmswoqnjGc6
- Q+qVFZ+VtVX8e9NsIsS+EMPT5qviU1cMQ0+R0PflJc0v80FDciIrHNYpWpAP2GcazsQf
- Q9DprLE/1gCOhgIeKesroFehsfM3q4FcHrMKadYzLR77LXiACIC1YgcAYbj/KOuRtOEz
- n5+PbuVcCHfJACdiwaCaOE7mUb2lU4p55RPEgHDY2IzNei0RiWTqS0M8cCC5bRViGUOD
- 2irw==
-X-Gm-Message-State: APjAAAUe/GVRi4bCFr3TsdixLqAQEwlaBBh6m3GFVENFT+8MzFQpmWOM
- vp3YdRurXfvtURw/jYVY1ys=
-X-Google-Smtp-Source: APXvYqzQUedoP/ERtt4XvHLELuGClnVTPF0/WGUV+n9Zl63CLpk/PLpneR5GudEPKKfUx+ELXPRcjg==
-X-Received: by 2002:a17:902:6b48:: with SMTP id
- g8mr11929887plt.21.1552776444362; 
- Sat, 16 Mar 2019 15:47:24 -0700 (PDT)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
- by smtp.gmail.com with ESMTPSA id
- g2sm15479420pfm.144.2019.03.16.15.47.22
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sat, 16 Mar 2019 15:47:23 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/6xx: fix setup and use of SPRN_PGDIR for hash32
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <7e45ca3f0283fb24c2642e5b91bd75c55f2ba96f.1552028583.git.christophe.leroy@c-s.fr>
- <20190308160334.GZ3969@gate.crashing.org>
- <7681ad2b-35d4-6e43-f727-21545e3bb223@c-s.fr>
- <72bac00c-d2e3-515e-3ab1-99f20c058ea1@c-s.fr>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <fac535c2-af61-1a1b-ebed-82ca0bd2e4a4@roeck-us.net>
-Date: Sat, 16 Mar 2019 15:47:21 -0700
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44MMy52scwzDqD1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Mar 2019 13:02:05 +1100 (AEDT)
+Received: from ben by shadbolt.decadent.org.uk with local (Exim 4.89)
+ (envelope-from <ben@decadent.org.uk>)
+ id 1h5KR2-0003J6-Ss; Sun, 17 Mar 2019 01:17:57 +0000
+Date: Sun, 17 Mar 2019 01:17:56 +0000
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Message-ID: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <72bac00c-d2e3-515e-3ab1-99f20c058ea1@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="6t5kletm6yrjkgna"
+Content-Disposition: inline
+User-Agent: NeoMutt/20170113 (1.7.2)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH] powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
+ configurations
+X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -99,44 +63,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/15/19 6:20 AM, Christophe Leroy wrote:
-> Michael,
-> 
-> Are you able to get this merged before 5.1-rc1 comes out ?
-> 
 
-Looks like this patch got lost. I don't see it in Michael's most recent
-pull request, the one that got merged today.
+--6t5kletm6yrjkgna
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Guenter
+MAX_PHYSMEM_BITS only needs to be defined if CONFIG_SPARSEMEM is
+enabled, and that was the case before commit 4ffe713b7587
+("powerpc/mm: Increase the max addressable memory to 2PB").
 
-> Thanks
-> Christophe
-> 
-> Le 08/03/2019 à 17:06, Christophe Leroy a écrit :
->>
->>
->> Le 08/03/2019 à 17:03, Segher Boessenkool a écrit :
->>> On Fri, Mar 08, 2019 at 07:05:22AM +0000, Christophe Leroy wrote:
->>>> Not only the 603 but all 6xx need SPRN_PGDIR to be initialised at
->>>> startup. This patch move it from __setup_cpu_603() to start_here()
->>>> and __secondary_start(), close to the initialisation of SPRN_THREAD.
->>>
->>> I thought you meant an SPR I did not know about.  But you just misspelled
->>> SPRN_SPRG_PGDIR :-)
->>>
->>
->> Oops.
->>
->> Michael, can you fix the commit text (and subject) when applying ?
->>
-> 
-> 
-> 
+On 32-bit systems, where CONFIG_SPARSEMEM is not enabled, we now
+define it as 46.  That is larger than the real number of physical
+address bits, and breaks calculations in zsmalloc:
 
+    mm/zsmalloc.c:130:49: warning: right shift count is negative [-Wshift-c=
+ount-negative]
+      MAX(32, (ZS_MAX_PAGES_PER_ZSPAGE << PAGE_SHIFT >> OBJ_INDEX_BITS))
+                                                     ^~
+    ...
+    mm/zsmalloc.c:253:21: error: variably modified 'size_class' at file sco=
+pe
+      struct size_class *size_class[ZS_SIZE_CLASSES];
+                         ^~~~~~~~~~
+
+Fixes: 4ffe713b7587 ("powerpc/mm: Increase the max addressable memory to 2P=
+B")
+Cc: stable@vger.kernel.org
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ arch/powerpc/include/asm/mmu.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+index 25607604a7a5..2bc8c3f04f8a 100644
+--- a/arch/powerpc/include/asm/mmu.h
++++ b/arch/powerpc/include/asm/mmu.h
+@@ -341,7 +341,7 @@ static inline u16 get_mm_addr_key(struct mm_struct *mm,=
+ unsigned long address)
+ #if defined(CONFIG_SPARSEMEM_VMEMMAP) && defined(CONFIG_SPARSEMEM_EXTREME)=
+ &&	\
+ 	defined (CONFIG_PPC_64K_PAGES)
+ #define MAX_PHYSMEM_BITS        51
+-#else
++#elif defined(CONFIG_SPARSEMEM)
+ #define MAX_PHYSMEM_BITS        46
+ #endif
+=20
+
+--6t5kletm6yrjkgna
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAlyNoD8ACgkQ57/I7JWG
+EQmaYBAAt9g6bvxoz3CmRc9fMbx9E+mfVO9UNS7lyl4K2s0CjL5qitof3KtWSUwL
+E+NbMFCsVZJ84AkjpJ+y7Wu/IqWdQcLXXkvgUHcJjPLhlwZ+reW7AmyuDpRObubq
+kDmCL1IncfvrqchjEo4HZ534ul/sDln6Sf0ojQg/HD6gymzP9F9Vg+x4fAOv4JXc
+fg8s/jeV8FFcGzgMjUvd9f2caeU+EIAVcp3eAM+tO11f+3tc4vGlPPiPcb7q5NxX
+X1z5Y3/nQTq3yHRNVg0meJJwbYztn49wQ0ZR6/fH5fieVHcVSlyFmtjKvRoFnaw9
+x2gQuDcFnzd807Z3McaA3KSaQV8U2hiO4MboM9tYHWMCo4gIrTqSeYG5kZZTsHZ/
+vnXgnELX4ybx8xz4Y4BNQUo3NPdakcZXjmhtftOcg4mbexOiK1Bl3MjZ5k9FAmes
+/7FKPD02NgfLub7Ou647zLnC5g4WO2gb7LgcEW3YbioXCd4bAF8yGzCdGZDu+PYy
+tk0OQy7ZRMU14to8IrxCzx/oBl/BOOFsy5mbTY2c3tkGxf9EBkm9YM+hETXQvxsr
+geg9g55KfZMb1vpYE3YQAHkbJQ3TZUO0BqdlLUkimnOY8Bt3Bb2OoVpKb3M1B+ns
+eSLTuOKX5WzNmthIgde3jp+ax81sQqszb6sR0GH1ckrcAFdm56E=
+=zim7
+-----END PGP SIGNATURE-----
+
+--6t5kletm6yrjkgna--
