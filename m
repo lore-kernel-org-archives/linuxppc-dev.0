@@ -2,47 +2,93 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03131C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:00:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8883BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:08:08 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7A08720854
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:00:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7A08720854
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C88E22084F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:08:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C88E22084F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NCsF5GT4zDqP0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 22:00:49 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44ND1d5fy5zDqM3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 22:08:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44NCcj2DmVzDqJq
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 21:49:56 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F36CC165C;
- Mon, 18 Mar 2019 03:49:54 -0700 (PDT)
-Received: from usa.arm.com (e107155-lin.cambridge.arm.com [10.1.196.42])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 084643F614;
- Mon, 18 Mar 2019 03:49:51 -0700 (PDT)
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: x86@kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 6/6] arm64: ptrace: add support for syscall emulation
-Date: Mon, 18 Mar 2019 10:49:25 +0000
-Message-Id: <20190318104925.16600-7-sudeep.holla@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190318104925.16600-1-sudeep.holla@arm.com>
-References: <20190318104925.16600-1-sudeep.holla@arm.com>
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=srikar@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44NCzd6KpMzDqHq
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 22:06:21 +1100 (AEDT)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2IB5V0K019344
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 07:06:19 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2raa2j0amb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 07:06:18 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Mon, 18 Mar 2019 11:06:17 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 18 Mar 2019 11:06:14 -0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2IB6Ej135455214
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+ Mon, 18 Mar 2019 11:06:14 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 22AB811C05B;
+ Mon, 18 Mar 2019 11:06:14 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 2517B11C04C;
+ Mon, 18 Mar 2019 11:06:11 +0000 (GMT)
+Received: from linux.vnet.ibm.com (unknown [9.126.150.29])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with SMTP;
+ Mon, 18 Mar 2019 11:06:10 +0000 (GMT)
+Date: Mon, 18 Mar 2019 16:36:10 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Laurent Vivier <lvivier@redhat.com>
+Subject: Re: [RFC v3] sched/topology: fix kernel crash when a CPU is
+ hotplugged in a memoryless node
+References: <20190304195952.16879-1-lvivier@redhat.com>
+ <77b142fe-0886-1510-28bd-d432ea2c796a@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <77b142fe-0886-1510-28bd-d432ea2c796a@redhat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-TM-AS-GCONF: 00
+x-cbid: 19031811-0028-0000-0000-0000035561FD
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19031811-0029-0000-0000-00002413F9B0
+Message-Id: <20190318110610.GB4450@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-18_08:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903180085
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -54,81 +100,61 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Haibo Xu <haibo.xu@arm.com>, Steve Capper <Steve.Capper@arm.com>,
- jdike@addtoit.com, Sudeep Holla <sudeep.holla@arm.com>,
- Will Deacon <will.deacon@arm.com>, Oleg Nesterov <oleg@redhat.com>,
- Bin Lu <bin.lu@arm.com>, Richard Weinberger <richard@nod.at>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- Thomas Gleixner <tglx@linutronix.de>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add PTRACE_SYSEMU and PTRACE_SYSEMU_SINGLESTEP support on arm64.
-We can just make sure of the generic ptrace_syscall_enter hook to
-support PTRACE_SYSEMU. We don't need any special handling for
-PTRACE_SYSEMU_SINGLESTEP.
+* Laurent Vivier <lvivier@redhat.com> [2019-03-15 12:12:45]:
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- arch/arm64/include/asm/thread_info.h | 5 ++++-
- arch/arm64/kernel/ptrace.c           | 3 +++
- 2 files changed, 7 insertions(+), 1 deletion(-)
+> 
+> Another way to avoid the nodes overlapping for the offline nodes at
+> startup is to ensure the default values don't define a distance that
+> merge all offline nodes into node 0.
+> 
+> A powerpc specific patch can workaround the kernel crash by doing this:
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 87f0dd0..3ba29bb 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -623,6 +623,7 @@ static int __init parse_numa_properties(void)
+>         struct device_node *memory;
+>         int default_nid = 0;
+>         unsigned long i;
+> +       int nid, dist;
+> 
+>         if (numa_enabled == 0) {
+>                 printk(KERN_WARNING "NUMA disabled by user\n");
+> @@ -636,6 +637,10 @@ static int __init parse_numa_properties(void)
+> 
+>         dbg("NUMA associativity depth for CPU/Memory: %d\n",
+> min_common_depth);
+> 
+> +       for (nid = 0; nid < MAX_NUMNODES; nid ++)
+> +               for (dist = 0; dist < MAX_DISTANCE_REF_POINTS; dist++)
+> +                       distance_lookup_table[nid][dist] = nid;
+> +
 
-diff --git a/arch/arm64/include/asm/thread_info.h b/arch/arm64/include/asm/thread_info.h
-index eb3ef73e07cf..c285d1ce7186 100644
---- a/arch/arm64/include/asm/thread_info.h
-+++ b/arch/arm64/include/asm/thread_info.h
-@@ -75,6 +75,7 @@ void arch_release_task_struct(struct task_struct *tsk);
-  *  TIF_SYSCALL_TRACE	- syscall trace active
-  *  TIF_SYSCALL_TRACEPOINT - syscall tracepoint for ftrace
-  *  TIF_SYSCALL_AUDIT	- syscall auditing
-+ *  TIF_SYSCALL_EMU     - syscall emulation active
-  *  TIF_SECOMP		- syscall secure computing
-  *  TIF_SIGPENDING	- signal pending
-  *  TIF_NEED_RESCHED	- rescheduling necessary
-@@ -91,6 +92,7 @@ void arch_release_task_struct(struct task_struct *tsk);
- #define TIF_SYSCALL_AUDIT	9
- #define TIF_SYSCALL_TRACEPOINT	10
- #define TIF_SECCOMP		11
-+#define TIF_SYSCALL_EMU		12
- #define TIF_MEMDIE		18	/* is terminating due to OOM killer */
- #define TIF_FREEZE		19
- #define TIF_RESTORE_SIGMASK	20
-@@ -109,6 +111,7 @@ void arch_release_task_struct(struct task_struct *tsk);
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
- #define _TIF_SYSCALL_TRACEPOINT	(1 << TIF_SYSCALL_TRACEPOINT)
- #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
-+#define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
- #define _TIF_UPROBE		(1 << TIF_UPROBE)
- #define _TIF_FSCHECK		(1 << TIF_FSCHECK)
- #define _TIF_32BIT		(1 << TIF_32BIT)
-@@ -120,7 +123,7 @@ void arch_release_task_struct(struct task_struct *tsk);
- 
- #define _TIF_SYSCALL_WORK	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
- 				 _TIF_SYSCALL_TRACEPOINT | _TIF_SECCOMP | \
--				 _TIF_NOHZ)
-+				 _TIF_NOHZ | _TIF_SYSCALL_EMU)
- 
- #define INIT_THREAD_INFO(tsk)						\
- {									\
-diff --git a/arch/arm64/kernel/ptrace.c b/arch/arm64/kernel/ptrace.c
-index b82e0a9b3da3..cf29275cd4d9 100644
---- a/arch/arm64/kernel/ptrace.c
-+++ b/arch/arm64/kernel/ptrace.c
-@@ -1819,6 +1819,9 @@ static void tracehook_report_syscall(struct pt_regs *regs,
- 
- int syscall_trace_enter(struct pt_regs *regs)
- {
-+	if (unlikely(ptrace_syscall_enter(regs)))
-+		return -1;
-+
- 	if (test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall(regs, PTRACE_SYSCALL_ENTER);
- 
+The only reason, this would have worked in the specific case, is because we
+are overriding the distance_lookup_table with a unique distance.
+So node_distance for any other node other than itself will return max
+distance which is 40 in this case. (since distance_ref_points_depth is 2)
+
+I am not sure if  this will work if the node distance between the two nodes
+happens to be 20.
+
+>         /*
+>          * Even though we connect cpus to numa domains later in SMP
+>          * init, we need to know the node ids now. This is because
+> 
+
 -- 
-2.17.1
+Thanks and Regards
+Srikar Dronamraju
 
