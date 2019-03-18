@@ -2,69 +2,50 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 84172C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:29:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82809C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:28:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C03F92085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 11:29:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HUMYqDlB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C03F92085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	by mail.kernel.org (Postfix) with ESMTPS id 05F082085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:28:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05F082085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NDV823WVzDqKL
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 22:29:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44NJT03pdVzDqKM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 01:28:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=infradead.org
- (client-ip=2001:8b0:10b:1231::1; helo=merlin.infradead.org;
- envelope-from=peterz@infradead.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=altlinux.org
+ (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
+ envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=infradead.org
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44NDRg33r3zDqCh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 22:27:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
- d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
- References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
- Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
- Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
- List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
- bh=S2/dxFXAm03U45Rs8pY/i96tt6/fU95rFJjs1/nGlmE=; b=HUMYqDlBR8gH8twMBPth8dKUC
- q1+S0eXS+6JhX/WbndFij+Cqi/Y3wPcM2ay9gZwxo+fSwj+lQYIfNeTr3JRZFE+wCng6EbngBM7L/
- kJZNgAzAFwtLpDSUVX6xmP7TKaFGNv1s73tQFuq5quFebQ9GKcGlLxCwGNyPT7vQiw2ieOvOOiih6
- 7hYQLqnar57uvNBEmUBSWstu+VAgF5BA0MUpxqrHk+LaRGXpVjePqBIyV31C61tzpBfeLJTo84uE5
- swGAyYtT4rOf6MxnbGy88vxyCffH84QC92qixV42qn85hhMeKmfAC6+l/etwJFUths7VB2RiQzeE3
- exnn0tvCg==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100]
- helo=hirez.programming.kicks-ass.net)
- by merlin.infradead.org with esmtpsa (Exim 4.90_1 #2 (Red Hat Linux))
- id 1h5qPr-0002Mi-VD; Mon, 18 Mar 2019 11:26:52 +0000
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
- id 5811D20A0FF82; Mon, 18 Mar 2019 12:26:50 +0100 (CET)
-Date: Mon, 18 Mar 2019 12:26:50 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [RFC v3] sched/topology: fix kernel crash when a CPU is
- hotplugged in a memoryless node
-Message-ID: <20190318112650.GO6058@hirez.programming.kicks-ass.net>
-References: <20190304195952.16879-1-lvivier@redhat.com>
- <20190305115952.GH32477@hirez.programming.kicks-ass.net>
- <20190318104730.GA4450@linux.vnet.ibm.com>
+ dmarc=none (p=none dis=none) header.from=altlinux.org
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44NJQQ6b5QzDqHJ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 01:26:20 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 830F972CC53;
+ Mon, 18 Mar 2019 17:26:18 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+ id 5A5E57CC74C; Mon, 18 Mar 2019 17:26:18 +0300 (MSK)
+Date: Mon, 18 Mar 2019 17:26:18 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 4/6] powerpc: use common ptrace_syscall_enter hook to
+ handle _TIF_SYSCALL_EMU
+Message-ID: <20190318142618.GA27941@altlinux.org>
+References: <20190318104925.16600-1-sudeep.holla@arm.com>
+ <20190318104925.16600-5-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
 Content-Disposition: inline
-In-Reply-To: <20190318104730.GA4450@linux.vnet.ibm.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20190318104925.16600-5-sudeep.holla@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -76,87 +57,87 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Laurent Vivier <lvivier@redhat.com>, linux-kernel@vger.kernel.org,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, Borislav Petkov <bp@suse.de>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: Haibo Xu <haibo.xu@arm.com>, Steve Capper <Steve.Capper@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, jdike@addtoit.com, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Oleg Nesterov <oleg@redhat.com>, Richard Weinberger <richard@nod.at>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Bin Lu <bin.lu@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 18, 2019 at 04:17:30PM +0530, Srikar Dronamraju wrote:
-> > > node 0 (because firmware doesn't provide the distance information for
-> > > memoryless/cpuless nodes):
-> > > 
-> > >   node   0   1   2   3
-> > >     0:  10  40  10  10
-> > >     1:  40  10  40  40
-> > >     2:  10  40  10  10
-> > >     3:  10  40  10  10
-> > 
-> > *groan*... what does it do for things like percpu memory? ISTR the
-> > per-cpu chunks are all allocated early too. Having them all use memory
-> > out of node-0 would seem sub-optimal.
-> 
-> In the specific failing case, there is only one node with memory; all other
-> nodes are cpu only nodes.
-> 
-> However in the generic case since its just a cpu hotplug ops, the memory
-> allocated for per-cpu chunks allocated early would remain.
 
-What do you do in the case where there's multiple nodes with memory, but
-only one with CPUs on?
+--HcAYCG3uE/tztfnV
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Do you then still allocate the per-cpu memory for the CPUs that will
-appear on that second node on node0?
+On Mon, Mar 18, 2019 at 10:49:23AM +0000, Sudeep Holla wrote:
+> Now that we have a new hook ptrace_syscall_enter that can be called from
+> syscall entry code and it handles PTRACE_SYSEMU in generic code, we
+> can do some cleanup using the same in do_syscall_trace_enter.
+>=20
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  arch/powerpc/kernel/ptrace.c | 48 ++++++++++++++++--------------------
+>  1 file changed, 21 insertions(+), 27 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index 2e2183b800a8..05579a5dcb12 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -3278,35 +3278,29 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+> =20
+>  	user_exit();
+> =20
+> -	flags =3D READ_ONCE(current_thread_info()->flags) &
+> -		(_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE);
+> -
+> -	if (flags) {
+> -		int rc =3D tracehook_report_syscall_entry(regs);
+> +	if (unlikely(ptrace_syscall_enter(regs))) {
+> +		/*
+> +		 * A nonzero return code from tracehook_report_syscall_entry()
+> +		 * tells us to prevent the syscall execution, but we are not
+> +		 * going to execute it anyway.
+> +		 *
+> +		 * Returning -1 will skip the syscall execution. We want to
+> +		 * avoid clobbering any registers, so we don't goto the skip
+> +		 * label below.
+> +		 */
+> +		return -1;
+> +	}
 
-> > > We should have:
-> > > 
-> > >   node   0   1   2   3
-> > >     0:  10  40  40  40
-> > >     1:  40  10  40  40
-> > >     2:  40  40  10  40
-> > >     3:  40  40  40  10
-> > 
-> > Can it happen that it introduces a new distance in the table? One that
-> > hasn't been seen before? This example only has 10 and 40, but suppose
-> > the new node lands at distance 20 (or 80); can such a thing happen?
-> > 
-> > If not; why not?
-> 
-> Yes distances can be 20, 40 or 80. There is nothing that makes the node
-> distance to be 40 always.
-
-This,
-
-> > So you're relying on sched_domain_numa_masks_set/clear() to fix this up,
-> > but that in turn relies on the sched_domain_numa_levels thing to stay
-> > accurate.
-> > 
-> > This all seems very fragile and unfortunate.
-> > 
-> 
-> Any reasons why this is fragile?
-
-breaks that patch. The code assumes all the numa distances are known at
-boot. If you add distances later, it comes unstuck.
-
-It's not like you're actually changing the interconnects around at
-runtime. Node topology really should be known at boot time.
+This comment is out of sync with the changed code.
 
 
+--=20
+ldv
 
-What I _think_ the x86 BIOS does is, for each empty socket, iterate as
-many logical CPUs (non-present) as it finds on Socket-0 (or whatever
-socket is the boot socket).
+--HcAYCG3uE/tztfnV
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Those non-present CPUs are assigned to their respective nodes. And
-if/when a physical CPU is placed on the socket and the CPUs onlined, it
-all 'works' (see ACPI SRAT).
+-----BEGIN PGP SIGNATURE-----
 
-I'm not entirely sure what happens on x86 when it boots with say a
-10-core part and you then fill an empty socket with a 20-core part, I
-suspect we simply will not use more than 10, we'll not have space
-reserved in the Linux cpumasks for them anyway.
+iQIcBAEBCAAGBQJcj6qKAAoJEAVFT+BVnCUIpOUP/j1ZfG80n/XTu6EimciHcs9e
+nhN3qmFqVCDXeuvQh8I/xncM25fHK+ftwsUQOij1bT2iecbY/yLxpFpfBcru1bho
+Gp0hMlMCEQcxJ/2ArUKjL3HWIaeh8/ut63nLEgGARp0C4Zd14vnjNEZsJBtnZDvZ
+/pKKGNKENgMzx/LH/8pouPQoLTLcTctLjpg7QCHhVgyf+cEjkcTPB2z7ityUXUGG
+4WlGjWyo6qL9fMmUKrhQ+w1B2FyjsffRv0zKAyOG+p2edHGHEjfqw+Z4s2h8rJLL
+nol9SN00msn5wFH83YJmkKolNAIVdDC3seGM2tiX4HROIqKK13MBr4ZqX37mQP7r
+DClvWfuvCCH/NaIoyaq6f4YkkSboox2YDZVTjPQ9NPInoRUXZG3MuvL92eGh8wuZ
+2sjwMWvBU1a+l+C8u0+U2Q/7FMWG8wYwkARiq5AqkNZmIV8dxhyXtY2+X8G3LIDe
+/W1yzi2cYAlMU1oisoA4uYwrFHvUvd2K2jQYHXWvTX6tV7QFdiJNRv9DHdlOqmSL
+cnMyjhOXPKL7bxsh39VvHQJHBP1hru9+IuGqGuLUgeF1nSDIbaFY5RsvwzTqzazJ
+6z8f+gK+Odmt2B6n5zZnSFqCvzOiyQ3XYuRa9Xbfh8DSaDR5BwzqUp3MQZs6QbRI
+DsJJJSfcDOCFdWJIYv+6
+=JQDW
+-----END PGP SIGNATURE-----
 
+--HcAYCG3uE/tztfnV--
