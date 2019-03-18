@@ -6,59 +6,50 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 589AAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:36:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E83C4C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:42:39 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D3AF620854
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:36:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D3AF620854
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id 670F12070D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:42:39 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 670F12070D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NNdv3fvzzDqLd
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 04:36:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44NNms2QMMzDqLM
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 04:42:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=oleg@redhat.com;
- receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44NNZh13phzDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 04:33:48 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com
- [10.5.11.23])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 944DA3082E55;
- Mon, 18 Mar 2019 17:33:45 +0000 (UTC)
-Received: from dhcp-27-174.brq.redhat.com (unknown [10.43.17.34])
- by smtp.corp.redhat.com (Postfix) with SMTP id 7FFE627CC2;
- Mon, 18 Mar 2019 17:33:42 +0000 (UTC)
-Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
- oleg@redhat.com; Mon, 18 Mar 2019 18:33:45 +0100 (CET)
-Date: Mon, 18 Mar 2019 18:33:41 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sudeep Holla <sudeep.holla@arm.com>
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44NNkX1lwkzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 04:40:35 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3A34BEBD;
+ Mon, 18 Mar 2019 10:40:34 -0700 (PDT)
+Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 696373F614;
+ Mon, 18 Mar 2019 10:40:31 -0700 (PDT)
+Date: Mon, 18 Mar 2019 17:40:28 +0000
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: Oleg Nesterov <oleg@redhat.com>
 Subject: Re: [PATCH v2 4/6] powerpc: use common ptrace_syscall_enter hook to
  handle _TIF_SYSCALL_EMU
-Message-ID: <20190318173341.GD23521@redhat.com>
+Message-ID: <20190318174028.GE18196@e107155-lin>
 References: <20190318104925.16600-1-sudeep.holla@arm.com>
  <20190318104925.16600-5-sudeep.holla@arm.com>
  <20190318172024.GB23521@redhat.com>
  <20190318172457.GD18196@e107155-lin>
+ <20190318173341.GD23521@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190318172457.GD18196@e107155-lin>
-User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.46]); Mon, 18 Mar 2019 17:33:45 +0000 (UTC)
+In-Reply-To: <20190318173341.GD23521@redhat.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -81,20 +72,29 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/18, Sudeep Holla wrote:
->
-> On Mon, Mar 18, 2019 at 06:20:24PM +0100, Oleg Nesterov wrote:
+On Mon, Mar 18, 2019 at 06:33:41PM +0100, Oleg Nesterov wrote:
+> On 03/18, Sudeep Holla wrote:
 > >
-> > Again, to me this patch just makes the code look worse. Honestly, I don't
-> > think that the new (badly named) ptrace_syscall_enter() hook makes any sense.
+> > On Mon, Mar 18, 2019 at 06:20:24PM +0100, Oleg Nesterov wrote:
+> > >
+> > > Again, to me this patch just makes the code look worse. Honestly, I don't
+> > > think that the new (badly named) ptrace_syscall_enter() hook makes any sense.
+> > >
 > >
+> > Worse because we end up reading current_thread_info->flags twice ?
 >
-> Worse because we end up reading current_thread_info->flags twice ?
+> Mostly because in my opinion ptrace_syscall_enter() buys nothing but makes
+> the caller's code less readable/understandable.
+>
+> Sure, this is subjective.
+>
 
-Mostly because in my opinion ptrace_syscall_enter() buys nothing but makes
-the caller's code less readable/understandable.
+Based on what we have in that function today, I tend to agree. Will and
+Richard were in the opinion to consolidate SYSEMU handling(in the threads
+pointed in my cover letter). If there's a better way to achieve the same
+I am in for it. I have just tried to put something together based on
+what I could think of.
 
-Sure, this is subjective.
-
-Oleg.
-
+--
+Regards,
+Sudeep
