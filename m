@@ -2,54 +2,70 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E83C4C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:42:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36D99C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 20:06:27 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 670F12070D
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:42:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 670F12070D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 551F620989
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 20:06:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="e7d+6Fob"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 551F620989
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NNms2QMMzDqLM
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 04:42:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44NRym3GLWzDqP6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 07:06:24 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=sudeep.holla@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kernel.org
+ (client-ip=198.145.29.99; helo=mail.kernel.org; envelope-from=luto@kernel.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44NNkX1lwkzDqK9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 04:40:35 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3A34BEBD;
- Mon, 18 Mar 2019 10:40:34 -0700 (PDT)
-Received: from e107155-lin (e107155-lin.cambridge.arm.com [10.1.196.42])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 696373F614;
- Mon, 18 Mar 2019 10:40:31 -0700 (PDT)
-Date: Mon, 18 Mar 2019 17:40:28 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH v2 4/6] powerpc: use common ptrace_syscall_enter hook to
- handle _TIF_SYSCALL_EMU
-Message-ID: <20190318174028.GE18196@e107155-lin>
-References: <20190318104925.16600-1-sudeep.holla@arm.com>
- <20190318104925.16600-5-sudeep.holla@arm.com>
- <20190318172024.GB23521@redhat.com>
- <20190318172457.GD18196@e107155-lin>
- <20190318173341.GD23521@redhat.com>
+ dmarc=pass (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="e7d+6Fob"; 
+ dkim-atps=neutral
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44NRwz03WZzDqHw
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 07:04:50 +1100 (AEDT)
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com
+ [209.85.128.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A9A96217F4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 20:04:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+ s=default; t=1552939488;
+ bh=VxP+vAro5vjl+5TW9HBLtbTDE0dvcAVdcTwI/Q3IDxM=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=e7d+6Fob+r60jqntGxl0h2CUy/r3aqHdTZ76jqw4a/9SJn8mCMQ9CNRj8fLVhdDZ0
+ KhbnKl9+NrTxxbtHOuowKLNayd4qh/ZuLMvi6Xuh/uM0c3LPA0DJYThybTlEtdZEyM
+ vezDSpreM/7fFZNIp+BhlHrcJU08bW/8Tt8PyjiM=
+Received: by mail-wm1-f49.google.com with SMTP id 4so14307198wmf.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 13:04:47 -0700 (PDT)
+X-Gm-Message-State: APjAAAXj6mCvbah2ltJLrnERR2jUHRpmj7V8Ajmy2TtzyLWG323pLP07
+ O3sjv7nZLB2eRCFTdM0TO5N8bh6uh8FMF1vYr8Z2cQ==
+X-Google-Smtp-Source: APXvYqx0Qp0LaqRE7TDSGtKjrBxrV1SRYxrd9ZsByp+J6+nszeCFG/2GlsipIJinh1+fUEuFHdnHaG+CvXROayqeoko=
+X-Received: by 2002:a1c:eb14:: with SMTP id j20mr537361wmh.32.1552939486176;
+ Mon, 18 Mar 2019 13:04:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190318173341.GD23521@redhat.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <20190318104925.16600-1-sudeep.holla@arm.com>
+In-Reply-To: <20190318104925.16600-1-sudeep.holla@arm.com>
+From: Andy Lutomirski <luto@kernel.org>
+Date: Mon, 18 Mar 2019 13:04:28 -0700
+X-Gmail-Original-Message-ID: <CALCETrXneXdPG246B=Sa4R+MG7r-RwVDA1W3bRPzDwAUCai=xQ@mail.gmail.com>
+Message-ID: <CALCETrXneXdPG246B=Sa4R+MG7r-RwVDA1W3bRPzDwAUCai=xQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/6] ptrace: consolidate PTRACE_SYSEMU handling and add
+ support for arm64
+To: Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -62,39 +78,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Haibo Xu <haibo.xu@arm.com>, Steve Capper <Steve.Capper@arm.com>,
- Catalin Marinas <catalin.marinas@arm.com>, jdike@addtoit.com, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Bin Lu <bin.lu@arm.com>, Richard Weinberger <richard@nod.at>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ Catalin Marinas <catalin.marinas@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ X86 ML <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+ Richard Weinberger <richard@nod.at>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Bin Lu <bin.lu@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 18, 2019 at 06:33:41PM +0100, Oleg Nesterov wrote:
-> On 03/18, Sudeep Holla wrote:
-> >
-> > On Mon, Mar 18, 2019 at 06:20:24PM +0100, Oleg Nesterov wrote:
-> > >
-> > > Again, to me this patch just makes the code look worse. Honestly, I don't
-> > > think that the new (badly named) ptrace_syscall_enter() hook makes any sense.
-> > >
-> >
-> > Worse because we end up reading current_thread_info->flags twice ?
+On Mon, Mar 18, 2019 at 3:49 AM Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Mostly because in my opinion ptrace_syscall_enter() buys nothing but makes
-> the caller's code less readable/understandable.
+> Hi,
 >
-> Sure, this is subjective.
+> This patchset evolved from the discussion in the thread[0][1]. When we
+> wanted to add PTRACE_SYSEMU support to ARM64, we thought instead of
+> duplicating what other architectures like x86 and powerpc have done,
+> let consolidate the existing support and move it to the core as there's
+> nothing arch specific in it.
 >
 
-Based on what we have in that function today, I tend to agree. Will and
-Richard were in the opinion to consolidate SYSEMU handling(in the threads
-pointed in my cover letter). If there's a better way to achieve the same
-I am in for it. I have just tried to put something together based on
-what I could think of.
+In the discussion from the first version, there was talk of some
+testing.  Can you put the test cases in question into v3?
 
---
-Regards,
-Sudeep
+--Andy
