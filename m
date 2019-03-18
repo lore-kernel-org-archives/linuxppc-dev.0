@@ -2,59 +2,73 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEB8AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 06:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1338FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:02:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C5AC20643
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 06:46:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="oQOVAXp9"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C5AC20643
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 5769B2077B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:02:44 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5769B2077B
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44N6Cf1r1czDqJW
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 17:46:22 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44N6ZV28PxzDqM1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 18:02:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=none (mailfrom) smtp.mailfrom=ghiti.fr
+ (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net;
+ envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=ghiti.fr
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
+ [217.70.183.197])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44N67f6BSRzDqJT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 17:42:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="oQOVAXp9"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44N67d5gv3z9s9N; Mon, 18 Mar 2019 17:42:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1552891373;
- bh=H60BjCMmU9tYl0FXi8Q1ni8TjhzgFMix1CHsFS2z6Fs=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=oQOVAXp9sSSYgQNON7hwtxablml5Nu8ucQIIS7W/GrAfS3/Uj0DvWVYW9ANiZ2Tz0
- aJwqMZLogh24ULDG21UXqdwt4VUuMagCi3pGUETL7NR8vpj2tyEXcLtSTBo/geh/WD
- lJxKc3NabxiJcPZm6ibHwgu1M/2v7ZWc9RtPx7sM=
-Date: Mon, 18 Mar 2019 17:42:42 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v3 16/17] KVM: introduce a KVM_DESTROY_DEVICE ioctl
-Message-ID: <20190318064242.GN6874@umbus.fritz.box>
-References: <20190315120609.25910-1-clg@kaod.org>
- <20190315120609.25910-17-clg@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44N6Xf4Lg3zDqCW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 18:01:03 +1100 (AEDT)
+X-Originating-IP: 79.86.19.127
+Received: from [192.168.0.11] (127.19.86.79.rev.sfr.net [79.86.19.127])
+ (Authenticated sender: alex@ghiti.fr)
+ by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id 59B641C0007;
+ Mon, 18 Mar 2019 07:00:48 +0000 (UTC)
+Subject: Re: [PATCH v7 4/4] hugetlb: allow to free gigantic pages regardless
+ of the configuration
+To: christophe leroy <christophe.leroy@c-s.fr>, aneesh.kumar@linux.ibm.com,
+ mpe@ellerman.id.au, Andrew Morton <akpm@linux-foundation.org>,
+ Vlastimil Babka <vbabka@suse.cz>, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
+ Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+References: <20190317162847.14107-1-alex@ghiti.fr>
+ <20190317162847.14107-5-alex@ghiti.fr>
+ <f434892d-80b2-f09d-31d6-754a1be0b97a@c-s.fr>
+From: Alex Ghiti <alex@ghiti.fr>
+Message-ID: <525d6c00-012f-c6dd-abf0-fa5e1ffc12be@ghiti.fr>
+Date: Mon, 18 Mar 2019 03:00:47 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="fpolVoprVozDR81Y"
-Content-Disposition: inline
-In-Reply-To: <20190315120609.25910-17-clg@kaod.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+In-Reply-To: <f434892d-80b2-f09d-31d6-754a1be0b97a@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: sv-FI
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,192 +80,265 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On 3/17/19 2:31 PM, christophe leroy wrote:
+>
+>
+> Le 17/03/2019 à 17:28, Alexandre Ghiti a écrit :
+>> On systems without CONTIG_ALLOC activated but that support gigantic 
+>> pages,
+>> boottime reserved gigantic pages can not be freed at all. This patch
+>> simply enables the possibility to hand back those pages to memory
+>> allocator.
+>>
+>> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+>> Acked-by: David S. Miller <davem@davemloft.net> [sparc]
+>> ---
+>>   arch/arm64/Kconfig                           |  2 +-
+>>   arch/arm64/include/asm/hugetlb.h             |  4 --
+>>   arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
+>>   arch/powerpc/platforms/Kconfig.cputype       |  2 +-
+>>   arch/s390/Kconfig                            |  2 +-
+>>   arch/s390/include/asm/hugetlb.h              |  3 --
+>>   arch/sh/Kconfig                              |  2 +-
+>>   arch/sparc/Kconfig                           |  2 +-
+>>   arch/x86/Kconfig                             |  2 +-
+>>   arch/x86/include/asm/hugetlb.h               |  4 --
+>>   include/asm-generic/hugetlb.h                | 14 +++++
+>>   include/linux/gfp.h                          |  2 +-
+>>   mm/hugetlb.c                                 | 54 ++++++++++++++------
+>>   mm/page_alloc.c                              |  4 +-
+>>   14 files changed, 61 insertions(+), 43 deletions(-)
+>>
+>
+> [...]
+>
+>> diff --git a/include/asm-generic/hugetlb.h 
+>> b/include/asm-generic/hugetlb.h
+>> index 71d7b77eea50..aaf14974ee5f 100644
+>> --- a/include/asm-generic/hugetlb.h
+>> +++ b/include/asm-generic/hugetlb.h
+>> @@ -126,4 +126,18 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
+>>   }
+>>   #endif
+>>   +#ifndef __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
+>> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+>> +static inline bool gigantic_page_runtime_supported(void)
+>> +{
+>> +    return true;
+>> +}
+>> +#else
+>> +static inline bool gigantic_page_runtime_supported(void)
+>> +{
+>> +    return false;
+>> +}
+>> +#endif /* CONFIG_ARCH_HAS_GIGANTIC_PAGE */
+>
+> What about the following instead:
+>
+> static inline bool gigantic_page_runtime_supported(void)
+> {
+>     return IS_ENABLED(CONFIG_ARCH_HAS_GIGANTIC_PAGE);
+> }
+>
 
---fpolVoprVozDR81Y
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Totally, it already was like that in v2 or v3...
 
-On Fri, Mar 15, 2019 at 01:06:08PM +0100, C=E9dric Le Goater wrote:
-> The 'destroy' method is currently used to destroy all devices when the
-> VM is destroyed after the vCPUs have been freed.
->=20
-> This new KVM ioctl exposes the same KVM device method. It acts as a
-> software reset of the VM to 'destroy' selected devices when necessary
-> and perform the required cleanups on the vCPUs. Called with the
-> kvm->lock.
->=20
-> The 'destroy' method could be improved by returning an error code.
->=20
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>
+>> +#endif /* __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED */
+>> +
+>>   #endif /* _ASM_GENERIC_HUGETLB_H */
+>> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+>> index 1f1ad9aeebb9..58ea44bf75de 100644
+>> --- a/include/linux/gfp.h
+>> +++ b/include/linux/gfp.h
+>> @@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
+>>   /* The below functions must be run on a range from a single zone. */
+>>   extern int alloc_contig_range(unsigned long start, unsigned long end,
+>>                     unsigned migratetype, gfp_t gfp_mask);
+>> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
+>>   #endif
+>> +extern void free_contig_range(unsigned long pfn, unsigned int 
+>> nr_pages);
+>
+> 'extern' is unneeded and should be avoided (iaw checkpatch)
+>
 
+Ok, I did fix a checkpatch warning here, but did not notice the 'extern' 
+one.
+
+
+Thanks for your time,
+
+
+Alex
+
+
+> Christophe
+>
+>>     #ifdef CONFIG_CMA
+>>   /* CMA stuff */
+>> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+>> index afef61656c1e..4e55aa38704f 100644
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -1058,6 +1058,7 @@ static void free_gigantic_page(struct page 
+>> *page, unsigned int order)
+>>       free_contig_range(page_to_pfn(page), 1 << order);
+>>   }
+>>   +#ifdef CONFIG_CONTIG_ALLOC
+>>   static int __alloc_gigantic_page(unsigned long start_pfn,
+>>                   unsigned long nr_pages, gfp_t gfp_mask)
+>>   {
+>> @@ -1142,11 +1143,20 @@ static struct page 
+>> *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
+>>     static void prep_new_huge_page(struct hstate *h, struct page 
+>> *page, int nid);
+>>   static void prep_compound_gigantic_page(struct page *page, unsigned 
+>> int order);
+>> +#else /* !CONFIG_CONTIG_ALLOC */
+>> +static struct page *alloc_gigantic_page(struct hstate *h, gfp_t 
+>> gfp_mask,
+>> +                    int nid, nodemask_t *nodemask)
+>> +{
+>> +    return NULL;
+>> +}
+>> +#endif /* CONFIG_CONTIG_ALLOC */
+>>     #else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
+>> -static inline bool gigantic_page_supported(void) { return false; }
+>>   static struct page *alloc_gigantic_page(struct hstate *h, gfp_t 
+>> gfp_mask,
+>> -        int nid, nodemask_t *nodemask) { return NULL; }
+>> +                    int nid, nodemask_t *nodemask)
+>> +{
+>> +    return NULL;
+>> +}
+>>   static inline void free_gigantic_page(struct page *page, unsigned 
+>> int order) { }
+>>   static inline void destroy_compound_gigantic_page(struct page *page,
+>>                           unsigned int order) { }
+>> @@ -1156,7 +1166,7 @@ static void update_and_free_page(struct hstate 
+>> *h, struct page *page)
+>>   {
+>>       int i;
+>>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported())
+>> +    if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported())
+>>           return;
+>>         h->nr_huge_pages--;
+>> @@ -2276,13 +2286,27 @@ static int adjust_pool_surplus(struct hstate 
+>> *h, nodemask_t *nodes_allowed,
+>>   }
+>>     #define persistent_huge_pages(h) (h->nr_huge_pages - 
+>> h->surplus_huge_pages)
+>> -static unsigned long set_max_huge_pages(struct hstate *h, unsigned 
+>> long count,
+>> -                        nodemask_t *nodes_allowed)
+>> +static int set_max_huge_pages(struct hstate *h, unsigned long count,
+>> +                  nodemask_t *nodes_allowed)
+>>   {
+>>       unsigned long min_count, ret;
+>>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported())
+>> -        return h->max_huge_pages;
+>> +    spin_lock(&hugetlb_lock);
+>> +
+>> +    /*
+>> +     * Gigantic pages runtime allocation depend on the capability 
+>> for large
+>> +     * page range allocation.
+>> +     * If the system does not provide this feature, return an error 
+>> when
+>> +     * the user tries to allocate gigantic pages but let the user 
+>> free the
+>> +     * boottime allocated gigantic pages.
+>> +     */
+>> +    if (hstate_is_gigantic(h) && !IS_ENABLED(CONFIG_CONTIG_ALLOC)) {
+>> +        if (count > persistent_huge_pages(h)) {
+>> +            spin_unlock(&hugetlb_lock);
+>> +            return -EINVAL;
+>> +        }
+>> +        /* Fall through to decrease pool */
+>> +    }
+>>         /*
+>>        * Increase the pool size
+>> @@ -2295,7 +2319,6 @@ static unsigned long set_max_huge_pages(struct 
+>> hstate *h, unsigned long count,
+>>        * pool might be one hugepage larger than it needs to be, but
+>>        * within all the constraints specified by the sysctls.
+>>        */
+>> -    spin_lock(&hugetlb_lock);
+>>       while (h->surplus_huge_pages && count > 
+>> persistent_huge_pages(h)) {
+>>           if (!adjust_pool_surplus(h, nodes_allowed, -1))
+>>               break;
+>> @@ -2350,9 +2373,10 @@ static unsigned long set_max_huge_pages(struct 
+>> hstate *h, unsigned long count,
+>>               break;
+>>       }
+>>   out:
+>> -    ret = persistent_huge_pages(h);
+>> +    h->max_huge_pages = persistent_huge_pages(h);
+>>       spin_unlock(&hugetlb_lock);
+>> -    return ret;
+>> +
+>> +    return 0;
+>>   }
+>>     #define HSTATE_ATTR_RO(_name) \
+>> @@ -2404,7 +2428,7 @@ static ssize_t __nr_hugepages_store_common(bool 
+>> obey_mempolicy,
+>>       int err;
+>>       NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | 
+>> __GFP_NORETRY);
+>>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
+>> +    if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported()) {
+>>           err = -EINVAL;
+>>           goto out;
+>>       }
+>> @@ -2428,15 +2452,13 @@ static ssize_t 
+>> __nr_hugepages_store_common(bool obey_mempolicy,
+>>       } else
+>>           nodes_allowed = &node_states[N_MEMORY];
+>>   -    h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
+>> +    err = set_max_huge_pages(h, count, nodes_allowed);
+>>   +out:
+>>       if (nodes_allowed != &node_states[N_MEMORY])
+>>           NODEMASK_FREE(nodes_allowed);
+>>   -    return len;
+>> -out:
+>> -    NODEMASK_FREE(nodes_allowed);
+>> -    return err;
+>> +    return err ? err : len;
+>>   }
+>>     static ssize_t nr_hugepages_store_common(bool obey_mempolicy,
+>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>> index ac9c45ffb344..a4547d90fa7a 100644
+>> --- a/mm/page_alloc.c
+>> +++ b/mm/page_alloc.c
+>> @@ -8234,8 +8234,9 @@ int alloc_contig_range(unsigned long start, 
+>> unsigned long end,
+>>                   pfn_max_align_up(end), migratetype);
+>>       return ret;
+>>   }
+>> +#endif /* CONFIG_CONTIG_ALLOC */
+>>   -void free_contig_range(unsigned long pfn, unsigned nr_pages)
+>> +void free_contig_range(unsigned long pfn, unsigned int nr_pages)
+>>   {
+>>       unsigned int count = 0;
+>>   @@ -8247,7 +8248,6 @@ void free_contig_range(unsigned long pfn, 
+>> unsigned nr_pages)
+>>       }
+>>       WARN(count != 0, "%d pages are still in use!\n", count);
+>>   }
+>> -#endif
+>>     #ifdef CONFIG_MEMORY_HOTPLUG
+>>   /*
+>>
+>
 > ---
->=20
->   Changes since v2 :
->=20
->  - checked that device is owned by VM
-> =20
->  include/uapi/linux/kvm.h          |  7 ++++++
->  virt/kvm/kvm_main.c               | 42 +++++++++++++++++++++++++++++++
->  Documentation/virtual/kvm/api.txt | 20 +++++++++++++++
->  3 files changed, 69 insertions(+)
->=20
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 52bf74a1616e..d78fafa54274 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -1183,6 +1183,11 @@ struct kvm_create_device {
->  	__u32	flags;	/* in: KVM_CREATE_DEVICE_xxx */
->  };
-> =20
-> +struct kvm_destroy_device {
-> +	__u32	fd;	/* in: device handle */
-> +	__u32	flags;	/* in: unused */
-> +};
-> +
->  struct kvm_device_attr {
->  	__u32	flags;		/* no flags currently defined */
->  	__u32	group;		/* device-defined */
-> @@ -1331,6 +1336,8 @@ struct kvm_s390_ucas_mapping {
->  #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
->  #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
-> =20
-> +#define KVM_DESTROY_DEVICE	  _IOWR(KVMIO,  0xf0, struct kvm_destroy_devi=
-ce)
-> +
->  /*
->   * ioctls for vcpu fds
->   */
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index e4881a8c2a6f..7b616a1d48cf 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -3026,6 +3026,34 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
->  	return 0;
->  }
-> =20
-> +static int kvm_ioctl_destroy_device(struct kvm *kvm,
-> +				    struct kvm_destroy_device *dd)
-> +{
-> +	struct fd f;
-> +	struct kvm_device *dev;
-> +
-> +	f =3D fdget(dd->fd);
-> +	if (!f.file)
-> +		return -EBADF;
-> +
-> +	dev =3D kvm_device_from_filp(f.file);
-> +	fdput(f);
-> +
-> +	if (!dev)
-> +		return -ENODEV;
-> +
-> +	if (dev->kvm !=3D kvm)
-> +		return -EPERM;
-> +
-> +	mutex_lock(&kvm->lock);
-> +	list_del(&dev->vm_node);
-> +	dev->ops->destroy(dev);
-> +	mutex_unlock(&kvm->lock);
-> +
-> +	/* TODO: kvm_put_kvm() crashes the host on some occasion ? */
-> +	return 0;
-> +}
-> +
->  static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long a=
-rg)
->  {
->  	switch (arg) {
-> @@ -3270,6 +3298,20 @@ static long kvm_vm_ioctl(struct file *filp,
->  		r =3D 0;
->  		break;
->  	}
-> +	case KVM_DESTROY_DEVICE: {
-> +		struct kvm_destroy_device dd;
-> +
-> +		r =3D -EFAULT;
-> +		if (copy_from_user(&dd, argp, sizeof(dd)))
-> +			goto out;
-> +
-> +		r =3D kvm_ioctl_destroy_device(kvm, &dd);
-> +		if (r)
-> +			goto out;
-> +
-> +		r =3D 0;
-> +		break;
-> +	}
->  	case KVM_CHECK_EXTENSION:
->  		r =3D kvm_vm_ioctl_check_extension_generic(kvm, arg);
->  		break;
-> diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kv=
-m/api.txt
-> index 1db1435769b4..914471494602 100644
-> --- a/Documentation/virtual/kvm/api.txt
-> +++ b/Documentation/virtual/kvm/api.txt
-> @@ -3857,6 +3857,26 @@ number of valid entries in the 'entries' array, wh=
-ich is then filled.
->  'index' and 'flags' fields in 'struct kvm_cpuid_entry2' are currently re=
-served,
->  userspace should not expect to get any particular value there.
-> =20
-> +4.119 KVM_DESTROY_DEVICE
-> +
-> +Capability: KVM_CAP_DEVICE_CTRL
-> +Type: vm ioctl
-> +Parameters: struct kvm_destroy_device (in)
-> +Returns: 0 on success, -1 on error
-> +Errors:
-> +  ENODEV: The device type is unknown or unsupported
-> +  EPERM: The device does not belong to the VM
-> +
-> +  Other error conditions may be defined by individual device types or
-> +  have their standard meanings.
-> +
-> +Destroys an emulated device in the kernel.
-> +
-> +struct kvm_destroy_device {
-> +	__u32	fd;	/* in: device handle */
-> +	__u32	flags;	/* unused */
-> +};
-> +
->  5. The kvm_run structure
->  ------------------------
-> =20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---fpolVoprVozDR81Y
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyPPeIACgkQbDjKyiDZ
-s5Kwsg/9Gq3ACtHKIt7mBbv7yoZnfTZiLmK0j9G98Cp/jvKgf7QOPHj0iov+2FxT
-NUlRXC4Jd3cDheyorfYVd0rZx1Iygow7SO8E+m6h7ljpeiBuAQ9kacUIyTO3GFi4
-kEBJAgQEm/vK5qK0staITyjVavQ7jUB1i2MmZKZIA8fARbHQuefHInsf+jSng0al
-s+4ItsN324eeQRLcbeHPOldm2dVC4T9PFF5YhVdY2U3OWMoEU5rvywtZczljjXC+
-Hz7toZP8tdT1MWrzD6BOiQC1FDO21mZmeXFmq1koG01QP0Ir0+x3HKtIuY8O0/DY
-RldGyuhwl02pSDL0bxgGdLjrUeek2w268t7pLdQZO7ZdUKgdjTieHqsrhdnaF8F+
-cDfMBR4fEoHenlqz6XPWD/ogLCjvA/uBFoLqSXqFRGRcaQkQR5/VG95uYOsSNuev
-3GVnpKzwBLv3I/nQAVzAsa8WI5omKX+C6wX3E6U1NZFcqHlf3o4asn774h/RUcZ1
-rC2Qdo1cZGIGnRg6W2aD+2Ujr4+IW6SF87tP86n9388ZyxYQ0pn9gIV8DK8hj9x8
-HOco3MTw1p4kdYvuEeWg0kptkV+2YlTHITfiKSZuvftSjJmNemKQ1W+fxxuSEOwR
-umejT+ii3b6TlMFLF17KEpdsAjJiEbfO9iYpA7nn0mfG6SrJZcQ=
-=8unw
------END PGP SIGNATURE-----
-
---fpolVoprVozDR81Y--
+> L'absence de virus dans ce courrier électronique a été vérifiée par le 
+> logiciel antivirus Avast.
+> https://www.avast.com/antivirus
+>
