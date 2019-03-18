@@ -2,23 +2,23 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE0E4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 538AAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:42:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41D9B2085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:33:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41D9B2085A
+	by mail.kernel.org (Postfix) with ESMTPS id 9C4FE20872
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 14:42:56 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C4FE20872
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NJZT0bYgzDqKD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 01:33:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44NJnV2YJszDqJ7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 01:42:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=altlinux.org
  (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
@@ -26,24 +26,24 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=altlinux.org
 Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 44NJXk1k4dzDq7w
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 01:31:50 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 44NJlc65p1zDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 01:41:16 +1100 (AEDT)
 Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
- by vmicros1.altlinux.org (Postfix) with ESMTP id EA69172CC8C;
- Mon, 18 Mar 2019 17:31:47 +0300 (MSK)
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 3C2B072CC53;
+ Mon, 18 Mar 2019 17:41:15 +0300 (MSK)
 Received: by mua.local.altlinux.org (Postfix, from userid 508)
- id C662E7CC74C; Mon, 18 Mar 2019 17:31:47 +0300 (MSK)
-Date: Mon, 18 Mar 2019 17:31:47 +0300
+ id 273227CC74C; Mon, 18 Mar 2019 17:41:15 +0300 (MSK)
+Date: Mon, 18 Mar 2019 17:41:15 +0300
 From: "Dmitry V. Levin" <ldv@altlinux.org>
 To: Sudeep Holla <sudeep.holla@arm.com>
 Subject: Re: [PATCH v2 2/6] ptrace: introduce ptrace_syscall_enter to
  consolidate PTRACE_SYSEMU handling
-Message-ID: <20190318143147.GB27941@altlinux.org>
+Message-ID: <20190318144115.GC27941@altlinux.org>
 References: <20190318104925.16600-1-sudeep.holla@arm.com>
  <20190318104925.16600-3-sudeep.holla@arm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="98e8jtXdkpgskNou"
+ protocol="application/pgp-signature"; boundary="V88s5gaDVPzZ0KCq"
 Content-Disposition: inline
 In-Reply-To: <20190318104925.16600-3-sudeep.holla@arm.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -70,7 +70,7 @@ Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---98e8jtXdkpgskNou
+--V88s5gaDVPzZ0KCq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -82,86 +82,34 @@ On Mon, Mar 18, 2019 at 10:49:21AM +0000, Sudeep Holla wrote:
 >=20
 > Let's introduce a hook 'ptrace_syscall_enter' that arch specific syscall
 > entry code can call.
->=20
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  include/linux/ptrace.h |  1 +
->  kernel/ptrace.c        | 22 ++++++++++++++++++++++
->  2 files changed, 23 insertions(+)
->=20
-> diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-> index edb9b040c94c..e30f51e3363e 100644
-> --- a/include/linux/ptrace.h
-> +++ b/include/linux/ptrace.h
-> @@ -407,6 +407,7 @@ static inline void user_single_step_report(struct pt_=
-regs *regs)
->  #define current_user_stack_pointer() user_stack_pointer(current_pt_regs(=
-))
->  #endif
-> =20
-> +extern long ptrace_syscall_enter(struct pt_regs *regs);
->  extern int task_current_syscall(struct task_struct *target, long *callno,
->  				unsigned long args[6], unsigned int maxargs,
->  				unsigned long *sp, unsigned long *pc);
-> diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-> index 4fa3b7f4c3c7..c9c505c483df 100644
-> --- a/kernel/ptrace.c
-> +++ b/kernel/ptrace.c
-> @@ -29,6 +29,7 @@
->  #include <linux/hw_breakpoint.h>
->  #include <linux/cn_proc.h>
->  #include <linux/compat.h>
-> +#include <linux/tracehook.h>
-> =20
->  /*
->   * Access another process' address space via ptrace.
-> @@ -557,6 +558,27 @@ static int ptrace_detach(struct task_struct *child, =
-unsigned int data)
->  	return 0;
->  }
-> =20
-> +/*
-> + * Hook to check and report for PTRACE_SYSEMU, can be called from arch
-> + * arch syscall entry code
-> + */
-> +long ptrace_syscall_enter(struct pt_regs *regs)
-> +{
-> +#ifdef TIF_SYSCALL_EMU
-> +	if (test_thread_flag(TIF_SYSCALL_EMU)) {
-> +		if (tracehook_report_syscall_entry(regs))
-> +			/*
-> +			 * We can ignore the return code here as we need
-> +			 * return -1 always for syscall emulation irrespective
-> +			 * of whether the tracehook report fails or succeed.
-> +			 */
-> +			;
 
-This is problematic as it causes build errors with -Werror=3Dempty-body,
-see https://lore.kernel.org/lkml/20181218205305.26647-1-malat@debian.org/
+Sorry if I'm late for the party, but the new name looks confusing.
+If all it does is related to TIF_SYSCALL_EMU, why does it have a generic
+name 'ptrace_syscall_enter' without any hint of being specific to
+TIF_SYSCALL_EMU?
 
 
 --=20
 ldv
 
---98e8jtXdkpgskNou
+--V88s5gaDVPzZ0KCq
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAEBCAAGBQJcj6vTAAoJEAVFT+BVnCUIZdoQAMNcDIAbaXHLJT0H192POtdF
-rRwlBaKZeLHo9YKsCNI0YJWD5L6mrw6pzKrIb+O7w3fkel4k/BYhKJj0VKMriGWv
-ZhB0qOsRMRj8ytIGzBP+g0EjB+OVO0KBDrR9aKa1Kh3lRIL95sECaoZkcI4xv3dw
-5Gs46YNIHaKzXg/0kdAmKb6/FmTqC+0x7dB1KdvuIP8uKFNKOAaLwopTS6fmTVvd
-SZPBuzeOhTvSvm73avmwwsLf2agniq9nFRiw1Q/3JWPxoRcJToRSozwudkm64z7J
-OClyRZiOsFTvtXd/tiPZVPr17YhNR2f6XQYtqpWCMzSsbLpvO86cTFJcFIzpWfJr
-ly+oeURC24KQK2jPjVLBeisugW074Kva0CqGYu/tKAUScWcvoXs6miNYv5/VoiIe
-yZWr4WlJ5God4Tnk5Y/BFvm3fhwShy+u56VpLy1hX8QaEZUC+jSp0N9YrS5ufx7U
-WMhdEHfXwfuoMtyAUSINxINFabH15RfC9P818lXmBs4tbKJs51OUQZ5OsyPF0MQn
-+iPj1Ups+D+1m788lrQE6RsyC4/3piJNehIt7S+5K73UeMek/f2LA5rq+BSjjzBO
-iJD6xpWwvqLg5mpAAn7Jdq0Wzz7g16auC2m+6F5pXeTA/a5Ju7qrPh1i1Xwx6qqH
-osPsh+YtCIqvfsZn9TSQ
-=fKg4
+iQIcBAEBCAAGBQJcj64KAAoJEAVFT+BVnCUIxpQP/jwIu65MqEkZ5bTrcyYeWRHb
+UfiJ2PNmJZ0oW8kKkFfTLL/KpldqRSotVfyVOCu41DfhC1LLouF4LHIlCVObRBj/
+2KRgYkPZbfl1dZ7ErIT6O+YxR5n7ygdP379A5DGIbz2gzm0X2q+I2CjFFIbbyBuQ
+N8rF1cijb1CCpoHaxDNWtNzTL9gV0fH+kKqNttarKFHV5EYPckR9bat31dktab74
+74nI81OVtR3PYJMlWiR9HKS3JBVp9LLZ2wGMmELhwHG6nmEpgoYJwYy4wwlwf+6E
+DgYZOa2SWx/cdLrQpSF98UjSDd5qoHe1Aycg1cyfbx+Y5/VQBBi72Jb5EwAbyHtZ
+J0sD0bAueGNOiftyPRDaChSjfIygtUvWsdBjPOXyaz7HSwngussKpFHVopg5mEna
+ZwzSYFvTcd6mLgX05mKtlQFzYPWHTX/13Hcrtdc+61ABSVbVfkuft5/28H1tO7T5
+W9Rwiahj2LS4Ud9IzHAPOvqfQywJSOy2djKvVbh9jDyjyXLh/H7V0ozP3aDLx6U1
+VH39RmwNHTVRAlRcEEMtwKvtXUkNvI4aRMwsVfrzv+g2LSx0AgDzcXPRDgbIc5yO
+rP35A23jtqYdzjplzZjH+JbpRFS8xXoExHYHryXcA3CGGFpJ/9ztMnlkjAR0N0Y3
+q0ftG5tIPuT0RCghzjIm
+=YZtt
 -----END PGP SIGNATURE-----
 
---98e8jtXdkpgskNou--
+--V88s5gaDVPzZ0KCq--
