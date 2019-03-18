@@ -2,73 +2,75 @@ Return-Path: <SRS0=3pJc=RV=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1338FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:02:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88D76C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:47:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5769B2077B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:02:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5769B2077B
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+	by mail.kernel.org (Postfix) with ESMTPS id BE01120828
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 07:47:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="2/dCYSvN"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BE01120828
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44N6ZV28PxzDqM1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 18:02:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44N7Yp3JLzzDqKt
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Mar 2019 18:47:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=ghiti.fr
- (client-ip=217.70.183.197; helo=relay5-d.mail.gandi.net;
- envelope-from=alex@ghiti.fr; receiver=<UNKNOWN>)
+ spf=softfail (mailfrom) smtp.mailfrom=socionext.com
+ (client-ip=210.131.2.82; helo=conssluserg-03.nifty.com;
+ envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ghiti.fr
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
- [217.70.183.197])
+ dmarc=none (p=none dis=none) header.from=socionext.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=nifty.com header.i=@nifty.com header.b="2/dCYSvN"; 
+ dkim-atps=neutral
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44N6Xf4Lg3zDqCW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 18:01:03 +1100 (AEDT)
-X-Originating-IP: 79.86.19.127
-Received: from [192.168.0.11] (127.19.86.79.rev.sfr.net [79.86.19.127])
- (Authenticated sender: alex@ghiti.fr)
- by relay5-d.mail.gandi.net (Postfix) with ESMTPSA id 59B641C0007;
- Mon, 18 Mar 2019 07:00:48 +0000 (UTC)
-Subject: Re: [PATCH v7 4/4] hugetlb: allow to free gigantic pages regardless
- of the configuration
-To: christophe leroy <christophe.leroy@c-s.fr>, aneesh.kumar@linux.ibm.com,
- mpe@ellerman.id.au, Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Borislav Petkov <bp@alien8.de>, "H . Peter Anvin" <hpa@zytor.com>,
- x86@kernel.org, Dave Hansen <dave.hansen@linux.intel.com>,
- Andy Lutomirski <luto@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
- Mike Kravetz <mike.kravetz@oracle.com>,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
-References: <20190317162847.14107-1-alex@ghiti.fr>
- <20190317162847.14107-5-alex@ghiti.fr>
- <f434892d-80b2-f09d-31d6-754a1be0b97a@c-s.fr>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <525d6c00-012f-c6dd-abf0-fa5e1ffc12be@ghiti.fr>
-Date: Mon, 18 Mar 2019 03:00:47 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.4.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44N7X10R3vzDqDG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 18:45:35 +1100 (AEDT)
+Received: from mail-vs1-f43.google.com (mail-vs1-f43.google.com
+ [209.85.217.43]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id x2I7j37r001761
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 16:45:03 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-03.nifty.com x2I7j37r001761
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+ s=dec2015msa; t=1552895104;
+ bh=3ix53cwSg7wpTPsOZzwByaZewljMUWKcbgwMN//A5Q4=;
+ h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+ b=2/dCYSvNbG8BcJy5jWvlnRIDp3UI6fkUf+TZGQWfUSB0hxFfy6qAwdbVQQQk9tU7j
+ fc/h19uzr/tLU/+0AypOqvvAvAyS1qCUMnA+gqXczR3z2M2bpxTHMRAujbkUtjbRcN
+ 5cDunN2XFJuSchtjq9BADODw0CbUleroYuZuGL/+YI5NCX8TbKxZG8+FB0OaQ0QBKw
+ LOVTiwBswPREHMsU6HyAE5H87EFgW8FXfRdn5GRUlU/w3mRuu9WUgzZJ5PONaoGn2c
+ W5xyi99VyO5IfhzRiipRULjnNQNdNEVVw0of/hzU39JB0TsIk+SdLV9k/Vn+Iu8FJs
+ 8N3xLn5TXpkVw==
+X-Nifty-SrcIP: [209.85.217.43]
+Received: by mail-vs1-f43.google.com with SMTP id z25so7562980vsk.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Mar 2019 00:45:03 -0700 (PDT)
+X-Gm-Message-State: APjAAAVSFwFcwsmoXPcvb6VNhfkKJzFH/BkI4NjHZPtUY+yKEvgmk0Gz
+ yZbDmtU5GLlRc/JMx3Gw9LvVHJuvWXGOTmRBsqE=
+X-Google-Smtp-Source: APXvYqyNijpqNVoW+bWF9eEp2LsjyfAuO7SHhsoKO0R2rUk+XQQSybYzte9XvRxtwUk8OvStMi0b8nTnqgwbUoIR9Oo=
+X-Received: by 2002:a67:7a43:: with SMTP id v64mr4107181vsc.54.1552895102473; 
+ Mon, 18 Mar 2019 00:45:02 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <f434892d-80b2-f09d-31d6-754a1be0b97a@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: sv-FI
+References: <1552602855-26086-1-git-send-email-info@metux.net>
+ <1552602855-26086-8-git-send-email-info@metux.net>
+In-Reply-To: <1552602855-26086-8-git-send-email-info@metux.net>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 18 Mar 2019 16:44:25 +0900
+X-Gmail-Original-Message-ID: <CAK7LNAT6p41J+voYdrOtPkiq92sRDNv6nbrBdVKsWZYGENxsWw@mail.gmail.com>
+Message-ID: <CAK7LNAT6p41J+voYdrOtPkiq92sRDNv6nbrBdVKsWZYGENxsWw@mail.gmail.com>
+Subject: Re: [PATCH v2 07/45] drivers: tty: serial: 8250_uniphier: use
+ devm_ioremap_resource()
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,265 +82,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Cc: linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+ David Brown <david.brown@linaro.org>,
+ "Maciej W. Rozycki" <macro@linux-mips.org>, jacmet@sunsite.dk,
+ Fabio Estevam <festevam@gmail.com>, Stefan Wahren <stefan.wahren@i2se.com>,
+ Florian Fainelli <f.fainelli@gmail.com>,
+ Broadcom Kernel Feedback List <bcm-kernel-feedback-list@broadcom.com>,
+ linux-imx@nxp.com, linux-serial@vger.kernel.org,
+ =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Andy Gross <andy.gross@linaro.org>, Tobias Klauser <tklauser@distanz.ch>,
+ Ray Jui <rjui@broadcom.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Sylvain Lemieux <slemieux.tyco@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Vladimir Zapolskiy <vz@mleia.com>, Matthias Brugger <matthias.bgg@gmail.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Barry Song <baohua@kernel.org>, Scott Branden <sbranden@broadcom.com>,
+ Eric Anholt <eric@anholt.net>, Richard Genoud <richard.genoud@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/17/19 2:31 PM, christophe leroy wrote:
+On Fri, Mar 15, 2019 at 7:35 AM Enrico Weigelt, metux IT consult
+<info@metux.net> wrote:
 >
+> Instead of fetching out data from a struct resource for passing
+> it to devm_ioremap(), directly use devm_ioremap_resource()
 >
-> Le 17/03/2019 à 17:28, Alexandre Ghiti a écrit :
->> On systems without CONTIG_ALLOC activated but that support gigantic 
->> pages,
->> boottime reserved gigantic pages can not be freed at all. This patch
->> simply enables the possibility to hand back those pages to memory
->> allocator.
->>
->> Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
->> Acked-by: David S. Miller <davem@davemloft.net> [sparc]
->> ---
->>   arch/arm64/Kconfig                           |  2 +-
->>   arch/arm64/include/asm/hugetlb.h             |  4 --
->>   arch/powerpc/include/asm/book3s/64/hugetlb.h |  7 ---
->>   arch/powerpc/platforms/Kconfig.cputype       |  2 +-
->>   arch/s390/Kconfig                            |  2 +-
->>   arch/s390/include/asm/hugetlb.h              |  3 --
->>   arch/sh/Kconfig                              |  2 +-
->>   arch/sparc/Kconfig                           |  2 +-
->>   arch/x86/Kconfig                             |  2 +-
->>   arch/x86/include/asm/hugetlb.h               |  4 --
->>   include/asm-generic/hugetlb.h                | 14 +++++
->>   include/linux/gfp.h                          |  2 +-
->>   mm/hugetlb.c                                 | 54 ++++++++++++++------
->>   mm/page_alloc.c                              |  4 +-
->>   14 files changed, 61 insertions(+), 43 deletions(-)
->>
->
-> [...]
->
->> diff --git a/include/asm-generic/hugetlb.h 
->> b/include/asm-generic/hugetlb.h
->> index 71d7b77eea50..aaf14974ee5f 100644
->> --- a/include/asm-generic/hugetlb.h
->> +++ b/include/asm-generic/hugetlb.h
->> @@ -126,4 +126,18 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
->>   }
->>   #endif
->>   +#ifndef __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
->> +#ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
->> +static inline bool gigantic_page_runtime_supported(void)
->> +{
->> +    return true;
->> +}
->> +#else
->> +static inline bool gigantic_page_runtime_supported(void)
->> +{
->> +    return false;
->> +}
->> +#endif /* CONFIG_ARCH_HAS_GIGANTIC_PAGE */
->
-> What about the following instead:
->
-> static inline bool gigantic_page_runtime_supported(void)
-> {
->     return IS_ENABLED(CONFIG_ARCH_HAS_GIGANTIC_PAGE);
-> }
->
-
-Totally, it already was like that in v2 or v3...
-
-
->
->> +#endif /* __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED */
->> +
->>   #endif /* _ASM_GENERIC_HUGETLB_H */
->> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
->> index 1f1ad9aeebb9..58ea44bf75de 100644
->> --- a/include/linux/gfp.h
->> +++ b/include/linux/gfp.h
->> @@ -589,8 +589,8 @@ static inline bool pm_suspended_storage(void)
->>   /* The below functions must be run on a range from a single zone. */
->>   extern int alloc_contig_range(unsigned long start, unsigned long end,
->>                     unsigned migratetype, gfp_t gfp_mask);
->> -extern void free_contig_range(unsigned long pfn, unsigned nr_pages);
->>   #endif
->> +extern void free_contig_range(unsigned long pfn, unsigned int 
->> nr_pages);
->
-> 'extern' is unneeded and should be avoided (iaw checkpatch)
->
-
-Ok, I did fix a checkpatch warning here, but did not notice the 'extern' 
-one.
-
-
-Thanks for your time,
-
-
-Alex
-
-
-> Christophe
->
->>     #ifdef CONFIG_CMA
->>   /* CMA stuff */
->> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
->> index afef61656c1e..4e55aa38704f 100644
->> --- a/mm/hugetlb.c
->> +++ b/mm/hugetlb.c
->> @@ -1058,6 +1058,7 @@ static void free_gigantic_page(struct page 
->> *page, unsigned int order)
->>       free_contig_range(page_to_pfn(page), 1 << order);
->>   }
->>   +#ifdef CONFIG_CONTIG_ALLOC
->>   static int __alloc_gigantic_page(unsigned long start_pfn,
->>                   unsigned long nr_pages, gfp_t gfp_mask)
->>   {
->> @@ -1142,11 +1143,20 @@ static struct page 
->> *alloc_gigantic_page(struct hstate *h, gfp_t gfp_mask,
->>     static void prep_new_huge_page(struct hstate *h, struct page 
->> *page, int nid);
->>   static void prep_compound_gigantic_page(struct page *page, unsigned 
->> int order);
->> +#else /* !CONFIG_CONTIG_ALLOC */
->> +static struct page *alloc_gigantic_page(struct hstate *h, gfp_t 
->> gfp_mask,
->> +                    int nid, nodemask_t *nodemask)
->> +{
->> +    return NULL;
->> +}
->> +#endif /* CONFIG_CONTIG_ALLOC */
->>     #else /* !CONFIG_ARCH_HAS_GIGANTIC_PAGE */
->> -static inline bool gigantic_page_supported(void) { return false; }
->>   static struct page *alloc_gigantic_page(struct hstate *h, gfp_t 
->> gfp_mask,
->> -        int nid, nodemask_t *nodemask) { return NULL; }
->> +                    int nid, nodemask_t *nodemask)
->> +{
->> +    return NULL;
->> +}
->>   static inline void free_gigantic_page(struct page *page, unsigned 
->> int order) { }
->>   static inline void destroy_compound_gigantic_page(struct page *page,
->>                           unsigned int order) { }
->> @@ -1156,7 +1166,7 @@ static void update_and_free_page(struct hstate 
->> *h, struct page *page)
->>   {
->>       int i;
->>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported())
->> +    if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported())
->>           return;
->>         h->nr_huge_pages--;
->> @@ -2276,13 +2286,27 @@ static int adjust_pool_surplus(struct hstate 
->> *h, nodemask_t *nodes_allowed,
->>   }
->>     #define persistent_huge_pages(h) (h->nr_huge_pages - 
->> h->surplus_huge_pages)
->> -static unsigned long set_max_huge_pages(struct hstate *h, unsigned 
->> long count,
->> -                        nodemask_t *nodes_allowed)
->> +static int set_max_huge_pages(struct hstate *h, unsigned long count,
->> +                  nodemask_t *nodes_allowed)
->>   {
->>       unsigned long min_count, ret;
->>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported())
->> -        return h->max_huge_pages;
->> +    spin_lock(&hugetlb_lock);
->> +
->> +    /*
->> +     * Gigantic pages runtime allocation depend on the capability 
->> for large
->> +     * page range allocation.
->> +     * If the system does not provide this feature, return an error 
->> when
->> +     * the user tries to allocate gigantic pages but let the user 
->> free the
->> +     * boottime allocated gigantic pages.
->> +     */
->> +    if (hstate_is_gigantic(h) && !IS_ENABLED(CONFIG_CONTIG_ALLOC)) {
->> +        if (count > persistent_huge_pages(h)) {
->> +            spin_unlock(&hugetlb_lock);
->> +            return -EINVAL;
->> +        }
->> +        /* Fall through to decrease pool */
->> +    }
->>         /*
->>        * Increase the pool size
->> @@ -2295,7 +2319,6 @@ static unsigned long set_max_huge_pages(struct 
->> hstate *h, unsigned long count,
->>        * pool might be one hugepage larger than it needs to be, but
->>        * within all the constraints specified by the sysctls.
->>        */
->> -    spin_lock(&hugetlb_lock);
->>       while (h->surplus_huge_pages && count > 
->> persistent_huge_pages(h)) {
->>           if (!adjust_pool_surplus(h, nodes_allowed, -1))
->>               break;
->> @@ -2350,9 +2373,10 @@ static unsigned long set_max_huge_pages(struct 
->> hstate *h, unsigned long count,
->>               break;
->>       }
->>   out:
->> -    ret = persistent_huge_pages(h);
->> +    h->max_huge_pages = persistent_huge_pages(h);
->>       spin_unlock(&hugetlb_lock);
->> -    return ret;
->> +
->> +    return 0;
->>   }
->>     #define HSTATE_ATTR_RO(_name) \
->> @@ -2404,7 +2428,7 @@ static ssize_t __nr_hugepages_store_common(bool 
->> obey_mempolicy,
->>       int err;
->>       NODEMASK_ALLOC(nodemask_t, nodes_allowed, GFP_KERNEL | 
->> __GFP_NORETRY);
->>   -    if (hstate_is_gigantic(h) && !gigantic_page_supported()) {
->> +    if (hstate_is_gigantic(h) && !gigantic_page_runtime_supported()) {
->>           err = -EINVAL;
->>           goto out;
->>       }
->> @@ -2428,15 +2452,13 @@ static ssize_t 
->> __nr_hugepages_store_common(bool obey_mempolicy,
->>       } else
->>           nodes_allowed = &node_states[N_MEMORY];
->>   -    h->max_huge_pages = set_max_huge_pages(h, count, nodes_allowed);
->> +    err = set_max_huge_pages(h, count, nodes_allowed);
->>   +out:
->>       if (nodes_allowed != &node_states[N_MEMORY])
->>           NODEMASK_FREE(nodes_allowed);
->>   -    return len;
->> -out:
->> -    NODEMASK_FREE(nodes_allowed);
->> -    return err;
->> +    return err ? err : len;
->>   }
->>     static ssize_t nr_hugepages_store_common(bool obey_mempolicy,
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index ac9c45ffb344..a4547d90fa7a 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -8234,8 +8234,9 @@ int alloc_contig_range(unsigned long start, 
->> unsigned long end,
->>                   pfn_max_align_up(end), migratetype);
->>       return ret;
->>   }
->> +#endif /* CONFIG_CONTIG_ALLOC */
->>   -void free_contig_range(unsigned long pfn, unsigned nr_pages)
->> +void free_contig_range(unsigned long pfn, unsigned int nr_pages)
->>   {
->>       unsigned int count = 0;
->>   @@ -8247,7 +8248,6 @@ void free_contig_range(unsigned long pfn, 
->> unsigned nr_pages)
->>       }
->>       WARN(count != 0, "%d pages are still in use!\n", count);
->>   }
->> -#endif
->>     #ifdef CONFIG_MEMORY_HOTPLUG
->>   /*
->>
->
+> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 > ---
-> L'absence de virus dans ce courrier électronique a été vérifiée par le 
-> logiciel antivirus Avast.
-> https://www.avast.com/antivirus
+
+
+NACK.
+
+
+This patch would break my driver.
+
+Probably, all the 8250* drivers would be broken in the same way.
+
+
+For 8250 drivers, request_mem_region() is called
+from 8250_port.c
+
+
+Let's not touch around the code you do not
+understand how it works.
+
+
+Thanks.
+
+Masahiro Yamada
+
+
+
+>  drivers/tty/serial/8250/8250_uniphier.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/tty/serial/8250/8250_uniphier.c b/drivers/tty/serial/8250/8250_uniphier.c
+> index 164ba13..9c1244e 100644
+> --- a/drivers/tty/serial/8250/8250_uniphier.c
+> +++ b/drivers/tty/serial/8250/8250_uniphier.c
+> @@ -171,7 +171,7 @@ static int uniphier_uart_probe(struct platform_device *pdev)
+>                 return -EINVAL;
+>         }
+>
+> -       membase = devm_ioremap(dev, regs->start, resource_size(regs));
+> +       membase = devm_ioremap_resource(dev, regs);
+>         if (!membase)
+>                 return -ENOMEM;
+>
+> --
+> 1.9.1
 >
