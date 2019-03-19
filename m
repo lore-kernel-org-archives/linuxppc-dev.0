@@ -2,87 +2,80 @@ Return-Path: <SRS0=MfaX=RW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_NEOMUTT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D2ACC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 15:38:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52680C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 15:47:42 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7F52C2083D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 15:38:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 014CC20854
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 15:47:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=intel-com.20150623.gappssmtp.com header.i=@intel-com.20150623.gappssmtp.com header.b="aZpreJfZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F52C2083D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="RqG/mpSY"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 014CC20854
+Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44NxzB4gM6zDqGQ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 02:38:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Ny9k2gHSzDqD3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 02:47:38 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=2607:f8b0:4864:20::344; helo=mail-ot1-x344.google.com;
- envelope-from=dan.j.williams@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=intel-com.20150623.gappssmtp.com
- header.i=@intel-com.20150623.gappssmtp.com header.b="aZpreJfZ"; 
+ spf=pass (mailfrom) smtp.mailfrom=cisco.com
+ (client-ip=173.37.142.92; helo=alln-iport-5.cisco.com;
+ envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
+ header.from=cisco.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=cisco.com header.i=@cisco.com header.b="RqG/mpSY"; 
  dkim-atps=neutral
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
- [IPv6:2607:f8b0:4864:20::344])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44NxxM6D2NzDqHZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 02:36:54 +1100 (AEDT)
-Received: by mail-ot1-x344.google.com with SMTP id q24so18098252otk.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 08:36:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=intel-com.20150623.gappssmtp.com; s=20150623;
- h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc:content-transfer-encoding;
- bh=1unbtIvY5Ht57/xExEoU7Ql118n/fJ7lA1QdHqj8Odk=;
- b=aZpreJfZigo3FKFLPUZju3pojwCEccRahWR3gpAo6ZfCqnm80KEjECkjhF+s7IRotx
- 5hw8tXb+CaJesSAIWhgcGCpQA7hZzzrZ+9f9SO7gvkUW5tGowDM/3iommlzv6U6burYI
- BNmd+EJvqFeLxFn81SfbhyntCt4bNsllLQoFNgz1f2lITd61wl+htoOGhnjBl014kN16
- IUmyQXlvPOSXPDY++j0eWwbcpoyyqtUpOsmNnsshnqRnsUDfJiLYo9EeHXeyyaz763AC
- q8MEBln0Af2RbQ8eLac+I5cLVBSiQ1cCA2cpKMnBa4WuGFMYa31AV8rxXkUOkAyb1YHe
- A1+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc:content-transfer-encoding;
- bh=1unbtIvY5Ht57/xExEoU7Ql118n/fJ7lA1QdHqj8Odk=;
- b=tQQSQjtlpR5TCQg4XD1ZiBF5412Ru7r3tZbHiiyqqyPI2oNmeokWEqp2ZSXziKTS6G
- JRUq/GMCl+huEkH5PFzf9Wujwe7ax8pkCExnh7p7Uaug6k/Qs76OITL871rl1VD6OS/t
- 5j8Ef+fXqJKT1Q714/cLcimnGLRyKq14GM8d4mWUV4lpR5No3lG3iDLdDTBdBevdJVxE
- F+DQMFgu8aMX8+tIn1zc3zKz5f98NvjL5nyO3c+FO3CynBRnQWPKVI68JdC/AwrnHa9X
- KBYKSndG/GUrbTL1nI0TecpvYE6iaEgSmEbtK6wut8rFEuIChb8MbJX91T28UgPL2t9i
- nTcQ==
-X-Gm-Message-State: APjAAAUJBFyCLXz7LAJtR73Lf/pMZ0D2pE+ll59yS5wBJZ78+1twqTM9
- 2QjITYN25m2S/yaFc8ZDUsnZZiYAq9uIxOU6crY+7A==
-X-Google-Smtp-Source: APXvYqxPZKAs3Uy3oIgghMayYyNVrb3KfDYOGyNEqIq7hCNaT+fTAAGNpB3SAeibiLTtMxkc/Xc9qQ6zh78W8KexrOw=
-X-Received: by 2002:a9d:2c23:: with SMTP id f32mr1985166otb.353.1553009810711; 
- Tue, 19 Mar 2019 08:36:50 -0700 (PDT)
+X-Greylist: delayed 430 seconds by postgrey-1.36 at bilbo;
+ Wed, 20 Mar 2019 02:45:59 AEDT
+Received: from alln-iport-5.cisco.com (alln-iport-5.cisco.com [173.37.142.92])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Ny7q70gGzDqD3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 02:45:59 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=cisco.com; i=@cisco.com; l=5151; q=dns/txt; s=iport;
+ t=1553010360; x=1554219960;
+ h=date:from:to:cc:subject:message-id:references:
+ mime-version:in-reply-to;
+ bh=ualcYx1fUp04g4KteUthNHAzkK28jXy8eukTQKIHMCU=;
+ b=RqG/mpSYpChwgch9OJ7kt0xlbccufrhfH6ao5ZxlCPD3Eitwoo3OW+Kk
+ BO8irif5kzgJ8xB3nlZQgqhtDyDr0kDYC4wljh1Ssq2BCn2Ee+ii/hG/p
+ wooi9oUQjgJIQB5Kw0pIu04DmWFNkP0UTQkr+xnZf6MmqDx6nvYGCUDAS M=;
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0ADAAAhDJFc/4oNJK1jGQEBAQEBAQE?=
+ =?us-ascii?q?BAQEBAQcBAQEBAQGBUQQBAQEBAQsBgWEFKmhQMyeMJ4sqgg2OP4lzFIFnCwE?=
+ =?us-ascii?q?BI4RJAoRrIjQJDQEBAwEBCQEDAm0cDIVKAQEBAwE6PwULCw4EBgklDy0NDgY?=
+ =?us-ascii?q?TgyOBbQgPqRCCMIoyBSKBDQGLMReBQD+EI4EoGQGBXAKBLgESAYYAA4ouIId?=
+ =?us-ascii?q?Okk0JgkuFEodOg3UlDIFwKYVJi3CRB40IAgQGBQIVb1g4ZXEzGggbFYMngiK?=
+ =?us-ascii?q?BCwEMgj6Kcx8DMI0jgj4BAQ?=
+X-IronPort-AV: E=Sophos;i="5.58,498,1544486400"; d="scan'208";a="247194103"
+Received: from alln-core-5.cisco.com ([173.36.13.138])
+ by alln-iport-5.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
+ 19 Mar 2019 15:38:43 +0000
+Received: from zorba ([10.41.50.85])
+ by alln-core-5.cisco.com (8.15.2/8.15.2) with ESMTPS id x2JFcfl5029540
+ (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
+ Tue, 19 Mar 2019 15:38:42 GMT
+Date: Tue, 19 Mar 2019 08:38:42 -0700
+From: Daniel Walker <danielwa@cisco.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PULL REQUEST] powerpc generic command line
+Message-ID: <20190319153842.vgrm5dc7wwc4u44l@zorba>
+References: <1551469472-53043-1-git-send-email-danielwa@cisco.com>
+ <878sxb7jck.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
- <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
- <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
- <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
- <87k1hc8iqa.fsf@linux.ibm.com> <20190306124453.126d36d8@naga.suse.cz>
- <df01bf6e-84a1-53fb-bf0c-0957af2f79e1@linux.ibm.com>
- <CAPcyv4iLm09DSiF3niFprP3PTFrgB5pZPp9AysBpRa-m725tmw@mail.gmail.com>
- <20190319084439.eya2pisiirattuil@kshutemo-mobl1>
-In-Reply-To: <20190319084439.eya2pisiirattuil@kshutemo-mobl1>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Tue, 19 Mar 2019 08:36:38 -0700
-Message-ID: <CAPcyv4jAMAenu-WJ1P9E-q728OVpvcajPxqPrW0+gQg_Jk1+0g@mail.gmail.com>
-Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <878sxb7jck.fsf@concordia.ellerman.id.au>
+User-Agent: NeoMutt/20170609 (1.8.3)
+X-Outbound-SMTP-Client: 10.41.50.85, [10.41.50.85]
+X-Outbound-Node: alln-core-5.cisco.com
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -94,73 +87,122 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux MM <linux-mm@kvack.org>, Oliver <oohall@gmail.com>,
- Ross Zwisler <zwisler@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
- =?UTF-8?Q?Michal_Such=C3=A1nek?= <msuchanek@suse.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 19, 2019 at 1:45 AM Kirill A. Shutemov <kirill@shutemov.name> w=
-rote:
->
-> On Wed, Mar 13, 2019 at 09:07:13AM -0700, Dan Williams wrote:
-> > On Wed, Mar 6, 2019 at 4:46 AM Aneesh Kumar K.V
-> > <aneesh.kumar@linux.ibm.com> wrote:
-> > >
-> > > On 3/6/19 5:14 PM, Michal Such=C3=A1nek wrote:
-> > > > On Wed, 06 Mar 2019 14:47:33 +0530
-> > > > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
-> > > >
-> > > >> Dan Williams <dan.j.williams@intel.com> writes:
-> > > >>
-> > > >>> On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
-> > > >>>>
-> > > >>>> On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
-> > > >>>> <aneesh.kumar@linux.ibm.com> wrote:
-> > > >
-> > > >> Also even if the user decided to not use THP, by
-> > > >> echo "never" > transparent_hugepage/enabled , we should continue t=
-o map
-> > > >> dax fault using huge page on platforms that can support huge pages=
-.
-> > > >
-> > > > Is this a good idea?
-> > > >
-> > > > This knob is there for a reason. In some situations having huge pag=
-es
-> > > > can severely impact performance of the system (due to host-guest
-> > > > interaction or whatever) and the ability to really turn off all THP
-> > > > would be important in those cases, right?
-> > > >
-> > >
-> > > My understanding was that is not true for dax pages? These are not
-> > > regular memory that got allocated. They are allocated out of /dev/dax=
-/
-> > > or /dev/pmem*. Do we have a reason not to use hugepages for mapping
-> > > pages in that case?
+On Tue, Mar 19, 2019 at 12:18:03PM +1100, Michael Ellerman wrote:
+> Hi Daniel,
+> 
+> Daniel Walker <danielwa@cisco.com> writes:
+> > Here are the generic command line changes for powerpc. 
 > >
-> > The problem with the transparent_hugepage/enabled interface is that it
-> > conflates performing compaction work to produce THP-pages with the
-> > ability to map huge pages at all.
->
-> That's not [entirely] true. transparent_hugepage/defrag gates heavy-duty
-> compaction. We do only very limited compaction if it's not advised by
-> transparent_hugepage/defrag.
->
-> I believe DAX has to respect transparent_hugepage/enabled. Or not
-> advertise its huge pages as THP. It's confusing for user.
+> > These changes have been in linux-next for two cycles, with few problems reported.
+> > It's also been used at Cisco Systems, Inc. in production products for many many
+> > years with no problems.
+> >
+> > Please pull these changes.
+> 
+> Sorry I didn't reply to this earlier, have been busy with merge window
+> bugs and so on.
+> 
+> As I imagine you noticed, I didn't pull this. There are a few reasons.
+> 
+> Firstly you sent it a bit late, about a day before the 5.0 release, and
+> at 6am Saturday my time :) In future if you want me to merge something
+> please send a pull at least the ~Wednesday before the release.
+  
+Ok .. It was Friday morning my time.
 
-What does "advertise its huge pages as THP" mean in practice? I think
-it's confusing that DAX, a facility that bypasses System RAM, is
-affected by a transparent_hugepage flag which is a feature for
-combining System RAM pages into larger pages. For the same reason that
-transparent_hugepage does not gate / control hugetlb operation is the
-same reason that transparent_hugepage should not gate / control DAX. A
-global setting to disable opportunistic large page mappings of
-System-RAM makes sense, but I don't see why that should read on DAX?
+> Secondly I had no idea this code was even in linux-next. I'm not sure if
+> I was Cc'ed at some point when you added it, if so sorry I missed it,
+> but I get lots of email. If you're going to add changes to arch/powerpc
+> in your next tree I'd appreciate some notice, or preferably an explicit
+> ack.
+ 
+Can I have an ack now ? Since your looking at it. Do you think this has no use,
+certainly Cisco has use for it. It's still in linux-next as of now.
+
+> The main reason I didn't merge it is that it's adding a bunch of code
+> outside of arch/powerpc, into files which I'm not the maintainer for,
+> and the patches doing so have no acks or reviews from anyone.
+
+With the exception of the Kconfig the header file is brand new, so I'm not sure
+who would ack that. From a maintainer perspective I think you could add new
+files without issues from other maintainers.
+
+> It's also adding a generic implementation with no indication that any
+> other arches are willing/able to use the generic implementation, which
+> begs the question whether it will actually used.
+ 
+It would have been used by powerpc ;) I've gotten feedback in the past from
+Ralf Baechle who thought this was useful, however that was years ago when
+this was first submitted and the code around this area in mips has changed and
+it would require a fair amount of new work to function properly on mips.
+
+Also , no other platforms need to use this. Powerpc could be the only user of
+it. This isn't really a question of a new exciting implementation of
+something. This is really simple, it's just consolidation across architectures.
+The implementation is vanilla, non-exciting stuff.
+
+> I appreciate it's hard to get these sort of cross architecture changes
+> into mainline, but I don't think this is the way to do it.
+> 
+> I'd suggest you post a patch series to linux-arch with the generic
+> changes and as many architecture conversions as you can manage, then get
+> some review/acks for the generic changes and chase arch maintainers for
+> some acks.
+ 
+I didn't post to linux-arch , but the code has been around for years, submitted
+multiple times with more architectures than powerpc. It was scaled down to just
+powerpc to simplify it's submission.
+
+It's really a simple set of changes, I don't think it needs as much thought as
+other cross architecture changes.
+
+> I realise you have posted the series before, it may require some
+> persistence. There were also quite a few comments from Christophe, so
+> replying to those would be a good place to start.
+ 
+I've looked at his comments, but I think he was more worried about conflicts with
+his debugging enablement, not something to stop a pull request.
+
+> > The following changes since commit ccda4af0f4b92f7b4c308d3acc262f4a7e3affad:
+> >
+> >   Linux 4.20-rc2 (2018-11-11 17:12:31 -0600)
+> >
+> > are available in the git repository at:
+> >
+> >   https://github.com/daniel-walker/cisco-linux.git for-powerpc
+> >
+> > for you to fetch changes up to 5d4514a9c291ecf19b0626695161673d35e5d549:
+> >
+> >   powerpc: convert config files to generic cmdline (2018-11-16 07:32:26 -0800)
+> >
+> > ----------------------------------------------------------------
+> > Daniel Walker (3):
+> >       add generic builtin command line
+> >       powerpc: convert to generic builtin command line
+> >       powerpc: convert config files to generic cmdline
+> >
+> >  arch/powerpc/Kconfig                          | 23 +--------
+> >  arch/powerpc/configs/44x/fsp2_defconfig       | 29 ++++++-----
+> >  arch/powerpc/configs/44x/iss476-smp_defconfig | 24 ++++-----
+> >  arch/powerpc/configs/44x/warp_defconfig       | 12 ++---
+> >  arch/powerpc/configs/holly_defconfig          | 12 ++---
+> >  arch/powerpc/configs/mvme5100_defconfig       | 25 +++++-----
+> >  arch/powerpc/configs/skiroot_defconfig        | 48 +++++++++---------
+> >  arch/powerpc/configs/storcenter_defconfig     | 15 +++---
+> 
+> Also if you're updating defconfigs please don't include any unrelated
+> changes. Trimming the defconfigs can silently drop symbols and break
+> people's setups so needs to be done carefully.
+ 
+> It's safer to just sed the defconfig files directly, rather than running
+> savedefconfig on them.
+ 
+Ok.
+
+Daniel
