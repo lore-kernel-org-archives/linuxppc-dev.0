@@ -2,49 +2,51 @@ Return-Path: <SRS0=MfaX=RW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17395C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 12:00:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D77AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 14:45:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 89B032082F
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 12:00:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 89B032082F
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
+	by mail.kernel.org (Postfix) with ESMTPS id C37D62173C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 14:45:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C37D62173C
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=huawei.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Ns7j1B6hzDqJt
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 23:00:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Nwnh6S0rzDqHr
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 01:45:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=arm.com
- (client-ip=217.140.101.70; helo=foss.arm.com;
- envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=huawei.com
+ (client-ip=45.249.212.35; helo=huawei.com; envelope-from=yuehaibing@huawei.com;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arm.com
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 44Ns4l4pG3zDqJB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:57:54 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
- by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C1E1D1596;
- Tue, 19 Mar 2019 04:57:51 -0700 (PDT)
-Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.78])
- by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
- 00CD03F614; Tue, 19 Mar 2019 04:57:49 -0700 (PDT)
-Date: Tue, 19 Mar 2019 11:57:47 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Qian Cai <cai@lca.pw>
-Subject: Re: [PATCH v2] kmemleak: skip scanning holes in the .bss section
-Message-ID: <20190319115747.GB59586@arrakis.emea.arm.com>
-References: <20190313145717.46369-1-cai@lca.pw>
+ dmarc=none (p=none dis=none) header.from=huawei.com
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Nwlj6cLvzDqHW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:43:28 +1100 (AEDT)
+Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.59])
+ by Forcepoint Email with ESMTP id EC417BE7C5A95EDE4D18;
+ Tue, 19 Mar 2019 22:43:20 +0800 (CST)
+Received: from localhost (10.177.31.96) by DGGEMS411-HUB.china.huawei.com
+ (10.3.19.211) with Microsoft SMTP Server id 14.3.408.0; Tue, 19 Mar 2019
+ 22:43:13 +0800
+From: Yue Haibing <yuehaibing@huawei.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <tlfalcon@linux.ibm.com>, <davem@davemloft.net>
+Subject: [PATCH net-next] ibmveth: Make array ibmveth_stats static
+Date: Tue, 19 Mar 2019 22:42:37 +0800
+Message-ID: <20190319144237.19288-1-yuehaibing@huawei.com>
+X-Mailer: git-send-email 2.10.2.windows.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190313145717.46369-1-cai@lca.pw>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
+X-Originating-IP: [10.177.31.96]
+X-CFilter-Loop: Reflected
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -56,34 +58,37 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: netdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Qian,
+From: YueHaibing <yuehaibing@huawei.com>
 
-On Wed, Mar 13, 2019 at 10:57:17AM -0400, Qian Cai wrote:
-> @@ -1531,7 +1547,14 @@ static void kmemleak_scan(void)
->  
->  	/* data/bss scanning */
->  	scan_large_block(_sdata, _edata);
-> -	scan_large_block(__bss_start, __bss_stop);
-> +
-> +	if (bss_hole_start) {
-> +		scan_large_block(__bss_start, bss_hole_start);
-> +		scan_large_block(bss_hole_stop, __bss_stop);
-> +	} else {
-> +		scan_large_block(__bss_start, __bss_stop);
-> +	}
-> +
->  	scan_large_block(__start_ro_after_init, __end_ro_after_init);
+Fix sparse warning:
+drivers/net/ethernet/ibm/ibmveth.c:96:21:
+ warning: symbol 'ibmveth_stats' was not declared. Should it be static?
 
-I'm not a fan of this approach but I couldn't come up with anything
-better. I was hoping we could check for PageReserved() in scan_block()
-but on arm64 it ends up not scanning the .bss at all.
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Until another user appears, I'm ok with this patch.
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index dd71d5d..d86b0e5 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -93,7 +93,7 @@ struct ibmveth_stat {
+ #define IBMVETH_STAT_OFF(stat) offsetof(struct ibmveth_adapter, stat)
+ #define IBMVETH_GET_STAT(a, off) *((u64 *)(((unsigned long)(a)) + off))
+ 
+-struct ibmveth_stat ibmveth_stats[] = {
++static struct ibmveth_stat ibmveth_stats[] = {
+ 	{ "replenish_task_cycles", IBMVETH_STAT_OFF(replenish_task_cycles) },
+ 	{ "replenish_no_mem", IBMVETH_STAT_OFF(replenish_no_mem) },
+ 	{ "replenish_add_buff_failure",
+-- 
+2.7.4
 
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
+
