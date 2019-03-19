@@ -2,80 +2,96 @@ Return-Path: <SRS0=MfaX=RW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40533C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 07:16:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 612C7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 08:46:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1E0F920872
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 07:16:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1E0F920872
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ilande.co.uk
+	by mail.kernel.org (Postfix) with ESMTPS id 7DFAA20854
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 08:46:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="H2yafXhC"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7DFAA20854
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=shutemov.name
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Nkr04KfXzDqKZ
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 18:16:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Nmqn6klzzDqLS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 19:46:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=ilande.co.uk
- (client-ip=46.43.2.167; helo=mail.default.ilande.uk0.bigv.io;
- envelope-from=mark.cave-ayland@ilande.co.uk; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=shutemov.name
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
+ envelope-from=kirill@shutemov.name; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=ilande.co.uk
-Received: from mail.default.ilande.uk0.bigv.io (mail.ilande.co.uk
- [46.43.2.167])
+ dmarc=none (p=none dis=none) header.from=shutemov.name
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=shutemov-name.20150623.gappssmtp.com
+ header.i=@shutemov-name.20150623.gappssmtp.com header.b="H2yafXhC"; 
+ dkim-atps=neutral
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Nkny2MzRzDqHw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 18:14:46 +1100 (AEDT)
-Received: from [86.188.254.49] (helo=[172.30.1.185])
- by mail.default.ilande.uk0.bigv.io with esmtpsa
- (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128) (Exim 4.89)
- (envelope-from <mark.cave-ayland@ilande.co.uk>)
- id 1h68sz-0007a7-6j; Tue, 19 Mar 2019 07:10:10 +0000
-To: linuxppc-dev@lists.ozlabs.org
-From: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Openpgp: preference=signencrypt
-Autocrypt: addr=mark.cave-ayland@ilande.co.uk; keydata=
- mQENBFQJuzwBCADAYvxrwUh1p/PvUlNFwKosVtVHHplgWi5p29t58QlOUkceZG0DBYSNqk93
- 3JzBTbtd4JfFcSupo6MNNOrCzdCbCjZ64ik8ycaUOSzK2tKbeQLEXzXoaDL1Y7vuVO7nL9bG
- E5Ru3wkhCFc7SkoypIoAUqz8EtiB6T89/D9TDEyjdXUacc53R5gu8wEWiMg5MQQuGwzbQy9n
- PFI+mXC7AaEUqBVc2lBQVpAYXkN0EyqNNT12UfDLdxaxaFpUAE2pCa2LTyo5vn5hEW+i3VdN
- PkmjyPvL6DdY03fvC01PyY8zaw+UI94QqjlrDisHpUH40IUPpC/NB0LwzL2aQOMkzT2NABEB
- AAG0ME1hcmsgQ2F2ZS1BeWxhbmQgPG1hcmsuY2F2ZS1heWxhbmRAaWxhbmRlLmNvLnVrPokB
- OAQTAQIAIgUCVAm7PAIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQW8LFb64PMh9f
- NAgAuc3ObOEY8NbZko72AGrg2tWKdybcMVITxmcor4hb9155o/OWcA4IDbeATR6cfiDL/oxU
- mcmtXVgPqOwtW3NYAKr5g/FrZZ3uluQ2mtNYAyTFeALy8YF7N3yhs7LOcpbFP7tEbkSzoXNG
- z8iYMiYtKwttt40WaheWuRs0ZOLbs6yoczZBDhna3Nj0LA3GpeJKlaV03O4umjKJgACP1c/q
- T2Pkg+FCBHHFP454+waqojHp4OCBo6HyK+8I4wJRa9Z0EFqXIu8lTDYoggeX0Xd6bWeCFHK3
- DhD0/Xi/kegSW33unsp8oVcM4kcFxTkpBgj39dB4KwAUznhTJR0zUHf63LkBDQRUCbs8AQgA
- y7kyevA4bpetM/EjtuqQX4U05MBhEz/2SFkX6IaGtTG2NNw5wbcAfhOIuNNBYbw6ExuaJ3um
- 2uLseHnudmvN4VSJ5Hfbd8rhqoMmmO71szgT/ZD9MEe2KHzBdmhmhxJdp+zQNivy215j6H27
- 14mbC2dia7ktwP1rxPIX1OOfQwPuqlkmYPuVwZP19S4EYnCELOrnJ0m56tZLn5Zj+1jZX9Co
- YbNLMa28qsktYJ4oU4jtn6V79H+/zpERZAHmH40IRXdR3hA+Ye7iC/ZpWzT2VSDlPbGY9Yja
- Sp7w2347L5G+LLbAfaVoejHlfy/msPeehUcuKjAdBLoEhSPYzzdvEQARAQABiQEfBBgBAgAJ
- BQJUCbs8AhsMAAoJEFvCxW+uDzIfabYIAJXmBepHJpvCPiMNEQJNJ2ZSzSjhic84LTMWMbJ+
- opQgr5cb8SPQyyb508fc8b4uD8ejlF/cdbbBNktp3BXsHlO5BrmcABgxSP8HYYNsX0n9kERv
- NMToU0oiBuAaX7O/0K9+BW+3+PGMwiu5ml0cwDqljxfVN0dUBZnQ8kZpLsY+WDrIHmQWjtH+
- Ir6VauZs5Gp25XLrL6bh/SL8aK0BX6y79m5nhfKI1/6qtzHAjtMAjqy8ChPvOqVVVqmGUzFg
- KPsrrIoklWcYHXPyMLj9afispPVR8e0tMKvxzFBWzrWX1mzljbBlnV2n8BIwVXWNbgwpHSsj
- imgcU9TTGC5qd9g=
-Message-ID: <c6ba8992-a3f3-2c99-6d6d-7ee9d41a22c5@ilande.co.uk>
-Date: Tue, 19 Mar 2019 07:10:09 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Nmns0mgnzDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 19:44:47 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id c8so6557429pfd.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 01:44:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=shutemov-name.20150623.gappssmtp.com; s=20150623;
+ h=date:from:to:cc:subject:message-id:references:mime-version
+ :content-disposition:content-transfer-encoding:in-reply-to
+ :user-agent; bh=qAR3a4Tp536S5BF0fcnDXo7BSqIJ+Wix2hz2G88QfYw=;
+ b=H2yafXhCxww2Ui/9GWn4Ibv+5222qc24hBAoz7mopK6XBNEl8YsyIGoBL4mxVsgNv1
+ GBLIgNc751rNEJNNZENFQqArXrc9hT/wJVJv9horcQyoLACuk68xKiqmJDy1NxWUxFva
+ VQbtkyhDQ4rS0v3TVhd+NS2TH8HT5XPiJmO2JYXNLOncoVFhe9x//OOexFxs4/jcGHdm
+ Xa15eF/S8SUSaWh1XHCQoRMwCEd1gqxIO8goZoHmaDIwUbJwUiyxWSZgNnfgofVsrtIV
+ b2YcyuElYoq66Y/1fXxI3tZGT0u+gr9rRYiYlBRKIlW2MHnJDFRhsVBxbVMxnjBFoexi
+ O4Sw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+ :mime-version:content-disposition:content-transfer-encoding
+ :in-reply-to:user-agent;
+ bh=qAR3a4Tp536S5BF0fcnDXo7BSqIJ+Wix2hz2G88QfYw=;
+ b=smvYPGVWuiKvutKVMbnXk+Czr6ENdPRh2LP1IeKu6/fA2pSQXuX67FYDCssG5jLDXL
+ uEnxV9NUdmtg6sA33q5hS/WHmbDhIUXh09Q6hTfRMADT9WxFNDmQ/hD3YFJPKIlklcMj
+ ltLVIBWCt/KSpljl3Uynpft/JbkdHjflnfGboSQ1mSmgfRQNBPveZnlKF+OvHOor4exC
+ r73VjF+PDKfW8h4JsmCG0BqfF/+u50lPh8uCCEYfuGrFojwTMEoGMmZYRjMAhGkFN0HW
+ b1LF0x05VWp90k5WwNolzvvJF/Z8h3QsjRKv7kqhYTNR4m/Ywwg5kY1+V8UpP/ylwWyp
+ LH6Q==
+X-Gm-Message-State: APjAAAVVmbxhqCM7b1Ec0IerpKHzcMtCgtTMm7Hblx44fadJK6J5dsNT
+ joMWz7qcBdh13iv8tZ6MFJODVw==
+X-Google-Smtp-Source: APXvYqwQJhhbuKxbG07ohl6GTw3nbB9v8fuYg7I4XK9bC/v/Mt1y46+7YdnuVQi/DtVjy6lZCh0v3A==
+X-Received: by 2002:a63:f905:: with SMTP id h5mr723037pgi.223.1552985084044;
+ Tue, 19 Mar 2019 01:44:44 -0700 (PDT)
+Received: from kshutemo-mobl1.localdomain ([192.55.54.45])
+ by smtp.gmail.com with ESMTPSA id g188sm23542592pfc.24.2019.03.19.01.44.42
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 19 Mar 2019 01:44:43 -0700 (PDT)
+Received: by kshutemo-mobl1.localdomain (Postfix, from userid 1000)
+ id 5C088300B98; Tue, 19 Mar 2019 11:44:39 +0300 (+03)
+Date: Tue, 19 Mar 2019 11:44:39 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
+Message-ID: <20190319084439.eya2pisiirattuil@kshutemo-mobl1>
+References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
+ <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
+ <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
+ <87k1hc8iqa.fsf@linux.ibm.com>
+ <20190306124453.126d36d8@naga.suse.cz>
+ <df01bf6e-84a1-53fb-bf0c-0957af2f79e1@linux.ibm.com>
+ <CAPcyv4iLm09DSiF3niFprP3PTFrgB5pZPp9AysBpRa-m725tmw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-GB
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 86.188.254.49
-X-SA-Exim-Mail-From: mark.cave-ayland@ilande.co.uk
-Subject: Shift overflow warnings in arch/powerpc/boot/addnote.c on 32-bit
- builds
-X-SA-Exim-Version: 4.2.1 (built Tue, 02 Aug 2016 21:08:31 +0000)
-X-SA-Exim-Scanned: Yes (on mail.default.ilande.uk0.bigv.io)
+In-Reply-To: <CAPcyv4iLm09DSiF3niFprP3PTFrgB5pZPp9AysBpRa-m725tmw@mail.gmail.com>
+User-Agent: NeoMutt/20180716
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -87,1053 +103,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: paulus@samba.org
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Oliver <oohall@gmail.com>,
+ Ross Zwisler <zwisler@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+ Michal =?utf-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi all,
+On Wed, Mar 13, 2019 at 09:07:13AM -0700, Dan Williams wrote:
+> On Wed, Mar 6, 2019 at 4:46 AM Aneesh Kumar K.V
+> <aneesh.kumar@linux.ibm.com> wrote:
+> >
+> > On 3/6/19 5:14 PM, Michal Such�nek wrote:
+> > > On Wed, 06 Mar 2019 14:47:33 +0530
+> > > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+> > >
+> > >> Dan Williams <dan.j.williams@intel.com> writes:
+> > >>
+> > >>> On Thu, Feb 28, 2019 at 1:40 AM Oliver <oohall@gmail.com> wrote:
+> > >>>>
+> > >>>> On Thu, Feb 28, 2019 at 7:35 PM Aneesh Kumar K.V
+> > >>>> <aneesh.kumar@linux.ibm.com> wrote:
+> > >
+> > >> Also even if the user decided to not use THP, by
+> > >> echo "never" > transparent_hugepage/enabled , we should continue to map
+> > >> dax fault using huge page on platforms that can support huge pages.
+> > >
+> > > Is this a good idea?
+> > >
+> > > This knob is there for a reason. In some situations having huge pages
+> > > can severely impact performance of the system (due to host-guest
+> > > interaction or whatever) and the ability to really turn off all THP
+> > > would be important in those cases, right?
+> > >
+> >
+> > My understanding was that is not true for dax pages? These are not
+> > regular memory that got allocated. They are allocated out of /dev/dax/
+> > or /dev/pmem*. Do we have a reason not to use hugepages for mapping
+> > pages in that case?
+> 
+> The problem with the transparent_hugepage/enabled interface is that it
+> conflates performing compaction work to produce THP-pages with the
+> ability to map huge pages at all.
 
-Whilst building the latest git master on my G4 I noticed the following shift overflow
-warnings in the build log for arch/powerpc/boot/addnote.c:
+That's not [entirely] true. transparent_hugepage/defrag gates heavy-duty
+compaction. We do only very limited compaction if it's not advised by
+transparent_hugepage/defrag.
 
+I believe DAX has to respect transparent_hugepage/enabled. Or not
+advertise its huge pages as THP. It's confusing for user.
 
-arch/powerpc/boot/addnote.c: In function ‘main’:
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-
-
-
-CURRENT HEAD 2019-03-19:
-
-  HOSTCC  arch/powerpc/boot/addnote
-arch/powerpc/boot/addnote.c: In function ‘main’:
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:183:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:188:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:206:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_OFFSET, ns);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:72:39: note: in definition of macro ‘PUT_16BE’
- #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:75:47: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                                               ^~
-arch/powerpc/boot/addnote.c:73:23: note: in definition of macro ‘PUT_16BE’
-     buf[(off) + 1] = (v) & 0xff)
-                       ^
-arch/powerpc/boot/addnote.c:75:27: note: in expansion of macro ‘PUT_32BE’
- #define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-                           ^~~~~~~~
-arch/powerpc/boot/addnote.c:94:50: note: in expansion of macro ‘PUT_64BE’
- #define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
-                                                  ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:82:39: note: in definition of macro ‘PUT_16LE’
- #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
-                                       ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-arch/powerpc/boot/addnote.c:85:73: warning: right shift count >= width of type
-[-Wshift-count-overflow]
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                                         ^~
-arch/powerpc/boot/addnote.c:83:25: note: in definition of macro ‘PUT_16LE’
-      buf[(off) + 1] = ((v) >> 8) & 0xff)
-                         ^
-arch/powerpc/boot/addnote.c:85:49: note: in expansion of macro ‘PUT_32LE’
- #define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-                                                 ^~~~~~~~
-arch/powerpc/boot/addnote.c:95:5: note: in expansion of macro ‘PUT_64LE’
-     PUT_64LE(off, v))
-     ^~~~~~~~
-arch/powerpc/boot/addnote.c:211:3: note: in expansion of macro ‘PUT_64’
-   PUT_64(ph + PH_FILESZ, nnote2);
-   ^~~~~~
-  HOSTCC  arch/powerpc/boot/hack-coff
-
-
-
-ATB,
-
-Mark.
+-- 
+ Kirill A. Shutemov
