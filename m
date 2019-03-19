@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97FB0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 17:09:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1800EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 17:34:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA05820863
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 17:09:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA05820863
+	by mail.kernel.org (Postfix) with ESMTPS id 41E0120685
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 17:34:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41E0120685
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44P00h3C9mzDqJc
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 04:09:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44P0Xb01vszDqJX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 04:34:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
  (client-ip=209.132.183.28; helo=mx1.redhat.com; envelope-from=oleg@redhat.com;
@@ -28,39 +28,40 @@ Authentication-Results: lists.ozlabs.org;
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Nzyk1HBszDqDY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 04:08:12 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44P0Vw0VPvzDqGh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 04:32:40 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com
+ [10.5.11.14])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 9B19B31688F2;
- Tue, 19 Mar 2019 17:08:09 +0000 (UTC)
+ by mx1.redhat.com (Postfix) with ESMTPS id D31DD81E09;
+ Tue, 19 Mar 2019 17:32:37 +0000 (UTC)
 Received: from dhcp-27-174.brq.redhat.com (unknown [10.43.17.34])
- by smtp.corp.redhat.com (Postfix) with SMTP id BE442BA82;
- Tue, 19 Mar 2019 17:08:05 +0000 (UTC)
+ by smtp.corp.redhat.com (Postfix) with SMTP id 5E04B5DA2A;
+ Tue, 19 Mar 2019 17:32:34 +0000 (UTC)
 Received: by dhcp-27-174.brq.redhat.com (nbSMTP-1.00) for uid 1000
- oleg@redhat.com; Tue, 19 Mar 2019 18:08:09 +0100 (CET)
-Date: Tue, 19 Mar 2019 18:08:05 +0100
+ oleg@redhat.com; Tue, 19 Mar 2019 18:32:37 +0100 (CET)
+Date: Tue, 19 Mar 2019 18:32:33 +0100
 From: Oleg Nesterov <oleg@redhat.com>
 To: Sudeep Holla <sudeep.holla@arm.com>
 Subject: Re: [PATCH v2 4/6] powerpc: use common ptrace_syscall_enter hook to
  handle _TIF_SYSCALL_EMU
-Message-ID: <20190319170804.GA11525@redhat.com>
+Message-ID: <20190319173233.GB11525@redhat.com>
 References: <20190318104925.16600-1-sudeep.holla@arm.com>
  <20190318104925.16600-5-sudeep.holla@arm.com>
  <20190318172024.GB23521@redhat.com>
  <20190318172457.GD18196@e107155-lin>
  <20190318173341.GD23521@redhat.com>
  <20190318174028.GE18196@e107155-lin>
+ <20190319170804.GA11525@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190318174028.GE18196@e107155-lin>
+In-Reply-To: <20190319170804.GA11525@redhat.com>
 User-Agent: Mutt/1.5.24 (2015-08-30)
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.41]); Tue, 19 Mar 2019 17:08:10 +0000 (UTC)
+ (mx1.redhat.com [10.5.110.25]); Tue, 19 Mar 2019 17:32:38 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,44 +84,31 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 03/18, Sudeep Holla wrote:
+On 03/19, Oleg Nesterov wrote:
 >
-> On Mon, Mar 18, 2019 at 06:33:41PM +0100, Oleg Nesterov wrote:
-> > On 03/18, Sudeep Holla wrote:
-> > >
-> > > On Mon, Mar 18, 2019 at 06:20:24PM +0100, Oleg Nesterov wrote:
-> > > >
-> > > > Again, to me this patch just makes the code look worse. Honestly, I don't
-> > > > think that the new (badly named) ptrace_syscall_enter() hook makes any sense.
-> > > >
-> > >
-> > > Worse because we end up reading current_thread_info->flags twice ?
-> >
-> > Mostly because in my opinion ptrace_syscall_enter() buys nothing but makes
-> > the caller's code less readable/understandable.
-> >
-> > Sure, this is subjective.
-> >
+> Well, personally I see no point... Again, after the trivial simplification
+> x86 does
 >
-> Based on what we have in that function today, I tend to agree. Will and
-> Richard were in the opinion to consolidate SYSEMU handling
+> 	if (work & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE)) {
+> 		ret = tracehook_report_syscall_entry(regs);
+> 		if (ret || (work & _TIF_SYSCALL_EMU))
+> 			return -1L;
+> 	}
+>
+> this looks simple enough for copy-and-paste.
+>
+> > If there's a better way to achieve the same
+>
+> I can only say that if we add a common helper, I think it should absorb
+> tracehook_report_syscall_entry() and handle both TIF's just like the code
+> above does. Not sure this makes any sense.
 
-Well, personally I see no point... Again, after the trivial simplification
-x86 does
+this won't work, looking at 6/6 I see that arm64 needs to distinguish
+_TRACE and _EMU ... I don't understand this code, but it looks suspicious.
+If tracehook_report_syscall_entry() returns nonzero the tracee was killed,
+syscall_trace_enter() should just return.
 
-	if (work & (_TIF_SYSCALL_EMU | _TIF_SYSCALL_TRACE)) {
-		ret = tracehook_report_syscall_entry(regs);
-		if (ret || (work & _TIF_SYSCALL_EMU))
-			return -1L;
-	}
-
-this looks simple enough for copy-and-paste.
-
-> If there's a better way to achieve the same
-
-I can only say that if we add a common helper, I think it should absorb
-tracehook_report_syscall_entry() and handle both TIF's just like the code
-above does. Not sure this makes any sense.
+To me this is another indication that consolidation makes no sense ;)
 
 Oleg.
 
