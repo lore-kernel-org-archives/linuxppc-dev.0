@@ -2,76 +2,66 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77F05C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:43:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EEA3C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 07:22:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 9C98B2184D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:43:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="ovvv4tmc"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C98B2184D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	by mail.kernel.org (Postfix) with ESMTPS id 6ACF921841
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 07:22:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6ACF921841
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PL2y0RVdzDqFF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:43:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PLvw0dYXzDqGk
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 18:22:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.91; helo=conssluserg-06.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=kaod.org
+ (client-ip=87.98.171.146; helo=9.mo6.mail-out.ovh.net;
+ envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="ovvv4tmc"; 
- dkim-atps=neutral
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PL1M171nzDqCT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:41:42 +1100 (AEDT)
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com
- [209.85.217.44]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id x2K6fFon016726
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 15:41:16 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com x2K6fFon016726
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1553064077;
- bh=zOtpzaDhTDDF+yxlEq7IT39Jb+oZPJiPLeZ9YjWU6wg=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=ovvv4tmc2FWwYok0bvOEvCdj6au6x5wHqZUjTb172Ic438V9SUj940Bqtw1Novkx8
- Gm0X80ptpKAayMZpB7YA1koxSkVAjnzl5uteOzWD7ljO/5D4Gh+yRJoVKLY3ikUktE
- rpmI3gKJM5E5coar9qltCMnOfptu2f387yHJAGlEglarO8EIgqJ+TMYe7rSbbDD73i
- oweBsTQIZFrJnbn0EI0HIFn43UfEMGbxzvb2mQG+FGnKhYGiKMmLwPWk5BsCnIjFJv
- lyjXCfxRGTiV8qBpKXb+PaRHJWJitojEFT9aMpinv6mwVXw09FEwHiZP2L0aSate/q
- iO0EYthSQrbIA==
-X-Nifty-SrcIP: [209.85.217.44]
-Received: by mail-vs1-f44.google.com with SMTP id z18so815278vso.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:41:16 -0700 (PDT)
-X-Gm-Message-State: APjAAAWOwH0nC1eYFCh/cUDRpa7o6ilPpbOGClw42LrSb8XMo7TienCU
- xkcIWP6ORkV8KvDGXFozFCyf3YCxnHwyINbPV88=
-X-Google-Smtp-Source: APXvYqzE0npFFlzReFAdt8jDlSG1cnEUOSznC6rkWmqRt9Yuf0H3yS3DvLVyAqyje3C/Ck3vh6xrw4gyHXW6ldfa7WY=
-X-Received: by 2002:a67:74cd:: with SMTP id p196mr3817246vsc.215.1553064075103; 
- Tue, 19 Mar 2019 23:41:15 -0700 (PDT)
+ dmarc=none (p=none dis=none) header.from=kaod.org
+X-Greylist: delayed 1797 seconds by postgrey-1.36 at bilbo;
+ Wed, 20 Mar 2019 18:20:33 AEDT
+Received: from 9.mo6.mail-out.ovh.net (9.mo6.mail-out.ovh.net [87.98.171.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PLt96wdvzDqF7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 18:20:29 +1100 (AEDT)
+Received: from player698.ha.ovh.net (unknown [10.109.160.251])
+ by mo6.mail-out.ovh.net (Postfix) with ESMTP id 735BA1B8FC5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 07:45:05 +0100 (CET)
+Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
+ (Authenticated sender: clg@kaod.org)
+ by player698.ha.ovh.net (Postfix) with ESMTPSA id 393A03D79866;
+ Wed, 20 Mar 2019 06:44:54 +0000 (UTC)
+Subject: Re: [PATCH v3 06/17] KVM: PPC: Book3S HV: XIVE: add controls for the
+ EQ configuration
+To: David Gibson <david@gibson.dropbear.id.au>
+References: <20190315120609.25910-1-clg@kaod.org>
+ <20190315120609.25910-7-clg@kaod.org> <20190318032348.GH6874@umbus.fritz.box>
+ <8b3caeef-8750-b8db-d516-c722bc08c535@kaod.org>
+ <20190319045455.GB31018@umbus.fritz.box>
+ <3b59a5be-ebde-8b1b-36af-5336cfb35cb3@kaod.org>
+ <20190320034429.GF31018@umbus.fritz.box>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <b1db921f-a4ae-5224-262c-8be3739bb77b@kaod.org>
+Date: Wed, 20 Mar 2019 07:44:53 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.4.0
 MIME-Version: 1.0
-References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
-In-Reply-To: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 20 Mar 2019 15:40:39 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQu9hmeSgKO_B1LhXqq9Z923H25HXNS9XYNvFi55WrFYw@mail.gmail.com>
-Message-ID: <CAK7LNAQu9hmeSgKO_B1LhXqq9Z923H25HXNS9XYNvFi55WrFYw@mail.gmail.com>
-Subject: Re: [PATCH] compiler: allow all arches to enable
- CONFIG_OPTIMIZE_INLINING
-To: Andrew Morton <akpm@linux-foundation.org>,
- linux-arch <linux-arch@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20190320034429.GF31018@umbus.fritz.box>
+Content-Type: text/plain; charset=windows-1252
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Ovh-Tracer-Id: 16244765330924145597
+X-VR-SPAMSTATE: OK
+X-VR-SPAMSCORE: -100
+X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrieehgddutdduucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -83,408 +73,458 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-s390 <linux-s390@vger.kernel.org>, Dave Hansen <dave@sr71.net>,
- Arnd Bergmann <arnd@arndb.de>, X86 ML <x86@kernel.org>,
- linux-mips@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>, Ingo Molnar <mingo@redhat.com>,
- linux-mtd <linux-mtd@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 20, 2019 at 3:21 PM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
->
-> Commit 60a3cdd06394 ("x86: add optimized inlining") introduced
-> CONFIG_OPTIMIZE_INLINING, but it has been available only for x86.
->
-> The idea is obviously arch-agnostic although we need some code fixups.
-> This commit moves the config entry from arch/x86/Kconfig.debug to
-> lib/Kconfig.debug so that all architectures (except MIPS for now) can
-> benefit from it.
->
-> At this moment, I added "depends on !MIPS" because fixing 0day bot report=
-s
-> for MIPS was complex to me.
+On 3/20/19 4:44 AM, David Gibson wrote:
+> On Tue, Mar 19, 2019 at 04:47:20PM +0100, Cédric Le Goater wrote:
+>> On 3/19/19 5:54 AM, David Gibson wrote:
+>>> On Mon, Mar 18, 2019 at 03:12:10PM +0100, Cédric Le Goater wrote:
+>>>> On 3/18/19 4:23 AM, David Gibson wrote:
+>>>>> On Fri, Mar 15, 2019 at 01:05:58PM +0100, Cédric Le Goater wrote:
+>>>>>> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
+>>>>>> H_INT_GET_QUEUE_CONFIG hcalls from QEMU to configure the underlying
+>>>>>> Event Queue in the XIVE IC. They will also be used to restore the
+>>>>>> configuration of the XIVE EQs and to capture the internal run-time
+>>>>>> state of the EQs. Both 'get' and 'set' rely on an OPAL call to access
+>>>>>> the EQ toggle bit and EQ index which are updated by the XIVE IC when
+>>>>>> event notifications are enqueued in the EQ.
+>>>>>>
+>>>>>> The value of the guest physical address of the event queue is saved in
+>>>>>> the XIVE internal xive_q structure for later use. That is when
+>>>>>> migration needs to mark the EQ pages dirty to capture a consistent
+>>>>>> memory state of the VM.
+>>>>>>
+>>>>>> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
+>>>>>> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
+>>>>>> but restoring the EQ state will.
+>>>>>>
+>>>>>> Signed-off-by: Cédric Le Goater <clg@kaod.org>
+>>>>>> ---
+>>>>>>
+>>>>>>  Changes since v2 :
+>>>>>>  
+>>>>>>  - fixed comments on the KVM device attribute definitions
+>>>>>>  - fixed check on supported EQ size to restrict to 64K pages
+>>>>>>  - checked kvm_eq.flags that need to be zero
+>>>>>>  - removed the OPAL call when EQ qtoggle bit and index are zero. 
+>>>>>>
+>>>>>>  arch/powerpc/include/asm/xive.h            |   2 +
+>>>>>>  arch/powerpc/include/uapi/asm/kvm.h        |  21 ++
+>>>>>>  arch/powerpc/kvm/book3s_xive.h             |   2 +
+>>>>>>  arch/powerpc/kvm/book3s_xive.c             |  15 +-
+>>>>>>  arch/powerpc/kvm/book3s_xive_native.c      | 232 +++++++++++++++++++++
+>>>>>>  Documentation/virtual/kvm/devices/xive.txt |  31 +++
+>>>>>>  6 files changed, 297 insertions(+), 6 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+>>>>>> index b579a943407b..46891f321606 100644
+>>>>>> --- a/arch/powerpc/include/asm/xive.h
+>>>>>> +++ b/arch/powerpc/include/asm/xive.h
+>>>>>> @@ -73,6 +73,8 @@ struct xive_q {
+>>>>>>  	u32			esc_irq;
+>>>>>>  	atomic_t		count;
+>>>>>>  	atomic_t		pending_count;
+>>>>>> +	u64			guest_qpage;
+>>>>>> +	u32			guest_qsize;
+>>>>>>  };
+>>>>>>  
+>>>>>>  /* Global enable flags for the XIVE support */
+>>>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>> index 12bb01baf0ae..1cd728c87d7c 100644
+>>>>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+>>>>>> @@ -679,6 +679,7 @@ struct kvm_ppc_cpu_char {
+>>>>>>  #define KVM_DEV_XIVE_GRP_CTRL		1
+>>>>>>  #define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source identifier */
+>>>>>>  #define KVM_DEV_XIVE_GRP_SOURCE_CONFIG	3	/* 64-bit source identifier */
+>>>>>> +#define KVM_DEV_XIVE_GRP_EQ_CONFIG	4	/* 64-bit EQ identifier */
+>>>>>>  
+>>>>>>  /* Layout of 64-bit XIVE source attribute values */
+>>>>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
+>>>>>> @@ -694,4 +695,24 @@ struct kvm_ppc_cpu_char {
+>>>>>>  #define KVM_XIVE_SOURCE_EISN_SHIFT	33
+>>>>>>  #define KVM_XIVE_SOURCE_EISN_MASK	0xfffffffe00000000ULL
+>>>>>>  
+>>>>>> +/* Layout of 64-bit EQ identifier */
+>>>>>> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
+>>>>>> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
+>>>>>> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
+>>>>>> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
+>>>>>> +
+>>>>>> +/* Layout of EQ configuration values (64 bytes) */
+>>>>>> +struct kvm_ppc_xive_eq {
+>>>>>> +	__u32 flags;
+>>>>>> +	__u32 qsize;
+>>>>>> +	__u64 qpage;
+>>>>>> +	__u32 qtoggle;
+>>>>>> +	__u32 qindex;
+>>>>>> +	__u8  pad[40];
+>>>>>> +};
+>>>>>> +
+>>>>>> +#define KVM_XIVE_EQ_FLAG_ENABLED	0x00000001
+>>>>>> +#define KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY	0x00000002
+>>>>>> +#define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
+>>>>>> +
+>>>>>>  #endif /* __LINUX_KVM_POWERPC_H */
+>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
+>>>>>> index ae26fe653d98..622f594d93e1 100644
+>>>>>> --- a/arch/powerpc/kvm/book3s_xive.h
+>>>>>> +++ b/arch/powerpc/kvm/book3s_xive.h
+>>>>>> @@ -272,6 +272,8 @@ struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
+>>>>>>  	struct kvmppc_xive *xive, int irq);
+>>>>>>  void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
+>>>>>>  int kvmppc_xive_select_target(struct kvm *kvm, u32 *server, u8 prio);
+>>>>>> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
+>>>>>> +				  bool single_escalation);
+>>>>>>  
+>>>>>>  #endif /* CONFIG_KVM_XICS */
+>>>>>>  #endif /* _KVM_PPC_BOOK3S_XICS_H */
+>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+>>>>>> index e09f3addffe5..c1b7aa7dbc28 100644
+>>>>>> --- a/arch/powerpc/kvm/book3s_xive.c
+>>>>>> +++ b/arch/powerpc/kvm/book3s_xive.c
+>>>>>> @@ -166,7 +166,8 @@ static irqreturn_t xive_esc_irq(int irq, void *data)
+>>>>>>  	return IRQ_HANDLED;
+>>>>>>  }
+>>>>>>  
+>>>>>> -static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
+>>>>>> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
+>>>>>> +				  bool single_escalation)
+>>>>>>  {
+>>>>>>  	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+>>>>>>  	struct xive_q *q = &xc->queues[prio];
+>>>>>> @@ -185,7 +186,7 @@ static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
+>>>>>>  		return -EIO;
+>>>>>>  	}
+>>>>>>  
+>>>>>> -	if (xc->xive->single_escalation)
+>>>>>> +	if (single_escalation)
+>>>>>>  		name = kasprintf(GFP_KERNEL, "kvm-%d-%d",
+>>>>>>  				 vcpu->kvm->arch.lpid, xc->server_num);
+>>>>>>  	else
+>>>>>> @@ -217,7 +218,7 @@ static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
+>>>>>>  	 * interrupt, thus leaving it effectively masked after
+>>>>>>  	 * it fires once.
+>>>>>>  	 */
+>>>>>> -	if (xc->xive->single_escalation) {
+>>>>>> +	if (single_escalation) {
+>>>>>>  		struct irq_data *d = irq_get_irq_data(xc->esc_virq[prio]);
+>>>>>>  		struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
+>>>>>>  
+>>>>>> @@ -291,7 +292,8 @@ static int xive_check_provisioning(struct kvm *kvm, u8 prio)
+>>>>>>  			continue;
+>>>>>>  		rc = xive_provision_queue(vcpu, prio);
+>>>>>>  		if (rc == 0 && !xive->single_escalation)
+>>>>>> -			xive_attach_escalation(vcpu, prio);
+>>>>>> +			kvmppc_xive_attach_escalation(vcpu, prio,
+>>>>>> +						      xive->single_escalation);
+>>>>>>  		if (rc)
+>>>>>>  			return rc;
+>>>>>>  	}
+>>>>>> @@ -1214,7 +1216,8 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>>>>>>  		if (xive->qmap & (1 << i)) {
+>>>>>>  			r = xive_provision_queue(vcpu, i);
+>>>>>>  			if (r == 0 && !xive->single_escalation)
+>>>>>> -				xive_attach_escalation(vcpu, i);
+>>>>>> +				kvmppc_xive_attach_escalation(
+>>>>>> +					vcpu, i, xive->single_escalation);
+>>>>>>  			if (r)
+>>>>>>  				goto bail;
+>>>>>>  		} else {
+>>>>>> @@ -1229,7 +1232,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+>>>>>>  	}
+>>>>>>  
+>>>>>>  	/* If not done above, attach priority 0 escalation */
+>>>>>> -	r = xive_attach_escalation(vcpu, 0);
+>>>>>> +	r = kvmppc_xive_attach_escalation(vcpu, 0, xive->single_escalation);
+>>>>>>  	if (r)
+>>>>>>  		goto bail;
+>>>>>>  
+>>>>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>> index b841d339f674..42e824658a30 100644
+>>>>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
+>>>>>> @@ -340,6 +340,226 @@ static int kvmppc_xive_native_set_source_config(struct kvmppc_xive *xive,
+>>>>>>  						       priority, masked, eisn);
+>>>>>>  }
+>>>>>>  
+>>>>>> +static int xive_native_validate_queue_size(u32 qsize)
+>>>>>> +{
+>>>>>> +	/*
+>>>>>> +	 * We only support 64K pages for the moment. This is also
+>>>>>> +	 * advertised in the DT property "ibm,xive-eq-sizes"
+>>>>>
+>>>>> IIUC, that won't work properly if you had a guest using 4kiB pages.
+>>>>
+>>>>> That's fine, but do we have somewhere that checks for that case and
+>>>>> throws a suitable error?
+>>>>
+>>>> Not in the device. 
+>>>>
+>>>> So, we should check the current page_size of the guest ? Is there a way 
+>>>> to do that simply from KVM ?
+>>>
+>>> Not really.  But I think I know where to make the necessary test, see
+>>> comment below..
+>>>
+>>>>>> +	 */
+>>>>>> +	switch (qsize) {
+>>>>>> +	case 0: /* EQ reset */
+>>>>>> +	case 16:
+>>>>>> +		return 0;
+>>>>>> +	case 12:
+>>>>>> +	case 21:
+>>>>>> +	case 24:
+>>>>>> +	default:
+>>>>>> +		return -EINVAL;
+>>>>>> +	}
+>>>>>> +}
+>>>>>> +
+>>>>>> +static int kvmppc_xive_native_set_queue_config(struct kvmppc_xive *xive,
+>>>>>> +					       long eq_idx, u64 addr)
+>>>>>> +{
+>>>>>> +	struct kvm *kvm = xive->kvm;
+>>>>>> +	struct kvm_vcpu *vcpu;
+>>>>>> +	struct kvmppc_xive_vcpu *xc;
+>>>>>> +	void __user *ubufp = (u64 __user *) addr;
+>>>>>
+>>>>> Nit: that should be (void __user *) on the right, shouldn't it?
+>>>>
+>>>> yes.
+>>>>
+>>>>>
+>>>>>> +	u32 server;
+>>>>>> +	u8 priority;
+>>>>>> +	struct kvm_ppc_xive_eq kvm_eq;
+>>>>>> +	int rc;
+>>>>>> +	__be32 *qaddr = 0;
+>>>>>> +	struct page *page;
+>>>>>> +	struct xive_q *q;
+>>>>>> +
+>>>>>> +	/*
+>>>>>> +	 * Demangle priority/server tuple from the EQ identifier
+>>>>>> +	 */
+>>>>>> +	priority = (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
+>>>>>> +		KVM_XIVE_EQ_PRIORITY_SHIFT;
+>>>>>> +	server = (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
+>>>>>> +		KVM_XIVE_EQ_SERVER_SHIFT;
+>>>>>> +
+>>>>>> +	if (copy_from_user(&kvm_eq, ubufp, sizeof(kvm_eq)))
+>>>>>> +		return -EFAULT;
+>>>>>> +
+>>>>>> +	vcpu = kvmppc_xive_find_server(kvm, server);
+>>>>>> +	if (!vcpu) {
+>>>>>> +		pr_err("Can't find server %d\n", server);
+>>>>>> +		return -ENOENT;
+>>>>>> +	}
+>>>>>> +	xc = vcpu->arch.xive_vcpu;
+>>>>>> +
+>>>>>> +	if (priority != xive_prio_from_guest(priority)) {
+>>>>>> +		pr_err("Trying to restore invalid queue %d for VCPU %d\n",
+>>>>>> +		       priority, server);
+>>>>>> +		return -EINVAL;
+>>>>>> +	}
+>>>>>> +	q = &xc->queues[priority];
+>>>>>> +
+>>>>>> +	pr_devel("%s VCPU %d priority %d fl:%x sz:%d addr:%llx g:%d idx:%d\n",
+>>>>>> +		 __func__, server, priority, kvm_eq.flags,
+>>>>>> +		 kvm_eq.qsize, kvm_eq.qpage, kvm_eq.qtoggle, kvm_eq.qindex);
+>>>>>> +
+>>>>>> +	/*
+>>>>>> +	 * We can not tune the EQ configuration from user space. All
+>>>>>> +	 * is done in OPAL.
+>>>>>> +	 */
+>>>>>> +	if (kvm_eq.flags != 0) {
+>>>>>> +		pr_err("invalid flags %d\n", kvm_eq.flags);
+>>>>>> +		return -EINVAL;
+>>>>>> +	}
+>>>>>> +
+>>>>>> +	rc = xive_native_validate_queue_size(kvm_eq.qsize);
+>>>>>> +	if (rc) {
+>>>>>> +		pr_err("invalid queue size %d\n", kvm_eq.qsize);
+>>>>>> +		return rc;
+>>>>>> +	}
+>>>>>> +
+>>>>>> +	/* reset queue and disable queueing */
+>>>>>> +	if (!kvm_eq.qsize) {
+>>>>>> +		q->guest_qpage = 0;
+>>>>>> +		q->guest_qsize = 0;
+>>>>>> +
+>>>>>> +		rc = xive_native_configure_queue(xc->vp_id, q, priority,
+>>>>>> +						 NULL, 0, true);
+>>>>>> +		if (rc) {
+>>>>>> +			pr_err("Failed to reset queue %d for VCPU %d: %d\n",
+>>>>>> +			       priority, xc->server_num, rc);
+>>>>>> +			return rc;
+>>>>>> +		}
+>>>>>> +
+>>>>>> +		if (q->qpage) {
+>>>>>> +			put_page(virt_to_page(q->qpage));
+>>>>>> +			q->qpage = NULL;
+>>>>>> +		}
+>>>>>> +
+>>>>>> +		return 0;
+>>>>>> +	}
+>>>>>> +
+>>>>>> +
+>>>>>> +	page = gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
+>>>>>> +	if (is_error_page(page)) {
+>>>>>> +		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
+>>>>>> +		return -EINVAL;
+>>>>>> +	}
+>>>>>
+>>>>> Yeah.. for the case of a 4kiB page host (these days weird, but not
+>>>>> actually prohibited, AFAIK) you need to check that the qsize selected
+>>>>> actually fits within the page.
+>>>>
+>>>> Ah yes. sure.
+>>>
+>>> I think the pagesize test belongs here.  Rather than thinking about
+>>> the pagesize of the guest overall, you can check that this specific
+>>> page (possibly compound) is large enough to take the requested queue
+>>> size.
+>>
+>> OK. It think kvm_host_page_size() is what we need. It returns the page
+>> size of the underlying VMA of the memblock holding the gfn. So I am going 
+>> to add :
+> 
+> Yes, that sounds good.
+> 
+>> +	page_size = kvm_host_page_size(kvm, gfn);
+>> +	if (1ull << kvm_eq.qshift > page_size) {
+>> +		pr_warn("Incompatible host page size %lx!\n", page_size);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>>
+>> Also I am renaming 'qsize' in 'qshift' and renaming 'qpage' to 'qaddr'.
+>>
+>>> That should be enough to protect the host - it ensures that userspace
+>>> owns a suitable contiguous chunk of memory for the XIVE to write the
+>>> queue into.
+>>>
+>>> It's possible there are weirder edge cases with a large page that's
+>>> not fully mapped into the guest - if necessary we can add tests for
+>>> that on the qemu side.
+>>>
+>>> Oh.. it occurs to me that we might need to pin the queue page to make
+>>> sure it doesn't get swapped out or page-migrated while the XIVE holds
+>>> a pointer to it
+>>
+>> That is what gfn_to_page() ends up doing by calling hva_to_pfn().
+> 
+> Ah, ok.
+> 
+>>>>>> +	/*
+>>>>>> +	 * Return some information on the EQ configuration in
+>>>>>> +	 * OPAL. This is purely informative for now as we can't really
+>>>>>> +	 * tune the EQ configuration from user space.
+>>>>>> +	 */
+>>>>>> +	kvm_eq.flags = 0;
+>>>>>> +	if (qflags & OPAL_XIVE_EQ_ENABLED)
+>>>>>> +		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ENABLED;
+>>>>>> +	if (qflags & OPAL_XIVE_EQ_ALWAYS_NOTIFY)
+>>>>>> +		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY;
+>>>>>> +	if (qflags & OPAL_XIVE_EQ_ESCALATE)
+>>>>>> +		kvm_eq.flags |= KVM_XIVE_EQ_FLAG_ESCALATE;
+>>>>>
+>>>>> If there's not really anything it can do about it, does it make sense
+>>>>> to even expose this info to userspace?
+>>>>
+>>>> Hmm, good question. 
+>>>>
+>>>>  - KVM_XIVE_EQ_FLAG_ENABLED		
+>>>> 	may be uselessly obvious.
+>>>
+>>> What's it controlled by?
+>>
+>> OPAL only. It's equivalent to the VALID bit in the XIVE END structure. 
+>> We can drop this one. 
+> 
+> Ok.
+> 
+>>>>  - KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY 	
+>>>> 	means we do not use the END ESBs to coalesce the events at the END
+>>>> 	level. This flag is reflected by the XIVE_EQ_ALWAYS_NOTIFY option
+>>>> 	in the sPAPR specs. We don't support the END ESBs but we might one
+>>>> 	day.
+>>>
+>>> Since the guest isn't currently permitted to set this, it should never
+>>> be set here either, no?
+>>
+>> The OS does not support the END ESBs so this flag is always set in the 
+>> Linux XIVE driver. END ESBs are supported in the emulated device but not 
+>> in KVM/OPAL.
+> 
+> Ok, it's reasonable to keep this then.
+> 
+>>>>  - KVM_XIVE_EQ_FLAG_ESCALATE
+>>>> 	means the EQ is an escalation. QEMU doesn't really care for now 
+>>>> 	but it's an important information I think.
+>>>
+>>> Likewise this one, yes?
+>>
+>> That is an hypervisor information on the nature of the EQ, so it is 
+>> for QEMU and not the guest. I am not sure it is important today as
+>> we don't support escalation in QEMU. May be drop ? 
+> 
+> Yes, I think drop it.  We can add something later if we have a
+> concrete use case for it.
+> 
+>>>> I tried not to add too many of the END flags, only the relevant ones which
+>>>> could have an impact in the future modeling.  
+>>>>
+>>>> I think KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY is important. I was setting it from
+>>>> QEMU in the hcall but as OPAL does the same blindly I removed it in
+>>>> v3.
+>>>
+>>> So, I might have misinterpreted this a bit the first time around.  Am
+>>> I correct in thinking that these bits all correspond to defined
+>>> options in the PAPR hcall
+>>
+>> Yes for KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY which is the only flag defined 
+>> in sPAPR. 
+>>
+>>> - but that for now we don't allow guests to
+>>> set them (because we haven't implemented support so far).
+>>
+>> It's a bit more complex.
+>>
+>> KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY is a "required" flag as the OS does not 
+>> support END ESBs. END ESBs are not supported in KVM/OPAL but they are 
+>> in the QEMU device. 
+> 
+> So, the (current) guest needs this behaviour, but I'm guessing PAPR
+> doesn't require it.  Is this behaviour configurable in the PAPR interface?
 
-BTW, I got the following error if I enabled CONFIG_OPTIMIZE_INLINING for MI=
-PS.
+It is part of the sPAPR specs. The H_INT_SET_QUEUE_CONFIG hcall has a 
+"Unconditional Notify (n) flag" to force notification without using the
+coalescing mechanism provided by the XIVE END ESBs. As the XIVE driver 
+in Linux doesn't use the END ESBS, this flag is always set at the spapr
+level. 
 
-It is unclear to me how to fix it.
-That's why I ended up with "depends on !MIPS".
+We have a similar flag at the PowerNV level, and for the same reason
+that on sPAPR, the flag is always set: OPAL_XIVE_EQ_ALWAYS_NOTIFY in
+xive_native_configure_queue()
 
+I think we should propagate at the KVM level and possibly, one day, add 
+a parameter to xive_native_configure_queue() to reflect this setting
+from KVM. This is not required today as we don't support "conditional 
+notification".
 
-  MODPOST vmlinux.o
-arch/mips/mm/sc-mips.o: In function `mips_sc_prefetch_enable.part.2':
-sc-mips.c:(.text+0x98): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0x9c): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xbc): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xc8): undefined reference to `mips_gcr_base'
-sc-mips.c:(.text+0xdc): undefined reference to `mips_gcr_base'
-arch/mips/mm/sc-mips.o:sc-mips.c:(.text.unlikely+0x44): more undefined
-references to `mips_gcr_base'
+I will add some comments in this area.
 
+C. 
 
-Perhaps, MIPS folks may know how to fix it.
+>> I think it would be good for consistency to set KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY
+>> when calling kvmppc_xive_native_get_queue_config() from QEMU, as I did 
+>> in v2. But as OPAL forces the same behavior without any flag, it is not 
+>> really needed at the KVM level ...
+>>
+>> Please tell me.
+> 
 
-
-
-
-> I tested this patch on my arm/arm64 boards.
->
-> This can make a huge difference in kernel image size especially when
-> CONFIG_OPTIMIZE_FOR_SIZE is enabled.
->
-> For example, I got 3.5% smaller arm64 kernel image for v5.1-rc1.
->
->   dec       file
->   18983424  arch/arm64/boot/Image.before
->   18321920  arch/arm64/boot/Image.after
->
-> This also slightly improves the "Kernel hacking" Kconfig menu.
-> Commit e61aca5158a8 ("Merge branch 'kconfig-diet' from Dave Hansen')
-> mentioned this config option would be a good fit in the "compiler option"
-> menu. I did so.
->
-> I fixed up some files to avoid build warnings/errors.
->
-> [1] arch/arm64/include/asm/cpufeature.h
->
-> In file included from ././include/linux/compiler_types.h:68,
->                  from <command-line>:
-> ./arch/arm64/include/asm/jump_label.h: In function 'cpus_have_const_cap':
-> ./include/linux/compiler-gcc.h:120:38: warning: asm operand 0 probably do=
-esn't match constraints
->  #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
->                                       ^~~
-> ./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of macro '=
-asm_volatile_goto'
->   asm_volatile_goto(
->   ^~~~~~~~~~~~~~~~~
-> ./include/linux/compiler-gcc.h:120:38: error: impossible constraint in 'a=
-sm'
->  #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
->                                       ^~~
-> ./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of macro '=
-asm_volatile_goto'
->   asm_volatile_goto(
->   ^~~~~~~~~~~~~~~~~
->
-> [2] arch/mips/kernel/cpu-bugs64.c
->
-> arch/mips/kernel/cpu-bugs64.c: In function 'mult_sh_align_mod.constprop':
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably doesn't=
- match constraints [-Werror]
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably doesn't=
- match constraints [-Werror]
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
->   asm volatile(
->   ^~~
->
-> [3] arch/powerpc/mm/tlb-radix.c
->
-> arch/powerpc/mm/tlb-radix.c: In function '__radix__flush_tlb_range_psize'=
-:
-> arch/powerpc/mm/tlb-radix.c:104:2: error: asm operand 3 probably doesn't =
-match constraints [-Werror]
->   asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
->   ^~~
-> arch/powerpc/mm/tlb-radix.c:104:2: error: impossible constraint in 'asm'
->   CC      arch/powerpc/perf/hv-gpci.o
->
-> [4] arch/s390/include/asm/cpacf.h
->
-> In file included from arch/s390/crypto/des_s390.c:19:
-> ./arch/s390/include/asm/cpacf.h: In function 'cpacf_query':
-> ./arch/s390/include/asm/cpacf.h:170:2: warning: asm operand 3 probably do=
-esn't match constraints
->   asm volatile(
->   ^~~
-> ./arch/s390/include/asm/cpacf.h:170:2: error: impossible constraint in 'a=
-sm'
->
-> [5] arch/powerpc/kernel/prom_init.c
->
-> WARNING: vmlinux.o(.text.unlikely+0x20): Section mismatch in reference fr=
-om the function .prom_getprop() to the function .init.text:.call_prom()
-> The function .prom_getprop() references
-> the function __init .call_prom().
-> This is often because .prom_getprop lacks a __init
-> annotation or the annotation of .call_prom is wrong.
->
-> WARNING: vmlinux.o(.text.unlikely+0x3c): Section mismatch in reference fr=
-om the function .prom_getproplen() to the function .init.text:.call_prom()
-> The function .prom_getproplen() references
-> the function __init .call_prom().
-> This is often because .prom_getproplen lacks a __init
-> annotation or the annotation of .call_prom is wrong.
->
-> [6] drivers/mtd/nand/raw/vf610_nfc.c
->
-> drivers/mtd/nand/raw/vf610_nfc.c: In function =E2=80=98vf610_nfc_cmd=E2=
-=80=99:
-> drivers/mtd/nand/raw/vf610_nfc.c:455:3: warning: =E2=80=98offset=E2=80=99=
- may be used uninitialized in this function [-Wmaybe-uninitialized]
->    vf610_nfc_rd_from_sram(instr->ctx.data.buf.in + offset,
->    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->             nfc->regs + NFC_MAIN_AREA(0) + offset,
->             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->             trfr_sz, !nfc->data_access);
->             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> [7] arch/arm/kernel/smp.c
->
-> arch/arm/kernel/smp.c: In function =E2=80=98raise_nmi=E2=80=99:
-> arch/arm/kernel/smp.c:522:2: warning: array subscript is above array boun=
-ds [-Warray-bounds]
->   trace_ipi_raise_rcuidle(target, ipi_types[ipinr]);
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> The fixup is not included in this. The patch is available in ML:
->
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2016-February/40939=
-3.html
->
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
->
->  arch/arm64/include/asm/cpufeature.h |  4 ++--
->  arch/mips/kernel/cpu-bugs64.c       |  4 ++--
->  arch/powerpc/kernel/prom_init.c     |  6 +++---
->  arch/powerpc/mm/tlb-radix.c         |  2 +-
->  arch/s390/include/asm/cpacf.h       |  2 +-
->  arch/x86/Kconfig                    |  3 ---
->  arch/x86/Kconfig.debug              | 14 --------------
->  drivers/mtd/nand/raw/vf610_nfc.c    |  2 +-
->  include/linux/compiler_types.h      |  3 +--
->  lib/Kconfig.debug                   | 15 +++++++++++++++
->  10 files changed, 26 insertions(+), 29 deletions(-)
->
-> diff --git a/arch/arm64/include/asm/cpufeature.h b/arch/arm64/include/asm=
-/cpufeature.h
-> index e505e1f..77d1aa5 100644
-> --- a/arch/arm64/include/asm/cpufeature.h
-> +++ b/arch/arm64/include/asm/cpufeature.h
-> @@ -406,7 +406,7 @@ static inline bool cpu_have_feature(unsigned int num)
->  }
->
->  /* System capability check for constant caps */
-> -static inline bool __cpus_have_const_cap(int num)
-> +static __always_inline bool __cpus_have_const_cap(int num)
->  {
->         if (num >=3D ARM64_NCAPS)
->                 return false;
-> @@ -420,7 +420,7 @@ static inline bool cpus_have_cap(unsigned int num)
->         return test_bit(num, cpu_hwcaps);
->  }
->
-> -static inline bool cpus_have_const_cap(int num)
-> +static __always_inline bool cpus_have_const_cap(int num)
->  {
->         if (static_branch_likely(&arm64_const_caps_ready))
->                 return __cpus_have_const_cap(num);
-> diff --git a/arch/mips/kernel/cpu-bugs64.c b/arch/mips/kernel/cpu-bugs64.=
-c
-> index bada74a..c04b97a 100644
-> --- a/arch/mips/kernel/cpu-bugs64.c
-> +++ b/arch/mips/kernel/cpu-bugs64.c
-> @@ -42,8 +42,8 @@ static inline void align_mod(const int align, const int=
- mod)
->                 : "n"(align), "n"(mod));
->  }
->
-> -static inline void mult_sh_align_mod(long *v1, long *v2, long *w,
-> -                                    const int align, const int mod)
-> +static __always_inline void mult_sh_align_mod(long *v1, long *v2, long *=
-w,
-> +                                             const int align, const int =
-mod)
->  {
->         unsigned long flags;
->         int m1, m2;
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_i=
-nit.c
-> index f33ff41..241fe6b 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -501,14 +501,14 @@ static int __init prom_next_node(phandle *nodep)
->         }
->  }
->
-> -static inline int prom_getprop(phandle node, const char *pname,
-> -                              void *value, size_t valuelen)
-> +static inline int __init prom_getprop(phandle node, const char *pname,
-> +                                     void *value, size_t valuelen)
->  {
->         return call_prom("getprop", 4, 1, node, ADDR(pname),
->                          (u32)(unsigned long) value, (u32) valuelen);
->  }
->
-> -static inline int prom_getproplen(phandle node, const char *pname)
-> +static inline int __init prom_getproplen(phandle node, const char *pname=
-)
->  {
->         return call_prom("getproplen", 2, 1, node, ADDR(pname));
->  }
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index 6a23b9e..a2b2848 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -928,7 +928,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
->         tlb->need_flush_all =3D 0;
->  }
->
-> -static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
-> +static __always_inline void __radix__flush_tlb_range_psize(struct mm_str=
-uct *mm,
->                                 unsigned long start, unsigned long end,
->                                 int psize, bool also_pwc)
->  {
-> diff --git a/arch/s390/include/asm/cpacf.h b/arch/s390/include/asm/cpacf.=
-h
-> index 3cc52e3..f316de4 100644
-> --- a/arch/s390/include/asm/cpacf.h
-> +++ b/arch/s390/include/asm/cpacf.h
-> @@ -202,7 +202,7 @@ static inline int __cpacf_check_opcode(unsigned int o=
-pcode)
->         }
->  }
->
-> -static inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
-> +static __always_inline int cpacf_query(unsigned int opcode, cpacf_mask_t=
- *mask)
->  {
->         if (__cpacf_check_opcode(opcode)) {
->                 __cpacf_query(opcode, mask);
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index c1f9b3c..1a3e2b5 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -310,9 +310,6 @@ config ZONE_DMA32
->  config AUDIT_ARCH
->         def_bool y if X86_64
->
-> -config ARCH_SUPPORTS_OPTIMIZED_INLINING
-> -       def_bool y
-> -
->  config ARCH_SUPPORTS_DEBUG_PAGEALLOC
->         def_bool y
->
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index 15d0fbe..f730680 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -266,20 +266,6 @@ config CPA_DEBUG
->         ---help---
->           Do change_page_attr() self-tests every 30 seconds.
->
-> -config OPTIMIZE_INLINING
-> -       bool "Allow gcc to uninline functions marked 'inline'"
-> -       ---help---
-> -         This option determines if the kernel forces gcc to inline the f=
-unctions
-> -         developers have marked 'inline'. Doing so takes away freedom fr=
-om gcc to
-> -         do what it thinks is best, which is desirable for the gcc 3.x s=
-eries of
-> -         compilers. The gcc 4.x series have a rewritten inlining algorit=
-hm and
-> -         enabling this option will generate a smaller kernel there. Hope=
-fully
-> -         this algorithm is so good that allowing gcc 4.x and above to ma=
-ke the
-> -         decision will become the default in the future. Until then this=
- option
-> -         is there to test gcc for this.
-> -
-> -         If unsure, say N.
-> -
->  config DEBUG_ENTRY
->         bool "Debug low-level entry code"
->         depends on DEBUG_KERNEL
-> diff --git a/drivers/mtd/nand/raw/vf610_nfc.c b/drivers/mtd/nand/raw/vf61=
-0_nfc.c
-> index a662ca1..19792d7 100644
-> --- a/drivers/mtd/nand/raw/vf610_nfc.c
-> +++ b/drivers/mtd/nand/raw/vf610_nfc.c
-> @@ -364,7 +364,7 @@ static int vf610_nfc_cmd(struct nand_chip *chip,
->  {
->         const struct nand_op_instr *instr;
->         struct vf610_nfc *nfc =3D chip_to_nfc(chip);
-> -       int op_id =3D -1, trfr_sz =3D 0, offset;
-> +       int op_id =3D -1, trfr_sz =3D 0, offset =3D 0;
->         u32 col =3D 0, row =3D 0, cmd1 =3D 0, cmd2 =3D 0, code =3D 0;
->         bool force8bit =3D false;
->
-> diff --git a/include/linux/compiler_types.h b/include/linux/compiler_type=
-s.h
-> index ba814f1..19e58b9 100644
-> --- a/include/linux/compiler_types.h
-> +++ b/include/linux/compiler_types.h
-> @@ -140,8 +140,7 @@ struct ftrace_likely_data {
->   * Do not use __always_inline here, since currently it expands to inline=
- again
->   * (which would break users of __always_inline).
->   */
-> -#if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) || \
-> -       !defined(CONFIG_OPTIMIZE_INLINING)
-> +#if !defined(CONFIG_OPTIMIZE_INLINING)
->  #define inline inline __attribute__((__always_inline__)) __gnu_inline \
->         __maybe_unused notrace
->  #else
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 0d9e817..20f3dfc 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -310,6 +310,21 @@ config HEADERS_CHECK
->           exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
->           your build tree), to make sure they're suitable.
->
-> +config OPTIMIZE_INLINING
-> +       bool "Allow compiler to uninline functions marked 'inline'"
-> +       depends on !MIPS  # TODO: look into MIPS code
-> +       help
-> +         This option determines if the kernel forces gcc to inline the f=
-unctions
-> +         developers have marked 'inline'. Doing so takes away freedom fr=
-om gcc to
-> +         do what it thinks is best, which is desirable for the gcc 3.x s=
-eries of
-> +         compilers. The gcc 4.x series have a rewritten inlining algorit=
-hm and
-> +         enabling this option will generate a smaller kernel there. Hope=
-fully
-> +         this algorithm is so good that allowing gcc 4.x and above to ma=
-ke the
-> +         decision will become the default in the future. Until then this=
- option
-> +         is there to test gcc for this.
-> +
-> +         If unsure, say N.
-> +
->  config DEBUG_SECTION_MISMATCH
->         bool "Enable full Section mismatch analysis"
->         help
-> --
-> 2.7.4
->
->
-> ______________________________________________________
-> Linux MTD discussion mailing list
-> http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
-
-
---=20
-Best Regards
-Masahiro Yamada
