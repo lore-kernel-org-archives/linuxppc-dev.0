@@ -2,50 +2,56 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 648EDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:56:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41E2EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:58:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 19B7B2146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:56:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 19B7B2146E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id ECA822146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:58:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECA822146E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PVKt0xNrzDqQD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:56:34 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PVMc1GrmzDqG1
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:58:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=nxp.com
+ (client-ip=92.121.34.21; helo=inva021.nxp.com;
+ envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=nxp.com
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PVFg3r4zzDq8B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 23:52:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44PVFg1bDqz9sPC;
- Wed, 20 Mar 2019 23:52:55 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mathieu Malaterre <malat@debian.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] powerpc: Make some functions static
-In-Reply-To: <CA+7wUszPviAFVjyU-=qAJfOpe_NxmimWd2-tc148NLUEc4Oj0w@mail.gmail.com>
-References: <20190312203140.31785-1-malat@debian.org>
- <607b412d-e5a2-5d08-7fb9-53a24e6c76d4@c-s.fr>
- <CA+7wUszPviAFVjyU-=qAJfOpe_NxmimWd2-tc148NLUEc4Oj0w@mail.gmail.com>
-Date: Wed, 20 Mar 2019 23:52:53 +1100
-Message-ID: <87tvfxyafu.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PVK61XvhzDqMv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 23:55:52 +1100 (AEDT)
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A06A8200214;
+ Wed, 20 Mar 2019 13:55:48 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
+ [134.27.226.22])
+ by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9B7B42000C4;
+ Wed, 20 Mar 2019 13:55:48 +0100 (CET)
+Received: from fsr-ub1864-014.ea.freescale.net
+ (fsr-ub1864-014.ea.freescale.net [10.171.95.219])
+ by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 369522062E;
+ Wed, 20 Mar 2019 13:55:48 +0100 (CET)
+From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
+To: Rob Herring <robh+dt@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>
+Subject: [PATCH] powerpc/dts/fsl: add crypto node alias for B4
+Date: Wed, 20 Mar 2019 14:55:16 +0200
+Message-Id: <20190320125516.12277-1-horia.geanta@nxp.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: ClamAV using ClamSMTP
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -57,35 +63,32 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Mathieu Malaterre <malat@debian.org> writes:
-> On Tue, Mar 12, 2019 at 10:14 PM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->>
->>
->> Le 12/03/2019 =C3=A0 21:31, Mathieu Malaterre a =C3=A9crit :
->> > In commit cb9e4d10c448 ("[POWERPC] Add support for 750CL Holly board")
->> > new functions were added. Since these functions can be made static,
->> > make it so. While doing so, it turns out that holly_power_off and
->> > holly_halt are unused, so remove them.
->>
->> I would have said 'since these functions are only used in this C file,
->> make them static'.
->>
->> I think this could be split in two patches:
->> 1/ Remove unused functions, ie holly_halt() and holly_power_off().
->> 2/ Make the other ones static.
->
-> Michael do you want two patches ?
+crypto node alias is needed by U-boot to identify the node and
+perform fix-ups, like adding "fsl,sec-era" property.
 
-That would be better if it's not too much trouble. A patch with a title
-of "Make some functions static" shouldn't really be deleting functions
-entirely.
+Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/b4qds.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-cheers
+diff --git a/arch/powerpc/boot/dts/fsl/b4qds.dtsi b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
+index 999efd3bc167..05be919f3545 100644
+--- a/arch/powerpc/boot/dts/fsl/b4qds.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
+@@ -40,6 +40,7 @@
+ 	interrupt-parent = <&mpic>;
+ 
+ 	aliases {
++		crypto = &crypto;
+ 		phy_sgmii_10 = &phy_sgmii_10;
+ 		phy_sgmii_11 = &phy_sgmii_11;
+ 		phy_sgmii_1c = &phy_sgmii_1c;
+-- 
+2.17.1
+
