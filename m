@@ -4,79 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36BD1C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:12:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D798CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:14:07 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA90420857
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:12:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5079C20857
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:14:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jkOM65LG"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA90420857
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="xoTrDCt6"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5079C20857
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PKMP1mPjzDqHr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:12:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PKPT4M7RzDqND
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:14:05 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="jkOM65LG"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="xoTrDCt6"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PK8k1scgzDqMB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:03:02 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id b12so983779pgk.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:03:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PK8y5TB3zDqMf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:03:12 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id v1so961964pgi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:03:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=MXusI7yCojNM7mGiMQSzxfQPKN8PLeBFLiffEt0PMdg=;
- b=jkOM65LGUc23Eh9OuhFs1XVtELvDKYksvgQcNLN4rNx6WXELJzaDCZd32dYKOflbLa
- z+WuTs3sCyS6WiG6eSfJYMmTezVAjI94Hp9pq6B26ZKPldbeVMjlbJRzKI/DXxzEuWJa
- JwiMUhuftqU+5negw6Z+iapWiuQ7fHG6ojr6zCwPYFj1s1QPi/glNS2GAhEFhYXUp09D
- 7Mu9ee+dj7nSb4L+TwsqsrqjO+HfsSAMKYo2MVpthy45sPXY9vgc+NHmFg+gT29pFOPk
- 6JTiWK3BoYs8sRR9t2wJrDzkfN9EkOvhqneJgjiOZRGCbpeNtBTrCSTLJk0SI4zz/VMx
- WIRw==
+ bh=+lPGByhHmGWyu6VbSmhPqdF7Ht8p35rZtHsVl23RHVQ=;
+ b=xoTrDCt6tfYGjnuli5Zplqw2XwFcVVr+Me3XeS3Ped11a90e0Pc4kxj0akhpfCZv0s
+ k4zxY2tCBf9UQ23Qeu/eHbpKjIzvXhjA7aLktdTcxF5ObilA5noclPCjYfbBqUYuxN41
+ qNKx6yxqONLnRtFBHkj6sfDikoUeWnsT84GVYLsuJccLPnH4umzHqZ/NVLpkg4Pnnvnw
+ lYwedoGcn+/oiLlMFW9KgBfMop7NT930HXOH8WnPeXzhflawEdw2hRndn5MKzLAlOSvU
+ wqAAnTlbCzPqNejebC9yg8rb6mHIxuj962EvovvJPrskq5cgOtQzDU4MwGHuuLjnhBbj
+ aOdw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=MXusI7yCojNM7mGiMQSzxfQPKN8PLeBFLiffEt0PMdg=;
- b=CRbDlX1WGuOW5iquzlPpwOK5z0DbF30C+tD5vx0qouqjUzluc2TTg4fqLIMvnBUFrn
- mH2ylKBsF9+e+TOFTfOZNmIT8QLT3lJWToV70pVeH2LmvZcrDrRGKAUs1YW2kpB2yk9r
- g8ElpdGPYInbgRTMv3r5+H4c4BthOHRfRWv2EZydK/W2r7BCIKkIDhre5Nr6r2rsldI7
- 9zxJ1qn93ef3GG3Ecg444qXFQEso4oKhXuWebE+6TFiChXGVS/Zd1cKSYJGmEzJi5r6B
- t3j5yHxvFLQ29hCBQ3sDL84myZGRt25Xh1vxvZ/CQrk6FQWX4U92J+0KKHSrn5WydfYb
- VSEQ==
-X-Gm-Message-State: APjAAAXP8NMeWSMJc3o2x7s7MNoTxH5+KnOEPKeAU7WKT2I3axQ1r+Yk
- 4MSNwAcUbw9zSpWTgVqL6UoReUDbIKE=
-X-Google-Smtp-Source: APXvYqzs2DKZ7RJtUbUpSRj4QMv9txTgP53JRvCpxwKkgbS2NTHszCz8dMdd/be9d0gsKJXTicxXwQ==
-X-Received: by 2002:a17:902:b698:: with SMTP id
- c24mr5961234pls.221.1553061780324; 
- Tue, 19 Mar 2019 23:03:00 -0700 (PDT)
+ bh=+lPGByhHmGWyu6VbSmhPqdF7Ht8p35rZtHsVl23RHVQ=;
+ b=J/38PXwyfmZziqwP4lBSrguEfJROAV2WZ9O1CNqy4kqJ2C5zgEIA008mFnQywLtRaW
+ KaDeZvl5nkqdx9tG6D63LYdx57eV7iu5+leGu6DqaLZyFdQXwqC4SqU2rxrAcxBgCaGj
+ 2ReqyUkgSjDCCumv4LfnG6ayj+ZLUo1ZaiIBQPOaYmUshJETL4AL2VAy1Fh1lmAXEPof
+ PXAPCnAtcp00khlE1yZ+i8VTPt4QGtZCFis/4ouyK3Lx9b+IKjpW1T4Ti1YJKyhX2XBs
+ 60qGtELNs73DJJTJH1c3xDFJHGyKf8rXNrJREi1A7j+yrWKZPrz4jczMsEdwpAmV/0+k
+ /yVQ==
+X-Gm-Message-State: APjAAAVBlKbYoJpDhYDOHpwfgExGlhQw/R6Iu62J1U2HhpTQNL7vE+7w
+ 1S6IltboWCTrPHCnse+wI7UOVfMLDsE=
+X-Google-Smtp-Source: APXvYqymNMb6PAqjZR5rIcuy1BjH+fhRQz5R7odyENPELL5Ye4gK0JvCZFsDZXM2Fanh/HPCGGsVbQ==
+X-Received: by 2002:a65:628f:: with SMTP id f15mr5706920pgv.410.1553061790870; 
+ Tue, 19 Mar 2019 23:03:10 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id b15sm1986055pfj.167.2019.03.19.23.02.58
+ by smtp.gmail.com with ESMTPSA id c13sm1437402pfm.34.2019.03.19.23.03.09
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 19 Mar 2019 23:02:59 -0700 (PDT)
-Subject: Re: [PATCH 2/8] powerpc/eeh: Clear stale EEH_DEV_NO_HANDLER flag
+ Tue, 19 Mar 2019 23:03:10 -0700 (PDT)
+Subject: Re: [PATCH 1/8] powerpc/64: Adjust order in pcibios_init()
 To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <cover.1553050609.git.sbobroff@linux.ibm.com>
- <28b287eb3939b1941bd46b2ed9a6981a577568c4.1553050609.git.sbobroff@linux.ibm.com>
+ <fcdb48612cb4cb777ed33a617b932b054170b074.1553050609.git.sbobroff@linux.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -152,12 +152,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
  DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
  XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <fd1acf72-aefe-233f-cd01-e89846551e08@ozlabs.ru>
-Date: Wed, 20 Mar 2019 17:02:57 +1100
+Message-ID: <bf640b19-0cf5-217c-4871-9e61f3e78f26@ozlabs.ru>
+Date: Wed, 20 Mar 2019 17:03:07 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <28b287eb3939b1941bd46b2ed9a6981a577568c4.1553050609.git.sbobroff@linux.ibm.com>
+In-Reply-To: <fcdb48612cb4cb777ed33a617b932b054170b074.1553050609.git.sbobroff@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -179,55 +179,92 @@ Sender: "Linuxppc-dev"
 
 
 On 20/03/2019 13:58, Sam Bobroff wrote:
-> The EEH_DEV_NO_HANDLER flag is used by the EEH system to prevent the
-> use of driver callbacks in drivers that have been bound part way
-> through the recovery process. This is necessary to prevent later stage
-> handlers from being called when the earlier stage handlers haven't,
-> which can be confusing for drivers.
-
-The flag is used from eeh_pe_report()->eeh_pe_report_edev which is
-called many times from eeh_handle_normal_event() (and you clear the flag
-here unconditionally) and once from eeh_handle_special_event() - so this
-is actually the only case now when the flag matters. Is my understanding
-correct? Also is not clearing the flag correct in that case? I do not
-quite understand eeh_handle_normal_event vs. eeh_handle_special_event
-business though.
-
-
+> The pcibios_init() function for 64 bit PowerPC currently calls
+> pci_bus_add_devices() before pcibios_resource_survey(), which seems
+> incorrect because it adds devices and attempts to bind their drivers
+> before allocating their resources (although no problems seem to be
+> apparent).
 > 
-> However, the flag is set for all devices that are added after boot
-> time and only cleared at the end of the EEH recovery process. This
-> results in hot plugged devices erroneously having the flag set during
-> the first recovery after they are added (causing their driver's
-> handlers to be incorrectly ignored).
+> So move the call to pci_bus_add_devices() to after
+> pcibios_resource_survey(), while extracting call to the
+> pcibios_fixup() hook so that it remains in the same location.
 > 
-> To remedy this, clear the flag at the beginning of recovery
-> processing. The flag is still cleared at the end of recovery
-> processing, although it is no longer really necessary.
-
-Then may be remove that redundant clearing?
-
+> This will also allow the ppc_md.pcibios_bus_add_device() hooks to
+> perform actions that depend on PCI resources, both during rescanning
+> (where this is already the case) and at boot time, to support future
+> work.
 > 
 > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+
+
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+
+
 > ---
->  arch/powerpc/kernel/eeh_driver.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/powerpc/kernel/pci-common.c |  4 ----
+>  arch/powerpc/kernel/pci_32.c     |  4 ++++
+>  arch/powerpc/kernel/pci_64.c     | 12 +++++++++---
+>  3 files changed, 13 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 6f3ee30565dd..4c34b9901f15 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -819,6 +819,10 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
->  		result = PCI_ERS_RESULT_DISCONNECT;
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index ff4b7539cbdf..3146eb73e3b3 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1383,10 +1383,6 @@ void __init pcibios_resource_survey(void)
+>  		pr_debug("PCI: Assigning unassigned resources...\n");
+>  		pci_assign_unassigned_resources();
 >  	}
+> -
+> -	/* Call machine dependent fixup */
+> -	if (ppc_md.pcibios_fixup)
+> -		ppc_md.pcibios_fixup();
+>  }
 >  
-> +	eeh_for_each_pe(pe, tmp_pe)
-> +		eeh_pe_for_each_dev(tmp_pe, edev, tmp)
-> +			edev->mode &= ~EEH_DEV_NO_HANDLER;
+>  /* This is used by the PCI hotplug driver to allocate resource
+> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+> index d3f04f2d8249..40aaa1a6e193 100644
+> --- a/arch/powerpc/kernel/pci_32.c
+> +++ b/arch/powerpc/kernel/pci_32.c
+> @@ -259,6 +259,10 @@ static int __init pcibios_init(void)
+>  	/* Call common code to handle resource allocation */
+>  	pcibios_resource_survey();
+>  
+> +	/* Call machine dependent fixup */
+> +	if (ppc_md.pcibios_fixup)
+> +		ppc_md.pcibios_fixup();
 > +
->  	/* Walk the various device drivers attached to this slot through
->  	 * a reset sequence, giving each an opportunity to do what it needs
->  	 * to accomplish the reset.  Each child gets a report of the
+>  	/* Call machine dependent post-init code */
+>  	if (ppc_md.pcibios_after_init)
+>  		ppc_md.pcibios_after_init();
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 9d8c10d55407..6f16f30031d7 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -58,14 +58,20 @@ static int __init pcibios_init(void)
+>  	pci_add_flags(PCI_ENABLE_PROC_DOMAINS | PCI_COMPAT_DOMAIN_0);
+>  
+>  	/* Scan all of the recorded PCI controllers.  */
+> -	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+>  		pcibios_scan_phb(hose);
+> -		pci_bus_add_devices(hose->bus);
+> -	}
+>  
+>  	/* Call common code to handle resource allocation */
+>  	pcibios_resource_survey();
+>  
+> +	/* Add devices. */
+> +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+> +		pci_bus_add_devices(hose->bus);
+> +
+> +	/* Call machine dependent fixup */
+> +	if (ppc_md.pcibios_fixup)
+> +		ppc_md.pcibios_fixup();
+> +
+>  	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
+>  
+>  	return 0;
 > 
 
 -- 
