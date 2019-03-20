@@ -2,59 +2,51 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C005BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:26:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2E60C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 18:19:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 4C55921841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:26:27 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4C55921841
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=perches.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4EFD4218C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 18:19:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4EFD4218C3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PcKD6vZ8zDqMX
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 04:26:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PdVB6vZbzDqNv
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 05:19:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=perches.com
- (client-ip=216.40.44.162; helo=smtprelay.hostedemail.com;
- envelope-from=joe@perches.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=catalin.marinas@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=perches.com
-Received: from smtprelay.hostedemail.com (smtprelay0162.hostedemail.com
- [216.40.44.162])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PcHR2f9czDqLG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 04:24:49 +1100 (AEDT)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net
- [216.40.38.60])
- by smtprelay07.hostedemail.com (Postfix) with ESMTP id 4A80D181D3419;
- Wed, 20 Mar 2019 17:24:44 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: tooth04_63629714ab316
-X-Filterd-Recvd-Size: 2271
-Received: from XPS-9350.home (unknown [47.151.153.53])
- (Authenticated sender: joe@perches.com)
- by omf04.hostedemail.com (Postfix) with ESMTPA;
- Wed, 20 Mar 2019 17:24:42 +0000 (UTC)
-Message-ID: <3e62601417f959c60d7f0c0311afb1d8484a0d1c.camel@perches.com>
-Subject: Re: [PATCH v3 2/5] ocxl: Clean up printf formats
-From: Joe Perches <joe@perches.com>
-To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
-Date: Wed, 20 Mar 2019 10:24:41 -0700
-In-Reply-To: <20190320053448.2098-3-alastair@au1.ibm.com>
-References: <20190313040702.14276-1-alastair@au1.ibm.com>
- <20190320053448.2098-1-alastair@au1.ibm.com>
- <20190320053448.2098-3-alastair@au1.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.30.1-1build1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44PdRj0XS4zDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 05:17:03 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AE9A8A78;
+ Wed, 20 Mar 2019 11:17:01 -0700 (PDT)
+Received: from arrakis.emea.arm.com (arrakis.cambridge.arm.com [10.1.196.78])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id
+ E1F723F59C; Wed, 20 Mar 2019 11:16:59 -0700 (PDT)
+Date: Wed, 20 Mar 2019 18:16:57 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] kmemleak: skip scanning holes in the .bss section
+Message-ID: <20190320181656.GB38229@arrakis.emea.arm.com>
+References: <20190313145717.46369-1-cai@lca.pw>
+ <20190319115747.GB59586@arrakis.emea.arm.com>
+ <87lg19y9dp.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87lg19y9dp.fsf@concordia.ellerman.id.au>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,48 +58,101 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
+ Qian Cai <cai@lca.pw>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-03-20 at 16:34 +1100, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Thu, Mar 21, 2019 at 12:15:46AM +1100, Michael Ellerman wrote:
+> Catalin Marinas <catalin.marinas@arm.com> writes:
+> > On Wed, Mar 13, 2019 at 10:57:17AM -0400, Qian Cai wrote:
+> >> @@ -1531,7 +1547,14 @@ static void kmemleak_scan(void)
+> >>  
+> >>  	/* data/bss scanning */
+> >>  	scan_large_block(_sdata, _edata);
+> >> -	scan_large_block(__bss_start, __bss_stop);
+> >> +
+> >> +	if (bss_hole_start) {
+> >> +		scan_large_block(__bss_start, bss_hole_start);
+> >> +		scan_large_block(bss_hole_stop, __bss_stop);
+> >> +	} else {
+> >> +		scan_large_block(__bss_start, __bss_stop);
+> >> +	}
+> >> +
+> >>  	scan_large_block(__start_ro_after_init, __end_ro_after_init);
+> >
+> > I'm not a fan of this approach but I couldn't come up with anything
+> > better. I was hoping we could check for PageReserved() in scan_block()
+> > but on arm64 it ends up not scanning the .bss at all.
+> >
+> > Until another user appears, I'm ok with this patch.
+> >
+> > Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 > 
-> Use %# instead of using a literal '0x'
+> I actually would like to rework this kvm_tmp thing to not be in bss at
+> all. It's a bit of a hack and is incompatible with strict RWX.
+> 
+> If we size it a bit more conservatively we can hopefully just reserve
+> some space in the text section for it.
+> 
+> I'm not going to have time to work on that immediately though, so if
+> people want this fixed now then this patch could go in as a temporary
+> solution.
 
-I do not suggest this as reasonable.
+I think I have a simpler idea. Kmemleak allows punching holes in
+allocated objects, so just turn the data/bss sections into dedicated
+kmemleak objects. This happens when kmemleak is initialised, before the
+initcalls are invoked. The kvm_free_tmp() would just free the
+corresponding part of the bss.
 
-There are 10's of thousands of uses of 0x%x in the kernel
-and converting them to save a byte seems unnecessary.
+Patch below, only tested briefly on arm64. Qian, could you give it a try
+on powerpc? Thanks.
 
-$ git grep -P '0x%[\*\d\.]*[xX]' | wc -l
-26120
-
-And the %#x style is by far the lesser used form
-
-$ git grep -P '%#[\*\d\.]*[xX]' | wc -l
-2726
-
-Also, the sized form of %#[size]x is frequently misused
-where the size does not account for the initial 0x output.
-
-> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-[]
-> @@ -178,9 +178,9 @@ static int read_dvsec_vendor(struct pci_dev *dev)
->  	pci_read_config_dword(dev, pos + OCXL_DVSEC_VENDOR_DLX_VERS, &dlx);
->  
->  	dev_dbg(&dev->dev, "Vendor specific DVSEC:\n");
-> -	dev_dbg(&dev->dev, "  CFG version = 0x%x\n", cfg);
-> -	dev_dbg(&dev->dev, "  TLX version = 0x%x\n", tlx);
-> -	dev_dbg(&dev->dev, "  DLX version = 0x%x\n", dlx);
-> +	dev_dbg(&dev->dev, "  CFG version = %#x\n", cfg);
-> +	dev_dbg(&dev->dev, "  TLX version = %#x\n", tlx);
-> +	dev_dbg(&dev->dev, "  DLX version = %#x\n", dlx);
-
-etc...
-
-
+--------8<------------------------------
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 683b5b3805bd..c4b8cb3c298d 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -712,6 +712,8 @@ static void kvm_use_magic_page(void)
+ 
+ static __init void kvm_free_tmp(void)
+ {
++	kmemleak_free_part(&kvm_tmp[kvm_tmp_index],
++			   ARRAY_SIZE(kvm_tmp) - kvm_tmp_index);
+ 	free_reserved_area(&kvm_tmp[kvm_tmp_index],
+ 			   &kvm_tmp[ARRAY_SIZE(kvm_tmp)], -1, NULL);
+ }
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 707fa5579f66..0f6adcbfc2c7 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -1529,11 +1529,6 @@ static void kmemleak_scan(void)
+ 	}
+ 	rcu_read_unlock();
+ 
+-	/* data/bss scanning */
+-	scan_large_block(_sdata, _edata);
+-	scan_large_block(__bss_start, __bss_stop);
+-	scan_large_block(__start_ro_after_init, __end_ro_after_init);
+-
+ #ifdef CONFIG_SMP
+ 	/* per-cpu sections scanning */
+ 	for_each_possible_cpu(i)
+@@ -2071,6 +2066,15 @@ void __init kmemleak_init(void)
+ 	}
+ 	local_irq_restore(flags);
+ 
++	/* register the data/bss sections */
++	create_object((unsigned long)_sdata, _edata - _sdata,
++		      KMEMLEAK_GREY, GFP_ATOMIC);
++	create_object((unsigned long)__bss_start, __bss_stop - __bss_start,
++		      KMEMLEAK_GREY, GFP_ATOMIC);
++	create_object((unsigned long)__start_ro_after_init,
++		      __end_ro_after_init - __start_ro_after_init,
++		      KMEMLEAK_GREY, GFP_ATOMIC);
++
+ 	/*
+ 	 * This is the point where tracking allocations is safe. Automatic
+ 	 * scanning is started during the late initcall. Add the early logged
