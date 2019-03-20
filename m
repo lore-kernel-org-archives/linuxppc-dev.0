@@ -6,50 +6,53 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8B8FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:54:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09DF1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:56:33 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6CEC22175B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:54:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6CEC22175B
+	by mail.kernel.org (Postfix) with ESMTPS id 4ED2E2175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:56:32 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4ED2E2175B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PNz04DxRzDqMk
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:54:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PP0t3S0KzDqMy
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:56:30 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.43.93; helo=6.mo173.mail-out.ovh.net;
+ (client-ip=46.105.76.148; helo=9.mo179.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 6.mo173.mail-out.ovh.net (6.mo173.mail-out.ovh.net
- [46.105.43.93])
+X-Greylist: delayed 151889 seconds by postgrey-1.36 at bilbo;
+ Wed, 20 Mar 2019 19:40:32 AEDT
+Received: from 9.mo179.mail-out.ovh.net (9.mo179.mail-out.ovh.net
+ [46.105.76.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PNfJ6DMkzDqM3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:40:23 +1100 (AEDT)
-Received: from player787.ha.ovh.net (unknown [10.109.159.20])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id E6B5CFAA6D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:40:18 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PNfS6qSwzDqK6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:40:31 +1100 (AEDT)
+Received: from player787.ha.ovh.net (unknown [10.109.159.35])
+ by mo179.mail-out.ovh.net (Postfix) with ESMTP id 1951C1227EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:40:29 +0100 (CET)
 Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
  (Authenticated sender: clg@kaod.org)
- by player787.ha.ovh.net (Postfix) with ESMTPSA id B8FA53F3B72A;
- Wed, 20 Mar 2019 08:40:09 +0000 (UTC)
+ by player787.ha.ovh.net (Postfix) with ESMTPSA id EF15B3F3B7B6;
+ Wed, 20 Mar 2019 08:40:18 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 16/17] KVM: introduce a KVM_DESTROY_DEVICE ioctl
-Date: Wed, 20 Mar 2019 09:37:50 +0100
-Message-Id: <20190320083751.27001-17-clg@kaod.org>
+Subject: [PATCH v4 17/17] KVM: PPC: Book3S HV: XIVE: clear the vCPU interrupt
+ presenters
+Date: Wed, 20 Mar 2019 09:37:51 +0100
+Message-Id: <20190320083751.27001-18-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190320083751.27001-1-clg@kaod.org>
 References: <20190320083751.27001-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 18190601847763405783
+X-Ovh-Tracer-Id: 18193698072572758999
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrieehgdduvdeiucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -66,156 +69,165 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: kvm@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The 'destroy' method is currently used to destroy all devices when the
-VM is destroyed after the vCPUs have been freed.
+When the VM boots, the CAS negotiation process determines which
+interrupt mode to use and invokes a machine reset. At that time, the
+previous KVM interrupt device is 'destroyed' before the chosen one is
+created. Upon destruction, the vCPU interrupt presenters using the KVM
+device should be cleared first, the machine will reconnect them later
+to the new device after it is created.
 
-This new KVM ioctl exposes the same KVM device method. It acts as a
-software reset of the VM to 'destroy' selected devices when necessary
-and perform the required cleanups on the vCPUs. Called with the
-kvm->lock.
-
-The 'destroy' method could be improved by returning an error code.
-
-Cc: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 
- Changes since v3 :
-
- - Removed temporary TODO comment in kvm_ioctl_destroy_device()
-   regarding kvm_put_kvm()
- 
  Changes since v2 :
 
- - checked that device is owned by VM
- 
- include/uapi/linux/kvm.h          |  7 ++++++
- virt/kvm/kvm_main.c               | 41 +++++++++++++++++++++++++++++++
- Documentation/virtual/kvm/api.txt | 20 +++++++++++++++
- 3 files changed, 68 insertions(+)
+ - removed comments on possible race in kvmppc_native_connect_vcpu()
+   for the XIVE KVM device. This is still an issue in the
+   XICS-over-XIVE device.
+   
+ arch/powerpc/kvm/book3s_xics.c        | 19 +++++++++++++
+ arch/powerpc/kvm/book3s_xive.c        | 39 +++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_xive_native.c | 12 +++++++++
+ 3 files changed, 68 insertions(+), 2 deletions(-)
 
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 52bf74a1616e..d78fafa54274 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -1183,6 +1183,11 @@ struct kvm_create_device {
- 	__u32	flags;	/* in: KVM_CREATE_DEVICE_xxx */
- };
- 
-+struct kvm_destroy_device {
-+	__u32	fd;	/* in: device handle */
-+	__u32	flags;	/* in: unused */
-+};
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index f27ee57ab46e..81cdabf4295f 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -1342,6 +1342,25 @@ static void kvmppc_xics_free(struct kvm_device *dev)
+ 	struct kvmppc_xics *xics = dev->private;
+ 	int i;
+ 	struct kvm *kvm = xics->kvm;
++	struct kvm_vcpu *vcpu;
 +
- struct kvm_device_attr {
- 	__u32	flags;		/* no flags currently defined */
- 	__u32	group;		/* device-defined */
-@@ -1331,6 +1336,8 @@ struct kvm_s390_ucas_mapping {
- #define KVM_GET_DEVICE_ATTR	  _IOW(KVMIO,  0xe2, struct kvm_device_attr)
- #define KVM_HAS_DEVICE_ATTR	  _IOW(KVMIO,  0xe3, struct kvm_device_attr)
- 
-+#define KVM_DESTROY_DEVICE	  _IOWR(KVMIO,  0xf0, struct kvm_destroy_device)
++	/*
++	 * When destroying the VM, the vCPUs are destroyed first and
++	 * the vCPU list should be empty. If this is not the case,
++	 * then we are simply destroying the device and we should
++	 * clean up the vCPU interrupt presenters first.
++	 */
++	if (atomic_read(&kvm->online_vcpus) != 0) {
++		/*
++		 * call kick_all_cpus_sync() to ensure that all CPUs
++		 * have executed any pending interrupts
++		 */
++		if (is_kvmppc_hv_enabled(kvm))
++			kick_all_cpus_sync();
 +
- /*
-  * ioctls for vcpu fds
-  */
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 5e2fa5c7dd1a..9601c2ddecc5 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3032,6 +3032,33 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
- 	return 0;
++		kvm_for_each_vcpu(i, vcpu, kvm)
++			kvmppc_xics_free_icp(vcpu);
++	}
+ 
+ 	debugfs_remove(xics->dentry);
+ 
+diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
+index 480a3fc6b9fd..cf6a4c6c5a28 100644
+--- a/arch/powerpc/kvm/book3s_xive.c
++++ b/arch/powerpc/kvm/book3s_xive.c
+@@ -1100,11 +1100,19 @@ void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
+ void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+-	struct kvmppc_xive *xive = xc->xive;
++	struct kvmppc_xive *xive;
+ 	int i;
+ 
++	if (!kvmppc_xics_enabled(vcpu))
++		return;
++
++	if (!xc)
++		return;
++
+ 	pr_devel("cleanup_vcpu(cpu=%d)\n", xc->server_num);
+ 
++	xive = xc->xive;
++
+ 	/* Ensure no interrupt is still routed to that VP */
+ 	xc->valid = false;
+ 	kvmppc_xive_disable_vcpu_interrupts(vcpu);
+@@ -1141,6 +1149,10 @@ void kvmppc_xive_cleanup_vcpu(struct kvm_vcpu *vcpu)
+ 	}
+ 	/* Free the VP */
+ 	kfree(xc);
++
++	/* Cleanup the vcpu */
++	vcpu->arch.irq_type = KVMPPC_IRQ_DEFAULT;
++	vcpu->arch.xive_vcpu = NULL;
  }
  
-+static int kvm_ioctl_destroy_device(struct kvm *kvm,
-+				    struct kvm_destroy_device *dd)
-+{
-+	struct fd f;
-+	struct kvm_device *dev;
-+
-+	f = fdget(dd->fd);
-+	if (!f.file)
-+		return -EBADF;
-+
-+	dev = kvm_device_from_filp(f.file);
-+	fdput(f);
-+
-+	if (!dev)
-+		return -ENODEV;
-+
-+	if (dev->kvm != kvm)
-+		return -EPERM;
-+
-+	mutex_lock(&kvm->lock);
-+	list_del(&dev->vm_node);
-+	dev->ops->destroy(dev);
-+	mutex_unlock(&kvm->lock);
-+
-+	return 0;
-+}
-+
- static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- {
- 	switch (arg) {
-@@ -3276,6 +3303,20 @@ static long kvm_vm_ioctl(struct file *filp,
- 		r = 0;
- 		break;
+ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
+@@ -1158,7 +1170,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
  	}
-+	case KVM_DESTROY_DEVICE: {
-+		struct kvm_destroy_device dd;
+ 	if (xive->kvm != vcpu->kvm)
+ 		return -EPERM;
+-	if (vcpu->arch.irq_type)
++	if (vcpu->arch.irq_type != KVMPPC_IRQ_DEFAULT)
+ 		return -EBUSY;
+ 	if (kvmppc_xive_find_server(vcpu->kvm, cpu)) {
+ 		pr_devel("Duplicate !\n");
+@@ -1828,8 +1840,31 @@ static void kvmppc_xive_free(struct kvm_device *dev)
+ {
+ 	struct kvmppc_xive *xive = dev->private;
+ 	struct kvm *kvm = xive->kvm;
++	struct kvm_vcpu *vcpu;
+ 	int i;
+ 
++	/*
++	 * When destroying the VM, the vCPUs are destroyed first and
++	 * the vCPU list should be empty. If this is not the case,
++	 * then we are simply destroying the device and we should
++	 * clean up the vCPU interrupt presenters first.
++	 */
++	if (atomic_read(&kvm->online_vcpus) != 0) {
++		/*
++		 * call kick_all_cpus_sync() to ensure that all CPUs
++		 * have executed any pending interrupts
++		 */
++		if (is_kvmppc_hv_enabled(kvm))
++			kick_all_cpus_sync();
 +
-+		r = -EFAULT;
-+		if (copy_from_user(&dd, argp, sizeof(dd)))
-+			goto out;
-+
-+		r = kvm_ioctl_destroy_device(kvm, &dd);
-+		if (r)
-+			goto out;
-+
-+		r = 0;
-+		break;
++		/*
++		 * TODO: There is still a race window with the early
++		 * checks in kvmppc_native_connect_vcpu()
++		 */
++		kvm_for_each_vcpu(i, vcpu, kvm)
++			kvmppc_xive_cleanup_vcpu(vcpu);
 +	}
- 	case KVM_CHECK_EXTENSION:
- 		r = kvm_vm_ioctl_check_extension_generic(kvm, arg);
- 		break;
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index 8022ecce2c47..abe8433adf4f 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -3874,6 +3874,26 @@ number of valid entries in the 'entries' array, which is then filled.
- 'index' and 'flags' fields in 'struct kvm_cpuid_entry2' are currently reserved,
- userspace should not expect to get any particular value there.
++
+ 	debugfs_remove(xive->dentry);
  
-+4.119 KVM_DESTROY_DEVICE
-+
-+Capability: KVM_CAP_DEVICE_CTRL
-+Type: vm ioctl
-+Parameters: struct kvm_destroy_device (in)
-+Returns: 0 on success, -1 on error
-+Errors:
-+  ENODEV: The device type is unknown or unsupported
-+  EPERM: The device does not belong to the VM
-+
-+  Other error conditions may be defined by individual device types or
-+  have their standard meanings.
-+
-+Destroys an emulated device in the kernel.
-+
-+struct kvm_destroy_device {
-+	__u32	fd;	/* in: device handle */
-+	__u32	flags;	/* unused */
-+};
-+
- 5. The kvm_run structure
- ------------------------
+ 	if (kvm)
+diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
+index 6a502eee6744..96e6b5c50eb3 100644
+--- a/arch/powerpc/kvm/book3s_xive_native.c
++++ b/arch/powerpc/kvm/book3s_xive_native.c
+@@ -961,8 +961,20 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
+ {
+ 	struct kvmppc_xive *xive = dev->private;
+ 	struct kvm *kvm = xive->kvm;
++	struct kvm_vcpu *vcpu;
+ 	int i;
  
++	/*
++	 * When destroying the VM, the vCPUs are destroyed first and
++	 * the vCPU list should be empty. If this is not the case,
++	 * then we are simply destroying the device and we should
++	 * clean up the vCPU interrupt presenters first.
++	 */
++	if (atomic_read(&kvm->online_vcpus) != 0) {
++		kvm_for_each_vcpu(i, vcpu, kvm)
++			kvmppc_xive_native_cleanup_vcpu(vcpu);
++	}
++
+ 	debugfs_remove(xive->dentry);
+ 
+ 	pr_devel("Destroying xive native device\n");
 -- 
 2.20.1
 
