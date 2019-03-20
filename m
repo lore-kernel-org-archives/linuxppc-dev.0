@@ -2,82 +2,80 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK autolearn=ham autolearn_force=no
-	version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA29C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:05:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A89BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:07:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8EAAE20830
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:05:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id E3CAB20830
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:07:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FB0isDMI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EAAE20830
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="C/iUPEZb"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E3CAB20830
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PKCb4hKFzDq9B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:05:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PKFc0160zDq9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:07:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
+ (client-ip=2607:f8b0:4864:20::442; helo=mail-pf1-x442.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FB0isDMI"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="C/iUPEZb"; 
  dkim-atps=neutral
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PK833M2FzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:02:27 +1100 (AEDT)
-Received: by mail-pg1-x543.google.com with SMTP id g8so974887pgf.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:02:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PK865BQYzDq7n
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:02:30 +1100 (AEDT)
+Received: by mail-pf1-x442.google.com with SMTP id r15so1102710pfn.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:02:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=23Nqa1ytGnW9o+VtxnyfGsbAyIbZSpZ38F3mctJi0uA=;
- b=FB0isDMIptN/h5rgSMFs71ZbzRBy1Kax9SqmjEcQcsufNTPSpdLk/THskt9gspXVn4
- 9dr/DgcsDbs2yQYkjORiKmMaDmMolYIAtknMApOBS0008DigIT1hKDSH7EeY0BEYGNTd
- 4sRs3D0SRzw6JzO/Go3vO6I6tCMoh+l8YU+DH3gPz+EBbbSfK8hUAzFG5nPVzxtvWy0E
- RdYSBSMOv5sxEg8YcC+ikP/KSToQnTqNjNuVPoC0POe3AmuB84zPw6QBbjX/Cc7Zvqm3
- ImBXQ2nSWaE5W/qh1VyaE/Tfls8afsPP5H0Sxd03OTHoYNew8quO1O3wog/PwJiYHSzb
- RaFA==
+ bh=Wza9GI655UZcRvWVFBYGgLG87b0gem193ae0BmJXWik=;
+ b=C/iUPEZbjfTqtlpfq2j36Agtqpx2llkyG4Mi4lP4boHYACpi21+LttQhnTdzT7v/b6
+ bwXgnHMd/KczO1SdBkV35Q4R/dPPw+dBxjj2Qm5dF0y66MFRuvZn2wKf4+sndBKBOF7+
+ ySR4fw3WZdnNy+i+72dgBvpH8Y08uFn8xRKIGEb+ri25ZOzVcCi4eGjtU01oAdv8hvfp
+ 73o8yvJQdJBn+Numbdis2eNwfW20AhFrdTEMNnvGrkZHasJNblc9qu/3bF4KOyCkD+fs
+ LIMu3FR44Vrl0GGfFiLPPrhR27rHukD/ZOaLkeftYm9vPIiXeZCU8lnGeIRTzpGO46H4
+ lPkQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=23Nqa1ytGnW9o+VtxnyfGsbAyIbZSpZ38F3mctJi0uA=;
- b=CVMUuIcQ6yHiijTGiUUh00SBY4VKm0EfLTnferEgw1aGCKz6NKJi5M5CEYVq3FUuq0
- RhNvBkidCDK+t1tbXHf3CwhfH2+QihoH7hrQb3LKAvsn8qzs9XMNqNqs3DttI3emHqAD
- hPc2lmriz2/jsuKwml0ajya7cuuiOicItJ7oDm5Ig0ObSd6hhA8J1FjGP3S5nOGkUJOX
- 2yWBeFkhI17EtoIovJiFNTMIgu8FLPWUltdhuW/OgahEEk5fXmtDAeNwZ7wP9AUAGI5O
- WK4NQUwoJhio6LuvBkK4nHQksZyVEhtkplI2Cc7mMMsHKOFE/X9V0ZGV0ZMXZgPHzEDh
- a0lw==
-X-Gm-Message-State: APjAAAUPtbepMi2kYGcVLFoXvMCwX6o7R+B7C37oyl7nnvdjClHOe4Gw
- uEpjfJkGi/Byb3rcm1gjYNCapd+yRhk=
-X-Google-Smtp-Source: APXvYqx/w2wMO5HVmKz/looaPEgy8M+ABOX0XETCGhf6gEztnlByGBxIBoG1PtQijeEGNfN6200UeA==
-X-Received: by 2002:a17:902:7610:: with SMTP id
- k16mr6631846pll.215.1553061744324; 
- Tue, 19 Mar 2019 23:02:24 -0700 (PDT)
+ bh=Wza9GI655UZcRvWVFBYGgLG87b0gem193ae0BmJXWik=;
+ b=gfzOo4BupFM0M9dbadATefXuz3nH1swD/Fv9Hwa8f2E2nNXOh5AZ3iwGxUznc0BzaT
+ 932GDvyHRBxzzzFSR++u5qh71mHzVoxMeK3OMXjQZRNVXD+zt3NRKSz2S37hLX79lbcc
+ jhYgUQg0ugTeK99pca9Em5OT2vfpdeOd+xgveW5hymDq3+GT3Fxds6UhqDgxjohV2wD+
+ dOyfqUNjBNdlUCW7VyjCyhNz4cucYPc0xPqjrgcGkrfuznwbqTBsshsim1jlgdoJ4iuR
+ aowlwDWE0evrMs1yDzM0wxMCG9qF3F63NnsensM+FB/coPk3oagv3YhA0eI9nSDi5MMo
+ V2PA==
+X-Gm-Message-State: APjAAAX4RPMOu85iVMSvNffZYtk4VrIpsCM5sqbL01UYwMIwHaGT50Vv
+ tJM2Lr3yfo1eEwMfJvJgjMjWiddThmg=
+X-Google-Smtp-Source: APXvYqzyuaiGH/sw/74zmegWGbCqkDeq4UwJcxqLvx/0vg9L9v+oxwwI7zUaxERG3hdOWzrtOAcC1A==
+X-Received: by 2002:a65:5281:: with SMTP id y1mr5860848pgp.59.1553061747150;
+ Tue, 19 Mar 2019 23:02:27 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id q78sm1294735pfa.138.2019.03.19.23.02.22
+ by smtp.gmail.com with ESMTPSA id c11sm1719191pgd.24.2019.03.19.23.02.25
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 19 Mar 2019 23:02:23 -0700 (PDT)
-Subject: Re: [PATCH 6/8] powerpc/eeh: Initialize EEH address cache earlier
+ Tue, 19 Mar 2019 23:02:26 -0700 (PDT)
+Subject: Re: [PATCH 5/8] powerpc/eeh: Add eeh_show_enabled()
 To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <cover.1553050609.git.sbobroff@linux.ibm.com>
- <0ca5b600a69f73323b269e4bfdaec1a53cdb4282.1553050609.git.sbobroff@linux.ibm.com>
+ <ad8cf11e3151fd39c6a9deedc0098d50274c75e4.1553050609.git.sbobroff@linux.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -153,12 +151,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
  DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
  XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <169cc8c7-2fff-10ef-eb18-75e2e2499f6b@ozlabs.ru>
-Date: Wed, 20 Mar 2019 17:02:21 +1100
+Message-ID: <26b7c0de-4192-eae5-f8aa-94073b3e768e@ozlabs.ru>
+Date: Wed, 20 Mar 2019 17:02:23 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <0ca5b600a69f73323b269e4bfdaec1a53cdb4282.1553050609.git.sbobroff@linux.ibm.com>
+In-Reply-To: <ad8cf11e3151fd39c6a9deedc0098d50274c75e4.1553050609.git.sbobroff@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -180,93 +178,88 @@ Sender: "Linuxppc-dev"
 
 
 On 20/03/2019 13:58, Sam Bobroff wrote:
-> The EEH address cache is currently initialized and populated by a
-> single function: eeh_addr_cache_build().  While the initial population
-> of the cache can only be done once resources are allocated,
-> initialization (just setting up a spinlock) could be done much
-> earlier.
-> 
-> So move the initialization step into a separate function and call it
-> from a core_initcall (rather than a subsys initcall).
-> 
-> This will allow future work to make use of the cache during boot time
-> PCI scanning.
+> Move the EEH enabled message into it's own function so that future
+> work can call it from multiple places.
 > 
 > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
 > ---
->  arch/powerpc/include/asm/eeh.h  |  3 +++
->  arch/powerpc/kernel/eeh.c       |  2 ++
->  arch/powerpc/kernel/eeh_cache.c | 13 +++++++++++--
->  3 files changed, 16 insertions(+), 2 deletions(-)
+>  arch/powerpc/include/asm/eeh.h |  3 +++
+>  arch/powerpc/kernel/eeh.c      | 16 +++++++++++-----
+>  2 files changed, 14 insertions(+), 5 deletions(-)
 > 
 > diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-> index e217ccda55d0..791b9e6fcc45 100644
+> index fe4cf7208890..e217ccda55d0 100644
 > --- a/arch/powerpc/include/asm/eeh.h
 > +++ b/arch/powerpc/include/asm/eeh.h
-> @@ -295,6 +295,7 @@ int __init eeh_ops_register(struct eeh_ops *ops);
+> @@ -289,6 +289,7 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+>  
+>  struct eeh_dev *eeh_dev_init(struct pci_dn *pdn);
+>  void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+> +void eeh_show_enabled(void);
+>  void eeh_probe_devices(void);
+>  int __init eeh_ops_register(struct eeh_ops *ops);
 >  int __exit eeh_ops_unregister(const char *name);
->  int eeh_check_failure(const volatile void __iomem *token);
->  int eeh_dev_check_failure(struct eeh_dev *edev);
-> +void eeh_addr_cache_init(void);
->  void eeh_addr_cache_build(void);
->  void eeh_add_device_early(struct pci_dn *);
->  void eeh_add_device_tree_early(struct pci_dn *);
-> @@ -362,6 +363,8 @@ static inline int eeh_check_failure(const volatile void __iomem *token)
+> @@ -338,6 +339,8 @@ static inline bool eeh_enabled(void)
+>          return false;
+>  }
 >  
->  #define eeh_dev_check_failure(x) (0)
->  
-> +static inline void eeh_addr_cache_init(void) { }
+> +static inline void eeh_show_enabled(void) { }
 > +
->  static inline void eeh_addr_cache_build(void) { }
->  
->  static inline void eeh_add_device_early(struct pci_dn *pdn) { }
+>  static inline bool eeh_phb_enabled(void)
+>  {
+>  	return false;
 > diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 3dcff29cb9b3..7a406d58d2c0 100644
+> index b14d89547895..3dcff29cb9b3 100644
 > --- a/arch/powerpc/kernel/eeh.c
 > +++ b/arch/powerpc/kernel/eeh.c
-> @@ -1219,6 +1219,8 @@ static int eeh_init(void)
->  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
->  		eeh_dev_phb_init_dynamic(hose);
->  
-> +	eeh_addr_cache_init();
-> +
->  	/* Initialize EEH event */
->  	return eeh_event_init();
+> @@ -163,6 +163,16 @@ static int __init eeh_setup(char *str)
 >  }
-> diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
-> index 9c68f0837385..f93dd5cf6a39 100644
-> --- a/arch/powerpc/kernel/eeh_cache.c
-> +++ b/arch/powerpc/kernel/eeh_cache.c
-> @@ -267,6 +267,17 @@ void eeh_addr_cache_rmv_dev(struct pci_dev *dev)
->  	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
->  }
+>  __setup("eeh=", eeh_setup);
 >  
-> +/**
-> + * eeh_addr_cache_init - Initialize a cache of I/O addresses
-> + *
-> + * Initialize a cache of pci i/o addresses.  This cache will be used to
-> + * find the pci device that corresponds to a given address.
-> + */
-> +void eeh_addr_cache_init(void)
+> +void eeh_show_enabled(void)
 > +{
-> +	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+> +	if (eeh_has_flag(EEH_FORCE_DISABLED))
+> +		pr_info("EEH: PCI Enhanced I/O Error Handling DISABLED (by eeh=off)\n");
+> +	else if (eeh_enabled())
+
+
+I'd make it eeh_has_flag(EEH_ENABLED) for clarity.
+
+
+> +		pr_info("EEH: PCI Enhanced I/O Error Handling ENABLED (capable adapter found)\n");
+> +	else
+> +		pr_info("EEH: PCI Enhanced I/O Error Handling DISABLED (no capable adapter found)\n");
 > +}
 > +
->  /**
->   * eeh_addr_cache_build - Build a cache of I/O addresses
->   *
-> @@ -282,8 +293,6 @@ void eeh_addr_cache_build(void)
->  	struct eeh_dev *edev;
->  	struct pci_dev *dev = NULL;
->  
-> -	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+>  /*
+>   * This routine captures assorted PCI configuration space data
+>   * for the indicated PCI device, and puts them into a buffer
+> @@ -1166,11 +1176,7 @@ void eeh_probe_devices(void)
+>  		pdn = hose->pci_data;
+>  		traverse_pci_dn(pdn, eeh_ops->probe, NULL);
+>  	}
+> -	if (eeh_enabled())
+> -		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
+> -	else
+> -		pr_info("EEH: No capable adapters found\n");
 > -
->  	for_each_pci_dev(dev) {
->  		pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
->  		if (!pdn)
+> +	eeh_show_enabled();
+
+
+This line moves later in the series so I'd just merge this patch into
+8/8 to reduce number of lines moving withing the patchset.
+
+In general the whole point of the EEH_ENABLED flag is fading away. Its
+meaning now is that "at least somewhere in the box for at least one
+device with enabled EEH" which does not seem extremely useful as we have
+a pci_dev or pe pretty much everywhere we look at eeh_enabled() and
+pdev->dev.archdata.edev can tell if eeh is enabled for a device.
+Although I am pretty sure this is in your list already :)
+
+
+>  }
+>  
+>  /**
 > 
 
 -- 
