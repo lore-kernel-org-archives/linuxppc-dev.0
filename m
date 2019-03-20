@@ -6,50 +6,51 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 346C0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:44:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26298C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:46:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AF09921841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:44:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AF09921841
+	by mail.kernel.org (Postfix) with ESMTPS id A5B5521841
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:46:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A5B5521841
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PNlX4dD6zDqLZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:44:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PNnm5kntzDqFJ
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:46:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.75.36; helo=2.mo3.mail-out.ovh.net;
+ (client-ip=46.105.61.149; helo=7.mo177.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 2.mo3.mail-out.ovh.net (2.mo3.mail-out.ovh.net [46.105.75.36])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PNcB2lfjzDqL5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:38:33 +1100 (AEDT)
-Received: from player787.ha.ovh.net (unknown [10.109.160.230])
- by mo3.mail-out.ovh.net (Postfix) with ESMTP id 0067D203E31
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:38:27 +0100 (CET)
+Received: from 7.mo177.mail-out.ovh.net (7.mo177.mail-out.ovh.net
+ [46.105.61.149])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PNcJ4gwyzDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:38:39 +1100 (AEDT)
+Received: from player787.ha.ovh.net (unknown [10.109.143.145])
+ by mo177.mail-out.ovh.net (Postfix) with ESMTP id 79A3EEBD6D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:38:35 +0100 (CET)
 Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
  (Authenticated sender: clg@kaod.org)
- by player787.ha.ovh.net (Postfix) with ESMTPSA id 0D1463F3AD5E;
- Wed, 20 Mar 2019 08:38:20 +0000 (UTC)
+ by player787.ha.ovh.net (Postfix) with ESMTPSA id 9C56B3F3AE22;
+ Wed, 20 Mar 2019 08:38:27 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 03/17] KVM: PPC: Book3S HV: XIVE: introduce a new
- capability KVM_CAP_PPC_IRQ_XIVE
-Date: Wed, 20 Mar 2019 09:37:37 +0100
-Message-Id: <20190320083751.27001-4-clg@kaod.org>
+Subject: [PATCH v4 04/17] KVM: PPC: Book3S HV: XIVE: add a control to
+ initialize a source
+Date: Wed, 20 Mar 2019 09:37:38 +0100
+Message-Id: <20190320083751.27001-5-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190320083751.27001-1-clg@kaod.org>
 References: <20190320083751.27001-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 18159358124675468247
+X-Ovh-Tracer-Id: 18161609926146427863
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrieehgdduvdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -71,15 +72,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-The user interface exposes a new capability KVM_CAP_PPC_IRQ_XIVE to
-let QEMU connect the vCPU presenters to the XIVE KVM device if
-required. The capability is not advertised for now as the full support
-for the XIVE native exploitation mode is not yet available. When this
-is case, the capability will be advertised on PowerNV Hypervisors
-only. Nested guests (pseries KVM Hypervisor) are not supported.
+The XIVE KVM device maintains a list of interrupt sources for the VM
+which are allocated in the pool of generic interrupts (IPIs) of the
+main XIVE IC controller. These are used for the CPU IPIs as well as
+for virtual device interrupts. The IRQ number space is defined by
+QEMU.
 
-Internally, the interface to the new KVM device is protected with a
-new interrupt mode: KVMPPC_IRQ_XIVE.
+The XIVE device reuses the source structures of the XICS-on-XIVE
+device for the source blocks (2-level tree) and for the source
+interrupts. Under XIVE native, the source interrupt caches mostly
+configuration information and is less used than under the XICS-on-XIVE
+device in which hcalls are still necessary at run-time.
+
+When a source is initialized in KVM, an IPI interrupt source is simply
+allocated at the OPAL level and then MASKED. KVM only needs to know
+about its type: LSI or MSI.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
@@ -87,406 +94,193 @@ Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
  Changes since v2:
 
- - made use of the xive_vp() macro to compute VP identifiers
- - reworked locking in kvmppc_xive_native_connect_vcpu() to fix races 
- - stop advertising KVM_CAP_PPC_IRQ_XIVE as support is not fully
-   available yet 
+ - extra documentation in commit log
+ - fixed comments on XIVE IRQ number space
+ - removed usage of the __x_* macros
+ - fixed locking on source block
 
- arch/powerpc/include/asm/kvm_host.h   |   1 +
- arch/powerpc/include/asm/kvm_ppc.h    |  13 +++
- arch/powerpc/kvm/book3s_xive.h        |  11 ++
- include/uapi/linux/kvm.h              |   1 +
- arch/powerpc/kvm/book3s_xive.c        |  88 ++++++++-------
- arch/powerpc/kvm/book3s_xive_native.c | 150 ++++++++++++++++++++++++++
- arch/powerpc/kvm/powerpc.c            |  36 +++++++
- Documentation/virtual/kvm/api.txt     |   9 ++
- 8 files changed, 268 insertions(+), 41 deletions(-)
+ arch/powerpc/include/uapi/asm/kvm.h        |   5 +
+ arch/powerpc/kvm/book3s_xive.h             |  10 ++
+ arch/powerpc/kvm/book3s_xive.c             |   8 +-
+ arch/powerpc/kvm/book3s_xive_native.c      | 106 +++++++++++++++++++++
+ Documentation/virtual/kvm/devices/xive.txt |  15 +++
+ 5 files changed, 140 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 008523224e7a..9cc6abdce1b9 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -450,6 +450,7 @@ struct kvmppc_passthru_irqmap {
- #define KVMPPC_IRQ_DEFAULT	0
- #define KVMPPC_IRQ_MPIC		1
- #define KVMPPC_IRQ_XICS		2 /* Includes a XIVE option */
-+#define KVMPPC_IRQ_XIVE		3 /* XIVE native exploitation mode */
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index be0ce1f17625..d468294c2a67 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -679,5 +679,10 @@ struct kvm_ppc_cpu_char {
  
- #define MMIO_HPTE_CACHE_SIZE	4
- 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index f3383e76017a..6928a35ac3c7 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -595,6 +595,14 @@ extern int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 irq,
- 			       int level, bool line_status);
- extern void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu);
- 
-+static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.irq_type == KVMPPC_IRQ_XIVE;
-+}
+ /* POWER9 XIVE Native Interrupt Controller */
+ #define KVM_DEV_XIVE_GRP_CTRL		1
++#define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source identifier */
 +
-+extern int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
-+					   struct kvm_vcpu *vcpu, u32 cpu);
-+extern void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu);
- extern void kvmppc_xive_native_init_module(void);
- extern void kvmppc_xive_native_exit_module(void);
++/* Layout of 64-bit XIVE source attribute values */
++#define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
++#define KVM_XIVE_LEVEL_ASSERTED		(1ULL << 1)
  
-@@ -622,6 +630,11 @@ static inline int kvmppc_xive_set_irq(struct kvm *kvm, int irq_source_id, u32 ir
- 				      int level, bool line_status) { return -ENODEV; }
- static inline void kvmppc_xive_push_vcpu(struct kvm_vcpu *vcpu) { }
- 
-+static inline int kvmppc_xive_enabled(struct kvm_vcpu *vcpu)
-+	{ return 0; }
-+static inline int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
-+			  struct kvm_vcpu *vcpu, u32 cpu) { return -EBUSY; }
-+static inline void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu) { }
- static inline void kvmppc_xive_native_init_module(void) { }
- static inline void kvmppc_xive_native_exit_module(void) { }
- 
+ #endif /* __LINUX_KVM_POWERPC_H */
 diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3s_xive.h
-index a08ae6fd4c51..d366df69b9cb 100644
+index d366df69b9cb..1be921cb5dcb 100644
 --- a/arch/powerpc/kvm/book3s_xive.h
 +++ b/arch/powerpc/kvm/book3s_xive.h
-@@ -198,6 +198,11 @@ static inline struct kvmppc_xive_src_block *kvmppc_xive_find_source(struct kvmpp
- 	return xive->src_blocks[bid];
- }
- 
-+static inline u32 kvmppc_xive_vp(struct kvmppc_xive *xive, u32 server)
-+{
-+	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
-+}
-+
- /*
-  * Mapping between guest priorities and host priorities
-  * is as follow.
-@@ -248,5 +253,11 @@ extern int (*__xive_vm_h_ipi)(struct kvm_vcpu *vcpu, unsigned long server,
- extern int (*__xive_vm_h_cppr)(struct kvm_vcpu *vcpu, unsigned long cppr);
- extern int (*__xive_vm_h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr);
+@@ -12,6 +12,13 @@
+ #ifdef CONFIG_KVM_XICS
+ #include "book3s_xics.h"
  
 +/*
-+ * Common Xive routines for XICS-over-XIVE and XIVE native
++ * The XIVE Interrupt source numbers are within the range 0 to
++ * KVMPPC_XICS_NR_IRQS.
 + */
-+void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu);
-+int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu);
++#define KVMPPC_XIVE_FIRST_IRQ	0
++#define KVMPPC_XIVE_NR_IRQS	KVMPPC_XICS_NR_IRQS
 +
+ /*
+  * State for one guest irq source.
+  *
+@@ -258,6 +265,9 @@ extern int (*__xive_vm_h_eoi)(struct kvm_vcpu *vcpu, unsigned long xirr);
+  */
+ void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu);
+ int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu);
++struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
++	struct kvmppc_xive *xive, int irq);
++void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
+ 
  #endif /* CONFIG_KVM_XICS */
  #endif /* _KVM_PPC_BOOK3S_XICS_H */
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index e6368163d3a0..52bf74a1616e 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -988,6 +988,7 @@ struct kvm_ppc_resize_hpt {
- #define KVM_CAP_ARM_VM_IPA_SIZE 165
- #define KVM_CAP_MANUAL_DIRTY_LOG_PROTECT 166
- #define KVM_CAP_HYPERV_CPUID 167
-+#define KVM_CAP_PPC_IRQ_XIVE 168
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
 diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index f78d002f0fe0..e7f1ada1c3de 100644
+index e7f1ada1c3de..6c9f9fd0855f 100644
 --- a/arch/powerpc/kvm/book3s_xive.c
 +++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -380,11 +380,6 @@ static int xive_select_target(struct kvm *kvm, u32 *server, u8 prio)
- 	return -EBUSY;
- }
- 
--static u32 xive_vp(struct kvmppc_xive *xive, u32 server)
--{
--	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
--}
--
- static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
- 			     struct kvmppc_xive_src_block *sb,
- 			     struct kvmppc_xive_irq_state *state)
-@@ -430,8 +425,8 @@ static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
- 	 */
- 	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
- 		xive_native_configure_irq(hw_num,
--					  xive_vp(xive, state->act_server),
--					  MASKED, state->number);
-+				kvmppc_xive_vp(xive, state->act_server),
-+				MASKED, state->number);
- 		/* set old_p so we can track if an H_EOI was done */
- 		state->old_p = true;
- 		state->old_q = false;
-@@ -486,8 +481,8 @@ static void xive_finish_unmask(struct kvmppc_xive *xive,
- 	 */
- 	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
- 		xive_native_configure_irq(hw_num,
--					  xive_vp(xive, state->act_server),
--					  state->act_priority, state->number);
-+				kvmppc_xive_vp(xive, state->act_server),
-+				state->act_priority, state->number);
- 		/* If an EOI is needed, do it here */
- 		if (!state->old_p)
- 			xive_vm_source_eoi(hw_num, xd);
-@@ -563,7 +558,7 @@ static int xive_target_interrupt(struct kvm *kvm,
- 	kvmppc_xive_select_irq(state, &hw_num, NULL);
- 
- 	return xive_native_configure_irq(hw_num,
--					 xive_vp(xive, server),
-+					 kvmppc_xive_vp(xive, server),
- 					 prio, state->number);
- }
- 
-@@ -951,7 +946,7 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
- 	 * which is fine for a never started interrupt.
- 	 */
- 	xive_native_configure_irq(hw_irq,
--				  xive_vp(xive, state->act_server),
-+				  kvmppc_xive_vp(xive, state->act_server),
- 				  state->act_priority, state->number);
- 
- 	/*
-@@ -1027,7 +1022,7 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
- 
- 	/* Reconfigure the IPI */
- 	xive_native_configure_irq(state->ipi_number,
--				  xive_vp(xive, state->act_server),
-+				  kvmppc_xive_vp(xive, state->act_server),
- 				  state->act_priority, state->number);
- 
- 	/*
-@@ -1049,7 +1044,7 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
- }
- EXPORT_SYMBOL_GPL(kvmppc_xive_clr_mapped);
- 
--static void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
-+void kvmppc_xive_disable_vcpu_interrupts(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
- 	struct kvm *kvm = vcpu->kvm;
-@@ -1166,7 +1161,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	xc->xive = xive;
- 	xc->vcpu = vcpu;
- 	xc->server_num = cpu;
--	xc->vp_id = xive_vp(xive, cpu);
-+	xc->vp_id = kvmppc_xive_vp(xive, cpu);
- 	xc->mfrr = 0xff;
- 	xc->valid = true;
- 
-@@ -1883,6 +1878,43 @@ static int kvmppc_xive_create(struct kvm_device *dev, u32 type)
+@@ -1480,8 +1480,8 @@ static int xive_get_source(struct kvmppc_xive *xive, long irq, u64 addr)
  	return 0;
  }
  
-+int kvmppc_xive_debug_show_queues(struct seq_file *m, struct kvm_vcpu *vcpu)
-+{
-+	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	unsigned int i;
-+
-+	for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
-+		struct xive_q *q = &xc->queues[i];
-+		u32 i0, i1, idx;
-+
-+		if (!q->qpage && !xc->esc_virq[i])
-+			continue;
-+
-+		seq_printf(m, " [q%d]: ", i);
-+
-+		if (q->qpage) {
-+			idx = q->idx;
-+			i0 = be32_to_cpup(q->qpage + idx);
-+			idx = (idx + 1) & q->msk;
-+			i1 = be32_to_cpup(q->qpage + idx);
-+			seq_printf(m, "T=%d %08x %08x...\n", q->toggle,
-+				   i0, i1);
-+		}
-+		if (xc->esc_virq[i]) {
-+			struct irq_data *d = irq_get_irq_data(xc->esc_virq[i]);
-+			struct xive_irq_data *xd =
-+				irq_data_get_irq_handler_data(d);
-+			u64 pq = xive_vm_esb_load(xd, XIVE_ESB_GET);
-+
-+			seq_printf(m, "E:%c%c I(%d:%llx:%llx)",
-+				   (pq & XIVE_ESB_VAL_P) ? 'P' : 'p',
-+				   (pq & XIVE_ESB_VAL_Q) ? 'Q' : 'q',
-+				   xc->esc_virq[i], pq, xd->eoi_page);
-+			seq_puts(m, "\n");
-+		}
-+	}
-+	return 0;
-+}
- 
- static int xive_debug_show(struct seq_file *m, void *private)
+-static struct kvmppc_xive_src_block *xive_create_src_block(struct kvmppc_xive *xive,
+-							   int irq)
++struct kvmppc_xive_src_block *kvmppc_xive_create_src_block(
++	struct kvmppc_xive *xive, int irq)
  {
-@@ -1908,7 +1940,6 @@ static int xive_debug_show(struct seq_file *m, void *private)
+ 	struct kvm *kvm = xive->kvm;
+ 	struct kvmppc_xive_src_block *sb;
+@@ -1560,7 +1560,7 @@ static int xive_set_source(struct kvmppc_xive *xive, long irq, u64 addr)
+ 	sb = kvmppc_xive_find_source(xive, irq, &idx);
+ 	if (!sb) {
+ 		pr_devel("No source, creating source block...\n");
+-		sb = xive_create_src_block(xive, irq);
++		sb = kvmppc_xive_create_src_block(xive, irq);
+ 		if (!sb) {
+ 			pr_devel("Failed to create block...\n");
+ 			return -ENOMEM;
+@@ -1784,7 +1784,7 @@ static void kvmppc_xive_cleanup_irq(u32 hw_num, struct xive_irq_data *xd)
+ 	xive_cleanup_irq_data(xd);
+ }
  
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
--		unsigned int i;
+-static void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
++void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb)
+ {
+ 	int i;
  
- 		if (!xc)
- 			continue;
-@@ -1918,33 +1949,8 @@ static int xive_debug_show(struct seq_file *m, void *private)
- 			   xc->server_num, xc->cppr, xc->hw_cppr,
- 			   xc->mfrr, xc->pending,
- 			   xc->stat_rm_h_xirr, xc->stat_vm_h_xirr);
--		for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
--			struct xive_q *q = &xc->queues[i];
--			u32 i0, i1, idx;
- 
--			if (!q->qpage && !xc->esc_virq[i])
--				continue;
--
--			seq_printf(m, " [q%d]: ", i);
--
--			if (q->qpage) {
--				idx = q->idx;
--				i0 = be32_to_cpup(q->qpage + idx);
--				idx = (idx + 1) & q->msk;
--				i1 = be32_to_cpup(q->qpage + idx);
--				seq_printf(m, "T=%d %08x %08x... \n", q->toggle, i0, i1);
--			}
--			if (xc->esc_virq[i]) {
--				struct irq_data *d = irq_get_irq_data(xc->esc_virq[i]);
--				struct xive_irq_data *xd = irq_data_get_irq_handler_data(d);
--				u64 pq = xive_vm_esb_load(xd, XIVE_ESB_GET);
--				seq_printf(m, "E:%c%c I(%d:%llx:%llx)",
--					   (pq & XIVE_ESB_VAL_P) ? 'P' : 'p',
--					   (pq & XIVE_ESB_VAL_Q) ? 'Q' : 'q',
--					   xc->esc_virq[i], pq, xd->eoi_page);
--				seq_printf(m, "\n");
--			}
--		}
-+		kvmppc_xive_debug_show_queues(m, vcpu);
- 
- 		t_rm_h_xirr += xc->stat_rm_h_xirr;
- 		t_rm_h_ipoll += xc->stat_rm_h_ipoll;
 diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index 751259394150..6fa73cfd9d9c 100644
+index 6fa73cfd9d9c..5f2bd6c137b7 100644
 --- a/arch/powerpc/kvm/book3s_xive_native.c
 +++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -26,6 +26,134 @@
+@@ -26,6 +26,17 @@
  
  #include "book3s_xive.h"
  
-+static void kvmppc_xive_native_cleanup_queue(struct kvm_vcpu *vcpu, int prio)
++static u8 xive_vm_esb_load(struct xive_irq_data *xd, u32 offset)
 +{
-+	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	struct xive_q *q = &xc->queues[prio];
++	u64 val;
 +
-+	xive_native_disable_queue(xc->vp_id, q, prio);
-+	if (q->qpage) {
-+		put_page(virt_to_page(q->qpage));
-+		q->qpage = NULL;
-+	}
++	if (xd->flags & XIVE_IRQ_FLAG_SHIFT_BUG)
++		offset |= offset << 4;
++
++	val = in_be64(xd->eoi_mmio + offset);
++	return (u8)val;
 +}
 +
-+void kvmppc_xive_native_cleanup_vcpu(struct kvm_vcpu *vcpu)
+ static void kvmppc_xive_native_cleanup_queue(struct kvm_vcpu *vcpu, int prio)
+ {
+ 	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
+@@ -154,12 +165,94 @@ int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
+ 	return rc;
+ }
+ 
++static int kvmppc_xive_native_set_source(struct kvmppc_xive *xive, long irq,
++					 u64 addr)
 +{
-+	struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+	int i;
-+
-+	if (!kvmppc_xive_enabled(vcpu))
-+		return;
-+
-+	if (!xc)
-+		return;
-+
-+	pr_devel("native_cleanup_vcpu(cpu=%d)\n", xc->server_num);
-+
-+	/* Ensure no interrupt is still routed to that VP */
-+	xc->valid = false;
-+	kvmppc_xive_disable_vcpu_interrupts(vcpu);
-+
-+	/* Disable the VP */
-+	xive_native_disable_vp(xc->vp_id);
-+
-+	/* Free the queues & associated interrupts */
-+	for (i = 0; i < KVMPPC_XIVE_Q_COUNT; i++) {
-+		/* Free the escalation irq */
-+		if (xc->esc_virq[i]) {
-+			free_irq(xc->esc_virq[i], vcpu);
-+			irq_dispose_mapping(xc->esc_virq[i]);
-+			kfree(xc->esc_virq_names[i]);
-+			xc->esc_virq[i] = 0;
-+		}
-+
-+		/* Free the queue */
-+		kvmppc_xive_native_cleanup_queue(vcpu, i);
-+	}
-+
-+	/* Free the VP */
-+	kfree(xc);
-+
-+	/* Cleanup the vcpu */
-+	vcpu->arch.irq_type = KVMPPC_IRQ_DEFAULT;
-+	vcpu->arch.xive_vcpu = NULL;
-+}
-+
-+int kvmppc_xive_native_connect_vcpu(struct kvm_device *dev,
-+				    struct kvm_vcpu *vcpu, u32 server_num)
-+{
-+	struct kvmppc_xive *xive = dev->private;
-+	struct kvmppc_xive_vcpu *xc = NULL;
++	struct kvmppc_xive_src_block *sb;
++	struct kvmppc_xive_irq_state *state;
++	u64 __user *ubufp = (u64 __user *) addr;
++	u64 val;
++	u16 idx;
 +	int rc;
 +
-+	pr_devel("native_connect_vcpu(server=%d)\n", server_num);
++	pr_devel("%s irq=0x%lx\n", __func__, irq);
 +
-+	if (dev->ops != &kvm_xive_native_ops) {
-+		pr_devel("Wrong ops !\n");
-+		return -EPERM;
++	if (irq < KVMPPC_XIVE_FIRST_IRQ || irq >= KVMPPC_XIVE_NR_IRQS)
++		return -E2BIG;
++
++	sb = kvmppc_xive_find_source(xive, irq, &idx);
++	if (!sb) {
++		pr_debug("No source, creating source block...\n");
++		sb = kvmppc_xive_create_src_block(xive, irq);
++		if (!sb) {
++			pr_err("Failed to create block...\n");
++			return -ENOMEM;
++		}
 +	}
-+	if (xive->kvm != vcpu->kvm)
-+		return -EPERM;
-+	if (vcpu->arch.irq_type != KVMPPC_IRQ_DEFAULT)
-+		return -EBUSY;
-+	if (server_num >= KVM_MAX_VCPUS) {
-+		pr_devel("Out of bounds !\n");
-+		return -EINVAL;
-+	}
++	state = &sb->irq_state[idx];
 +
-+	mutex_lock(&vcpu->kvm->lock);
-+
-+	if (kvmppc_xive_find_server(vcpu->kvm, server_num)) {
-+		pr_devel("Duplicate !\n");
-+		rc = -EEXIST;
-+		goto bail;
++	if (get_user(val, ubufp)) {
++		pr_err("fault getting user info !\n");
++		return -EFAULT;
 +	}
 +
-+	xc = kzalloc(sizeof(*xc), GFP_KERNEL);
-+	if (!xc) {
-+		rc = -ENOMEM;
-+		goto bail;
-+	}
-+
-+	vcpu->arch.xive_vcpu = xc;
-+	xc->xive = xive;
-+	xc->vcpu = vcpu;
-+	xc->server_num = server_num;
-+
-+	xc->vp_id = kvmppc_xive_vp(xive, server_num);
-+	xc->valid = true;
-+	vcpu->arch.irq_type = KVMPPC_IRQ_XIVE;
-+
-+	rc = xive_native_get_vp_info(xc->vp_id, &xc->vp_cam, &xc->vp_chip_id);
-+	if (rc) {
-+		pr_err("Failed to get VP info from OPAL: %d\n", rc);
-+		goto bail;
-+	}
++	arch_spin_lock(&sb->lock);
 +
 +	/*
-+	 * Enable the VP first as the single escalation mode will
-+	 * affect escalation interrupts numbering
++	 * If the source doesn't already have an IPI, allocate
++	 * one and get the corresponding data
 +	 */
-+	rc = xive_native_enable_vp(xc->vp_id, xive->single_escalation);
-+	if (rc) {
-+		pr_err("Failed to enable VP in OPAL: %d\n", rc);
-+		goto bail;
++	if (!state->ipi_number) {
++		state->ipi_number = xive_native_alloc_irq();
++		if (state->ipi_number == 0) {
++			pr_err("Failed to allocate IRQ !\n");
++			rc = -ENXIO;
++			goto unlock;
++		}
++		xive_native_populate_irq_data(state->ipi_number,
++					      &state->ipi_data);
++		pr_debug("%s allocated hw_irq=0x%x for irq=0x%lx\n", __func__,
++			 state->ipi_number, irq);
 +	}
 +
-+	/* Configure VCPU fields for use by assembly push/pull */
-+	vcpu->arch.xive_saved_state.w01 = cpu_to_be64(0xff000000);
-+	vcpu->arch.xive_cam_word = cpu_to_be32(xc->vp_cam | TM_QW1W2_VO);
++	/* Restore LSI state */
++	if (val & KVM_XIVE_LEVEL_SENSITIVE) {
++		state->lsi = true;
++		if (val & KVM_XIVE_LEVEL_ASSERTED)
++			state->asserted = true;
++		pr_devel("  LSI ! Asserted=%d\n", state->asserted);
++	}
 +
-+	/* TODO: reset all queues to a clean state ? */
-+bail:
-+	mutex_unlock(&vcpu->kvm->lock);
-+	if (rc)
-+		kvmppc_xive_native_cleanup_vcpu(vcpu);
++	/* Mask IRQ to start with */
++	state->act_server = 0;
++	state->act_priority = MASKED;
++	xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
++	xive_native_configure_irq(state->ipi_number, 0, MASKED, 0);
++
++	/* Increment the number of valid sources and mark this one valid */
++	if (!state->valid)
++		xive->src_count++;
++	state->valid = true;
++
++	rc = 0;
++
++unlock:
++	arch_spin_unlock(&sb->lock);
 +
 +	return rc;
 +}
@@ -494,120 +288,74 @@ index 751259394150..6fa73cfd9d9c 100644
  static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
  				       struct kvm_device_attr *attr)
  {
-@@ -114,10 +242,32 @@ static int xive_native_debug_show(struct seq_file *m, void *private)
- {
- 	struct kvmppc_xive *xive = m->private;
- 	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
-+	unsigned int i;
- 
- 	if (!kvm)
- 		return 0;
- 
-+	seq_puts(m, "=========\nVCPU state\n=========\n");
++	struct kvmppc_xive *xive = dev->private;
 +
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+
-+		if (!xc)
-+			continue;
-+
-+		seq_printf(m, "cpu server %#x NSR=%02x CPPR=%02x IBP=%02x PIPR=%02x w01=%016llx w2=%08x\n",
-+			   xc->server_num,
-+			   vcpu->arch.xive_saved_state.nsr,
-+			   vcpu->arch.xive_saved_state.cppr,
-+			   vcpu->arch.xive_saved_state.ipb,
-+			   vcpu->arch.xive_saved_state.pipr,
-+			   vcpu->arch.xive_saved_state.w01,
-+			   (u32) vcpu->arch.xive_cam_word);
-+
-+		kvmppc_xive_debug_show_queues(m, vcpu);
-+	}
-+
- 	return 0;
+ 	switch (attr->group) {
+ 	case KVM_DEV_XIVE_GRP_CTRL:
+ 		break;
++	case KVM_DEV_XIVE_GRP_SOURCE:
++		return kvmppc_xive_native_set_source(xive, attr->attr,
++						     attr->addr);
+ 	}
+ 	return -ENXIO;
  }
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 8885377ec3e0..b0858ee61460 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -570,6 +570,15 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_PPC_GET_CPU_CHAR:
- 		r = 1;
+@@ -176,6 +269,11 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
+ 	switch (attr->group) {
+ 	case KVM_DEV_XIVE_GRP_CTRL:
  		break;
-+#ifdef CONFIG_KVM_XIVE
-+	case KVM_CAP_PPC_IRQ_XIVE:
-+		/*
-+		 * Return false until all the XIVE infrastructure is
-+		 * in place including support for migration.
-+		 */
-+		r = 0;
-+		break;
-+#endif
- 
- 	case KVM_CAP_PPC_ALLOC_HTAB:
- 		r = hv_enabled;
-@@ -753,6 +762,9 @@ void kvm_arch_vcpu_free(struct kvm_vcpu *vcpu)
- 		else
- 			kvmppc_xics_free_icp(vcpu);
- 		break;
-+	case KVMPPC_IRQ_XIVE:
-+		kvmppc_xive_native_cleanup_vcpu(vcpu);
++	case KVM_DEV_XIVE_GRP_SOURCE:
++		if (attr->attr >= KVMPPC_XIVE_FIRST_IRQ &&
++		    attr->attr < KVMPPC_XIVE_NR_IRQS)
++			return 0;
 +		break;
  	}
+ 	return -ENXIO;
+ }
+@@ -184,6 +282,7 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
+ {
+ 	struct kvmppc_xive *xive = dev->private;
+ 	struct kvm *kvm = xive->kvm;
++	int i;
  
- 	kvmppc_core_vcpu_free(vcpu);
-@@ -1941,6 +1953,30 @@ static int kvm_vcpu_ioctl_enable_cap(struct kvm_vcpu *vcpu,
- 		break;
- 	}
- #endif /* CONFIG_KVM_XICS */
-+#ifdef CONFIG_KVM_XIVE
-+	case KVM_CAP_PPC_IRQ_XIVE: {
-+		struct fd f;
-+		struct kvm_device *dev;
-+
-+		r = -EBADF;
-+		f = fdget(cap->args[0]);
-+		if (!f.file)
-+			break;
-+
-+		r = -ENXIO;
-+		if (!xive_enabled())
-+			break;
-+
-+		r = -EPERM;
-+		dev = kvm_device_from_filp(f.file);
-+		if (dev)
-+			r = kvmppc_xive_native_connect_vcpu(dev, vcpu,
-+							    cap->args[1]);
-+
-+		fdput(f);
-+		break;
+ 	debugfs_remove(xive->dentry);
+ 
+@@ -192,6 +291,13 @@ static void kvmppc_xive_native_free(struct kvm_device *dev)
+ 	if (kvm)
+ 		kvm->arch.xive = NULL;
+ 
++	for (i = 0; i <= xive->max_sbid; i++) {
++		if (xive->src_blocks[i])
++			kvmppc_xive_free_sources(xive->src_blocks[i]);
++		kfree(xive->src_blocks[i]);
++		xive->src_blocks[i] = NULL;
 +	}
-+#endif /* CONFIG_KVM_XIVE */
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	case KVM_CAP_PPC_FWNMI:
- 		r = -EINVAL;
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index 7de9eee73fcd..8022ecce2c47 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -4475,6 +4475,15 @@ struct kvm_sync_regs {
-         struct kvm_vcpu_events events;
- };
++
+ 	if (xive->vp_base != XIVE_INVALID_VP)
+ 		xive_native_free_vp_block(xive->vp_base);
  
-+6.75 KVM_CAP_PPC_IRQ_XIVE
-+
-+Architectures: ppc
-+Target: vcpu
-+Parameters: args[0] is the XIVE device fd
-+            args[1] is the XIVE CPU number (server ID) for this vcpu
-+
-+This capability connects the vcpu to an in-kernel XIVE device.
-+
- 7. Capabilities that can be enabled on VMs
- ------------------------------------------
+diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
+index fdbd2ff92a88..cd8bfc37b72e 100644
+--- a/Documentation/virtual/kvm/devices/xive.txt
++++ b/Documentation/virtual/kvm/devices/xive.txt
+@@ -17,3 +17,18 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
  
+   1. KVM_DEV_XIVE_GRP_CTRL
+   Provides global controls on the device
++
++  2. KVM_DEV_XIVE_GRP_SOURCE (write only)
++  Initializes a new source in the XIVE device and mask it.
++  Attributes:
++    Interrupt source number  (64-bit)
++  The kvm_device_attr.addr points to a __u64 value:
++  bits:     | 63   ....  2 |   1   |   0
++  values:   |    unused    | level | type
++  - type:  0:MSI 1:LSI
++  - level: assertion level in case of an LSI.
++  Errors:
++    -E2BIG:  Interrupt source number is out of range
++    -ENOMEM: Could not create a new source block
++    -EFAULT: Invalid user pointer for attr->addr.
++    -ENXIO:  Could not allocate underlying HW interrupt
 -- 
 2.20.1
 
