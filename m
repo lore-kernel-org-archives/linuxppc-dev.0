@@ -2,82 +2,82 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLACK autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB5CFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:03:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BA29C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:05:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AA4D720830
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:03:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 8EAAE20830
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:05:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="L78HiBvL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA4D720830
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FB0isDMI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8EAAE20830
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PK9m38B1zDq9B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:03:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PKCb4hKFzDq9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:05:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
- (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
  unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
- header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="L78HiBvL"; 
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="FB0isDMI"; 
  dkim-atps=neutral
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PK813yC8zDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:02:24 +1100 (AEDT)
-Received: by mail-pg1-x542.google.com with SMTP id a22so930354pgg.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:02:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PK833M2FzDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:02:27 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id g8so974887pgf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:02:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
  h=subject:to:references:from:openpgp:autocrypt:message-id:date
  :user-agent:mime-version:in-reply-to:content-language
  :content-transfer-encoding;
- bh=hGpA7SZ9ajU3a0ZAS0ipjsnqT+i14OjgRvMMQ1DLOIM=;
- b=L78HiBvLsgCns/uV1ElFItZ3ziadyYFHfWwaBfhogPj16SGfCI/rMxfKrh/lJ5EAEN
- iUd0jqdPUatzbZzHARUQvpAhWWcd1ImNkiZvuStAA7VI+ejZvbm+GLYI8FRaAP5eIoLr
- kwtFUDu1ojgxsZcq6YAl0PmVu/eu61U3SM7KDL5ePmo26qgJY76D14/Yon7E6DW2Eb5R
- GG40sdl1NoGw7ESOg87XfQB5iZs/Y+Xkxn57OrEYPwuESs/iyGKPMf1P2hGI1/9XcBaB
- I6aCLqylfC23+3aL3dc/62BYS6gBcvgpcERdp5lxbzVDNziEGAMM1jyzEp2QZKlf1fwa
- PvxA==
+ bh=23Nqa1ytGnW9o+VtxnyfGsbAyIbZSpZ38F3mctJi0uA=;
+ b=FB0isDMIptN/h5rgSMFs71ZbzRBy1Kax9SqmjEcQcsufNTPSpdLk/THskt9gspXVn4
+ 9dr/DgcsDbs2yQYkjORiKmMaDmMolYIAtknMApOBS0008DigIT1hKDSH7EeY0BEYGNTd
+ 4sRs3D0SRzw6JzO/Go3vO6I6tCMoh+l8YU+DH3gPz+EBbbSfK8hUAzFG5nPVzxtvWy0E
+ RdYSBSMOv5sxEg8YcC+ikP/KSToQnTqNjNuVPoC0POe3AmuB84zPw6QBbjX/Cc7Zvqm3
+ ImBXQ2nSWaE5W/qh1VyaE/Tfls8afsPP5H0Sxd03OTHoYNew8quO1O3wog/PwJiYHSzb
+ RaFA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
  :message-id:date:user-agent:mime-version:in-reply-to
  :content-language:content-transfer-encoding;
- bh=hGpA7SZ9ajU3a0ZAS0ipjsnqT+i14OjgRvMMQ1DLOIM=;
- b=MYREwf407V6uf7x8ujm/xhIeePL9LYG9P3xyhlnx0ovgpdHAtHR47/pwsFXxQdmF6F
- MEL7fgxwukufcLjDZ29FIO2ebF65N/ynCRriUymFeomBKz8UDifyiB515DMpFl+ipu4M
- VtVQnr/C0rw2NGdPo/zgc5evD9tqTxDxaALVGN7ynx/f6ca7DgbD4UB1RoCaOQCqmNwn
- 0PX2pYBiUZFKWajbKj3AF3nbL1uV53HfEOehjS/5OgItK86jntNOd/aAJjJ+Y1ydJeMN
- Ghxjm/XUIexMe1+FxpVzdVAndCDOfEywEU4uh+OKLkfcEh3pqY6zXFUbpaia7i35pC7L
- X1Qg==
-X-Gm-Message-State: APjAAAXAT+GvoncoESkKcCRDXvDpecUPQ9s+9zQZx8C/AboNg8yDSBot
- sqOhHMnwrodGSIgrQbQe88113fy4AAA=
-X-Google-Smtp-Source: APXvYqyHk30+xtjeDeHwXVCzI5JzI5OgXtUvF2nqK1gyBTt56A9HJZtr2lpakvKsTIKZBmUF3ykaQg==
-X-Received: by 2002:a17:902:9341:: with SMTP id
- g1mr6472231plp.80.1553061741783; 
- Tue, 19 Mar 2019 23:02:21 -0700 (PDT)
+ bh=23Nqa1ytGnW9o+VtxnyfGsbAyIbZSpZ38F3mctJi0uA=;
+ b=CVMUuIcQ6yHiijTGiUUh00SBY4VKm0EfLTnferEgw1aGCKz6NKJi5M5CEYVq3FUuq0
+ RhNvBkidCDK+t1tbXHf3CwhfH2+QihoH7hrQb3LKAvsn8qzs9XMNqNqs3DttI3emHqAD
+ hPc2lmriz2/jsuKwml0ajya7cuuiOicItJ7oDm5Ig0ObSd6hhA8J1FjGP3S5nOGkUJOX
+ 2yWBeFkhI17EtoIovJiFNTMIgu8FLPWUltdhuW/OgahEEk5fXmtDAeNwZ7wP9AUAGI5O
+ WK4NQUwoJhio6LuvBkK4nHQksZyVEhtkplI2Cc7mMMsHKOFE/X9V0ZGV0ZMXZgPHzEDh
+ a0lw==
+X-Gm-Message-State: APjAAAUPtbepMi2kYGcVLFoXvMCwX6o7R+B7C37oyl7nnvdjClHOe4Gw
+ uEpjfJkGi/Byb3rcm1gjYNCapd+yRhk=
+X-Google-Smtp-Source: APXvYqx/w2wMO5HVmKz/looaPEgy8M+ABOX0XETCGhf6gEztnlByGBxIBoG1PtQijeEGNfN6200UeA==
+X-Received: by 2002:a17:902:7610:: with SMTP id
+ k16mr6631846pll.215.1553061744324; 
+ Tue, 19 Mar 2019 23:02:24 -0700 (PDT)
 Received: from [10.61.2.175] ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id g15sm1822595pfg.157.2019.03.19.23.02.19
+ by smtp.gmail.com with ESMTPSA id q78sm1294735pfa.138.2019.03.19.23.02.22
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 19 Mar 2019 23:02:20 -0700 (PDT)
-Subject: Re: [PATCH 7/8] powerpc/eeh: EEH for pSeries hot plug
+ Tue, 19 Mar 2019 23:02:23 -0700 (PDT)
+Subject: Re: [PATCH 6/8] powerpc/eeh: Initialize EEH address cache earlier
 To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 References: <cover.1553050609.git.sbobroff@linux.ibm.com>
- <ec3ab4f1b484d37ff0864b439612c01e7ee42948.1553050609.git.sbobroff@linux.ibm.com>
+ <0ca5b600a69f73323b269e4bfdaec1a53cdb4282.1553050609.git.sbobroff@linux.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 Openpgp: preference=signencrypt
 Autocrypt: addr=aik@ozlabs.ru; keydata=
@@ -153,12 +153,12 @@ Autocrypt: addr=aik@ozlabs.ru; keydata=
  c7E5M+/NpslPCmYnDjs5qg0/3ihh6XuOGggZQOqrYPC3PnsNs3NxirwOkVPQgO6mXxpuifvJ
  DG9EMkK8IBXnLulqVk54kf7fE0jT/d8RTtJIA92GzsgdK2rpT1MBKKVffjRFGwN7nQVOzi4T
  XrB5p+6ML7Bd84xOEGsj/vdaXmz1esuH7BOZAGEZfLRCHJ0GVCSssg==
-Message-ID: <cfd3bf90-dd4b-b6ae-b97a-7eb51fe729be@ozlabs.ru>
-Date: Wed, 20 Mar 2019 17:02:17 +1100
+Message-ID: <169cc8c7-2fff-10ef-eb18-75e2e2499f6b@ozlabs.ru>
+Date: Wed, 20 Mar 2019 17:02:21 +1100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <ec3ab4f1b484d37ff0864b439612c01e7ee42948.1553050609.git.sbobroff@linux.ibm.com>
+In-Reply-To: <0ca5b600a69f73323b269e4bfdaec1a53cdb4282.1553050609.git.sbobroff@linux.ibm.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -180,180 +180,93 @@ Sender: "Linuxppc-dev"
 
 
 On 20/03/2019 13:58, Sam Bobroff wrote:
-> On PowerNV and pSeries, devices currently acquire EEH support from
-> several different places: Boot-time devices from eeh_probe_devices()
-> and eeh_addr_cache_build(), Virtual Function devices from the pcibios
-> bus add device hooks and hot plugged devices from pci_hp_add_devices()
-> (with other platforms using other methods as well).  Unfortunately,
-> pSeries machines currently discover hot plugged devices using
-> pci_rescan_bus(), not pci_hp_add_devices(), and so those devices do
-> not receive EEH support.
+> The EEH address cache is currently initialized and populated by a
+> single function: eeh_addr_cache_build().  While the initial population
+> of the cache can only be done once resources are allocated,
+> initialization (just setting up a spinlock) could be done much
+> earlier.
 > 
-> Rather than adding another case for pci_rescan_bus(), this change
-> widens the scope of the pcibios bus add device hooks so that they can
-> handle all devices. As a side effect this also supports devices
-> discovered after manually rescanning via /sys/bus/pci/rescan.
+> So move the initialization step into a separate function and call it
+> from a core_initcall (rather than a subsys initcall).
 > 
-> Note that on PowerNV, this change allows the EEH subsystem to become
-> enabled after boot as long as it has not been forced off, which was
-> not previously possible (it was already possible on pSeries).
+> This will allow future work to make use of the cache during boot time
+> PCI scanning.
 > 
 > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/eeh.c                    |  2 +-
->  arch/powerpc/kernel/of_platform.c            |  3 +-
->  arch/powerpc/platforms/powernv/eeh-powernv.c |  8 ++-
->  arch/powerpc/platforms/pseries/eeh_pseries.c | 54 ++++++++++----------
->  4 files changed, 35 insertions(+), 32 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 7a406d58d2c0..217e14bb1fb6 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -1291,7 +1291,7 @@ void eeh_add_device_late(struct pci_dev *dev)
->  	struct pci_dn *pdn;
->  	struct eeh_dev *edev;
->  
-> -	if (!dev || !eeh_enabled())
-> +	if (!dev)
->  		return;
->  
->  	pr_debug("EEH: Adding device %s\n", pci_name(dev));
-> diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-> index becaec990140..d5818e9c4069 100644
-> --- a/arch/powerpc/kernel/of_platform.c
-> +++ b/arch/powerpc/kernel/of_platform.c
-> @@ -86,7 +86,8 @@ static int of_pci_phb_probe(struct platform_device *dev)
->  	pcibios_claim_one_bus(phb->bus);
->  
->  	/* Finish EEH setup */
-> -	eeh_add_device_tree_late(phb->bus);
-> +	if (!eeh_has_flag(EEH_FORCE_DISABLED))
-> +		eeh_add_device_tree_late(phb->bus);
->  
->  	/* Add probed PCI devices to the device model */
->  	pci_bus_add_devices(phb->bus);
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 51c5b6bb9b0e..81b0923cc55f 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -47,7 +47,7 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
->  {
->  	struct pci_dn *pdn = pci_get_pdn(pdev);
->  
-> -	if (!pdev->is_virtfn)
-> +	if (eeh_has_flag(EEH_FORCE_DISABLED))
->  		return;
->  
->  	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
-> @@ -479,7 +479,11 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
->  	 * Enable EEH explicitly so that we will do EEH check
->  	 * while accessing I/O stuff
->  	 */
-> -	eeh_add_flag(EEH_ENABLED);
-> +	if (!eeh_has_flag(EEH_ENABLED)) {
-> +		enable_irq(eeh_event_irq);
-> +		eeh_add_flag(EEH_PHB_ENABLED);
-
-
-Except that I do not think we need EEH_PHB_ENABLED (commented elsewhere),
 
 Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-
-
-
-> +		eeh_add_flag(EEH_ENABLED);
-> +	}
+> ---
+>  arch/powerpc/include/asm/eeh.h  |  3 +++
+>  arch/powerpc/kernel/eeh.c       |  2 ++
+>  arch/powerpc/kernel/eeh_cache.c | 13 +++++++++++--
+>  3 files changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+> index e217ccda55d0..791b9e6fcc45 100644
+> --- a/arch/powerpc/include/asm/eeh.h
+> +++ b/arch/powerpc/include/asm/eeh.h
+> @@ -295,6 +295,7 @@ int __init eeh_ops_register(struct eeh_ops *ops);
+>  int __exit eeh_ops_unregister(const char *name);
+>  int eeh_check_failure(const volatile void __iomem *token);
+>  int eeh_dev_check_failure(struct eeh_dev *edev);
+> +void eeh_addr_cache_init(void);
+>  void eeh_addr_cache_build(void);
+>  void eeh_add_device_early(struct pci_dn *);
+>  void eeh_add_device_tree_early(struct pci_dn *);
+> @@ -362,6 +363,8 @@ static inline int eeh_check_failure(const volatile void __iomem *token)
 >  
->  	/* Save memory bars */
->  	eeh_save_bars(edev);
-> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> index ae06878fbdea..e68c79164974 100644
-> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-> @@ -55,44 +55,44 @@ static int ibm_get_config_addr_info;
->  static int ibm_get_config_addr_info2;
->  static int ibm_configure_pe;
+>  #define eeh_dev_check_failure(x) (0)
 >  
-> -#ifdef CONFIG_PCI_IOV
->  void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
->  {
->  	struct pci_dn *pdn = pci_get_pdn(pdev);
-> -	struct pci_dn *physfn_pdn;
-> -	struct eeh_dev *edev;
+> +static inline void eeh_addr_cache_init(void) { }
+> +
+>  static inline void eeh_addr_cache_build(void) { }
 >  
-> -	if (!pdev->is_virtfn)
-> +	if (eeh_has_flag(EEH_FORCE_DISABLED))
->  		return;
+>  static inline void eeh_add_device_early(struct pci_dn *pdn) { }
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 3dcff29cb9b3..7a406d58d2c0 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1219,6 +1219,8 @@ static int eeh_init(void)
+>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node)
+>  		eeh_dev_phb_init_dynamic(hose);
 >  
->  	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
-> +#ifdef CONFIG_PCI_IOV
-> +	if (pdev->is_virtfn) {
-> +		struct pci_dn *physfn_pdn;
->  
-> -	pdn->device_id  =  pdev->device;
-> -	pdn->vendor_id  =  pdev->vendor;
-> -	pdn->class_code =  pdev->class;
-> -	/*
-> -	 * Last allow unfreeze return code used for retrieval
-> -	 * by user space in eeh-sysfs to show the last command
-> -	 * completion from platform.
-> -	 */
-> -	pdn->last_allow_rc =  0;
-> -	physfn_pdn      =  pci_get_pdn(pdev->physfn);
-> -	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
-> -	edev = pdn_to_eeh_dev(pdn);
-> -
-> -	/*
-> -	 * The following operations will fail if VF's sysfs files
-> -	 * aren't created or its resources aren't finalized.
-> -	 */
-> +		pdn->device_id  =  pdev->device;
-> +		pdn->vendor_id  =  pdev->vendor;
-> +		pdn->class_code =  pdev->class;
-> +		/*
-> +		 * Last allow unfreeze return code used for retrieval
-> +		 * by user space in eeh-sysfs to show the last command
-> +		 * completion from platform.
-> +		 */
-> +		pdn->last_allow_rc =  0;
-> +		physfn_pdn      =  pci_get_pdn(pdev->physfn);
-> +		pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
-> +	}
-> +#endif
->  	eeh_add_device_early(pdn);
->  	eeh_add_device_late(pdev);
-> -	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
-> -	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
-> -	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
-> -	eeh_sysfs_add_device(pdev);
-> +#ifdef CONFIG_PCI_IOV
-> +	if (pdev->is_virtfn) {
-> +		struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->  
-> -}
-> +		edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
-> +		eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
-> +		eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
-> +	}
->  #endif
-> +	eeh_sysfs_add_device(pdev);
-> +}
->  
->  /*
->   * Buffer for reporting slot-error-detail rtas calls. Its here
-> @@ -159,10 +159,8 @@ static int pseries_eeh_init(void)
->  	/* Set EEH probe mode */
->  	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
->  
-> -#ifdef CONFIG_PCI_IOV
->  	/* Set EEH machine dependent code */
->  	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
-> -#endif
->  
->  	return 0;
+> +	eeh_addr_cache_init();
+> +
+>  	/* Initialize EEH event */
+>  	return eeh_event_init();
 >  }
+> diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+> index 9c68f0837385..f93dd5cf6a39 100644
+> --- a/arch/powerpc/kernel/eeh_cache.c
+> +++ b/arch/powerpc/kernel/eeh_cache.c
+> @@ -267,6 +267,17 @@ void eeh_addr_cache_rmv_dev(struct pci_dev *dev)
+>  	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
+>  }
+>  
+> +/**
+> + * eeh_addr_cache_init - Initialize a cache of I/O addresses
+> + *
+> + * Initialize a cache of pci i/o addresses.  This cache will be used to
+> + * find the pci device that corresponds to a given address.
+> + */
+> +void eeh_addr_cache_init(void)
+> +{
+> +	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+> +}
+> +
+>  /**
+>   * eeh_addr_cache_build - Build a cache of I/O addresses
+>   *
+> @@ -282,8 +293,6 @@ void eeh_addr_cache_build(void)
+>  	struct eeh_dev *edev;
+>  	struct pci_dev *dev = NULL;
+>  
+> -	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
+> -
+>  	for_each_pci_dev(dev) {
+>  		pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
+>  		if (!pdn)
 > 
 
 -- 
