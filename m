@@ -2,88 +2,93 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03BE9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 20:06:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EC03C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 20:39:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3DBDC21841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 20:06:45 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="HPpQBz/C"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3DBDC21841
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lca.pw
+	by mail.kernel.org (Postfix) with ESMTPS id 9EC8A218C3
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 20:39:09 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9EC8A218C3
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PgtB6WsGzDqP3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 07:06:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Phbb1x7XzDqPR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 07:39:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=lca.pw
- (client-ip=2607:f8b0:4864:20::743; helo=mail-qk1-x743.google.com;
- envelope-from=cai@lca.pw; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=farosas@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=lca.pw
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=lca.pw header.i=@lca.pw header.b="HPpQBz/C"; 
- dkim-atps=neutral
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com
- [IPv6:2607:f8b0:4864:20::743])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Pgqp3K0pzDqKR
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 07:04:37 +1100 (AEDT)
-Received: by mail-qk1-x743.google.com with SMTP id n6so14930808qkf.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 13:04:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lca.pw; s=google;
- h=message-id:subject:from:to:cc:date:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=Vo6r5RiuoHQQbBcC9iguZtdqZ6ajLyJa96gCdeOiWbE=;
- b=HPpQBz/CvqsFaa0YHkIdIWC9iwfw02s4wfgNx/cLGOHj1a5FGWAnDDpEotjpjx0NSL
- F0gyFf/ieAD253cjGeiAI+MkOvyvKxGe61VtSSWQyyRJBaP7ihSFnE/JoVW2e+vyFmJ/
- oOS7inR6aNpv0mA8RAyeReJDsdd38nUMURgiM9zWeRT4BPqOg5Djdld7zvw2Y8Eov+n7
- /YZmRaOdN3FdNQJFu/QU8RFIhdswP6VC6E+Es8DpHWFEFDgpkO5rN/P+p1FBRmPnU30m
- WYfL0DDwwyVAavff0M6gTimy98fqUaF3Rinq/8q+m+aNdLDaewlmpV8kawsjV23Vwx7s
- G2Fg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:message-id:subject:from:to:cc:date:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Vo6r5RiuoHQQbBcC9iguZtdqZ6ajLyJa96gCdeOiWbE=;
- b=gHF+vhxjHux5rQkPpVNarHl1UzbRk8asYeG/hiF/hkEVTFy87LbbSrVaGKtwyR88Jr
- odkVlKeSdDIFxltftv4wOea+csPZIZkMLJIgyOgbacy+4kxi1lKeAX5U/b2keN964MX/
- ddHsNNlXsZ2JdEqULH0J5iXOvGI4btcRQKMitQQVe3pHfW6ag8xK9wBnPl5pGhMvewRC
- 5Qmye2Px/CcVQKNGsTpYWvci90JrZ5+D2p/JxhCCABnync3Mk8KPQQ8hr7sIMWK9/UkS
- bdYKLBsfu2DRn+6MoQ16d5leG8LelI2mIP7nmkEs5EqhViqH++aw+qL0hcAI8p9jGhFR
- GKFg==
-X-Gm-Message-State: APjAAAWjipLYxuoS4jY0jdVwzowljqQ+uRscbjAVvIfbZQIzluM0AKn5
- xEkjxul4Wt4GnyUgI2i5o8Zumw==
-X-Google-Smtp-Source: APXvYqyNcoCpTrG/QlxBIiS3xOXvYOWD0i6x08P3+8eR8pgFrkDCEqYQr79GX02pD2JjjO+rwwfWzA==
-X-Received: by 2002:a37:4d52:: with SMTP id a79mr8186639qkb.75.1553112274192; 
- Wed, 20 Mar 2019 13:04:34 -0700 (PDT)
-Received: from dhcp-41-57.bos.redhat.com (nat-pool-bos-t.redhat.com.
- [66.187.233.206])
- by smtp.gmail.com with ESMTPSA id h24sm2225964qte.50.2019.03.20.13.04.32
- (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 20 Mar 2019 13:04:33 -0700 (PDT)
-Message-ID: <1553112272.26196.9.camel@lca.pw>
-Subject: Re: [PATCH v2] kmemleak: skip scanning holes in the .bss section
-From: Qian Cai <cai@lca.pw>
-To: Catalin Marinas <catalin.marinas@arm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Date: Wed, 20 Mar 2019 16:04:32 -0400
-In-Reply-To: <20190320181656.GB38229@arrakis.emea.arm.com>
-References: <20190313145717.46369-1-cai@lca.pw>
- <20190319115747.GB59586@arrakis.emea.arm.com>
- <87lg19y9dp.fsf@concordia.ellerman.id.au>
- <20190320181656.GB38229@arrakis.emea.arm.com>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.22.6 (3.22.6-10.el7) 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PdyG2DQlzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 05:40:02 +1100 (AEDT)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2KITOet064432
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 14:40:00 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rbrr772gp-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 14:40:00 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <farosas@linux.ibm.com>;
+ Wed, 20 Mar 2019 18:39:58 -0000
+Received: from b01cxnp23033.gho.pok.ibm.com (9.57.198.28)
+ by e13.ny.us.ibm.com (146.89.104.200) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 20 Mar 2019 18:39:54 -0000
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2KIdsMr22544390
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 20 Mar 2019 18:39:54 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8F136AE068;
+ Wed, 20 Mar 2019 18:39:54 +0000 (GMT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 19FC4AE05C;
+ Wed, 20 Mar 2019 18:39:52 +0000 (GMT)
+Received: from farosas.linux.ibm.com.br.ibm.com (unknown [9.86.27.13])
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Mar 2019 18:39:51 +0000 (GMT)
+From: Fabiano Rosas <farosas@linux.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [RFC PATCH 0/1] KVM: PPC: Inform userspace about singlestep support
+Date: Wed, 20 Mar 2019 15:39:49 -0300
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032018-0064-0000-0000-000003BD0EF3
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010789; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01177186; UDB=6.00615791; IPR=6.00957881; 
+ MB=3.00026076; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-20 18:39:56
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032018-0065-0000-0000-00003CC8AA8B
+Message-Id: <20190320183951.29537-1-farosas@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-20_11:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=340 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903200135
+X-Mailman-Approved-At: Thu, 21 Mar 2019 07:37:39 +1100
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -95,20 +100,38 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linux-mm@kvack.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, aik@ozlabs.ru, pbonzini@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-03-20 at 18:16 +0000, Catalin Marinas wrote:
-> I think I have a simpler idea. Kmemleak allows punching holes in
-> allocated objects, so just turn the data/bss sections into dedicated
-> kmemleak objects. This happens when kmemleak is initialised, before the
-> initcalls are invoked. The kvm_free_tmp() would just free the
-> corresponding part of the bss.
-> 
-> Patch below, only tested briefly on arm64. Qian, could you give it a try
-> on powerpc? Thanks.
+I am looking for a way to inform userspace about the lack of an
+implementation in KVM HV for single stepping of instructions
+(KVM_GUESTDGB_SINGLESTEP bit from SET_GUEST_DEBUG ioctl).
 
-It works great so far!
+This will be used by QEMU to decide whether to attempt a call to the
+set_guest_debug ioctl (for BookE, KVM PR) or fallback to a QEMU only
+implementation (for KVM HV).
+
+QEMU thread:
+http://patchwork.ozlabs.org/cover/1049811/
+
+My current proposal is to introduce a ppc-specific capability for
+this. However I'm not sure if this would be better as a cap common for
+all architectures or even if it should report on all of the possible
+set_guest_debug flags to cover for the future.
+
+Please comment. Thanks.
+
+
+Fabiano Rosas (1):
+  KVM: PPC: Report single stepping capability
+
+ arch/powerpc/kvm/powerpc.c | 5 +++++
+ include/uapi/linux/kvm.h   | 1 +
+ 2 files changed, 6 insertions(+)
+
+--
+2.20.1
+
