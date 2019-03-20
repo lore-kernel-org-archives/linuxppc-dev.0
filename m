@@ -1,76 +1,100 @@
-Return-Path: <SRS0=MfaX=RW=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0DA31C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 23:33:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61585C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 00:30:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7ACAC20811
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Mar 2019 23:33:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="KZeP1sld"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7ACAC20811
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id 9C19B2175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 00:30:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9C19B2175B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44P8Vy3gyYzDqJN
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 10:33:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44P9mr00ffzDqHR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 11:30:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.142.95; helo=alln-iport-8.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="KZeP1sld"; 
- dkim-atps=neutral
-Received: from alln-iport-8.cisco.com (alln-iport-8.cisco.com [173.37.142.95])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44P8KV4tc0zDq6X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 10:25:01 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=4393; q=dns/txt; s=iport;
- t=1553037903; x=1554247503;
- h=from:to:cc:subject:date:message-id:mime-version:
- content-transfer-encoding;
- bh=ebaKlHsU+JLkUig1mk8UCew4GuPPPQqZTb0b5yOHuM0=;
- b=KZeP1sldTz27m89kbDZ/sU3OXZVggdlPl2Mp7dagEeoWAzZUYKCMe8hB
- hH+J5QAy9yOSQM8KFzvrtBsM5O6dUECM9q56M5QJPAu8S4i8vXXfDM/8h
- JHsvm6XX9hkk9eIuhuOoDIUo6iD/1NkHvy8Yo0PmFm/eVLhg4L1lIdiza w=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0AEAAA8eZFc/4cNJK1jGgEBAQEBAgE?=
- =?us-ascii?q?BAQEHAgEBAQGBUQUBAQEBCwGCEIFrJ4wnpWuBew2EbIRtIjQJDQEBAwEBCQE?=
- =?us-ascii?q?DAm0ohgMBRimBFQESgyKBdQGsD4o1FIEbAYZphEgXgUA/jmMiA5Ickk0Jgku?=
- =?us-ascii?q?QVQwZk16LDJMrgUc4gVYzGggbFYMnkGsfM49rAQE?=
-X-IronPort-AV: E=Sophos;i="5.60,246,1549929600"; d="scan'208";a="247548013"
-Received: from alln-core-2.cisco.com ([173.36.13.135])
- by alln-iport-8.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
- 19 Mar 2019 23:24:58 +0000
-Received: from sjc-ads-2388.cisco.com (sjc-ads-2388.cisco.com [171.70.63.76])
- by alln-core-2.cisco.com (8.15.2/8.15.2) with ESMTP id
- x2JNOrtY019667; Tue, 19 Mar 2019 23:24:57 GMT
-From: Daniel Walker <danielwa@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Rob Herring <robh+dt@kernel.org>, xe-linux-external@cisco.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc: convert config files to generic cmdline
-Date: Tue, 19 Mar 2019 16:24:48 -0700
-Message-Id: <20190319232448.45964-5-danielwa@cisco.com>
-X-Mailer: git-send-email 2.19.1
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44P9lC2XGgzDqDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 11:28:54 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2K0ODjm014888
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 20:28:51 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rb8qqn2kh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 20:28:50 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Wed, 20 Mar 2019 00:28:42 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 20 Mar 2019 00:28:40 -0000
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2K0SjQZ58916900
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 20 Mar 2019 00:28:45 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 263F04C04A;
+ Wed, 20 Mar 2019 00:28:45 +0000 (GMT)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id C9BC34C040;
+ Wed, 20 Mar 2019 00:28:44 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Mar 2019 00:28:44 +0000 (GMT)
+Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 3AE79A0129;
+ Wed, 20 Mar 2019 11:28:43 +1100 (AEDT)
+Subject: Re: [PATCH 6/7] ocxl: afu_irq only deals with IRQ IDs, not offsets
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: Greg Kurz <groug@kaod.org>
+Date: Wed, 20 Mar 2019 11:28:43 +1100
+In-Reply-To: <20190315145639.4ae9e257@bahia.lab.toulouse-stg.fr.ibm.com>
+References: <20190313041524.14644-1-alastair@au1.ibm.com>
+ <20190313041524.14644-7-alastair@au1.ibm.com>
+ <20190315145639.4ae9e257@bahia.lab.toulouse-stg.fr.ibm.com>
+Organization: IBM Australia
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.30.5 (3.30.5-1.fc29) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Auto-Response-Suppress: DR, OOF, AutoReply
-X-Outbound-SMTP-Client: 171.70.63.76, sjc-ads-2388.cisco.com
-X-Outbound-Node: alln-core-2.cisco.com
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032000-0020-0000-0000-000003255778
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032000-0021-0000-0000-00002177734C
+Message-Id: <20fc6ceee1d45e3d4e71e3ac6887ef2860a1c341.camel@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-19_13:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903200001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -82,126 +106,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Daniel Walker <dwalker@fifo99.com>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This is a mass convert of the config files to use the new
-generic cmdline.
+On Fri, 2019-03-15 at 14:56 +0100, Greg Kurz wrote:
+> On Wed, 13 Mar 2019 15:15:21 +1100
+> "Alastair D'Silva" <alastair@au1.ibm.com> wrote:
+> 
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> > 
+> > The use of offsets is required only in the frontend, so alter
+> > the IRQ API to only work with IRQ IDs in the backend.
+> > 
+> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> > ---
+> >  drivers/misc/ocxl/afu_irq.c       | 31 +++++++++++++------------
+> > ------
+> >  drivers/misc/ocxl/context.c       |  7 +++++--
+> >  drivers/misc/ocxl/file.c          | 13 ++++++++-----
+> >  drivers/misc/ocxl/ocxl_internal.h | 10 ++++++----
+> >  drivers/misc/ocxl/trace.h         | 12 ++++--------
+> >  5 files changed, 36 insertions(+), 37 deletions(-)
+> > 
+> > diff --git a/drivers/misc/ocxl/afu_irq.c
+> > b/drivers/misc/ocxl/afu_irq.c
+> > index 11ab996657a2..1885c472df58 100644
+> > --- a/drivers/misc/ocxl/afu_irq.c
+> > +++ b/drivers/misc/ocxl/afu_irq.c
+> > @@ -14,14 +14,14 @@ struct afu_irq {
+> >  	struct eventfd_ctx *ev_ctx;
+> >  };
+> >  
+> > -static int irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
+> > +int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
+> >  {
+> >  	return (offset - ctx->afu->irq_base_offset) >> PAGE_SHIFT;
+> >  }
+> >  
+> > -static u64 irq_id_to_offset(struct ocxl_context *ctx, int id)
+> > +u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id)
+> >  {
+> > -	return ctx->afu->irq_base_offset + (id << PAGE_SHIFT);
+> > +	return ctx->afu->irq_base_offset + (irq_id << PAGE_SHIFT);
+> >  }
+> >  
+> >  static irqreturn_t afu_irq_handler(int virq, void *data)
+> > @@ -69,7 +69,7 @@ static void release_afu_irq(struct afu_irq *irq)
+> >  	kfree(irq->name);
+> >  }
+> >  
+> > -int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
+> > +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id)
+> >  {
+> >  	struct afu_irq *irq;
+> >  	int rc;
+> > @@ -101,10 +101,7 @@ int ocxl_afu_irq_alloc(struct ocxl_context
+> > *ctx, u64 *irq_offset)
+> >  	if (rc)
+> >  		goto err_alloc;
+> >  
+> > -	*irq_offset = irq_id_to_offset(ctx, irq->id);
+> 
+> This should be replaced by:
+> 
+> 	*irq_id = irq->id;
+> 
 
-The command used to convert is as follows,
+Whoops, good catch, thanks :)
 
-sed -i 's/CONFIG_CMDLINE=/CONFIG_CMDLINE_PREPEND=/g' <config>
-
-Cc: xe-linux-external@cisco.com
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
-
-Change-Id: Idf7cae45ef5f8afebcb1ee7e025aafcb6541ad35
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
----
- arch/powerpc/configs/44x/fsp2_defconfig       | 2 +-
- arch/powerpc/configs/44x/iss476-smp_defconfig | 2 +-
- arch/powerpc/configs/44x/warp_defconfig       | 2 +-
- arch/powerpc/configs/holly_defconfig          | 2 +-
- arch/powerpc/configs/mvme5100_defconfig       | 2 +-
- arch/powerpc/configs/skiroot_defconfig        | 2 +-
- arch/powerpc/configs/storcenter_defconfig     | 2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/configs/44x/fsp2_defconfig b/arch/powerpc/configs/44x/fsp2_defconfig
-index bae6b26bcfba..1e9b1e7e281f 100644
---- a/arch/powerpc/configs/44x/fsp2_defconfig
-+++ b/arch/powerpc/configs/44x/fsp2_defconfig
-@@ -29,7 +29,7 @@ CONFIG_SWIOTLB=y
- CONFIG_KEXEC=y
- CONFIG_CRASH_DUMP=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="ip=on rw"
-+CONFIG_CMDLINE_PREPEND="ip=on rw"
- # CONFIG_SUSPEND is not set
- # CONFIG_PCI is not set
- CONFIG_NET=y
-diff --git a/arch/powerpc/configs/44x/iss476-smp_defconfig b/arch/powerpc/configs/44x/iss476-smp_defconfig
-index d24bfa6ecd62..ed234c2b1956 100644
---- a/arch/powerpc/configs/44x/iss476-smp_defconfig
-+++ b/arch/powerpc/configs/44x/iss476-smp_defconfig
-@@ -18,7 +18,7 @@ CONFIG_HZ_100=y
- CONFIG_MATH_EMULATION=y
- CONFIG_IRQ_ALL_CPUS=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="root=/dev/issblk0"
-+CONFIG_CMDLINE_PREPEND="root=/dev/issblk0"
- # CONFIG_PCI is not set
- CONFIG_ADVANCED_OPTIONS=y
- CONFIG_DYNAMIC_MEMSTART=y
-diff --git a/arch/powerpc/configs/44x/warp_defconfig b/arch/powerpc/configs/44x/warp_defconfig
-index 6c02f53271cd..ddb395840bb9 100644
---- a/arch/powerpc/configs/44x/warp_defconfig
-+++ b/arch/powerpc/configs/44x/warp_defconfig
-@@ -15,7 +15,7 @@ CONFIG_WARP=y
- CONFIG_PPC4xx_GPIO=y
- CONFIG_HZ_1000=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="ip=on"
-+CONFIG_CMDLINE_PREPEND="ip=on"
- # CONFIG_PCI is not set
- CONFIG_NET=y
- CONFIG_PACKET=y
-diff --git a/arch/powerpc/configs/holly_defconfig b/arch/powerpc/configs/holly_defconfig
-index 71d8d2430b6c..14945562d193 100644
---- a/arch/powerpc/configs/holly_defconfig
-+++ b/arch/powerpc/configs/holly_defconfig
-@@ -14,7 +14,7 @@ CONFIG_PPC_HOLLY=y
- CONFIG_GEN_RTC=y
- CONFIG_BINFMT_MISC=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=ttyS0,115200"
-+CONFIG_CMDLINE_PREPEND="console=ttyS0,115200"
- # CONFIG_SECCOMP is not set
- CONFIG_NET=y
- CONFIG_PACKET=y
-diff --git a/arch/powerpc/configs/mvme5100_defconfig b/arch/powerpc/configs/mvme5100_defconfig
-index 63e38c7220f1..07a68ebb3713 100644
---- a/arch/powerpc/configs/mvme5100_defconfig
-+++ b/arch/powerpc/configs/mvme5100_defconfig
-@@ -23,7 +23,7 @@ CONFIG_HZ_100=y
- # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
- # CONFIG_COMPACTION is not set
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
-+CONFIG_CMDLINE_PREPEND="console=ttyS0,9600 ip=dhcp root=/dev/nfs"
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index cfdd08897a06..a79984208224 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -53,7 +53,7 @@ CONFIG_NUMA=y
- CONFIG_PPC_64K_PAGES=y
- CONFIG_SCHED_SMT=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=tty0 console=hvc0 ipr.fast_reboot=1 quiet"
-+CONFIG_CMDLINE_PREPEND="console=tty0 console=hvc0 ipr.fast_reboot=1 quiet"
- # CONFIG_SECCOMP is not set
- # CONFIG_PPC_MEM_KEYS is not set
- CONFIG_NET=y
-diff --git a/arch/powerpc/configs/storcenter_defconfig b/arch/powerpc/configs/storcenter_defconfig
-index 74bca2eccd0f..83b3b92176a0 100644
---- a/arch/powerpc/configs/storcenter_defconfig
-+++ b/arch/powerpc/configs/storcenter_defconfig
-@@ -13,7 +13,7 @@ CONFIG_STORCENTER=y
- CONFIG_HZ_100=y
- CONFIG_BINFMT_MISC=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="console=ttyS0,115200"
-+CONFIG_CMDLINE_PREPEND="console=ttyS0,115200"
- # CONFIG_SECCOMP is not set
- CONFIG_NET=y
- CONFIG_PACKET=m
 -- 
-2.19.1
+Alastair D'Silva
+Open Source Developer
+Linux Technology Centre, IBM Australia
+mob: 0423 762 819
 
