@@ -2,96 +2,166 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5DF5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB5CFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 35A012184E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:45:14 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 35A012184E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id AA4D720830
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 06:03:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=ozlabs-ru.20150623.gappssmtp.com header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="L78HiBvL"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AA4D720830
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ozlabs.ru
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PJm823RYzDqMW
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:45:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PK9m38B1zDq9B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 17:03:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=ozlabs.ru
+ (client-ip=2607:f8b0:4864:20::542; helo=mail-pg1-x542.google.com;
+ envelope-from=aik@ozlabs.ru; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=ozlabs.ru
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=ozlabs-ru.20150623.gappssmtp.com
+ header.i=@ozlabs-ru.20150623.gappssmtp.com header.b="L78HiBvL"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PJY15MsczDqG9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:35:33 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2K5YOht037391
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:35:31 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rbdrf4dsr-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:35:31 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 20 Mar 2019 05:35:23 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 20 Mar 2019 05:35:19 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2K5ZOcK43778126
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Mar 2019 05:35:24 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1D64B11C054;
- Wed, 20 Mar 2019 05:35:24 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 8776711C052;
- Wed, 20 Mar 2019 05:35:23 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 20 Mar 2019 05:35:23 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 7B912A0349;
- Wed, 20 Mar 2019 16:35:22 +1100 (AEDT)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org
-Subject: [PATCH v3 4/5] ocxl: Remove superfluous 'extern' from headers
-Date: Wed, 20 Mar 2019 16:34:47 +1100
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190320053448.2098-1-alastair@au1.ibm.com>
-References: <20190313040702.14276-1-alastair@au1.ibm.com>
- <20190320053448.2098-1-alastair@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PK813yC8zDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 17:02:24 +1100 (AEDT)
+Received: by mail-pg1-x542.google.com with SMTP id a22so930354pgg.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 23:02:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=ozlabs-ru.20150623.gappssmtp.com; s=20150623;
+ h=subject:to:references:from:openpgp:autocrypt:message-id:date
+ :user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=hGpA7SZ9ajU3a0ZAS0ipjsnqT+i14OjgRvMMQ1DLOIM=;
+ b=L78HiBvLsgCns/uV1ElFItZ3ziadyYFHfWwaBfhogPj16SGfCI/rMxfKrh/lJ5EAEN
+ iUd0jqdPUatzbZzHARUQvpAhWWcd1ImNkiZvuStAA7VI+ejZvbm+GLYI8FRaAP5eIoLr
+ kwtFUDu1ojgxsZcq6YAl0PmVu/eu61U3SM7KDL5ePmo26qgJY76D14/Yon7E6DW2Eb5R
+ GG40sdl1NoGw7ESOg87XfQB5iZs/Y+Xkxn57OrEYPwuESs/iyGKPMf1P2hGI1/9XcBaB
+ I6aCLqylfC23+3aL3dc/62BYS6gBcvgpcERdp5lxbzVDNziEGAMM1jyzEp2QZKlf1fwa
+ PvxA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:subject:to:references:from:openpgp:autocrypt
+ :message-id:date:user-agent:mime-version:in-reply-to
+ :content-language:content-transfer-encoding;
+ bh=hGpA7SZ9ajU3a0ZAS0ipjsnqT+i14OjgRvMMQ1DLOIM=;
+ b=MYREwf407V6uf7x8ujm/xhIeePL9LYG9P3xyhlnx0ovgpdHAtHR47/pwsFXxQdmF6F
+ MEL7fgxwukufcLjDZ29FIO2ebF65N/ynCRriUymFeomBKz8UDifyiB515DMpFl+ipu4M
+ VtVQnr/C0rw2NGdPo/zgc5evD9tqTxDxaALVGN7ynx/f6ca7DgbD4UB1RoCaOQCqmNwn
+ 0PX2pYBiUZFKWajbKj3AF3nbL1uV53HfEOehjS/5OgItK86jntNOd/aAJjJ+Y1ydJeMN
+ Ghxjm/XUIexMe1+FxpVzdVAndCDOfEywEU4uh+OKLkfcEh3pqY6zXFUbpaia7i35pC7L
+ X1Qg==
+X-Gm-Message-State: APjAAAXAT+GvoncoESkKcCRDXvDpecUPQ9s+9zQZx8C/AboNg8yDSBot
+ sqOhHMnwrodGSIgrQbQe88113fy4AAA=
+X-Google-Smtp-Source: APXvYqyHk30+xtjeDeHwXVCzI5JzI5OgXtUvF2nqK1gyBTt56A9HJZtr2lpakvKsTIKZBmUF3ykaQg==
+X-Received: by 2002:a17:902:9341:: with SMTP id
+ g1mr6472231plp.80.1553061741783; 
+ Tue, 19 Mar 2019 23:02:21 -0700 (PDT)
+Received: from [10.61.2.175] ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id g15sm1822595pfg.157.2019.03.19.23.02.19
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 19 Mar 2019 23:02:20 -0700 (PDT)
+Subject: Re: [PATCH 7/8] powerpc/eeh: EEH for pSeries hot plug
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <cover.1553050609.git.sbobroff@linux.ibm.com>
+ <ec3ab4f1b484d37ff0864b439612c01e7ee42948.1553050609.git.sbobroff@linux.ibm.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Openpgp: preference=signencrypt
+Autocrypt: addr=aik@ozlabs.ru; keydata=
+ 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
+Message-ID: <cfd3bf90-dd4b-b6ae-b97a-7eb51fe729be@ozlabs.ru>
+Date: Wed, 20 Mar 2019 17:02:17 +1100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.3
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032005-0020-0000-0000-00000325693F
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032005-0021-0000-0000-000021778605
-Message-Id: <20190320053448.2098-5-alastair@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-20_04:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=824 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903200048
+In-Reply-To: <ec3ab4f1b484d37ff0864b439612c01e7ee42948.1553050609.git.sbobroff@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,261 +173,188 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
 
-The 'extern' keyword adds no value here.
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- drivers/misc/ocxl/ocxl_internal.h | 54 +++++++++++++++----------------
- include/misc/ocxl.h               | 36 ++++++++++-----------
- 2 files changed, 44 insertions(+), 46 deletions(-)
+On 20/03/2019 13:58, Sam Bobroff wrote:
+> On PowerNV and pSeries, devices currently acquire EEH support from
+> several different places: Boot-time devices from eeh_probe_devices()
+> and eeh_addr_cache_build(), Virtual Function devices from the pcibios
+> bus add device hooks and hot plugged devices from pci_hp_add_devices()
+> (with other platforms using other methods as well).  Unfortunately,
+> pSeries machines currently discover hot plugged devices using
+> pci_rescan_bus(), not pci_hp_add_devices(), and so those devices do
+> not receive EEH support.
+> 
+> Rather than adding another case for pci_rescan_bus(), this change
+> widens the scope of the pcibios bus add device hooks so that they can
+> handle all devices. As a side effect this also supports devices
+> discovered after manually rescanning via /sys/bus/pci/rescan.
+> 
+> Note that on PowerNV, this change allows the EEH subsystem to become
+> enabled after boot as long as it has not been forced off, which was
+> not previously possible (it was already possible on pSeries).
+> 
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/eeh.c                    |  2 +-
+>  arch/powerpc/kernel/of_platform.c            |  3 +-
+>  arch/powerpc/platforms/powernv/eeh-powernv.c |  8 ++-
+>  arch/powerpc/platforms/pseries/eeh_pseries.c | 54 ++++++++++----------
+>  4 files changed, 35 insertions(+), 32 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> index 7a406d58d2c0..217e14bb1fb6 100644
+> --- a/arch/powerpc/kernel/eeh.c
+> +++ b/arch/powerpc/kernel/eeh.c
+> @@ -1291,7 +1291,7 @@ void eeh_add_device_late(struct pci_dev *dev)
+>  	struct pci_dn *pdn;
+>  	struct eeh_dev *edev;
+>  
+> -	if (!dev || !eeh_enabled())
+> +	if (!dev)
+>  		return;
+>  
+>  	pr_debug("EEH: Adding device %s\n", pci_name(dev));
+> diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+> index becaec990140..d5818e9c4069 100644
+> --- a/arch/powerpc/kernel/of_platform.c
+> +++ b/arch/powerpc/kernel/of_platform.c
+> @@ -86,7 +86,8 @@ static int of_pci_phb_probe(struct platform_device *dev)
+>  	pcibios_claim_one_bus(phb->bus);
+>  
+>  	/* Finish EEH setup */
+> -	eeh_add_device_tree_late(phb->bus);
+> +	if (!eeh_has_flag(EEH_FORCE_DISABLED))
+> +		eeh_add_device_tree_late(phb->bus);
+>  
+>  	/* Add probed PCI devices to the device model */
+>  	pci_bus_add_devices(phb->bus);
+> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+> index 51c5b6bb9b0e..81b0923cc55f 100644
+> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+> @@ -47,7 +47,7 @@ void pnv_pcibios_bus_add_device(struct pci_dev *pdev)
+>  {
+>  	struct pci_dn *pdn = pci_get_pdn(pdev);
+>  
+> -	if (!pdev->is_virtfn)
+> +	if (eeh_has_flag(EEH_FORCE_DISABLED))
+>  		return;
+>  
+>  	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
+> @@ -479,7 +479,11 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
+>  	 * Enable EEH explicitly so that we will do EEH check
+>  	 * while accessing I/O stuff
+>  	 */
+> -	eeh_add_flag(EEH_ENABLED);
+> +	if (!eeh_has_flag(EEH_ENABLED)) {
+> +		enable_irq(eeh_event_irq);
+> +		eeh_add_flag(EEH_PHB_ENABLED);
 
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index a32f2151029f..321b29e77f45 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -16,7 +16,6 @@
- 
- extern struct pci_driver ocxl_pci_driver;
- 
--
- struct ocxl_fn {
- 	struct device dev;
- 	int bar_used[3];
-@@ -92,41 +91,40 @@ struct ocxl_process_element {
- 	__be32 software_state;
- };
- 
-+struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
-+void ocxl_afu_put(struct ocxl_afu *afu);
- 
--extern struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
--extern void ocxl_afu_put(struct ocxl_afu *afu);
--
--extern int ocxl_create_cdev(struct ocxl_afu *afu);
--extern void ocxl_destroy_cdev(struct ocxl_afu *afu);
--extern int ocxl_register_afu(struct ocxl_afu *afu);
--extern void ocxl_unregister_afu(struct ocxl_afu *afu);
-+int ocxl_create_cdev(struct ocxl_afu *afu);
-+void ocxl_destroy_cdev(struct ocxl_afu *afu);
-+int ocxl_register_afu(struct ocxl_afu *afu);
-+void ocxl_unregister_afu(struct ocxl_afu *afu);
- 
--extern int ocxl_file_init(void);
--extern void ocxl_file_exit(void);
-+int ocxl_file_init(void);
-+void ocxl_file_exit(void);
- 
--extern int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
--extern void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
--extern int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
--extern void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-+int ocxl_pasid_afu_alloc(struct ocxl_fn *fn, u32 size);
-+void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
-+int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
-+void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
- 
--extern struct ocxl_context *ocxl_context_alloc(void);
--extern int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
-+struct ocxl_context *ocxl_context_alloc(void);
-+int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
- 			struct address_space *mapping);
--extern int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
--extern int ocxl_context_mmap(struct ocxl_context *ctx,
-+int ocxl_context_attach(struct ocxl_context *ctx, u64 amr);
-+int ocxl_context_mmap(struct ocxl_context *ctx,
- 			struct vm_area_struct *vma);
--extern int ocxl_context_detach(struct ocxl_context *ctx);
--extern void ocxl_context_detach_all(struct ocxl_afu *afu);
--extern void ocxl_context_free(struct ocxl_context *ctx);
-+int ocxl_context_detach(struct ocxl_context *ctx);
-+void ocxl_context_detach_all(struct ocxl_afu *afu);
-+void ocxl_context_free(struct ocxl_context *ctx);
- 
--extern int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
--extern void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
-+int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
-+void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
- 
--extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
--extern int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
--extern void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
--extern int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
-+int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
-+int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
-+void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
-+int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
- 			int eventfd);
--extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
-+u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
- 
- #endif /* _OCXL_INTERNAL_H_ */
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index 9ff6ddc28e22..4544573cc93c 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -53,7 +53,7 @@ struct ocxl_fn_config {
-  * Read the configuration space of a function and fill in a
-  * ocxl_fn_config structure with all the function details
-  */
--extern int ocxl_config_read_function(struct pci_dev *dev,
-+int ocxl_config_read_function(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn);
- 
- /*
-@@ -62,14 +62,14 @@ extern int ocxl_config_read_function(struct pci_dev *dev,
-  * AFU indexes can be sparse, so a driver should check all indexes up
-  * to the maximum found in the function description
-  */
--extern int ocxl_config_check_afu_index(struct pci_dev *dev,
-+int ocxl_config_check_afu_index(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn, int afu_idx);
- 
- /*
-  * Read the configuration space of a function for the AFU specified by
-  * the index 'afu_idx'. Fills in a ocxl_afu_config structure
-  */
--extern int ocxl_config_read_afu(struct pci_dev *dev,
-+int ocxl_config_read_afu(struct pci_dev *dev,
- 				struct ocxl_fn_config *fn,
- 				struct ocxl_afu_config *afu,
- 				u8 afu_idx);
-@@ -77,7 +77,7 @@ extern int ocxl_config_read_afu(struct pci_dev *dev,
- /*
-  * Get the max PASID value that can be used by the function
-  */
--extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-+int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
- 
- /*
-  * Tell an AFU, by writing in the configuration space, the PASIDs that
-@@ -87,7 +87,7 @@ extern int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-  * 'afu_control_offset' is the offset of the AFU control DVSEC which
-  * can be found in the function configuration
-  */
--extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
-+void ocxl_config_set_afu_pasid(struct pci_dev *dev,
- 				int afu_control_offset,
- 				int pasid_base, u32 pasid_count_log);
- 
-@@ -98,7 +98,7 @@ extern void ocxl_config_set_afu_pasid(struct pci_dev *dev,
-  * 'supported' is the total number of actags desired by all the AFUs
-  *             of the function.
-  */
--extern int ocxl_config_get_actag_info(struct pci_dev *dev,
-+int ocxl_config_get_actag_info(struct pci_dev *dev,
- 				u16 *base, u16 *enabled, u16 *supported);
- 
- /*
-@@ -108,7 +108,7 @@ extern int ocxl_config_get_actag_info(struct pci_dev *dev,
-  * 'func_offset' is the offset of the Function DVSEC that can found in
-  * the function configuration
-  */
--extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
-+void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
- 				u32 actag_base, u32 actag_count);
- 
- /*
-@@ -118,7 +118,7 @@ extern void ocxl_config_set_actag(struct pci_dev *dev, int func_offset,
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
-+void ocxl_config_set_afu_actag(struct pci_dev *dev,
- 				int afu_control_offset,
- 				int actag_base, int actag_count);
- 
-@@ -128,7 +128,7 @@ extern void ocxl_config_set_afu_actag(struct pci_dev *dev,
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern void ocxl_config_set_afu_state(struct pci_dev *dev,
-+void ocxl_config_set_afu_state(struct pci_dev *dev,
- 				int afu_control_offset, int enable);
- 
- /*
-@@ -139,7 +139,7 @@ extern void ocxl_config_set_afu_state(struct pci_dev *dev,
-  * between the host and device, and set the Transaction Layer on both
-  * accordingly.
-  */
--extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
-+int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
- 
- /*
-  * Request an AFU to terminate a PASID.
-@@ -152,7 +152,7 @@ extern int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
-  * 'afu_control_offset' is the offset of the AFU control DVSEC for the
-  * desired AFU. It can be found in the AFU configuration
-  */
--extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
-+int ocxl_config_terminate_pasid(struct pci_dev *dev,
- 				int afu_control_offset, int pasid);
- 
- /*
-@@ -165,13 +165,13 @@ extern int ocxl_config_terminate_pasid(struct pci_dev *dev,
-  * Returns a 'link handle' that should be used for further calls for
-  * the link
-  */
--extern int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
-+int ocxl_link_setup(struct pci_dev *dev, int PE_mask,
- 			void **link_handle);
- 
- /*
-  * Remove the association between the function and its link.
-  */
--extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
-+void ocxl_link_release(struct pci_dev *dev, void *link_handle);
- 
- /*
-  * Add a Process Element to the Shared Process Area for a link.
-@@ -183,7 +183,7 @@ extern void ocxl_link_release(struct pci_dev *dev, void *link_handle);
-  * 'xsl_err_data' is an argument passed to the above callback, if
-  * defined
-  */
--extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-+int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
- 		u64 amr, struct mm_struct *mm,
- 		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
- 		void *xsl_err_data);
-@@ -195,12 +195,12 @@ extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
-  * pasid: the PASID for the AFU context
-  * tid: the new thread id for the process element
-  */
--extern int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-+int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
- 
- /*
-  * Remove a Process Element from the Shared Process Area for a link
-  */
--extern int ocxl_link_remove_pe(void *link_handle, int pasid);
-+int ocxl_link_remove_pe(void *link_handle, int pasid);
- 
- /*
-  * Allocate an AFU interrupt associated to the link.
-@@ -212,12 +212,12 @@ extern int ocxl_link_remove_pe(void *link_handle, int pasid);
-  * interrupt. It is an MMIO address which needs to be remapped (one
-  * page).
-  */
--extern int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
-+int ocxl_link_irq_alloc(void *link_handle, int *hw_irq,
- 			u64 *obj_handle);
- 
- /*
-  * Free a previously allocated AFU interrupt
-  */
--extern void ocxl_link_free_irq(void *link_handle, int hw_irq);
-+void ocxl_link_free_irq(void *link_handle, int hw_irq);
- 
- #endif /* _MISC_OCXL_H_ */
+
+Except that I do not think we need EEH_PHB_ENABLED (commented elsewhere),
+
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+
+
+
+
+> +		eeh_add_flag(EEH_ENABLED);
+> +	}
+>  
+>  	/* Save memory bars */
+>  	eeh_save_bars(edev);
+> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> index ae06878fbdea..e68c79164974 100644
+> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+> @@ -55,44 +55,44 @@ static int ibm_get_config_addr_info;
+>  static int ibm_get_config_addr_info2;
+>  static int ibm_configure_pe;
+>  
+> -#ifdef CONFIG_PCI_IOV
+>  void pseries_pcibios_bus_add_device(struct pci_dev *pdev)
+>  {
+>  	struct pci_dn *pdn = pci_get_pdn(pdev);
+> -	struct pci_dn *physfn_pdn;
+> -	struct eeh_dev *edev;
+>  
+> -	if (!pdev->is_virtfn)
+> +	if (eeh_has_flag(EEH_FORCE_DISABLED))
+>  		return;
+>  
+>  	pr_debug("%s: EEH: Setting up device %s.\n", __func__, pci_name(pdev));
+> +#ifdef CONFIG_PCI_IOV
+> +	if (pdev->is_virtfn) {
+> +		struct pci_dn *physfn_pdn;
+>  
+> -	pdn->device_id  =  pdev->device;
+> -	pdn->vendor_id  =  pdev->vendor;
+> -	pdn->class_code =  pdev->class;
+> -	/*
+> -	 * Last allow unfreeze return code used for retrieval
+> -	 * by user space in eeh-sysfs to show the last command
+> -	 * completion from platform.
+> -	 */
+> -	pdn->last_allow_rc =  0;
+> -	physfn_pdn      =  pci_get_pdn(pdev->physfn);
+> -	pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
+> -	edev = pdn_to_eeh_dev(pdn);
+> -
+> -	/*
+> -	 * The following operations will fail if VF's sysfs files
+> -	 * aren't created or its resources aren't finalized.
+> -	 */
+> +		pdn->device_id  =  pdev->device;
+> +		pdn->vendor_id  =  pdev->vendor;
+> +		pdn->class_code =  pdev->class;
+> +		/*
+> +		 * Last allow unfreeze return code used for retrieval
+> +		 * by user space in eeh-sysfs to show the last command
+> +		 * completion from platform.
+> +		 */
+> +		pdn->last_allow_rc =  0;
+> +		physfn_pdn      =  pci_get_pdn(pdev->physfn);
+> +		pdn->pe_number  =  physfn_pdn->pe_num_map[pdn->vf_index];
+> +	}
+> +#endif
+>  	eeh_add_device_early(pdn);
+>  	eeh_add_device_late(pdev);
+> -	edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
+> -	eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
+> -	eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
+> -	eeh_sysfs_add_device(pdev);
+> +#ifdef CONFIG_PCI_IOV
+> +	if (pdev->is_virtfn) {
+> +		struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+>  
+> -}
+> +		edev->pe_config_addr =  (pdn->busno << 16) | (pdn->devfn << 8);
+> +		eeh_rmv_from_parent_pe(edev); /* Remove as it is adding to bus pe */
+> +		eeh_add_to_parent_pe(edev);   /* Add as VF PE type */
+> +	}
+>  #endif
+> +	eeh_sysfs_add_device(pdev);
+> +}
+>  
+>  /*
+>   * Buffer for reporting slot-error-detail rtas calls. Its here
+> @@ -159,10 +159,8 @@ static int pseries_eeh_init(void)
+>  	/* Set EEH probe mode */
+>  	eeh_add_flag(EEH_PROBE_MODE_DEVTREE | EEH_ENABLE_IO_FOR_LOG);
+>  
+> -#ifdef CONFIG_PCI_IOV
+>  	/* Set EEH machine dependent code */
+>  	ppc_md.pcibios_bus_add_device = pseries_pcibios_bus_add_device;
+> -#endif
+>  
+>  	return 0;
+>  }
+> 
+
 -- 
-2.20.1
-
+Alexey
