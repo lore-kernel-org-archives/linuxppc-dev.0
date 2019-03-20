@@ -2,64 +2,64 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC93DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:13:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45807C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:15:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 41E642175B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:13:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41E642175B
+	by mail.kernel.org (Postfix) with ESMTPS id B940C2175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:15:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B940C2175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PJ380PrmzDqJs
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:13:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PJ5g6MkkzDqJR
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:15:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.210.193; helo=mail-pf1-f193.google.com;
+ (client-ip=209.85.210.195; helo=mail-pf1-f195.google.com;
  envelope-from=bhsharma@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-pf1-f193.google.com (mail-pf1-f193.google.com
- [209.85.210.193])
+Received: from mail-pf1-f195.google.com (mail-pf1-f195.google.com
+ [209.85.210.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PHzP4RNszDqCg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:09:52 +1100 (AEDT)
-Received: by mail-pf1-f193.google.com with SMTP id i17so1021042pfo.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:09:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PHzS2dSqzDqH5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:09:56 +1100 (AEDT)
+Received: by mail-pf1-f195.google.com with SMTP id a3so999536pff.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:09:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
  :references;
- bh=e4gf7gQQRDrHYkHmBGmiy/271ro0jZqvmttHmTXDjOw=;
- b=W7X7jnvudc+Z41o1Jn9xd/1R+ApkEEmAbo+rJY8X+P8wR4E12IeJOxAqusimXMIE3K
- xEYjiKoXWwCqC/uNZpNgsL8hSE3KVaJnLSFbcpuLNjUEc7RSKWTyvpXc5BNjFxRqyZ7t
- WSUN2YdXZNWErtz19QUJyH4cxwyYlUACSpOsRVIO1Gq6lg+BQZxQSeBjJDhQ8jmRsBxZ
- Igf6aAubVoGAsGkuABIDDwnumZhYXkFtB50P5/phWNSAxtbVj9TjFk9Dbb4A0+WDI2SK
- suxPqOfXSPiVzf0hfXV7aGsdIAw0aPjVq1qsbqvJ7oJyylQWEvVuEzPaNyzktvV0Ue97
- Pv8A==
-X-Gm-Message-State: APjAAAU7InmNhOWtyiTSud+q7wYhHRAF8wWnjSfb52KfWqITmKyzpGRC
- ceO14F1CHrqAwQKeOKgPCqeNNg==
-X-Google-Smtp-Source: APXvYqwquzJ/LobGlm7cNilKJM6zRdniDHacYy1BqPtGwxNdqRtts7VAQpU4ybvYWD6CVPzQvfam4A==
-X-Received: by 2002:a63:e002:: with SMTP id e2mr5901612pgh.300.1553058590559; 
- Tue, 19 Mar 2019 22:09:50 -0700 (PDT)
+ bh=NzF2lox56cCw7G7V/HuQAT3g3XyLKaDXps4ZB1oA+bc=;
+ b=mHSM6/8yboQHw7Cn2VzGWze1hPrN7+6FiC276jxlbCx9RMqVwLXmhtld9uLaGgOvP7
+ pbYaXZoH2CbH2KIk+TyZKtTwi6RexL1wZb6rrWqte3PndoFkMas1VegLG5JaPIO9h9RY
+ 60NpDPfxkBVe1DlRrN6BfSJIt60M0tvs7AdklxatOqDVb7sWrl/sFRXm8MXsotmxQ3jI
+ ZhmbZlHIJZU3UEJCqVpt5QJqBJOVtFV783AQCIlj+5ZkNW42OvmVO9Y34/DSEPyJW8JA
+ rfzLcPThhbviBAx6FkAmNh+kFmbF3OpvX3CgFxE8swUoisVcK1+4RDpzMPsr7tvWrt3Y
+ Pq2g==
+X-Gm-Message-State: APjAAAWbdxGcks55porsYAQfDf6MhvC5T1/r55lK1N8gAgjzDJlMhsb0
+ QzttU76ADoOF8bOMxPZqlPr0Ig==
+X-Google-Smtp-Source: APXvYqz11gH+I/P5+wWWISa5BJ9kL4DjJeRovWcoEtWVrZ9t7h0ul+/Pcy/JsXGCFXwgldP+Gz6FQg==
+X-Received: by 2002:a17:902:7b93:: with SMTP id
+ w19mr5881676pll.141.1553058594147; 
+ Tue, 19 Mar 2019 22:09:54 -0700 (PDT)
 Received: from localhost ([122.177.144.121])
- by smtp.gmail.com with ESMTPSA id e123sm958508pfe.35.2019.03.19.22.09.48
+ by smtp.gmail.com with ESMTPSA id t10sm1470971pgo.27.2019.03.19.22.09.52
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 19 Mar 2019 22:09:49 -0700 (PDT)
+ Tue, 19 Mar 2019 22:09:53 -0700 (PDT)
 From: Bhupesh Sharma <bhsharma@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/3] crash_core,
- vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
-Date: Wed, 20 Mar 2019 10:39:33 +0530
-Message-Id: <1553058574-18606-3-git-send-email-bhsharma@redhat.com>
+Subject: [PATCH v3 3/3] Documentation/vmcoreinfo: Add documentation for
+ 'MAX_PHYSMEM_BITS'
+Date: Wed, 20 Mar 2019 10:39:34 +0530
+Message-Id: <1553058574-18606-4-git-send-email-bhsharma@redhat.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
 References: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
@@ -85,33 +85,11 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Right now user-space tools like 'makedumpfile' and 'crash' need to rely
-on a best-guess method of determining value of 'MAX_PHYSMEM_BITS'
-supported by underlying kernel.
+Add documentation for 'MAX_PHYSMEM_BITS' variable being added to
+vmcoreinfo.
 
-This value is used in user-space code to calculate the bit-space
-required to store a section for SPARESMEM (similar to the existing
-calculation method used in the kernel implementation):
-
-  #define SECTIONS_SHIFT    (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
-
-Now, regressions have been reported in user-space utilities
-like 'makedumpfile' and 'crash' on arm64, with the recently added
-kernel support for 52-bit physical address space, as there is
-no clear method of determining this value in user-space
-(other than reading kernel CONFIG flags).
-
-As per suggestion from makedumpfile maintainer (Kazu), it makes more
-sense to append 'MAX_PHYSMEM_BITS' to vmcoreinfo in the core code itself
-rather than in arch-specific code, so that the user-space code for other
-archs can also benefit from this addition to the vmcoreinfo and use it
-as a standard way of determining 'SECTIONS_SHIFT' value in user-land.
-
-A reference 'makedumpfile' implementation which reads the
-'MAX_PHYSMEM_BITS' value from vmcoreinfo in a arch-independent fashion
-is available here:
-
-[0]. https://github.com/bhupesh-sharma/makedumpfile/blob/remove-max-phys-mem-bit-v1/arch/ppc64.c#L471
+'MAX_PHYSMEM_BITS' defines the maximum supported physical address
+space memory.
 
 Cc: Boris Petkov <bp@alien8.de>
 Cc: Ingo Molnar <mingo@kernel.org>
@@ -130,21 +108,25 @@ Cc: linux-kernel@vger.kernel.org
 Cc: kexec@lists.infradead.org
 Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
 ---
- kernel/crash_core.c | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/kdump/vmcoreinfo.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-index 093c9f917ed0..495f09084696 100644
---- a/kernel/crash_core.c
-+++ b/kernel/crash_core.c
-@@ -415,6 +415,7 @@ static int __init crash_save_vmcoreinfo_init(void)
- 	VMCOREINFO_LENGTH(mem_section, NR_SECTION_ROOTS);
- 	VMCOREINFO_STRUCT_SIZE(mem_section);
- 	VMCOREINFO_OFFSET(mem_section, section_mem_map);
-+	VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
- #endif
- 	VMCOREINFO_STRUCT_SIZE(page);
- 	VMCOREINFO_STRUCT_SIZE(pglist_data);
+diff --git a/Documentation/kdump/vmcoreinfo.txt b/Documentation/kdump/vmcoreinfo.txt
+index bb94a4bd597a..f5a11388dc49 100644
+--- a/Documentation/kdump/vmcoreinfo.txt
++++ b/Documentation/kdump/vmcoreinfo.txt
+@@ -95,6 +95,11 @@ It exists in the sparse memory mapping model, and it is also somewhat
+ similar to the mem_map variable, both of them are used to translate an
+ address.
+ 
++MAX_PHYSMEM_BITS
++----------------
++
++Defines the maximum supported physical address space memory.
++
+ page
+ ----
+ 
 -- 
 2.7.4
 
