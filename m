@@ -2,64 +2,64 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68864C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 04:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B20C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:11:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A4161204FD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 04:03:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="KTiVe3qi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A4161204FD
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 83EC82184E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:11:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83EC82184E
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PGVz1XNBzDqGZ
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 15:03:39 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PJ1L6FkPzDqK5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:11:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.85.210.196; helo=mail-pf1-f196.google.com;
+ envelope-from=bhsharma@redhat.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
+ [209.85.210.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PGSj5pmzzDqDQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 15:01:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="KTiVe3qi"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44PGSj40p8z9sNG; Wed, 20 Mar 2019 15:01:41 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1553054501;
- bh=i+q3ncg5rMXnQKP4zF+foPUf24yofjvNNnWFeFxAfqk=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=KTiVe3qiq/W9oAXX67oNdf43Zv10wXaQuE3ZmJTHdQauPY5B2R1bamzt2e8trm787
- UlOmJ8t943+1zGzfCQxN8WCcffKKDwliDKDC5/wOLxEFuilElV6vJlnWANtJmI3ARg
- JfZ2flqDeCBPbTZkMthWondqEY1j9kdHluwDY0kY=
-Date: Wed, 20 Mar 2019 14:44:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@kaod.org>
-Subject: Re: [PATCH v3 06/17] KVM: PPC: Book3S HV: XIVE: add controls for the
- EQ configuration
-Message-ID: <20190320034429.GF31018@umbus.fritz.box>
-References: <20190315120609.25910-1-clg@kaod.org>
- <20190315120609.25910-7-clg@kaod.org>
- <20190318032348.GH6874@umbus.fritz.box>
- <8b3caeef-8750-b8db-d516-c722bc08c535@kaod.org>
- <20190319045455.GB31018@umbus.fritz.box>
- <3b59a5be-ebde-8b1b-36af-5336cfb35cb3@kaod.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="xaMk4Io5JJdpkLEb"
-Content-Disposition: inline
-In-Reply-To: <3b59a5be-ebde-8b1b-36af-5336cfb35cb3@kaod.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PHzK109kzDqDD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:09:46 +1100 (AEDT)
+Received: by mail-pf1-f196.google.com with SMTP id v21so1000422pfm.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:09:46 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=zRNsdf+V/AK4P0Z2aSwS4lRRtyqJz6mWGX6inLxUzcw=;
+ b=WfYU+9dgLT+63r3bAdx00jRKm0BtSSchz3U1BmaefarrTBwEV/GIDJ0LJD2MFcHGxV
+ Uvr3U/DWPhm7XyN/aZEgIyyCzgeURAiQGMeG0KopP0o8j/R7RnGd28aMyaH5JGGy8TK3
+ JFmsgg8aKsGmGRxi5yX4Nc9+3eASoRPG/SfBusGBr03pnCGxs05YnF+nJ7UkhkkZIkhy
+ x8Q+ipuf0CG0rxp6FVcAfS/oV1/1RFBOkNeMtQMeoxznEKS4wOENIjAWWzmPRt8GRQzQ
+ PNTe1YVjHleJSN7S3eryE2SWVgSNLtB8GZA/2wLq4jJ6kA7LYB3SKLkN1P/0OMT2l2CX
+ Tj8g==
+X-Gm-Message-State: APjAAAV8E9etEBkoUKcQAiWP3NTJe+Wch4bjFsdy242paP9bfmB6kAgr
+ JPXV8+CKxx+3Pgb59LVUpYl4aw==
+X-Google-Smtp-Source: APXvYqwPAI1uQcQkOu6TsbGPh4BpCrHfy7St/TgYZeLCzp0v/5kAh9lS3UJX6Bw722ElXp09XHgbpw==
+X-Received: by 2002:a17:902:2bab:: with SMTP id
+ l40mr5876361plb.273.1553058583841; 
+ Tue, 19 Mar 2019 22:09:43 -0700 (PDT)
+Received: from localhost ([122.177.144.121])
+ by smtp.gmail.com with ESMTPSA id p86sm1298564pfa.104.2019.03.19.22.09.42
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Tue, 19 Mar 2019 22:09:42 -0700 (PDT)
+From: Bhupesh Sharma <bhsharma@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/3] Append new variables to vmcoreinfo (PTRS_PER_PGD for
+ arm64 and MAX_PHYSMEM_BITS for all archs)
+Date: Wed, 20 Mar 2019 10:39:31 +0530
+Message-Id: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,497 +71,84 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
+ bhsharma@redhat.com, x86@kernel.org, Will Deacon <will.deacon@arm.com>,
+ linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
+ James Morse <james.morse@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ bhupesh.linux@gmail.com, Dave Anderson <anderson@redhat.com>,
+ Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Changes since v2:
+----------------
+- v2 can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
+- Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
+  ifdef sections, as suggested by Kazu.
+- Updated vmcoreinfo documentation to add description about
+  'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
 
---xaMk4Io5JJdpkLEb
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes since v1:
+----------------
+- v1 was sent out as a single patch which can be seen here:
+  http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
 
-On Tue, Mar 19, 2019 at 04:47:20PM +0100, C=E9dric Le Goater wrote:
-> On 3/19/19 5:54 AM, David Gibson wrote:
-> > On Mon, Mar 18, 2019 at 03:12:10PM +0100, C=E9dric Le Goater wrote:
-> >> On 3/18/19 4:23 AM, David Gibson wrote:
-> >>> On Fri, Mar 15, 2019 at 01:05:58PM +0100, C=E9dric Le Goater wrote:
-> >>>> These controls will be used by the H_INT_SET_QUEUE_CONFIG and
-> >>>> H_INT_GET_QUEUE_CONFIG hcalls from QEMU to configure the underlying
-> >>>> Event Queue in the XIVE IC. They will also be used to restore the
-> >>>> configuration of the XIVE EQs and to capture the internal run-time
-> >>>> state of the EQs. Both 'get' and 'set' rely on an OPAL call to access
-> >>>> the EQ toggle bit and EQ index which are updated by the XIVE IC when
-> >>>> event notifications are enqueued in the EQ.
-> >>>>
-> >>>> The value of the guest physical address of the event queue is saved =
-in
-> >>>> the XIVE internal xive_q structure for later use. That is when
-> >>>> migration needs to mark the EQ pages dirty to capture a consistent
-> >>>> memory state of the VM.
-> >>>>
-> >>>> To be noted that H_INT_SET_QUEUE_CONFIG does not require the extra
-> >>>> OPAL call setting the EQ toggle bit and EQ index to configure the EQ,
-> >>>> but restoring the EQ state will.
-> >>>>
-> >>>> Signed-off-by: C=E9dric Le Goater <clg@kaod.org>
-> >>>> ---
-> >>>>
-> >>>>  Changes since v2 :
-> >>>> =20
-> >>>>  - fixed comments on the KVM device attribute definitions
-> >>>>  - fixed check on supported EQ size to restrict to 64K pages
-> >>>>  - checked kvm_eq.flags that need to be zero
-> >>>>  - removed the OPAL call when EQ qtoggle bit and index are zero.=20
-> >>>>
-> >>>>  arch/powerpc/include/asm/xive.h            |   2 +
-> >>>>  arch/powerpc/include/uapi/asm/kvm.h        |  21 ++
-> >>>>  arch/powerpc/kvm/book3s_xive.h             |   2 +
-> >>>>  arch/powerpc/kvm/book3s_xive.c             |  15 +-
-> >>>>  arch/powerpc/kvm/book3s_xive_native.c      | 232 ++++++++++++++++++=
-+++
-> >>>>  Documentation/virtual/kvm/devices/xive.txt |  31 +++
-> >>>>  6 files changed, 297 insertions(+), 6 deletions(-)
-> >>>>
-> >>>> diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/=
-asm/xive.h
-> >>>> index b579a943407b..46891f321606 100644
-> >>>> --- a/arch/powerpc/include/asm/xive.h
-> >>>> +++ b/arch/powerpc/include/asm/xive.h
-> >>>> @@ -73,6 +73,8 @@ struct xive_q {
-> >>>>  	u32			esc_irq;
-> >>>>  	atomic_t		count;
-> >>>>  	atomic_t		pending_count;
-> >>>> +	u64			guest_qpage;
-> >>>> +	u32			guest_qsize;
-> >>>>  };
-> >>>> =20
-> >>>>  /* Global enable flags for the XIVE support */
-> >>>> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/incl=
-ude/uapi/asm/kvm.h
-> >>>> index 12bb01baf0ae..1cd728c87d7c 100644
-> >>>> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> >>>> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> >>>> @@ -679,6 +679,7 @@ struct kvm_ppc_cpu_char {
-> >>>>  #define KVM_DEV_XIVE_GRP_CTRL		1
-> >>>>  #define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source identifier */
-> >>>>  #define KVM_DEV_XIVE_GRP_SOURCE_CONFIG	3	/* 64-bit source identifie=
-r */
-> >>>> +#define KVM_DEV_XIVE_GRP_EQ_CONFIG	4	/* 64-bit EQ identifier */
-> >>>> =20
-> >>>>  /* Layout of 64-bit XIVE source attribute values */
-> >>>>  #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
-> >>>> @@ -694,4 +695,24 @@ struct kvm_ppc_cpu_char {
-> >>>>  #define KVM_XIVE_SOURCE_EISN_SHIFT	33
-> >>>>  #define KVM_XIVE_SOURCE_EISN_MASK	0xfffffffe00000000ULL
-> >>>> =20
-> >>>> +/* Layout of 64-bit EQ identifier */
-> >>>> +#define KVM_XIVE_EQ_PRIORITY_SHIFT	0
-> >>>> +#define KVM_XIVE_EQ_PRIORITY_MASK	0x7
-> >>>> +#define KVM_XIVE_EQ_SERVER_SHIFT	3
-> >>>> +#define KVM_XIVE_EQ_SERVER_MASK		0xfffffff8ULL
-> >>>> +
-> >>>> +/* Layout of EQ configuration values (64 bytes) */
-> >>>> +struct kvm_ppc_xive_eq {
-> >>>> +	__u32 flags;
-> >>>> +	__u32 qsize;
-> >>>> +	__u64 qpage;
-> >>>> +	__u32 qtoggle;
-> >>>> +	__u32 qindex;
-> >>>> +	__u8  pad[40];
-> >>>> +};
-> >>>> +
-> >>>> +#define KVM_XIVE_EQ_FLAG_ENABLED	0x00000001
-> >>>> +#define KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY	0x00000002
-> >>>> +#define KVM_XIVE_EQ_FLAG_ESCALATE	0x00000004
-> >>>> +
-> >>>>  #endif /* __LINUX_KVM_POWERPC_H */
-> >>>> diff --git a/arch/powerpc/kvm/book3s_xive.h b/arch/powerpc/kvm/book3=
-s_xive.h
-> >>>> index ae26fe653d98..622f594d93e1 100644
-> >>>> --- a/arch/powerpc/kvm/book3s_xive.h
-> >>>> +++ b/arch/powerpc/kvm/book3s_xive.h
-> >>>> @@ -272,6 +272,8 @@ struct kvmppc_xive_src_block *kvmppc_xive_create=
-_src_block(
-> >>>>  	struct kvmppc_xive *xive, int irq);
-> >>>>  void kvmppc_xive_free_sources(struct kvmppc_xive_src_block *sb);
-> >>>>  int kvmppc_xive_select_target(struct kvm *kvm, u32 *server, u8 prio=
-);
-> >>>> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
-> >>>> +				  bool single_escalation);
-> >>>> =20
-> >>>>  #endif /* CONFIG_KVM_XICS */
-> >>>>  #endif /* _KVM_PPC_BOOK3S_XICS_H */
-> >>>> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3=
-s_xive.c
-> >>>> index e09f3addffe5..c1b7aa7dbc28 100644
-> >>>> --- a/arch/powerpc/kvm/book3s_xive.c
-> >>>> +++ b/arch/powerpc/kvm/book3s_xive.c
-> >>>> @@ -166,7 +166,8 @@ static irqreturn_t xive_esc_irq(int irq, void *d=
-ata)
-> >>>>  	return IRQ_HANDLED;
-> >>>>  }
-> >>>> =20
-> >>>> -static int xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio)
-> >>>> +int kvmppc_xive_attach_escalation(struct kvm_vcpu *vcpu, u8 prio,
-> >>>> +				  bool single_escalation)
-> >>>>  {
-> >>>>  	struct kvmppc_xive_vcpu *xc =3D vcpu->arch.xive_vcpu;
-> >>>>  	struct xive_q *q =3D &xc->queues[prio];
-> >>>> @@ -185,7 +186,7 @@ static int xive_attach_escalation(struct kvm_vcp=
-u *vcpu, u8 prio)
-> >>>>  		return -EIO;
-> >>>>  	}
-> >>>> =20
-> >>>> -	if (xc->xive->single_escalation)
-> >>>> +	if (single_escalation)
-> >>>>  		name =3D kasprintf(GFP_KERNEL, "kvm-%d-%d",
-> >>>>  				 vcpu->kvm->arch.lpid, xc->server_num);
-> >>>>  	else
-> >>>> @@ -217,7 +218,7 @@ static int xive_attach_escalation(struct kvm_vcp=
-u *vcpu, u8 prio)
-> >>>>  	 * interrupt, thus leaving it effectively masked after
-> >>>>  	 * it fires once.
-> >>>>  	 */
-> >>>> -	if (xc->xive->single_escalation) {
-> >>>> +	if (single_escalation) {
-> >>>>  		struct irq_data *d =3D irq_get_irq_data(xc->esc_virq[prio]);
-> >>>>  		struct xive_irq_data *xd =3D irq_data_get_irq_handler_data(d);
-> >>>> =20
-> >>>> @@ -291,7 +292,8 @@ static int xive_check_provisioning(struct kvm *k=
-vm, u8 prio)
-> >>>>  			continue;
-> >>>>  		rc =3D xive_provision_queue(vcpu, prio);
-> >>>>  		if (rc =3D=3D 0 && !xive->single_escalation)
-> >>>> -			xive_attach_escalation(vcpu, prio);
-> >>>> +			kvmppc_xive_attach_escalation(vcpu, prio,
-> >>>> +						      xive->single_escalation);
-> >>>>  		if (rc)
-> >>>>  			return rc;
-> >>>>  	}
-> >>>> @@ -1214,7 +1216,8 @@ int kvmppc_xive_connect_vcpu(struct kvm_device=
- *dev,
-> >>>>  		if (xive->qmap & (1 << i)) {
-> >>>>  			r =3D xive_provision_queue(vcpu, i);
-> >>>>  			if (r =3D=3D 0 && !xive->single_escalation)
-> >>>> -				xive_attach_escalation(vcpu, i);
-> >>>> +				kvmppc_xive_attach_escalation(
-> >>>> +					vcpu, i, xive->single_escalation);
-> >>>>  			if (r)
-> >>>>  				goto bail;
-> >>>>  		} else {
-> >>>> @@ -1229,7 +1232,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device=
- *dev,
-> >>>>  	}
-> >>>> =20
-> >>>>  	/* If not done above, attach priority 0 escalation */
-> >>>> -	r =3D xive_attach_escalation(vcpu, 0);
-> >>>> +	r =3D kvmppc_xive_attach_escalation(vcpu, 0, xive->single_escalati=
-on);
-> >>>>  	if (r)
-> >>>>  		goto bail;
-> >>>> =20
-> >>>> diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kv=
-m/book3s_xive_native.c
-> >>>> index b841d339f674..42e824658a30 100644
-> >>>> --- a/arch/powerpc/kvm/book3s_xive_native.c
-> >>>> +++ b/arch/powerpc/kvm/book3s_xive_native.c
-> >>>> @@ -340,6 +340,226 @@ static int kvmppc_xive_native_set_source_confi=
-g(struct kvmppc_xive *xive,
-> >>>>  						       priority, masked, eisn);
-> >>>>  }
-> >>>> =20
-> >>>> +static int xive_native_validate_queue_size(u32 qsize)
-> >>>> +{
-> >>>> +	/*
-> >>>> +	 * We only support 64K pages for the moment. This is also
-> >>>> +	 * advertised in the DT property "ibm,xive-eq-sizes"
-> >>>
-> >>> IIUC, that won't work properly if you had a guest using 4kiB pages.
-> >>
-> >>> That's fine, but do we have somewhere that checks for that case and
-> >>> throws a suitable error?
-> >>
-> >> Not in the device.=20
-> >>
-> >> So, we should check the current page_size of the guest ? Is there a wa=
-y=20
-> >> to do that simply from KVM ?
-> >=20
-> > Not really.  But I think I know where to make the necessary test, see
-> > comment below..
-> >=20
-> >>>> +	 */
-> >>>> +	switch (qsize) {
-> >>>> +	case 0: /* EQ reset */
-> >>>> +	case 16:
-> >>>> +		return 0;
-> >>>> +	case 12:
-> >>>> +	case 21:
-> >>>> +	case 24:
-> >>>> +	default:
-> >>>> +		return -EINVAL;
-> >>>> +	}
-> >>>> +}
-> >>>> +
-> >>>> +static int kvmppc_xive_native_set_queue_config(struct kvmppc_xive *=
-xive,
-> >>>> +					       long eq_idx, u64 addr)
-> >>>> +{
-> >>>> +	struct kvm *kvm =3D xive->kvm;
-> >>>> +	struct kvm_vcpu *vcpu;
-> >>>> +	struct kvmppc_xive_vcpu *xc;
-> >>>> +	void __user *ubufp =3D (u64 __user *) addr;
-> >>>
-> >>> Nit: that should be (void __user *) on the right, shouldn't it?
-> >>
-> >> yes.
-> >>
-> >>>
-> >>>> +	u32 server;
-> >>>> +	u8 priority;
-> >>>> +	struct kvm_ppc_xive_eq kvm_eq;
-> >>>> +	int rc;
-> >>>> +	__be32 *qaddr =3D 0;
-> >>>> +	struct page *page;
-> >>>> +	struct xive_q *q;
-> >>>> +
-> >>>> +	/*
-> >>>> +	 * Demangle priority/server tuple from the EQ identifier
-> >>>> +	 */
-> >>>> +	priority =3D (eq_idx & KVM_XIVE_EQ_PRIORITY_MASK) >>
-> >>>> +		KVM_XIVE_EQ_PRIORITY_SHIFT;
-> >>>> +	server =3D (eq_idx & KVM_XIVE_EQ_SERVER_MASK) >>
-> >>>> +		KVM_XIVE_EQ_SERVER_SHIFT;
-> >>>> +
-> >>>> +	if (copy_from_user(&kvm_eq, ubufp, sizeof(kvm_eq)))
-> >>>> +		return -EFAULT;
-> >>>> +
-> >>>> +	vcpu =3D kvmppc_xive_find_server(kvm, server);
-> >>>> +	if (!vcpu) {
-> >>>> +		pr_err("Can't find server %d\n", server);
-> >>>> +		return -ENOENT;
-> >>>> +	}
-> >>>> +	xc =3D vcpu->arch.xive_vcpu;
-> >>>> +
-> >>>> +	if (priority !=3D xive_prio_from_guest(priority)) {
-> >>>> +		pr_err("Trying to restore invalid queue %d for VCPU %d\n",
-> >>>> +		       priority, server);
-> >>>> +		return -EINVAL;
-> >>>> +	}
-> >>>> +	q =3D &xc->queues[priority];
-> >>>> +
-> >>>> +	pr_devel("%s VCPU %d priority %d fl:%x sz:%d addr:%llx g:%d idx:%d=
-\n",
-> >>>> +		 __func__, server, priority, kvm_eq.flags,
-> >>>> +		 kvm_eq.qsize, kvm_eq.qpage, kvm_eq.qtoggle, kvm_eq.qindex);
-> >>>> +
-> >>>> +	/*
-> >>>> +	 * We can not tune the EQ configuration from user space. All
-> >>>> +	 * is done in OPAL.
-> >>>> +	 */
-> >>>> +	if (kvm_eq.flags !=3D 0) {
-> >>>> +		pr_err("invalid flags %d\n", kvm_eq.flags);
-> >>>> +		return -EINVAL;
-> >>>> +	}
-> >>>> +
-> >>>> +	rc =3D xive_native_validate_queue_size(kvm_eq.qsize);
-> >>>> +	if (rc) {
-> >>>> +		pr_err("invalid queue size %d\n", kvm_eq.qsize);
-> >>>> +		return rc;
-> >>>> +	}
-> >>>> +
-> >>>> +	/* reset queue and disable queueing */
-> >>>> +	if (!kvm_eq.qsize) {
-> >>>> +		q->guest_qpage =3D 0;
-> >>>> +		q->guest_qsize =3D 0;
-> >>>> +
-> >>>> +		rc =3D xive_native_configure_queue(xc->vp_id, q, priority,
-> >>>> +						 NULL, 0, true);
-> >>>> +		if (rc) {
-> >>>> +			pr_err("Failed to reset queue %d for VCPU %d: %d\n",
-> >>>> +			       priority, xc->server_num, rc);
-> >>>> +			return rc;
-> >>>> +		}
-> >>>> +
-> >>>> +		if (q->qpage) {
-> >>>> +			put_page(virt_to_page(q->qpage));
-> >>>> +			q->qpage =3D NULL;
-> >>>> +		}
-> >>>> +
-> >>>> +		return 0;
-> >>>> +	}
-> >>>> +
-> >>>> +
-> >>>> +	page =3D gfn_to_page(kvm, gpa_to_gfn(kvm_eq.qpage));
-> >>>> +	if (is_error_page(page)) {
-> >>>> +		pr_warn("Couldn't get guest page for %llx!\n", kvm_eq.qpage);
-> >>>> +		return -EINVAL;
-> >>>> +	}
-> >>>
-> >>> Yeah.. for the case of a 4kiB page host (these days weird, but not
-> >>> actually prohibited, AFAIK) you need to check that the qsize selected
-> >>> actually fits within the page.
-> >>
-> >> Ah yes. sure.
-> >=20
-> > I think the pagesize test belongs here.  Rather than thinking about
-> > the pagesize of the guest overall, you can check that this specific
-> > page (possibly compound) is large enough to take the requested queue
-> > size.
->=20
-> OK. It think kvm_host_page_size() is what we need. It returns the page
-> size of the underlying VMA of the memblock holding the gfn. So I am going=
-=20
-> to add :
+- v2 breaks the single patch into two independent patches:
+  [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, whereas
+  [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel code (all archs)
 
-Yes, that sounds good.
+This patchset primarily fixes the regression reported in user-space
+utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
+with the availability of 52-bit address space feature in underlying
+kernel. These regressions have been reported both on CPUs which don't
+support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
+and also on prototype platforms (like ARMv8 FVP simulator model) which
+support ARMv8.2 extensions and are running newer kernels.
 
-> +	page_size =3D kvm_host_page_size(kvm, gfn);
-> +	if (1ull << kvm_eq.qshift > page_size) {
-> +		pr_warn("Incompatible host page size %lx!\n", page_size);
-> +		return -EINVAL;
-> +	}
-> +
->=20
-> Also I am renaming 'qsize' in 'qshift' and renaming 'qpage' to 'qaddr'.
->=20
-> > That should be enough to protect the host - it ensures that userspace
-> > owns a suitable contiguous chunk of memory for the XIVE to write the
-> > queue into.
-> >=20
-> > It's possible there are weirder edge cases with a large page that's
-> > not fully mapped into the guest - if necessary we can add tests for
-> > that on the qemu side.
-> >=20
-> > Oh.. it occurs to me that we might need to pin the queue page to make
-> > sure it doesn't get swapped out or page-migrated while the XIVE holds
-> > a pointer to it
->=20
-> That is what gfn_to_page() ends up doing by calling hva_to_pfn().
+The reason for these regressions is that right now user-space tools
+have no direct access to these values (since these are not exported
+from the kernel) and hence need to rely on a best-guess method of
+determining value of 'PTRS_PER_PGD' and 'MAX_PHYSMEM_BITS' supported
+by underlying kernel.
 
-Ah, ok.
+Exporting these values via vmcoreinfo will help user-land in such cases.
+In addition, as per suggestion from makedumpfile maintainer (Kazu),
+it makes more sense to append 'MAX_PHYSMEM_BITS' to
+vmcoreinfo in the core code itself rather than in arm64 arch-specific
+code, so that the user-space code for other archs can also benefit from
+this addition to the vmcoreinfo and use it as a standard way of
+determining 'SECTIONS_SHIFT' value in user-land.
 
-> >>>> +	/*
-> >>>> +	 * Return some information on the EQ configuration in
-> >>>> +	 * OPAL. This is purely informative for now as we can't really
-> >>>> +	 * tune the EQ configuration from user space.
-> >>>> +	 */
-> >>>> +	kvm_eq.flags =3D 0;
-> >>>> +	if (qflags & OPAL_XIVE_EQ_ENABLED)
-> >>>> +		kvm_eq.flags |=3D KVM_XIVE_EQ_FLAG_ENABLED;
-> >>>> +	if (qflags & OPAL_XIVE_EQ_ALWAYS_NOTIFY)
-> >>>> +		kvm_eq.flags |=3D KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY;
-> >>>> +	if (qflags & OPAL_XIVE_EQ_ESCALATE)
-> >>>> +		kvm_eq.flags |=3D KVM_XIVE_EQ_FLAG_ESCALATE;
-> >>>
-> >>> If there's not really anything it can do about it, does it make sense
-> >>> to even expose this info to userspace?
-> >>
-> >> Hmm, good question.=20
-> >>
-> >>  - KVM_XIVE_EQ_FLAG_ENABLED	=09
-> >> 	may be uselessly obvious.
-> >=20
-> > What's it controlled by?
->=20
-> OPAL only. It's equivalent to the VALID bit in the XIVE END structure.=20
-> We can drop this one.=20
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: James Morse <james.morse@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Boris Petkov <bp@alien8.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Dave Anderson <anderson@redhat.com>
+Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+Cc: x86@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: kexec@lists.infradead.org
 
-Ok.
+Bhupesh Sharma (3):
+  arm64, vmcoreinfo : Append 'PTRS_PER_PGD' to vmcoreinfo
+  crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+  Documentation/vmcoreinfo: Add documentation for 'MAX_PHYSMEM_BITS'
 
-> >>  - KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY =09
-> >> 	means we do not use the END ESBs to coalesce the events at the END
-> >> 	level. This flag is reflected by the XIVE_EQ_ALWAYS_NOTIFY option
-> >> 	in the sPAPR specs. We don't support the END ESBs but we might one
-> >> 	day.
-> >=20
-> > Since the guest isn't currently permitted to set this, it should never
-> > be set here either, no?
->=20
-> The OS does not support the END ESBs so this flag is always set in the=20
-> Linux XIVE driver. END ESBs are supported in the emulated device but not=
-=20
-> in KVM/OPAL.
+ Documentation/kdump/vmcoreinfo.txt | 5 +++++
+ arch/arm64/kernel/crash_core.c     | 1 +
+ kernel/crash_core.c                | 1 +
+ 3 files changed, 7 insertions(+)
 
-Ok, it's reasonable to keep this then.
+-- 
+2.7.4
 
-> >>  - KVM_XIVE_EQ_FLAG_ESCALATE
-> >> 	means the EQ is an escalation. QEMU doesn't really care for now=20
-> >> 	but it's an important information I think.
-> >=20
-> > Likewise this one, yes?
->=20
-> That is an hypervisor information on the nature of the EQ, so it is=20
-> for QEMU and not the guest. I am not sure it is important today as
-> we don't support escalation in QEMU. May be drop ?=20
-
-Yes, I think drop it.  We can add something later if we have a
-concrete use case for it.
-
-> >> I tried not to add too many of the END flags, only the relevant ones w=
-hich
-> >> could have an impact in the future modeling. =20
-> >>
-> >> I think KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY is important. I was setting it =
-=66rom
-> >> QEMU in the hcall but as OPAL does the same blindly I removed it in
-> >> v3.
-> >=20
-> > So, I might have misinterpreted this a bit the first time around.  Am
-> > I correct in thinking that these bits all correspond to defined
-> > options in the PAPR hcall
->=20
-> Yes for KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY which is the only flag defined=20
-> in sPAPR.=20
->=20
-> > - but that for now we don't allow guests to
-> > set them (because we haven't implemented support so far).
->=20
-> It's a bit more complex.
->=20
-> KVM_XIVE_EQ_FLAG_ALWAYS_NOTIFY is a "required" flag as the OS does not=20
-> support END ESBs. END ESBs are not supported in KVM/OPAL but they are=20
-> in the QEMU device.=20
-
-So, the (current) guest needs this behaviour, but I'm guessing PAPR
-doesn't require it.  Is this behaviour configurable in the PAPR interface?
-
-> I think it would be good for consistency to set KVM_XIVE_EQ_FLAG_ALWAYS_N=
-OTIFY
-> when calling kvmppc_xive_native_get_queue_config() from QEMU, as I did=20
-> in v2. But as OPAL forces the same behavior without any flag, it is not=
-=20
-> really needed at the KVM level ...
->=20
-> Please tell me.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---xaMk4Io5JJdpkLEb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyRtxsACgkQbDjKyiDZ
-s5LzpRAAnT7Kg+eKMIsKaU7/XY86AJgzwdyCxkZ8N17AlJnEelYNH5/EUm2PMHiB
-0rtJaWOESkzxZAmmMu4/peVFVHAgb2tvtr4oZHYlaWRPNWNocJhCeC/LNTvcgC7k
-C9dsCevbgczb6l9sodIi+9grp2VHXEiQRMIzY6HMvYiNlPo9YZ8sw3l7xTvvM4ZR
-mRFDEtPFW4N8fROAUrZ7bb14r6RCwGVEE/276lgSwkoiS332l5LBjeM69tReqIj4
-EaENMC2kFdjp4fm1eZBpqugUPYYuX9ZczjxnhJPO+rh72OABr/a3onbYHZ+t43hm
-hQECM1rXQt5cf5Vh3/jfRYKYTDe/m82tCDHEdMfIJIoHxxhLxTSRAyCpP1AWUqX2
-BIxts/7F07DyHkw1pxwCmvPmuGCKr+Uav8pyFnymUrHnJJbObD1zxruMsEJMUkwf
-xNtd3gg6qjwKwXTkUgoZUIMa40ZShhWr0bDR9dfNQRjQX31i8DdgTsIYMcOSE+Hz
-XQGFkrK9JNzNSvAZgefa7mrs9HL+TzMWQq4ax5V20nfFYT9wzP32FiDvKE4BFyKu
-f0+Ge22zks/Xv0ZUM6o13aJ+D0IIcgwLysGu7aO12fHXptTPmpG2YXRnmS4lY36a
-BFrxwrLkP4JPvmDwJKOdjCoBhkoxek2VXuTzRQo8lSIkTDHPsUA=
-=/UeX
------END PGP SIGNATURE-----
-
---xaMk4Io5JJdpkLEb--
