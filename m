@@ -2,64 +2,67 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-14.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44B20C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:11:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC93DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:13:10 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 83EC82184E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:11:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 83EC82184E
+	by mail.kernel.org (Postfix) with ESMTPS id 41E642175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:13:10 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 41E642175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PJ1L6FkPzDqK5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:11:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PJ380PrmzDqJs
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:13:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.85.210.196; helo=mail-pf1-f196.google.com;
+ (client-ip=209.85.210.193; helo=mail-pf1-f193.google.com;
  envelope-from=bhsharma@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mail-pf1-f196.google.com (mail-pf1-f196.google.com
- [209.85.210.196])
+Received: from mail-pf1-f193.google.com (mail-pf1-f193.google.com
+ [209.85.210.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PHzK109kzDqDD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:09:46 +1100 (AEDT)
-Received: by mail-pf1-f196.google.com with SMTP id v21so1000422pfm.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:09:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PHzP4RNszDqCg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:09:52 +1100 (AEDT)
+Received: by mail-pf1-f193.google.com with SMTP id i17so1021042pfo.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Mar 2019 22:09:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id;
- bh=zRNsdf+V/AK4P0Z2aSwS4lRRtyqJz6mWGX6inLxUzcw=;
- b=WfYU+9dgLT+63r3bAdx00jRKm0BtSSchz3U1BmaefarrTBwEV/GIDJ0LJD2MFcHGxV
- Uvr3U/DWPhm7XyN/aZEgIyyCzgeURAiQGMeG0KopP0o8j/R7RnGd28aMyaH5JGGy8TK3
- JFmsgg8aKsGmGRxi5yX4Nc9+3eASoRPG/SfBusGBr03pnCGxs05YnF+nJ7UkhkkZIkhy
- x8Q+ipuf0CG0rxp6FVcAfS/oV1/1RFBOkNeMtQMeoxznEKS4wOENIjAWWzmPRt8GRQzQ
- PNTe1YVjHleJSN7S3eryE2SWVgSNLtB8GZA/2wLq4jJ6kA7LYB3SKLkN1P/0OMT2l2CX
- Tj8g==
-X-Gm-Message-State: APjAAAV8E9etEBkoUKcQAiWP3NTJe+Wch4bjFsdy242paP9bfmB6kAgr
- JPXV8+CKxx+3Pgb59LVUpYl4aw==
-X-Google-Smtp-Source: APXvYqwPAI1uQcQkOu6TsbGPh4BpCrHfy7St/TgYZeLCzp0v/5kAh9lS3UJX6Bw722ElXp09XHgbpw==
-X-Received: by 2002:a17:902:2bab:: with SMTP id
- l40mr5876361plb.273.1553058583841; 
- Tue, 19 Mar 2019 22:09:43 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references;
+ bh=e4gf7gQQRDrHYkHmBGmiy/271ro0jZqvmttHmTXDjOw=;
+ b=W7X7jnvudc+Z41o1Jn9xd/1R+ApkEEmAbo+rJY8X+P8wR4E12IeJOxAqusimXMIE3K
+ xEYjiKoXWwCqC/uNZpNgsL8hSE3KVaJnLSFbcpuLNjUEc7RSKWTyvpXc5BNjFxRqyZ7t
+ WSUN2YdXZNWErtz19QUJyH4cxwyYlUACSpOsRVIO1Gq6lg+BQZxQSeBjJDhQ8jmRsBxZ
+ Igf6aAubVoGAsGkuABIDDwnumZhYXkFtB50P5/phWNSAxtbVj9TjFk9Dbb4A0+WDI2SK
+ suxPqOfXSPiVzf0hfXV7aGsdIAw0aPjVq1qsbqvJ7oJyylQWEvVuEzPaNyzktvV0Ue97
+ Pv8A==
+X-Gm-Message-State: APjAAAU7InmNhOWtyiTSud+q7wYhHRAF8wWnjSfb52KfWqITmKyzpGRC
+ ceO14F1CHrqAwQKeOKgPCqeNNg==
+X-Google-Smtp-Source: APXvYqwquzJ/LobGlm7cNilKJM6zRdniDHacYy1BqPtGwxNdqRtts7VAQpU4ybvYWD6CVPzQvfam4A==
+X-Received: by 2002:a63:e002:: with SMTP id e2mr5901612pgh.300.1553058590559; 
+ Tue, 19 Mar 2019 22:09:50 -0700 (PDT)
 Received: from localhost ([122.177.144.121])
- by smtp.gmail.com with ESMTPSA id p86sm1298564pfa.104.2019.03.19.22.09.42
+ by smtp.gmail.com with ESMTPSA id e123sm958508pfe.35.2019.03.19.22.09.48
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Tue, 19 Mar 2019 22:09:42 -0700 (PDT)
+ Tue, 19 Mar 2019 22:09:49 -0700 (PDT)
 From: Bhupesh Sharma <bhsharma@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 0/3] Append new variables to vmcoreinfo (PTRS_PER_PGD for
- arm64 and MAX_PHYSMEM_BITS for all archs)
-Date: Wed, 20 Mar 2019 10:39:31 +0530
-Message-Id: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
+Subject: [PATCH v3 2/3] crash_core,
+ vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
+Date: Wed, 20 Mar 2019 10:39:33 +0530
+Message-Id: <1553058574-18606-3-git-send-email-bhsharma@redhat.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
+References: <1553058574-18606-1-git-send-email-bhsharma@redhat.com>
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,63 +74,50 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>,
- bhsharma@redhat.com, x86@kernel.org, Will Deacon <will.deacon@arm.com>,
- linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- James Morse <james.morse@arm.com>, linux-arm-kernel@lists.infradead.org,
- Boris Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- bhupesh.linux@gmail.com, Dave Anderson <anderson@redhat.com>,
- Ingo Molnar <mingo@kernel.org>, Paul Mackerras <paulus@samba.org>
+Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>, bhsharma@redhat.com, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org, James Morse <james.morse@arm.com>,
+ linux-arm-kernel@lists.infradead.org, Boris Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>, bhupesh.linux@gmail.com,
+ Dave Anderson <anderson@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Changes since v2:
-----------------
-- v2 can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-March/022531.html
-- Protected 'MAX_PHYSMEM_BITS' vmcoreinfo variable under CONFIG_SPARSEMEM
-  ifdef sections, as suggested by Kazu.
-- Updated vmcoreinfo documentation to add description about
-  'MAX_PHYSMEM_BITS' variable (via [PATCH 3/3]).
+Right now user-space tools like 'makedumpfile' and 'crash' need to rely
+on a best-guess method of determining value of 'MAX_PHYSMEM_BITS'
+supported by underlying kernel.
 
-Changes since v1:
-----------------
-- v1 was sent out as a single patch which can be seen here:
-  http://lists.infradead.org/pipermail/kexec/2019-February/022411.html
+This value is used in user-space code to calculate the bit-space
+required to store a section for SPARESMEM (similar to the existing
+calculation method used in the kernel implementation):
 
-- v2 breaks the single patch into two independent patches:
-  [PATCH 1/2] appends 'PTRS_PER_PGD' to vmcoreinfo for arm64 arch, whereas
-  [PATCH 2/2] appends 'MAX_PHYSMEM_BITS' to vmcoreinfo in core kernel code (all archs)
+  #define SECTIONS_SHIFT    (MAX_PHYSMEM_BITS - SECTION_SIZE_BITS)
 
-This patchset primarily fixes the regression reported in user-space
-utilities like 'makedumpfile' and 'crash-utility' on arm64 architecture
-with the availability of 52-bit address space feature in underlying
-kernel. These regressions have been reported both on CPUs which don't
-support ARMv8.2 extensions (i.e. LVA, LPA) and are running newer kernels
-and also on prototype platforms (like ARMv8 FVP simulator model) which
-support ARMv8.2 extensions and are running newer kernels.
+Now, regressions have been reported in user-space utilities
+like 'makedumpfile' and 'crash' on arm64, with the recently added
+kernel support for 52-bit physical address space, as there is
+no clear method of determining this value in user-space
+(other than reading kernel CONFIG flags).
 
-The reason for these regressions is that right now user-space tools
-have no direct access to these values (since these are not exported
-from the kernel) and hence need to rely on a best-guess method of
-determining value of 'PTRS_PER_PGD' and 'MAX_PHYSMEM_BITS' supported
-by underlying kernel.
+As per suggestion from makedumpfile maintainer (Kazu), it makes more
+sense to append 'MAX_PHYSMEM_BITS' to vmcoreinfo in the core code itself
+rather than in arch-specific code, so that the user-space code for other
+archs can also benefit from this addition to the vmcoreinfo and use it
+as a standard way of determining 'SECTIONS_SHIFT' value in user-land.
 
-Exporting these values via vmcoreinfo will help user-land in such cases.
-In addition, as per suggestion from makedumpfile maintainer (Kazu),
-it makes more sense to append 'MAX_PHYSMEM_BITS' to
-vmcoreinfo in the core code itself rather than in arm64 arch-specific
-code, so that the user-space code for other archs can also benefit from
-this addition to the vmcoreinfo and use it as a standard way of
-determining 'SECTIONS_SHIFT' value in user-land.
+A reference 'makedumpfile' implementation which reads the
+'MAX_PHYSMEM_BITS' value from vmcoreinfo in a arch-independent fashion
+is available here:
 
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: James Morse <james.morse@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
+[0]. https://github.com/bhupesh-sharma/makedumpfile/blob/remove-max-phys-mem-bit-v1/arch/ppc64.c#L471
+
 Cc: Boris Petkov <bp@alien8.de>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: James Morse <james.morse@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -138,17 +128,23 @@ Cc: linuxppc-dev@lists.ozlabs.org
 Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 Cc: kexec@lists.infradead.org
+Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
+---
+ kernel/crash_core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Bhupesh Sharma (3):
-  arm64, vmcoreinfo : Append 'PTRS_PER_PGD' to vmcoreinfo
-  crash_core, vmcoreinfo: Append 'MAX_PHYSMEM_BITS' to vmcoreinfo
-  Documentation/vmcoreinfo: Add documentation for 'MAX_PHYSMEM_BITS'
-
- Documentation/kdump/vmcoreinfo.txt | 5 +++++
- arch/arm64/kernel/crash_core.c     | 1 +
- kernel/crash_core.c                | 1 +
- 3 files changed, 7 insertions(+)
-
+diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+index 093c9f917ed0..495f09084696 100644
+--- a/kernel/crash_core.c
++++ b/kernel/crash_core.c
+@@ -415,6 +415,7 @@ static int __init crash_save_vmcoreinfo_init(void)
+ 	VMCOREINFO_LENGTH(mem_section, NR_SECTION_ROOTS);
+ 	VMCOREINFO_STRUCT_SIZE(mem_section);
+ 	VMCOREINFO_OFFSET(mem_section, section_mem_map);
++	VMCOREINFO_NUMBER(MAX_PHYSMEM_BITS);
+ #endif
+ 	VMCOREINFO_STRUCT_SIZE(page);
+ 	VMCOREINFO_STRUCT_SIZE(pglist_data);
 -- 
 2.7.4
 
