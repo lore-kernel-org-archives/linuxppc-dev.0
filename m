@@ -3,53 +3,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4F68C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:50:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 33779C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:51:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2C9DF21841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:50:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2C9DF21841
+	by mail.kernel.org (Postfix) with ESMTPS id A49FC2175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:51:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A49FC2175B
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PNsP1kQVzDqLr
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:50:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PNvX4Xz4zDqMl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:51:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.111.180; helo=1.mo173.mail-out.ovh.net;
+ (client-ip=46.105.74.148; helo=10.mo173.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 1.mo173.mail-out.ovh.net (1.mo173.mail-out.ovh.net
- [178.33.111.180])
+X-Greylist: delayed 60695 seconds by postgrey-1.36 at bilbo;
+ Wed, 20 Mar 2019 19:39:11 AEDT
+Received: from 10.mo173.mail-out.ovh.net (10.mo173.mail-out.ovh.net
+ [46.105.74.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PNck5tFlzDqJ2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:39:01 +1100 (AEDT)
-Received: from player787.ha.ovh.net (unknown [10.109.160.232])
- by mo173.mail-out.ovh.net (Postfix) with ESMTP id 8B429F4944
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:38:57 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PNcv5zM1zDqFL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:39:10 +1100 (AEDT)
+Received: from player787.ha.ovh.net (unknown [10.109.146.50])
+ by mo173.mail-out.ovh.net (Postfix) with ESMTP id 07EF7FAA3F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:39:05 +0100 (CET)
 Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
  (Authenticated sender: clg@kaod.org)
- by player787.ha.ovh.net (Postfix) with ESMTPSA id 0A80F3F3B0BA;
- Wed, 20 Mar 2019 08:38:50 +0000 (UTC)
+ by player787.ha.ovh.net (Postfix) with ESMTPSA id 92D303F3B188;
+ Wed, 20 Mar 2019 08:38:57 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 07/17] KVM: PPC: Book3S HV: XIVE: add a global reset control
-Date: Wed, 20 Mar 2019 09:37:41 +0100
-Message-Id: <20190320083751.27001-8-clg@kaod.org>
+Subject: [PATCH v4 08/17] KVM: PPC: Book3S HV: XIVE: add a control to sync the
+ sources
+Date: Wed, 20 Mar 2019 09:37:42 +0100
+Message-Id: <20190320083751.27001-9-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190320083751.27001-1-clg@kaod.org>
 References: <20190320083751.27001-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 18167802373236427735
+X-Ovh-Tracer-Id: 18170054174521068503
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrieehgdduvdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -71,17 +74,8 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This control is to be used by the H_INT_RESET hcall from QEMU. Its
-purpose is to clear all configuration of the sources and EQs. This is
-necessary in case of a kexec (for a kdump kernel for instance) to make
-sure that no remaining configuration is left from the previous boot
-setup so that the new kernel can start safely from a clean state.
-
-The queue 7 is ignored when the XIVE device is configured to run in
-single escalation mode. Prio 7 is used by escalations.
-
-The XIVE VP is kept enabled as the vCPU is still active and connected
-to the XIVE device.
+This control will be used by the H_INT_SYNC hcall from QEMU to flush
+event notifications on the XIVE IC owning the source.
 
 Signed-off-by: Cédric Le Goater <clg@kaod.org>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
@@ -92,148 +86,99 @@ Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
  - fixed locking on source block
 
  arch/powerpc/include/uapi/asm/kvm.h        |  1 +
- arch/powerpc/kvm/book3s_xive_native.c      | 85 ++++++++++++++++++++++
- Documentation/virtual/kvm/devices/xive.txt |  5 ++
- 3 files changed, 91 insertions(+)
+ arch/powerpc/kvm/book3s_xive_native.c      | 36 ++++++++++++++++++++++
+ Documentation/virtual/kvm/devices/xive.txt |  8 +++++
+ 3 files changed, 45 insertions(+)
 
 diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-index 85005400fd86..f045f9dee42e 100644
+index f045f9dee42e..e4abe30f6fc6 100644
 --- a/arch/powerpc/include/uapi/asm/kvm.h
 +++ b/arch/powerpc/include/uapi/asm/kvm.h
-@@ -679,6 +679,7 @@ struct kvm_ppc_cpu_char {
- 
- /* POWER9 XIVE Native Interrupt Controller */
- #define KVM_DEV_XIVE_GRP_CTRL		1
-+#define   KVM_DEV_XIVE_RESET		1
+@@ -683,6 +683,7 @@ struct kvm_ppc_cpu_char {
  #define KVM_DEV_XIVE_GRP_SOURCE		2	/* 64-bit source identifier */
  #define KVM_DEV_XIVE_GRP_SOURCE_CONFIG	3	/* 64-bit source identifier */
  #define KVM_DEV_XIVE_GRP_EQ_CONFIG	4	/* 64-bit EQ identifier */
++#define KVM_DEV_XIVE_GRP_SOURCE_SYNC	5       /* 64-bit source identifier */
+ 
+ /* Layout of 64-bit XIVE source attribute values */
+ #define KVM_XIVE_LEVEL_SENSITIVE	(1ULL << 0)
 diff --git a/arch/powerpc/kvm/book3s_xive_native.c b/arch/powerpc/kvm/book3s_xive_native.c
-index 2c335454da72..b54d6fa978fe 100644
+index b54d6fa978fe..d45dc2ec0557 100644
 --- a/arch/powerpc/kvm/book3s_xive_native.c
 +++ b/arch/powerpc/kvm/book3s_xive_native.c
-@@ -565,6 +565,83 @@ static int kvmppc_xive_native_get_queue_config(struct kvmppc_xive *xive,
- 	return 0;
+@@ -335,6 +335,38 @@ static int kvmppc_xive_native_set_source_config(struct kvmppc_xive *xive,
+ 						       priority, masked, eisn);
  }
  
-+static void kvmppc_xive_reset_sources(struct kvmppc_xive_src_block *sb)
++static int kvmppc_xive_native_sync_source(struct kvmppc_xive *xive,
++					  long irq, u64 addr)
 +{
-+	int i;
++	struct kvmppc_xive_src_block *sb;
++	struct kvmppc_xive_irq_state *state;
++	struct xive_irq_data *xd;
++	u32 hw_num;
++	u16 src;
++	int rc = 0;
 +
-+	for (i = 0; i < KVMPPC_XICS_IRQ_PER_ICS; i++) {
-+		struct kvmppc_xive_irq_state *state = &sb->irq_state[i];
++	pr_devel("%s irq=0x%lx", __func__, irq);
 +
-+		if (!state->valid)
-+			continue;
++	sb = kvmppc_xive_find_source(xive, irq, &src);
++	if (!sb)
++		return -ENOENT;
 +
-+		if (state->act_priority == MASKED)
-+			continue;
++	state = &sb->irq_state[src];
 +
-+		state->eisn = 0;
-+		state->act_server = 0;
-+		state->act_priority = MASKED;
-+		xive_vm_esb_load(&state->ipi_data, XIVE_ESB_SET_PQ_01);
-+		xive_native_configure_irq(state->ipi_number, 0, MASKED, 0);
-+		if (state->pt_number) {
-+			xive_vm_esb_load(state->pt_data, XIVE_ESB_SET_PQ_01);
-+			xive_native_configure_irq(state->pt_number,
-+						  0, MASKED, 0);
-+		}
++	rc = -EINVAL;
++
++	arch_spin_lock(&sb->lock);
++
++	if (state->valid) {
++		kvmppc_xive_select_irq(state, &hw_num, &xd);
++		xive_native_sync_source(hw_num);
++		rc = 0;
 +	}
++
++	arch_spin_unlock(&sb->lock);
++	return rc;
 +}
 +
-+static int kvmppc_xive_reset(struct kvmppc_xive *xive)
-+{
-+	struct kvm *kvm = xive->kvm;
-+	struct kvm_vcpu *vcpu;
-+	unsigned int i;
-+
-+	pr_devel("%s\n", __func__);
-+
-+	mutex_lock(&kvm->lock);
-+
-+	kvm_for_each_vcpu(i, vcpu, kvm) {
-+		struct kvmppc_xive_vcpu *xc = vcpu->arch.xive_vcpu;
-+		unsigned int prio;
-+
-+		if (!xc)
-+			continue;
-+
-+		kvmppc_xive_disable_vcpu_interrupts(vcpu);
-+
-+		for (prio = 0; prio < KVMPPC_XIVE_Q_COUNT; prio++) {
-+
-+			/* Single escalation, no queue 7 */
-+			if (prio == 7 && xive->single_escalation)
-+				break;
-+
-+			if (xc->esc_virq[prio]) {
-+				free_irq(xc->esc_virq[prio], vcpu);
-+				irq_dispose_mapping(xc->esc_virq[prio]);
-+				kfree(xc->esc_virq_names[prio]);
-+				xc->esc_virq[prio] = 0;
-+			}
-+
-+			kvmppc_xive_native_cleanup_queue(vcpu, prio);
-+		}
-+	}
-+
-+	for (i = 0; i <= xive->max_sbid; i++) {
-+		struct kvmppc_xive_src_block *sb = xive->src_blocks[i];
-+
-+		if (sb) {
-+			arch_spin_lock(&sb->lock);
-+			kvmppc_xive_reset_sources(sb);
-+			arch_spin_unlock(&sb->lock);
-+		}
-+	}
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return 0;
-+}
-+
- static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
- 				       struct kvm_device_attr *attr)
+ static int xive_native_validate_queue_size(u32 qshift)
  {
-@@ -572,6 +649,10 @@ static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
- 
- 	switch (attr->group) {
- 	case KVM_DEV_XIVE_GRP_CTRL:
-+		switch (attr->attr) {
-+		case KVM_DEV_XIVE_RESET:
-+			return kvmppc_xive_reset(xive);
-+		}
- 		break;
- 	case KVM_DEV_XIVE_GRP_SOURCE:
- 		return kvmppc_xive_native_set_source(xive, attr->attr,
-@@ -604,6 +685,10 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
- {
- 	switch (attr->group) {
- 	case KVM_DEV_XIVE_GRP_CTRL:
-+		switch (attr->attr) {
-+		case KVM_DEV_XIVE_RESET:
-+			return 0;
-+		}
+ 	/*
+@@ -663,6 +695,9 @@ static int kvmppc_xive_native_set_attr(struct kvm_device *dev,
+ 	case KVM_DEV_XIVE_GRP_EQ_CONFIG:
+ 		return kvmppc_xive_native_set_queue_config(xive, attr->attr,
+ 							   attr->addr);
++	case KVM_DEV_XIVE_GRP_SOURCE_SYNC:
++		return kvmppc_xive_native_sync_source(xive, attr->attr,
++						      attr->addr);
+ 	}
+ 	return -ENXIO;
+ }
+@@ -692,6 +727,7 @@ static int kvmppc_xive_native_has_attr(struct kvm_device *dev,
  		break;
  	case KVM_DEV_XIVE_GRP_SOURCE:
  	case KVM_DEV_XIVE_GRP_SOURCE_CONFIG:
++	case KVM_DEV_XIVE_GRP_SOURCE_SYNC:
+ 		if (attr->attr >= KVMPPC_XIVE_FIRST_IRQ &&
+ 		    attr->attr < KVMPPC_XIVE_NR_IRQS)
+ 			return 0;
 diff --git a/Documentation/virtual/kvm/devices/xive.txt b/Documentation/virtual/kvm/devices/xive.txt
-index 8bb5e6e6923a..acd5cb9d1339 100644
+index acd5cb9d1339..26fc918b02fb 100644
 --- a/Documentation/virtual/kvm/devices/xive.txt
 +++ b/Documentation/virtual/kvm/devices/xive.txt
-@@ -17,6 +17,11 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
- 
-   1. KVM_DEV_XIVE_GRP_CTRL
-   Provides global controls on the device
+@@ -92,3 +92,11 @@ the legacy interrupt mode, referred as XICS (POWER7/8).
+     -EINVAL: Invalid queue address
+     -EFAULT: Invalid user pointer for attr->addr.
+     -EIO:    Configuration of the underlying HW failed
++
++  5. KVM_DEV_XIVE_GRP_SOURCE_SYNC (write only)
++  Synchronize the source to flush event notifications
 +  Attributes:
-+    1.1 KVM_DEV_XIVE_RESET (write only)
-+    Resets the interrupt controller configuration for sources and event
-+    queues. To be used by kexec and kdump.
-+    Errors: none
- 
-   2. KVM_DEV_XIVE_GRP_SOURCE (write only)
-   Initializes a new source in the XIVE device and mask it.
++    Interrupt source number  (64-bit)
++  Errors:
++    -ENOENT: Unknown source number
++    -EINVAL: Not initialized source number
 -- 
 2.20.1
 
