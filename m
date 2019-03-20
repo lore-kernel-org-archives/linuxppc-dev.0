@@ -2,56 +2,52 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41E2EC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21188C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:59:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id ECA822146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:58:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ECA822146E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by mail.kernel.org (Postfix) with ESMTPS id 96F3E2146E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 12:59:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96F3E2146E
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PVMc1GrmzDqG1
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:58:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=nxp.com
- (client-ip=92.121.34.21; helo=inva021.nxp.com;
- envelope-from=horia.geanta@nxp.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=nxp.com
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PVPX5GWpzDqQD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:59:44 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PVK61XvhzDqMv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 23:55:52 +1100 (AEDT)
-Received: from inva021.nxp.com (localhost [127.0.0.1])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id A06A8200214;
- Wed, 20 Mar 2019 13:55:48 +0100 (CET)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com
- [134.27.226.22])
- by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 9B7B42000C4;
- Wed, 20 Mar 2019 13:55:48 +0100 (CET)
-Received: from fsr-ub1864-014.ea.freescale.net
- (fsr-ub1864-014.ea.freescale.net [10.171.95.219])
- by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 369522062E;
- Wed, 20 Mar 2019 13:55:48 +0100 (CET)
-From: =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@nxp.com>
-To: Rob Herring <robh+dt@kernel.org>,
-	Mark Rutland <mark.rutland@arm.com>
-Subject: [PATCH] powerpc/dts/fsl: add crypto node alias for B4
-Date: Wed, 20 Mar 2019 14:55:16 +0200
-Message-Id: <20190320125516.12277-1-horia.geanta@nxp.com>
-X-Mailer: git-send-email 2.17.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PVLt3jlxzDqPg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 23:57:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44PVLt2KCpz9sPH; Wed, 20 Mar 2019 23:57:26 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44PVLt0RZBz9sP3;
+ Wed, 20 Mar 2019 23:57:26 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v5 05/10] powerpc: Add a framework for Kernel Userspace
+ Access Protection
+In-Reply-To: <b1d292b5-5844-34c6-c388-2ad2045e1904@c-s.fr>
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-5-mpe@ellerman.id.au>
+ <b1d292b5-5844-34c6-c388-2ad2045e1904@c-s.fr>
+Date: Wed, 20 Mar 2019 23:57:24 +1100
+Message-ID: <87r2b1ya8b.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Virus-Scanned: ClamAV using ClamSMTP
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -63,32 +59,64 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: devicetree@vger.kernel.org, Scott Wood <oss@buserror.net>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-crypto node alias is needed by U-boot to identify the node and
-perform fix-ups, like adding "fsl,sec-era" property.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> Le 08/03/2019 =C3=A0 02:16, Michael Ellerman a =C3=A9crit=C2=A0:
+>> From: Christophe Leroy <christophe.leroy@c-s.fr>
+>>=20
+>> This patch implements a framework for Kernel Userspace Access
+>> Protection.
+>>=20
+>> Then subarches will have the possibility to provide their own
+>> implementation by providing setup_kuap() and
+>> allow/prevent_user_access().
+>>=20
+>> Some platforms will need to know the area accessed and whether it is
+>> accessed from read, write or both. Therefore source, destination and
+>> size and handed over to the two functions.
+>>=20
+>> mpe: Rename to allow/prevent rather than unlock/lock, and add
+>> read/write wrappers. Drop the 32-bit code for now until we have an
+>> implementation for it. Add kuap to pt_regs for 64-bit as well as
+>> 32-bit. Don't split strings, use pr_crit_ratelimited().
+>>=20
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>> v5: Futex ops need read/write so use allow_user_acccess() there.
+>>      Use #ifdef CONFIG_PPC64 in kup.h to fix build errors.
+>>      Allow subarch to override allow_read/write_from/to_user().
+>
+> Those little helpers that will just call allow_user_access() when=20
+> distinct read/write handling is not performed looks overkill to me.
+>
+> Can't the subarch do it by itself based on the nullity of from/to ?
+>
+> static inline void allow_user_access(void __user *to, const void __user=20
+> *from,
+> 				     unsigned long size)
+> {
+> 	if (to & from)
+> 		set_kuap(0);
+> 	else if (to)
+> 		set_kuap(AMR_KUAP_BLOCK_READ);
+> 	else if (from)
+> 		set_kuap(AMR_KUAP_BLOCK_WRITE);
+> }
 
-Signed-off-by: Horia Geantă <horia.geanta@nxp.com>
----
- arch/powerpc/boot/dts/fsl/b4qds.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+You could implement it that way, but it reads better at the call sites
+if we have:
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4qds.dtsi b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
-index 999efd3bc167..05be919f3545 100644
---- a/arch/powerpc/boot/dts/fsl/b4qds.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4qds.dtsi
-@@ -40,6 +40,7 @@
- 	interrupt-parent = <&mpic>;
- 
- 	aliases {
-+		crypto = &crypto;
- 		phy_sgmii_10 = &phy_sgmii_10;
- 		phy_sgmii_11 = &phy_sgmii_11;
- 		phy_sgmii_1c = &phy_sgmii_1c;
--- 
-2.17.1
+	allow_write_to_user(uaddr, sizeof(*uaddr));
+vs:
+	allow_user_access(uaddr, NULL, sizeof(*uaddr));
 
+So I'm inclined to keep them. It should all end up inlined and generate
+the same code at the end of the day.
+
+cheers
