@@ -2,79 +2,98 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A284BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:11:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3E54C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:13:38 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21B9A2146E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:11:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="M6fXg3yL"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21B9A2146E
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 3D88D2184D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:13:38 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3D88D2184D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PN122PMQzDqJL
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:11:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PN3N0GDTzDqBj
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:13:36 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=aneesh.kumar@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="M6fXg3yL"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PMvR6VrvzDqHf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:06:43 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44PMvM1KxVz9v0sK;
- Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=M6fXg3yL; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id y8ATYzIcvcpt; Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44PMvM0Bj6z9v0sF;
- Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553069199; bh=rvgtEFljU/MDwjWci5lIWb+EiOuBRO+LM7KFcdfIF98=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=M6fXg3yLL4rwLvfn1Bh/KyJpr9IHaKVOzDegsVqmKKLBIMPBYGXjr2/rymmnx9soF
- HrqPA1Y2Vz1MAYetckvNpRBPxn7/ohIbgBSpWMZCnUN+cZu6sfKjZ+QbL2kQ9/kSRO
- iao/IBxSJGhT5frTqbHWKqgXQmMz7RoQWLsB1V1I=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id EF4338B8FD;
- Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id XCLY2YU4nE7n; Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [172.25.231.2])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id CA8A98B8F8;
- Wed, 20 Mar 2019 09:06:39 +0100 (CET)
-Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
- id BEF3163AF9; Wed, 20 Mar 2019 08:06:39 +0000 (UTC)
-Message-Id: <0e87f999b5bd9d5a98e5d15a9d0c320f0c1fec5a.1553069097.git.christophe.leroy@c-s.fr>
-In-Reply-To: <67ed3a31a16b9ece870ec55139e83c86d4d9ce60.1553069097.git.christophe.leroy@c-s.fr>
-References: <67ed3a31a16b9ece870ec55139e83c86d4d9ce60.1553069097.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/3] powerpc/mm: print hash info in a helper
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 20 Mar 2019 08:06:39 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PMyb6LsLzDqLs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:09:27 +1100 (AEDT)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2K85vte018470
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 04:09:24 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rbh6p9yxw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 04:09:24 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 20 Mar 2019 08:09:17 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 20 Mar 2019 08:09:14 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2K89H8X49676504
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 20 Mar 2019 08:09:17 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 4F9D14204D;
+ Wed, 20 Mar 2019 08:09:17 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id AB6D34203F;
+ Wed, 20 Mar 2019 08:09:15 +0000 (GMT)
+Received: from skywalker.linux.ibm.com (unknown [9.124.31.96])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Mar 2019 08:09:15 +0000 (GMT)
+X-Mailer: emacs 26.1 (via feedmail 11-beta-1 I)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH 2/2] mm/dax: Don't enable huge dax mapping by default
+In-Reply-To: <87bm267ywc.fsf@linux.ibm.com>
+References: <20190228083522.8189-1-aneesh.kumar@linux.ibm.com>
+ <20190228083522.8189-2-aneesh.kumar@linux.ibm.com>
+ <CAOSf1CHjkyX2NTex7dc1AEHXSDcWA_UGYX8NoSyHpb5s_RkwXQ@mail.gmail.com>
+ <CAPcyv4jhEvijybSVsy+wmvgqfvyxfePQ3PUqy1hhmVmPtJTyqQ@mail.gmail.com>
+ <87k1hc8iqa.fsf@linux.ibm.com>
+ <CAPcyv4ir4irASBQrZD_a6kMkEUt=XPUCuKajF75O7wDCgeG=7Q@mail.gmail.com>
+ <871s3aqfup.fsf@linux.ibm.com>
+ <CAPcyv4i0SahDP=_ZQV3RG_b5pMkjn-9Cjy7OpY2sm1PxLdO8jA@mail.gmail.com>
+ <87bm267ywc.fsf@linux.ibm.com>
+Date: Wed, 20 Mar 2019 13:39:14 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+X-TM-AS-GCONF: 00
+x-cbid: 19032008-0008-0000-0000-000002CF7022
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032008-0009-0000-0000-0000223B8633
+Message-Id: <878sxa7ys5.fsf@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-20_06:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903200068
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,132 +105,71 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Jan Kara <jack@suse.cz>, linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux MM <linux-mm@kvack.org>, Ross Zwisler <zwisler@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reduce #ifdef mess by defining a helper to print
-hash info at startup.
+Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> writes:
 
-In the meantime, remove the display of hash table address
-to reduce leak of non necessary information.
+> Dan Williams <dan.j.williams@intel.com> writes:
+>
+>>
+>>> Now what will be page size used for mapping vmemmap?
+>>
+>> That's up to the architecture's vmemmap_populate() implementation.
+>>
+>>> Architectures
+>>> possibly will use PMD_SIZE mapping if supported for vmemmap. Now a
+>>> device-dax with struct page in the device will have pfn reserve area aligned
+>>> to PAGE_SIZE with the above example? We can't map that using
+>>> PMD_SIZE page size?
+>>
+>> IIUC, that's a different alignment. Currently that's handled by
+>> padding the reservation area up to a section (128MB on x86) boundary,
+>> but I'm working on patches to allow sub-section sized ranges to be
+>> mapped.
+>
+> I am missing something w.r.t code. The below code align that using nd_pfn->align
+>
+> 	if (nd_pfn->mode == PFN_MODE_PMEM) {
+> 		unsigned long memmap_size;
+>
+> 		/*
+> 		 * vmemmap_populate_hugepages() allocates the memmap array in
+> 		 * HPAGE_SIZE chunks.
+> 		 */
+> 		memmap_size = ALIGN(64 * npfns, HPAGE_SIZE);
+> 		offset = ALIGN(start + SZ_8K + memmap_size + dax_label_reserve,
+> 				nd_pfn->align) - start;
+>       }
+>
+> IIUC that is finding the offset where to put vmemmap start. And that has
+> to be aligned to the page size with which we may end up mapping vmemmap
+> area right?
+>
+> Yes we find the npfns by aligning up using PAGES_PER_SECTION. But that
+> is to compute howmany pfns we should map for this pfn dev right?
+> 	
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/setup-common.c | 19 +------------------
- arch/powerpc/mm/hash_utils_64.c    |  8 ++++++++
- arch/powerpc/mm/mmu_decl.h         |  5 ++++-
- arch/powerpc/mm/ppc_mmu_32.c       |  9 ++++++++-
- 4 files changed, 21 insertions(+), 20 deletions(-)
+Also i guess those 4K assumptions there is wrong?
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 2e5dfb6e0823..f24a74f7912d 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -799,12 +799,6 @@ void arch_setup_pdev_archdata(struct platform_device *pdev)
- static __init void print_system_info(void)
- {
- 	pr_info("-----------------------------------------------------\n");
--#ifdef CONFIG_PPC_BOOK3S_64
--	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
--#endif
--#ifdef CONFIG_PPC_BOOK3S_32
--	pr_info("Hash_size         = 0x%lx\n", Hash_size);
--#endif
- 	pr_info("phys_mem_size     = 0x%llx\n",
- 		(unsigned long long)memblock_phys_mem_size());
+modified   drivers/nvdimm/pfn_devs.c
+@@ -783,7 +783,7 @@ static int nd_pfn_init(struct nd_pfn *nd_pfn)
+ 		return -ENXIO;
+ 	}
  
-@@ -826,18 +820,7 @@ static __init void print_system_info(void)
- 	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
- #endif
- 
--#ifdef CONFIG_PPC_BOOK3S_64
--	if (htab_address)
--		pr_info("htab_address      = 0x%p\n", htab_address);
--	if (htab_hash_mask)
--		pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
--#endif
--#ifdef CONFIG_PPC_BOOK3S_32
--	if (Hash)
--		pr_info("Hash              = 0x%p\n", Hash);
--	if (Hash_mask)
--		pr_info("Hash_mask         = 0x%lx\n", Hash_mask);
--#endif
-+	print_system_hash_info();
- 
- 	if (PHYSICAL_START > 0)
- 		pr_info("physical_start    = 0x%llx\n",
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0a4f939a8161..017380b890bb 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1909,3 +1909,11 @@ static int __init hash64_debugfs(void)
- }
- machine_device_initcall(pseries, hash64_debugfs);
- #endif /* CONFIG_DEBUG_FS */
-+
-+void __init print_system_hash_info(void)
-+{
-+	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
-+
-+	if (htab_hash_mask)
-+		pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
-+}
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index f7f1374ba3ee..dc617ade83ab 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -83,6 +83,8 @@ static inline void _tlbivax_bcast(unsigned long address, unsigned int pid,
- }
- #endif
- 
-+static inline void print_system_hash_info(void) {}
-+
- #else /* CONFIG_PPC_MMU_NOHASH */
- 
- extern void hash_preload(struct mm_struct *mm, unsigned long ea,
-@@ -92,6 +94,8 @@ extern void hash_preload(struct mm_struct *mm, unsigned long ea,
- extern void _tlbie(unsigned long address);
- extern void _tlbia(void);
- 
-+void print_system_hash_info(void);
-+
- #endif /* CONFIG_PPC_MMU_NOHASH */
- 
- #ifdef CONFIG_PPC32
-@@ -105,7 +109,6 @@ extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
- extern struct hash_pte *Hash;
--extern unsigned long Hash_size, Hash_mask;
- 
- #endif /* CONFIG_PPC32 */
- 
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 088f14d57cce..864096489b6d 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -37,7 +37,7 @@
- #include "mmu_decl.h"
- 
- struct hash_pte *Hash;
--unsigned long Hash_size, Hash_mask;
-+static unsigned long Hash_size, Hash_mask;
- unsigned long _SDR1;
- 
- struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
-@@ -392,3 +392,10 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	else /* Anything else has 256M mapped */
- 		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x10000000));
- }
-+
-+void __init print_system_hash_info(void)
-+{
-+	pr_info("Hash_size         = 0x%lx\n", Hash_size);
-+	if (Hash_mask)
-+		pr_info("Hash_mask         = 0x%lx\n", Hash_mask);
-+}
--- 
-2.13.3
+-	npfns = (size - offset - start_pad - end_trunc) / SZ_4K;
++	npfns = (size - offset - start_pad - end_trunc) / PAGE_SIZE;
+ 	pfn_sb->mode = cpu_to_le32(nd_pfn->mode);
+ 	pfn_sb->dataoff = cpu_to_le64(offset);
+ 	pfn_sb->npfns = cpu_to_le64(npfns);
+
+
+-aneesh
 
