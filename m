@@ -2,44 +2,101 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5D6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 13:11:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E5F6DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 13:14:49 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 75E092184D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 13:11:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 75E092184D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 4663D2184D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 13:14:49 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="US09r1nE"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4663D2184D
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PVgF1SybzDqPl
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 00:11:37 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PVkv0M8DzDqL4
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 00:14:47 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits))
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PVW40YzTzDqDW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 00:04:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PVW92x47zDqDW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 00:04:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="US09r1nE"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44PVW82PWFz8syV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 00:04:36 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44PVW364gBz9sPM; Thu, 21 Mar 2019 00:04:31 +1100 (AEDT)
-Received: by ozlabs.org (Postfix, from userid 1034)
- id 44PVW34B1Cz9sPY; Thu, 21 Mar 2019 00:04:31 +1100 (AEDT)
-X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: b5b4453e7912f056da1ca7572574cada32ecb60c
-X-Patchwork-Hint: ignore
-In-Reply-To: <20190313131438.8212-1-mpe@ellerman.id.au>
+ id 44PVW76yhcz9sPL; Thu, 21 Mar 2019 00:04:35 +1100 (AEDT)
+Authentication-Results: ozlabs.org; spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="US09r1nE"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44PVW512kFz9sPb
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Mar 2019 00:04:31 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44PVVy6Dt7z9vBx5;
+ Wed, 20 Mar 2019 14:04:26 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=US09r1nE; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id stYVnmCjJamP; Wed, 20 Mar 2019 14:04:26 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44PVVy4z3kz9vBx4;
+ Wed, 20 Mar 2019 14:04:26 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553087066; bh=i4j0PmUVMIbCHxfhxqhfBch3ODvon2JeXXkzC3QCfFU=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=US09r1nE+zlK+p/rZMx8B4MilpVh53DN4b6rC6TVE6dGYi0CbIllvy4uQlDQs9YKL
+ 46SugOP7xi427aOKlMg2H1ubeNTi7LpY2zr9dcDbVP91xI86dR5xT3slo+qZqCICEf
+ AzseZ4H8I2PKj3C08tw6A8gk3KKmCHIU1yeuc0Lk=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 065EE8B929;
+ Wed, 20 Mar 2019 14:04:28 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id EmwkfOm50SXn; Wed, 20 Mar 2019 14:04:27 +0100 (CET)
+Received: from PO15451 (unknown [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D23048B918;
+ Wed, 20 Mar 2019 14:04:27 +0100 (CET)
+Subject: Re: [PATCH v5 05/10] powerpc: Add a framework for Kernel Userspace
+ Access Protection
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/vdso64: Fix CLOCK_MONOTONIC inconsistencies across Y2038
-Message-Id: <44PVW34B1Cz9sPY@ozlabs.org>
-Date: Thu, 21 Mar 2019 00:04:31 +1100 (AEDT)
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-5-mpe@ellerman.id.au>
+ <b1d292b5-5844-34c6-c388-2ad2045e1904@c-s.fr>
+ <87r2b1ya8b.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <7fad467c-1e63-02c8-636e-7f8ab456f76c@c-s.fr>
+Date: Wed, 20 Mar 2019 14:04:27 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.3
+MIME-Version: 1.0
+In-Reply-To: <87r2b1ya8b.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -51,92 +108,77 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: arnd@arndb.de, sboyd@kernel.org, linux-kernel@vger.kernel.org,
- john.stultz@linaro.org, tglx@linutronix.de, jaydee@email.cz
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, 2019-03-13 at 13:14:38 UTC, Michael Ellerman wrote:
-> Jakub Drnec reported:
->   Setting the realtime clock can sometimes make the monotonic clock go
->   back by over a hundred years. Decreasing the realtime clock across
->   the y2k38 threshold is one reliable way to reproduce. Allegedly this
->   can also happen just by running ntpd, I have not managed to
->   reproduce that other than booting with rtc at >2038 and then running
->   ntp. When this happens, anything with timers (e.g. openjdk) breaks
->   rather badly.
-> 
-> And included a test case (slightly edited for brevity):
->   #define _POSIX_C_SOURCE 199309L
->   #include <stdio.h>
->   #include <time.h>
->   #include <stdlib.h>
->   #include <unistd.h>
-> 
->   long get_time(void) {
->     struct timespec tp;
->     clock_gettime(CLOCK_MONOTONIC, &tp);
->     return tp.tv_sec + tp.tv_nsec / 1000000000;
->   }
-> 
->   int main(void) {
->     long last = get_time();
->     while(1) {
->       long now = get_time();
->       if (now < last) {
->         printf("clock went backwards by %ld seconds!\n", last - now);
->       }
->       last = now;
->       sleep(1);
->     }
->     return 0;
->   }
-> 
-> Which when run concurrently with:
->  # date -s 2040-1-1
->  # date -s 2037-1-1
-> 
-> Will detect the clock going backward.
-> 
-> The root cause is that wtom_clock_sec in struct vdso_data is only a
-> 32-bit signed value, even though we set its value to be equal to
-> tk->wall_to_monotonic.tv_sec which is 64-bits.
-> 
-> Because the monotonic clock starts at zero when the system boots the
-> wall_to_montonic.tv_sec offset is negative for current and future
-> dates. Currently on a freshly booted system the offset will be in the
-> vicinity of negative 1.5 billion seconds.
-> 
-> However if the wall clock is set past the Y2038 boundary, the offset
-> from wall to monotonic becomes less than negative 2^31, and no longer
-> fits in 32-bits. When that value is assigned to wtom_clock_sec it is
-> truncated and becomes positive, causing the VDSO assembly code to
-> calculate CLOCK_MONOTONIC incorrectly.
-> 
-> That causes CLOCK_MONOTONIC to jump ahead by ~4 billion seconds which
-> it is not meant to do. Worse, if the time is then set back before the
-> Y2038 boundary CLOCK_MONOTONIC will jump backward.
-> 
-> We can fix it simply by storing the full 64-bit offset in the
-> vdso_data, and using that in the VDSO assembly code. We also shuffle
-> some of the fields in vdso_data to avoid creating a hole.
-> 
-> The original commit that added the CLOCK_MONOTONIC support to the VDSO
-> did actually use a 64-bit value for wtom_clock_sec, see commit
-> a7f290dad32e ("[PATCH] powerpc: Merge vdso's and add vdso support to
-> 32 bits kernel") (Nov 2005). However just 3 days later it was
-> converted to 32-bits in commit 0c37ec2aa88b ("[PATCH] powerpc: vdso
-> fixes (take #2)"), and the bug has existed since then AFAICS.
-> 
-> Fixes: 0c37ec2aa88b ("[PATCH] powerpc: vdso fixes (take #2)")
-> Cc: stable@vger.kernel.org # v2.6.15+
-> Link: http://lkml.kernel.org/r/HaC.ZfES.62bwlnvAvMP.1STMMj@seznam.cz
-> Reported-by: Jakub Drnec <jaydee@email.cz>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/b5b4453e7912f056da1ca7572574cada
+Le 20/03/2019 à 13:57, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> Le 08/03/2019 à 02:16, Michael Ellerman a écrit :
+>>> From: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>
+>>> This patch implements a framework for Kernel Userspace Access
+>>> Protection.
+>>>
+>>> Then subarches will have the possibility to provide their own
+>>> implementation by providing setup_kuap() and
+>>> allow/prevent_user_access().
+>>>
+>>> Some platforms will need to know the area accessed and whether it is
+>>> accessed from read, write or both. Therefore source, destination and
+>>> size and handed over to the two functions.
+>>>
+>>> mpe: Rename to allow/prevent rather than unlock/lock, and add
+>>> read/write wrappers. Drop the 32-bit code for now until we have an
+>>> implementation for it. Add kuap to pt_regs for 64-bit as well as
+>>> 32-bit. Don't split strings, use pr_crit_ratelimited().
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>> v5: Futex ops need read/write so use allow_user_acccess() there.
+>>>       Use #ifdef CONFIG_PPC64 in kup.h to fix build errors.
+>>>       Allow subarch to override allow_read/write_from/to_user().
+>>
+>> Those little helpers that will just call allow_user_access() when
+>> distinct read/write handling is not performed looks overkill to me.
+>>
+>> Can't the subarch do it by itself based on the nullity of from/to ?
+>>
+>> static inline void allow_user_access(void __user *to, const void __user
+>> *from,
+>> 				     unsigned long size)
+>> {
+>> 	if (to & from)
+>> 		set_kuap(0);
+>> 	else if (to)
+>> 		set_kuap(AMR_KUAP_BLOCK_READ);
+>> 	else if (from)
+>> 		set_kuap(AMR_KUAP_BLOCK_WRITE);
+>> }
+> 
+> You could implement it that way, but it reads better at the call sites
+> if we have:
+> 
+> 	allow_write_to_user(uaddr, sizeof(*uaddr));
+> vs:
+> 	allow_user_access(uaddr, NULL, sizeof(*uaddr));
+> 
+> So I'm inclined to keep them. It should all end up inlined and generate
+> the same code at the end of the day.
+> 
 
-cheers
+I was not suggesting to completly remove allow_write_to_user(), I fully 
+agree that it reads better at the call sites.
+
+I was just thinking that allow_write_to_user() could remain generic and 
+call the subarch specific allow_user_access() instead of making multiple 
+subarch's allow_write_to_user()
+
+But both solution are OK for me at the end.
+
+Christophe
