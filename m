@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 888EDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:19:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C147C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:21:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0108A2175B
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:19:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0108A2175B
+	by mail.kernel.org (Postfix) with ESMTPS id 15A382175B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 05:21:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 15A382175B
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PJBk5rRWzDqL5
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:19:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PJDs5m93zDqJm
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 16:21:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,50 +29,50 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PJ3Q42pfzDqKJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:13:22 +1100 (AEDT)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PJ3T2qLSzDqCg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 16:13:25 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2K53cNn171100
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:13:20 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rbcnv5vcy-1
+ x2K5AlH4064402
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:13:23 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rbf4vg2qp-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:13:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 01:13:22 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 20 Mar 2019 05:13:13 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Wed, 20 Mar 2019 05:13:17 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com (9.149.109.198)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 20 Mar 2019 05:13:10 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2K5DFrX60096620
+ Wed, 20 Mar 2019 05:13:14 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2K5DHrg38076586
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 20 Mar 2019 05:13:15 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 129EBA405F;
- Wed, 20 Mar 2019 05:13:15 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 72969A4054;
- Wed, 20 Mar 2019 05:13:14 +0000 (GMT)
+ Wed, 20 Mar 2019 05:13:17 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 68CF74204B;
+ Wed, 20 Mar 2019 05:13:17 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8320642045;
+ Wed, 20 Mar 2019 05:13:16 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 20 Mar 2019 05:13:14 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Mar 2019 05:13:16 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 5E332A0129;
- Wed, 20 Mar 2019 16:13:13 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 21EF0A024A;
+ Wed, 20 Mar 2019 16:13:15 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v2 2/7] ocxl: Don't pass pci_dev around
-Date: Wed, 20 Mar 2019 16:08:54 +1100
+Subject: [PATCH v2 3/7] ocxl: Create a clear delineation between ocxl backend
+ & frontend
+Date: Wed, 20 Mar 2019 16:08:55 +1100
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190320050901.310-1-alastair@au1.ibm.com>
 References: <20190313041524.14644-1-alastair@au1.ibm.com>
@@ -80,15 +80,15 @@ References: <20190313041524.14644-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19032005-4275-0000-0000-0000031D1658
+x-cbid: 19032005-0008-0000-0000-000002CF628A
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032005-4276-0000-0000-0000382B98D1
-Message-Id: <20190320050901.310-3-alastair@au1.ibm.com>
+x-cbparentid: 19032005-0009-0000-0000-0000223B7814
+Message-Id: <20190320050901.310-4-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-20_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=4 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1903200044
@@ -113,166 +113,1037 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-This data is already available in a struct
+The OCXL driver contains both frontend code for interacting with userspace,
+as well as backend code for interacting with the hardware.
+
+This patch separates the backend code from the frontend so that it can be
+used by other device drivers that communicate via OpenCAPI.
+
+Relocate dev, cdev & sysfs files to the frontend code to allow external
+drivers to maintain their own devices.
+
+Reference counting on the device in the backend is replaced with kref
+counting.
+
+Move file & sysfs layer initialisation from core.c (backend) to
+pci.c (frontend).
+
+Create an ocxl_function oriented interface for initing devices &
+enumerating AFUs.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/misc/ocxl/core.c | 38 +++++++++++++++++++++-----------------
- 1 file changed, 21 insertions(+), 17 deletions(-)
+ drivers/misc/ocxl/context.c       |   2 +-
+ drivers/misc/ocxl/core.c          | 205 +++++++++++++++++++-----------
+ drivers/misc/ocxl/file.c          | 125 ++++++++++++------
+ drivers/misc/ocxl/ocxl_internal.h |  39 +++---
+ drivers/misc/ocxl/pci.c           |  61 ++++-----
+ drivers/misc/ocxl/sysfs.c         |  58 +++++----
+ include/misc/ocxl.h               | 121 ++++++++++++++++--
+ 7 files changed, 416 insertions(+), 195 deletions(-)
 
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index 3498a0199bde..371ef17bba33 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -238,7 +238,7 @@ int ocxl_context_detach(struct ocxl_context *ctx)
+ 	}
+ 	rc = ocxl_link_remove_pe(ctx->afu->fn->link, ctx->pasid);
+ 	if (rc) {
+-		dev_warn(&ctx->afu->dev,
++		dev_warn(&dev->dev,
+ 			"Couldn't remove PE entry cleanly: %d\n", rc);
+ 	}
+ 	return 0;
 diff --git a/drivers/misc/ocxl/core.c b/drivers/misc/ocxl/core.c
-index b47cfda83e46..2fd0c700e8a0 100644
+index 2fd0c700e8a0..c632ec372342 100644
 --- a/drivers/misc/ocxl/core.c
 +++ b/drivers/misc/ocxl/core.c
-@@ -66,10 +66,11 @@ static int set_afu_device(struct ocxl_afu *afu, const char *location)
- 	return rc;
+@@ -13,16 +13,6 @@ static void ocxl_fn_put(struct ocxl_fn *fn)
+ 	put_device(&fn->dev);
  }
  
--static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
-+static int assign_afu_actag(struct ocxl_afu *afu)
+-struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu)
+-{
+-	return (get_device(&afu->dev) == NULL) ? NULL : afu;
+-}
+-
+-void ocxl_afu_put(struct ocxl_afu *afu)
+-{
+-	put_device(&afu->dev);
+-}
+-
+ static struct ocxl_afu *alloc_afu(struct ocxl_fn *fn)
  {
- 	struct ocxl_fn *fn = afu->fn;
- 	int actag_count, actag_offset;
-+	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
+ 	struct ocxl_afu *afu;
+@@ -31,6 +21,7 @@ static struct ocxl_afu *alloc_afu(struct ocxl_fn *fn)
+ 	if (!afu)
+ 		return NULL;
  
- 	/*
- 	 * if there were not enough actags for the function, each afu
-@@ -79,16 +80,16 @@ static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
- 		fn->actag_enabled / fn->actag_supported;
- 	actag_offset = ocxl_actag_afu_alloc(fn, actag_count);
- 	if (actag_offset < 0) {
--		dev_err(&afu->dev, "Can't allocate %d actags for AFU: %d\n",
-+		dev_err(&pci_dev->dev, "Can't allocate %d actags for AFU: %d\n",
- 			actag_count, actag_offset);
- 		return actag_offset;
- 	}
- 	afu->actag_base = fn->actag_base + actag_offset;
- 	afu->actag_enabled = actag_count;
++	kref_init(&afu->kref);
+ 	mutex_init(&afu->contexts_lock);
+ 	mutex_init(&afu->afu_control_lock);
+ 	idr_init(&afu->contexts_idr);
+@@ -39,32 +30,26 @@ static struct ocxl_afu *alloc_afu(struct ocxl_fn *fn)
+ 	return afu;
+ }
  
--	ocxl_config_set_afu_actag(dev, afu->config.dvsec_afu_control_pos,
-+	ocxl_config_set_afu_actag(pci_dev, afu->config.dvsec_afu_control_pos,
- 				afu->actag_base, afu->actag_enabled);
--	dev_dbg(&afu->dev, "actag base=%d enabled=%d\n",
-+	dev_dbg(&pci_dev->dev, "actag base=%d enabled=%d\n",
- 		afu->actag_base, afu->actag_enabled);
+-static void free_afu(struct ocxl_afu *afu)
++static void afu_release(struct kref *kref)
+ {
++	struct ocxl_afu *afu = container_of(kref, struct ocxl_afu, kref);
++
+ 	idr_destroy(&afu->contexts_idr);
+ 	ocxl_fn_put(afu->fn);
+ 	kfree(afu);
+ }
+ 
+-static void free_afu_dev(struct device *dev)
++void ocxl_afu_get(struct ocxl_afu *afu)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(dev);
+-
+-	ocxl_unregister_afu(afu);
+-	free_afu(afu);
++	kref_get(&afu->kref);
+ }
++EXPORT_SYMBOL_GPL(ocxl_afu_get);
+ 
+-static int set_afu_device(struct ocxl_afu *afu, const char *location)
++void ocxl_afu_put(struct ocxl_afu *afu)
+ {
+-	struct ocxl_fn *fn = afu->fn;
+-	int rc;
+-
+-	afu->dev.parent = &fn->dev;
+-	afu->dev.release = free_afu_dev;
+-	rc = dev_set_name(&afu->dev, "%s.%s.%hhu", afu->config.name, location,
+-		afu->config.idx);
+-	return rc;
++	kref_put(&afu->kref, afu_release);
+ }
++EXPORT_SYMBOL_GPL(ocxl_afu_put);
+ 
+ static int assign_afu_actag(struct ocxl_afu *afu)
+ {
+@@ -233,27 +218,25 @@ static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
+ 	if (rc)
+ 		return rc;
+ 
+-	rc = set_afu_device(afu, dev_name(&dev->dev));
+-	if (rc)
+-		return rc;
+-
+ 	rc = assign_afu_actag(afu);
+ 	if (rc)
+ 		return rc;
+ 
+ 	rc = assign_afu_pasid(afu);
+-	if (rc) {
+-		reclaim_afu_actag(afu);
+-		return rc;
+-	}
++	if (rc)
++		goto err_free_actag;
+ 
+ 	rc = map_mmio_areas(afu);
+-	if (rc) {
+-		reclaim_afu_pasid(afu);
+-		reclaim_afu_actag(afu);
+-		return rc;
+-	}
++	if (rc)
++		goto err_free_pasid;
++
+ 	return 0;
++
++err_free_pasid:
++	reclaim_afu_pasid(afu);
++err_free_actag:
++	reclaim_afu_actag(afu);
++	return rc;
+ }
+ 
+ static void deconfigure_afu(struct ocxl_afu *afu)
+@@ -265,16 +248,8 @@ static void deconfigure_afu(struct ocxl_afu *afu)
+ 
+ static int activate_afu(struct pci_dev *dev, struct ocxl_afu *afu)
+ {
+-	int rc;
+-
+ 	ocxl_config_set_afu_state(dev, afu->config.dvsec_afu_control_pos, 1);
+-	/*
+-	 * Char device creation is the last step, as processes can
+-	 * call our driver immediately, so all our inits must be finished.
+-	 */
+-	rc = ocxl_create_cdev(afu);
+-	if (rc)
+-		return rc;
++
  	return 0;
  }
-@@ -103,10 +104,11 @@ static void reclaim_afu_actag(struct ocxl_afu *afu)
- 	ocxl_actag_afu_free(afu->fn, start_offset, size);
- }
  
--static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
-+static int assign_afu_pasid(struct ocxl_afu *afu)
+@@ -282,11 +257,10 @@ static void deactivate_afu(struct ocxl_afu *afu)
  {
- 	struct ocxl_fn *fn = afu->fn;
- 	int pasid_count, pasid_offset;
-+	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
+ 	struct pci_dev *dev = to_pci_dev(afu->fn->dev.parent);
  
- 	/*
- 	 * We only support the case where the function configuration
-@@ -115,7 +117,7 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
- 	pasid_count = 1 << afu->config.pasid_supported_log;
- 	pasid_offset = ocxl_pasid_afu_alloc(fn, pasid_count);
- 	if (pasid_offset < 0) {
--		dev_err(&afu->dev, "Can't allocate %d PASIDs for AFU: %d\n",
-+		dev_err(&pci_dev->dev, "Can't allocate %d PASIDs for AFU: %d\n",
- 			pasid_count, pasid_offset);
- 		return pasid_offset;
- 	}
-@@ -123,10 +125,10 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
- 	afu->pasid_count = 0;
- 	afu->pasid_max = pasid_count;
- 
--	ocxl_config_set_afu_pasid(dev, afu->config.dvsec_afu_control_pos,
-+	ocxl_config_set_afu_pasid(pci_dev, afu->config.dvsec_afu_control_pos,
- 				afu->pasid_base,
- 				afu->config.pasid_supported_log);
--	dev_dbg(&afu->dev, "PASID base=%d, enabled=%d\n",
-+	dev_dbg(&pci_dev->dev, "PASID base=%d, enabled=%d\n",
- 		afu->pasid_base, pasid_count);
- 	return 0;
- }
-@@ -172,9 +174,10 @@ static void release_fn_bar(struct ocxl_fn *fn, int bar)
- 	WARN_ON(fn->bar_used[idx] < 0);
+-	ocxl_destroy_cdev(afu);
+ 	ocxl_config_set_afu_state(dev, afu->config.dvsec_afu_control_pos, 0);
  }
  
--static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
-+static int map_mmio_areas(struct ocxl_afu *afu)
+-int init_afu(struct pci_dev *dev, struct ocxl_fn *fn, u8 afu_idx)
++static int init_afu(struct pci_dev *dev, struct ocxl_fn *fn, u8 afu_idx)
  {
  	int rc;
-+	struct pci_dev *pci_dev = to_pci_dev(afu->fn->dev.parent);
+ 	struct ocxl_afu *afu;
+@@ -297,41 +271,29 @@ int init_afu(struct pci_dev *dev, struct ocxl_fn *fn, u8 afu_idx)
  
- 	rc = reserve_fn_bar(afu->fn, afu->config.global_mmio_bar);
- 	if (rc)
-@@ -187,10 +190,10 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
- 	}
- 
- 	afu->global_mmio_start =
--		pci_resource_start(dev, afu->config.global_mmio_bar) +
-+		pci_resource_start(pci_dev, afu->config.global_mmio_bar) +
- 		afu->config.global_mmio_offset;
- 	afu->pp_mmio_start =
--		pci_resource_start(dev, afu->config.pp_mmio_bar) +
-+		pci_resource_start(pci_dev, afu->config.pp_mmio_bar) +
- 		afu->config.pp_mmio_offset;
- 
- 	afu->global_mmio_ptr = ioremap(afu->global_mmio_start,
-@@ -198,7 +201,7 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
- 	if (!afu->global_mmio_ptr) {
- 		release_fn_bar(afu->fn, afu->config.pp_mmio_bar);
- 		release_fn_bar(afu->fn, afu->config.global_mmio_bar);
--		dev_err(&dev->dev, "Error mapping global mmio area\n");
-+		dev_err(&pci_dev->dev, "Error mapping global mmio area\n");
- 		return -ENOMEM;
- 	}
- 
-@@ -234,17 +237,17 @@ static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
- 	if (rc)
- 		return rc;
- 
--	rc = assign_afu_actag(afu, dev);
-+	rc = assign_afu_actag(afu);
- 	if (rc)
- 		return rc;
- 
--	rc = assign_afu_pasid(afu, dev);
-+	rc = assign_afu_pasid(afu);
+ 	rc = configure_afu(afu, afu_idx, dev);
  	if (rc) {
- 		reclaim_afu_actag(afu);
+-		free_afu(afu);
++		ocxl_afu_put(afu);
  		return rc;
  	}
  
--	rc = map_mmio_areas(afu, dev);
-+	rc = map_mmio_areas(afu);
- 	if (rc) {
- 		reclaim_afu_pasid(afu);
- 		reclaim_afu_actag(afu);
-@@ -331,7 +334,7 @@ void remove_afu(struct ocxl_afu *afu)
- 	device_unregister(&afu->dev);
+-	rc = ocxl_register_afu(afu);
+-	if (rc)
+-		goto err;
+-
+-	rc = ocxl_sysfs_add_afu(afu);
+-	if (rc)
+-		goto err;
+-
+ 	rc = activate_afu(dev, afu);
+-	if (rc)
+-		goto err_sys;
++	if (rc) {
++		deconfigure_afu(afu);
++		ocxl_afu_put(afu);
++		return rc;
++	}
+ 
+ 	list_add_tail(&afu->list, &fn->afu_list);
+-	return 0;
+ 
+-err_sys:
+-	ocxl_sysfs_remove_afu(afu);
+-err:
+-	deconfigure_afu(afu);
+-	device_unregister(&afu->dev);
+-	return rc;
++	return 0;
  }
  
--static struct ocxl_fn *alloc_function(struct pci_dev *dev)
-+static struct ocxl_fn *alloc_function(void)
+-void remove_afu(struct ocxl_afu *afu)
++static void remove_afu(struct ocxl_afu *afu)
+ {
+ 	list_del(&afu->list);
+ 	ocxl_context_detach_all(afu);
+ 	deactivate_afu(afu);
+-	ocxl_sysfs_remove_afu(afu);
+ 	deconfigure_afu(afu);
+-	device_unregister(&afu->dev);
++	ocxl_afu_put(afu); // matches the implicit get in alloc_afu
+ }
+ 
+ static struct ocxl_fn *alloc_function(void)
+@@ -358,7 +320,7 @@ static void free_function(struct ocxl_fn *fn)
+ 
+ static void free_function_dev(struct device *dev)
+ {
+-	struct ocxl_fn *fn = to_ocxl_function(dev);
++	struct ocxl_fn *fn = container_of(dev, struct ocxl_fn, dev);
+ 
+ 	free_function(fn);
+ }
+@@ -372,7 +334,6 @@ static int set_function_device(struct ocxl_fn *fn, struct pci_dev *dev)
+ 	rc = dev_set_name(&fn->dev, "ocxlfn.%s", dev_name(&dev->dev));
+ 	if (rc)
+ 		return rc;
+-	pci_set_drvdata(dev, fn);
+ 	return 0;
+ }
+ 
+@@ -490,7 +451,7 @@ static void deconfigure_function(struct ocxl_fn *fn)
+ 	pci_disable_device(dev);
+ }
+ 
+-struct ocxl_fn *init_function(struct pci_dev *dev)
++static struct ocxl_fn *init_function(struct pci_dev *dev)
  {
  	struct ocxl_fn *fn;
- 
-@@ -342,6 +345,7 @@ static struct ocxl_fn *alloc_function(struct pci_dev *dev)
- 	INIT_LIST_HEAD(&fn->afu_list);
- 	INIT_LIST_HEAD(&fn->pasid_list);
- 	INIT_LIST_HEAD(&fn->actag_list);
-+
+ 	int rc;
+@@ -514,8 +475,104 @@ struct ocxl_fn *init_function(struct pci_dev *dev)
  	return fn;
  }
  
-@@ -491,7 +495,7 @@ struct ocxl_fn *init_function(struct pci_dev *dev)
- 	struct ocxl_fn *fn;
+-void remove_function(struct ocxl_fn *fn)
++// Device detection & initialisation
++
++struct ocxl_fn *ocxl_function_open(struct pci_dev *dev)
++{
++	int rc, afu_count = 0;
++	u8 afu;
++	struct ocxl_fn *fn;
++
++	if (!radix_enabled()) {
++		dev_err(&dev->dev, "Unsupported memory model (hash)\n");
++		return ERR_PTR(-ENODEV);
++	}
++
++	fn = init_function(dev);
++	if (IS_ERR(fn)) {
++		dev_err(&dev->dev, "function init failed: %li\n",
++			PTR_ERR(fn));
++		return fn;
++	}
++
++	for (afu = 0; afu <= fn->config.max_afu_index; afu++) {
++		rc = ocxl_config_check_afu_index(dev, &fn->config, afu);
++		if (rc > 0) {
++			rc = init_afu(dev, fn, afu);
++			if (rc) {
++				dev_err(&dev->dev,
++					"Can't initialize AFU index %d\n", afu);
++				continue;
++			}
++			afu_count++;
++		}
++	}
++	dev_info(&dev->dev, "%d AFU(s) configured\n", afu_count);
++	return fn;
++}
++EXPORT_SYMBOL_GPL(ocxl_function_open);
++
++struct list_head *ocxl_function_afu_list(struct ocxl_fn *fn)
++{
++	return &fn->afu_list;
++}
++EXPORT_SYMBOL_GPL(ocxl_function_afu_list);
++
++struct ocxl_afu *ocxl_function_fetch_afu(struct ocxl_fn *fn, u8 afu_idx)
++{
++	struct ocxl_afu *afu;
++
++	list_for_each_entry(afu, &fn->afu_list, list) {
++		if (afu->config.idx == afu_idx)
++			return afu;
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(ocxl_function_fetch_afu);
++
++const struct ocxl_fn_config *ocxl_function_config(struct ocxl_fn *fn)
+ {
++	return &fn->config;
++}
++EXPORT_SYMBOL_GPL(ocxl_function_config);
++
++void ocxl_function_close(struct ocxl_fn *fn)
++{
++	struct ocxl_afu *afu, *tmp;
++
++	list_for_each_entry_safe(afu, tmp, &fn->afu_list, list) {
++		if (afu->private && afu->private_release)
++			afu->private_release(afu->private);
++		remove_afu(afu);
++	}
++
+ 	deconfigure_function(fn);
+ 	device_unregister(&fn->dev);
+ }
++EXPORT_SYMBOL_GPL(ocxl_function_close);
++
++// AFU Metadata
++
++struct ocxl_afu_config *ocxl_afu_config(struct ocxl_afu *afu)
++{
++	return &afu->config;
++}
++EXPORT_SYMBOL_GPL(ocxl_afu_config);
++
++void ocxl_afu_set_private(struct ocxl_afu *afu, void *private,
++			void (*private_release)(void *private))
++{
++	afu->private = private;
++	afu->private_release = private_release;
++}
++EXPORT_SYMBOL_GPL(ocxl_afu_set_private);
++
++void *ocxl_afu_get_private(struct ocxl_afu *afu)
++{
++	if (afu)
++		return afu->private;
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(ocxl_afu_get_private);
+diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
+index 009e09b7ded5..1f17f8706e29 100644
+--- a/drivers/misc/ocxl/file.c
++++ b/drivers/misc/ocxl/file.c
+@@ -17,12 +17,10 @@ static struct class *ocxl_class;
+ static struct mutex minors_idr_lock;
+ static struct idr minors_idr;
+ 
+-static struct ocxl_afu *find_and_get_afu(dev_t devno)
++static struct ocxl_file_info *find_file_info(dev_t devno)
+ {
+-	struct ocxl_afu *afu;
+-	int afu_minor;
++	struct ocxl_file_info *info;
+ 
+-	afu_minor = MINOR(devno);
+ 	/*
+ 	 * We don't declare an RCU critical section here, as our AFU
+ 	 * is protected by a reference counter on the device. By the time the
+@@ -30,56 +28,52 @@ static struct ocxl_afu *find_and_get_afu(dev_t devno)
+ 	 * the device is already at 0, so no user API will access that AFU and
+ 	 * this function can't return it.
+ 	 */
+-	afu = idr_find(&minors_idr, afu_minor);
+-	if (afu)
+-		ocxl_afu_get(afu);
+-	return afu;
++	info = idr_find(&minors_idr, MINOR(devno));
++	return info;
+ }
+ 
+-static int allocate_afu_minor(struct ocxl_afu *afu)
++static int allocate_minor(struct ocxl_file_info *info)
+ {
+ 	int minor;
+ 
+ 	mutex_lock(&minors_idr_lock);
+-	minor = idr_alloc(&minors_idr, afu, 0, OCXL_NUM_MINORS, GFP_KERNEL);
++	minor = idr_alloc(&minors_idr, info, 0, OCXL_NUM_MINORS, GFP_KERNEL);
+ 	mutex_unlock(&minors_idr_lock);
+ 	return minor;
+ }
+ 
+-static void free_afu_minor(struct ocxl_afu *afu)
++static void free_minor(struct ocxl_file_info *info)
+ {
+ 	mutex_lock(&minors_idr_lock);
+-	idr_remove(&minors_idr, MINOR(afu->dev.devt));
++	idr_remove(&minors_idr, MINOR(info->dev.devt));
+ 	mutex_unlock(&minors_idr_lock);
+ }
+ 
+ static int afu_open(struct inode *inode, struct file *file)
+ {
+-	struct ocxl_afu *afu;
++	struct ocxl_file_info *info;
+ 	struct ocxl_context *ctx;
  	int rc;
  
--	fn = alloc_function(dev);
-+	fn = alloc_function();
- 	if (!fn)
- 		return ERR_PTR(-ENOMEM);
+ 	pr_debug("%s for device %x\n", __func__, inode->i_rdev);
  
+-	afu = find_and_get_afu(inode->i_rdev);
+-	if (!afu)
++	info = find_file_info(inode->i_rdev);
++	if (!info)
+ 		return -ENODEV;
+ 
+ 	ctx = ocxl_context_alloc();
+ 	if (!ctx) {
+ 		rc = -ENOMEM;
+-		goto put_afu;
++		goto err;
+ 	}
+ 
+-	rc = ocxl_context_init(ctx, afu, inode->i_mapping);
++	rc = ocxl_context_init(ctx, info->afu, inode->i_mapping);
+ 	if (rc)
+-		goto put_afu;
++		goto err;
+ 	file->private_data = ctx;
+-	ocxl_afu_put(afu);
+ 	return 0;
+ 
+-put_afu:
+-	ocxl_afu_put(afu);
++err:
+ 	return rc;
+ }
+ 
+@@ -204,11 +198,16 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
+ 	struct ocxl_ioctl_irq_fd irq_fd;
+ 	u64 irq_offset;
+ 	long rc;
++	bool closed;
+ 
+ 	pr_debug("%s for context %d, command %s\n", __func__, ctx->pasid,
+ 		CMD_STR(cmd));
+ 
+-	if (ctx->status == CLOSED)
++	mutex_lock(&ctx->status_mutex);
++	closed = (ctx->status == CLOSED);
++	mutex_unlock(&ctx->status_mutex);
++
++	if (closed)
+ 		return -EIO;
+ 
+ 	switch (cmd) {
+@@ -468,39 +467,83 @@ static const struct file_operations ocxl_afu_fops = {
+ 	.release        = afu_release,
+ };
+ 
+-int ocxl_create_cdev(struct ocxl_afu *afu)
++// Called when there are no more consumers of the AFU
++static void ocxl_file_release(void *private)
+ {
+-	int rc;
++	struct ocxl_file_info *info = private;
+ 
+-	cdev_init(&afu->cdev, &ocxl_afu_fops);
+-	rc = cdev_add(&afu->cdev, afu->dev.devt, 1);
+-	if (rc) {
+-		dev_err(&afu->dev, "Unable to add afu char device: %d\n", rc);
+-		return rc;
+-	}
+-	return 0;
++	ocxl_sysfs_unregister_afu(info->afu);
++	device_unregister(&info->dev);
++
++	free_minor(info);
+ }
+ 
+-void ocxl_destroy_cdev(struct ocxl_afu *afu)
++// Free the info struct
++static void info_release(struct device *dev)
+ {
+-	cdev_del(&afu->cdev);
++	struct ocxl_file_info *info = container_of(dev, struct ocxl_file_info, dev);
++	kfree(info);
+ }
+ 
+-int ocxl_register_afu(struct ocxl_afu *afu)
++int ocxl_file_register_afu(struct ocxl_afu *afu)
+ {
+ 	int minor;
++	int rc;
++	struct ocxl_file_info *info;
++	struct ocxl_fn *fn = afu->fn;
++	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
++
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
++	if (info == NULL)
++		return -ENOMEM;
++
++	info->afu = afu;
+ 
+-	minor = allocate_afu_minor(afu);
+-	if (minor < 0)
++	minor = allocate_minor(info);
++	if (minor < 0) {
++		kfree(info);
+ 		return minor;
+-	afu->dev.devt = MKDEV(MAJOR(ocxl_dev), minor);
+-	afu->dev.class = ocxl_class;
+-	return device_register(&afu->dev);
++	}
++
++	info->dev.parent = &fn->dev;
++	info->dev.devt = MKDEV(MAJOR(ocxl_dev), minor);
++	info->dev.class = ocxl_class;
++	info->dev.release = info_release;
++
++	ocxl_afu_set_private(afu, info, ocxl_file_release);
++
++	rc = dev_set_name(&info->dev, "%s.%s.%hhu",
++		afu->config.name, dev_name(&pci_dev->dev), afu->config.idx);
++	if (rc)
++		return rc;
++
++	rc = device_register(&info->dev);
++	if (rc)
++		return rc;
++
++	return ocxl_sysfs_register_afu(afu);
+ }
+ 
+-void ocxl_unregister_afu(struct ocxl_afu *afu)
++int ocxl_file_make_visible(struct ocxl_afu *afu)
+ {
+-	free_afu_minor(afu);
++	int rc;
++	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
++
++	cdev_init(&info->cdev, &ocxl_afu_fops);
++	rc = cdev_add(&info->cdev, info->dev.devt, 1);
++	if (rc) {
++		dev_err(&info->dev, "Unable to add afu char device: %d\n", rc);
++		return rc;
++	}
++
++	return 0;
++}
++
++void ocxl_file_make_invisible(struct ocxl_afu *afu)
++{
++	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
++
++	cdev_del(&info->cdev);
+ }
+ 
+ static char *ocxl_devnode(struct device *dev, umode_t *mode)
+diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+index 81086534dab5..05930a29f606 100644
+--- a/drivers/misc/ocxl/ocxl_internal.h
++++ b/drivers/misc/ocxl/ocxl_internal.h
+@@ -11,9 +11,6 @@
+ #define MAX_IRQ_PER_LINK	2000
+ #define MAX_IRQ_PER_CONTEXT	MAX_IRQ_PER_LINK
+ 
+-#define to_ocxl_function(d) container_of(d, struct ocxl_fn, dev)
+-#define to_ocxl_afu(d) container_of(d, struct ocxl_afu, dev)
+-
+ extern struct pci_driver ocxl_pci_driver;
+ 
+ struct ocxl_fn {
+@@ -30,11 +27,17 @@ struct ocxl_fn {
+ 	void *link;
+ };
+ 
++struct ocxl_file_info {
++	struct ocxl_afu *afu;
++	struct device dev;
++	struct cdev cdev;
++	struct bin_attribute attr_global_mmio;
++};
++
+ struct ocxl_afu {
++	struct kref kref;
+ 	struct ocxl_fn *fn;
+ 	struct list_head list;
+-	struct device dev;
+-	struct cdev cdev;
+ 	struct ocxl_afu_config config;
+ 	int pasid_base;
+ 	int pasid_count; /* opened contexts */
+@@ -48,7 +51,9 @@ struct ocxl_afu {
+ 	u64 irq_base_offset;
+ 	void __iomem *global_mmio_ptr;
+ 	u64 pp_mmio_start;
+-	struct bin_attribute attr_global_mmio;
++	void *private;
++	void (*private_release)(void *private);
++
+ };
+ 
+ enum ocxl_context_status {
+@@ -91,13 +96,11 @@ struct ocxl_process_element {
+ 	__be32 software_state;
+ };
+ 
+-struct ocxl_afu *ocxl_afu_get(struct ocxl_afu *afu);
+-void ocxl_afu_put(struct ocxl_afu *afu);
+-
+ int ocxl_create_cdev(struct ocxl_afu *afu);
+ void ocxl_destroy_cdev(struct ocxl_afu *afu);
+-int ocxl_register_afu(struct ocxl_afu *afu);
+-void ocxl_unregister_afu(struct ocxl_afu *afu);
++int ocxl_file_register_afu(struct ocxl_afu *afu);
++int ocxl_file_make_visible(struct ocxl_afu *afu);
++void ocxl_file_make_invisible(struct ocxl_afu *afu);
+ 
+ int ocxl_file_init(void);
+ void ocxl_file_exit(void);
+@@ -140,8 +143,8 @@ int ocxl_context_detach(struct ocxl_context *ctx);
+ void ocxl_context_detach_all(struct ocxl_afu *afu);
+ void ocxl_context_free(struct ocxl_context *ctx);
+ 
+-int ocxl_sysfs_add_afu(struct ocxl_afu *afu);
+-void ocxl_sysfs_remove_afu(struct ocxl_afu *afu);
++int ocxl_sysfs_register_afu(struct ocxl_afu *afu);
++void ocxl_sysfs_unregister_afu(struct ocxl_afu *afu);
+ 
+ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
+ int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
+@@ -150,9 +153,11 @@ int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
+ 			int eventfd);
+ u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
+ 
+-struct ocxl_fn *init_function(struct pci_dev *dev);
+-void remove_function(struct ocxl_fn *fn);
+-int init_afu(struct pci_dev *dev, struct ocxl_fn *fn, u8 afu_idx);
+-void remove_afu(struct ocxl_afu *afu);
++/**
++ * Free an AFU
++ *
++ * afu: The AFU to free
++ */
++void ocxl_free_afu(struct ocxl_afu *afu);
+ 
+ #endif /* _OCXL_INTERNAL_H_ */
+diff --git a/drivers/misc/ocxl/pci.c b/drivers/misc/ocxl/pci.c
+index 5926c863716c..a1ed2bb02e4b 100644
+--- a/drivers/misc/ocxl/pci.c
++++ b/drivers/misc/ocxl/pci.c
+@@ -16,47 +16,48 @@ MODULE_DEVICE_TABLE(pci, ocxl_pci_tbl);
+ 
+ static int ocxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ {
+-	int rc, afu_count = 0;
+-	u8 afu;
++	int rc;
++	struct ocxl_afu *afu, *tmp;
+ 	struct ocxl_fn *fn;
++	struct list_head *afu_list;
+ 
+-	if (!radix_enabled()) {
+-		dev_err(&dev->dev, "Unsupported memory model (hash)\n");
+-		return -ENODEV;
+-	}
+-
+-	fn = init_function(dev);
+-	if (IS_ERR(fn)) {
+-		dev_err(&dev->dev, "function init failed: %li\n",
+-			PTR_ERR(fn));
++	fn = ocxl_function_open(dev);
++	if (IS_ERR(fn))
+ 		return PTR_ERR(fn);
+-	}
+ 
+-	for (afu = 0; afu <= fn->config.max_afu_index; afu++) {
+-		rc = ocxl_config_check_afu_index(dev, &fn->config, afu);
+-		if (rc > 0) {
+-			rc = init_afu(dev, fn, afu);
+-			if (rc) {
+-				dev_err(&dev->dev,
+-					"Can't initialize AFU index %d\n", afu);
+-				continue;
+-			}
+-			afu_count++;
+-		}
++	pci_set_drvdata(dev, fn);
++
++	afu_list = ocxl_function_afu_list(fn);
++
++	list_for_each_entry_safe(afu, tmp, afu_list, list) {
++		rc = ocxl_file_register_afu(afu);
++		if (rc)
++			continue;
++
++		rc = ocxl_file_make_visible(afu);
++		if (rc)
++			continue;
++
++		// Defer error cleanup until the device is removed
+ 	}
+-	dev_info(&dev->dev, "%d AFU(s) configured\n", afu_count);
++
+ 	return 0;
+ }
+ 
+-static void ocxl_remove(struct pci_dev *dev)
++void ocxl_remove(struct pci_dev *dev)
+ {
+-	struct ocxl_afu *afu, *tmp;
+-	struct ocxl_fn *fn = pci_get_drvdata(dev);
++	struct ocxl_fn *fn;
++	struct ocxl_afu *afu;
++	struct list_head *afu_list;
++
++	fn = pci_get_drvdata(dev);
++	afu_list = ocxl_function_afu_list(fn);
+ 
+-	list_for_each_entry_safe(afu, tmp, &fn->afu_list, list) {
+-		remove_afu(afu);
++	list_for_each_entry(afu, afu_list, list) {
++		ocxl_file_make_invisible(afu);
+ 	}
+-	remove_function(fn);
++
++	ocxl_function_close(fn);
+ }
+ 
+ struct pci_driver ocxl_pci_driver = {
+diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
+index 0ab1fd1b2682..a67931f1feec 100644
+--- a/drivers/misc/ocxl/sysfs.c
++++ b/drivers/misc/ocxl/sysfs.c
+@@ -3,11 +3,18 @@
+ #include <linux/sysfs.h>
+ #include "ocxl_internal.h"
+ 
++static inline struct ocxl_afu *to_afu(struct device *device)
++{
++	struct ocxl_file_info *info = container_of(device, struct ocxl_file_info, dev);
++
++	return info->afu;
++}
++
+ static ssize_t global_mmio_size_show(struct device *device,
+ 				struct device_attribute *attr,
+ 				char *buf)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(device);
++	struct ocxl_afu *afu = to_afu(device);
+ 
+ 	return scnprintf(buf, PAGE_SIZE, "%d\n",
+ 			afu->config.global_mmio_size);
+@@ -17,7 +24,7 @@ static ssize_t pp_mmio_size_show(struct device *device,
+ 				struct device_attribute *attr,
+ 				char *buf)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(device);
++	struct ocxl_afu *afu = to_afu(device);
+ 
+ 	return scnprintf(buf, PAGE_SIZE, "%d\n",
+ 			afu->config.pp_mmio_stride);
+@@ -27,7 +34,7 @@ static ssize_t afu_version_show(struct device *device,
+ 				struct device_attribute *attr,
+ 				char *buf)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(device);
++	struct ocxl_afu *afu = to_afu(device);
+ 
+ 	return scnprintf(buf, PAGE_SIZE, "%hhu:%hhu\n",
+ 			afu->config.version_major,
+@@ -38,7 +45,7 @@ static ssize_t contexts_show(struct device *device,
+ 		struct device_attribute *attr,
+ 		char *buf)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(device);
++	struct ocxl_afu *afu = to_afu(device);
+ 
+ 	return scnprintf(buf, PAGE_SIZE, "%d/%d\n",
+ 			afu->pasid_count, afu->pasid_max);
+@@ -55,7 +62,7 @@ static ssize_t global_mmio_read(struct file *filp, struct kobject *kobj,
+ 				struct bin_attribute *bin_attr, char *buf,
+ 				loff_t off, size_t count)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(kobj_to_dev(kobj));
++	struct ocxl_afu *afu = to_afu(kobj_to_dev(kobj));
+ 
+ 	if (count == 0 || off < 0 ||
+ 		off >= afu->config.global_mmio_size)
+@@ -86,7 +93,7 @@ static int global_mmio_mmap(struct file *filp, struct kobject *kobj,
+ 			struct bin_attribute *bin_attr,
+ 			struct vm_area_struct *vma)
+ {
+-	struct ocxl_afu *afu = to_ocxl_afu(kobj_to_dev(kobj));
++	struct ocxl_afu *afu = to_afu(kobj_to_dev(kobj));
+ 
+ 	if ((vma_pages(vma) + vma->vm_pgoff) >
+ 		(afu->config.global_mmio_size >> PAGE_SHIFT))
+@@ -99,27 +106,29 @@ static int global_mmio_mmap(struct file *filp, struct kobject *kobj,
+ 	return 0;
+ }
+ 
+-int ocxl_sysfs_add_afu(struct ocxl_afu *afu)
++int ocxl_sysfs_register_afu(struct ocxl_afu *afu)
+ {
+ 	int i, rc;
++	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
++
++	if (!info)
++		return -EFAULT; // ocxl_file_register_afu() must be called first
+ 
+ 	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++) {
+-		rc = device_create_file(&afu->dev, &afu_attrs[i]);
++		rc = device_create_file(&info->dev, &afu_attrs[i]);
+ 		if (rc)
+ 			goto err;
+ 	}
+ 
+-	sysfs_attr_init(&afu->attr_global_mmio.attr);
+-	afu->attr_global_mmio.attr.name = "global_mmio_area";
+-	afu->attr_global_mmio.attr.mode = 0600;
+-	afu->attr_global_mmio.size = afu->config.global_mmio_size;
+-	afu->attr_global_mmio.read = global_mmio_read;
+-	afu->attr_global_mmio.mmap = global_mmio_mmap;
+-	rc = device_create_bin_file(&afu->dev, &afu->attr_global_mmio);
++	sysfs_attr_init(&info->attr_global_mmio.attr);
++	info->attr_global_mmio.attr.name = "global_mmio_area";
++	info->attr_global_mmio.attr.mode = 0600;
++	info->attr_global_mmio.size = afu->config.global_mmio_size;
++	info->attr_global_mmio.read = global_mmio_read;
++	info->attr_global_mmio.mmap = global_mmio_mmap;
++	rc = device_create_bin_file(&info->dev, &info->attr_global_mmio);
+ 	if (rc) {
+-		dev_err(&afu->dev,
+-			"Unable to create global mmio attr for afu: %d\n",
+-			rc);
++		dev_err(&info->dev, "Unable to create global mmio attr for afu: %d\n", rc);
+ 		goto err;
+ 	}
+ 
+@@ -127,15 +136,20 @@ int ocxl_sysfs_add_afu(struct ocxl_afu *afu)
+ 
+ err:
+ 	for (i--; i >= 0; i--)
+-		device_remove_file(&afu->dev, &afu_attrs[i]);
++		device_remove_file(&info->dev, &afu_attrs[i]);
++
+ 	return rc;
+ }
+ 
+-void ocxl_sysfs_remove_afu(struct ocxl_afu *afu)
++void ocxl_sysfs_unregister_afu(struct ocxl_afu *afu)
+ {
++	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
+ 	int i;
+ 
++	if (!info)
++		return;
++
+ 	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++)
+-		device_remove_file(&afu->dev, &afu_attrs[i]);
+-	device_remove_bin_file(&afu->dev, &afu->attr_global_mmio);
++		device_remove_file(&info->dev, &afu_attrs[i]);
++	device_remove_bin_file(&info->dev, &info->attr_global_mmio);
+ }
+diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+index 9530d3be1b30..7d611ea68a59 100644
+--- a/include/misc/ocxl.h
++++ b/include/misc/ocxl.h
+@@ -16,11 +16,7 @@
+ 
+ #define OCXL_AFU_NAME_SZ      (24+1)  /* add 1 for NULL termination */
+ 
+-/*
+- * The following 2 structures are a fairly generic way of representing
+- * the configuration data for a function and AFU, as read from the
+- * configuration space.
+- */
++
+ struct ocxl_afu_config {
+ 	u8 idx;
+ 	int dvsec_afu_control_pos; /* offset of AFU control DVSEC */
+@@ -49,12 +45,110 @@ struct ocxl_fn_config {
+ 	s8 max_afu_index;
+ };
+ 
+-/*
+- * Read the configuration space of a function and fill in a
+- * ocxl_fn_config structure with all the function details
++// These are opaque outside the ocxl driver
++struct ocxl_afu;
++struct ocxl_fn;
++
++// Device detection & initialisation
++
++/**
++ * Open an OpenCAPI function on an OpenCAPI device
++ *
++ * @dev: The PCI device that contains the function
++ *
++ * Returns an opaque pointer to the function, or an error pointer (check with IS_ERR)
+  */
+-int ocxl_config_read_function(struct pci_dev *dev,
+-				struct ocxl_fn_config *fn);
++struct ocxl_fn *ocxl_function_open(struct pci_dev *dev);
++
++/**
++ * Get the list of AFUs associated with a PCI function device
++ *
++ * Returns a list of struct ocxl_afu *
++ *
++ * @fn: The OpenCAPI function containing the AFUs
++ */
++struct list_head *ocxl_function_afu_list(struct ocxl_fn *fn);
++
++/**
++ * Fetch an AFU instance from an OpenCAPI function
++ *
++ * @fn: The OpenCAPI function to get the AFU from
++ * @afu_idx: The index of the AFU to get
++ *
++ * If successful, the AFU should be released with ocxl_afu_put()
++ *
++ * Returns a pointer to the AFU, or NULL on error
++ */
++struct ocxl_afu *ocxl_function_fetch_afu(struct ocxl_fn *fn, u8 afu_idx);
++
++/**
++ * Take a reference to an AFU
++ *
++ * @afu: The AFU to increment the reference count on
++ */
++void ocxl_afu_get(struct ocxl_afu *afu);
++
++/**
++ * Release a reference to an AFU
++ *
++ * @afu: The AFU to decrement the reference count on
++ */
++void ocxl_afu_put(struct ocxl_afu *afu);
++
++
++/**
++ * Get the configuration information for an OpenCAPI function
++ *
++ * @fn: The OpenCAPI function to get the config for
++ *
++ * Returns the function config, or NULL on error
++ */
++const struct ocxl_fn_config *ocxl_function_config(struct ocxl_fn *fn);
++
++/**
++ * Close an OpenCAPI function
++ *
++ * This will free any AFUs previously retrieved from the function, and
++ * detach and associated contexts. The contexts must by freed by the caller.
++ *
++ * @fn: The OpenCAPI function to close
++ *
++ */
++void ocxl_function_close(struct ocxl_fn *fn);
++
++// AFU Metadata
++
++/**
++ * Get a pointer to the config for an AFU
++ *
++ * @afu: a pointer to the AFU to get the config for
++ *
++ * Returns a pointer to the AFU config
++ */
++struct ocxl_afu_config *ocxl_afu_config(struct ocxl_afu *afu);
++
++/**
++ * Assign opaque hardware specific information to an OpenCAPI AFU.
++ *
++ * @dev: The PCI device associated with the OpenCAPI device
++ * @private: the opaque hardware specific information to assign to the driver
++ * @private_release: A callback to free the private data
++ */
++void ocxl_afu_set_private(struct ocxl_afu *afu, void *private,
++			void (*private_release)(void *private));
++
++/**
++ * Fetch the hardware specific information associated with an external OpenCAPI
++ * AFU. This may be consumed by an external OpenCAPI driver.
++ *
++ * @afu: The AFU
++ *
++ * Returns the opaque pointer associated with the device, or NULL if not set
++ */
++void *ocxl_afu_get_private(struct ocxl_afu *dev);
++
++
++// Functions left here are for compatibility with the cxlflash driver
+ 
+ /*
+  * Read the configuration space of a function for the AFU specified by
+@@ -141,6 +235,13 @@ int ocxl_config_set_TL(struct pci_dev *dev, int tl_dvsec);
+ int ocxl_config_terminate_pasid(struct pci_dev *dev,
+ 				int afu_control_offset, int pasid);
+ 
++/*
++ * Read the configuration space of a function and fill in a
++ * ocxl_fn_config structure with all the function details
++ */
++int ocxl_config_read_function(struct pci_dev *dev,
++				struct ocxl_fn_config *fn);
++
+ /*
+  * Set up the opencapi link for the function.
+  *
 -- 
 2.20.1
 
