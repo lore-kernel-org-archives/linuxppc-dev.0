@@ -2,77 +2,91 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_NEOMUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.9 required=3.0 tests=DATE_IN_PAST_03_06,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DF4C2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:25:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D455FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:51:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 56BCB2183E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:25:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=cisco.com header.i=@cisco.com header.b="Ash0+VDD"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 56BCB2183E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=quarantine dis=none) header.from=cisco.com
+	by mail.kernel.org (Postfix) with ESMTPS id 235FC20835
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 23:51:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 235FC20835
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PmH70GQvzDqPg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 10:25:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PmsD6th4zDqQ0
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 10:51:12 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=cisco.com
- (client-ip=173.37.86.72; helo=rcdn-iport-1.cisco.com;
- envelope-from=danielwa@cisco.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none)
- header.from=cisco.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=cisco.com header.i=@cisco.com header.b="Ash0+VDD"; 
- dkim-atps=neutral
-Received: from rcdn-iport-1.cisco.com (rcdn-iport-1.cisco.com [173.37.86.72])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PmFP3cSVzDqNS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 10:23:34 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=cisco.com; i=@cisco.com; l=1174; q=dns/txt; s=iport;
- t=1553124217; x=1554333817;
- h=date:from:to:cc:subject:message-id:references:
- mime-version:in-reply-to;
- bh=R+DVdRepSu84yfowrZ6ypAs5+WZg8d0uiCTV7N33jOI=;
- b=Ash0+VDDBdVxUJl4Dggup4xYtwOlZEhTGEvx2ygZQ/+XQ0UGmgaZIpCg
- stx2S5ivY1TzGTd7grTpWB+gE3+tDbht4IIkrWhf53HpRTuW5lApH9n9e
- jIhBiMcmX2/XbGSWnAAaXEBYMNhwJloRmGjpkfnUZWbgwMk+xFJHvHRVL U=;
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: =?us-ascii?q?A0AQAACbypJc/4oNJK1kGQEBAQEBAQE?=
- =?us-ascii?q?BAQEBAQcBAQEBAQGBVAEBAQEBAQsBghCBODMnl0eCDYkzhQwRiXmBZwsBARi?=
- =?us-ascii?q?EVAKEZyI3Bg0BAQMBAQkBAwJtKIVKAQEBAQMBOTQLEAsOBwIBCSUPEgcUEwg?=
- =?us-ascii?q?GE4UAAxWsRYgFDYIfFA6BDQGLMReBQD+EI4JXgXcBEQIBhX8DkiaGGotrGzY?=
- =?us-ascii?q?JgkuMLHqDMyUMk1mSRYtbAgQGBQIVgWIiZXEzGggbFTuCbJBrHwMwjQ0BAQ?=
-X-IronPort-AV: E=Sophos;i="5.60,250,1549929600"; d="scan'208";a="537691888"
-Received: from alln-core-5.cisco.com ([173.36.13.138])
- by rcdn-iport-1.cisco.com with ESMTP/TLS/DHE-RSA-SEED-SHA;
- 20 Mar 2019 23:23:30 +0000
-Received: from zorba ([10.154.176.41])
- by alln-core-5.cisco.com (8.15.2/8.15.2) with ESMTPS id x2KNNSaN001900
- (version=TLSv1.2 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=NO);
- Wed, 20 Mar 2019 23:23:29 GMT
-Date: Wed, 20 Mar 2019 16:23:28 -0700
-From: Daniel Walker <danielwa@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] add generic builtin command line
-Message-ID: <20190320232328.3bijcxek2yg43a25@zorba>
-References: <20190319232448.45964-2-danielwa@cisco.com>
- <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
-User-Agent: NeoMutt/20170609 (1.8.3)
-X-Auto-Response-Suppress: DR, OOF, AutoReply
-X-Outbound-SMTP-Client: 10.154.176.41, [10.154.176.41]
-X-Outbound-Node: alln-core-5.cisco.com
+ spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=tyreld@linux.vnet.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux.vnet.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PmqY25TTzDqNX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 10:49:44 +1100 (AEDT)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2KNnEiF099660
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:49:42 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rbxg1ja2x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:49:42 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Wed, 20 Mar 2019 23:49:48 -0000
+Received: from b03cxnp08025.gho.boulder.ibm.com (9.17.130.17)
+ by e33.co.us.ibm.com (192.168.1.133) with IBM ESMTP SMTP Gateway: Authorized
+ Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Wed, 20 Mar 2019 23:49:45 -0000
+Received: from b03ledav002.gho.boulder.ibm.com
+ (b03ledav002.gho.boulder.ibm.com [9.17.130.233])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2KNnbSv32571412
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Wed, 20 Mar 2019 23:49:38 GMT
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D6837136053;
+ Wed, 20 Mar 2019 23:49:37 +0000 (GMT)
+Received: from b03ledav002.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7603A13604F;
+ Wed, 20 Mar 2019 23:49:37 +0000 (GMT)
+Received: from linux-xej6.aus.stglabs.ibm.com (unknown [9.40.195.184])
+ by b03ledav002.gho.boulder.ibm.com (Postfix) with ESMTP;
+ Wed, 20 Mar 2019 23:49:37 +0000 (GMT)
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: james.bottomley@hansenpartnership.com
+Subject: [PATCH 1/2] ibmvscsi: Protect ibmvscsi_head from concurrent
+ modificaiton
+Date: Wed, 20 Mar 2019 13:41:50 -0500
+X-Mailer: git-send-email 2.12.3
+X-TM-AS-GCONF: 00
+x-cbid: 19032023-0036-0000-0000-00000A9BE395
+X-IBM-SpamModules-Scores: 
+X-IBM-SpamModules-Versions: BY=3.00010789; HX=3.00000242; KW=3.00000007;
+ PH=3.00000004; SC=3.00000281; SDB=6.01177289; UDB=6.00615853; IPR=6.00957984; 
+ MB=3.00026081; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-20 23:49:47
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032023-0037-0000-0000-00004B198209
+Message-Id: <20190320184151.31321-1-tyreld@linux.vnet.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-20_14:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=761 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903200169
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -84,40 +98,60 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- xe-linux-external@cisco.com, Daniel Walker <dwalker@fifo99.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: martin.petersen@oracle.com, linux-scsi@vger.kernel.org,
+ stable@vger.kernel.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ brking@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Wed, Mar 20, 2019 at 03:53:19PM -0700, Andrew Morton wrote:
-> On Tue, 19 Mar 2019 16:24:45 -0700 Daniel Walker <danielwa@cisco.com> wrote:
-> 
-> > This code allows architectures to use a generic builtin command line.
-> 
-> I wasn't cc'ed on [2/4].  No mailing lists were cc'ed on [0/4] but it
-> didn't say anything useful anyway ;)
-> 
-> I'll queue them up for testing and shall await feedback from the
-> powerpc developers.
-> 
+For each ibmvscsi host created during a probe or destroyed during a
+remove we either add or remove that host to/from the global ibmvscsi_head
+list. This runs the risk of concurrent modification.
 
-You weren't CC'd , but it was To: you,
+This patch adds a simple spinlock around the list modification calls to
+prevent concurrent updates as is done similarly in the ibmvfc driver and
+ipr driver.
 
- 35 From: Daniel Walker <danielwa@cisco.com>
- 36 To: Andrew Morton <akpm@linux-foundation.org>,
- 37         Christophe Leroy <christophe.leroy@c-s.fr>,
- 38         Michael Ellerman <mpe@ellerman.id.au>,
- 39         Rob Herring <robh+dt@kernel.org>, xe-linux-external@cisco.com,
- 40         linuxppc-dev@lists.ozlabs.org, Frank Rowand <frowand.list@gmail.com>
- 41 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
- 42 Subject: [PATCH 2/4] drivers: of: generic command line support
+Fixes: 32d6e4b6e4ea ("scsi: ibmvscsi: add vscsi hosts to global list_head")
+Cc: <stable@vger.kernel.org> # v4.10+
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ drivers/scsi/ibmvscsi/ibmvscsi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-and the first one [0/4] should have went to the linuxppc-dev , and xe-linux-external. Maybe 
-our git-send-email isn't working with our mail servers.
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index 1135e74646e2..2b22969f3f63 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -96,6 +96,7 @@ static int client_reserve = 1;
+ static char partition_name[96] = "UNKNOWN";
+ static unsigned int partition_number = -1;
+ static LIST_HEAD(ibmvscsi_head);
++static DEFINE_SPINLOCK(ibmvscsi_driver_lock);
+ 
+ static struct scsi_transport_template *ibmvscsi_transport_template;
+ 
+@@ -2270,7 +2271,9 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	}
+ 
+ 	dev_set_drvdata(&vdev->dev, hostdata);
++	spin_lock(&ibmvscsi_driver_lock);
+ 	list_add_tail(&hostdata->host_list, &ibmvscsi_head);
++	spin_unlock(&ibmvscsi_driver_lock);
+ 	return 0;
+ 
+       add_srp_port_failed:
+@@ -2292,7 +2295,9 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ static int ibmvscsi_remove(struct vio_dev *vdev)
+ {
+ 	struct ibmvscsi_host_data *hostdata = dev_get_drvdata(&vdev->dev);
++	spin_lock(&ibmvscsi_driver_lock);
+ 	list_del(&hostdata->host_list);
++	spin_unlock(&ibmvscsi_driver_lock);
+ 	unmap_persist_bufs(hostdata);
+ 	release_event_pool(&hostdata->pool, hostdata);
+ 	ibmvscsi_release_crq_queue(&hostdata->queue, hostdata,
+-- 
+2.12.3
 
-Thanks for picking it up.
-
-Daniel
