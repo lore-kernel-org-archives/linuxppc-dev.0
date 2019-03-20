@@ -2,55 +2,55 @@ Return-Path: <SRS0=4bR/=RX=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38F94C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:40:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE21DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:41:41 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EA88D21841
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:40:06 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EA88D21841
+	by mail.kernel.org (Postfix) with ESMTPS id 4E24B21841
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 08:41:41 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4E24B21841
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44PNdw2VMzzDqFK
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:40:04 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44PNgl1JkXzDqLl
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Mar 2019 19:41:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=46.105.53.132; helo=6.mo178.mail-out.ovh.net;
+ (client-ip=46.105.72.44; helo=9.mo173.mail-out.ovh.net;
  envelope-from=clg@kaod.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=kaod.org
-X-Greylist: delayed 60248 seconds by postgrey-1.36 at bilbo;
- Wed, 20 Mar 2019 19:38:14 AEDT
-Received: from 6.mo178.mail-out.ovh.net (6.mo178.mail-out.ovh.net
- [46.105.53.132])
+Received: from 9.mo173.mail-out.ovh.net (9.mo173.mail-out.ovh.net
+ [46.105.72.44])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44PNbp38R9zDq8g
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:38:10 +1100 (AEDT)
-Received: from player787.ha.ovh.net (unknown [10.109.159.224])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id 6C281592FE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:38:04 +0100 (CET)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44PNbt17Y6zDqHb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 19:38:17 +1100 (AEDT)
+Received: from player787.ha.ovh.net (unknown [10.109.159.69])
+ by mo173.mail-out.ovh.net (Postfix) with ESMTP id C0037F5238
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Mar 2019 09:38:12 +0100 (CET)
 Received: from kaod.org (lfbn-1-2226-17.w90-76.abo.wanadoo.fr [90.76.48.17])
  (Authenticated sender: clg@kaod.org)
- by player787.ha.ovh.net (Postfix) with ESMTPSA id D7E6B3F3AB2A;
- Wed, 20 Mar 2019 08:37:57 +0000 (UTC)
+ by player787.ha.ovh.net (Postfix) with ESMTPSA id E6D293F3AC31;
+ Wed, 20 Mar 2019 08:38:04 +0000 (UTC)
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v4 00/17] KVM: PPC: Book3S HV: add XIVE native exploitation
- mode
-Date: Wed, 20 Mar 2019 09:37:34 +0100
-Message-Id: <20190320083751.27001-1-clg@kaod.org>
+Subject: [PATCH v4 01/17] powerpc/xive: add OPAL extensions for the XIVE
+ native exploitation support
+Date: Wed, 20 Mar 2019 09:37:35 +0100
+Message-Id: <20190320083751.27001-2-clg@kaod.org>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190320083751.27001-1-clg@kaod.org>
+References: <20190320083751.27001-1-clg@kaod.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 18152884199811091415
+X-Ovh-Tracer-Id: 18155135999028726743
 X-VR-SPAMSTATE: OK
 X-VR-SPAMSCORE: -100
 X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrieehgdduvdehucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddm
@@ -72,169 +72,231 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hello,
+The support for XIVE native exploitation mode in Linux/KVM needs a
+couple more OPAL calls to get and set the state of the XIVE internal
+structures being used by a sPAPR guest.
 
-On the POWER9 processor, the XIVE interrupt controller can control
-interrupt sources using MMIOs to trigger events, to EOI or to turn off
-the sources. Priority management and interrupt acknowledgment is also
-controlled by MMIO in the CPU presenter sub-engine.
+Signed-off-by: Cédric Le Goater <clg@kaod.org>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-PowerNV/baremetal Linux runs natively under XIVE but sPAPR guests need
-special support from the hypervisor to do the same. This is called the
-XIVE native exploitation mode and today, it can be activated under the
-PowerPC Hypervisor, pHyp. However, Linux/KVM lacks XIVE native support
-and still offers the old interrupt mode interface using a KVM device
-implementing the XICS hcalls over XIVE.
-
-The following series is proposal to add the same support under KVM.
-
-A new KVM device is introduced for the XIVE native exploitation
-mode. It reuses most of the XICS-over-XIVE glue implementation
-structures which are internal to KVM but has a completely different
-interface. A set of KVM device ioctls provide support for the
-hypervisor calls, all handled in QEMU, to configure the sources and
-the event queues. From there, all interrupt control is transferred to
-the guest which can use MMIOs.
-
-These MMIO regions (ESB and TIMA) are exposed to guests in QEMU,
-similarly to VFIO, and the associated VMAs are populated dynamically
-with the appropriate pages using a fault handler. These are now
-implemented using mmap()s of the KVM device fd.
-
-Migration has its own specific needs regarding memory. The patchset
-provides a specific control to quiesce XIVE before capturing the
-memory. The save and restore of the internal state is based on the
-same ioctls used for the hcalls.
-
-On a POWER9 sPAPR machine, the Client Architecture Support (CAS)
-negotiation process determines whether the guest operates with a
-interrupt controller using the XICS legacy model, as found on POWER8,
-or in XIVE exploitation mode. Which means that the KVM interrupt
-device should be created at run-time, after the machine has started.
-This requires extra support from KVM to destroy KVM devices. It is
-introduced at the end of the patchset as it still requires some
-attention and a XIVE-only VM would not need.
-
-This is based on 5.1-rc1 and should be a candidate for 5.2 now. The
-OPAL patches have not yet been merged.
-
-
-GitHub trees available here :
+ Changes since v3:
  
-QEMU sPAPR:
-
-  https://github.com/legoater/qemu/commits/xive-next
-  
-Linux/KVM:
-
-  https://github.com/legoater/linux/commits/xive-5.1
-
-OPAL:
-
-  https://github.com/legoater/skiboot/commits/xive
-
-Thanks,
-
-C.
-
-Caveats :
-
- - We should introduce a set of definitions common to XIVE and XICS
- - The XICS-over-XIVE device file book3s_xive.c could be renamed to
-   book3s_xics_on_xive.c or book3s_xics_p9.c
- - The XICS-over-XIVE device has locking issues in the setup. 
-
-Changes since v3:
-
- - removed a couple of useless includes
- - fix the test ont the initial setting of the EQ toggle bit : 0 -> 1
- - renamed qsize to qshift
- - renamed qpage to qaddr
- - checked host page size
- - limited flags to KVM_XIVE_EQ_ALWAYS_NOTIFY to fit sPAPR specs
- - Fixed xive_timaval description in documentation
-
-Changes since v2:
-
- - removed extra OPAL call definitions
- - removed ->q_order setting. Only useful in the XICS-on-XIVE KVM
-   device which allocates the EQs on behalf of the guest.
- - returned -ENXIO when VP base is invalid
- - made use of the xive_vp() macro to compute VP identifiers
- - reworked locking in kvmppc_xive_native_connect_vcpu() to fix races 
- - stop advertising KVM_CAP_PPC_IRQ_XIVE as support is not fully
-   available yet
- - fixed comment on XIVE IRQ number space
- - removed usage of the __x_* macros
- - fixed locking on source block
- - fixed comments on the KVM device attribute definitions
- - handled MASKED EAS configuration
- - fixed check on supported EQ size to restrict to 64K pages
- - checked kvm_eq.flags that need to be zero
- - removed the OPAL call when EQ qtoggle bit and index are zero. 
- - reduced the size of kvmppc_one_reg timaval attribute to two u64s
- - stopped returning of the OS CAM line value
+ - rebased on 5.1-rc1 
  
-Changes since v1:
+ Changes since v2:
+ 
+ - remove extra OPAL call definitions
+ 
+ arch/powerpc/include/asm/opal-api.h        |  7 +-
+ arch/powerpc/include/asm/opal.h            |  7 ++
+ arch/powerpc/include/asm/xive.h            | 14 +++
+ arch/powerpc/platforms/powernv/opal-call.c |  3 +
+ arch/powerpc/sysdev/xive/native.c          | 99 ++++++++++++++++++++++
+ 5 files changed, 127 insertions(+), 3 deletions(-)
 
- - Better documentation (was missing)
- - Nested support. XIVE not advertised on non PowerNV platforms. This
-   is a good way to test the fallback on QEMU emulated devices.
- - ESB and TIMA special mapping done using the KVM device fd
- - All hcalls moved to QEMU. Dropped the patch moving the hcall flags.
- - Reworked of the KVM device ioctl controls to support hcalls and
-   migration needs to capture/save states
- - Merged the control syncing XIVE and marking the EQ page dirty
- - Fixed passthrough support using the KVM device file address_space
-   to clear the ESB pages from the mapping
- - Misc enhancements and fixes 
-
-Cédric Le Goater (17):
-  powerpc/xive: add OPAL extensions for the XIVE native exploitation
-    support
-  KVM: PPC: Book3S HV: add a new KVM device for the XIVE native
-    exploitation mode
-  KVM: PPC: Book3S HV: XIVE: introduce a new capability
-    KVM_CAP_PPC_IRQ_XIVE
-  KVM: PPC: Book3S HV: XIVE: add a control to initialize a source
-  KVM: PPC: Book3S HV: XIVE: add a control to configure a source
-  KVM: PPC: Book3S HV: XIVE: add controls for the EQ configuration
-  KVM: PPC: Book3S HV: XIVE: add a global reset control
-  KVM: PPC: Book3S HV: XIVE: add a control to sync the sources
-  KVM: PPC: Book3S HV: XIVE: add a control to dirty the XIVE EQ pages
-  KVM: PPC: Book3S HV: XIVE: add get/set accessors for the VP XIVE state
-  KVM: introduce a 'mmap' method for KVM devices
-  KVM: PPC: Book3S HV: XIVE: add a TIMA mapping
-  KVM: PPC: Book3S HV: XIVE: add a mapping for the source ESB pages
-  KVM: PPC: Book3S HV: XIVE: add passthrough support
-  KVM: PPC: Book3S HV: XIVE: activate XIVE exploitation mode
-  KVM: introduce a KVM_DESTROY_DEVICE ioctl
-  KVM: PPC: Book3S HV: XIVE: clear the vCPU interrupt presenters
-
- arch/powerpc/include/asm/kvm_host.h        |    2 +
- arch/powerpc/include/asm/kvm_ppc.h         |   32 +
- arch/powerpc/include/asm/opal-api.h        |    7 +-
- arch/powerpc/include/asm/opal.h            |    7 +
- arch/powerpc/include/asm/xive.h            |   17 +
- arch/powerpc/include/uapi/asm/kvm.h        |   46 +
- arch/powerpc/kvm/book3s_xive.h             |   36 +
- include/linux/kvm_host.h                   |    1 +
- include/uapi/linux/kvm.h                   |   10 +
- arch/powerpc/kvm/book3s.c                  |   31 +-
- arch/powerpc/kvm/book3s_xics.c             |   19 +
- arch/powerpc/kvm/book3s_xive.c             |  170 ++-
- arch/powerpc/kvm/book3s_xive_native.c      | 1205 ++++++++++++++++++++
- arch/powerpc/kvm/powerpc.c                 |   37 +
- arch/powerpc/platforms/powernv/opal-call.c |    3 +
- arch/powerpc/sysdev/xive/native.c          |  110 ++
- virt/kvm/kvm_main.c                        |   52 +
- Documentation/virtual/kvm/api.txt          |   29 +
- Documentation/virtual/kvm/devices/xive.txt |  197 ++++
- arch/powerpc/kvm/Makefile                  |    2 +-
- 20 files changed, 1953 insertions(+), 60 deletions(-)
- create mode 100644 arch/powerpc/kvm/book3s_xive_native.c
- create mode 100644 Documentation/virtual/kvm/devices/xive.txt
-
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 870fb7b239ea..e1d118ac61dc 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -186,8 +186,8 @@
+ #define OPAL_XIVE_FREE_IRQ			140
+ #define OPAL_XIVE_SYNC				141
+ #define OPAL_XIVE_DUMP				142
+-#define OPAL_XIVE_RESERVED3			143
+-#define OPAL_XIVE_RESERVED4			144
++#define OPAL_XIVE_GET_QUEUE_STATE		143
++#define OPAL_XIVE_SET_QUEUE_STATE		144
+ #define OPAL_SIGNAL_SYSTEM_RESET		145
+ #define OPAL_NPU_INIT_CONTEXT			146
+ #define OPAL_NPU_DESTROY_CONTEXT		147
+@@ -210,7 +210,8 @@
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+ #define	OPAL_NX_COPROC_INIT			167
+-#define OPAL_LAST				167
++#define OPAL_XIVE_GET_VP_STATE			170
++#define OPAL_LAST				170
+ 
+ #define QUIESCE_HOLD			1 /* Spin all calls at entry */
+ #define QUIESCE_REJECT			2 /* Fail all calls with OPAL_BUSY */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a55b01c90bb1..4e978d4dea5c 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -279,6 +279,13 @@ int64_t opal_xive_allocate_irq(uint32_t chip_id);
+ int64_t opal_xive_free_irq(uint32_t girq);
+ int64_t opal_xive_sync(uint32_t type, uint32_t id);
+ int64_t opal_xive_dump(uint32_t type, uint32_t id);
++int64_t opal_xive_get_queue_state(uint64_t vp, uint32_t prio,
++				  __be32 *out_qtoggle,
++				  __be32 *out_qindex);
++int64_t opal_xive_set_queue_state(uint64_t vp, uint32_t prio,
++				  uint32_t qtoggle,
++				  uint32_t qindex);
++int64_t opal_xive_get_vp_state(uint64_t vp, __be64 *out_w01);
+ int64_t opal_pci_set_p2p(uint64_t phb_init, uint64_t phb_target,
+ 			uint64_t desc, uint16_t pe_number);
+ 
+diff --git a/arch/powerpc/include/asm/xive.h b/arch/powerpc/include/asm/xive.h
+index 3c704f5dd3ae..b579a943407b 100644
+--- a/arch/powerpc/include/asm/xive.h
++++ b/arch/powerpc/include/asm/xive.h
+@@ -109,12 +109,26 @@ extern int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
+ extern void xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio);
+ 
+ extern void xive_native_sync_source(u32 hw_irq);
++extern void xive_native_sync_queue(u32 hw_irq);
+ extern bool is_xive_irq(struct irq_chip *chip);
+ extern int xive_native_enable_vp(u32 vp_id, bool single_escalation);
+ extern int xive_native_disable_vp(u32 vp_id);
+ extern int xive_native_get_vp_info(u32 vp_id, u32 *out_cam_id, u32 *out_chip_id);
+ extern bool xive_native_has_single_escalation(void);
+ 
++extern int xive_native_get_queue_info(u32 vp_id, uint32_t prio,
++				      u64 *out_qpage,
++				      u64 *out_qsize,
++				      u64 *out_qeoi_page,
++				      u32 *out_escalate_irq,
++				      u64 *out_qflags);
++
++extern int xive_native_get_queue_state(u32 vp_id, uint32_t prio, u32 *qtoggle,
++				       u32 *qindex);
++extern int xive_native_set_queue_state(u32 vp_id, uint32_t prio, u32 qtoggle,
++				       u32 qindex);
++extern int xive_native_get_vp_state(u32 vp_id, u64 *out_state);
++
+ #else
+ 
+ static inline bool xive_enabled(void) { return false; }
+diff --git a/arch/powerpc/platforms/powernv/opal-call.c b/arch/powerpc/platforms/powernv/opal-call.c
+index daad8c45c8e7..7472244e7f30 100644
+--- a/arch/powerpc/platforms/powernv/opal-call.c
++++ b/arch/powerpc/platforms/powernv/opal-call.c
+@@ -260,6 +260,9 @@ OPAL_CALL(opal_xive_get_vp_info,		OPAL_XIVE_GET_VP_INFO);
+ OPAL_CALL(opal_xive_set_vp_info,		OPAL_XIVE_SET_VP_INFO);
+ OPAL_CALL(opal_xive_sync,			OPAL_XIVE_SYNC);
+ OPAL_CALL(opal_xive_dump,			OPAL_XIVE_DUMP);
++OPAL_CALL(opal_xive_get_queue_state,		OPAL_XIVE_GET_QUEUE_STATE);
++OPAL_CALL(opal_xive_set_queue_state,		OPAL_XIVE_SET_QUEUE_STATE);
++OPAL_CALL(opal_xive_get_vp_state,		OPAL_XIVE_GET_VP_STATE);
+ OPAL_CALL(opal_signal_system_reset,		OPAL_SIGNAL_SYSTEM_RESET);
+ OPAL_CALL(opal_npu_init_context,		OPAL_NPU_INIT_CONTEXT);
+ OPAL_CALL(opal_npu_destroy_context,		OPAL_NPU_DESTROY_CONTEXT);
+diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+index 1ca127d052a6..0c037e933e55 100644
+--- a/arch/powerpc/sysdev/xive/native.c
++++ b/arch/powerpc/sysdev/xive/native.c
+@@ -437,6 +437,12 @@ void xive_native_sync_source(u32 hw_irq)
+ }
+ EXPORT_SYMBOL_GPL(xive_native_sync_source);
+ 
++void xive_native_sync_queue(u32 hw_irq)
++{
++	opal_xive_sync(XIVE_SYNC_QUEUE, hw_irq);
++}
++EXPORT_SYMBOL_GPL(xive_native_sync_queue);
++
+ static const struct xive_ops xive_native_ops = {
+ 	.populate_irq_data	= xive_native_populate_irq_data,
+ 	.configure_irq		= xive_native_configure_irq,
+@@ -711,3 +717,96 @@ bool xive_native_has_single_escalation(void)
+ 	return xive_has_single_esc;
+ }
+ EXPORT_SYMBOL_GPL(xive_native_has_single_escalation);
++
++int xive_native_get_queue_info(u32 vp_id, u32 prio,
++			       u64 *out_qpage,
++			       u64 *out_qsize,
++			       u64 *out_qeoi_page,
++			       u32 *out_escalate_irq,
++			       u64 *out_qflags)
++{
++	__be64 qpage;
++	__be64 qsize;
++	__be64 qeoi_page;
++	__be32 escalate_irq;
++	__be64 qflags;
++	s64 rc;
++
++	rc = opal_xive_get_queue_info(vp_id, prio, &qpage, &qsize,
++				      &qeoi_page, &escalate_irq, &qflags);
++	if (rc) {
++		pr_err("OPAL failed to get queue info for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	if (out_qpage)
++		*out_qpage = be64_to_cpu(qpage);
++	if (out_qsize)
++		*out_qsize = be32_to_cpu(qsize);
++	if (out_qeoi_page)
++		*out_qeoi_page = be64_to_cpu(qeoi_page);
++	if (out_escalate_irq)
++		*out_escalate_irq = be32_to_cpu(escalate_irq);
++	if (out_qflags)
++		*out_qflags = be64_to_cpu(qflags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_info);
++
++int xive_native_get_queue_state(u32 vp_id, u32 prio, u32 *qtoggle, u32 *qindex)
++{
++	__be32 opal_qtoggle;
++	__be32 opal_qindex;
++	s64 rc;
++
++	rc = opal_xive_get_queue_state(vp_id, prio, &opal_qtoggle,
++				       &opal_qindex);
++	if (rc) {
++		pr_err("OPAL failed to get queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	if (qtoggle)
++		*qtoggle = be32_to_cpu(opal_qtoggle);
++	if (qindex)
++		*qindex = be32_to_cpu(opal_qindex);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_queue_state);
++
++int xive_native_set_queue_state(u32 vp_id, u32 prio, u32 qtoggle, u32 qindex)
++{
++	s64 rc;
++
++	rc = opal_xive_set_queue_state(vp_id, prio, qtoggle, qindex);
++	if (rc) {
++		pr_err("OPAL failed to set queue state for VCPU %d/%d : %lld\n",
++		       vp_id, prio, rc);
++		return -EIO;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_set_queue_state);
++
++int xive_native_get_vp_state(u32 vp_id, u64 *out_state)
++{
++	__be64 state;
++	s64 rc;
++
++	rc = opal_xive_get_vp_state(vp_id, &state);
++	if (rc) {
++		pr_err("OPAL failed to get vp state for VCPU %d : %lld\n",
++		       vp_id, rc);
++		return -EIO;
++	}
++
++	if (out_state)
++		*out_state = be64_to_cpu(state);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xive_native_get_vp_state);
 -- 
 2.20.1
 
