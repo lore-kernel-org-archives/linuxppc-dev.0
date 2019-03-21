@@ -2,95 +2,65 @@ Return-Path: <SRS0=DN5o=RY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47F9DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 14:37:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2604BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 15:09:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBDAA2077B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 14:37:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBDAA2077B
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 4710C21874
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 15:09:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sirena.org.uk header.i=@sirena.org.uk header.b="JaF2BOrK"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 4710C21874
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Q8Wv2gKLzDqTv
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 01:37:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Q9DM354XzDqTM
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 02:09:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=farosas@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=sirena.org.uk
+ (client-ip=2a01:7e01::f03c:91ff:fed4:a3b6; helo=heliosphere.sirena.org.uk;
+ envelope-from=broonie@sirena.org.uk; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=fail (p=none dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=sirena.org.uk header.i=@sirena.org.uk
+ header.b="JaF2BOrK"; dkim-atps=neutral
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Q8VG3fypzDqMN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 01:36:06 +1100 (AEDT)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2LEXPaB062594
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 10:36:04 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rc9fa136s-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 10:36:03 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <farosas@linux.ibm.com>;
- Thu, 21 Mar 2019 14:36:01 -0000
-Received: from b03cxnp08028.gho.boulder.ibm.com (9.17.130.20)
- by e34.co.us.ibm.com (192.168.1.134) with IBM ESMTP SMTP Gateway: Authorized
- Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Thu, 21 Mar 2019 14:35:56 -0000
-Received: from b03ledav004.gho.boulder.ibm.com
- (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2LEZu7I31260894
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Thu, 21 Mar 2019 14:35:57 GMT
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D0DA47805C;
- Thu, 21 Mar 2019 14:35:56 +0000 (GMT)
-Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 91AB278060;
- Thu, 21 Mar 2019 14:35:56 +0000 (GMT)
-Received: from localhost (unknown [9.86.27.221])
- by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTPS;
- Thu, 21 Mar 2019 14:35:56 +0000 (GMT)
-From: Fabiano Rosas <farosas@linux.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org
-Subject: Re: [RFC PATCH 1/1] KVM: PPC: Report single stepping capability
-In-Reply-To: <c15b17c8-6ef5-00b4-c762-8b1627ca5f18@ozlabs.ru>
-References: <20190320183951.29537-1-farosas@linux.ibm.com>
- <20190320183951.29537-2-farosas@linux.ibm.com>
- <c15b17c8-6ef5-00b4-c762-8b1627ca5f18@ozlabs.ru>
-Date: Thu, 21 Mar 2019 11:35:54 -0300
-MIME-Version: 1.0
-Content-Type: text/plain
-X-TM-AS-GCONF: 00
-x-cbid: 19032114-0016-0000-0000-000009957C96
-X-IBM-SpamModules-Scores: 
-X-IBM-SpamModules-Versions: BY=3.00010789; HX=3.00000242; KW=3.00000007;
- PH=3.00000004; SC=3.00000281; SDB=6.01177580; UDB=6.00616030; IPR=6.00958277; 
- MB=3.00026091; MTD=3.00000008; XFM=3.00000015; UTC=2019-03-21 14:35:59
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032114-0017-0000-0000-00004287E69D
-Message-Id: <87va0ce1md.fsf@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-21_06:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=44 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=749 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903210103
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Q9BJ07M9zDqRZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 02:07:17 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+ d=sirena.org.uk; s=20170815-heliosphere; h=Date:Message-Id:In-Reply-To:
+ Subject:Cc:To:From:Sender:Reply-To:MIME-Version:Content-Type:
+ Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+ Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:References:
+ List-Id:List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:
+ List-Archive; bh=bovDGFVdd52/+6Mg0vpzo+PriYDvWt9Jx0pEbmlM3M4=; b=JaF2BOrKFahR
+ +H6Ke+7uXcE4q0yY/LpucFDUqD8a9l0qePyOPjiVMMdvVA1omQb3fR10u1GS/99VXiJD/NE43AY2v
+ kUHQSmOGFBiiXEZB/85vcfFbCmUJf7+pFLrRpFSB3sJ84F8PVnjEWZKKlChK9d+v8afio/F/9gDjZ
+ /HXeA=;
+Received: from cpc102320-sgyl38-2-0-cust46.18-2.cable.virginm.net
+ ([82.37.168.47] helo=debutante.sirena.org.uk)
+ by heliosphere.sirena.org.uk with esmtpa (Exim 4.89)
+ (envelope-from <broonie@sirena.org.uk>)
+ id 1h6zHk-0005ce-Dv; Thu, 21 Mar 2019 15:07:12 +0000
+Received: by debutante.sirena.org.uk (Postfix, from userid 1000)
+ id D55FA11288EC; Thu, 21 Mar 2019 15:07:11 +0000 (GMT)
+From: Mark Brown <broonie@kernel.org>
+To: S.j. Wang <shengjiu.wang@nxp.com>
+Subject: Applied "ASoC: fsl_esai: fix channel swap issue when stream starts"
+ to the asoc tree
+In-Reply-To: <f05c95e5371336a8e3b0c395dc4cef70922f0caa.1551248985.git.shengjiu.wang@nxp.com>
+X-Patchwork-Hint: ignore
+Message-Id: <20190321150711.D55FA11288EC@debutante.sirena.org.uk>
+Date: Thu, 21 Mar 2019 15:07:11 +0000 (GMT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,33 +72,170 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, pbonzini@redhat.com,
- linuxppc-dev@lists.ozlabs.org, david@gibson.dropbear.id.au
+Cc: alsa-devel@alsa-project.org, "timur@kernel.org" <timur@kernel.org>,
+ "Xiubo.Lee@gmail.com" <Xiubo.Lee@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Shengjiu Wang <shengjiu.wang@nxp.com>, stable@vger.kernel.org,
+ "nicoleotsuka@gmail.com" <nicoleotsuka@gmail.com>,
+ "broonie@kernel.org" <broonie@kernel.org>,
+ "festevam@gmail.com" <festevam@gmail.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+The patch
 
-> In the cover letter (which is not really required for a single patch)
-> you say the capability will be present for BookE and PR KVM (which
-> Book3s) but here it is BookE only, is that intentional?
+   ASoC: fsl_esai: fix channel swap issue when stream starts
 
-A few lines below (falling through) we have:
+has been applied to the asoc tree at
 
-        /* We support this only for PR */
-        r = !hv_enabled;
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-> Also, you need to update Documentation/virtual/kvm/api.txt for the new
-> capability. After reading which I started wondering could not we just
-> use existing KVM_CAP_GUEST_DEBUG_HW_BPS?
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-We _could_, but I think that would conflate two different
-concepts. Single stepping does not necessarily makes use of hardware
-breakpoints (e.g. Trace Interrupt on Book3s PR).
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
 
-I also think we should use KVM_CAP_GUEST_DEBUG_HW_BPS in the future to
-let QEMU know about: i) the lack of hardware breakpoints in Book3s and
-ii) BookE's hardware breakpoints (Instruction Address Compare) that are
-currently not being reported via HW_BPS.
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+From 0ff4e8c61b794a4bf6c854ab071a1abaaa80f358 Mon Sep 17 00:00:00 2001
+From: "S.j. Wang" <shengjiu.wang@nxp.com>
+Date: Wed, 27 Feb 2019 06:31:12 +0000
+Subject: [PATCH] ASoC: fsl_esai: fix channel swap issue when stream starts
+
+There is very low possibility ( < 0.1% ) that channel swap happened
+in beginning when multi output/input pin is enabled. The issue is
+that hardware can't send data to correct pin in the beginning with
+the normal enable flow.
+
+This is hardware issue, but there is no errata, the workaround flow
+is that: Each time playback/recording, firstly clear the xSMA/xSMB,
+then enable TE/RE, then enable xSMB and xSMA (xSMB must be enabled
+before xSMA). Which is to use the xSMA as the trigger start register,
+previously the xCR_TE or xCR_RE is the bit for starting.
+
+Fixes commit 43d24e76b698 ("ASoC: fsl_esai: Add ESAI CPU DAI driver")
+Cc: <stable@vger.kernel.org>
+Reviewed-by: Fabio Estevam <festevam@gmail.com>
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_esai.c | 47 +++++++++++++++++++++++++++++++---------
+ 1 file changed, 37 insertions(+), 10 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index afe67c865330..3623aa9a6f2e 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -54,6 +54,8 @@ struct fsl_esai {
+ 	u32 fifo_depth;
+ 	u32 slot_width;
+ 	u32 slots;
++	u32 tx_mask;
++	u32 rx_mask;
+ 	u32 hck_rate[2];
+ 	u32 sck_rate[2];
+ 	bool hck_dir[2];
+@@ -361,21 +363,13 @@ static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
+ 	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
+ 			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
+ 
+-	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMA,
+-			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(tx_mask));
+-	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMB,
+-			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(tx_mask));
+-
+ 	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
+ 			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
+ 
+-	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMA,
+-			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(rx_mask));
+-	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMB,
+-			   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(rx_mask));
+-
+ 	esai_priv->slot_width = slot_width;
+ 	esai_priv->slots = slots;
++	esai_priv->tx_mask = tx_mask;
++	esai_priv->rx_mask = rx_mask;
+ 
+ 	return 0;
+ }
+@@ -596,6 +590,7 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
+ 	u8 i, channels = substream->runtime->channels;
+ 	u32 pins = DIV_ROUND_UP(channels, esai_priv->slots);
++	u32 mask;
+ 
+ 	switch (cmd) {
+ 	case SNDRV_PCM_TRIGGER_START:
+@@ -608,15 +603,38 @@ static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		for (i = 0; tx && i < channels; i++)
+ 			regmap_write(esai_priv->regmap, REG_ESAI_ETDR, 0x0);
+ 
++		/*
++		 * When set the TE/RE in the end of enablement flow, there
++		 * will be channel swap issue for multi data line case.
++		 * In order to workaround this issue, we switch the bit
++		 * enablement sequence to below sequence
++		 * 1) clear the xSMB & xSMA: which is done in probe and
++		 *                           stop state.
++		 * 2) set TE/RE
++		 * 3) set xSMB
++		 * 4) set xSMA:  xSMA is the last one in this flow, which
++		 *               will trigger esai to start.
++		 */
+ 		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+ 				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK,
+ 				   tx ? ESAI_xCR_TE(pins) : ESAI_xCR_RE(pins));
++		mask = tx ? esai_priv->tx_mask : esai_priv->rx_mask;
++
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
++				   ESAI_xSMB_xS_MASK, ESAI_xSMB_xS(mask));
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
++				   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(mask));
++
+ 		break;
+ 	case SNDRV_PCM_TRIGGER_SUSPEND:
+ 	case SNDRV_PCM_TRIGGER_STOP:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+ 		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
+ 				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK, 0);
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMA(tx),
++				   ESAI_xSMA_xS_MASK, 0);
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xSMB(tx),
++				   ESAI_xSMB_xS_MASK, 0);
+ 
+ 		/* Disable and reset FIFO */
+ 		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
+@@ -906,6 +924,15 @@ static int fsl_esai_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
++	esai_priv->tx_mask = 0xFFFFFFFF;
++	esai_priv->rx_mask = 0xFFFFFFFF;
++
++	/* Clear the TSMA, TSMB, RSMA, RSMB */
++	regmap_write(esai_priv->regmap, REG_ESAI_TSMA, 0);
++	regmap_write(esai_priv->regmap, REG_ESAI_TSMB, 0);
++	regmap_write(esai_priv->regmap, REG_ESAI_RSMA, 0);
++	regmap_write(esai_priv->regmap, REG_ESAI_RSMB, 0);
++
+ 	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
+ 					      &fsl_esai_dai, 1);
+ 	if (ret) {
+-- 
+2.20.1
 
