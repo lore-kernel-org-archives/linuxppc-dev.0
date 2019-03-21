@@ -3,59 +3,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 980C5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 21:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCAF7C43381
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 22:17:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EF101218D4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 21:18:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EF101218D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 013BC218D3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 22:17:21 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 013BC218D3
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QKQD1h9fzDqPF
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 08:18:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QLkR4zCLzDqDG
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 09:17:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
+ (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
+ envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QKNR0KbCzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 08:16:37 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44QKNK0TDpz9tyfT;
- Thu, 21 Mar 2019 22:16:33 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id 7jX3PQF3ONST; Thu, 21 Mar 2019 22:16:32 +0100 (CET)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44QKNJ6Xyyz9tyfS;
- Thu, 21 Mar 2019 22:16:32 +0100 (CET)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id B689874B; Thu, 21 Mar 2019 22:16:32 +0100 (CET)
-Received: from mry91-4-88-160-8-182.fbx.proxad.net
- (mry91-4-88-160-8-182.fbx.proxad.net [88.160.8.182]) by messagerie.si.c-s.fr
- (Horde Framework) with HTTP; Thu, 21 Mar 2019 22:16:32 +0100
-Date: Thu, 21 Mar 2019 22:16:32 +0100
-Message-ID: <20190321221632.Horde.sUFPCFV5Nrk0KQFVNqmMjw2@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: powerpc32 boot crash in 5.1-rc1
-In-Reply-To: <91966c00-b09f-7e07-89cb-04ac208d5dc1@linux.ee>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QLhC3ddXzDqPy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 09:15:23 +1100 (AEDT)
+Received: from localhost.localdomain (c-73-223-200-170.hsd1.ca.comcast.net
+ [73.223.200.170])
+ by mail.linuxfoundation.org (Postfix) with ESMTPSA id BEF25EB6;
+ Thu, 21 Mar 2019 22:15:20 +0000 (UTC)
+Date: Thu, 21 Mar 2019 15:15:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Walker <danielwa@cisco.com>
+Subject: Re: [PATCH 1/4] add generic builtin command line
+Message-Id: <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
+In-Reply-To: <20190321151308.yt6uc3mxgppm5zko@zorba>
+References: <20190319232448.45964-2-danielwa@cisco.com>
+ <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
+ <20190320232328.3bijcxek2yg43a25@zorba>
+ <20190320201433.6c5c4782f4432d280c0e8361@linux-foundation.org>
+ <20190321151308.yt6uc3mxgppm5zko@zorba>
+X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -67,28 +61,20 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ xe-linux-external@cisco.com, Daniel Walker <dwalker@fifo99.com>,
+ linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Meelis Roos <mroos@linux.ee> a =C3=A9crit=C2=A0:
+On Thu, 21 Mar 2019 08:13:08 -0700 Daniel Walker <danielwa@cisco.com> wrote:
 
-> While 5.0.0 worked fine on my PowerMac G4, 5.0 + git (unknown rev as=20=
-=20
->=20of Mar 13), 5.0.0-11520-gf261c4e and todays git all fail to boot.
->
-> The problem seems to be in page fault handler in load_elf_binary()=20=20
->=20of init process.
+> > The patches (or some version of them) are already in linux-next,
+> > which messes me up.  I'll disable them for now.
+>  
+> Those are from my tree, but I remove them when you picked up the series. The
+> next linux-next should not have them.
 
-The patch at https://patchwork.ozlabs.org/patch/1053385/ should fix it
-
-Christophe
-
->
-> Two different screenshots are attached (let's see if they come through).
->
-> --=20
->=20Meelis Roos <mroos@linux.ee>
-
-
+Yup, thanks, all looks good now.
