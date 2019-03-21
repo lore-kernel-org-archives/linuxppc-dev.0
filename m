@@ -1,55 +1,54 @@
-Return-Path: <SRS0=DN5o=RY=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
+Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,USER_AGENT_MUTT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCAF7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 22:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35687C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:02:43 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 013BC218D3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Mar 2019 22:17:21 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 013BC218D3
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	by mail.kernel.org (Postfix) with ESMTPS id E99DD21902
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:02:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E99DD21902
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QLkR4zCLzDqDG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 09:17:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux-foundation.org
- (client-ip=140.211.169.12; helo=mail.linuxfoundation.org;
- envelope-from=akpm@linux-foundation.org; receiver=<UNKNOWN>)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QP3y2g4LzDqNs
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 11:02:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; spf=permerror (mailfrom)
+ smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
+ helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
+ receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=linux-foundation.org
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ header.from=kernel.crashing.org
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QLhC3ddXzDqPy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 09:15:23 +1100 (AEDT)
-Received: from localhost.localdomain (c-73-223-200-170.hsd1.ca.comcast.net
- [73.223.200.170])
- by mail.linuxfoundation.org (Postfix) with ESMTPSA id BEF25EB6;
- Thu, 21 Mar 2019 22:15:20 +0000 (UTC)
-Date: Thu, 21 Mar 2019 15:15:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Walker <danielwa@cisco.com>
-Subject: Re: [PATCH 1/4] add generic builtin command line
-Message-Id: <20190321151519.1f4479d92228c8a8738e02cf@linux-foundation.org>
-In-Reply-To: <20190321151308.yt6uc3mxgppm5zko@zorba>
-References: <20190319232448.45964-2-danielwa@cisco.com>
- <20190320155319.2cd3c0f73ef3cdefb65d5d1e@linux-foundation.org>
- <20190320232328.3bijcxek2yg43a25@zorba>
- <20190320201433.6c5c4782f4432d280c0e8361@linux-foundation.org>
- <20190321151308.yt6uc3mxgppm5zko@zorba>
-X-Mailer: Sylpheed 3.5.1 (GTK+ 2.24.31; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QP214Y5lzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 11:00:56 +1100 (AEDT)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x2LNYuYj003056;
+ Thu, 21 Mar 2019 18:35:01 -0500
+Received: (from segher@localhost)
+ by gate.crashing.org (8.14.1/8.14.1/Submit) id x2LNYT16002948;
+ Thu, 21 Mar 2019 18:34:29 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to
+ segher@kernel.crashing.org using -f
+Date: Thu, 21 Mar 2019 18:34:21 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Joel Stanley <joel@jms.id.au>
+Subject: Re: [PATCH] powerpc: vmlinux.lds: Drop Binutils 2.18 workarounds
+Message-ID: <20190321233420.GD3969@gate.crashing.org>
+References: <20190321003253.22100-1-joel@jms.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190321003253.22100-1-joel@jms.id.au>
+User-Agent: Mutt/1.4.2.3i
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,20 +60,23 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Maksym Kokhan <maksym.kokhan@globallogic.com>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>,
- xe-linux-external@cisco.com, Daniel Walker <dwalker@fifo99.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Thu, 21 Mar 2019 08:13:08 -0700 Daniel Walker <danielwa@cisco.com> wrote:
+On Thu, Mar 21, 2019 at 11:02:53AM +1030, Joel Stanley wrote:
+> Segher added some workarounds for GCC 4.2 and bintuils 2.18. We now set
+> 4.6 and 2.20 as the minimum, so they can be dropped.
 
-> > The patches (or some version of them) are already in linux-next,
-> > which messes me up.  I'll disable them for now.
->  
-> Those are from my tree, but I remove them when you picked up the series. The
-> next linux-next should not have them.
+It was a bug in binutils _before_ 2.18, only seen by people using GCC
+_before_ 4.2.
 
-Yup, thanks, all looks good now.
+It's all ancient history by now, and good riddance :-)
+
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
+
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+
+
+Segher
