@@ -2,54 +2,78 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 706BAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF24AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 02:15:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E9EFC218FC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:36:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9EFC218FC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id E877D21900
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 02:15:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=axtens.net header.i=@axtens.net header.b="MskbKifU"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E877D21900
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=axtens.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QPqX5P4MzDqRq
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 11:36:56 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QS1V0mdPzDqRL
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 13:15:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=axtens.net
+ (client-ip=2607:f8b0:4864:20::544; helo=mail-pg1-x544.google.com;
+ envelope-from=dja@axtens.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=axtens.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=axtens.net header.i=@axtens.net header.b="MskbKifU"; 
+ dkim-atps=neutral
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QPnk5MnPzDqPl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=ellerman.id.au
-Received: by ozlabs.org (Postfix)
- id 44QPnk3TP7z9sRy; Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
- SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44QPnk2WDWz9sRG;
- Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v5 05/10] powerpc: Add a framework for Kernel Userspace
- Access Protection
-In-Reply-To: <7fad467c-1e63-02c8-636e-7f8ab456f76c@c-s.fr>
-References: <20190308011619.22402-1-mpe@ellerman.id.au>
- <20190308011619.22402-5-mpe@ellerman.id.au>
- <b1d292b5-5844-34c6-c388-2ad2045e1904@c-s.fr>
- <87r2b1ya8b.fsf@concordia.ellerman.id.au>
- <7fad467c-1e63-02c8-636e-7f8ab456f76c@c-s.fr>
-Date: Fri, 22 Mar 2019 11:35:21 +1100
-Message-ID: <87a7hnkapi.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QRzc6QX4zDqQw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 13:14:04 +1100 (AEDT)
+Received: by mail-pg1-x544.google.com with SMTP id u9so374101pgo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Mar 2019 19:14:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=axtens.net; s=google;
+ h=from:to:cc:subject:in-reply-to:references:date:message-id
+ :mime-version; bh=kVol0XgY1GrkrCydApUcrMKadPyzgXmpcAqek0gktrk=;
+ b=MskbKifUSht8b1fME/1KZYuBfy63vN8bsNjh+an00L7/R8wRo+f/40rAFgf8QbJGsA
+ wMro0YHzanLpcmWq3pTXDPRR5tIRl2AzfVS3Sfvlh5zATMSrsEHJAoSTrhNXk8ZukMKr
+ lfWWP4rvtn0C5g4Fi46v9ROOAtzew8UTIhMmM=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+ :message-id:mime-version;
+ bh=kVol0XgY1GrkrCydApUcrMKadPyzgXmpcAqek0gktrk=;
+ b=UFgPo4NFN/sbXvsQ3zUNgsQniWod1LIi3HZczObMqIZIlpczSkrDdenXHNvp7RO32h
+ wLBXzHu0bM9mnk8uR3myHn3PEQJw1dH8b/ww7W0slDx/sTo89DW/+Qd0APC5sjO+P4Z8
+ nMhyhtIqzBMV0jFMehMwL/yMHAMJfys7K2vtu3xmcuS4YCxqPN4tn2Ykm9FUX81own5w
+ JUh1QyXZpuldzhqni+ddU/SlY13kdnNzTQDuTvMjRTnQCOiGD5t/n6Qyz0o0DeVew0jk
+ 2Xp8+//HoqyqdrfhLHhoXGLlsL4wGPwW0hwdXh+KUhcF0C6lQEimCA9YdcDJWOc5B+Hx
+ Tylg==
+X-Gm-Message-State: APjAAAWNJ/xmmL/wBVx0tdajjTJXleZnLGfhzqP3zhR4IfBI+bAZ4gIq
+ 3hG3jxq1WoG2BYWRu9j2KSip+A==
+X-Google-Smtp-Source: APXvYqyQ1gEx28qddl3shtOahh2sg2FVTpyJFIKDaKfdg83i22814iMukCKxByWQ0kNUqadsbVjLlA==
+X-Received: by 2002:a65:5184:: with SMTP id h4mr6509337pgq.32.1553220841099;
+ Thu, 21 Mar 2019 19:14:01 -0700 (PDT)
+Received: from localhost (dip-220-235-49-94.wa.westnet.com.au. [220.235.49.94])
+ by smtp.gmail.com with ESMTPSA id i135sm2496266pgd.41.2019.03.21.19.13.59
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Thu, 21 Mar 2019 19:13:59 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: George Spelvin <lkml@sdf.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] arch/powerpc/crypto/crc-vpmsum_test: Use cheaper random
+ numbers for self-test
+In-Reply-To: <201903211042.x2LAgMp3003053@sdf.org>
+References: <201903211042.x2LAgMp3003053@sdf.org>
+Date: Fri, 22 Mar 2019 13:13:56 +1100
+Message-ID: <87tvfvsljv.fsf@dja-thinkpad.axtens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,83 +85,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: npiggin@gmail.com
+Cc: George Spelvin <lkml@sdf.org>, Paul Mackerras <paulus@samba.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Hi George,
 
-> Le 20/03/2019 =C3=A0 13:57, Michael Ellerman a =C3=A9crit=C2=A0:
->> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>> Le 08/03/2019 =C3=A0 02:16, Michael Ellerman a =C3=A9crit=C2=A0:
->>>> From: Christophe Leroy <christophe.leroy@c-s.fr>
->>>>
->>>> This patch implements a framework for Kernel Userspace Access
->>>> Protection.
->>>>
->>>> Then subarches will have the possibility to provide their own
->>>> implementation by providing setup_kuap() and
->>>> allow/prevent_user_access().
->>>>
->>>> Some platforms will need to know the area accessed and whether it is
->>>> accessed from read, write or both. Therefore source, destination and
->>>> size and handed over to the two functions.
->>>>
->>>> mpe: Rename to allow/prevent rather than unlock/lock, and add
->>>> read/write wrappers. Drop the 32-bit code for now until we have an
->>>> implementation for it. Add kuap to pt_regs for 64-bit as well as
->>>> 32-bit. Don't split strings, use pr_crit_ratelimited().
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> Signed-off-by: Russell Currey <ruscur@russell.cc>
->>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>>> ---
->>>> v5: Futex ops need read/write so use allow_user_acccess() there.
->>>>       Use #ifdef CONFIG_PPC64 in kup.h to fix build errors.
->>>>       Allow subarch to override allow_read/write_from/to_user().
->>>
->>> Those little helpers that will just call allow_user_access() when
->>> distinct read/write handling is not performed looks overkill to me.
->>>
->>> Can't the subarch do it by itself based on the nullity of from/to ?
->>>
->>> static inline void allow_user_access(void __user *to, const void __user
->>> *from,
->>> 				     unsigned long size)
->>> {
->>> 	if (to & from)
->>> 		set_kuap(0);
->>> 	else if (to)
->>> 		set_kuap(AMR_KUAP_BLOCK_READ);
->>> 	else if (from)
->>> 		set_kuap(AMR_KUAP_BLOCK_WRITE);
->>> }
->>=20
->> You could implement it that way, but it reads better at the call sites
->> if we have:
->>=20
->> 	allow_write_to_user(uaddr, sizeof(*uaddr));
->> vs:
->> 	allow_user_access(uaddr, NULL, sizeof(*uaddr));
->>=20
->> So I'm inclined to keep them. It should all end up inlined and generate
->> the same code at the end of the day.
->>=20
+> This code was filling a 64K buffer from /dev/urandom in order to
+> compute a CRC over (on average half of) it by two different methods,
+> comparing the CRCs, and repeating.
 >
-> I was not suggesting to completly remove allow_write_to_user(), I fully=20
-> agree that it reads better at the call sites.
+> This is not a remotely security-critical application, so use the far
+> faster and cheaper prandom_u32() generator.
 >
-> I was just thinking that allow_write_to_user() could remain generic and=20
-> call the subarch specific allow_user_access() instead of making multiple=
-=20
-> subarch's allow_write_to_user()
 
-Yep OK I see what you mean.
+I've had a quick look at the prandom_u32 generator and I agree that it's
+suitable for this. 
 
-Your suggestion above should work, and involves the least amount of
-ifdefs and so on.
+> And, while we're at it, only fill as much of the buffer as we plan to use.
 
-I'll try and get time to post a v6.
+This also looks good to me.
 
-cheers
+Acked-by: Daniel Axtens <dja@axtens.net>
+
+Regards,
+Daniel
+
+>
+> Signed-off-by: George Spelvin <lkml@sdf.org>
+> Cc: Daniel Axtens <dja@axtens.net>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/crypto/crc-vpmsum_test.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/powerpc/crypto/crc-vpmsum_test.c b/arch/powerpc/crypto/crc-vpmsum_test.c
+> index 0153a9c6f4af..98ea4f4d3dde 100644
+> --- a/arch/powerpc/crypto/crc-vpmsum_test.c
+> +++ b/arch/powerpc/crypto/crc-vpmsum_test.c
+> @@ -78,16 +78,12 @@ static int __init crc_test_init(void)
+>  
+>  		pr_info("crc-vpmsum_test begins, %lu iterations\n", iterations);
+>  		for (i=0; i<iterations; i++) {
+> -			size_t len, offset;
+> +			size_t offset = prandom_u32_max(16);
+> +			size_t len = prandom_u32_max(MAX_CRC_LENGTH);
+>  
+> -			get_random_bytes(data, MAX_CRC_LENGTH);
+> -			get_random_bytes(&len, sizeof(len));
+> -			get_random_bytes(&offset, sizeof(offset));
+> -
+> -			len %= MAX_CRC_LENGTH;
+> -			offset &= 15;
+>  			if (len <= offset)
+>  				continue;
+> +			prandom_bytes(data, len);
+>  			len -= offset;
+>  
+>  			crypto_shash_update(crct10dif_shash, data+offset, len);
+> -- 
+> 2.20.1
