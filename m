@@ -2,62 +2,45 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C00C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 09:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8676C4360F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:25:35 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7BBED21904
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 09:47:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7BBED21904
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id 08C592054F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:25:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08C592054F
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Qf2w2SsDzDqWG
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 20:47:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=209.85.167.193; helo=mail-oi1-f193.google.com;
- envelope-from=rjwysocki@gmail.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=fail (p=none dis=none) header.from=kernel.org
-Received: from mail-oi1-f193.google.com (mail-oi1-f193.google.com
- [209.85.167.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QjY803cjzDqV6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 23:25:32 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Qf1J3PvMzDqMK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 20:46:09 +1100 (AEDT)
-Received: by mail-oi1-f193.google.com with SMTP id x188so1215529oia.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 02:46:08 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:mime-version:references:in-reply-to:from:date
- :message-id:subject:to:cc;
- bh=i4/MNnc1Sea+usyPpKw/vkxvIwHz+vkgmpIh97ysm0E=;
- b=raJLPAgG2/1qrfLQH3r2D11EWsPVsT+6OfRPnOyEzmVqtuAGL6IxKAwZF4tzpAkfb7
- Q9xJW6uZXgDfKtCqefcx55L58TL26+AKQEJ43juICZYVka9+bYXb9DOB0pAqrpAgAnJz
- 8FufiF61SNy2nHrBCRdHi6DpECXxVLfK6tMxV90Z0yr4d+3rNeT4JjycKBeLOWgGX73e
- yigB1Hx9sXlK1SAEauh8XqCYiImU6LDa/4awACfyo2Det8lpwosjdnQstiHwyhaQqS+d
- njqig6ILvM7SOmNjuBWWJ0nTPyjAfiLdyy+aF4swRVaUotQfu1DRVmOkZ13Lpsb1yzTN
- Gryw==
-X-Gm-Message-State: APjAAAWzbhR3WpV9uk+jZ6s1PKcOK+ufenqGxdeuzR/Y9hltO8XXVYBf
- JX6X+BhLbcPB2CK1tiHw0XQjJUk/9tcbnRZ6mN8=
-X-Google-Smtp-Source: APXvYqy8qQWkbml8D0MLXmIVayDzaUmem5mHamQOx04tW4evyz61JMOJSNdIvn/+mQGKYiFxOzaRbOdGBgpPXuKeU8Q=
-X-Received: by 2002:aca:6046:: with SMTP id u67mr1152190oib.84.1553247966744; 
- Fri, 22 Mar 2019 02:46:06 -0700 (PDT)
-MIME-Version: 1.0
-References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
- <20190322072942.8038-2-huntbag@linux.vnet.ibm.com>
-In-Reply-To: <20190322072942.8038-2-huntbag@linux.vnet.ibm.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 22 Mar 2019 10:45:55 +0100
-Message-ID: <CAJZ5v0gY-theHng=bQQpw-33jHGe++iEigEM5j6Ls7vEuewuSQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cpuidle : auto-promotion for cpuidle states
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QjSj6TyfzDqTR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 23:21:41 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix, from userid 1034)
+ id 44QjSh4zGhz9sV2; Fri, 22 Mar 2019 23:21:40 +1100 (AEDT)
+X-powerpc-patch-notification: thanks
+X-powerpc-patch-commit: 8bc086899816214fbc6047c9c7e15fcab49552bf
+X-Patchwork-Hint: ignore
+In-Reply-To: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
+To: Ben Hutchings <ben@decadent.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Subject: Re: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
+ configurations
+Message-Id: <44QjSh4zGhz9sV2@ozlabs.org>
+Date: Fri, 22 Mar 2019 23:21:40 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,33 +52,34 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2019 at 8:31 AM Abhishek Goel
-<huntbag@linux.vnet.ibm.com> wrote:
->
-> Currently, the cpuidle governors (menu /ladder) determine what idle state
-> an idling CPU should enter into based on heuristics that depend on the
-> idle history on that CPU. Given that no predictive heuristic is perfect,
-> there are cases where the governor predicts a shallow idle state, hoping
-> that the CPU will be busy soon. However, if no new workload is scheduled
-> on that CPU in the near future, the CPU will end up in the shallow state.
->
-> In case of POWER, this is problematic, when the predicted state in the
-> aforementioned scenario is a lite stop state, as such lite states will
-> inhibit SMT folding, thereby depriving the other threads in the core from
-> using the core resources.
->
-> To address this, such lite states need to be autopromoted. The cpuidle-
-> core can queue timer to correspond with the residency value of the next
-> available state. Thus leading to auto-promotion to a deeper idle state as
-> soon as possible.
+On Sun, 2019-03-17 at 01:17:56 UTC, Ben Hutchings wrote:
+> MAX_PHYSMEM_BITS only needs to be defined if CONFIG_SPARSEMEM is
+> enabled, and that was the case before commit 4ffe713b7587
+> ("powerpc/mm: Increase the max addressable memory to 2PB").
+> 
+> On 32-bit systems, where CONFIG_SPARSEMEM is not enabled, we now
+> define it as 46.  That is larger than the real number of physical
+> address bits, and breaks calculations in zsmalloc:
+> 
+>     mm/zsmalloc.c:130:49: warning: right shift count is negative [-Wshift-count-negative]
+>       MAX(32, (ZS_MAX_PAGES_PER_ZSPAGE << PAGE_SHIFT >> OBJ_INDEX_BITS))
+>                                                      ^~
+>     ...
+>     mm/zsmalloc.c:253:21: error: variably modified 'size_class' at file scope
+>       struct size_class *size_class[ZS_SIZE_CLASSES];
+>                          ^~~~~~~~~~
+> 
+> Fixes: 4ffe713b7587 ("powerpc/mm: Increase the max addressable memory to 2PB")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Isn't the tick stopping avoidance sufficient for that?
+Applied to powerpc fixes, thanks.
+
+https://git.kernel.org/powerpc/c/8bc086899816214fbc6047c9c7e15fca
+
+cheers
