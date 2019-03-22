@@ -6,80 +6,81 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 999E6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE541C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:08:57 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D564C2190A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:04:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 45CC721900
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:08:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="EQb0PJgI"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D564C2190A
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="Xicmuh1N"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 45CC721900
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Qqkf3rLFzDqRf
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 04:04:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Qqr7074jzDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 04:08:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
- (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
+ (client-ip=2a00:1450:4864:20::144; helo=mail-lf1-x144.google.com;
  envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
  unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
- header.b="EQb0PJgI"; dkim-atps=neutral
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
- [IPv6:2a00:1450:4864:20::141])
+ header.b="Xicmuh1N"; dkim-atps=neutral
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com
+ [IPv6:2a00:1450:4864:20::144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Qqhh3L49zDqPZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 04:02:22 +1100 (AEDT)
-Received: by mail-lf1-x141.google.com with SMTP id 5so1857789lft.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:02:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QqpT4ZJ2zDqDF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 04:07:26 +1100 (AEDT)
+Received: by mail-lf1-x144.google.com with SMTP id 10so1883658lfr.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:07:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=linux-foundation.org; s=google;
  h=mime-version:references:in-reply-to:from:date:message-id:subject:to
- :cc; bh=vz3qEaERAPywi/7ygEvysJD/ZMRj5JWoH5GTAfYhS9M=;
- b=EQb0PJgIUrxIFWDmv2d+roZcOdf47m4oWDh2aF9nqiM4xcdszNPdjlEZ6XBCZ7EETk
- 1IfpVzYln8LpimAQjhRDAkW3OaV5XXtB4BOqOTWHoOqa+CwXq49WMc62V63vMcFKOgKB
- AUA6dt7kp1lq7E8yacEVhDOuhsd4cjNkTZNrI=
+ :cc; bh=K5KpCUavpU6jklxItqvKr4mbyrohs/asqf5NX0BYYpc=;
+ b=Xicmuh1ND+AZ9lc/udGkNvWbzi2Lu2j3o6M44sYQ0ZH2WsGeVBgW5f2xPJwNTxlY2d
+ JaSMsr2SEVdWRDbZBYCXJ0vB1W1wIN3vVWqOMIiqWhD3oBYZFF9I7ROZZs9bJvkPzu9N
+ HN8UN8zBc9zkjew06tZVB45+s5iWpvEon1EZk=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=vz3qEaERAPywi/7ygEvysJD/ZMRj5JWoH5GTAfYhS9M=;
- b=e3BwCf/zlDAH8+Nw5LgdFjj0opyWlNrltUTkUKLrIplvuc3zT57ubb2ySKD+awghAL
- /QFkv6a4dhDjS2k9VPmLJ8Na6ADNYn1lgA2j8Zx2M6S8l/xoGJKLBeyu+hspG1HtrtFL
- nJ7gbyZjHOnQDSqT3wjeeIFRFowzP9fC+hIojNyIVmYOgHyUQFubs/RailzSY5dNZ/6j
- 6o/tXerqMWoLqm3E+fRLE4jS/sH0Pehx6pEXZksSY3kw3GjbI0aNQwUmKswjBT9UNovn
- fnkKCE0FU7x041K5l56ekX2DGJo5cXC9ui4DKZaGQXuMdtBrm62CRLl2g+h/J5+83wqm
- iEtQ==
-X-Gm-Message-State: APjAAAVd//AtZZdkvlPTapdOvsfBANFywzc7y3s4ttdsmJH3lxDu15FK
- uHi/TLqFOFnRSECawtN0g+4xgSu8K84=
-X-Google-Smtp-Source: APXvYqwU9jyRUV2Q2YhpzrL30T5Ks3+88Xgcv4lvPqxqjryQBiU+chnYe6TxnmHbopKfcPJWOZHcEA==
-X-Received: by 2002:a19:f703:: with SMTP id z3mr5572579lfe.15.1553274131754;
- Fri, 22 Mar 2019 10:02:11 -0700 (PDT)
-Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com.
- [209.85.208.172])
- by smtp.gmail.com with ESMTPSA id m77sm950042lje.67.2019.03.22.10.02.10
+ bh=K5KpCUavpU6jklxItqvKr4mbyrohs/asqf5NX0BYYpc=;
+ b=atatk6YtxGDav8jX/XhpSUxUa1xzYvCQ9AksSK+tFqKqjdMIQ4GOmyY+l++VZFkkRt
+ JyRS5RhprdHKcs9XbPGanQ2N/W51QVK9rO8g2XUYpyt2KCVBUcc8MCtFq9KR4qAchyXb
+ HNTN3Vzc8JsOtNleFVZkH7+YnaKGbpkP2myB69FTvx/mStNg3bBduw6K+BzBVp4qG/gg
+ H+AbH5N3GbhOd0qR1knlk65nzbr7ao/wwvXAQe91vl7VHXLGNyXmpiv3OII2+YqdWRxb
+ UjDR0DCbnHQcd17A8mw6Q2jucTQOm/0daF46UO6L+PpHYACSd5nws9fUov2tDjVHj/q8
+ 8QMA==
+X-Gm-Message-State: APjAAAWhjvaOTbOaT1opVBZLGYXT0D4N9HSarCNikp9DdjS36NTGLwq6
+ jbbOVeauxaHxpre4ztbl9KHvdTc1W68=
+X-Google-Smtp-Source: APXvYqwTBd5uTBoGk0qfQd6JvIDrLy/GgNfjsEI7qz62YJgPr6rqOG9ra+mlQkEtk+LG0uoBcXcycA==
+X-Received: by 2002:a19:4c41:: with SMTP id z62mr5782846lfa.9.1553274441843;
+ Fri, 22 Mar 2019 10:07:21 -0700 (PDT)
+Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com.
+ [209.85.208.175])
+ by smtp.gmail.com with ESMTPSA id a29sm1841934lfi.19.2019.03.22.10.07.20
  for <linuxppc-dev@lists.ozlabs.org>
  (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Fri, 22 Mar 2019 10:02:10 -0700 (PDT)
-Received: by mail-lj1-f172.google.com with SMTP id f23so2678697ljc.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:02:10 -0700 (PDT)
-X-Received: by 2002:a2e:94ca:: with SMTP id r10mr5731037ljh.118.1553274129929; 
- Fri, 22 Mar 2019 10:02:09 -0700 (PDT)
+ Fri, 22 Mar 2019 10:07:20 -0700 (PDT)
+Received: by mail-lj1-f175.google.com with SMTP id r24so1619042ljg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:07:20 -0700 (PDT)
+X-Received: by 2002:a2e:9786:: with SMTP id y6mr5380150lji.79.1553274440270;
+ Fri, 22 Mar 2019 10:07:20 -0700 (PDT)
 MIME-Version: 1.0
 References: <20190322143008.21313-1-longman@redhat.com>
- <20190322143008.21313-2-longman@redhat.com>
-In-Reply-To: <20190322143008.21313-2-longman@redhat.com>
+ <20190322143008.21313-3-longman@redhat.com>
+In-Reply-To: <20190322143008.21313-3-longman@redhat.com>
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 22 Mar 2019 10:01:53 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wikkO-1f1=FEOEzkSnaDg3yJLP=4Vd59UCuLBztFd0KOw@mail.gmail.com>
-Message-ID: <CAHk-=wikkO-1f1=FEOEzkSnaDg3yJLP=4Vd59UCuLBztFd0KOw@mail.gmail.com>
-Subject: Re: [PATCH v5 1/3] locking/rwsem: Remove arch specific rwsem files
+Date: Fri, 22 Mar 2019 10:07:04 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wjujKK-Ey7DPnMExaEmphicuEDLmVn-9+W9VzFzR-Ts=A@mail.gmail.com>
+Message-ID: <CAHk-=wjujKK-Ey7DPnMExaEmphicuEDLmVn-9+W9VzFzR-Ts=A@mail.gmail.com>
+Subject: Re: [PATCH v5 2/3] locking/rwsem: Remove rwsem-spinlock.c & use
+ rwsem-xadd.c for all archs
 To: Waiman Long <longman@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -117,68 +118,9 @@ Sender: "Linuxppc-dev"
 
 On Fri, Mar 22, 2019 at 7:30 AM Waiman Long <longman@redhat.com> wrote:
 >
->  19 files changed, 133 insertions(+), 930 deletions(-)
+> For simplication, we are going to remove rwsem-spinlock.c and make all
+> architectures use a single implementation of rwsem - rwsem-xadd.c.
 
-Lovely. And it all looks sane to me.
+Ack.
 
-So ack.
-
-The only comment I have is about __down_read_trylock(), which probably
-isn't critical enough to actually care about, but:
-
-> +static inline int __down_read_trylock(struct rw_semaphore *sem)
-> +{
-> +       long tmp;
-> +
-> +       while ((tmp = atomic_long_read(&sem->count)) >= 0) {
-> +               if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
-> +                                  tmp + RWSEM_ACTIVE_READ_BIAS)) {
-> +                       return 1;
-> +               }
-> +       }
-> +       return 0;
-> +}
-
-So this seems to
-
- (a) read the line early (the whole cacheline in shared state issue)
-
- (b) read the line again unnecessarily in the while loop
-
-Now, (a) might be explained by "well, maybe we do trylock even with
-existing readers", although I continue to think that the case we
-should optimize for is simply the uncontended one, where we don't even
-have multiple readers.
-
-But (b) just seems silly.
-
-So I wonder if it shouldn't just be
-
-        long tmp = 0;
-
-        do {
-                long new = atomic_long_cmpxchg_acquire(&sem->count, tmp,
-                        tmp + RWSEM_ACTIVE_READ_BIAS);
-                if (likely(new == tmp))
-                        return 1;
-               tmp = new;
-        } while (tmp >= 0);
-        return 0;
-
-which would seem simpler and solve both issues. Hmm?
-
-But honestly, I didn't check what our uses of down_read_trylock() look
-like. We have more of them than I expected, and I _think_ the normal
-case is the "nobody else holds the lock", but that's just a gut
-feeling.
-
-Some of them _might_ be performance-critical. There's the one on
-mmap_sem in the fault handling path, for example. And yes, I'd expect
-the normal case to very much be "no other readers or writers" for that
-one.
-
-NOTE! The above code snippet is absolutely untested, and might be
-completely wrong. Take it as a "something like this" rather than
-anything else.
-
-                   Linus
+               Linus
