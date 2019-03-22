@@ -3,44 +3,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8676C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:25:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C24DDC10F03
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:29:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 08C592054F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:25:34 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 08C592054F
+	by mail.kernel.org (Postfix) with ESMTPS id 73A5D2196F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 12:29:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 73A5D2196F
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QjY803cjzDqV6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 23:25:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QjdN2c7czDqV8
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 23:29:12 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QjSj6TyfzDqTR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 23:21:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QjSk2X7jzDqV6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 23:21:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44QjSj6x16z9sTd; Fri, 22 Mar 2019 23:21:41 +1100 (AEDT)
 Received: by ozlabs.org (Postfix, from userid 1034)
- id 44QjSh4zGhz9sV2; Fri, 22 Mar 2019 23:21:40 +1100 (AEDT)
+ id 44QjSj4qcjz9sV3; Fri, 22 Mar 2019 23:21:41 +1100 (AEDT)
 X-powerpc-patch-notification: thanks
-X-powerpc-patch-commit: 8bc086899816214fbc6047c9c7e15fcab49552bf
+X-powerpc-patch-commit: 92edf8df0ff2ae86cc632eeca0e651fd8431d40d
 X-Patchwork-Hint: ignore
-In-Reply-To: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
-To: Ben Hutchings <ben@decadent.org.uk>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20190321042433.20454-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
- configurations
-Message-Id: <44QjSh4zGhz9sV2@ozlabs.org>
-Date: Fri, 22 Mar 2019 23:21:40 +1100 (AEDT)
+Subject: Re: powerpc/security: Fix spectre_v2 reporting
+Message-Id: <44QjSj4qcjz9sV3@ozlabs.org>
+Date: Fri, 22 Mar 2019 23:21:41 +1100 (AEDT)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -52,34 +51,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: diana.craciun@nxp.com, mikey@neuling.org, msuchanek@suse.de,
+ andrew.donnellan@au1.ibm.com, dja@axtens.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Sun, 2019-03-17 at 01:17:56 UTC, Ben Hutchings wrote:
-> MAX_PHYSMEM_BITS only needs to be defined if CONFIG_SPARSEMEM is
-> enabled, and that was the case before commit 4ffe713b7587
-> ("powerpc/mm: Increase the max addressable memory to 2PB").
+On Thu, 2019-03-21 at 04:24:33 UTC, Michael Ellerman wrote:
+> When I updated the spectre_v2 reporting to handle software count cache
+> flush I got the logic wrong when there's no software count cache
+> enabled at all.
 > 
-> On 32-bit systems, where CONFIG_SPARSEMEM is not enabled, we now
-> define it as 46.  That is larger than the real number of physical
-> address bits, and breaks calculations in zsmalloc:
+> The result is that on systems with the software count cache flush
+> disabled we print:
 > 
->     mm/zsmalloc.c:130:49: warning: right shift count is negative [-Wshift-count-negative]
->       MAX(32, (ZS_MAX_PAGES_PER_ZSPAGE << PAGE_SHIFT >> OBJ_INDEX_BITS))
->                                                      ^~
->     ...
->     mm/zsmalloc.c:253:21: error: variably modified 'size_class' at file scope
->       struct size_class *size_class[ZS_SIZE_CLASSES];
->                          ^~~~~~~~~~
+>   Mitigation: Indirect branch cache disabled, Software count cache flush
 > 
-> Fixes: 4ffe713b7587 ("powerpc/mm: Increase the max addressable memory to 2PB")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+> Which correctly indicates that the count cache is disabled, but
+> incorrectly says the software count cache flush is enabled.
+> 
+> The root of the problem is that we are trying to handle all
+> combinations of options. But we know now that we only expect to see
+> the software count cache flush enabled if the other options are false.
+> 
+> So split the two cases, which simplifies the logic and fixes the bug.
+> We were also missing a space before "(hardware accelerated)".
+> 
+> The result is we see one of:
+> 
+>   Mitigation: Indirect branch serialisation (kernel only)
+>   Mitigation: Indirect branch cache disabled
+>   Mitigation: Software count cache flush
+>   Mitigation: Software count cache flush (hardware accelerated)
+> 
+> Fixes: ee13cb249fab ("powerpc/64s: Add support for software count cache flush")
+> Cc: stable@vger.kernel.org # v4.19+
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Michael Neuling <mikey@neuling.org>
+> Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/8bc086899816214fbc6047c9c7e15fca
+https://git.kernel.org/powerpc/c/92edf8df0ff2ae86cc632eeca0e651fd
 
 cheers
