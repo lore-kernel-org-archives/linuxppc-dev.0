@@ -2,94 +2,80 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 05D01C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:44:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B84DFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 08:11:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7E15B218FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:44:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E15B218FE
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id D14B320700
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 08:11:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="tAJMX/1t"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D14B320700
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QbK43X9szDqVJ
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 18:44:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Qbvs1qf4zDqQB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 19:11:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="tAJMX/1t"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QbH8301KzDqCC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 18:43:00 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2M7dCox026550
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:42:58 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rct9yjvma-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:42:57 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Fri, 22 Mar 2019 07:42:47 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 22 Mar 2019 07:42:45 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2M7gqe758654926
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 22 Mar 2019 07:42:52 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 3DA28A4051;
- Fri, 22 Mar 2019 07:42:52 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id E3B7FA404D;
- Fri, 22 Mar 2019 07:42:51 +0000 (GMT)
-Received: from [9.145.3.179] (unknown [9.145.3.179])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 22 Mar 2019 07:42:51 +0000 (GMT)
-Subject: Re: [PATCH 13/38] vfs: Convert cxl to fs_context
-To: David Howells <dhowells@redhat.com>, viro@zeniv.linux.org.uk
-References: <155257972443.13720.11743171471060355965.stgit@warthog.procyon.org.uk>
- <155257984031.13720.1656009200478611751.stgit@warthog.procyon.org.uk>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Fri, 22 Mar 2019 08:42:51 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
-MIME-Version: 1.0
-In-Reply-To: <155257984031.13720.1656009200478611751.stgit@warthog.procyon.org.uk>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032207-4275-0000-0000-0000031DF369
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032207-4276-0000-0000-0000382C7DFC
-Message-Id: <33d93ba3-166f-abe0-253d-a3e81e697563@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-22_05:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903220059
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Qbrr5hfvzDqRt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 19:08:44 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44Qbrm1B3pz9v9vL;
+ Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=tAJMX/1t; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id J_EDFwehDTbV; Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44Qbrm04Vpz9v9vG;
+ Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553242120; bh=vuX9mjDqG9V5hTI4EOw+h7yoI6fzAlRXWPPWa05ZC2M=;
+ h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
+ b=tAJMX/1tKKfQOh0G5X9lWosgLupVLMJzOtgOkPwZxmwuCLhF2+rOW8ZkLNfjEuaM9
+ sesuovY46BGvXn1BeLCMKR5daYyLQWkf03l+uUMRUyG5/xPH+ZAy8JvCNX4Nb6waBa
+ DcmNzSzixpqidmIUau/85NFpi9wKgfpqJyQCZyMY=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id EDF5B8B845;
+ Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id 2r5_HJ1yyVDQ; Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id D3A958B844;
+ Fri, 22 Mar 2019 09:08:40 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id C99C46CD85; Fri, 22 Mar 2019 08:08:40 +0000 (UTC)
+Message-Id: <2d9fe7eac16d51000747648b5f84a58ef258633e.1553242059.git.christophe.leroy@c-s.fr>
+In-Reply-To: <a2ac33258063682558fe0cac8eedcbd28aa4a141.1553242059.git.christophe.leroy@c-s.fr>
+References: <a2ac33258063682558fe0cac8eedcbd28aa4a141.1553242059.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 2/7] powerpc/mm: define an empty mm_iommu_init()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 22 Mar 2019 08:08:40 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -101,61 +87,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+To avoid ifdefs, define a empty static inline mm_iommu_init() function
+when CONFIG_SPAPR_TCE_IOMMU is not selected.
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/mmu_context.h | 1 +
+ arch/powerpc/kernel/setup-common.c     | 2 --
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-Le 14/03/2019 à 17:10, David Howells a écrit :
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> cc: Frederic Barrat <fbarrat@linux.ibm.com>
-> cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> cc: linuxppc-dev@lists.ozlabs.org
-> ---
-
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
-> 
->   drivers/misc/cxl/api.c |   10 +++++-----
->   1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 750470ef2049..395e9a88e6ba 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -13,6 +13,7 @@
->   #include <misc/cxl.h>
->   #include <linux/module.h>
->   #include <linux/mount.h>
-> +#include <linux/fs_context.h>
->   #include <linux/sched/mm.h>
->   #include <linux/mmu_context.h>
->   
-> @@ -41,17 +42,16 @@ static const struct dentry_operations cxl_fs_dops = {
->   	.d_dname	= simple_dname,
->   };
->   
-> -static struct dentry *cxl_fs_mount(struct file_system_type *fs_type, int flags,
-> -				const char *dev_name, void *data)
-> +static int cxl_fs_init_fs_context(struct fs_context *fc)
->   {
-> -	return mount_pseudo(fs_type, "cxl:", NULL, &cxl_fs_dops,
-> -			CXL_PSEUDO_FS_MAGIC);
-> +	return vfs_init_pseudo_fs_context(fc, "cxl:", NULL, NULL,
-> +					  &cxl_fs_dops, CXL_PSEUDO_FS_MAGIC);
->   }
->   
->   static struct file_system_type cxl_fs_type = {
->   	.name		= "cxl",
->   	.owner		= THIS_MODULE,
-> -	.mount		= cxl_fs_mount,
-> +	.init_fs_context = cxl_fs_init_fs_context,
->   	.kill_sb	= kill_anon_super,
->   };
->   
-> 
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 6ee8195a2ffb..95b93ce428b7 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -52,6 +52,7 @@ static inline bool mm_iommu_is_devmem(struct mm_struct *mm, unsigned long hpa,
+ {
+ 	return false;
+ }
++static inline void mm_iommu_init(struct mm_struct *mm) { }
+ #endif
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+ extern void set_context(unsigned long id, pgd_t *pgd);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 971f50d99d87..a90e8367ccde 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -956,9 +956,7 @@ void __init setup_arch(char **cmdline_p)
+ #endif
+ #endif
+ 
+-#ifdef CONFIG_SPAPR_TCE_IOMMU
+ 	mm_iommu_init(&init_mm);
+-#endif
+ 	irqstack_early_init();
+ 	exc_lvl_early_init();
+ 	emergency_stack_init();
+-- 
+2.13.3
 
