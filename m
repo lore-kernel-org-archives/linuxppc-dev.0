@@ -2,89 +2,93 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88B6BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:36:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F95CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:40:47 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05639218D3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:36:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05639218D3
+	by mail.kernel.org (Postfix) with ESMTPS id 04EF1218D3
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 07:40:46 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 04EF1218D3
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Qb7h0W0GzDqVx
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 18:36:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QbDX4yPgzDqWT
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 18:40:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=none (mailfrom) smtp.mailfrom=linux.vnet.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=huntbag@linux.vnet.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=linux.vnet.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Qb2N5hqzzDqSt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 18:31:56 +1100 (AEDT)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2M7OEAI012963
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:31:54 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QbBd0gH5zDqCC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 18:39:04 +1100 (AEDT)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2M7Xlam001765
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:39:02 -0400
 Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rctcham7f-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2rcs7wd5kn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:31:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 03:39:02 -0400
 Received: from localhost
  by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
- Fri, 22 Mar 2019 07:31:45 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
+ Fri, 22 Mar 2019 07:38:54 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
  by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Fri, 22 Mar 2019 07:31:43 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2M7VmKt39256268
+ Fri, 22 Mar 2019 07:38:50 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2M7ctMm47579268
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Fri, 22 Mar 2019 07:31:49 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D244311C05E;
- Fri, 22 Mar 2019 07:31:48 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B5BE811C04A;
- Fri, 22 Mar 2019 07:31:47 +0000 (GMT)
-Received: from boston16h.aus.stglabs.ibm.com (unknown [9.3.23.78])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Fri, 22 Mar 2019 07:31:47 +0000 (GMT)
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+ Fri, 22 Mar 2019 07:38:55 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B94DC42042;
+ Fri, 22 Mar 2019 07:38:55 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 343D742045;
+ Fri, 22 Mar 2019 07:38:52 +0000 (GMT)
+Received: from oc0383214508.ibm.com (unknown [9.102.30.3])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Fri, 22 Mar 2019 07:38:51 +0000 (GMT)
+Subject: Re: [PATCH 0/2] Auto-promotion logic for cpuidle states
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-pm@vger.kernel.org
-Subject: [PATCH 2/2] cpuidle : Add auto-promotion flag to cpuidle flags
-Date: Fri, 22 Mar 2019 02:29:42 -0500
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
-References: <20190322072942.8038-1-huntbag@linux.vnet.ibm.com>
+References: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+From: Abhishek <huntbag@linux.vnet.ibm.com>
+Date: Fri, 22 Mar 2019 13:08:49 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101
+ Thunderbird/52.9.1
+MIME-Version: 1.0
+In-Reply-To: <20190322062530.7586-1-huntbag@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 X-TM-AS-GCONF: 00
-x-cbid: 19032207-0008-0000-0000-000002D03BE3
+x-cbid: 19032207-0008-0000-0000-000002D03C99
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032207-0009-0000-0000-0000223C5AD7
-Message-Id: <20190322072942.8038-3-huntbag@linux.vnet.ibm.com>
+x-cbparentid: 19032207-0009-0000-0000-0000223C5B90
+Message-Id: <6131c0d7-bb2f-04fb-9700-4c6655a1c56e@linux.vnet.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-22_05:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=801 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903220057
+ mlxlogscore=670 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903220058
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -96,92 +100,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: daniel.lezcano@linaro.org, rjw@rjwysocki.net,
- Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Cc: daniel.lezcano@linaro.org, rjw@rjwysocki.net
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This patch sets up flags for the state which needs to be auto-promoted.
-For powernv systems, lite states do not even lose user context. That
-information has been used to set the flag for lite states.
+Please ignore this set as this is incomplete. I have resent the patches.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h |  1 +
- drivers/cpuidle/Kconfig             |  4 ++++
- drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
- 3 files changed, 16 insertions(+), 2 deletions(-)
+--Abhishek
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 870fb7b23..735dec731 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -226,6 +226,7 @@
-  */
- 
- #define OPAL_PM_TIMEBASE_STOP		0x00000002
-+#define OPAL_PM_LOSE_USER_CONTEXT	0x00001000
- #define OPAL_PM_LOSE_HYP_CONTEXT	0x00002000
- #define OPAL_PM_LOSE_FULL_CONTEXT	0x00004000
- #define OPAL_PM_NAP_ENABLED		0x00010000
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index 7e48eb5bf..0ece62684 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -26,6 +26,10 @@ config CPU_IDLE_GOV_MENU
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_AUTO_PROMOTION
-+	bool
-+	default y if PPC_POWERNV
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 84b1ebe21..e351f5f9c 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -299,6 +299,7 @@ static int powernv_add_idle_states(void)
- 	for (i = 0; i < dt_idle_states; i++) {
- 		unsigned int exit_latency, target_residency;
- 		bool stops_timebase = false;
-+		bool lose_user_context = false;
- 		struct pnv_idle_states_t *state = &pnv_idle_states[i];
- 
- 		/*
-@@ -324,6 +325,9 @@ static int powernv_add_idle_states(void)
- 		if (has_stop_states && !(state->valid))
- 				continue;
- 
-+		if (state->flags & OPAL_PM_LOSE_USER_CONTEXT)
-+			lose_user_context = true;
-+
- 		if (state->flags & OPAL_PM_TIMEBASE_STOP)
- 			stops_timebase = true;
- 
-@@ -332,12 +336,17 @@ static int powernv_add_idle_states(void)
- 			add_powernv_state(nr_idle_states, "Nap",
- 					  CPUIDLE_FLAG_NONE, nap_loop,
- 					  target_residency, exit_latency, 0, 0);
-+		} else if (has_stop_states & !lose_user_context) {
-+			add_powernv_state(nr_idle_states, state->name,
-+					  CPUIDLE_FLAG_AUTO_PROMOTION,
-+					  stop_loop, target_residency,
-+					  exit_latency, state->psscr_val,
-+					  state->psscr_mask);
- 		} else if (has_stop_states && !stops_timebase) {
- 			add_powernv_state(nr_idle_states, state->name,
- 					  CPUIDLE_FLAG_NONE, stop_loop,
- 					  target_residency, exit_latency,
--					  state->psscr_val,
--					  state->psscr_mask);
-+					  state->psscr_val, state->psscr_mask);
- 		}
- 
- 		/*
--- 
-2.17.1
+On 03/22/2019 11:55 AM, Abhishek Goel wrote:
+> Currently, the cpuidle governors (menu/ladder) determine what idle state a
+> idling CPU should enter into based on heuristics that depend on the idle
+> history on that CPU. Given that no predictive heuristic is perfect, there
+> are cases where the governor predicts a shallow idle state, hoping that
+> the CPU will be busy soon. However, if no new workload is scheduled on
+> that CPU in the near future, the CPU will end up in the shallow state.
+>
+> Motivation
+> ----------
+> In case of POWER, this is problematic, when the predicted state in the
+> aforementioned scenario is a lite stop state, as such lite states will
+> inhibit SMT folding, thereby depriving the other threads in the core from
+> using the core resources.
+>
+> To address this, such lite states need to be autopromoted. The cpuidle-core
+> can queue timer to correspond with the residency value of the next
+> available state. Thus leading to auto-promotion to a deeper idle state as
+> soon as possible.
+>
+> Experiment
+> ----------
+> Without this patch -
+> It was seen that for a idle system, a cpu may remain in stop0_lite for few
+> seconds and then directly goes to a deeper state such as stop2.
+>
+> With this patch -
+> A cpu will not remain in stop0_lite for more than the residency of next
+> available state, and thus it will go to a deeper state in conservative
+> fashion. Using this, we may spent even less than 20 milliseconds if
+> susbsequent stop states are enabled. In the worst case, we may end up
+> spending more than a second, as was the case without this patch. The
+> worst case will occur in the scenario when no other shallow states are
+> enbaled, and only deep states are available for auto-promotion.
+>
+> Abhishek Goel (2):
+>    cpuidle : auto-promotion for cpuidle states
+>    cpuidle : Add auto-promotion flag to cpuidle flags
+>
+>   arch/powerpc/include/asm/opal-api.h |  1 +
+>   drivers/cpuidle/Kconfig             |  4 ++++
+>   drivers/cpuidle/cpuidle-powernv.c   | 13 +++++++++++--
+>   drivers/cpuidle/cpuidle.c           |  3 ---
+>   4 files changed, 16 insertions(+), 5 deletions(-)
+>
 
