@@ -3,47 +3,53 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CDF49C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:24:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 706BAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:36:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 2D51920850
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:24:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2D51920850
+	by mail.kernel.org (Postfix) with ESMTPS id E9EFC218FC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 00:36:58 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E9EFC218FC
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QPXd08PHzDqRf
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 11:24:01 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QPqX5P4MzDqRq
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 11:36:56 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QPW05jVPzDqPc
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 11:22:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QPnk5MnPzDqPl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
  header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44QPnk3TP7z9sRy; Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
 Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
  key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
  SHA256) (No client certificate requested)
- by mail.ozlabs.org (Postfix) with ESMTPSA id 44QPW03vBZz9sS0;
- Fri, 22 Mar 2019 11:22:36 +1100 (AEDT)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44QPnk2WDWz9sRG;
+ Fri, 22 Mar 2019 11:35:22 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Joel Stanley <joel@jms.id.au>
-Subject: Re: [PATCH] powerpc: vmlinux.lds: Drop Binutils 2.18 workarounds
-In-Reply-To: <20190321233420.GD3969@gate.crashing.org>
-References: <20190321003253.22100-1-joel@jms.id.au>
- <20190321233420.GD3969@gate.crashing.org>
-Date: Fri, 22 Mar 2019 11:22:36 +1100
-Message-ID: <87h8bvkbar.fsf@concordia.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v5 05/10] powerpc: Add a framework for Kernel Userspace
+ Access Protection
+In-Reply-To: <7fad467c-1e63-02c8-636e-7f8ab456f76c@c-s.fr>
+References: <20190308011619.22402-1-mpe@ellerman.id.au>
+ <20190308011619.22402-5-mpe@ellerman.id.au>
+ <b1d292b5-5844-34c6-c388-2ad2045e1904@c-s.fr>
+ <87r2b1ya8b.fsf@concordia.ellerman.id.au>
+ <7fad467c-1e63-02c8-636e-7f8ab456f76c@c-s.fr>
+Date: Fri, 22 Mar 2019 11:35:21 +1100
+Message-ID: <87a7hnkapi.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -55,37 +61,83 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> On Thu, Mar 21, 2019 at 11:02:53AM +1030, Joel Stanley wrote:
->> Segher added some workarounds for GCC 4.2 and bintuils 2.18. We now set
->> 4.6 and 2.20 as the minimum, so they can be dropped.
+> Le 20/03/2019 =C3=A0 13:57, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>> Le 08/03/2019 =C3=A0 02:16, Michael Ellerman a =C3=A9crit=C2=A0:
+>>>> From: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>>
+>>>> This patch implements a framework for Kernel Userspace Access
+>>>> Protection.
+>>>>
+>>>> Then subarches will have the possibility to provide their own
+>>>> implementation by providing setup_kuap() and
+>>>> allow/prevent_user_access().
+>>>>
+>>>> Some platforms will need to know the area accessed and whether it is
+>>>> accessed from read, write or both. Therefore source, destination and
+>>>> size and handed over to the two functions.
+>>>>
+>>>> mpe: Rename to allow/prevent rather than unlock/lock, and add
+>>>> read/write wrappers. Drop the 32-bit code for now until we have an
+>>>> implementation for it. Add kuap to pt_regs for 64-bit as well as
+>>>> 32-bit. Don't split strings, use pr_crit_ratelimited().
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> Signed-off-by: Russell Currey <ruscur@russell.cc>
+>>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>>> ---
+>>>> v5: Futex ops need read/write so use allow_user_acccess() there.
+>>>>       Use #ifdef CONFIG_PPC64 in kup.h to fix build errors.
+>>>>       Allow subarch to override allow_read/write_from/to_user().
+>>>
+>>> Those little helpers that will just call allow_user_access() when
+>>> distinct read/write handling is not performed looks overkill to me.
+>>>
+>>> Can't the subarch do it by itself based on the nullity of from/to ?
+>>>
+>>> static inline void allow_user_access(void __user *to, const void __user
+>>> *from,
+>>> 				     unsigned long size)
+>>> {
+>>> 	if (to & from)
+>>> 		set_kuap(0);
+>>> 	else if (to)
+>>> 		set_kuap(AMR_KUAP_BLOCK_READ);
+>>> 	else if (from)
+>>> 		set_kuap(AMR_KUAP_BLOCK_WRITE);
+>>> }
+>>=20
+>> You could implement it that way, but it reads better at the call sites
+>> if we have:
+>>=20
+>> 	allow_write_to_user(uaddr, sizeof(*uaddr));
+>> vs:
+>> 	allow_user_access(uaddr, NULL, sizeof(*uaddr));
+>>=20
+>> So I'm inclined to keep them. It should all end up inlined and generate
+>> the same code at the end of the day.
+>>=20
 >
-> It was a bug in binutils _before_ 2.18, only seen by people using GCC
-> _before_ 4.2.
+> I was not suggesting to completly remove allow_write_to_user(), I fully=20
+> agree that it reads better at the call sites.
 >
-> It's all ancient history by now, and good riddance :-)
->
->> Signed-off-by: Joel Stanley <joel@jms.id.au>
->
-> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+> I was just thinking that allow_write_to_user() could remain generic and=20
+> call the subarch specific allow_user_access() instead of making multiple=
+=20
+> subarch's allow_write_to_user()
 
-Thanks.
+Yep OK I see what you mean.
 
-I updated the change log slightly:
+Your suggestion above should work, and involves the least amount of
+ifdefs and so on.
 
-  powerpc/vmlinux.lds: Drop binutils < 2.18 workarounds
-  
-  Segher added some workarounds for binutils < 2.18 and GCC < 4.2. We
-  now set GCC 4.6 and binutils 2.20 as the minimum, so the workarounds
-  can be dropped.
-  
-  This is mostly a revert of c69cccc95fe4 ("powerpc: Fix build bug with
-  binutils < 2.18 and GCC < 4.2").
+I'll try and get time to post a v6.
 
 cheers
