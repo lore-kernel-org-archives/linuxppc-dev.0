@@ -2,64 +2,45 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_MUTT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFBADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 03:23:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1CD9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 04:16:17 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 96FA9218FC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 03:23:29 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="oaFOh9cq"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 96FA9218FC
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 20F93218FE
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 04:16:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 20F93218FE
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=altlinux.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QTWg2QSBzDqRC
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 14:23:27 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QTTm668fzDqQk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 14:21:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="oaFOh9cq"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44QTTm1g03z9sSN; Fri, 22 Mar 2019 14:21:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1553224908;
- bh=MMcFfSSc5Mohs5/PXTYURg2Ki8hqeRuy+fcNofauepw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=oaFOh9cqxjvhX8h4BkfMncdHNnTJ4yAuu7o6jHW1+bCC0HjWI2dqpqqDpIz+/J9mq
- OHuqZQpxOfuj7Mm3FIDBEec6oK2rhMQ5Kl+XPVxVhNo/IboozHAynNZCQpDPiNsbG9
- X+FB5pbryCdFIr1E77JKhPsEXHSYDtka30GjjjrA=
-Date: Fri, 22 Mar 2019 14:08:38 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel RFC 2/2] vfio-pci-nvlink2: Implement interconnect
- isolation
-Message-ID: <20190322030838.GL26431@umbus.fritz.box>
-References: <20190315081835.14083-1-aik@ozlabs.ru>
- <20190315081835.14083-3-aik@ozlabs.ru>
- <20190319103619.6534c7df@x1.home>
- <20190320043824.GG31018@umbus.fritz.box>
- <20190320130908.4f837995@x1.home>
- <20190320235600.GB2501@umbus.fritz.box>
- <20190321121934.283cdc67@x1.home>
+	by lists.ozlabs.org (Postfix) with ESMTP id 44QVhZ4kPdzDqRv
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 15:16:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=altlinux.org
+ (client-ip=194.107.17.57; helo=vmicros1.altlinux.org;
+ envelope-from=ldv@altlinux.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=altlinux.org
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44QVfH2dhVzDqQT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 15:14:13 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+ by vmicros1.altlinux.org (Postfix) with ESMTP id 2157372CC53;
+ Fri, 22 Mar 2019 07:14:10 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+ id 08D5A7CC74C; Fri, 22 Mar 2019 07:14:09 +0300 (MSK)
+Date: Fri, 22 Mar 2019 07:14:09 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: Oleg Nesterov <oleg@redhat.com>, Andy Lutomirski <luto@kernel.org>
+Subject: [PATCH linux-next v8 0/7] ptrace: add PTRACE_GET_SYSCALL_INFO request
+Message-ID: <20190322041409.GA27266@altlinux.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Y+Z5jE7Arku/2GrR"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20190321121934.283cdc67@x1.home>
-User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -71,351 +52,190 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jose Ricardo Ziviani <joserz@linux.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Daniel Henrique Barboza <danielhb413@gmail.com>, kvm-ppc@vger.kernel.org,
- Piotr Jaroszynski <pjaroszynski@nvidia.com>,
- Leonardo Augusto =?iso-8859-1?Q?Guimar=E3es?= Garcia <lagarcia@br.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Paul Mackerras <paulus@samba.org>, linux-kselftest@vger.kernel.org,
+ Vincent Chen <deanbo422@gmail.com>, Shuah Khan <shuah@kernel.org>,
+ Helge Deller <deller@gmx.de>, Eugene Syromyatnikov <esyr@redhat.com>,
+ Elvira Khabirova <lineprinter@altlinux.org>, James Hogan <jhogan@kernel.org>,
+ strace-devel@lists.strace.io, Kees Cook <keescook@chromium.org>,
+ linux-kernel@vger.kernel.org, Greentime Hu <green.hu@gmail.com>,
+ linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-mips@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Richard Kuo <rkuo@codeaurora.org>, Paul Burton <paul.burton@mips.com>,
+ linux-hexagon@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+PTRACE_GET_SYSCALL_INFO is a generic ptrace API that lets ptracer obtain
+details of the syscall the tracee is blocked in.
 
---Y+Z5jE7Arku/2GrR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+There are two reasons for a special syscall-related ptrace request.
 
-On Thu, Mar 21, 2019 at 12:19:34PM -0600, Alex Williamson wrote:
-> On Thu, 21 Mar 2019 10:56:00 +1100
-> David Gibson <david@gibson.dropbear.id.au> wrote:
->=20
-> > On Wed, Mar 20, 2019 at 01:09:08PM -0600, Alex Williamson wrote:
-> > > On Wed, 20 Mar 2019 15:38:24 +1100
-> > > David Gibson <david@gibson.dropbear.id.au> wrote:
-> > >  =20
-> > > > On Tue, Mar 19, 2019 at 10:36:19AM -0600, Alex Williamson wrote: =
-=20
-> > > > > On Fri, 15 Mar 2019 19:18:35 +1100
-> > > > > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> > > > >    =20
-> > > > > > The NVIDIA V100 SXM2 GPUs are connected to the CPU via PCIe lin=
-ks and
-> > > > > > (on POWER9) NVLinks. In addition to that, GPUs themselves have =
-direct
-> > > > > > peer to peer NVLinks in groups of 2 to 4 GPUs. At the moment th=
-e POWERNV
-> > > > > > platform puts all interconnected GPUs to the same IOMMU group.
-> > > > > >=20
-> > > > > > However the user may want to pass individual GPUs to the usersp=
-ace so
-> > > > > > in order to do so we need to put them into separate IOMMU group=
-s and
-> > > > > > cut off the interconnects.
-> > > > > >=20
-> > > > > > Thankfully V100 GPUs implement an interface to do by programmin=
-g link
-> > > > > > disabling mask to BAR0 of a GPU. Once a link is disabled in a G=
-PU using
-> > > > > > this interface, it cannot be re-enabled until the secondary bus=
- reset is
-> > > > > > issued to the GPU.
-> > > > > >=20
-> > > > > > This defines a reset_done() handler for V100 NVlink2 device whi=
-ch
-> > > > > > determines what links need to be disabled. This relies on prese=
-nce
-> > > > > > of the new "ibm,nvlink-peers" device tree property of a GPU tel=
-ling which
-> > > > > > PCI peers it is connected to (which includes NVLink bridges or =
-peer GPUs).
-> > > > > >=20
-> > > > > > This does not change the existing behaviour and instead adds
-> > > > > > a new "isolate_nvlink" kernel parameter to allow such isolation.
-> > > > > >=20
-> > > > > > The alternative approaches would be:
-> > > > > >=20
-> > > > > > 1. do this in the system firmware (skiboot) but for that we wou=
-ld need
-> > > > > > to tell skiboot via an additional OPAL call whether or not we w=
-ant this
-> > > > > > isolation - skiboot is unaware of IOMMU groups.
-> > > > > >=20
-> > > > > > 2. do this in the secondary bus reset handler in the POWERNV pl=
-atform -
-> > > > > > the problem with that is at that point the device is not enable=
-d, i.e.
-> > > > > > config space is not restored so we need to enable the device (i=
-=2Ee. MMIO
-> > > > > > bit in CMD register + program valid address to BAR0) in order t=
-o disable
-> > > > > > links and then perhaps undo all this initialization to bring th=
-e device
-> > > > > > back to the state where pci_try_reset_function() expects it to =
-be.   =20
-> > > > >=20
-> > > > > The trouble seems to be that this approach only maintains the iso=
-lation
-> > > > > exposed by the IOMMU group when vfio-pci is the active driver for=
- the
-> > > > > device.  IOMMU groups can be used by any driver and the IOMMU cor=
-e is
-> > > > > incorporating groups in various ways.   =20
-> > > >=20
-> > > > I don't think that reasoning is quite right.  An IOMMU group doesn't
-> > > > necessarily represent devices which *are* isolated, just devices wh=
-ich
-> > > > *can be* isolated.  There are plenty of instances when we don't need
-> > > > to isolate devices in different IOMMU groups: passing both groups to
-> > > > the same guest or userspace VFIO driver for example, or indeed when
-> > > > both groups are owned by regular host kernel drivers.
-> > > >=20
-> > > > In at least some of those cases we also don't want to isolate the
-> > > > devices when we don't have to, usually for performance reasons. =20
-> > >=20
-> > > I see IOMMU groups as representing the current isolation of the devic=
-e,
-> > > not just the possible isolation.  If there are ways to break down that
-> > > isolation then ideally the group would be updated to reflect it.  The
-> > > ACS disable patches seem to support this, at boot time we can choose =
-to
-> > > disable ACS at certain points in the topology to favor peer-to-peer
-> > > performance over isolation.  This is then reflected in the group
-> > > composition, because even though ACS *can be* enabled at the given
-> > > isolation points, it's intentionally not with this option.  Whether or
-> > > not a given user who owns multiple devices needs that isolation is
-> > > really beside the point, the user can choose to connect groups via IO=
-MMU
-> > > mappings or reconfigure the system to disable ACS and potentially more
-> > > direct routing.  The IOMMU groups are still accurately reflecting the
-> > > topology and IOMMU based isolation. =20
-> >=20
-> > Huh, ok, I think we need to straighten this out.  Thinking of iommu
-> > groups as possible rather than potential isolation was a conscious
->=20
-> possible ~=3D potential
+Firstly, with the current ptrace API there are cases when ptracer cannot
+retrieve necessary information about syscalls.  Some examples include:
+* The notorious int-0x80-from-64-bit-task issue.  See [1] for details.
+In short, if a 64-bit task performs a syscall through int 0x80, its tracer
+has no reliable means to find out that the syscall was, in fact,
+a compat syscall, and misidentifies it.
+* Syscall-enter-stop and syscall-exit-stop look the same for the tracer.
+Common practice is to keep track of the sequence of ptrace-stops in order
+not to mix the two syscall-stops up.  But it is not as simple as it looks;
+for example, strace had a (just recently fixed) long-standing bug where
+attaching strace to a tracee that is performing the execve system call
+led to the tracer identifying the following syscall-exit-stop as
+syscall-enter-stop, which messed up all the state tracking.
+* Since the introduction of commit 84d77d3f06e7e8dea057d10e8ec77ad71f721be3
+("ptrace: Don't allow accessing an undumpable mm"), both PTRACE_PEEKDATA
+and process_vm_readv become unavailable when the process dumpable flag
+is cleared.  On such architectures as ia64 this results in all syscall
+arguments being unavailable for the tracer.
 
-Sorry, I meant "current" not "potential".
+Secondly, ptracers also have to support a lot of arch-specific code for
+obtaining information about the tracee.  For some architectures, this
+requires a ptrace(PTRACE_PEEKUSER, ...) invocation for every syscall
+argument and return value.
 
-> > decision on my part when we were first coming up with them.  The
-> > rationale was that that way iommu groups could be static for the
-> > lifetime of boot, with more dynamic isolation state layered on top.
-> >=20
-> > Now, that was based on analogy with PAPR's concept of "Partitionable
-> > Endpoints" which are decided by firmware before boot.  However, I
-> > think it makes sense in other contexts too: if iommu groups represent
-> > current isolation, then we need some other way to advertise possible
-> > isolation - otherwise how will the admin (and/or tools) know how it
-> > can configure the iommu groups.
-> >=20
-> > VFIO already has the container, which represents explicitly a "group
-> > of groups" that we don't care to isolate from each other.  I don't
-> > actually know what other uses of the iommu group infrastructure we
-> > have at present and how they treat them.
->=20
-> s/that we don't care to isolate/that the user doesn't care to isolate/
+PTRACE_GET_SYSCALL_INFO returns the following structure:
 
-Well, true, I guess we still want to isolate them when possible for
-additional safety.  But I don't think we should do so when that
-isolation has a real performance cost, which it would in the case of
-isolating linked GPUs here.
+struct ptrace_syscall_info {
+	__u8 op;	/* PTRACE_SYSCALL_INFO_* */
+	__u32 arch __attribute__((__aligned__(sizeof(__u32))));
+	__u64 instruction_pointer;
+	__u64 stack_pointer;
+	union {
+		struct {
+			__u64 nr;
+			__u64 args[6];
+		} entry;
+		struct {
+			__s64 rval;
+			__u8 is_error;
+		} exit;
+		struct {
+			__u64 nr;
+			__u64 args[6];
+			__u32 ret_data;
+		} seccomp;
+	};
+};
 
-> Though even that is not necessarily accurate, the container represents
-> a shared IOMMU context, that context doesn't necessarily include
-> mappings between devices, so the device can still be isolated *from
-> each other*.
+The structure was chosen according to [2], except for the following
+changes:
+* seccomp substructure was added as a superset of entry substructure;
+* the type of nr field was changed from int to __u64 because syscall
+numbers are, as a practical matter, 64 bits;
+* stack_pointer field was added along with instruction_pointer field
+since it is readily available and can save the tracer from extra
+PTRACE_GETREGS/PTRACE_GETREGSET calls;
+* arch is always initialized to aid with tracing system calls
+* such as execve();
+* instruction_pointer and stack_pointer are always initialized
+so they could be easily obtained for non-syscall stops;
+* a boolean is_error field was added along with rval field, this way
+the tracer can more reliably distinguish a return value
+from an error value.
 
-Well, sure, but it's the only mechanism the user has for indicating
-that they don't care about isolation between these device.  That might
-be because they simply don't care, but it might also be because they
-want to use interlinks between those devices for additional
-performance.
+strace has been ported to PTRACE_GET_SYSCALL_INFO.
+Starting with release 4.26, strace uses PTRACE_GET_SYSCALL_INFO API
+as the preferred mechanism of obtaining syscall information.
 
-> > So, if we now have dynamically reconfigurable groups which are a
-> > departure from that design, how can we go from here trying to bring
-> > things back to consistency.
->=20
-> We don't currently have dynamically reconfigurable groups,
+[1] https://lore.kernel.org/lkml/CA+55aFzcSVmdDj9Lh_gdbz1OzHyEm6ZrGPBDAJnywm2LF_eVyg@mail.gmail.com/
+[2] https://lore.kernel.org/lkml/CAObL_7GM0n80N7J_DFw_eQyfLyzq+sf4y2AvsCCV88Tb3AwEHA@mail.gmail.com/
 
-Ah, ok.  So what were these other use cases you were describing?  Boot
-time options which change how the iommu groups are generated?  Or
-something else.
+---
 
-> I think the
-> question is how do we introduce dynamically configurable groups within
-> the existing design, because whatever intentions were 7.5 years ago is
-> rather irrelevant now.
+Notes:
+    v8:
+    * Moved syscall_get_arch() specific patches to a separate patchset
+      which is now merged into audit/next tree.
+    * Rebased to linux-next.
+    * Moved ptrace_get_syscall_info code under #ifdef CONFIG_HAVE_ARCH_TRACEHOOK,
+      narrowing down the set of architectures supported by this implementation
+      back to those 19 that enable CONFIG_HAVE_ARCH_TRACEHOOK because
+      I failed to get all syscall_get_*(), instruction_pointer(),
+      and user_stack_pointer() functions implemented on some niche
+      architectures.  This leaves the following architectures out:
+      alpha, h8300, m68k, microblaze, and unicore32.
 
-Well, yeah, I guess.
+    v7:
+    * Rebased to v5.0-rc1.
+    * 5 arch-specific preparatory patches out of 25 have been merged
+      into v5.0-rc1 via arch trees.
 
-> VFIO groups are mapped directly to IOMMU groups.  IOMMU groups are the
-> smallest set of devices which can be considered isolated from other
-> sets of devices (not potentially, but as configured).
+    v6:
+    * Add syscall_get_arguments and syscall_set_arguments wrappers
+      to asm-generic/syscall.h, requested by Geert.
+    * Change PTRACE_GET_SYSCALL_INFO return code: do not take trailing paddings
+      into account, use the end of the last field of the structure being written.
+    * Change struct ptrace_syscall_info:
+      * remove .frame_pointer field, is is not needed and not portable;
+      * make .arch field explicitly aligned, remove no longer needed
+        padding before .arch field;
+      * remove trailing pads, they are no longer needed.
 
-Hm.. but what actually makes that assumption that this is the case as
-configured, rather than just possibly - I'm taking "possible" to mean
-possible with this host kernel, not just possible with this hardware.
+    v5:
+    * Merge separate series and patches into the single series.
+    * Change PTRACE_EVENTMSG_SYSCALL_{ENTRY,EXIT} values as requested by Oleg.
+    * Change struct ptrace_syscall_info: generalize instruction_pointer,
+      stack_pointer, and frame_pointer fields by moving them from
+      ptrace_syscall_info.{entry,seccomp} substructures to ptrace_syscall_info
+      and initializing them for all stops.
+    * Add PTRACE_SYSCALL_INFO_NONE, set it when not in a syscall stop,
+      so e.g. "strace -i" could use PTRACE_SYSCALL_INFO_SECCOMP to obtain
+      instruction_pointer when the tracee is in a signal stop.
+    * Patch all remaining architectures to provide all necessary
+      syscall_get_* functions.
+    * Make available for all architectures: do not conditionalize on
+      CONFIG_HAVE_ARCH_TRACEHOOK since all syscall_get_* functions
+      are implemented on all architectures.
+    * Add a test for PTRACE_GET_SYSCALL_INFO to selftests/ptrace.
+    
+    v4:
+    * Do not introduce task_struct.ptrace_event,
+      use child->last_siginfo->si_code instead.
+    * Implement PTRACE_SYSCALL_INFO_SECCOMP and ptrace_syscall_info.seccomp
+      support along with PTRACE_SYSCALL_INFO_{ENTRY,EXIT} and
+      ptrace_syscall_info.{entry,exit}.
+    
+    v3:
+    * Change struct ptrace_syscall_info.
+    * Support PTRACE_EVENT_SECCOMP by adding ptrace_event to task_struct.
+    * Add proper defines for ptrace_syscall_info.op values.
+    * Rename PT_SYSCALL_IS_ENTERING and PT_SYSCALL_IS_EXITING to
+      PTRACE_EVENTMSG_SYSCALL_ENTRY and PTRACE_EVENTMSG_SYSCALL_EXIT
+    * and move them to uapi.
+    
+    v2:
+    * Do not use task->ptrace.
+    * Replace entry_info.is_compat with entry_info.arch, use syscall_get_arch().
+    * Use addr argument of sys_ptrace to get expected size of the struct;
+      return full size of the struct.
 
-> VFIO groups are
-> the unit of ownership to userspace, therefore a VFIO group must be
-> (currently) isolated from other groups.
+Dmitry V. Levin (6):
+  nds32: fix asm/syscall.h
+  hexagon: define syscall_get_error() and syscall_get_return_value()
+  mips: define syscall_get_error()
+  parisc: define syscall_get_error()
+  powerpc: define syscall_get_error()
+  selftests/ptrace: add a test case for PTRACE_GET_SYSCALL_INFO
 
-It must be currently isolated once the VFIO group is instantiated, but
-is there actually anything that requires that current isolation before
-the iommu group is instantiated as a vfio group.
+Elvira Khabirova (1):
+  ptrace: add PTRACE_GET_SYSCALL_INFO request
 
-> The user owns and manages the
-> IOMMU context for one or more groups via a container.  A container
-> allows efficiency in managing a shared IOVA space between groups.
+ arch/hexagon/include/asm/syscall.h            |  14 +
+ arch/mips/include/asm/syscall.h               |   6 +
+ arch/nds32/include/asm/syscall.h              |  29 +-
+ arch/parisc/include/asm/syscall.h             |   7 +
+ arch/powerpc/include/asm/syscall.h            |  10 +
+ include/linux/tracehook.h                     |   9 +-
+ include/uapi/linux/ptrace.h                   |  35 +++
+ kernel/ptrace.c                               | 103 ++++++-
+ tools/testing/selftests/ptrace/.gitignore     |   1 +
+ tools/testing/selftests/ptrace/Makefile       |   2 +-
+ .../selftests/ptrace/get_syscall_info.c       | 271 ++++++++++++++++++
+ 11 files changed, 471 insertions(+), 16 deletions(-)
+ create mode 100644 tools/testing/selftests/ptrace/get_syscall_info.c
 
-Yes, and it seems to me an obvious extension to have the container
-also permit other efficiencies which aren't compatible with full
-isolation.
-
-> > > > > So, if there's a device specific
-> > > > > way to configure the isolation reported in the group, which requi=
-res
-> > > > > some sort of active management against things like secondary bus
-> > > > > resets, then I think we need to manage it above the attached endp=
-oint
-> > > > > driver.   =20
-> > > >=20
-> > > > The problem is that above the endpoint driver, we don't actually ha=
-ve
-> > > > enough information about what should be isolated.  For VFIO we want=
- to
-> > > > isolate things if they're in different containers, for most regular
-> > > > host kernel drivers we don't need to isolate at all (although we mi=
-ght
-> > > > as well when it doesn't have a cost). =20
-> > >=20
-> > > This idea that we only want to isolate things if they're in different
-> > > containers is bogus, imo.  There are performance reasons why we might
-> > > not want things isolated, but there are also address space reasons why
-> > > we do.  If there are direct routes between devices, the user needs to
-> > > be aware of the IOVA pollution, if we maintain singleton groups, they
-> > > don't.  Granted we don't really account for this well in most
-> > > userspaces and fumble through it by luck of the address space layout
-> > > and lack of devices really attempting peer to peer access. =20
-> >=20
-> > I don't really follow what you're saying here.
->=20
-> If the lack of isolation between devices includes peer-to-peer channels
-> then the MMIO of the devices within the group pollutes the IOVA space
-> of the container.
-
-Yes, if the permissible IOVA addresses overlap with valid MMIO
-addresses.  I don't really see why that's significant, though.  We
-already have basically the same situation if there are multiple
-devices in a group.  e.g. if you have several devices behind a dumb
-PCI-E to PCI bridge, you can't actually prohibit peer-to-peer DMA
-between them, and so those devices' MMIOs pollute the IOVA space for
-each other, even if they don't for other devices in the container.
-There's only so far we can go to prevent the user from shooting
-themselves in the foot.
-
-> > > For in-kernel users, we're still theoretically trying to isolate
-> > > devices such that they have restricted access to only the resources
-> > > they need.  Disabling things like ACS in the topology reduces that
-> > > isolation.  AFAICT, most users don't really care about that degree of
-> > > isolation, so they run with iommu=3Dpt for native driver performance
-> > > while still having the IOMMU available for isolation use cases running
-> > > in parallel.  We don't currently have support for on-demand enabling
-> > > isolation. =20
-> >=20
-> > Ok.
-> >=20
-> > > > The host side nVidia GPGPU
-> > > > drivers also won't want to isolate the (host owned) NVLink devices
-> > > > from each other, since they'll want to use the fast interconnects =
-=20
-> > >=20
-> > > This falls into the same mixed use case scenario above where we don't
-> > > really have a good solution today.  Things like ACS are dynamically
-> > > configurable, but we don't expose any interfaces to let drivers or
-> > > users change it (aside from setpci, which we don't account for
-> > > dynamically).  We assume a simplistic model where if you want IOMMU,
-> > > then you must also want the maximum configurable isolation.
-> > > Dynamically changing routing is not necessarily the most foolproof
-> > > thing either with potentially in-flight transactions and existing DMA
-> > > mappings, which is why I've suggested a couple times that perhaps we
-> > > could do a software hot-unplug of a sub-hierarchy, muck with isolation
-> > > at the remaining node, then re-discover the removed devices. =20
-> >=20
-> > Ok, so I feel like we need to go fully one way or the other.  Either:
-> >=20
-> > 1) Groups represent current isolation status, in which case we
-> >    deprecate vfio containers in favour of fusing groups beforehand,
-> >    and we need some new concept ("isolation atoms"?) to represent what
-> >    isolation is possible
->=20
-> Nope, containers are owned by users and serve a purpose beyond what
-> you're assuming here.  Also, there's 7.5 years of userspace tooling
-> broken by this.  I do remember we had discussions about merging groups,
-> but what we have now is what we agreed on.
-
-Well, quite - and I thought the reasoning that led to that design was
-that groups would be a representation of isolation granularity, not
-actual isolation.  That allows them to be static, which as you say,
-tools are likely to assume.
-
-> > or
-> >=20
-> > 2) Groups represent potential isolation, with a higher level construct
-> >    representing current isolation.  This could involve making vfio
-> >    containers essentially a wrapper around some more generic concept
-> >    ("isolation clusters"?) of a group of groups.
->=20
-> Have fun.  Containers and groups are exposed to userspace, so you're
-> essentially suggesting to throw away all that support, for... I don't
-> really know what.
-
-No, I'm not proposing removing containers, just changing them from
-being purely VFIO specific to being the VFIO front end to a generic
-concept.  Roughly speaking VFIO containers would be to "isolation
-clusters" (or whatever) as VFIO groups are to IOMMU groups now.
-
-> Groups are involved in IOMMU context, so dynamically
-> changing what a group defines is hard.
-
-Absolutely!  That's why I don't want to, and why my conception of
-groups was defined so that they didn't have to.
-
-> Thus my suggestions that mixed
-> or dynamic workloads could make use of soft remove and rediscovery for
-> sub-hierarchies, unbinding and rebinding drivers such that we have the
-> proper expectations of DMA context.   Thanks,
-
-Well, if we have to change groups, then that sounds like the sanest
-available way to do it.  But I'm not yet convinced that altering
-groups makes sense rather than using a group-of-groups concept on top
-of it - which would map to containers in the case of VFIO.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---Y+Z5jE7Arku/2GrR
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyUUbQACgkQbDjKyiDZ
-s5Kv1BAAl7TEFI8Vjfl7hTdH5QpZ0lU3QYs25JZuexiFQBz7YKVFulGyQlJtRgLT
-+eYBhTZWj+UaQlaXxI/lqiVWIK0hka8ETU3RqDHwo15UDQkH3qelmDXHLVaZ4GZX
-Eyo7WD+5R+FUIN3oYnNt8lh/jMJAuQkuc1wn8pXkP0G7nclGwC5NyO1XMn+EQtBy
-BsJQsJMbOOg4kPLibTz05eqfbKFoICxIvwdXxAnXb3OD7XpN8JCOXq+Q/SPbUB8F
-JLOf2nPb1Ufg+DnlZq4I7TupxdSf6U0GY28SmTGS6fGkhsLgmHBSedN/EArTWYZK
-dbCWqKxyK+eehQOwGx/sKD3oT5iJ8RB6R6zhY+JtrVlQ1PHFM85LF5noFMs6s7pC
-BzIN495BHcATs7tK4KuwCwaowKwYAZyw5ioqgxZas7pQcbyDOAYZlypG8NRiUylZ
-Swdj0Z6Pl1fai0RuLga3dKTLAIOqNbz9XjJGuGE6a9Q67CtMf7ioSpjkmpLNys1J
-VUE7jurCVj8k2lLdMTDLLLD1JXUEZRLsFXgpztmNH6qBzsDDEILGDrmsgZD/wzyy
-QHHOSfDShW1DIQ3P2CVMi6pq3dR7Q+M038+5g5CIKdCVoV4ywVffltenqmKAcgqD
-Ea+4oHICxjH/vdLf7Stu7ElfZEk1HuJpqWAzRqZBFNrfN9IRJ4M=
-=h22c
------END PGP SIGNATURE-----
-
---Y+Z5jE7Arku/2GrR--
+-- 
+ldv
