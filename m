@@ -2,66 +2,60 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC93C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 18:56:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3E5EC43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 19:32:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 01D26218FE
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 18:56:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 01D26218FE
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 8631420870
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 19:32:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8631420870
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44QtDd42BzzDqRk
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 05:56:49 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Qv1J2P9rzDqPK
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 06:32:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QtBp4VNDzDqLr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 05:55:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44QtBp1jX8z8wMX
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 05:55:14 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44QtBp1Dcnz9sRd; Sat, 23 Mar 2019 05:55:14 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44QtBY0hVhz9sQp
- for <linuxppc-dev@ozlabs.org>; Sat, 23 Mar 2019 05:54:59 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x2MIUAHk029368;
- Fri, 22 Mar 2019 13:30:24 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x2MITmkv029327;
- Fri, 22 Mar 2019 13:29:48 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Fri, 22 Mar 2019 13:29:43 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc/64: Fix memcmp reading past the end of src/dest
-Message-ID: <20190322182943.GF3969@gate.crashing.org>
-References: <20190322123724.28435-1-mpe@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44QtzQ2VGJzDqRm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 06:30:25 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44QtzH0VkLz9tyvj;
+ Fri, 22 Mar 2019 20:30:19 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id nshErp7imjiD; Fri, 22 Mar 2019 20:30:18 +0100 (CET)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44QtzG5tFqz9tyvg;
+ Fri, 22 Mar 2019 20:30:18 +0100 (CET)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id B81D5556; Fri, 22 Mar 2019 20:30:18 +0100 (CET)
+Received: from 37.171.246.171 ([37.171.246.171]) by messagerie.si.c-s.fr
+ (Horde Framework) with HTTP; Fri, 22 Mar 2019 20:30:18 +0100
+Date: Fri, 22 Mar 2019 20:30:18 +0100
+Message-ID: <20190322203018.Horde.HcjA5xJcxFAiEJOUjrO2DA1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Meelis Roos <mroos@linux.ee>
+Subject: Re: powerpc32 boot crash in 5.1-rc1
+References: <20190321221632.Horde.sUFPCFV5Nrk0KQFVNqmMjw2@messagerie.si.c-s.fr>
+ <6c3bfa43-4b11-ab27-fcc6-3732ccbed304@linux.ee>
+In-Reply-To: <6c3bfa43-4b11-ab27-fcc6-3732ccbed304@linux.ee>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20190322123724.28435-1-mpe@ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,40 +67,30 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, chandan@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2019 at 11:37:24PM +1100, Michael Ellerman wrote:
->  .Lcmp_rest_lt8bytes:
-> -	/* Here we have only less than 8 bytes to compare with. at least s1
-> -	 * Address is aligned with 8 bytes.
-> -	 * The next double words are load and shift right with appropriate
-> -	 * bits.
-> +	/*
-> +	 * Here we have less than 8 bytes to compare. At least s1 is aligned to
-> +	 * 8 bytes, but s2 may not be. We must make sure s2 + 8 doesn't cross a
+Meelis Roos <mroos@linux.ee> a =C3=A9crit=C2=A0:
 
-"s2 + 7"?  The code is fine though (bgt, not bge).
+>>> While 5.0.0 worked fine on my PowerMac G4, 5.0 + git (unknown rev=20=20
+>>>=20as of Mar 13), 5.0.0-11520-gf261c4e and todays git all fail to boot.
+>>>
+>>> The problem seems to be in page fault handler in load_elf_binary()=20=
+=20
+>>>=20of init process.
+>>
+>> The patch at https://patchwork.ozlabs.org/patch/1053385/ should fix it
+>
+> Tested it - yes, it fixes the boot.
 
-> +	 * page boundary, otherwise we might read past the end of the buffer and
-> +	 * trigger a page fault. We use 4K as the conservative minimum page
-> +	 * size. If we detect that case we go to the byte-by-byte loop.
-> +	 *
-> +	 * Otherwise the next double word is loaded from s1 and s2, and shifted
-> +	 * right to compare the appropriate bits.
->  	 */
-> +	clrldi	r6,r4,(64-12)	// r6 = r4 & 0xfff
+Thanks for testing. It will be merged in 5.1-rc2
 
-You can just write
-  rlwinm r6,r4,0,0x0fff
-if that is clearer?  Or do you still want a comment with that :-)
+Christophe
 
-> +	cmpdi	r6,0xff8
-> +	bgt	.Lshort
-
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+>
+> --=20
+>=20Meelis Roos <mroos@linux.ee>
 
 
-Segher
