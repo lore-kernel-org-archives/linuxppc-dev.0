@@ -2,54 +2,86 @@ Return-Path: <SRS0=ildu=RZ=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE0A0C43381
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 14:44:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 999E6C43381
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:04:13 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 58A7B2083D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 14:44:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 58A7B2083D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
+	by mail.kernel.org (Postfix) with ESMTPS id D564C2190A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Mar 2019 17:04:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=linux-foundation.org header.i=@linux-foundation.org header.b="EQb0PJgI"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D564C2190A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Qmf00ZpSzDqPy
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 01:44:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Qqkf3rLFzDqRf
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 04:04:10 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=redhat.com
- (client-ip=209.132.183.28; helo=mx1.redhat.com;
- envelope-from=longman@redhat.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=redhat.com
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ spf=pass (mailfrom) smtp.mailfrom=linuxfoundation.org
+ (client-ip=2a00:1450:4864:20::141; helo=mail-lf1-x141.google.com;
+ envelope-from=torvalds@linuxfoundation.org; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org
+ header.b="EQb0PJgI"; dkim-atps=neutral
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com
+ [IPv6:2a00:1450:4864:20::141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44QmKb4GGgzDqSZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 01:30:43 +1100 (AEDT)
-Received: from smtp.corp.redhat.com (int-mx02.intmail.prod.int.phx2.redhat.com
- [10.5.11.12])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by mx1.redhat.com (Postfix) with ESMTPS id 2D3E590B1A;
- Fri, 22 Mar 2019 14:30:41 +0000 (UTC)
-Received: from llong.com (dhcp-17-47.bos.redhat.com [10.18.17.47])
- by smtp.corp.redhat.com (Postfix) with ESMTP id 59B1C60C08;
- Fri, 22 Mar 2019 14:30:32 +0000 (UTC)
-From: Waiman Long <longman@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH v5 3/3] locking/rwsem: Optimize down_read_trylock()
-Date: Fri, 22 Mar 2019 10:30:08 -0400
-Message-Id: <20190322143008.21313-4-longman@redhat.com>
-In-Reply-To: <20190322143008.21313-1-longman@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Qqhh3L49zDqPZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 04:02:22 +1100 (AEDT)
+Received: by mail-lf1-x141.google.com with SMTP id 5so1857789lft.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:02:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=linux-foundation.org; s=google;
+ h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+ :cc; bh=vz3qEaERAPywi/7ygEvysJD/ZMRj5JWoH5GTAfYhS9M=;
+ b=EQb0PJgIUrxIFWDmv2d+roZcOdf47m4oWDh2aF9nqiM4xcdszNPdjlEZ6XBCZ7EETk
+ 1IfpVzYln8LpimAQjhRDAkW3OaV5XXtB4BOqOTWHoOqa+CwXq49WMc62V63vMcFKOgKB
+ AUA6dt7kp1lq7E8yacEVhDOuhsd4cjNkTZNrI=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=vz3qEaERAPywi/7ygEvysJD/ZMRj5JWoH5GTAfYhS9M=;
+ b=e3BwCf/zlDAH8+Nw5LgdFjj0opyWlNrltUTkUKLrIplvuc3zT57ubb2ySKD+awghAL
+ /QFkv6a4dhDjS2k9VPmLJ8Na6ADNYn1lgA2j8Zx2M6S8l/xoGJKLBeyu+hspG1HtrtFL
+ nJ7gbyZjHOnQDSqT3wjeeIFRFowzP9fC+hIojNyIVmYOgHyUQFubs/RailzSY5dNZ/6j
+ 6o/tXerqMWoLqm3E+fRLE4jS/sH0Pehx6pEXZksSY3kw3GjbI0aNQwUmKswjBT9UNovn
+ fnkKCE0FU7x041K5l56ekX2DGJo5cXC9ui4DKZaGQXuMdtBrm62CRLl2g+h/J5+83wqm
+ iEtQ==
+X-Gm-Message-State: APjAAAVd//AtZZdkvlPTapdOvsfBANFywzc7y3s4ttdsmJH3lxDu15FK
+ uHi/TLqFOFnRSECawtN0g+4xgSu8K84=
+X-Google-Smtp-Source: APXvYqwU9jyRUV2Q2YhpzrL30T5Ks3+88Xgcv4lvPqxqjryQBiU+chnYe6TxnmHbopKfcPJWOZHcEA==
+X-Received: by 2002:a19:f703:: with SMTP id z3mr5572579lfe.15.1553274131754;
+ Fri, 22 Mar 2019 10:02:11 -0700 (PDT)
+Received: from mail-lj1-f172.google.com (mail-lj1-f172.google.com.
+ [209.85.208.172])
+ by smtp.gmail.com with ESMTPSA id m77sm950042lje.67.2019.03.22.10.02.10
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Fri, 22 Mar 2019 10:02:10 -0700 (PDT)
+Received: by mail-lj1-f172.google.com with SMTP id f23so2678697ljc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Mar 2019 10:02:10 -0700 (PDT)
+X-Received: by 2002:a2e:94ca:: with SMTP id r10mr5731037ljh.118.1553274129929; 
+ Fri, 22 Mar 2019 10:02:09 -0700 (PDT)
+MIME-Version: 1.0
 References: <20190322143008.21313-1-longman@redhat.com>
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.12
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
- (mx1.redhat.com [10.5.110.29]); Fri, 22 Mar 2019 14:30:41 +0000 (UTC)
+ <20190322143008.21313-2-longman@redhat.com>
+In-Reply-To: <20190322143008.21313-2-longman@redhat.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 22 Mar 2019 10:01:53 -0700
+X-Gmail-Original-Message-ID: <CAHk-=wikkO-1f1=FEOEzkSnaDg3yJLP=4Vd59UCuLBztFd0KOw@mail.gmail.com>
+Message-ID: <CAHk-=wikkO-1f1=FEOEzkSnaDg3yJLP=4Vd59UCuLBztFd0KOw@mail.gmail.com>
+Subject: Re: [PATCH v5 1/3] locking/rwsem: Remove arch specific rwsem files
+To: Waiman Long <longman@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,125 +93,92 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+Cc: linux-ia64@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
  linux-mips@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
  sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
  Davidlohr Bueso <dave@stgolabs.net>, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, x86@kernel.org,
- Waiman Long <longman@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-hexagon@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, uclinux-h8-devel@lists.sourceforge.jp,
  linux-xtensa@linux-xtensa.org, Arnd Bergmann <arnd@arndb.de>,
- linux-um@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ linux-um@lists.infradead.org, linux-m68k <linux-m68k@lists.linux-m68k.org>,
  openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
- linux-arm-kernel@lists.infradead.org, Tim Chen <tim.c.chen@linux.intel.com>,
- linux-parisc@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "linux-alpha@vger.kernel.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-parisc@vger.kernel.org, Tim Chen <tim.c.chen@linux.intel.com>,
+ Linux List Kernel Mailing <linux-kernel@vger.kernel.org>,
+ "linux-alpha@vger.kernel.org" <linux-alpha@vger.kernel.org>,
  nios2-dev@lists.rocketboards.org, Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Modify __down_read_trylock() to optimize for an unlocked rwsem and make
-it generate slightly better code.
+On Fri, Mar 22, 2019 at 7:30 AM Waiman Long <longman@redhat.com> wrote:
+>
+>  19 files changed, 133 insertions(+), 930 deletions(-)
 
-Before this patch, down_read_trylock:
+Lovely. And it all looks sane to me.
 
-   0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
-   0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
-   0x000000000000000b <+11>:    mov    %rdx,%rax
-   0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
-   0x0000000000000013 <+19>:    cmp    %rax,%rdx
-   0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
-   0x0000000000000018 <+24>:    mov    (%rdi),%rdx
-   0x000000000000001b <+27>:    test   %rdx,%rdx
-   0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
-   0x0000000000000020 <+32>:    xor    %eax,%eax
-   0x0000000000000022 <+34>:    retq
-   0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
-   0x000000000000002c <+44>:    or     $0x3,%rax
-   0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
-   0x0000000000000034 <+52>:    mov    $0x1,%eax
-   0x0000000000000039 <+57>:    retq
+So ack.
 
-After patch, down_read_trylock:
+The only comment I have is about __down_read_trylock(), which probably
+isn't critical enough to actually care about, but:
 
-   0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
-   0x0000000000000005 <+5>:	xor    %eax,%eax
-   0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
-   0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
-   0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
-   0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
-   0x000000000000001b <+27>:	or     $0x3,%rax
-   0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
-   0x0000000000000023 <+35>:	mov    $0x1,%eax
-   0x0000000000000028 <+40>:	retq
-   0x0000000000000029 <+41>:	test   %rax,%rax
-   0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
-   0x000000000000002e <+46>:	xor    %eax,%eax
-   0x0000000000000030 <+48>:	retq
+> +static inline int __down_read_trylock(struct rw_semaphore *sem)
+> +{
+> +       long tmp;
+> +
+> +       while ((tmp = atomic_long_read(&sem->count)) >= 0) {
+> +               if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
+> +                                  tmp + RWSEM_ACTIVE_READ_BIAS)) {
+> +                       return 1;
+> +               }
+> +       }
+> +       return 0;
+> +}
 
-By using a rwsem microbenchmark, the down_read_trylock() rate (with a
-load of 10 to lengthen the lock critical section) on a x86-64 system
-before and after the patch were:
+So this seems to
 
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           14,496          14,716
-        2            8,644           8,453
-	4            6,799           6,983
-	8            5,664           7,190
+ (a) read the line early (the whole cacheline in shared state issue)
 
-On a ARM64 system, the performance results were:
+ (b) read the line again unnecessarily in the while loop
 
-                 Before Patch    After Patch
-   # of Threads     rlock           rlock
-   ------------     -----           -----
-        1           23,676          24,488
-        2            7,697           9,502
-        4            4,945           3,440
-        8            2,641           1,603
+Now, (a) might be explained by "well, maybe we do trylock even with
+existing readers", although I continue to think that the case we
+should optimize for is simply the uncontended one, where we don't even
+have multiple readers.
 
-For the uncontended case (1 thread), the new down_read_trylock() is a
-little bit faster. For the contended cases, the new down_read_trylock()
-perform pretty well in x86-64, but performance degrades at high
-contention level on ARM64.
+But (b) just seems silly.
 
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- kernel/locking/rwsem.h | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+So I wonder if it shouldn't just be
 
-diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
-index 45ee00236e03..1f5775aa6a1d 100644
---- a/kernel/locking/rwsem.h
-+++ b/kernel/locking/rwsem.h
-@@ -174,14 +174,17 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
- 
- static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
--	long tmp;
-+	/*
-+	 * Optimize for the case when the rwsem is not locked at all.
-+	 */
-+	long tmp = RWSEM_UNLOCKED_VALUE;
- 
--	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
--		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
--				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
-+	do {
-+		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
-+					tmp + RWSEM_ACTIVE_READ_BIAS)) {
- 			return 1;
- 		}
--	}
-+	} while (tmp >= 0);
- 	return 0;
- }
- 
--- 
-2.18.1
+        long tmp = 0;
 
+        do {
+                long new = atomic_long_cmpxchg_acquire(&sem->count, tmp,
+                        tmp + RWSEM_ACTIVE_READ_BIAS);
+                if (likely(new == tmp))
+                        return 1;
+               tmp = new;
+        } while (tmp >= 0);
+        return 0;
+
+which would seem simpler and solve both issues. Hmm?
+
+But honestly, I didn't check what our uses of down_read_trylock() look
+like. We have more of them than I expected, and I _think_ the normal
+case is the "nobody else holds the lock", but that's just a gut
+feeling.
+
+Some of them _might_ be performance-critical. There's the one on
+mmap_sem in the fault handling path, for example. And yes, I'd expect
+the normal case to very much be "no other readers or writers" for that
+one.
+
+NOTE! The above code snippet is absolutely untested, and might be
+completely wrong. Take it as a "something like this" rather than
+anything else.
+
+                   Linus
