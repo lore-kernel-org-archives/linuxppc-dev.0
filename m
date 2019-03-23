@@ -2,62 +2,55 @@ Return-Path: <SRS0=CEjL=R2=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E3C2C43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 08:39:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4644C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 13:24:30 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id BBE30218D4
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 08:39:38 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org BBE30218D4
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id 1C6132175B
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 13:24:29 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C6132175B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44RDV04YV1zDqRL
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 19:39:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44RLpf2vMWzDqQ3
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 24 Mar 2019 00:24:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=joe.lawrence@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44RDSD3wV5zDqNT
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 19:38:04 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44RDS80wjpz9vCyg;
- Sat, 23 Mar 2019 09:38:00 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id QrCXLpr1KXKI; Sat, 23 Mar 2019 09:38:00 +0100 (CET)
-Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44RDS76t6hz9vCyf;
- Sat, 23 Mar 2019 09:37:59 +0100 (CET)
-Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
- id B5762560; Sat, 23 Mar 2019 09:37:59 +0100 (CET)
-Received: from arouen-653-1-146-8.w82-126.abo.wanadoo.fr
- (arouen-653-1-146-8.w82-126.abo.wanadoo.fr [82.126.129.8]) by
- messagerie.si.c-s.fr (Horde Framework) with HTTP; Sat, 23 Mar 2019 09:37:59
- +0100
-Date: Sat, 23 Mar 2019 09:37:59 +0100
-Message-ID: <20190323093759.Horde.N3GEj1vZm31uMuE7v56kQQ1@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH] compiler: allow all arches to enable
- CONFIG_OPTIMIZE_INLINING
-In-Reply-To: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
-User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44RLjX47YtzDqPW
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2019 00:19:58 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx01.intmail.prod.int.phx2.redhat.com
+ [10.5.11.11])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 399663DDB6;
+ Sat, 23 Mar 2019 13:19:55 +0000 (UTC)
+Received: from redhat.com (dhcp-17-208.bos.redhat.com [10.18.17.208])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id A409160140;
+ Sat, 23 Mar 2019 13:19:52 +0000 (UTC)
+Date: Sat, 23 Mar 2019 09:19:50 -0400
+From: Joe Lawrence <joe.lawrence@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: ppc64le: ftrace self-tests and $(CC_FLAGS_FTRACE) broken?
+Message-ID: <20190323131950.GA30948@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mutt/1.11.3 (2019-02-01)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.11
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.29]); Sat, 23 Mar 2019 13:19:55 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,380 +62,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>, linux-s390@vger.kernel.org,
- Dave Hansen <dave@sr71.net>, Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>, Ingo Molnar <mingo@redhat.com>,
- linux-mtd@lists.infradead.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> a =C3=A9crit=C2=A0:
+Hi Steve, Nicholas,
 
-> Commit 60a3cdd06394 ("x86: add optimized inlining") introduced
-> CONFIG_OPTIMIZE_INLINING, but it has been available only for x86.
->
-> The idea is obviously arch-agnostic although we need some code fixups.
-> This commit moves the config entry from arch/x86/Kconfig.debug to
-> lib/Kconfig.debug so that all architectures (except MIPS for now) can
-> benefit from it.
->
-> At this moment, I added "depends on !MIPS" because fixing 0day bot report=
-s
-> for MIPS was complex to me.
->
-> I tested this patch on my arm/arm64 boards.
->
-> This can make a huge difference in kernel image size especially when
-> CONFIG_OPTIMIZE_FOR_SIZE is enabled.
->
-> For example, I got 3.5% smaller arm64 kernel image for v5.1-rc1.
->
->   dec       file
->   18983424  arch/arm64/boot/Image.before
->   18321920  arch/arm64/boot/Image.after
->
-> This also slightly improves the "Kernel hacking" Kconfig menu.
-> Commit e61aca5158a8 ("Merge branch 'kconfig-diet' from Dave Hansen')
-> mentioned this config option would be a good fit in the "compiler option"
-> menu. I did so.
->
-> I fixed up some files to avoid build warnings/errors.
->
-> [1] arch/arm64/include/asm/cpufeature.h
->
-> In file included from ././include/linux/compiler_types.h:68,
->                  from <command-line>:
-> ./arch/arm64/include/asm/jump_label.h: In function 'cpus_have_const_cap':
-> ./include/linux/compiler-gcc.h:120:38: warning: asm operand 0=20=20
->=20probably doesn't match constraints
->  #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
->                                       ^~~
-> ./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of=20=20
->=20macro 'asm_volatile_goto'
->   asm_volatile_goto(
->   ^~~~~~~~~~~~~~~~~
-> ./include/linux/compiler-gcc.h:120:38: error: impossible constraint in 'a=
-sm'
->  #define asm_volatile_goto(x...) do { asm goto(x); asm (""); } while (0)
->                                       ^~~
-> ./arch/arm64/include/asm/jump_label.h:32:2: note: in expansion of=20=20
->=20macro 'asm_volatile_goto'
->   asm_volatile_goto(
->   ^~~~~~~~~~~~~~~~~
->
-> [2] arch/mips/kernel/cpu-bugs64.c
->
-> arch/mips/kernel/cpu-bugs64.c: In function 'mult_sh_align_mod.constprop':
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably=20=20
->=20doesn't match constraints [-Werror]
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: asm operand 1 probably=20=20
->=20doesn't match constraints [-Werror]
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
->   asm volatile(
->   ^~~
-> arch/mips/kernel/cpu-bugs64.c:33:2: error: impossible constraint in 'asm'
->   asm volatile(
->   ^~~
->
-> [3] arch/powerpc/mm/tlb-radix.c
->
-> arch/powerpc/mm/tlb-radix.c: In function '__radix__flush_tlb_range_psize'=
-:
-> arch/powerpc/mm/tlb-radix.c:104:2: error: asm operand 3 probably=20=20
->=20doesn't match constraints [-Werror]
->   asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
->   ^~~
-> arch/powerpc/mm/tlb-radix.c:104:2: error: impossible constraint in 'asm'
->   CC      arch/powerpc/perf/hv-gpci.o
->
-> [4] arch/s390/include/asm/cpacf.h
->
-> In file included from arch/s390/crypto/des_s390.c:19:
-> ./arch/s390/include/asm/cpacf.h: In function 'cpacf_query':
-> ./arch/s390/include/asm/cpacf.h:170:2: warning: asm operand 3=20=20
->=20probably doesn't match constraints
->   asm volatile(
->   ^~~
-> ./arch/s390/include/asm/cpacf.h:170:2: error: impossible constraint in 'a=
-sm'
->
-> [5] arch/powerpc/kernel/prom_init.c
->
-> WARNING: vmlinux.o(.text.unlikely+0x20): Section mismatch in=20=20
->=20reference from the function .prom_getprop() to the function=20=20
->=20.init.text:.call_prom()
-> The function .prom_getprop() references
-> the function __init .call_prom().
-> This is often because .prom_getprop lacks a __init
-> annotation or the annotation of .call_prom is wrong.
->
-> WARNING: vmlinux.o(.text.unlikely+0x3c): Section mismatch in=20=20
->=20reference from the function .prom_getproplen() to the function=20=20
->=20.init.text:.call_prom()
-> The function .prom_getproplen() references
-> the function __init .call_prom().
-> This is often because .prom_getproplen lacks a __init
-> annotation or the annotation of .call_prom is wrong.
->
-> [6] drivers/mtd/nand/raw/vf610_nfc.c
->
-> drivers/mtd/nand/raw/vf610_nfc.c: In function =E2=80=98vf610_nfc_cmd=E2=
-=80=99:
-> drivers/mtd/nand/raw/vf610_nfc.c:455:3: warning: =E2=80=98offset=E2=80=99=
- may be=20=20
->=20used uninitialized in this function [-Wmaybe-uninitialized]
->    vf610_nfc_rd_from_sram(instr->ctx.data.buf.in + offset,
->    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->             nfc->regs + NFC_MAIN_AREA(0) + offset,
->             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->             trfr_sz, !nfc->data_access);
->             ~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> [7] arch/arm/kernel/smp.c
->
-> arch/arm/kernel/smp.c: In function =E2=80=98raise_nmi=E2=80=99:
-> arch/arm/kernel/smp.c:522:2: warning: array subscript is above array=20=
-=20
->=20bounds [-Warray-bounds]
->   trace_ipi_raise_rcuidle(target, ipi_types[ipinr]);
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->
-> The fixup is not included in this. The patch is available in ML:
->
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2016-February/40939=
-3.html
->
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
->
->  arch/arm64/include/asm/cpufeature.h |  4 ++--
->  arch/mips/kernel/cpu-bugs64.c       |  4 ++--
->  arch/powerpc/kernel/prom_init.c     |  6 +++---
->  arch/powerpc/mm/tlb-radix.c         |  2 +-
->  arch/s390/include/asm/cpacf.h       |  2 +-
->  arch/x86/Kconfig                    |  3 ---
->  arch/x86/Kconfig.debug              | 14 --------------
->  drivers/mtd/nand/raw/vf610_nfc.c    |  2 +-
->  include/linux/compiler_types.h      |  3 +--
->  lib/Kconfig.debug                   | 15 +++++++++++++++
->  10 files changed, 26 insertions(+), 29 deletions(-)
+I stumbled across this while working on livepatch self-tests, which like
+the ftrace self-tests, specify $(CC_FLAGS_FTRACE) to ensure that target
+functions are indeed trace-able.
 
-The arch fixups can be done regardless of the Kconfig change as far as=20=
-=20
-they=20are done before.
+On ppc64le, v5.0 fails the self-tests on my machine:
 
-I guess it would then be easier to manage and review with a series of=20=20
-small=20patches addressing each arch independently
+  % gcc --version
+  gcc (GCC) 8.2.1 20180905 (Red Hat 8.2.1-3)
 
-Christophe
+  % git checkout v5.0
 
->
-> diff --git a/arch/arm64/include/asm/cpufeature.h=20=20
->=20b/arch/arm64/include/asm/cpufeature.h
-> index e505e1f..77d1aa5 100644
-> --- a/arch/arm64/include/asm/cpufeature.h
-> +++ b/arch/arm64/include/asm/cpufeature.h
-> @@ -406,7 +406,7 @@ static inline bool cpu_have_feature(unsigned int num)
->  }
->
->  /* System capability check for constant caps */
-> -static inline bool __cpus_have_const_cap(int num)
-> +static __always_inline bool __cpus_have_const_cap(int num)
->  {
->  	if (num >=3D ARM64_NCAPS)
->  		return false;
-> @@ -420,7 +420,7 @@ static inline bool cpus_have_cap(unsigned int num)
->  	return test_bit(num, cpu_hwcaps);
->  }
->
-> -static inline bool cpus_have_const_cap(int num)
-> +static __always_inline bool cpus_have_const_cap(int num)
->  {
->  	if (static_branch_likely(&arm64_const_caps_ready))
->  		return __cpus_have_const_cap(num);
-> diff --git a/arch/mips/kernel/cpu-bugs64.c b/arch/mips/kernel/cpu-bugs64.=
-c
-> index bada74a..c04b97a 100644
-> --- a/arch/mips/kernel/cpu-bugs64.c
-> +++ b/arch/mips/kernel/cpu-bugs64.c
-> @@ -42,8 +42,8 @@ static inline void align_mod(const int align,=20=20
->=20const int mod)
->  		: "n"(align), "n"(mod));
->  }
->
-> -static inline void mult_sh_align_mod(long *v1, long *v2, long *w,
-> -				     const int align, const int mod)
-> +static __always_inline void mult_sh_align_mod(long *v1, long *v2, long *=
-w,
-> +					      const int align, const int mod)
->  {
->  	unsigned long flags;
->  	int m1, m2;
-> diff --git a/arch/powerpc/kernel/prom_init.c=20=20
->=20b/arch/powerpc/kernel/prom_init.c
-> index f33ff41..241fe6b 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -501,14 +501,14 @@ static int __init prom_next_node(phandle *nodep)
->  	}
->  }
->
-> -static inline int prom_getprop(phandle node, const char *pname,
-> -			       void *value, size_t valuelen)
-> +static inline int __init prom_getprop(phandle node, const char *pname,
-> +				      void *value, size_t valuelen)
->  {
->  	return call_prom("getprop", 4, 1, node, ADDR(pname),
->  			 (u32)(unsigned long) value, (u32) valuelen);
->  }
->
-> -static inline int prom_getproplen(phandle node, const char *pname)
-> +static inline int __init prom_getproplen(phandle node, const char *pname=
-)
->  {
->  	return call_prom("getproplen", 2, 1, node, ADDR(pname));
->  }
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index 6a23b9e..a2b2848 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -928,7 +928,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
->  	tlb->need_flush_all =3D 0;
->  }
->
-> -static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
-> +static __always_inline void __radix__flush_tlb_range_psize(struct=20=20
->=20mm_struct *mm,
->  				unsigned long start, unsigned long end,
->  				int psize, bool also_pwc)
->  {
-> diff --git a/arch/s390/include/asm/cpacf.h b/arch/s390/include/asm/cpacf.=
-h
-> index 3cc52e3..f316de4 100644
-> --- a/arch/s390/include/asm/cpacf.h
-> +++ b/arch/s390/include/asm/cpacf.h
-> @@ -202,7 +202,7 @@ static inline int __cpacf_check_opcode(unsigned=20=20
->=20int opcode)
->  	}
->  }
->
-> -static inline int cpacf_query(unsigned int opcode, cpacf_mask_t *mask)
-> +static __always_inline int cpacf_query(unsigned int opcode,=20=20
->=20cpacf_mask_t *mask)
->  {
->  	if (__cpacf_check_opcode(opcode)) {
->  		__cpacf_query(opcode, mask);
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index c1f9b3c..1a3e2b5 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -310,9 +310,6 @@ config ZONE_DMA32
->  config AUDIT_ARCH
->  	def_bool y if X86_64
->
-> -config ARCH_SUPPORTS_OPTIMIZED_INLINING
-> -	def_bool y
-> -
->  config ARCH_SUPPORTS_DEBUG_PAGEALLOC
->  	def_bool y
->
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index 15d0fbe..f730680 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -266,20 +266,6 @@ config CPA_DEBUG
->  	---help---
->  	  Do change_page_attr() self-tests every 30 seconds.
->
-> -config OPTIMIZE_INLINING
-> -	bool "Allow gcc to uninline functions marked 'inline'"
-> -	---help---
-> -	  This option determines if the kernel forces gcc to inline the functio=
-ns
-> -	  developers have marked 'inline'. Doing so takes away freedom from gcc=
- to
-> -	  do what it thinks is best, which is desirable for the gcc 3.x series =
-of
-> -	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
-> -	  enabling this option will generate a smaller kernel there. Hopefully
-> -	  this algorithm is so good that allowing gcc 4.x and above to make the
-> -	  decision will become the default in the future. Until then this optio=
-n
-> -	  is there to test gcc for this.
-> -
-> -	  If unsure, say N.
-> -
->  config DEBUG_ENTRY
->  	bool "Debug low-level entry code"
->  	depends on DEBUG_KERNEL
-> diff --git a/drivers/mtd/nand/raw/vf610_nfc.c=20=20
->=20b/drivers/mtd/nand/raw/vf610_nfc.c
-> index a662ca1..19792d7 100644
-> --- a/drivers/mtd/nand/raw/vf610_nfc.c
-> +++ b/drivers/mtd/nand/raw/vf610_nfc.c
-> @@ -364,7 +364,7 @@ static int vf610_nfc_cmd(struct nand_chip *chip,
->  {
->  	const struct nand_op_instr *instr;
->  	struct vf610_nfc *nfc =3D chip_to_nfc(chip);
-> -	int op_id =3D -1, trfr_sz =3D 0, offset;
-> +	int op_id =3D -1, trfr_sz =3D 0, offset =3D 0;
->  	u32 col =3D 0, row =3D 0, cmd1 =3D 0, cmd2 =3D 0, code =3D 0;
->  	bool force8bit =3D false;
->
-> diff --git a/include/linux/compiler_types.h b/include/linux/compiler_type=
-s.h
-> index ba814f1..19e58b9 100644
-> --- a/include/linux/compiler_types.h
-> +++ b/include/linux/compiler_types.h
-> @@ -140,8 +140,7 @@ struct ftrace_likely_data {
->   * Do not use __always_inline here, since currently it expands to=20=20
->=20inline again
->   * (which would break users of __always_inline).
->   */
-> -#if !defined(CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING) || \
-> -	!defined(CONFIG_OPTIMIZE_INLINING)
-> +#if !defined(CONFIG_OPTIMIZE_INLINING)
->  #define inline inline __attribute__((__always_inline__)) __gnu_inline \
->  	__maybe_unused notrace
->  #else
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 0d9e817..20f3dfc 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -310,6 +310,21 @@ config HEADERS_CHECK
->  	  exported to $(INSTALL_HDR_PATH) (usually 'usr/include' in
->  	  your build tree), to make sure they're suitable.
->
-> +config OPTIMIZE_INLINING
-> +	bool "Allow compiler to uninline functions marked 'inline'"
-> +	depends on !MIPS  # TODO: look into MIPS code
-> +	help
-> +	  This option determines if the kernel forces gcc to inline the functio=
-ns
-> +	  developers have marked 'inline'. Doing so takes away freedom from gcc=
- to
-> +	  do what it thinks is best, which is desirable for the gcc 3.x series =
-of
-> +	  compilers. The gcc 4.x series have a rewritten inlining algorithm and
-> +	  enabling this option will generate a smaller kernel there. Hopefully
-> +	  this algorithm is so good that allowing gcc 4.x and above to make the
-> +	  decision will become the default in the future. Until then this optio=
-n
-> +	  is there to test gcc for this.
-> +
-> +	  If unsure, say N.
-> +
->  config DEBUG_SECTION_MISMATCH
->  	bool "Enable full Section mismatch analysis"
->  	help
-> --
-> 2.7.4
+  % grep FTRACE_SELFTEST .config
+  CONFIG_FTRACE_SELFTEST=y
+
+After building the kernel, I noticed no mcount sections and of course
+the self-tests fail as it can't hook functions:
+
+  % readelf --sections kernel/trace/trace_selftest_dynamic.o | grep mcount
+  (nothing)
+
+  [ ... snip ... ]
+  [  126.147892] Testing all events: OK
+  [  126.390487] WARNING: CPU: 0 PID: 1 at kernel/trace/trace_events.c:3421 event_trace_self_tests_init+0x94/0xf4
+  [  126.390498] Modules linked in:
+  [  126.390510] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W         5.0.0 #10
+  [  126.390520] NIP:  c000000000f044d4 LR: c000000000f044cc CTR: c000000000b63d70
+  [  126.390530] REGS: c0000001fb183910 TRAP: 0700   Tainted: G        W          (5.0.0)
+  [  126.390540] MSR:  8000000002029033 <SF,VEC,EE,ME,IR,DR,RI,LE>  CR: 28000222  XER: 20040007
+  [  126.390564] CFAR: c00000000025b1f4 IRQMASK: 0
+  [  126.390564] GPR00: c000000000f044cc c0000001fb183ba0 c000000001453c00 ffffffffffffffed
+  [  126.390564] GPR04: 0000000000000000 c0000000017a0aac 000000000000037d c0000001fb142d00
+  [  126.390564] GPR08: 0000000000000000 0000000000000001 0000000000000000 0000000000000000
+  [  126.390564] GPR12: 0000000000000000 c000000001880000 c000000000010530 0000000000000000
+  [  126.390564] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+  [  126.390564] GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+  [  126.390564] GPR24: 0000000000000000 0000000000000000 c000000000eb8908 c000000000f4ea68
+  [  126.390564] GPR28: c000000000f4eaa8 0000000000000000 c000000000f04440 c000000000f581a8
+  [  126.390662] NIP [c000000000f044d4] event_trace_self_tests_init+0x94/0xf4
+  [  126.390672] LR [c000000000f044cc] event_trace_self_tests_init+0x8c/0xf4
+  [  126.390682] Call Trace:
+  [  126.390690] [c0000001fb183ba0] [c000000000f044cc] event_trace_self_tests_init+0x8c/0xf4 (unreliable)
+  [  126.390705] [c0000001fb183c10] [c000000000010134] do_one_initcall+0x64/0x264
+  [  126.390719] [c0000001fb183ce0] [c000000000ed443c] kernel_init_freeable+0x36c/0x470
+  [  126.390731] [c0000001fb183db0] [c000000000010554] kernel_init+0x2c/0x148
+  [  126.390744] [c0000001fb183e20] [c00000000000b65c] ret_from_kernel_thread+0x5c/0x80
+  [  126.390755] Instruction dump:
+  [  126.390765] 3fe2ffb0 f9284578 3bff3d50 794ad182 0b0a0000 2fa90000 419e0058 3bff0858
+  [  126.390789] 7fe3fb78 4b356cc1 60000000 54690ffe <0b090000> 2f830000 409c0018 3c62ff96
+  [  126.390814] ---[ end trace b5898e7f7f73e163 ]---
+  [  126.390822] Failed to enable function tracer for event tests
+
+I git bisected to 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC
+4.9 and newer").  Reverting this change and rebuilding, I could see the
+mcount sections once again:
+
+  % readelf --sections kernel/trace/trace_selftest_dynamic.o | grep mcount
+    [ 3] __mcount_loc      PROGBITS         0000000000000000  00000060
+    [ 4] .rela__mcount_loc RELA             0000000000000000  000258c8
+
+Reboot and the self-test now passes.
 
 
+Perhaps this is gcc version specific?  I didn't see any other reports,
+so maybe its specific to my config.  If I run make V=1, I can see that
+gcc is called with '-pg -mprofile-kernel', but then the record_mcount
+script is skipped.  Any ideas?
+
+Regards,
+
+-- Joe
