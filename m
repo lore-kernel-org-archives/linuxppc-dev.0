@@ -3,53 +3,64 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,UNPARSEABLE_RELAY autolearn=ham
-	autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E73DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 05:51:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3570C43381
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 08:28:24 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 14D7F218A5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 05:51:12 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 14D7F218A5
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=zte.com.cn
+	by mail.kernel.org (Postfix) with ESMTPS id 0DE94218D4
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 08:28:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0DE94218D4
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44R8lf40WqzDqMX
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 16:51:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44RDF13Kx2zDqS7
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 23 Mar 2019 19:28:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=zte.com.cn
- (client-ip=202.103.147.169; helo=mxct.zte.com.cn;
- envelope-from=wen.yang99@zte.com.cn; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=zte.com.cn
-Received: from mxct.zte.com.cn (mx7.zte.com.cn [202.103.147.169])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44R8jr4lzPzDqMp
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 16:49:31 +1100 (AEDT)
-Received: from mse02.zte.com.cn (unknown [10.30.3.21])
- by Forcepoint Email with ESMTPS id 7173FB43ECF43552F251;
- Sat, 23 Mar 2019 13:49:26 +0800 (CST)
-Received: from kjyxapp02.zte.com.cn ([10.30.12.201])
- by mse02.zte.com.cn with SMTP id x2N5nLbe068910;
- Sat, 23 Mar 2019 13:49:21 +0800 (GMT-8)
- (envelope-from wen.yang99@zte.com.cn)
-Received: from mapi (kjyxapp02[null]) by mapi (Zmail) with MAPI id mid14;
- Sat, 23 Mar 2019 13:49:23 +0800 (CST)
-Date: Sat, 23 Mar 2019 13:49:23 +0800 (CST)
-X-Zmail-TransId: 2b045c95c8e3f7a0dd6f
-X-Mailer: Zmail v1.0
-Message-ID: <201903231349235197028@zte.com.cn>
-Mime-Version: 1.0
-From: <wen.yang99@zte.com.cn>
-To: <christophe.leroy@c-s.fr>
-Subject: =?UTF-8?B?UmU6IFJlOiBbUEFUQ0ggNS81XSBwb3dlcnBjLzh4eDogZml4IHBvc3NpYmxlIG9iamVjdCByZWZlcmVuY2UgbGVhaw==?=
-Content-Type: multipart/mixed;
-	boundary="=====_001_next====="
-X-MAIL: mse02.zte.com.cn x2N5nLbe068910
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44RDCG2sx6zDq7g
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Mar 2019 19:26:47 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44RDC462qgz9vCyN;
+ Sat, 23 Mar 2019 09:26:40 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id VNlVHoa45lz0; Sat, 23 Mar 2019 09:26:40 +0100 (CET)
+Received: from vm-hermes.si.c-s.fr (vm-hermes.si.c-s.fr [192.168.25.253])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44RDC44wjLz9vCyM;
+ Sat, 23 Mar 2019 09:26:40 +0100 (CET)
+Received: by vm-hermes.si.c-s.fr (Postfix, from userid 33)
+ id 5157B437; Sat, 23 Mar 2019 09:26:40 +0100 (CET)
+Received: from arouen-653-1-146-8.w82-126.abo.wanadoo.fr
+ (arouen-653-1-146-8.w82-126.abo.wanadoo.fr [82.126.129.8]) by
+ messagerie.si.c-s.fr (Horde Framework) with HTTP; Sat, 23 Mar 2019 09:26:40
+ +0100
+Date: Sat, 23 Mar 2019 09:26:40 +0100
+Message-ID: <20190323092640.Horde.2lm4u26aZox5ialxuIRcYw2@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] compiler: allow all arches to enable
+ CONFIG_OPTIMIZE_INLINING
+References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
+ <CAK8P3a3BG_mxYxxCx4S_+ZKAer_+5FpmkzLk0VrACZekuD=2GQ@mail.gmail.com>
+ <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
+In-Reply-To: <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
+User-Agent: Internet Messaging Program (IMP) H5 (6.2.3)
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -61,63 +72,54 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: wang.yi59@zte.com.cn, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Dave Hansen <dave@sr71.net>,
+ the arch/x86 maintainers <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linux-mips@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Paul Burton <paul.burton@mips.com>, Ingo Molnar <mingo@redhat.com>,
+ linux-mtd <linux-mtd@lists.infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Arnd Bergmann <arnd@arndb.de> a =C3=A9crit=C2=A0:
 
+> On Wed, Mar 20, 2019 at 10:41 AM Arnd Bergmann <arnd@arndb.de> wrote:
+>>
+>> I've added your patch to my randconfig test setup and will let you
+>> know if I see anything noticeable. I'm currently testing clang-arm32,
+>> clang-arm64 and gcc-x86.
+>
+> This is the only additional bug that has come up so far:
+>
+> `.exit.text' referenced in section `.alt.smp.init' of
+> drivers/char/ipmi/ipmi_msghandler.o: defined in discarded section
+> `exit.text' of drivers/char/ipmi/ipmi_msghandler.o
 
---=====_001_next=====
-Content-Type: multipart/alternative;
-	boundary="=====_003_next====="
+Wouldn't it be useful to activate -Winline gcc warning to ease finding=20=
+=20
+out=20problematic usage of inline keyword ?
 
+Christophe
 
---=====_003_next=====
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
+>
+> diff --git a/arch/arm/kernel/atags.h b/arch/arm/kernel/atags.h
+> index 201100226301..84b12e33104d 100644
+> --- a/arch/arm/kernel/atags.h
+> +++ b/arch/arm/kernel/atags.h
+> @@ -5,7 +5,7 @@ void convert_to_tag_list(struct tag *tags);
+>  const struct machine_desc *setup_machine_tags(phys_addr_t __atags_pointe=
+r,
+>         unsigned int machine_nr);
+>  #else
+> -static inline const struct machine_desc *
+> +static __always_inline const struct machine_desc *
+>  setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
+>  {
+>         early_print("no ATAGS support: can't continue\n");
 
-SGksIENocmlzdG9waGUsCgo+PiBUaGUgY2FsbCB0byBvZl9maW5kX2NvbXBhdGlibGVfbm9kZSBy
-ZXR1cm5zIGEgbm9kZSBwb2ludGVyIHdpdGggcmVmY291bnQKPj4gaW5jcmVtZW50ZWQgdGh1cyBp
-dCBtdXN0IGJlIGV4cGxpY2l0bHkgZGVjcmVtZW50ZWQgYWZ0ZXIgdGhlIGxhc3QKPj4gdXNhZ2Uu
-Cj4+IGlycV9kb21haW5fYWRkX2xpbmVhciBhbHNvIGNhbGxzIG9mX25vZGVfZ2V0IHRvIGluY3Jl
-YXNlIHJlZmNvdW50LAo+PiBzbyBpcnFfZG9tYWluIHdpbGwgbm90IGJlIGFmZmVjdGVkIHdoZW4g
-aXQgaXMgcmVsZWFzZWQuCj4KPgo+IFNob3VsZCB5b3UgaGF2ZSBhOgo+Cj4gRml4ZXM6IGE4ZGI4
-Y2YwZDg5NCAoImlycV9kb21haW46IFJlcGxhY2UgaXJxX2FsbG9jX2hvc3QoKSB3aXRoCj4gcmV2
-bWFwLXNwZWNpZmljIGluaXRpYWxpemVycyIpCj4KPiBJZiBub3QsIGl0IG1lYW5zIHlvdXIgY2hh
-bmdlIGlzIGluIGNvbnRyYWRpY3Rpb24gd2l0aCBjb21taXQKPiBiMTcyNWM5MzE5YWEgKCJbUE9X
-RVJQQ10gYXJjaC9wb3dlcnBjL3N5c2RldjogQWRkIG1pc3Npbmcgb2Zfbm9kZV9wdXQiKQoKVGhh
-bmsgeW91IHZlcnkgbXVjaC4KVGhpcyBwcm9ibGVtIGV4aXN0ZWQgYmVmb3JlIHRoaXMgY29tbWl0
-IChhOGRiOGNmMGQ4OTQpLgphbmQgdGhlIFNtUEwgd2UgdXNlZCBpczoKaHR0cHM6Ly9sa21sLm9y
-Zy9sa21sLzIwMTkvMy8xNC84ODAKV2UgYXJlIHN0aWxsIGltcHJvdmluZyB0aGlzIFNtUEwsIGFu
-ZCBpdCBpcyBzb21ld2hhdCBkaWZmZXJlbnQgZnJvbSB0aGUgc2NyaXB0IAp1c2VkIGJ5IGIxNzI1
-YzkzMTlhYSAoIltQT1dFUlBDXSBhcmNoL3Bvd2VycGMvc3lzZGV2OiBBZGQgbWlzc2luZyBvZl9u
-b2RlX3B1dCIpLgoKPj4gRGV0ZWN0ZWQgYnkgY29jY2luZWxsZSB3aXRoIHRoZSBmb2xsb3dpbmcg
-d2FybmluZ3M6Cj4+IC4vYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgvcGljLmM6MTU4OjEtNzog
-RVJST1I6IG1pc3Npbmcgb2Zfbm9kZV9wdXQ7IGFjcXVpcmVkIGEgbm9kZSBwb2ludGVyIHdpdGgg
-cmVmY291bnQgaW5jcmVtZW50ZWQgb24gbGluZSAxMzYsIGJ1dCB3aXRob3V0IGEgY29ycmVzcG9u
-ZGluZyBvYmplY3QgcmVsZWFzZSB3aXRoaW4gdGhpcyBmdW5jdGlvbi4KPj4KPj4gICBhcmNoL3Bv
-d2VycGMvcGxhdGZvcm1zLzh4eC9waWMuYyB8IDEgKwo+PiAgIDEgZmlsZSBjaGFuZ2VkLCAxIGlu
-c2VydGlvbigrKQo+Pgo+PiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84eHgv
-cGljLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9waWMuYwo+PiBpbmRleCA4ZDVhMjVk
-Li4xM2Q4ODBiIDEwMDY0NAo+PiAtLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9waWMu
-Ywo+PiArKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzh4eC9waWMuYwo+PiBAQCAtMTU1LDYg
-KzE1NSw3IEBAIGludCBtcGM4eHhfcGljX2luaXQodm9pZCkKPj4gICAgICAgICAgIHJldCA9IC1F
-Tk9NRU07Cj4+ICAgICAgICAgICBnb3RvIG91dDsKPj4gICAgICAgfQo+PiArICAgIG9mX25vZGVf
-cHV0KG5wKTsKPj4gICAgICAgcmV0dXJuIDA7Cj4+Cj4+ICAgb3V0Ogo+Pgo+Cj4gSSBndWVzcyBp
-dCB3b3VsZCBiZSBiZXR0ZXIgYXMgZm9sbG93czoKPiAKPiAtLS0gYS9hcmNoL3Bvd2VycGMvcGxh
-dGZvcm1zLzh4eC9waWMuYwo+ICsrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvOHh4L3BpYy5j
-Cj4gQEAgLTE1Myw5ICsxNTMsNyBAQCBpbnQgbXBjOHh4X3BpY19pbml0KHZvaWQpCj4gaWYgKG1w
-Yzh4eF9waWNfaG9zdCA9PSBOVUxMKSB7Cj4gcHJpbnRrKEtFUk5fRVJSICJNUEM4eHggUElDOiBm
-YWlsZWQgdG8gYWxsb2NhdGUgaXJxCj4gaG9zdCFcbiIpOwo+IHJldCA9IC1FTk9NRU07Cj4gLSAg
-ICAgICAgICAgICAgIGdvdG8gb3V0Owo+IH0KPiAtICAgICAgIHJldHVybiAwOwo+IAo+IG91dDoK
-PiBvZl9ub2RlX3B1dChucCk7CgpPSy4KVGhhbmsgeW91LgpXZSB3aWxsIGZpeCBpdCBzb29uLgoK
-VGhhbmtzIGFuZCByZWdhcmRzLApXZW4=
-
-
---=====_003_next=====--
-
---=====_001_next=====--
 
