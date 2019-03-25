@@ -2,66 +2,95 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
-	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FACBC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 04:36:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1DBEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 05:37:52 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id D2C8220883
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 04:36:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fdwN+qUn"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2C8220883
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
+	by mail.kernel.org (Postfix) with ESMTPS id 30A0C2075D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 05:37:52 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 30A0C2075D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SM0D2QmFzDq77
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:36:12 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SNMK4687zDqKR
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:37:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=au1.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SLyF6CRgzDq5y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 15:34:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=gibson.dropbear.id.au
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
- header.b="fdwN+qUn"; dkim-atps=neutral
-Received: by ozlabs.org (Postfix, from userid 1007)
- id 44SLyF3DGnz9sSq; Mon, 25 Mar 2019 15:34:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
- d=gibson.dropbear.id.au; s=201602; t=1553488469;
- bh=eDGejTSbTW3TDTmlWKX1kYx08XgO4v6XzHPVzYLKlfc=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=fdwN+qUnidkQRow3RVe1QLq0b8eLaiwl8cTrGjD4giWHkhiPG3iFmNsp0hqh39ATl
- CfoTIZBgWTC5X1RPwk9YCiTbwiTXi46XLlzRMJDI5oi9Rrz6nVFdKGel6K8kAPhigx
- Y3SvfjGvHiPZURDc3DdwPuQpmkXHqJPvmYcLxIB0=
-Date: Mon, 25 Mar 2019 11:57:10 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
-Message-ID: <20190325005710.GC29295@umbus>
-References: <87zhrj8kcp.fsf@morokweng.localdomain>
- <87womn8inf.fsf@morokweng.localdomain>
- <20190129134750-mutt-send-email-mst@kernel.org>
- <877eefxvyb.fsf@morokweng.localdomain>
- <20190204144048-mutt-send-email-mst@kernel.org>
- <87ef71seve.fsf@morokweng.localdomain>
- <20190320171027-mutt-send-email-mst@kernel.org>
- <87tvfvbwpb.fsf@morokweng.localdomain>
- <20190323165456-mutt-send-email-mst@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SNJs715fzDq9B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 16:35:40 +1100 (AEDT)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2P5Z50d044816
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 01:35:37 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2reqrpapt3-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 01:35:36 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Mon, 25 Mar 2019 05:35:35 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
+ by e06smtp02.uk.ibm.com (192.168.101.132) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 25 Mar 2019 05:35:33 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2P5ZWFa59899954
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 25 Mar 2019 05:35:32 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 9040F4203F;
+ Mon, 25 Mar 2019 05:35:32 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3D8E042047;
+ Mon, 25 Mar 2019 05:35:32 +0000 (GMT)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 25 Mar 2019 05:35:32 +0000 (GMT)
+Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 8CE1CA0161;
+ Mon, 25 Mar 2019 16:35:30 +1100 (AEDT)
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: alastair@d-silva.org
+Subject: [PATCH v4 0/4] ocxl: OpenCAPI Cleanup
+Date: Mon, 25 Mar 2019 16:34:51 +1100
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190320053448.2098-1-alastair@au1.ibm.com>
+References: <20190320053448.2098-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Fig2xvG2VGoz8o/s"
-Content-Disposition: inline
-In-Reply-To: <20190323165456-mutt-send-email-mst@kernel.org>
-User-Agent: Mutt/1.11.3 (2019-02-01)
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032505-0008-0000-0000-000002D11AE0
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032505-0009-0000-0000-0000223D40FA
+Message-Id: <20190325053456.14599-1-alastair@au1.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-25_03:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=806 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903250043
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -73,80 +102,46 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mike Anderson <andmike@linux.ibm.com>,
- Michael Roth <mdroth@linux.vnet.ibm.com>,
- Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
- Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+From: Alastair D'Silva <alastair@d-silva.org>
 
---Fig2xvG2VGoz8o/s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some minor cleanups for the OpenCAPI driver as a prerequisite
+for an ocxl driver refactoring to allow the driver core to
+be utilised by external drivers.
 
-On Sat, Mar 23, 2019 at 05:01:35PM -0400, Michael S. Tsirkin wrote:
-> On Thu, Mar 21, 2019 at 09:05:04PM -0300, Thiago Jung Bauermann wrote:
-> > Michael S. Tsirkin <mst@redhat.com> writes:
-[snip]
-> > >> > Is there any justification to doing that beyond someone putting
-> > >> > out slow code in the past?
-> > >>
-> > >> The definition of the ACCESS_PLATFORM flag is generic and captures t=
-he
-> > >> notion of memory access restrictions for the device. Unfortunately, =
-on
-> > >> powerpc pSeries guests it also implies that the IOMMU is turned on
-> > >
-> > > IIUC that's really because on pSeries IOMMU is *always* turned on.
-> > > Platform has no way to say what you want it to say
-> > > which is bypass the iommu for the specific device.
-> >=20
-> > Yes, that's correct. pSeries guests running on KVM are in a gray area
-> > where theoretically they use an IOMMU but in practice KVM ignores it.
-> > It's unfortunate but it's the reality on the ground today. :-/
+Changelog:
+V4:
+  - Drop printf format changes as they omit the format indicator for '0'
+V3:
+  - Add missed header in 'ocxl: Remove some unused exported symbols'.
+    This addresses the introduced sparse warnings
+V2:
+  - remove intermediate assignment of 'link' var in
+                'Rename struct link to ocxl_link'
+  - Don't shift definition of ocxl_context_attach in
+                'Remove some unused exported symbols'
 
-Um.. I'm not sure what you mean by this.  As far as I'm concerned
-there is always a guest-visible (paravirtualized) IOMMU, and that will
-be backed onto the host IOMMU when necessary.
 
-[Actually there is an IOMMU bypass hack that's used by the guest
- firmware, but I don't think we want to expose that]
+Alastair D'Silva (4):
+  ocxl: Rename struct link to ocxl_link
+  ocxl: read_pasid never returns an error, so make it void
+  ocxl: Remove superfluous 'extern' from headers
+  ocxl: Remove some unused exported symbols
 
-> Well it's not just the reality, virt setups need something that
-> emulated IOMMUs don't provide. That is not uncommon, e.g.
-> intel's VTD has a "cache mode" field which AFAIK is only used for virt.
+ drivers/misc/ocxl/config.c        | 13 ++---
+ drivers/misc/ocxl/file.c          |  5 +-
+ drivers/misc/ocxl/link.c          | 36 ++++++-------
+ drivers/misc/ocxl/ocxl_internal.h | 85 +++++++++++++++++++------------
+ include/misc/ocxl.h               | 53 ++++++-------------
+ 5 files changed, 91 insertions(+), 101 deletions(-)
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+-- 
+2.20.1
 
---Fig2xvG2VGoz8o/s
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyYJ2YACgkQbDjKyiDZ
-s5JZyQ//SS59QY9yMVjm5dIHKUEs9Bci33j39MzpLz+QZ/rSLpgkKSlPhWZLhu70
-Sk2aNBu5ILbZaomcSttinaObyDh3IuicBnwqBFvAVWoSdKrrzSPFwHOTC3w5Ncdw
-pkFfxcvfr5jUzh/p3RQuBATbMJfP+/mZC+KaKseXGX2vDte2T4IqZa6SXyEdjLTO
-n9I7zE4D51jmPoCbOen1E65FMRQ7MkLOXsm2GCYYL9HfgdtzDzvQ8GsG4BABUGZg
-BREjDrJ5abIgeaygU69uSGbtJSOIeW1xN9SE1S6DhYj323A0VA2W9HsQCZEvjkrz
-4Ix5hSqOhwLhkhstH4oJAwTsXO+mDb0UIrgt8BnqnUw4OLyDDf1ukf/qf0lQgTSW
-k9c15llwqGFj9uUttu5ZcsCswYbgpug0JjNQn9ebBP9yoQIEZEerX3FBnmF8vwp2
-FgGP6eFM9XnnZPNiuO1AsYSL41G8Tvhjh+cGO6MWyYm4qczY1MoPLwYoihAc+ocr
-SJLZG99l77d344c1eTZeIWFZoYcq/1ZYbcfVVsFRGt8WJ+kM2YrN6zTD4+tS9zwA
-gq0AHzBZUZjln8CDA2HETxgvnXSI6ieyoO3zWu1EF5y/zL3wolKVvREKCeNbcvfI
-bT/RnjLgXMRSvCCxUbWPADa6lDGNtZ4STlnUf10vq7jAFlHgT+4=
-=YCYB
------END PGP SIGNATURE-----
-
---Fig2xvG2VGoz8o/s--
