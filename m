@@ -2,68 +2,58 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_MUTT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.4 required=3.0 tests=DATE_IN_PAST_06_12,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
+	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BE61C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:58:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6F8FC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 18:29:54 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 26A2B2087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:58:17 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 26A2B2087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+	by mail.kernel.org (Postfix) with ESMTPS id 464D620830
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 18:29:54 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 464D620830
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Shng08wBzDqK9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 04:58:15 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SjV809w8zDqLV
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:29:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.93; helo=mga11.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Shlh4CVWzDqKf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 04:56:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44Shlh0WXjz8t5X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 04:56:32 +1100 (AEDT)
-Received: by ozlabs.org (Postfix)
- id 44Shlg2hMhz9sSp; Tue, 26 Mar 2019 04:56:31 +1100 (AEDT)
-Authentication-Results: ozlabs.org; spf=permerror (mailfrom)
- smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57;
- helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org;
- receiver=<UNKNOWN>)
-Authentication-Results: ozlabs.org; dmarc=none (p=none dis=none)
- header.from=kernel.crashing.org
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44Shlf2bGZz9sSk
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Mar 2019 04:56:29 +1100 (AEDT)
-Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.14.1) with ESMTP id x2PHsnKE019994;
- Mon, 25 Mar 2019 12:54:54 -0500
-Received: (from segher@localhost)
- by gate.crashing.org (8.14.1/8.14.1/Submit) id x2PHsd3H019973;
- Mon, 25 Mar 2019 12:54:39 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to
- segher@kernel.crashing.org using -f
-Date: Mon, 25 Mar 2019 12:54:32 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc/64: Fix memcmp reading past the end of src/dest
-Message-ID: <20190325175431.GJ3969@gate.crashing.org>
-References: <20190322123724.28435-1-mpe@ellerman.id.au>
- <20190322182943.GF3969@gate.crashing.org>
- <877ecnp1zf.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SjSR2G2TzDqLF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 05:28:21 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 25 Mar 2019 11:28:18 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="125755489"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by orsmga007.jf.intel.com with ESMTP; 25 Mar 2019 11:28:17 -0700
+Date: Mon, 25 Mar 2019 03:27:05 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [RESEND 1/7] mm/gup: Replace get_user_pages_longterm() with
+ FOLL_LONGTERM
+Message-ID: <20190325102705.GG16366@iweiny-DESK2.sc.intel.com>
+References: <20190317183438.2057-1-ira.weiny@intel.com>
+ <20190317183438.2057-2-ira.weiny@intel.com>
+ <CAA9_cmffz1VBOJ0ykBtcj+hiznn-kbbuotu1uUhPiJtXiFjJXg@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <877ecnp1zf.fsf@concordia.ellerman.id.au>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <CAA9_cmffz1VBOJ0ykBtcj+hiznn-kbbuotu1uUhPiJtXiFjJXg@mail.gmail.com>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -75,49 +65,108 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@ozlabs.org, chandan@linux.ibm.com
+Cc: Michal Hocko <mhocko@suse.com>, Linux-sh <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-rdma@vger.kernel.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>,
+ linux-mips@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 25, 2019 at 11:33:56PM +1100, Michael Ellerman wrote:
-> Segher Boessenkool <segher@kernel.crashing.org> writes:
-> > On Fri, Mar 22, 2019 at 11:37:24PM +1100, Michael Ellerman wrote:
-> >> +	clrldi	r6,r4,(64-12)	// r6 = r4 & 0xfff
-> >
-> > You can just write
-> >   rlwinm r6,r4,0,0x0fff
+On Fri, Mar 22, 2019 at 02:24:40PM -0700, Dan Williams wrote:
+> On Sun, Mar 17, 2019 at 7:36 PM <ira.weiny@intel.com> wrote:
+
+[snip]
+
+> > + * __gup_longterm_locked() is a wrapper for __get_uer_pages_locked which
 > 
-> > if that is clearer?  Or do you still want a comment with that :-)
+> s/uer/user/
 > 
-> I don't think it's clearer doing a rotate of zero bits :)
+> > + * allows us to process the FOLL_LONGTERM flag if present.
+> > + *
+> > + * FOLL_LONGTERM Checks for either DAX VMAs or PPC CMA regions and either fails
+> > + * the pin or attempts to migrate the page as appropriate.
+> > + *
+> > + * In the filesystem-dax case mappings are subject to the lifetime enforced by
+> > + * the filesystem and we need guarantees that longterm users like RDMA and V4L2
+> > + * only establish mappings that have a kernel enforced revocation mechanism.
+> > + *
+> > + * In the CMA case pages can't be pinned in a CMA region as this would
+> > + * unnecessarily fragment that region.  So CMA attempts to migrate the page
+> > + * before pinning.
+> >   *
+> >   * "longterm" == userspace controlled elevated page count lifetime.
+> >   * Contrast this to iov_iter_get_pages() usages which are transient.
 > 
-> And yeah I'd probably still leave the comment, so I'm inclined to stick
-> with the clrldi?
-
-I always have to think what the clrldi etc. do exactly, while with rlwinm
-it is obvious.  But yeah this may be different for other people who are
-used to different idiom.
-
-> Would be nice if the assembler could support:
+> Ah, here's the longterm documentation, but if I was a developer
+> considering whether to use FOLL_LONGTERM or not I would expect to find
+> the documentation at the flag definition site.
 > 
-> 	andi	r6, r4, 0x0fff
-> 
-> And turn it into the rlwinm, or rldicl :)
+> I think it has become more clear since get_user_pages_longterm() was
+> initially merged that we need to warn people not to use it, or at
+> least seriously reconsider whether they want an interface to support
+> indefinite pins.
 
-The extended mnemonics are *simple*, *one-to-one* mappings.  Having
-"andi. 6,4,0x0f0f" a valid insn, but an extended mnemonic "andi 6,4,0x0f0f"
-that is not (and the other way around for say 0xff0000ff) would violate that.
+I will move the comment to the flag definition but...
 
-You could do some assembler macro, that can also expand to multiple insns
-where that is useful.  Also one for loading constants, etc.  The downside
-to that is you often do care how many insns are generated.
+In reviewing this comment it occurs to me that the addition of special casing
+CMA regions via FOLL_LONGTERM has made it less experimental/temporary and now
+simply implies intent to the GUP code as to the use of the pages.
 
-Instead you could do a macro for only those cases that can be done with *one*
-insn.  But that then is pretty restricted in use, and people have to learn
-what values are valid.
+As I'm not super familiar with the CMA use case I can't say for certain but it
+seems that it is not a temporary solution.
 
-I don't see a perfect solution.
+So I'm not going to refrain from a FIXME WRT removing the flag.
 
+New suggested text below.
 
-Segher
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 6831077d126c..5db9d8e894aa 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2596,7 +2596,28 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+ #define FOLL_REMOTE    0x2000  /* we are working on non-current tsk/mm */
+ #define FOLL_COW       0x4000  /* internal GUP flag */
+ #define FOLL_ANON      0x8000  /* don't do file mappings */
+-#define FOLL_LONGTERM  0x10000 /* mapping is intended for a long term pin */
++#define FOLL_LONGTERM  0x10000 /* mapping lifetime is indefinite: see below */
++
++/*
++ * NOTE on FOLL_LONGTERM:
++ *
++ * FOLL_LONGTERM indicates that the page will be held for an indefinite time
++ * period _often_ under userspace control.  This is contrasted with
++ * iov_iter_get_pages() where usages which are transient.
++ *
++ * FIXME: For pages which are part of a filesystem, mappings are subject to the
++ * lifetime enforced by the filesystem and we need guarantees that longterm
++ * users like RDMA and V4L2 only establish mappings which coordinate usage with
++ * the filesystem.  Ideas for this coordination include revoking the longterm
++ * pin, delaying writeback, bounce buffer page writeback, etc.  As FS DAX was
++ * added after the problem with filesystems was found FS DAX VMAs are
++ * specifically failed.  Filesystem pages are still subject to bugs and use of
++ * FOLL_LONGTERM should be avoided on those pages.
++ *
++ * In the CMA case: longterm pins in a CMA region would unnecessarily fragment
++ * that region.  And so CMA attempts to migrate the page before pinning when
++ * FOLL_LONGTERM is specified.
++ */
+ 
+ static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
+ {
+
