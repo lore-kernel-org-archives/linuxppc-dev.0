@@ -2,73 +2,49 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61DFAC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 12:28:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10DAAC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 12:36:06 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DA72B2085A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 12:28:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=xenosoft.de header.i=@xenosoft.de header.b="o3gA3DrB"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DA72B2085A
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=xenosoft.de
+	by mail.kernel.org (Postfix) with ESMTPS id 85A3A2085A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 12:36:05 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 85A3A2085A
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SYTD3bLWzDqJK
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 23:28:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (helo) smtp.helo=mo6-p00-ob.smtp.rzone.de
- (client-ip=2a01:238:20a:202:5300::3; helo=mo6-p00-ob.smtp.rzone.de;
- envelope-from=chzigotzky@xenosoft.de; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=xenosoft.de
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.b="o3gA3DrB"; 
- dkim-atps=neutral
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::3])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SYdv08Q9zDqKJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 23:36:03 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SYMg53H4zDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 23:23:37 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1553516608;
- s=strato-dkim-0002; d=xenosoft.de;
- h=In-Reply-To:Date:Message-ID:References:Cc:To:From:Subject:
- X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
- bh=TgBaP/tgoTryuS1+JEOkOMSn9msxalGNW6j5RGYhmI4=;
- b=o3gA3DrBbxgdMzcf1O5uICqlbhMVICF0ee8P2J2JK6oh6Ml52EQx4zgcWZXKVJtp3g
- atB1JTeocRh1G66SS1EgdMlorjv/i0UF/8MkpEVsmyEEgZ5+fX917+h4S93BIwUqCNgJ
- c3B28wysTXbnTPGiVkHp03hMkr2iYW3m0HqGfSqF/adrduvrMh1rNGBMkXEJishKNaKF
- B6L43iZTipvjfucoANTkF1mRxq26ur/n6jllVII7Qadcu/f4Jwe+5CjgMEPdpBzUguuC
- LUVKpJd+GD34M24nlKbD1dpQfUFhe8/FUxmtAMKREwG5CRhPm0Kn0Y4M5XKsKCDMUU6g
- fn5A==
-X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGM4l4Hio94KKxRySfLxnHfJ+Dkjp5G5MdirQj0WG7ClcjmaGPWerH/TbwNp4jUXzZO9p5Q=="
-X-RZG-CLASS-ID: mo00
-Received: from [IPv6:2a02:8109:a400:162c:c000:5165:6743:d73b]
- by smtp.strato.de (RZmta 44.18 AUTH) with ESMTPSA id k00e1ev2PCNQ0Qu
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with
- 521 ECDH bits, eq. 15360 bits RSA))
- (Client did not present a certificate);
- Mon, 25 Mar 2019 13:23:26 +0100 (CET)
-Subject: PowerPC fixes 5.1-3: CONFIG_SPARSEMEM doesn't exist in the kernel
- source code
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <675068dc-3874-4ff3-fdf3-8b96b8e43574@xenosoft.de>
-Message-ID: <656507ca-141f-2a37-5487-1acd55f1223e@xenosoft.de>
-Date: Mon, 25 Mar 2019 13:23:26 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SYbV1y4BzDqGT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 23:33:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=ellerman.id.au
+Received: by ozlabs.org (Postfix)
+ id 44SYbT5s7hz9sSN; Mon, 25 Mar 2019 23:33:57 +1100 (AEDT)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest
+ SHA256) (No client certificate requested)
+ by mail.ozlabs.org (Postfix) with ESMTPSA id 44SYbT41Wmz9sRt;
+ Mon, 25 Mar 2019 23:33:57 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3] powerpc/64: Fix memcmp reading past the end of src/dest
+In-Reply-To: <20190322182943.GF3969@gate.crashing.org>
+References: <20190322123724.28435-1-mpe@ellerman.id.au>
+ <20190322182943.GF3969@gate.crashing.org>
+Date: Mon, 25 Mar 2019 23:33:56 +1100
+Message-ID: <877ecnp1zf.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <675068dc-3874-4ff3-fdf3-8b96b8e43574@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: de-DE
+Content-Type: text/plain
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,98 +56,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: "R.T.Dickinson" <rtd@a-eon.com>, Darren Stevens <darren@stevens-zone.net>
+Cc: linuxppc-dev@ozlabs.org, chandan@linux.ibm.com
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-I was able to activate CONFIG_SPARSEMEM in the kernel configuration. But 
-does the P.A. Semi Nemo board need this option?
+Segher Boessenkool <segher@kernel.crashing.org> writes:
+> On Fri, Mar 22, 2019 at 11:37:24PM +1100, Michael Ellerman wrote:
+>>  .Lcmp_rest_lt8bytes:
+>> -	/* Here we have only less than 8 bytes to compare with. at least s1
+>> -	 * Address is aligned with 8 bytes.
+>> -	 * The next double words are load and shift right with appropriate
+>> -	 * bits.
+>> +	/*
+>> +	 * Here we have less than 8 bytes to compare. At least s1 is aligned to
+>> +	 * 8 bytes, but s2 may not be. We must make sure s2 + 8 doesn't cross a
+>
+> "s2 + 7"?  The code is fine though (bgt, not bge).
 
--- Christian
+Duh, thanks for catching it.
 
-On 25 March 2019 at 12:00PM, Christian Zigotzky wrote:
-> Hi All,
+>> +	 * page boundary, otherwise we might read past the end of the buffer and
+>> +	 * trigger a page fault. We use 4K as the conservative minimum page
+>> +	 * size. If we detect that case we go to the byte-by-byte loop.
+>> +	 *
+>> +	 * Otherwise the next double word is loaded from s1 and s2, and shifted
+>> +	 * right to compare the appropriate bits.
+>>  	 */
+>> +	clrldi	r6,r4,(64-12)	// r6 = r4 & 0xfff
 >
-> I wasn't able to compile the RC2 today because of the following error 
-> messages:
->
->   CC      arch/powerpc/mm/slb.o
-> In file included from ./arch/powerpc/include/asm/book3s/64/mmu.h:39:0,
->                  from ./arch/powerpc/include/asm/mmu.h:360,
->                  from ./arch/powerpc/include/asm/lppaca.h:36,
->                  from ./arch/powerpc/include/asm/paca.h:21,
->                  from ./arch/powerpc/include/asm/current.h:16,
->                  from ./include/linux/thread_info.h:21,
->                  from ./include/asm-generic/preempt.h:5,
->                  from ./arch/powerpc/include/generated/asm/preempt.h:1,
->                  from ./include/linux/preempt.h:78,
->                  from ./include/linux/spinlock.h:51,
->                  from ./include/linux/mmzone.h:8,
->                  from ./include/linux/gfp.h:6,
->                  from ./include/linux/mm.h:10,
->                  from ./arch/powerpc/include/asm/cacheflush.h:12,
->                  from ./arch/powerpc/include/asm/asm-prototypes.h:16,
->                  from arch/powerpc/mm/slb.c:17:
-> ./arch/powerpc/include/asm/book3s/64/mmu-hash.h:584:6: warning: 
-> "MAX_PHYSMEM_BITS" is not defined [-Wundef]
->  #if (MAX_PHYSMEM_BITS > MAX_EA_BITS_PER_CONTEXT)
->       ^
-> arch/powerpc/mm/slb.c: In function 'slb_allocate_kernel':
-> arch/powerpc/mm/slb.c:697:37: error: 'MAX_PHYSMEM_BITS' undeclared 
-> (first use in this function)
->    if ((ea & ~REGION_MASK) > (1UL << MAX_PHYSMEM_BITS))
->                                      ^
-> arch/powerpc/mm/slb.c:697:37: note: each undeclared identifier is 
-> reported only once for each function it appears in
-> scripts/Makefile.build:278: recipe for target 'arch/powerpc/mm/slb.o' 
-> failed
-> make[3]: *** [arch/powerpc/mm/slb.o] Error 1
-> scripts/Makefile.build:489: recipe for target 'arch/powerpc/mm' failed
-> make[2]: *** [arch/powerpc/mm] Error 2
-> /home/christian/Downloads/a/Makefile:1046: recipe for target 
-> 'arch/powerpc' failed
-> make[1]: *** [arch/powerpc] Error 2
-> Makefile:170: recipe for target 'sub-make' failed
-> make: *** [sub-make] Error 2
->
-> -----
->
-> The variable MAX_PHYSMEM_BITS isn't defined. The problem is in the 
-> last PowerPC fixes 5.1-3: 
-> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v5.1-rc2&id=a5ed1e96cafde5ba48638f486bfca0685dc6ddc9
->
-> Commit log: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM 
-> configurations
->
-> Problematic fix:
->
-> diff --git a/arch/powerpc/include/asm/mmu.h 
-> b/arch/powerpc/include/asm/mmu.h
-> index d34ad1657d7b..598cdcdd1355 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -352,7 +352,7 @@ static inline bool strict_kernel_rwx_enabled(void)
->  #if defined(CONFIG_SPARSEMEM_VMEMMAP) && 
-> defined(CONFIG_SPARSEMEM_EXTREME) &&   \
->     defined (CONFIG_PPC_64K_PAGES)
->  #define MAX_PHYSMEM_BITS        51
-> -#else
-> +#elif defined(CONFIG_SPARSEMEM)
->  #define MAX_PHYSMEM_BITS        46
->  #endif
->
-> The first if statement isn't successfull because the variables 
-> CONFIG_SPARSEMEM_EXTREME and CONFIG_PPC_64K_PAGES aren't activated in 
-> our kernel configuration. Therefore we need MAX_PHYSMEM_BITS 46 for 
-> our Nemo board. Unfortunately CONFIG_SPARSEMEM doesn't exist in the 
-> kernel source code so we can't activate it in the kernel config.
->
-> I replaced '#elif defined(CONFIG_SPARSEMEM)' with '#else' and after 
-> that the compiling of the RC2 works again.
->
-> Please check if CONFIG_SPARSEMEM exists.
->
-> Thanks,
-> Christian
+> You can just write
+>   rlwinm r6,r4,0,0x0fff
 
+> if that is clearer?  Or do you still want a comment with that :-)
+
+I don't think it's clearer doing a rotate of zero bits :)
+
+And yeah I'd probably still leave the comment, so I'm inclined to stick
+with the clrldi?
+
+Would be nice if the assembler could support:
+
+	andi	r6, r4, 0x0fff
+
+And turn it into the rlwinm, or rldicl :)
+
+>> +	cmpdi	r6,0xff8
+>> +	bgt	.Lshort
+>
+> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+
+I'll fixup the comment. Thanks.
+
+cheers
