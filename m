@@ -2,58 +2,73 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.4 required=3.0 tests=DATE_IN_PAST_06_12,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS,
-	USER_AGENT_MUTT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6F8FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 18:29:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59F1AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 20:14:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 464D620830
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 18:29:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 464D620830
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
+	by mail.kernel.org (Postfix) with ESMTPS id 86B5E20854
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 20:14:28 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 86B5E20854
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SjV809w8zDqLV
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:29:52 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Slpn5nRdzDqHS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 07:14:25 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=192.55.52.93; helo=mga11.intel.com;
- envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ spf=pass (mailfrom) smtp.mailfrom=nefkom.net
+ (client-ip=212.18.0.10; helo=mail-out.m-online.net;
+ envelope-from=whitebox@nefkom.net; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=linux-m68k.org
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SjSR2G2TzDqLF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 05:28:21 +1100 (AEDT)
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
- by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 25 Mar 2019 11:28:18 -0700
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="125755489"
-Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by orsmga007.jf.intel.com with ESMTP; 25 Mar 2019 11:28:17 -0700
-Date: Mon, 25 Mar 2019 03:27:05 -0700
-From: Ira Weiny <ira.weiny@intel.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [RESEND 1/7] mm/gup: Replace get_user_pages_longterm() with
- FOLL_LONGTERM
-Message-ID: <20190325102705.GG16366@iweiny-DESK2.sc.intel.com>
-References: <20190317183438.2057-1-ira.weiny@intel.com>
- <20190317183438.2057-2-ira.weiny@intel.com>
- <CAA9_cmffz1VBOJ0ykBtcj+hiznn-kbbuotu1uUhPiJtXiFjJXg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Slmr5VdFzDqLB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 07:12:42 +1100 (AEDT)
+Received: from frontend01.mail.m-online.net (unknown [192.168.8.182])
+ by mail-out.m-online.net (Postfix) with ESMTP id 44Slmg6Xmvz1rFtC;
+ Mon, 25 Mar 2019 21:12:35 +0100 (CET)
+Received: from localhost (dynscan1.mnet-online.de [192.168.6.70])
+ by mail.m-online.net (Postfix) with ESMTP id 44Slmg1XwQz1qr5R;
+ Mon, 25 Mar 2019 21:12:35 +0100 (CET)
+X-Virus-Scanned: amavisd-new at mnet-online.de
+Received: from mail.mnet-online.de ([192.168.8.182])
+ by localhost (dynscan1.mail.m-online.net [192.168.6.70]) (amavisd-new,
+ port 10024)
+ with ESMTP id afvt7Yvs8gfC; Mon, 25 Mar 2019 21:12:34 +0100 (CET)
+X-Auth-Info: WCX8Im/gVjTCyk70+ITBVCwkNuFPM1y/YC6ASCZCniynrrdKzQFViV0n8GSa+KAK
+Received: from igel.home (ppp-46-244-174-3.dynamic.mnet-online.de
+ [46.244.174.3])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA;
+ Mon, 25 Mar 2019 21:12:34 +0100 (CET)
+Received: by igel.home (Postfix, from userid 1000)
+ id 9B25B2C162C; Mon, 25 Mar 2019 21:12:33 +0100 (CET)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
+ configurations
+References: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
+ <44QjSh4zGhz9sV2__48832.6491251186$1553257542$gmane$org@ozlabs.org>
+ <87k1gnq5lp.fsf@igel.home>
+ <eb21be1ac183dd206da3a389b426707c535c463c.camel@decadent.org.uk>
+ <87ftrbq0qe.fsf@igel.home>
+ <cf9154f1812e0e9a328a1e21ef13d80a46e5feb6.camel@decadent.org.uk>
+ <87a7hjp4oi.fsf@concordia.ellerman.id.au>
+X-Yow: You must be a CUB SCOUT!!  Have you made your MONEY-DROP today??
+Date: Mon, 25 Mar 2019 21:12:33 +0100
+In-Reply-To: <87a7hjp4oi.fsf@concordia.ellerman.id.au> (Michael Ellerman's
+ message of "Mon, 25 Mar 2019 22:35:41 +1100")
+Message-ID: <877ecm1zny.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAA9_cmffz1VBOJ0ykBtcj+hiznn-kbbuotu1uUhPiJtXiFjJXg@mail.gmail.com>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -65,108 +80,24 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, Linux-sh <linux-sh@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Rich Felker <dalias@libc.org>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-s390 <linux-s390@vger.kernel.org>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, linux-rdma@vger.kernel.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
- Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>,
- linux-mips@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Ben Hutchings <ben@decadent.org.uk>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2019 at 02:24:40PM -0700, Dan Williams wrote:
-> On Sun, Mar 17, 2019 at 7:36 PM <ira.weiny@intel.com> wrote:
+On Mär 25 2019, Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-[snip]
+> So I'm inclined to just switch to always using SPARSEMEM on 64-bit
+> Book3S, because that's what's well tested and we hardly need more code
+> paths to test. Unless anyone has a strong objection, I haven't actually
+> benchmarked FLATMEM vs SPARSEMEM on a G5.
 
-> > + * __gup_longterm_locked() is a wrapper for __get_uer_pages_locked which
-> 
-> s/uer/user/
-> 
-> > + * allows us to process the FOLL_LONGTERM flag if present.
-> > + *
-> > + * FOLL_LONGTERM Checks for either DAX VMAs or PPC CMA regions and either fails
-> > + * the pin or attempts to migrate the page as appropriate.
-> > + *
-> > + * In the filesystem-dax case mappings are subject to the lifetime enforced by
-> > + * the filesystem and we need guarantees that longterm users like RDMA and V4L2
-> > + * only establish mappings that have a kernel enforced revocation mechanism.
-> > + *
-> > + * In the CMA case pages can't be pinned in a CMA region as this would
-> > + * unnecessarily fragment that region.  So CMA attempts to migrate the page
-> > + * before pinning.
-> >   *
-> >   * "longterm" == userspace controlled elevated page count lifetime.
-> >   * Contrast this to iov_iter_get_pages() usages which are transient.
-> 
-> Ah, here's the longterm documentation, but if I was a developer
-> considering whether to use FOLL_LONGTERM or not I would expect to find
-> the documentation at the flag definition site.
-> 
-> I think it has become more clear since get_user_pages_longterm() was
-> initially merged that we need to warn people not to use it, or at
-> least seriously reconsider whether they want an interface to support
-> indefinite pins.
+Configuring with SPARSEMEM saves about 32Mb of memory.
 
-I will move the comment to the flag definition but...
+Andreas.
 
-In reviewing this comment it occurs to me that the addition of special casing
-CMA regions via FOLL_LONGTERM has made it less experimental/temporary and now
-simply implies intent to the GUP code as to the use of the pages.
-
-As I'm not super familiar with the CMA use case I can't say for certain but it
-seems that it is not a temporary solution.
-
-So I'm not going to refrain from a FIXME WRT removing the flag.
-
-New suggested text below.
-
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 6831077d126c..5db9d8e894aa 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -2596,7 +2596,28 @@ struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
- #define FOLL_REMOTE    0x2000  /* we are working on non-current tsk/mm */
- #define FOLL_COW       0x4000  /* internal GUP flag */
- #define FOLL_ANON      0x8000  /* don't do file mappings */
--#define FOLL_LONGTERM  0x10000 /* mapping is intended for a long term pin */
-+#define FOLL_LONGTERM  0x10000 /* mapping lifetime is indefinite: see below */
-+
-+/*
-+ * NOTE on FOLL_LONGTERM:
-+ *
-+ * FOLL_LONGTERM indicates that the page will be held for an indefinite time
-+ * period _often_ under userspace control.  This is contrasted with
-+ * iov_iter_get_pages() where usages which are transient.
-+ *
-+ * FIXME: For pages which are part of a filesystem, mappings are subject to the
-+ * lifetime enforced by the filesystem and we need guarantees that longterm
-+ * users like RDMA and V4L2 only establish mappings which coordinate usage with
-+ * the filesystem.  Ideas for this coordination include revoking the longterm
-+ * pin, delaying writeback, bounce buffer page writeback, etc.  As FS DAX was
-+ * added after the problem with filesystems was found FS DAX VMAs are
-+ * specifically failed.  Filesystem pages are still subject to bugs and use of
-+ * FOLL_LONGTERM should be avoided on those pages.
-+ *
-+ * In the CMA case: longterm pins in a CMA region would unnecessarily fragment
-+ * that region.  And so CMA attempts to migrate the page before pinning when
-+ * FOLL_LONGTERM is specified.
-+ */
- 
- static inline int vm_fault_to_errno(vm_fault_t vm_fault, int foll_flags)
- {
-
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
