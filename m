@@ -2,63 +2,96 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5EB6C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 14:51:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83924C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:13:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 05C8E20811
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 14:51:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 05C8E20811
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
+	by mail.kernel.org (Postfix) with ESMTPS id C04732083D
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:13:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C04732083D
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44ScfB5vZlzDqHx
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 01:51:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Sd7d5xfdzDqHx
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 02:13:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=none (mailfrom) smtp.mailfrom=arndb.de
- (client-ip=212.227.126.187; helo=mout.kundenserver.de;
- envelope-from=arnd@arndb.de; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
+ (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=arndb.de
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ dmarc=none (p=none dis=none) header.from=linux.ibm.com
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Scc12mzvzDq9y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 01:49:30 +1100 (AEDT)
-Received: from wuerfel.lan ([149.172.19.189]) by mrelayeu.kundenserver.de
- (mreue009 [212.227.15.129]) with ESMTPA (Nemesis) id
- 1MirfI-1gVosU3XTY-00evvU; Mon, 25 Mar 2019 15:47:51 +0100
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] arch: add pidfd and io_uring syscalls everywhere
-Date: Mon, 25 Mar 2019 15:47:37 +0100
-Message-Id: <20190325144737.703921-1-arnd@arndb.de>
-X-Mailer: git-send-email 2.20.0
-In-Reply-To: <20190325143521.34928-1-arnd@arndb.de>
-References: <20190325143521.34928-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Sd5f08sRzDqDZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 02:11:49 +1100 (AEDT)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2PFAr0e085156
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:11:47 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rf07gmw8h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:11:47 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Mon, 25 Mar 2019 15:11:44 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp05.uk.ibm.com (192.168.101.135) with IBM ESMTP SMTP Gateway:
+ Authorized Use Only! Violators will be prosecuted; 
+ (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
+ Mon, 25 Mar 2019 15:11:42 -0000
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com
+ (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2PFBe1K59310242
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+ Mon, 25 Mar 2019 15:11:40 GMT
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 60F8DA4054;
+ Mon, 25 Mar 2019 15:11:40 +0000 (GMT)
+Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 010C2A405B;
+ Mon, 25 Mar 2019 15:11:40 +0000 (GMT)
+Received: from [9.145.37.149] (unknown [9.145.37.149])
+ by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 25 Mar 2019 15:11:39 +0000 (GMT)
+Subject: Re: [PATCH v3 3/7] ocxl: Create a clear delineation between ocxl
+ backend & frontend
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190320053448.2098-1-alastair@au1.ibm.com>
+ <20190325054438.15022-1-alastair@au1.ibm.com>
+ <20190325054438.15022-4-alastair@au1.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Mon, 25 Mar 2019 16:11:39 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.5.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V03:K1:FaiSmcpLJnThW6vsEWTPc3eZitCiMhab0InT0D7d6aEZ3xK0KeF
- nK8qMOGthno72x/Fz7KEca9N3rVAXYRiDRvhLa+9QhO9gvPbiRU8stXBfu6psktrdc1SOdQ
- G+xthZKxJklpQuS7FKlE4v4cCNFOxpqoyNgVkAWct7egfuLN9SinwHFWh54qc4B0jxya8wv
- FFGJWDZO0d9Ak42p2sjIw==
-X-UI-Out-Filterresults: notjunk:1;V03:K0:VeHMENui6h8=:gmlHgeAW3Jw9dRKbbBxP60
- NExKOHMk7nyKOfTirf9saOEfiHAoOgwmAvP28ZIxUx9gP2N0otsQDyfvZPCyyPhtJl3XIRi1l
- YmYnVG9JaiF0JCACs2rq55zK6ELGLgYGTGVVkq5co429G/vaZectvZKwDEJYgtWWVpURXjL9Q
- xzp2KqWHQjTQDhswXVJQJ4y30WBpog90DbGJEFuYdsnd5TTMjYF6PG6b0l3gi2XG7XX9EynVz
- U7vsxlQOaTuAP93ldBhgMZ2BBgMbIVNZySWzM2m2N6udjHLgzTTgstL10MiKz0S+MI0/c8MAi
- QA1KTsIprkR4sdWROz2/sdI9PRqiUDyO0b127o25s6A1yIiwGfuJ78Cg9lizMwYw+LSdVUgll
- tA5HpsNihO6V7AZA/ePde+2Pczv1OQhQsluvS8PcfqbOZv/2ZWI+xfF/CDSuy0JkPUQlDyDuh
- pR7rV58nXB7Qt91BvPc87pZAAK6pmiNixLsCsKQdfCc5vNJz7LotR8zvoGhjP9BJrhu00awhx
- x0qCkosAMznPYsJ4ZgWNLDJtA67k4SuMxk8kWC6RJmCkDThNsI8+j+fGrMS4ja2gAJozexjy1
- bswafjJZem6CmQdjDuEXm+clOnDRJWatv713Q/Cv1XnsDJoVRhYBk9I4KzXemc4JZ7aI5nHBH
- tEl1fhURKUzzNLEwST26UJPyansVTZmkNnEGzHqCVSrIZpvmv3SIFyhF7wctlgGyzp3i2tCzw
- f9sJAT2Zy7Kd7FxEG9JFfQ4Q0WVo8ihWHGBQFA==
+In-Reply-To: <20190325054438.15022-4-alastair@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+x-cbid: 19032515-0020-0000-0000-000003275B4D
+X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
+x-cbparentid: 19032515-0021-0000-0000-00002179920C
+Message-Id: <21fedf98-1b76-fc75-58d6-646e684f3e17@linux.ibm.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
+ definitions=2019-03-25_09:, , signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501
+ malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903250113
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,255 +103,184 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Rich Felker <dalias@libc.org>, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- linux-mips@vger.kernel.org,
- "James E . J . Bottomley" <James.Bottomley@HansenPartnership.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
- Helge Deller <deller@gmx.de>, Russell King <linux@armlinux.org.uk>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>, James Hogan <jhogan@kernel.org>,
- Firoz Khan <firoz.khan@linaro.org>, Matt Turner <mattst88@gmail.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Will Deacon <will.deacon@arm.com>, linux-m68k@lists.linux-m68k.org,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- linux-alpha@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "David S . Miller" <davem@davemloft.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Add the io_uring and pidfd_send_signal system calls to all architectures.
+This is a huge patch, there are probably ways to split it in smaller 
+pieces to make the review easier. However, considering how much time 
+we've already invested discussing and reviewing it, it's with by me to 
+keep it as is.
+The ref-counting and device management look good to me now. A few 
+details below.
 
-These system calls are designed to handle both native and compat tasks,
-so all entries are the same across architectures, only arm-compat and
-the generic tale still use an old format.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/alpha/kernel/syscalls/syscall.tbl      | 4 ++++
- arch/arm/tools/syscall.tbl                  | 4 ++++
- arch/arm64/include/asm/unistd.h             | 2 +-
- arch/arm64/include/asm/unistd32.h           | 8 ++++++++
- arch/ia64/kernel/syscalls/syscall.tbl       | 4 ++++
- arch/m68k/kernel/syscalls/syscall.tbl       | 4 ++++
- arch/microblaze/kernel/syscalls/syscall.tbl | 4 ++++
- arch/mips/kernel/syscalls/syscall_n32.tbl   | 4 ++++
- arch/mips/kernel/syscalls/syscall_n64.tbl   | 4 ++++
- arch/mips/kernel/syscalls/syscall_o32.tbl   | 4 ++++
- arch/parisc/kernel/syscalls/syscall.tbl     | 4 ++++
- arch/powerpc/kernel/syscalls/syscall.tbl    | 4 ++++
- arch/s390/kernel/syscalls/syscall.tbl       | 4 ++++
- arch/sh/kernel/syscalls/syscall.tbl         | 4 ++++
- arch/sparc/kernel/syscalls/syscall.tbl      | 4 ++++
- arch/xtensa/kernel/syscalls/syscall.tbl     | 4 ++++
- 16 files changed, 65 insertions(+), 1 deletion(-)
+> --- a/drivers/misc/ocxl/file.c
+> +++ b/drivers/misc/ocxl/file.c
+> @@ -17,12 +17,10 @@ static struct class *ocxl_class;
+>   static struct mutex minors_idr_lock;
+>   static struct idr minors_idr;
+>   
+> -static struct ocxl_afu *find_and_get_afu(dev_t devno)
+> +static struct ocxl_file_info *find_file_info(dev_t devno)
+>   {
+> -	struct ocxl_afu *afu;
+> -	int afu_minor;
+> +	struct ocxl_file_info *info;
+>   
+> -	afu_minor = MINOR(devno);
+>   	/*
+>   	 * We don't declare an RCU critical section here, as our AFU
+>   	 * is protected by a reference counter on the device. By the time the
+> @@ -30,56 +28,52 @@ static struct ocxl_afu *find_and_get_afu(dev_t devno)
+>   	 * the device is already at 0, so no user API will access that AFU and
+>   	 * this function can't return it.
+>   	 */
 
-diff --git a/arch/alpha/kernel/syscalls/syscall.tbl b/arch/alpha/kernel/syscalls/syscall.tbl
-index 63ed39cbd3bd..165f268beafc 100644
---- a/arch/alpha/kernel/syscalls/syscall.tbl
-+++ b/arch/alpha/kernel/syscalls/syscall.tbl
-@@ -463,3 +463,7 @@
- 532	common	getppid				sys_getppid
- # all other architectures have common numbers for new syscall, alpha
- # is the exception.
-+534	common	pidfd_send_signal		sys_pidfd_send_signal
-+535	common	io_uring_setup			sys_io_uring_setup
-+536	common	io_uring_enter			sys_io_uring_enter
-+537	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/arm/tools/syscall.tbl b/arch/arm/tools/syscall.tbl
-index 9016f4081bb9..0393917eaa57 100644
---- a/arch/arm/tools/syscall.tbl
-+++ b/arch/arm/tools/syscall.tbl
-@@ -437,3 +437,7 @@
- 421	common	rt_sigtimedwait_time64		sys_rt_sigtimedwait
- 422	common	futex_time64			sys_futex
- 423	common	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/arm64/include/asm/unistd.h b/arch/arm64/include/asm/unistd.h
-index 310d8f1cae7a..c6946fe640e6 100644
---- a/arch/arm64/include/asm/unistd.h
-+++ b/arch/arm64/include/asm/unistd.h
-@@ -49,7 +49,7 @@
- #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE + 5)
- #define __ARM_NR_COMPAT_END		(__ARM_NR_COMPAT_BASE + 0x800)
- 
--#define __NR_compat_syscalls		424
-+#define __NR_compat_syscalls		428
- #endif
- 
- #define __ARCH_WANT_SYS_CLONE
-diff --git a/arch/arm64/include/asm/unistd32.h b/arch/arm64/include/asm/unistd32.h
-index 5590f2623690..23f1a44acada 100644
---- a/arch/arm64/include/asm/unistd32.h
-+++ b/arch/arm64/include/asm/unistd32.h
-@@ -866,6 +866,14 @@ __SYSCALL(__NR_rt_sigtimedwait_time64, compat_sys_rt_sigtimedwait_time64)
- __SYSCALL(__NR_futex_time64, sys_futex)
- #define __NR_sched_rr_get_interval_time64 423
- __SYSCALL(__NR_sched_rr_get_interval_time64, sys_sched_rr_get_interval)
-+#define __NR_pidfd_send_signal 424
-+__SYSCALL(__NR_pidfd_send_signal, sys_pidfd_send_signal)
-+#define __NR_io_uring_setup 425
-+__SYSCALL(__NR_io_uring_setup, sys_io_uring_setup)
-+#define __NR_io_uring_enter 426
-+__SYSCALL(__NR_io_uring_enter, sys_io_uring_enter)
-+#define __NR_io_uring_register 427
-+__SYSCALL(__NR_io_uring_register, sys_io_uring_register)
- 
- /*
-  * Please add new compat syscalls above this comment and update
-diff --git a/arch/ia64/kernel/syscalls/syscall.tbl b/arch/ia64/kernel/syscalls/syscall.tbl
-index ab9cda5f6136..56e3d0b685e1 100644
---- a/arch/ia64/kernel/syscalls/syscall.tbl
-+++ b/arch/ia64/kernel/syscalls/syscall.tbl
-@@ -344,3 +344,7 @@
- 332	common	pkey_free			sys_pkey_free
- 333	common	rseq				sys_rseq
- # 334 through 423 are reserved to sync up with other architectures
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/m68k/kernel/syscalls/syscall.tbl b/arch/m68k/kernel/syscalls/syscall.tbl
-index 125c14178979..df4ec3ec71d1 100644
---- a/arch/m68k/kernel/syscalls/syscall.tbl
-+++ b/arch/m68k/kernel/syscalls/syscall.tbl
-@@ -423,3 +423,7 @@
- 421	common	rt_sigtimedwait_time64		sys_rt_sigtimedwait
- 422	common	futex_time64			sys_futex
- 423	common	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/microblaze/kernel/syscalls/syscall.tbl b/arch/microblaze/kernel/syscalls/syscall.tbl
-index 8ee3a8c18498..4964947732af 100644
---- a/arch/microblaze/kernel/syscalls/syscall.tbl
-+++ b/arch/microblaze/kernel/syscalls/syscall.tbl
-@@ -429,3 +429,7 @@
- 421	common	rt_sigtimedwait_time64		sys_rt_sigtimedwait
- 422	common	futex_time64			sys_futex
- 423	common	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/mips/kernel/syscalls/syscall_n32.tbl b/arch/mips/kernel/syscalls/syscall_n32.tbl
-index 15f4117900ee..9392dfe33f97 100644
---- a/arch/mips/kernel/syscalls/syscall_n32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n32.tbl
-@@ -362,3 +362,7 @@
- 421	n32	rt_sigtimedwait_time64		compat_sys_rt_sigtimedwait_time64
- 422	n32	futex_time64			sys_futex
- 423	n32	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	n32	pidfd_send_signal		sys_pidfd_send_signal
-+425	n32	io_uring_setup			sys_io_uring_setup
-+426	n32	io_uring_enter			sys_io_uring_enter
-+427	n32	io_uring_register		sys_io_uring_register
-diff --git a/arch/mips/kernel/syscalls/syscall_n64.tbl b/arch/mips/kernel/syscalls/syscall_n64.tbl
-index c85502e67b44..c4a49f7d57bb 100644
---- a/arch/mips/kernel/syscalls/syscall_n64.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_n64.tbl
-@@ -338,3 +338,7 @@
- 327	n64	rseq				sys_rseq
- 328	n64	io_pgetevents			sys_io_pgetevents
- # 329 through 423 are reserved to sync up with other architectures
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/mips/kernel/syscalls/syscall_o32.tbl b/arch/mips/kernel/syscalls/syscall_o32.tbl
-index 2e063d0f837e..e849e8ffe4a2 100644
---- a/arch/mips/kernel/syscalls/syscall_o32.tbl
-+++ b/arch/mips/kernel/syscalls/syscall_o32.tbl
-@@ -411,3 +411,7 @@
- 421	o32	rt_sigtimedwait_time64		sys_rt_sigtimedwait		compat_sys_rt_sigtimedwait_time64
- 422	o32	futex_time64			sys_futex			sys_futex
- 423	o32	sched_rr_get_interval_time64	sys_sched_rr_get_interval	sys_sched_rr_get_interval
-+424	o32	pidfd_send_signal		sys_pidfd_send_signal
-+425	o32	io_uring_setup			sys_io_uring_setup
-+426	o32	io_uring_enter			sys_io_uring_enter
-+427	o32	io_uring_register		sys_io_uring_register
-diff --git a/arch/parisc/kernel/syscalls/syscall.tbl b/arch/parisc/kernel/syscalls/syscall.tbl
-index b26766c6647d..fe8ca623add8 100644
---- a/arch/parisc/kernel/syscalls/syscall.tbl
-+++ b/arch/parisc/kernel/syscalls/syscall.tbl
-@@ -420,3 +420,7 @@
- 421	32	rt_sigtimedwait_time64		sys_rt_sigtimedwait		compat_sys_rt_sigtimedwait_time64
- 422	32	futex_time64			sys_futex			sys_futex
- 423	32	sched_rr_get_interval_time64	sys_sched_rr_get_interval	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/powerpc/kernel/syscalls/syscall.tbl b/arch/powerpc/kernel/syscalls/syscall.tbl
-index b18abb0c3dae..00f5a63c8d9a 100644
---- a/arch/powerpc/kernel/syscalls/syscall.tbl
-+++ b/arch/powerpc/kernel/syscalls/syscall.tbl
-@@ -505,3 +505,7 @@
- 421	32	rt_sigtimedwait_time64		sys_rt_sigtimedwait		compat_sys_rt_sigtimedwait_time64
- 422	32	futex_time64			sys_futex			sys_futex
- 423	32	sched_rr_get_interval_time64	sys_sched_rr_get_interval	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/s390/kernel/syscalls/syscall.tbl b/arch/s390/kernel/syscalls/syscall.tbl
-index 02579f95f391..3eb56e639b96 100644
---- a/arch/s390/kernel/syscalls/syscall.tbl
-+++ b/arch/s390/kernel/syscalls/syscall.tbl
-@@ -426,3 +426,7 @@
- 421	32	rt_sigtimedwait_time64	-				compat_sys_rt_sigtimedwait_time64
- 422	32	futex_time64		-				sys_futex
- 423	32	sched_rr_get_interval_time64	-			sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/sh/kernel/syscalls/syscall.tbl b/arch/sh/kernel/syscalls/syscall.tbl
-index bfda678576e4..480b057556ee 100644
---- a/arch/sh/kernel/syscalls/syscall.tbl
-+++ b/arch/sh/kernel/syscalls/syscall.tbl
-@@ -426,3 +426,7 @@
- 421	common	rt_sigtimedwait_time64		sys_rt_sigtimedwait
- 422	common	futex_time64			sys_futex
- 423	common	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/sparc/kernel/syscalls/syscall.tbl b/arch/sparc/kernel/syscalls/syscall.tbl
-index b9a5a04b2d2c..a1dd24307b00 100644
---- a/arch/sparc/kernel/syscalls/syscall.tbl
-+++ b/arch/sparc/kernel/syscalls/syscall.tbl
-@@ -469,3 +469,7 @@
- 421	32	rt_sigtimedwait_time64		sys_rt_sigtimedwait		compat_sys_rt_sigtimedwait_time64
- 422	32	futex_time64			sys_futex			sys_futex
- 423	32	sched_rr_get_interval_time64	sys_sched_rr_get_interval	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
-diff --git a/arch/xtensa/kernel/syscalls/syscall.tbl b/arch/xtensa/kernel/syscalls/syscall.tbl
-index 6af49929de85..30084eaf8422 100644
---- a/arch/xtensa/kernel/syscalls/syscall.tbl
-+++ b/arch/xtensa/kernel/syscalls/syscall.tbl
-@@ -394,3 +394,7 @@
- 421	common	rt_sigtimedwait_time64		sys_rt_sigtimedwait
- 422	common	futex_time64			sys_futex
- 423	common	sched_rr_get_interval_time64	sys_sched_rr_get_interval
-+424	common	pidfd_send_signal		sys_pidfd_send_signal
-+425	common	io_uring_setup			sys_io_uring_setup
-+426	common	io_uring_enter			sys_io_uring_enter
-+427	common	io_uring_register		sys_io_uring_register
--- 
-2.20.0
+
+The comment is still true, but needs tuning. Something like:
+"We don't declare an RCU critical section here, as our info structure is 
+protected by a reference counter on the device. By the time the info 
+reference is removed from the idr, the ref count of the device is 
+already at 0, so no user API will access the corresponding AFU and this 
+function can't return it."
+
+
+> -	afu = idr_find(&minors_idr, afu_minor);
+> -	if (afu)
+> -		ocxl_afu_get(afu);
+> -	return afu;
+> +	info = idr_find(&minors_idr, MINOR(devno));
+> +	return info;
+>   }
+>   
+> -static int allocate_afu_minor(struct ocxl_afu *afu)
+> +static int allocate_minor(struct ocxl_file_info *info)
+>   {
+>   	int minor;
+>   
+>   	mutex_lock(&minors_idr_lock);
+> -	minor = idr_alloc(&minors_idr, afu, 0, OCXL_NUM_MINORS, GFP_KERNEL);
+> +	minor = idr_alloc(&minors_idr, info, 0, OCXL_NUM_MINORS, GFP_KERNEL);
+>   	mutex_unlock(&minors_idr_lock);
+>   	return minor;
+>   }
+>   
+> -static void free_afu_minor(struct ocxl_afu *afu)
+> +static void free_minor(struct ocxl_file_info *info)
+>   {
+>   	mutex_lock(&minors_idr_lock);
+> -	idr_remove(&minors_idr, MINOR(afu->dev.devt));
+> +	idr_remove(&minors_idr, MINOR(info->dev.devt));
+>   	mutex_unlock(&minors_idr_lock);
+>   }
+>   
+>   static int afu_open(struct inode *inode, struct file *file)
+>   {
+> -	struct ocxl_afu *afu;
+> +	struct ocxl_file_info *info;
+>   	struct ocxl_context *ctx;
+>   	int rc;
+>   
+>   	pr_debug("%s for device %x\n", __func__, inode->i_rdev);
+>   
+> -	afu = find_and_get_afu(inode->i_rdev);
+> -	if (!afu)
+> +	info = find_file_info(inode->i_rdev);
+> +	if (!info)
+>   		return -ENODEV;
+>   
+>   	ctx = ocxl_context_alloc();
+>   	if (!ctx) {
+>   		rc = -ENOMEM;
+> -		goto put_afu;
+> +		goto err;
+>   	}
+>   
+> -	rc = ocxl_context_init(ctx, afu, inode->i_mapping);
+> +	rc = ocxl_context_init(ctx, info->afu, inode->i_mapping);
+>   	if (rc)
+> -		goto put_afu;
+> +		goto err;
+>   	file->private_data = ctx;
+> -	ocxl_afu_put(afu);
+>   	return 0;
+>   
+> -put_afu:
+> -	ocxl_afu_put(afu);
+> +err:
+>   	return rc;
+
+
+The error path with goto is here useless. However, if 
+ocxl_context_init() fails, the memory for the context is never released.
+You may consider either getting rid of ocxl_context_alloc(), which is 
+just a simple wrapper around kzalloc(), or merging the allocation in 
+ocxl_context_init(). It would impact the external API, but having 2 
+calls (alloc and init) feels like there's one too many.
+
+
+
+> +static int ocxl_file_make_visible(struct ocxl_afu *afu)
+>   {
+>   	int rc;
+> +	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
+>   
+> -	cdev_init(&afu->cdev, &ocxl_afu_fops);
+> -	rc = cdev_add(&afu->cdev, afu->dev.devt, 1);
+> +	cdev_init(&info->cdev, &ocxl_afu_fops);
+> +	rc = cdev_add(&info->cdev, info->dev.devt, 1);
+>   	if (rc) {
+> -		dev_err(&afu->dev, "Unable to add afu char device: %d\n", rc);
+> +		dev_err(&info->dev, "Unable to add afu char device: %d\n", rc);
+>   		return rc;
+>   	}
+> +
+>   	return 0;
+>   }
+>   
+> -void ocxl_destroy_cdev(struct ocxl_afu *afu)
+> +void ocxl_file_make_invisible(struct ocxl_afu *afu)
+
+
+This function is not called anywhere?
+
+
+
+> -void ocxl_unregister_afu(struct ocxl_afu *afu)
+> +void ocxl_file_unregister_afu(struct ocxl_afu *afu)
+>   {
+> -	free_afu_minor(afu);
+> +	struct ocxl_file_info *info = ocxl_afu_get_private(afu);
+> +
+> +	if (!info)
+> +		return;
+> +
+
+
+So that's likely where we miss the "make invisible" call. However, is it 
+enough to rely on the private data to be set on the AFU?
+
+
+
+> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
+> index 81086534dab5..e04e547df29e 100644
+> --- a/drivers/misc/ocxl/ocxl_internal.h
+> +++ b/drivers/misc/ocxl/ocxl_internal.h
+
+
+> +/**
+> + * Free an AFU
+> + *
+> + * afu: The AFU to free
+> + */
+> +void ocxl_free_afu(struct ocxl_afu *afu);
+
+
+This is obsolete and should go away.
+
+   Fred
 
