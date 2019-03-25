@@ -2,51 +2,59 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.4 required=3.0 tests=DATE_IN_PAST_06_12,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1821BC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:24:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3C73C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:29:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8B0DF20828
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:24:20 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8B0DF20828
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+	by mail.kernel.org (Postfix) with ESMTPS id 7B37920828
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:29:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7B37920828
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SfjG2Rg8zDq9s
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 03:24:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Sfpy18lBzDqKy
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 03:29:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=srs0=sg1t=r4=goodmis.org=rostedt@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=192.55.52.115; helo=mga14.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=goodmis.org
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Sfdx4nw1zDqKj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 03:21:25 +1100 (AEDT)
-Received: from gandalf.local.home (cpe-66-24-58-225.stny.res.rr.com
- [66.24.58.225])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 5E6FC20828;
- Mon, 25 Mar 2019 16:21:22 +0000 (UTC)
-Date: Mon, 25 Mar 2019 12:21:20 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Joe Lawrence <joe.lawrence@redhat.com>
-Subject: Re: [PATCH] kbuild: strip whitespace in cmd_record_mcount findstring
-Message-ID: <20190325122120.36b69344@gandalf.local.home>
-In-Reply-To: <20190325160438.8982-1-joe.lawrence@redhat.com>
-References: <20190325160438.8982-1-joe.lawrence@redhat.com>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Sfn5248WzDqHg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 03:27:35 +1100 (AEDT)
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+ by fmsmga103.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 25 Mar 2019 09:27:32 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="217406487"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by orsmga001.jf.intel.com with ESMTP; 25 Mar 2019 09:27:31 -0700
+Date: Mon, 25 Mar 2019 01:26:20 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [RESEND 3/7] mm/gup: Change GUP fast to use flags rather than a
+ write 'bool'
+Message-ID: <20190325082620.GB16366@iweiny-DESK2.sc.intel.com>
+References: <20190317183438.2057-1-ira.weiny@intel.com>
+ <20190317183438.2057-4-ira.weiny@intel.com>
+ <CAA9_cmd9gUWMbpkP_AuxZ08iqvZdxjbtDoR-FpSjAyhZJisRZA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAA9_cmd9gUWMbpkP_AuxZ08iqvZdxjbtDoR-FpSjAyhZJisRZA@mail.gmail.com>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -58,72 +66,161 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Linux-sh <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ linux-mm <linux-mm@kvack.org>, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-rdma@vger.kernel.org,
+ Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>,
+ John Hubbard <jhubbard@nvidia.com>, Borislav Petkov <bp@alien8.de>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 25 Mar 2019 12:04:38 -0400
-Joe Lawrence <joe.lawrence@redhat.com> wrote:
+On Fri, Mar 22, 2019 at 03:05:53PM -0700, Dan Williams wrote:
+> On Sun, Mar 17, 2019 at 7:36 PM <ira.weiny@intel.com> wrote:
+> >
+> > From: Ira Weiny <ira.weiny@intel.com>
+> >
+> > To facilitate additional options to get_user_pages_fast() change the
+> > singular write parameter to be gup_flags.
+> >
+> > This patch does not change any functionality.  New functionality will
+> > follow in subsequent patches.
+> >
+> > Some of the get_user_pages_fast() call sites were unchanged because they
+> > already passed FOLL_WRITE or 0 for the write parameter.
+> >
+> > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+> >
+> > ---
+> > Changes from V1:
+> >         Rebase to current merge tree
+> >         arch/powerpc/mm/mmu_context_iommu.c no longer calls gup_fast
+> >                 The gup_longterm was converted in patch 1
+> >
+> >  arch/mips/mm/gup.c                         | 11 ++++++-----
+> >  arch/powerpc/kvm/book3s_64_mmu_hv.c        |  4 ++--
+> >  arch/powerpc/kvm/e500_mmu.c                |  2 +-
+> >  arch/s390/kvm/interrupt.c                  |  2 +-
+> >  arch/s390/mm/gup.c                         | 12 ++++++------
+> >  arch/sh/mm/gup.c                           | 11 ++++++-----
+> >  arch/sparc/mm/gup.c                        |  9 +++++----
+> >  arch/x86/kvm/paging_tmpl.h                 |  2 +-
+> >  arch/x86/kvm/svm.c                         |  2 +-
+> >  drivers/fpga/dfl-afu-dma-region.c          |  2 +-
+> >  drivers/gpu/drm/via/via_dmablit.c          |  3 ++-
+> >  drivers/infiniband/hw/hfi1/user_pages.c    |  3 ++-
+> >  drivers/misc/genwqe/card_utils.c           |  2 +-
+> >  drivers/misc/vmw_vmci/vmci_host.c          |  2 +-
+> >  drivers/misc/vmw_vmci/vmci_queue_pair.c    |  6 ++++--
+> >  drivers/platform/goldfish/goldfish_pipe.c  |  3 ++-
+> >  drivers/rapidio/devices/rio_mport_cdev.c   |  4 +++-
+> >  drivers/sbus/char/oradax.c                 |  2 +-
+> >  drivers/scsi/st.c                          |  3 ++-
+> >  drivers/staging/gasket/gasket_page_table.c |  4 ++--
+> >  drivers/tee/tee_shm.c                      |  2 +-
+> >  drivers/vfio/vfio_iommu_spapr_tce.c        |  3 ++-
+> >  drivers/vhost/vhost.c                      |  2 +-
+> >  drivers/video/fbdev/pvr2fb.c               |  2 +-
+> >  drivers/virt/fsl_hypervisor.c              |  2 +-
+> >  drivers/xen/gntdev.c                       |  2 +-
+> >  fs/orangefs/orangefs-bufmap.c              |  2 +-
+> >  include/linux/mm.h                         |  4 ++--
+> >  kernel/futex.c                             |  2 +-
+> >  lib/iov_iter.c                             |  7 +++++--
+> >  mm/gup.c                                   | 10 +++++-----
+> >  mm/util.c                                  |  8 ++++----
+> >  net/ceph/pagevec.c                         |  2 +-
+> >  net/rds/info.c                             |  2 +-
+> >  net/rds/rdma.c                             |  3 ++-
+> >  35 files changed, 79 insertions(+), 63 deletions(-)
+> 
+> 
+> >
+> > diff --git a/arch/mips/mm/gup.c b/arch/mips/mm/gup.c
+> > index 0d14e0d8eacf..4c2b4483683c 100644
+> > --- a/arch/mips/mm/gup.c
+> > +++ b/arch/mips/mm/gup.c
+> > @@ -235,7 +235,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> >   * get_user_pages_fast() - pin user pages in memory
+> >   * @start:     starting user address
+> >   * @nr_pages:  number of pages from start to pin
+> > - * @write:     whether pages will be written to
+> > + * @gup_flags: flags modifying pin behaviour
+> >   * @pages:     array that receives pointers to the pages pinned.
+> >   *             Should be at least nr_pages long.
+> >   *
+> > @@ -247,8 +247,8 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> >   * requested. If nr_pages is 0 or negative, returns 0. If no pages
+> >   * were pinned, returns -errno.
+> >   */
+> > -int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> > -                       struct page **pages)
+> > +int get_user_pages_fast(unsigned long start, int nr_pages,
+> > +                       unsigned int gup_flags, struct page **pages)
+> 
+> This looks a tad scary given all related thrash especially when it's
+> only 1 user that wants to do get_user_page_fast_longterm, right?
 
-> CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
-> findstring.
-> 
-> For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
-> GCC 4.9 and newer") introduced a change such that on my ppc64le box,
-> CC_FLAGS_FTRACE="-pg -mprofile-kernel ".  (Note the trailing space.)
-> When cmd_record_mcount is now invoked, findstring fails as the ftrace
-> flags were found at very end of _c_flags, without the trailing space.
-> 
->   _c_flags=" ... -pg -mprofile-kernel"
->   CC_FLAGS_FTRACE="-pg -mprofile-kernel "
->                                        ^
->     findstring is looking for this extra space
+Agreed but the discussion back in Feb agreed that it would be better to make
+get_user_pages_fast() use flags rather than add another *_longterm call, and I
+agree.
 
-Wow, what a bug.
+> Maybe
+> something like the following. Note I explicitly moved the flags to the
+> end so that someone half paying attention that calls
+> __get_user_pages_fast will get a compile error if they specify the
+> args in the same order.
+
+I did this to remain consistent with the other public calls.  They put the
+"return" pages parameter at the end.  For example get_user_pages() is defined
+this way with pages and vmas at the end.
+
+long get_user_pages(unsigned long start, unsigned long nr_pages,
+                unsigned int gup_flags, struct page **pages,
+                struct vm_area_struct **vmas)
+
+I'm pretty sure I got all the callers.  Is this worth making the signature
+"non-standard" WRT the other calls?
+
+Ira
 
 > 
-> Remove the redundant whitespaces from CC_FLAGS_FTRACE in
-> cmd_record_mcount to avoid this problem.
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 76ba638ceda8..c6c743bc2c68 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1505,8 +1505,15 @@ static inline long
+> get_user_pages_longterm(unsigned long start,
+>  }
+>  #endif /* CONFIG_FS_DAX */
 > 
-> Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer").
-> Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
-
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-
--- Steve
-
-> ---
+> -int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+> -                       struct page **pages);
+> +
+> +int __get_user_pages_fast(unsigned long start, int nr_pages,
+> +               struct page **pages, unsigned int gup_flags);
+> +
+> +static inline int get_user_pages_fast(unsigned long start, int
+> nr_pages, int write,
+> +                       struct page **pages)
+> +{
+> +       return __get_user_pages_fast(start, nr_pages, pages, write ?
+> FOLL_WRITE);
+> +}
 > 
-> Standard disclaimer: I'm not a kbuild expert, but this works around the
-> problem I reported where ftrace and livepatch self-tests were failing as
-> specified object files were not run through the recordmcount.pl script:
+>  /* Container for pinned pfns / pages */
+>  struct frame_vector {
 > 
-> ppc64le: ftrace self-tests and $(CC_FLAGS_FTRACE) broken?
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-March/187298.html
-> 
->  scripts/Makefile.build | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 2554a15ecf2b..74d402b5aa3c 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -199,10 +199,10 @@ sub_cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
->  	"$(if $(part-of-module),1,0)" "$(@)";
->  recordmcount_source := $(srctree)/scripts/recordmcount.pl
->  endif # BUILD_C_RECORDMCOUNT
-> -cmd_record_mcount =						\
-> -	if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =	\
-> -	     "$(CC_FLAGS_FTRACE)" ]; then			\
-> -		$(sub_cmd_record_mcount)			\
-> +cmd_record_mcount =							\
-> +	if [ "$(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags))" =	\
-> +	     "$(strip $(CC_FLAGS_FTRACE))" ]; then			\
-> +		$(sub_cmd_record_mcount)				\
->  	fi
->  endif # CC_USING_RECORD_MCOUNT
->  endif # CONFIG_FTRACE_MCOUNT_RECORD
-
