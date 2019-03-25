@@ -2,96 +2,92 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3100C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:51:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E9F0C10F03
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:56:45 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 21A752087E
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:51:15 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 21A752087E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 1DF8720896
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:56:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QXA+Xt4z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1DF8720896
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=lwfinger.net
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Sdz50DxszDqFh
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 02:51:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Sf5Q6mVzzDqKS
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 02:56:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::243; helo=mail-oi1-x243.google.com;
+ envelope-from=larry.finger@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=lwfinger.net
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="QXA+Xt4z"; 
+ dkim-atps=neutral
+Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
+ [IPv6:2607:f8b0:4864:20::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SdxC2WjpzDq9J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 02:49:34 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2PFdf0w128084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:49:32 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rf1tqgh18-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:49:29 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 25 Mar 2019 15:49:27 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 25 Mar 2019 15:49:23 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2PFnMuR28377146
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Mar 2019 15:49:22 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1B8BCA405C;
- Mon, 25 Mar 2019 15:49:22 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 9BCC8A405F;
- Mon, 25 Mar 2019 15:49:21 +0000 (GMT)
-Received: from [9.145.37.149] (unknown [9.145.37.149])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 25 Mar 2019 15:49:21 +0000 (GMT)
-Subject: Re: [PATCH v3 7/7] ocxl: Provide global MMIO accessors for external
- drivers
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190320053448.2098-1-alastair@au1.ibm.com>
- <20190325054438.15022-1-alastair@au1.ibm.com>
- <20190325054438.15022-8-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 25 Mar 2019 16:49:21 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Sf2t5VXYzDqCY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 02:54:30 +1100 (AEDT)
+Received: by mail-oi1-x243.google.com with SMTP id y84so7325769oia.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 08:54:30 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=sender:subject:to:cc:references:from:message-id:date:user-agent
+ :mime-version:in-reply-to:content-language:content-transfer-encoding;
+ bh=g6xGLodDDgms6w7FgUnf63b+SEV7be9PLO7OpdSc9co=;
+ b=QXA+Xt4zS98QAT1iMWr0PB2q+bd0QqoeGt1UUMGWoYbJA5qaZAfXrlLGGIvExFKzbs
+ Cp+ZapzS+BaJgRHxiGW/Ih16kqVbjO6amuh8nHSDzqiz3I+ObBYQD1bHyMjRg30c+Pp7
+ ab4h/4+rrODUKF9zjy4HKOGeUx7bzfZdDwAIbInpUcl3r2FyRc/waGWZzlQjRsxBStje
+ JMY5J5+2YTmpvvvFoQGbMc6t3buIfHw159vlqlHYVf20cwgPDmqyfg8AU13wB3WXJiVU
+ 9zUYk/IcOgOG4pQkuv8bBxHv8JJoh3v2Cf/ZWfB4dTNK5ThU48Zg2HRR9Gu51LW7Zxvx
+ l0RQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:sender:subject:to:cc:references:from:message-id
+ :date:user-agent:mime-version:in-reply-to:content-language
+ :content-transfer-encoding;
+ bh=g6xGLodDDgms6w7FgUnf63b+SEV7be9PLO7OpdSc9co=;
+ b=OL0dbujWx4JRa0WPtv2ri1i/9SQxRhBhJV+fHZYoOBWc5FucVfZDTy6ofAW8prJC/z
+ iLRhEt69f/2x3BQR9Lntp9iF90JF4XQFgXoHV8k7KVmr/i0Cy6OGJllgy1TK/pNQwl9n
+ tVsONR84IRV+2wsbxm45sDK/AcTQ4kIcRPQmrc3qkl/i2I4A6lNF0KTdV3D1GDa1nwRG
+ O2sNEOvlYawVLghp161wCovrOlyGVRrzxiVgBtg7+k2so1K37iSHM9hDbjAPRI9l6IXj
+ FXvtz3rKabDBt01yt5hTdwbt86/4yRc9rZgKfkqWBGmAvn6NJDk8KFW96Lq8POskFsi9
+ ZnLQ==
+X-Gm-Message-State: APjAAAVkUEQ8QjVfUQQzrf/2FrOubjLGLls3h29nNAgVyDMgpQvH4bv7
+ 0rF3lKw286XAu8d/Aq7igC8=
+X-Google-Smtp-Source: APXvYqzrdVbP1vJ2P/zA6tb6UGnKD8dVr9GhxVKzHData6Qvx63d3nkS0N7itSMP/NMgim1CWDEnqg==
+X-Received: by 2002:aca:34d6:: with SMTP id b205mr1045966oia.14.1553529267224; 
+ Mon, 25 Mar 2019 08:54:27 -0700 (PDT)
+Received: from [192.168.1.112] (cpe-24-31-245-230.kc.res.rr.com.
+ [24.31.245.230])
+ by smtp.gmail.com with ESMTPSA id s73sm6743279oie.53.2019.03.25.08.54.26
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 25 Mar 2019 08:54:26 -0700 (PDT)
+Subject: Re: Regression in 5.1.0-rc2: PowerBook G4 Aluminum fails to boot -
+ bisected to commit 0df977eafc792
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <acc2d5a5-2fd4-4367-c8ef-497da951c208@lwfinger.net>
+ <ee247f37-8889-934c-571c-01c43fc31071@c-s.fr>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Message-ID: <af5603cb-5726-213a-adba-164c635d1a66@lwfinger.net>
+Date: Mon, 25 Mar 2019 10:54:25 -0500
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ Thunderbird/60.5.2
 MIME-Version: 1.0
-In-Reply-To: <20190325054438.15022-8-alastair@au1.ibm.com>
+In-Reply-To: <ee247f37-8889-934c-571c-01c43fc31071@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032515-0016-0000-0000-00000266EF0D
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032515-0017-0000-0000-000032C21FC3
-Message-Id: <baa18ac3-9c76-dd54-4774-380c6ed55663@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-25_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=0 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903250116
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -103,416 +99,31 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-
-
-Le 25/03/2019 à 06:44, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
+On 3/25/19 1:53 AM, Christophe Leroy wrote:
 > 
-> External drivers that communicate via OpenCAPI will need to make
-> MMIO calls to interact with the devices.
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Reviewed-by: Greg Kurz <groug@kaod.org>
-> ---
-
-
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
->   drivers/misc/ocxl/Makefile |   2 +-
->   drivers/misc/ocxl/mmio.c   | 234 +++++++++++++++++++++++++++++++++++++
->   include/misc/ocxl.h        | 110 +++++++++++++++++
->   3 files changed, 345 insertions(+), 1 deletion(-)
->   create mode 100644 drivers/misc/ocxl/mmio.c
+> Le 25/03/2019 à 01:49, Larry Finger a écrit :
+>> A build of kernel 5.1.0-rc2 resulted in a failure to boot on my PowerBook G4 
+>> Aluminum. The bootstrap loads the initial kernel and issues the appropriate 
+>> start, but the machine hangs at that point.
 > 
-> diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
-> index bc4e39bfda7b..d07d1bb8e8d4 100644
-> --- a/drivers/misc/ocxl/Makefile
-> +++ b/drivers/misc/ocxl/Makefile
-> @@ -1,7 +1,7 @@
->   # SPDX-License-Identifier: GPL-2.0+
->   ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
->   
-> -ocxl-y				+= main.o pci.o config.o file.o pasid.o
-> +ocxl-y				+= main.o pci.o config.o file.o pasid.o mmio.o
->   ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
->   ocxl-y				+= core.o
->   obj-$(CONFIG_OCXL)		+= ocxl.o
-> diff --git a/drivers/misc/ocxl/mmio.c b/drivers/misc/ocxl/mmio.c
-> new file mode 100644
-> index 000000000000..aae713db4ebe
-> --- /dev/null
-> +++ b/drivers/misc/ocxl/mmio.c
-> @@ -0,0 +1,234 @@
-> +// SPDX-License-Identifier: GPL-2.0+
-> +// Copyright 2019 IBM Corp.
-> +#include <linux/sched/mm.h>
-> +#include "trace.h"
-> +#include "ocxl_internal.h"
-> +
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readl((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read32);
-> +
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		*val = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		*val = readq((char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_read64);
-> +
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writel_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writel(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write32);
-> +
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val)
-> +{
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		writeq_be(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		writeq(val, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_write64);
-> +
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set32);
-> +
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp |= mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_set64);
-> +
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask)
-> +{
-> +	u32 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 4)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readl((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear32);
-> +
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask)
-> +{
-> +	u64 tmp;
-> +
-> +	if (offset > afu->config.global_mmio_size - 8)
-> +		return -EINVAL;
-> +
-> +#ifdef __BIG_ENDIAN__
-> +	if (endian == OCXL_HOST_ENDIAN)
-> +		endian = OCXL_BIG_ENDIAN;
-> +#endif
-> +
-> +	switch (endian) {
-> +	case OCXL_BIG_ENDIAN:
-> +		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +
-> +	default:
-> +		tmp = readq((char *)afu->global_mmio_ptr + offset);
-> +		tmp &= ~mask;
-> +		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +		break;
-> +	}
-> +
-> +	writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear64);
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index 1b48e9d63abb..e0742c00fb72 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -45,6 +45,12 @@ struct ocxl_fn_config {
->   	s8 max_afu_index;
->   };
->   
-> +enum ocxl_endian {
-> +	OCXL_BIG_ENDIAN = 0,    /**< AFU data is big-endian */
-> +	OCXL_LITTLE_ENDIAN = 1, /**< AFU data is little-endian */
-> +	OCXL_HOST_ENDIAN = 2,   /**< AFU data is the same endianness as the host */
-> +};
-> +
->   // These are opaque outside the ocxl driver
->   struct ocxl_afu;
->   struct ocxl_fn;
-> @@ -236,6 +242,110 @@ void ocxl_afu_set_private(struct ocxl_afu *afu, void *private);
->    */
->   void *ocxl_afu_get_private(struct ocxl_afu *dev);
->   
-> +// Global MMIO
-> +/**
-> + * Read a 32 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 *val);
-> +
-> +/**
-> + * Read a 64 bit value from global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: returns the value
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 *val);
-> +
-> +/**
-> + * Write a 32 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 val);
-> +
-> +/**
-> + * Write a 64 bit value to global MMIO
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @val: The value to write
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 val);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
-> +
-> +/**
-> + * Set bits in a 32 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u32 mask);
-> +
-> +/**
-> + * Set bits in a 64 bit global MMIO register
-> + *
-> + * @afu: The AFU
-> + * @offset: The Offset from the start of MMIO
-> + * @endian: the endianness that the MMIO data is in
-> + * @mask: a mask of the bits to set
-> + *
-> + * Returns 0 for success, negative on error
-> + */
-> +int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-> +				enum ocxl_endian endian, u64 mask);
->   
->   // Functions left here are for compatibility with the cxlflash driver
->   
-> 
+> Can you please be more explicit ? What do you mean by "issues the appropriate 
+> start" ? What is "that point" ? Any messages on the console ?
+
+Sorry to be unclear. The bootstrap code prints a line saying "Booting Linux via 
+__start() @ 0x00c00000" and then hangs.
+
+Your idea of confusion between physical and virtual address sounds right. I am 
+building a kernel with that patch applied now. As it seems to be going quickly, 
+I should have the answer fairly quickly.
+
+Thanks,
+
+Larry
+
 
