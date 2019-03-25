@@ -2,95 +2,68 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4B26C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:06:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2917AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:27:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3A95520811
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:06:25 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3A95520811
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id 7141220850
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:27:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7141220850
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SVKC3d46zDqKf
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 21:06:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SVnb3K8RzDqKJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 21:27:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
+ envelope-from=arndbergmann@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=none (p=none dis=none) header.from=arndb.de
+Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
+ [209.85.160.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SVH84WpGzDq74
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 21:04:36 +1100 (AEDT)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2P9sV19121820
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 06:04:33 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2reumbmanm-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 06:04:33 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 25 Mar 2019 10:04:31 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp03.uk.ibm.com (192.168.101.133) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 25 Mar 2019 10:04:28 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2PA4RXU48955502
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Mar 2019 10:04:27 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1C747A405F;
- Mon, 25 Mar 2019 10:04:27 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B8A98A4069;
- Mon, 25 Mar 2019 10:04:26 +0000 (GMT)
-Received: from [9.145.37.149] (unknown [9.145.37.149])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 25 Mar 2019 10:04:26 +0000 (GMT)
-Subject: Re: [PATCH v3 2/7] ocxl: Don't pass pci_dev around
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190320053448.2098-1-alastair@au1.ibm.com>
- <20190325054438.15022-1-alastair@au1.ibm.com>
- <20190325054438.15022-3-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 25 Mar 2019 11:04:26 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SVlk5HqKzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 21:25:54 +1100 (AEDT)
+Received: by mail-qt1-f195.google.com with SMTP id z16so9580793qtn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 03:25:54 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+ :message-id:subject:to:cc;
+ bh=uptj+eh0cd0E1jTQT2RebCWvCgUIjjYNwZDO+zjMQlo=;
+ b=WE9IDEcqXfH/QDa/DZu4mCSBAI8rxKSNOLVpuphJsI2YvV47ODuhQsZ0p6Ndb2X3oj
+ 1CLn8KQovzDi9lB3HdXHdS7TTeH+g+Z95ngwZJcQbWCY0Y4fOkaT82PfxRh7+slrzjms
+ I3b3OWl6NNalA0/NukVErMKH61mY9AvmfY/DWtKmGWuD99D2/ztU3sgZT5psDp/yxBJ7
+ QDOt4FA5ykzp71IzwHRZzR2cTpoAlxMDdEgs8DOJTmQT9fN+6jnNBYlc5fAmIaHOP4DE
+ v8DHB5rYUEnSSKqiHCI40/FQICN/aaIFDHzmlpZZzTGGzNKetdtNTZ91IZvD1ugRW5gz
+ upHw==
+X-Gm-Message-State: APjAAAWcG+sOHqyj7NyLJXzrTFi9AdE25aRc3YnjvW70PsCzk3QDwoc7
+ /CWjAk1Uu/Dpvmcaa3JzZaaAAWDXx9qFFB9X/Xs=
+X-Google-Smtp-Source: APXvYqzGC36CS17RsbRIMSM2NUx4KUTTuXGfJCXxY4s1a67ibbIU6+K0CM3qgDFINgtkxQIR4biGlim06jrN/EGtVB0=
+X-Received: by 2002:ac8:2692:: with SMTP id 18mr19682479qto.343.1553509551667; 
+ Mon, 25 Mar 2019 03:25:51 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20190325054438.15022-3-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032510-0012-0000-0000-00000306C956
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032510-0013-0000-0000-0000213DEC4B
-Message-Id: <426b0366-e50a-9fbc-ffcb-587a50e2aedb@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-25_07:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903250075
+References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
+ <CAK8P3a3BG_mxYxxCx4S_+ZKAer_+5FpmkzLk0VrACZekuD=2GQ@mail.gmail.com>
+ <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
+ <CAK7LNAQvvCVsQtd9ZYkechOSCg4HAeZFaNXCgaBbWWxBYXOgaQ@mail.gmail.com>
+ <CAK8P3a1P812avY8reSSguYB0jPzgjs+30dSJpKZCnWwzyLoSVQ@mail.gmail.com>
+ <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
+In-Reply-To: <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 25 Mar 2019 11:25:33 +0100
+Message-ID: <CAK8P3a1QQeK1cBN2O8=p+zceQ7tw-ovYtWq6sBeavDucDWA7Lg@mail.gmail.com>
+Subject: Re: [PATCH] compiler: allow all arches to enable
+ CONFIG_OPTIMIZE_INLINING
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="UTF-8"
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,181 +75,42 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-kernel@vger.kernel.org
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, Dave Hansen <dave@sr71.net>,
+ the arch/x86 maintainers <x86@kernel.org>, linux-mips@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Burton <paul.burton@mips.com>, Ingo Molnar <mingo@redhat.com>,
+ linux-mtd <linux-mtd@lists.infradead.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+On Mon, Mar 25, 2019 at 8:55 AM Masahiro Yamada
+<yamada.masahiro@socionext.com> wrote:
+>
+> On Mon, Mar 25, 2019 at 4:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> >
+> > On Mon, Mar 25, 2019 at 7:11 AM Masahiro Yamada
+> > <yamada.masahiro@socionext.com> wrote:
+> > > I do not know why to reproduce it,
+> > > but is "__init __noreturn" more sensible than
+> > > "__always_inline" here?
+> >
+> > It's in a header file, so it has to be 'inline'. We could make it
+> > static inline __init __noreturn,
+>
+> Yes, I like 'static inline __init __noreturn'
+>
+> > but I don't see an advantage over
+> > __always_inline there.
+>
+> __always_inline takes away the compiler's freedom.
+>
+> I'd like to leave it up to the compiler where possible.
 
+Ok, fair enough.
 
-Le 25/03/2019 à 06:44, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> This data is already available in a struct
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
-
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
->   drivers/misc/ocxl/core.c | 38 +++++++++++++++++++++-----------------
->   1 file changed, 21 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/misc/ocxl/core.c b/drivers/misc/ocxl/core.c
-> index 1a4411b72d35..2f2fe12eac1e 100644
-> --- a/drivers/misc/ocxl/core.c
-> +++ b/drivers/misc/ocxl/core.c
-> @@ -66,10 +66,11 @@ static int set_afu_device(struct ocxl_afu *afu, const char *location)
->   	return rc;
->   }
->   
-> -static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int assign_afu_actag(struct ocxl_afu *afu)
->   {
->   	struct ocxl_fn *fn = afu->fn;
->   	int actag_count, actag_offset;
-> +	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
->   
->   	/*
->   	 * if there were not enough actags for the function, each afu
-> @@ -79,16 +80,16 @@ static int assign_afu_actag(struct ocxl_afu *afu, struct pci_dev *dev)
->   		fn->actag_enabled / fn->actag_supported;
->   	actag_offset = ocxl_actag_afu_alloc(fn, actag_count);
->   	if (actag_offset < 0) {
-> -		dev_err(&afu->dev, "Can't allocate %d actags for AFU: %d\n",
-> +		dev_err(&pci_dev->dev, "Can't allocate %d actags for AFU: %d\n",
->   			actag_count, actag_offset);
->   		return actag_offset;
->   	}
->   	afu->actag_base = fn->actag_base + actag_offset;
->   	afu->actag_enabled = actag_count;
->   
-> -	ocxl_config_set_afu_actag(dev, afu->config.dvsec_afu_control_pos,
-> +	ocxl_config_set_afu_actag(pci_dev, afu->config.dvsec_afu_control_pos,
->   				afu->actag_base, afu->actag_enabled);
-> -	dev_dbg(&afu->dev, "actag base=%d enabled=%d\n",
-> +	dev_dbg(&pci_dev->dev, "actag base=%d enabled=%d\n",
->   		afu->actag_base, afu->actag_enabled);
->   	return 0;
->   }
-> @@ -103,10 +104,11 @@ static void reclaim_afu_actag(struct ocxl_afu *afu)
->   	ocxl_actag_afu_free(afu->fn, start_offset, size);
->   }
->   
-> -static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int assign_afu_pasid(struct ocxl_afu *afu)
->   {
->   	struct ocxl_fn *fn = afu->fn;
->   	int pasid_count, pasid_offset;
-> +	struct pci_dev *pci_dev = to_pci_dev(fn->dev.parent);
->   
->   	/*
->   	 * We only support the case where the function configuration
-> @@ -115,7 +117,7 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
->   	pasid_count = 1 << afu->config.pasid_supported_log;
->   	pasid_offset = ocxl_pasid_afu_alloc(fn, pasid_count);
->   	if (pasid_offset < 0) {
-> -		dev_err(&afu->dev, "Can't allocate %d PASIDs for AFU: %d\n",
-> +		dev_err(&pci_dev->dev, "Can't allocate %d PASIDs for AFU: %d\n",
->   			pasid_count, pasid_offset);
->   		return pasid_offset;
->   	}
-> @@ -123,10 +125,10 @@ static int assign_afu_pasid(struct ocxl_afu *afu, struct pci_dev *dev)
->   	afu->pasid_count = 0;
->   	afu->pasid_max = pasid_count;
->   
-> -	ocxl_config_set_afu_pasid(dev, afu->config.dvsec_afu_control_pos,
-> +	ocxl_config_set_afu_pasid(pci_dev, afu->config.dvsec_afu_control_pos,
->   				afu->pasid_base,
->   				afu->config.pasid_supported_log);
-> -	dev_dbg(&afu->dev, "PASID base=%d, enabled=%d\n",
-> +	dev_dbg(&pci_dev->dev, "PASID base=%d, enabled=%d\n",
->   		afu->pasid_base, pasid_count);
->   	return 0;
->   }
-> @@ -172,9 +174,10 @@ static void release_fn_bar(struct ocxl_fn *fn, int bar)
->   	WARN_ON(fn->bar_used[idx] < 0);
->   }
->   
-> -static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
-> +static int map_mmio_areas(struct ocxl_afu *afu)
->   {
->   	int rc;
-> +	struct pci_dev *pci_dev = to_pci_dev(afu->fn->dev.parent);
->   
->   	rc = reserve_fn_bar(afu->fn, afu->config.global_mmio_bar);
->   	if (rc)
-> @@ -187,10 +190,10 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
->   	}
->   
->   	afu->global_mmio_start =
-> -		pci_resource_start(dev, afu->config.global_mmio_bar) +
-> +		pci_resource_start(pci_dev, afu->config.global_mmio_bar) +
->   		afu->config.global_mmio_offset;
->   	afu->pp_mmio_start =
-> -		pci_resource_start(dev, afu->config.pp_mmio_bar) +
-> +		pci_resource_start(pci_dev, afu->config.pp_mmio_bar) +
->   		afu->config.pp_mmio_offset;
->   
->   	afu->global_mmio_ptr = ioremap(afu->global_mmio_start,
-> @@ -198,7 +201,7 @@ static int map_mmio_areas(struct ocxl_afu *afu, struct pci_dev *dev)
->   	if (!afu->global_mmio_ptr) {
->   		release_fn_bar(afu->fn, afu->config.pp_mmio_bar);
->   		release_fn_bar(afu->fn, afu->config.global_mmio_bar);
-> -		dev_err(&dev->dev, "Error mapping global mmio area\n");
-> +		dev_err(&pci_dev->dev, "Error mapping global mmio area\n");
->   		return -ENOMEM;
->   	}
->   
-> @@ -234,17 +237,17 @@ static int configure_afu(struct ocxl_afu *afu, u8 afu_idx, struct pci_dev *dev)
->   	if (rc)
->   		return rc;
->   
-> -	rc = assign_afu_actag(afu, dev);
-> +	rc = assign_afu_actag(afu);
->   	if (rc)
->   		return rc;
->   
-> -	rc = assign_afu_pasid(afu, dev);
-> +	rc = assign_afu_pasid(afu);
->   	if (rc) {
->   		reclaim_afu_actag(afu);
->   		return rc;
->   	}
->   
-> -	rc = map_mmio_areas(afu, dev);
-> +	rc = map_mmio_areas(afu);
->   	if (rc) {
->   		reclaim_afu_pasid(afu);
->   		reclaim_afu_actag(afu);
-> @@ -331,7 +334,7 @@ void remove_afu(struct ocxl_afu *afu)
->   	device_unregister(&afu->dev);
->   }
->   
-> -static struct ocxl_fn *alloc_function(struct pci_dev *dev)
-> +static struct ocxl_fn *alloc_function(void)
->   {
->   	struct ocxl_fn *fn;
->   
-> @@ -342,6 +345,7 @@ static struct ocxl_fn *alloc_function(struct pci_dev *dev)
->   	INIT_LIST_HEAD(&fn->afu_list);
->   	INIT_LIST_HEAD(&fn->pasid_list);
->   	INIT_LIST_HEAD(&fn->actag_list);
-> +
->   	return fn;
->   }
->   
-> @@ -491,7 +495,7 @@ struct ocxl_fn *init_function(struct pci_dev *dev)
->   	struct ocxl_fn *fn;
->   	int rc;
->   
-> -	fn = alloc_function(dev);
-> +	fn = alloc_function();
->   	if (!fn)
->   		return ERR_PTR(-ENOMEM);
->   
-> 
-
+      Arnd
