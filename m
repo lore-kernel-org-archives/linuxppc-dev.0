@@ -2,95 +2,85 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65728C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:27:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 980F9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:28:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DDBC120811
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:27:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DDBC120811
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id CDC3220811
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:28:54 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="Gb0MkZXr"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CDC3220811
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SdRS3BGmzDqDf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 02:27:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SdTJ65vQzDqJX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 02:28:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=fbarrat@linux.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="Gb0MkZXr"; 
+ dkim-atps=neutral
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SdNw6ZP9zDqCR
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 02:25:04 +1100 (AEDT)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2PFNxum134160
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:25:02 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2reybug09p-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 11:25:01 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 25 Mar 2019 15:24:58 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
- by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 25 Mar 2019 15:24:57 -0000
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com
- (b06wcsmtp001.portsmouth.uk.ibm.com [9.149.105.160])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2PFOt4d53084372
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Mar 2019 15:24:55 GMT
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6F4C5A405C;
- Mon, 25 Mar 2019 15:24:55 +0000 (GMT)
-Received: from b06wcsmtp001.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id F0539A4062;
- Mon, 25 Mar 2019 15:24:54 +0000 (GMT)
-Received: from [9.145.37.149] (unknown [9.145.37.149])
- by b06wcsmtp001.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 25 Mar 2019 15:24:54 +0000 (GMT)
-Subject: Re: [PATCH v3 5/7] ocxl: afu_irq only deals with IRQ IDs, not offsets
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, alastair@d-silva.org
-References: <20190320053448.2098-1-alastair@au1.ibm.com>
- <20190325054438.15022-1-alastair@au1.ibm.com>
- <20190325054438.15022-6-alastair@au1.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 25 Mar 2019 16:24:54 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.5.1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SdPT3W0XzDqH5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 02:25:30 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44SdPD2xnBz9v0lr;
+ Mon, 25 Mar 2019 16:25:20 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=Gb0MkZXr; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id CrK4rxgSxrO3; Mon, 25 Mar 2019 16:25:20 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44SdPD1fbZz9tyDn;
+ Mon, 25 Mar 2019 16:25:20 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553527520; bh=JrL7MExoxenGmOAA8+6zfD5VS8gV08AijePqq6+rivY=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=Gb0MkZXr4cfDzR19n8lna6H+IPA5AH3vZL1jNvOtCev91KCVbckg3/MYHKcjqkio5
+ h3ZxOQHblb9nHvTSJ7+rGRyQcDlyWn4FJ8MQkFBX2AdS6cvQu/8kr1/7uriihL47lA
+ Q8KeTVo/1kkW9DTDs2sH3feGWWW85xlVR3ifVPe8=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 464268B8AB;
+ Mon, 25 Mar 2019 16:25:25 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id PjtKP9S86Vzq; Mon, 25 Mar 2019 16:25:25 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id DA4758B74F;
+ Mon, 25 Mar 2019 16:25:24 +0100 (CET)
+Subject: Re: [PATCH v5 3/3] locking/rwsem: Optimize down_read_trylock()
+To: Waiman Long <longman@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@redhat.com>, Will Deacon <will.deacon@arm.com>,
+ Thomas Gleixner <tglx@linutronix.de>
+References: <20190322143008.21313-1-longman@redhat.com>
+ <20190322143008.21313-4-longman@redhat.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <014279a5-8998-8e03-adb3-c3d611dff171@c-s.fr>
+Date: Mon, 25 Mar 2019 16:25:24 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
 MIME-Version: 1.0
-In-Reply-To: <20190325054438.15022-6-alastair@au1.ibm.com>
+In-Reply-To: <20190322143008.21313-4-longman@redhat.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: fr
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032515-0016-0000-0000-00000266ECAF
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032515-0017-0000-0000-000032C21D36
-Message-Id: <b061390f-fb28-de5a-f504-8b5441e33be5@linux.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-25_09:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=2 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903250114
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,286 +92,133 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, linux-riscv@lists.infradead.org,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Davidlohr Bueso <dave@stgolabs.net>, linux-c6x-dev@linux-c6x.org,
+ linux-hexagon@vger.kernel.org, x86@kernel.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org,
+ Arnd Bergmann <arnd@arndb.de>, linux-um@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org,
+ openrisc@lists.librecores.org, Borislav Petkov <bp@alien8.de>,
+ linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, linux-mips@vger.kernel.org,
+ linux-alpha@vger.kernel.org, nios2-dev@lists.rocketboards.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Tim Chen <tim.c.chen@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+Hi,
 
+Could you share the microbenchmark you are using ?
 
-Le 25/03/2019 à 06:44, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
+I'd like to test the series on powerpc.
+
+Thanks
+Christophe
+
+Le 22/03/2019 à 15:30, Waiman Long a écrit :
+> Modify __down_read_trylock() to optimize for an unlocked rwsem and make
+> it generate slightly better code.
 > 
-> The use of offsets is required only in the frontend, so alter
-> the IRQ API to only work with IRQ IDs in the backend.
+> Before this patch, down_read_trylock:
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+>     0x0000000000000000 <+0>:     callq  0x5 <down_read_trylock+5>
+>     0x0000000000000005 <+5>:     jmp    0x18 <down_read_trylock+24>
+>     0x0000000000000007 <+7>:     lea    0x1(%rdx),%rcx
+>     0x000000000000000b <+11>:    mov    %rdx,%rax
+>     0x000000000000000e <+14>:    lock cmpxchg %rcx,(%rdi)
+>     0x0000000000000013 <+19>:    cmp    %rax,%rdx
+>     0x0000000000000016 <+22>:    je     0x23 <down_read_trylock+35>
+>     0x0000000000000018 <+24>:    mov    (%rdi),%rdx
+>     0x000000000000001b <+27>:    test   %rdx,%rdx
+>     0x000000000000001e <+30>:    jns    0x7 <down_read_trylock+7>
+>     0x0000000000000020 <+32>:    xor    %eax,%eax
+>     0x0000000000000022 <+34>:    retq
+>     0x0000000000000023 <+35>:    mov    %gs:0x0,%rax
+>     0x000000000000002c <+44>:    or     $0x3,%rax
+>     0x0000000000000030 <+48>:    mov    %rax,0x20(%rdi)
+>     0x0000000000000034 <+52>:    mov    $0x1,%eax
+>     0x0000000000000039 <+57>:    retq
+> 
+> After patch, down_read_trylock:
+> 
+>     0x0000000000000000 <+0>:	callq  0x5 <down_read_trylock+5>
+>     0x0000000000000005 <+5>:	xor    %eax,%eax
+>     0x0000000000000007 <+7>:	lea    0x1(%rax),%rdx
+>     0x000000000000000b <+11>:	lock cmpxchg %rdx,(%rdi)
+>     0x0000000000000010 <+16>:	jne    0x29 <down_read_trylock+41>
+>     0x0000000000000012 <+18>:	mov    %gs:0x0,%rax
+>     0x000000000000001b <+27>:	or     $0x3,%rax
+>     0x000000000000001f <+31>:	mov    %rax,0x20(%rdi)
+>     0x0000000000000023 <+35>:	mov    $0x1,%eax
+>     0x0000000000000028 <+40>:	retq
+>     0x0000000000000029 <+41>:	test   %rax,%rax
+>     0x000000000000002c <+44>:	jns    0x7 <down_read_trylock+7>
+>     0x000000000000002e <+46>:	xor    %eax,%eax
+>     0x0000000000000030 <+48>:	retq
+> 
+> By using a rwsem microbenchmark, the down_read_trylock() rate (with a
+> load of 10 to lengthen the lock critical section) on a x86-64 system
+> before and after the patch were:
+> 
+>                   Before Patch    After Patch
+>     # of Threads     rlock           rlock
+>     ------------     -----           -----
+>          1           14,496          14,716
+>          2            8,644           8,453
+> 	4            6,799           6,983
+> 	8            5,664           7,190
+> 
+> On a ARM64 system, the performance results were:
+> 
+>                   Before Patch    After Patch
+>     # of Threads     rlock           rlock
+>     ------------     -----           -----
+>          1           23,676          24,488
+>          2            7,697           9,502
+>          4            4,945           3,440
+>          8            2,641           1,603
+> 
+> For the uncontended case (1 thread), the new down_read_trylock() is a
+> little bit faster. For the contended cases, the new down_read_trylock()
+> perform pretty well in x86-64, but performance degrades at high
+> contention level on ARM64.
+> 
+> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Signed-off-by: Waiman Long <longman@redhat.com>
 > ---
-
-
-Acked-by: Frederic Barrat <fbarrat@linux.ibm.com>
-
-
->   drivers/misc/ocxl/afu_irq.c       | 34 +++++++++++++++----------------
->   drivers/misc/ocxl/context.c       |  7 +++++--
->   drivers/misc/ocxl/file.c          | 13 +++++++-----
->   drivers/misc/ocxl/ocxl_internal.h | 10 +++++----
->   drivers/misc/ocxl/trace.h         | 12 ++++-------
->   5 files changed, 39 insertions(+), 37 deletions(-)
+>   kernel/locking/rwsem.h | 13 ++++++++-----
+>   1 file changed, 8 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
-> index 11ab996657a2..2d410cd6f817 100644
-> --- a/drivers/misc/ocxl/afu_irq.c
-> +++ b/drivers/misc/ocxl/afu_irq.c
-> @@ -14,14 +14,14 @@ struct afu_irq {
->   	struct eventfd_ctx *ev_ctx;
->   };
+> diff --git a/kernel/locking/rwsem.h b/kernel/locking/rwsem.h
+> index 45ee00236e03..1f5775aa6a1d 100644
+> --- a/kernel/locking/rwsem.h
+> +++ b/kernel/locking/rwsem.h
+> @@ -174,14 +174,17 @@ static inline int __down_read_killable(struct rw_semaphore *sem)
 >   
-> -static int irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
-> +int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
+>   static inline int __down_read_trylock(struct rw_semaphore *sem)
 >   {
->   	return (offset - ctx->afu->irq_base_offset) >> PAGE_SHIFT;
->   }
+> -	long tmp;
+> +	/*
+> +	 * Optimize for the case when the rwsem is not locked at all.
+> +	 */
+> +	long tmp = RWSEM_UNLOCKED_VALUE;
 >   
-> -static u64 irq_id_to_offset(struct ocxl_context *ctx, int id)
-> +u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id)
->   {
-> -	return ctx->afu->irq_base_offset + (id << PAGE_SHIFT);
-> +	return ctx->afu->irq_base_offset + (irq_id << PAGE_SHIFT);
->   }
->   
->   static irqreturn_t afu_irq_handler(int virq, void *data)
-> @@ -69,7 +69,7 @@ static void release_afu_irq(struct afu_irq *irq)
->   	kfree(irq->name);
->   }
->   
-> -int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
-> +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id)
->   {
->   	struct afu_irq *irq;
->   	int rc;
-> @@ -101,11 +101,11 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset)
->   	if (rc)
->   		goto err_alloc;
->   
-> -	*irq_offset = irq_id_to_offset(ctx, irq->id);
-> -
-> -	trace_ocxl_afu_irq_alloc(ctx->pasid, irq->id, irq->virq, irq->hw_irq,
-> -				*irq_offset);
-> +	trace_ocxl_afu_irq_alloc(ctx->pasid, irq->id, irq->virq, irq->hw_irq);
->   	mutex_unlock(&ctx->irq_lock);
-> +
-> +	*irq_id = irq->id;
-> +
->   	return 0;
->   
->   err_alloc:
-> @@ -123,7 +123,7 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
->   	trace_ocxl_afu_irq_free(ctx->pasid, irq->id);
->   	if (ctx->mapping)
->   		unmap_mapping_range(ctx->mapping,
-> -				irq_id_to_offset(ctx, irq->id),
-> +				ocxl_irq_id_to_offset(ctx, irq->id),
->   				1 << PAGE_SHIFT, 1);
->   	release_afu_irq(irq);
->   	if (irq->ev_ctx)
-> @@ -132,14 +132,13 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
->   	kfree(irq);
->   }
->   
-> -int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset)
-> +int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id)
->   {
->   	struct afu_irq *irq;
-> -	int id = irq_offset_to_id(ctx, irq_offset);
->   
->   	mutex_lock(&ctx->irq_lock);
->   
-> -	irq = idr_find(&ctx->irq_idr, id);
-> +	irq = idr_find(&ctx->irq_idr, irq_id);
->   	if (!irq) {
->   		mutex_unlock(&ctx->irq_lock);
->   		return -EINVAL;
-> @@ -161,14 +160,14 @@ void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
->   	mutex_unlock(&ctx->irq_lock);
->   }
->   
-> -int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset, int eventfd)
-> +int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id, int eventfd)
->   {
->   	struct afu_irq *irq;
->   	struct eventfd_ctx *ev_ctx;
-> -	int rc = 0, id = irq_offset_to_id(ctx, irq_offset);
-> +	int rc = 0;
->   
->   	mutex_lock(&ctx->irq_lock);
-> -	irq = idr_find(&ctx->irq_idr, id);
-> +	irq = idr_find(&ctx->irq_idr, irq_id);
->   	if (!irq) {
->   		rc = -EINVAL;
->   		goto unlock;
-> @@ -186,14 +185,13 @@ int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset, int eventfd)
->   	return rc;
->   }
->   
-> -u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset)
-> +u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id)
->   {
->   	struct afu_irq *irq;
-> -	int id = irq_offset_to_id(ctx, irq_offset);
->   	u64 addr = 0;
->   
->   	mutex_lock(&ctx->irq_lock);
-> -	irq = idr_find(&ctx->irq_idr, id);
-> +	irq = idr_find(&ctx->irq_idr, irq_id);
->   	if (irq)
->   		addr = irq->trigger_page;
->   	mutex_unlock(&ctx->irq_lock);
-> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-> index 8b97b0f19db8..d6056883b85d 100644
-> --- a/drivers/misc/ocxl/context.c
-> +++ b/drivers/misc/ocxl/context.c
-> @@ -93,8 +93,9 @@ static vm_fault_t map_afu_irq(struct vm_area_struct *vma, unsigned long address,
->   		u64 offset, struct ocxl_context *ctx)
->   {
->   	u64 trigger_addr;
-> +	int irq_id = ocxl_irq_offset_to_id(ctx, offset);
->   
-> -	trigger_addr = ocxl_afu_irq_get_addr(ctx, offset);
-> +	trigger_addr = ocxl_afu_irq_get_addr(ctx, irq_id);
->   	if (!trigger_addr)
->   		return VM_FAULT_SIGBUS;
->   
-> @@ -154,12 +155,14 @@ static const struct vm_operations_struct ocxl_vmops = {
->   static int check_mmap_afu_irq(struct ocxl_context *ctx,
->   			struct vm_area_struct *vma)
->   {
-> +	int irq_id = ocxl_irq_offset_to_id(ctx, vma->vm_pgoff << PAGE_SHIFT);
-> +
->   	/* only one page */
->   	if (vma_pages(vma) != 1)
->   		return -EINVAL;
->   
->   	/* check offset validty */
-> -	if (!ocxl_afu_irq_get_addr(ctx, vma->vm_pgoff << PAGE_SHIFT))
-> +	if (!ocxl_afu_irq_get_addr(ctx, irq_id))
->   		return -EINVAL;
->   
->   	/*
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index e51578186fd4..2585fc991108 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -196,6 +196,7 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   {
->   	struct ocxl_context *ctx = file->private_data;
->   	struct ocxl_ioctl_irq_fd irq_fd;
-> +	int irq_id;
->   	u64 irq_offset;
->   	long rc;
->   	bool closed;
-> @@ -217,12 +218,13 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   		break;
->   
->   	case OCXL_IOCTL_IRQ_ALLOC:
-> -		rc = ocxl_afu_irq_alloc(ctx, &irq_offset);
-> +		rc = ocxl_afu_irq_alloc(ctx, &irq_id);
->   		if (!rc) {
-> +			irq_offset = ocxl_irq_id_to_offset(ctx, irq_id);
->   			rc = copy_to_user((u64 __user *) args, &irq_offset,
->   					sizeof(irq_offset));
->   			if (rc) {
-> -				ocxl_afu_irq_free(ctx, irq_offset);
-> +				ocxl_afu_irq_free(ctx, irq_id);
->   				return -EFAULT;
->   			}
+> -	while ((tmp = atomic_long_read(&sem->count)) >= 0) {
+> -		if (tmp == atomic_long_cmpxchg_acquire(&sem->count, tmp,
+> -				   tmp + RWSEM_ACTIVE_READ_BIAS)) {
+> +	do {
+> +		if (atomic_long_try_cmpxchg_acquire(&sem->count, &tmp,
+> +					tmp + RWSEM_ACTIVE_READ_BIAS)) {
+>   			return 1;
 >   		}
-> @@ -233,7 +235,8 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   				sizeof(irq_offset));
->   		if (rc)
->   			return -EFAULT;
-> -		rc = ocxl_afu_irq_free(ctx, irq_offset);
-> +		irq_id = ocxl_irq_offset_to_id(ctx, irq_offset);
-> +		rc = ocxl_afu_irq_free(ctx, irq_id);
->   		break;
->   
->   	case OCXL_IOCTL_IRQ_SET_FD:
-> @@ -243,8 +246,8 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   			return -EFAULT;
->   		if (irq_fd.reserved)
->   			return -EINVAL;
-> -		rc = ocxl_afu_irq_set_fd(ctx, irq_fd.irq_offset,
-> -					irq_fd.eventfd);
-> +		irq_id = ocxl_irq_offset_to_id(ctx, irq_fd.irq_offset);
-> +		rc = ocxl_afu_irq_set_fd(ctx, irq_id, irq_fd.eventfd);
->   		break;
->   
->   	case OCXL_IOCTL_GET_METADATA:
-> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-> index cda1e7667fc8..923e7f29c693 100644
-> --- a/drivers/misc/ocxl/ocxl_internal.h
-> +++ b/drivers/misc/ocxl/ocxl_internal.h
-> @@ -137,12 +137,14 @@ void ocxl_context_detach_all(struct ocxl_afu *afu);
->   int ocxl_sysfs_register_afu(struct ocxl_afu *afu);
->   void ocxl_sysfs_unregister_afu(struct ocxl_afu *afu);
->   
-> -int ocxl_afu_irq_alloc(struct ocxl_context *ctx, u64 *irq_offset);
-> -int ocxl_afu_irq_free(struct ocxl_context *ctx, u64 irq_offset);
-> +int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset);
-> +u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id);
-> +int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
-> +int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
->   void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
-> -int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, u64 irq_offset,
-> +int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id,
->   			int eventfd);
-> -u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, u64 irq_offset);
-> +u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
->   
->   /**
->    * Free an AFU
-> diff --git a/drivers/misc/ocxl/trace.h b/drivers/misc/ocxl/trace.h
-> index bcb7ff330c1e..024f417e7e01 100644
-> --- a/drivers/misc/ocxl/trace.h
-> +++ b/drivers/misc/ocxl/trace.h
-> @@ -107,16 +107,14 @@ DEFINE_EVENT(ocxl_fault_handler, ocxl_fault_ack,
->   );
->   
->   TRACE_EVENT(ocxl_afu_irq_alloc,
-> -	TP_PROTO(int pasid, int irq_id, unsigned int virq, int hw_irq,
-> -		u64 irq_offset),
-> -	TP_ARGS(pasid, irq_id, virq, hw_irq, irq_offset),
-> +	TP_PROTO(int pasid, int irq_id, unsigned int virq, int hw_irq),
-> +	TP_ARGS(pasid, irq_id, virq, hw_irq),
->   
->   	TP_STRUCT__entry(
->   		__field(int, pasid)
->   		__field(int, irq_id)
->   		__field(unsigned int, virq)
->   		__field(int, hw_irq)
-> -		__field(u64, irq_offset)
->   	),
->   
->   	TP_fast_assign(
-> @@ -124,15 +122,13 @@ TRACE_EVENT(ocxl_afu_irq_alloc,
->   		__entry->irq_id = irq_id;
->   		__entry->virq = virq;
->   		__entry->hw_irq = hw_irq;
-> -		__entry->irq_offset = irq_offset;
->   	),
->   
-> -	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d irq_offset=0x%llx",
-> +	TP_printk("pasid=0x%x irq_id=%d virq=%u hw_irq=%d",
->   		__entry->pasid,
->   		__entry->irq_id,
->   		__entry->virq,
-> -		__entry->hw_irq,
-> -		__entry->irq_offset
-> +		__entry->hw_irq
->   	)
->   );
+> -	}
+> +	} while (tmp >= 0);
+>   	return 0;
+>   }
 >   
 > 
-
