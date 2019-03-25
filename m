@@ -6,81 +6,81 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C6BDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:39:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F479C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:41:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CFA2D20830
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:39:48 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CFA2D20830
+	by mail.kernel.org (Postfix) with ESMTPS id D1B4E20830
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:41:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D1B4E20830
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SPkp6D20zDqHP
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:39:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SPms52HLzDqHJ
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:41:33 +1100 (AEDT)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SPhv0vndzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:38:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SPkC5Pt9zDqLF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:39:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44SPht3ny1z8tP4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:38:06 +1100 (AEDT)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44SPkC0hVPz8tP4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:39:15 +1100 (AEDT)
 Received: by ozlabs.org (Postfix)
- id 44SPht31brz9sSq; Mon, 25 Mar 2019 17:38:06 +1100 (AEDT)
+ id 44SPkC0B97z9sSq; Mon, 25 Mar 2019 17:39:15 +1100 (AEDT)
 Authentication-Results: ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=linux.ibm.com
- (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com;
+ (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
  envelope-from=chandan@linux.ibm.com; receiver=<UNKNOWN>)
 Authentication-Results: ozlabs.org;
  dmarc=none (p=none dis=none) header.from=linux.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 44SPhs6NNBz9sSh
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 17:38:05 +1100 (AEDT)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2P6ScHZ108630
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 02:38:02 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2req236bpd-1
+ by ozlabs.org (Postfix) with ESMTPS id 44SPkB2Qx5z9sSg
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 17:39:13 +1100 (AEDT)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2P6cpAK171403
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 02:39:12 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2repy36n6u-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 02:38:02 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Mar 2019 02:39:12 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <chandan@linux.ibm.com>;
- Mon, 25 Mar 2019 06:38:00 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com (9.149.109.194)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
+ Mon, 25 Mar 2019 06:39:10 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com (9.149.109.195)
+ by e06smtp04.uk.ibm.com (192.168.101.134) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Mon, 25 Mar 2019 06:37:57 -0000
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2P6buWC59506820
+ Mon, 25 Mar 2019 06:39:09 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (d06av24.portsmouth.uk.ibm.com
+ [9.149.105.60])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2P6d8it52691066
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Mon, 25 Mar 2019 06:37:56 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 5C177A4059;
- Mon, 25 Mar 2019 06:37:56 +0000 (GMT)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id AA6FEA4053;
- Mon, 25 Mar 2019 06:37:55 +0000 (GMT)
+ Mon, 25 Mar 2019 06:39:08 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 426C94204C;
+ Mon, 25 Mar 2019 06:39:08 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A5D544203F;
+ Mon, 25 Mar 2019 06:39:07 +0000 (GMT)
 Received: from dhcp-9-109-212-56.localnet (unknown [9.124.35.173])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Mon, 25 Mar 2019 06:37:55 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Mon, 25 Mar 2019 06:39:07 +0000 (GMT)
 From: Chandan Rajendra <chandan@linux.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH v3] powerpc/64: Fix memcmp reading past the end of src/dest
-Date: Mon, 25 Mar 2019 12:08:46 +0530
+Date: Mon, 25 Mar 2019 12:09:58 +0530
 Organization: IBM
 In-Reply-To: <20190322123724.28435-1-mpe@ellerman.id.au>
 References: <20190322123724.28435-1-mpe@ellerman.id.au>
@@ -88,18 +88,18 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
 X-TM-AS-GCONF: 00
-x-cbid: 19032506-0028-0000-0000-00000357DCCE
+x-cbid: 19032506-0016-0000-0000-00000266B878
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032506-0029-0000-0000-000024168DE3
-Message-Id: <2997030.PB4NAd2PaR@dhcp-9-109-212-56>
+x-cbparentid: 19032506-0017-0000-0000-000032C1E55F
+Message-Id: <1768262.FSDM8NzouT@dhcp-9-109-212-56>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-25_04:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
  malwarescore=0 suspectscore=10 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1011 lowpriorityscore=0 mlxscore=0 impostorscore=0
+ clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
  mlxlogscore=948 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903250049
+ scancount=1 engine=8.0.1-1810050000 definitions=main-1903250050
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
