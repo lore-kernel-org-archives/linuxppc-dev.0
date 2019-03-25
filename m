@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2917AC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:27:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E544BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:29:16 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 7141220850
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:27:33 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7141220850
+	by mail.kernel.org (Postfix) with ESMTPS id 6C01220850
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 10:29:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6C01220850
 Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arndb.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SVnb3K8RzDqKJ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 21:27:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SVqZ3jpZzDqKq
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 21:29:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
  (client-ip=209.85.160.195; helo=mail-qt1-f195.google.com;
@@ -29,37 +29,34 @@ Received: from mail-qt1-f195.google.com (mail-qt1-f195.google.com
  [209.85.160.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SVlk5HqKzDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 21:25:54 +1100 (AEDT)
-Received: by mail-qt1-f195.google.com with SMTP id z16so9580793qtn.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 03:25:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SVnn6Pq6zDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 21:27:41 +1100 (AEDT)
+Received: by mail-qt1-f195.google.com with SMTP id z17so9511823qts.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 03:27:41 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:mime-version:references:in-reply-to:from:date
  :message-id:subject:to:cc;
- bh=uptj+eh0cd0E1jTQT2RebCWvCgUIjjYNwZDO+zjMQlo=;
- b=WE9IDEcqXfH/QDa/DZu4mCSBAI8rxKSNOLVpuphJsI2YvV47ODuhQsZ0p6Ndb2X3oj
- 1CLn8KQovzDi9lB3HdXHdS7TTeH+g+Z95ngwZJcQbWCY0Y4fOkaT82PfxRh7+slrzjms
- I3b3OWl6NNalA0/NukVErMKH61mY9AvmfY/DWtKmGWuD99D2/ztU3sgZT5psDp/yxBJ7
- QDOt4FA5ykzp71IzwHRZzR2cTpoAlxMDdEgs8DOJTmQT9fN+6jnNBYlc5fAmIaHOP4DE
- v8DHB5rYUEnSSKqiHCI40/FQICN/aaIFDHzmlpZZzTGGzNKetdtNTZ91IZvD1ugRW5gz
- upHw==
-X-Gm-Message-State: APjAAAWcG+sOHqyj7NyLJXzrTFi9AdE25aRc3YnjvW70PsCzk3QDwoc7
- /CWjAk1Uu/Dpvmcaa3JzZaaAAWDXx9qFFB9X/Xs=
-X-Google-Smtp-Source: APXvYqzGC36CS17RsbRIMSM2NUx4KUTTuXGfJCXxY4s1a67ibbIU6+K0CM3qgDFINgtkxQIR4biGlim06jrN/EGtVB0=
-X-Received: by 2002:ac8:2692:: with SMTP id 18mr19682479qto.343.1553509551667; 
- Mon, 25 Mar 2019 03:25:51 -0700 (PDT)
+ bh=WWk2E7FS2keWQ3mp16IWcnefUS4l+ZTi/r4nGIMgIAY=;
+ b=oW6XF6oBTEGgXLtQSjNLP//RTa1ne0F4EWcxlRI4B124QpapKC1wSiwOFaVvUJwc/x
+ +RMEKVvdA++1QlR0DuZfl8op57r0hb+goTmfhJDDJwfDKX+qMkebNQXTBUorHKTgzi8r
+ 6v3Ty4zODBMHsIYkXy4o1rb7cLu39QjCJmZht/EUHNzrpJ5lCzRDOnpm6TGBXmsAOerL
+ jGFT2GeaB1GUDhihzBeH3Yw7oor2fdfAZR9Mu1xrXpItgdsa/J1IcsEGOzwGgAzhYJbg
+ FaViYV5iRX16w+G+AgWDORJbQcrtoDuERAK9InsHnmGQWae3U1dLds8QjCxl+AcUCHaw
+ Zn5A==
+X-Gm-Message-State: APjAAAXUDofNY5SQnfu9FP5Il/uB/A7I+jQWgnEy3HNX/MVO+mC8qzXU
+ 0AXPWIMKhhLRvDv+lUPBe5UtZYK1Hez430TTEYo=
+X-Google-Smtp-Source: APXvYqyjyImGL1pGf/aDVmDwHNjft4SZK7XiOGetAykXBVPrR+YAK8JAm8dLkG811rLOdSD5qF9H6YdvL0SvSIQwzSg=
+X-Received: by 2002:a0c:b758:: with SMTP id q24mr19400309qve.149.1553509659744; 
+ Mon, 25 Mar 2019 03:27:39 -0700 (PDT)
 MIME-Version: 1.0
 References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
  <CAK8P3a3BG_mxYxxCx4S_+ZKAer_+5FpmkzLk0VrACZekuD=2GQ@mail.gmail.com>
  <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
- <CAK7LNAQvvCVsQtd9ZYkechOSCg4HAeZFaNXCgaBbWWxBYXOgaQ@mail.gmail.com>
- <CAK8P3a1P812avY8reSSguYB0jPzgjs+30dSJpKZCnWwzyLoSVQ@mail.gmail.com>
- <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
-In-Reply-To: <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
+In-Reply-To: <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 25 Mar 2019 11:25:33 +0100
-Message-ID: <CAK8P3a1QQeK1cBN2O8=p+zceQ7tw-ovYtWq6sBeavDucDWA7Lg@mail.gmail.com>
+Date: Mon, 25 Mar 2019 11:27:22 +0100
+Message-ID: <CAK8P3a3SRYAHSoNfLb7_25O8kP6faN=Bg--QNOzaL9=wVn=ycw@mail.gmail.com>
 Subject: Re: [PATCH] compiler: allow all arches to enable
  CONFIG_OPTIMIZE_INLINING
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
@@ -88,29 +85,21 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 25, 2019 at 8:55 AM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
+On Wed, Mar 20, 2019 at 2:34 PM Arnd Bergmann <arnd@arndb.de> wrote:
 >
-> On Mon, Mar 25, 2019 at 4:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wed, Mar 20, 2019 at 10:41 AM Arnd Bergmann <arnd@arndb.de> wrote:
 > >
-> > On Mon, Mar 25, 2019 at 7:11 AM Masahiro Yamada
-> > <yamada.masahiro@socionext.com> wrote:
-> > > I do not know why to reproduce it,
-> > > but is "__init __noreturn" more sensible than
-> > > "__always_inline" here?
-> >
-> > It's in a header file, so it has to be 'inline'. We could make it
-> > static inline __init __noreturn,
+> > I've added your patch to my randconfig test setup and will let you
+> > know if I see anything noticeable. I'm currently testing clang-arm32,
+> > clang-arm64 and gcc-x86.
 >
-> Yes, I like 'static inline __init __noreturn'
+> This is the only additional bug that has come up so far:
 >
-> > but I don't see an advantage over
-> > __always_inline there.
->
-> __always_inline takes away the compiler's freedom.
->
-> I'd like to leave it up to the compiler where possible.
+> `.exit.text' referenced in section `.alt.smp.init' of
+> drivers/char/ipmi/ipmi_msghandler.o: defined in discarded section
+> `exit.text' of drivers/char/ipmi/ipmi_msghandler.o
 
-Ok, fair enough.
+FWIW, the message up there does not match the patch anyway,
+that was an unrelated bug.
 
-      Arnd
+     Arnd
