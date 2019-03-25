@@ -2,62 +2,66 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.2 required=3.0 tests=DATE_IN_PAST_03_06,
+	DKIM_INVALID,DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D76D4C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 03:56:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FACBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 04:36:15 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 209CF20828
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 03:56:19 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 209CF20828
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=decadent.org.uk
+	by mail.kernel.org (Postfix) with ESMTPS id D2C8220883
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 04:36:14 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au header.b="fdwN+qUn"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D2C8220883
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=gibson.dropbear.id.au
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SL693p9JzDqLZ
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 14:56:17 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=decadent.org.uk
- (client-ip=88.96.1.126; helo=shadbolt.e.decadent.org.uk;
- envelope-from=ben@decadent.org.uk; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
- header.from=decadent.org.uk
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SM0D2QmFzDq77
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 15:36:12 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SL4P0YTNzDq7g
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 14:54:45 +1100 (AEDT)
-Received: from [192.168.4.242] (helo=deadeye)
- by shadbolt.decadent.org.uk with esmtps
- (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256) (Exim 4.89)
- (envelope-from <ben@decadent.org.uk>)
- id 1h8Ggp-0002Jh-Uh; Mon, 25 Mar 2019 03:54:23 +0000
-Received: from ben by deadeye with local (Exim 4.92)
- (envelope-from <ben@decadent.org.uk>)
- id 1h8Ggp-00030g-PY; Mon, 25 Mar 2019 03:54:23 +0000
-Message-ID: <cf9154f1812e0e9a328a1e21ef13d80a46e5feb6.camel@decadent.org.uk>
-Subject: Re: powerpc/mm: Only define MAX_PHYSMEM_BITS in SPARSEMEM
- configurations
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Mon, 25 Mar 2019 03:54:18 +0000
-In-Reply-To: <87ftrbq0qe.fsf@igel.home>
-References: <20190317011756.abjylw3nzfnc6gnh@decadent.org.uk>
- <44QjSh4zGhz9sV2__48832.6491251186$1553257542$gmane$org@ozlabs.org>
- <87k1gnq5lp.fsf@igel.home>
- <eb21be1ac183dd206da3a389b426707c535c463c.camel@decadent.org.uk>
- <87ftrbq0qe.fsf@igel.home>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-AjXEkY+U0IbMKufkYmQY"
-User-Agent: Evolution 3.30.5-1 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SLyF6CRgzDq5y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 15:34:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none)
+ header.from=gibson.dropbear.id.au
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=gibson.dropbear.id.au header.i=@gibson.dropbear.id.au
+ header.b="fdwN+qUn"; dkim-atps=neutral
+Received: by ozlabs.org (Postfix, from userid 1007)
+ id 44SLyF3DGnz9sSq; Mon, 25 Mar 2019 15:34:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+ d=gibson.dropbear.id.au; s=201602; t=1553488469;
+ bh=eDGejTSbTW3TDTmlWKX1kYx08XgO4v6XzHPVzYLKlfc=;
+ h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+ b=fdwN+qUnidkQRow3RVe1QLq0b8eLaiwl8cTrGjD4giWHkhiPG3iFmNsp0hqh39ATl
+ CfoTIZBgWTC5X1RPwk9YCiTbwiTXi46XLlzRMJDI5oi9Rrz6nVFdKGel6K8kAPhigx
+ Y3SvfjGvHiPZURDc3DdwPuQpmkXHqJPvmYcLxIB0=
+Date: Mon, 25 Mar 2019 11:57:10 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [RFC PATCH] virtio_ring: Use DMA API if guest memory is encrypted
+Message-ID: <20190325005710.GC29295@umbus>
+References: <87zhrj8kcp.fsf@morokweng.localdomain>
+ <87womn8inf.fsf@morokweng.localdomain>
+ <20190129134750-mutt-send-email-mst@kernel.org>
+ <877eefxvyb.fsf@morokweng.localdomain>
+ <20190204144048-mutt-send-email-mst@kernel.org>
+ <87ef71seve.fsf@morokweng.localdomain>
+ <20190320171027-mutt-send-email-mst@kernel.org>
+ <87tvfvbwpb.fsf@morokweng.localdomain>
+ <20190323165456-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
-X-SA-Exim-Connect-IP: 192.168.4.242
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-X-SA-Exim-Scanned: No (on shadbolt.decadent.org.uk);
- SAEximRunCond expanded to false
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Fig2xvG2VGoz8o/s"
+Content-Disposition: inline
+In-Reply-To: <20190323165456-mutt-send-email-mst@kernel.org>
+User-Agent: Mutt/1.11.3 (2019-02-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -69,62 +73,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michael Ellerman <patch-notifications@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mike Anderson <andmike@linux.ibm.com>,
+ Michael Roth <mdroth@linux.vnet.ibm.com>,
+ Jean-Philippe Brucker <jean-philippe.brucker@arm.com>,
+ Jason Wang <jasowang@redhat.com>, Alexey Kardashevskiy <aik@linux.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, iommu@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
 
---=-AjXEkY+U0IbMKufkYmQY
-Content-Type: text/plain; charset="UTF-8"
+--Fig2xvG2VGoz8o/s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2019-03-25 at 01:03 +0100, Andreas Schwab wrote:
-> On M=C3=A4r 24 2019, Ben Hutchings <ben@decadent.org.uk> wrote:
->=20
-> > Presumably you have CONFIG_PPC_BOOK3S_64 enabled and
-> > CONFIG_SPARSEMEM
-> > disabled?  Was this configuration actually usable?
->=20
-> Why not?
+On Sat, Mar 23, 2019 at 05:01:35PM -0400, Michael S. Tsirkin wrote:
+> On Thu, Mar 21, 2019 at 09:05:04PM -0300, Thiago Jung Bauermann wrote:
+> > Michael S. Tsirkin <mst@redhat.com> writes:
+[snip]
+> > >> > Is there any justification to doing that beyond someone putting
+> > >> > out slow code in the past?
+> > >>
+> > >> The definition of the ACCESS_PLATFORM flag is generic and captures t=
+he
+> > >> notion of memory access restrictions for the device. Unfortunately, =
+on
+> > >> powerpc pSeries guests it also implies that the IOMMU is turned on
+> > >
+> > > IIUC that's really because on pSeries IOMMU is *always* turned on.
+> > > Platform has no way to say what you want it to say
+> > > which is bypass the iommu for the specific device.
+> >=20
+> > Yes, that's correct. pSeries guests running on KVM are in a gray area
+> > where theoretically they use an IOMMU but in practice KVM ignores it.
+> > It's unfortunate but it's the reality on the ground today. :-/
 
-I assume that CONFIG_SPARSEMEM is the default for a good reason.
-What I don't know is how strong that reason is (I am not a Power expert
-at all).  Looking a bit further, it seems to be related to CONFIG_NUMA
-in that you can enable CONFIG_FLATMEM if and only if that's disabled.=20
-So I suppose the configuration you used works for non-NUMA systems.
+Um.. I'm not sure what you mean by this.  As far as I'm concerned
+there is always a guest-visible (paravirtualized) IOMMU, and that will
+be backed onto the host IOMMU when necessary.
 
-Anyway, does the patch I sent work for you?
+[Actually there is an IOMMU bypass hack that's used by the guest
+ firmware, but I don't think we want to expose that]
 
-Ben.
+> Well it's not just the reality, virt setups need something that
+> emulated IOMMUs don't provide. That is not uncommon, e.g.
+> intel's VTD has a "cache mode" field which AFAIK is only used for virt.
 
 --=20
-Ben Hutchings
-I'm not a reverse psychological virus.
-Please don't copy me into your signature.
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-
-
---=-AjXEkY+U0IbMKufkYmQY
+--Fig2xvG2VGoz8o/s
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEErCspvTSmr92z9o8157/I7JWGEQkFAlyYUOoACgkQ57/I7JWG
-EQlxkQ/9EJopyyqXLAcbh2/aZ693JehVl4yXMuuZJ5kc8cmWbjoQnBWag/nkRyaI
-5LdBoLun/gzgfpIAVwfY4c7CtFV4h7ebYA6hgFEfOCe94ggb/7YUDlYWLAzu7vL9
-tGlqDAJ6PnQ5BQ2xK53vAtoVO5lDFD1o34QXdiRqhBonmWzRbe9pF2Qxn39733vi
-mn6590alBcF9l12RS62Z7F6ZHvdm/tPUU7KzRazWWuQXZi321NArBn9IR6A5CYev
-hhDoy6eGZNYd6Aa6t8E6ZgReOBF7ggZQLiswhzfTZqJWY4k+pzNdRHjsNlZLfBot
-q+Ebpt5XzVR9iiPoiEWrFp3LArqPbBg4pavE3PqzDL9gDOP0JpEj2x7tbZiJcV35
-Yksl3o+M45P+UnneSOe7BpZI96tKJ76bOx2W29qCY05wessd7tXPSS1KQX/wKhsm
-Rgbi0EirOk33NxcUOQCLyWbZcJx9D1lCUAZGYq0VnbLgkfesI2X7bTc7NXqy0JZH
-y8Eclukmbp5njeK7UOJAT3PTzfJFQTJmbdGRRXAwGYxWy8dkr58h4Imz3Moyl8M6
-p5AsEj7KS+dwNVMOboidwQSaYELdtFJPrOEoV10sqLubd7cKvN1kJYIw05KGu1rl
-vF1PqU8+zYr10QGYh6rm2p2LLEdxwzZCZJGaSqFHKkrLdKdStIs=
-=9SR6
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlyYJ2YACgkQbDjKyiDZ
+s5JZyQ//SS59QY9yMVjm5dIHKUEs9Bci33j39MzpLz+QZ/rSLpgkKSlPhWZLhu70
+Sk2aNBu5ILbZaomcSttinaObyDh3IuicBnwqBFvAVWoSdKrrzSPFwHOTC3w5Ncdw
+pkFfxcvfr5jUzh/p3RQuBATbMJfP+/mZC+KaKseXGX2vDte2T4IqZa6SXyEdjLTO
+n9I7zE4D51jmPoCbOen1E65FMRQ7MkLOXsm2GCYYL9HfgdtzDzvQ8GsG4BABUGZg
+BREjDrJ5abIgeaygU69uSGbtJSOIeW1xN9SE1S6DhYj323A0VA2W9HsQCZEvjkrz
+4Ix5hSqOhwLhkhstH4oJAwTsXO+mDb0UIrgt8BnqnUw4OLyDDf1ukf/qf0lQgTSW
+k9c15llwqGFj9uUttu5ZcsCswYbgpug0JjNQn9ebBP9yoQIEZEerX3FBnmF8vwp2
+FgGP6eFM9XnnZPNiuO1AsYSL41G8Tvhjh+cGO6MWyYm4qczY1MoPLwYoihAc+ocr
+SJLZG99l77d344c1eTZeIWFZoYcq/1ZYbcfVVsFRGt8WJ+kM2YrN6zTD4+tS9zwA
+gq0AHzBZUZjln8CDA2HETxgvnXSI6ieyoO3zWu1EF5y/zL3wolKVvREKCeNbcvfI
+bT/RnjLgXMRSvCCxUbWPADa6lDGNtZ4STlnUf10vq7jAFlHgT+4=
+=YCYB
 -----END PGP SIGNATURE-----
 
---=-AjXEkY+U0IbMKufkYmQY--
+--Fig2xvG2VGoz8o/s--
