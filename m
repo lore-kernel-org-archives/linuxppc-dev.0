@@ -2,78 +2,86 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA427C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:47:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A232C43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:55:11 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3EF5A206C0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:47:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7E55C20854
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 06:55:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="s9SfYvAe"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3EF5A206C0
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=pass (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SsJewLc+"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7E55C20854
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SPv62hX3zDqLj
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:46:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SQ4X321RzDqKl
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:55:08 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.90; helo=conssluserg-05.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="s9SfYvAe"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="SsJewLc+"; 
  dkim-atps=neutral
-Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
- [210.131.2.90])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SPrw2KJnzDqHF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:45:03 +1100 (AEDT)
-Received: from mail-vk1-f170.google.com (mail-vk1-f170.google.com
- [209.85.221.170]) (authenticated)
- by conssluserg-05.nifty.com with ESMTP id x2P6ig2J017409
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 15:44:43 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com x2P6ig2J017409
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1553496283;
- bh=TBTAAoxc845YLThKvAPkYbBCM6ldvYbj/UGkzwkcQAM=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=s9SfYvAeSqIUtAvXRpZnL3fs+fGErLsknf/UM8QsJCd+E31WXSg8W4awFda3+J8Sd
- WnYCHXk2JEsfZepAmv+CysBKLnqmhQEKM0rPUd5KD2d8F16pId5qvhma7zkNPZsmKB
- S85mimjzYlvb94oGamww08hck4dFGnybJirdkvWdc4lzI4qS7j4Vq2VJw92okBS1SW
- 4cp7uBLkaV2TA2XvEuSRJhfPIJ/F5W5QoEqhUG7VNrD+ePJdQFf/BshskYshCberRv
- 9eFNYSojHTFFxRkki3KpOgnTmA8R4DaBIlnuwpI8MkV4aZ7FSvwlhIrrBChClK4u8A
- jxwnRXEu//UIw==
-X-Nifty-SrcIP: [209.85.221.170]
-Received: by mail-vk1-f170.google.com with SMTP id o187so1710085vkg.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Mar 2019 23:44:43 -0700 (PDT)
-X-Gm-Message-State: APjAAAW/TrCmoPP6dbneCyHm4V83YuIBOG2OsthpNCI/MVhYTxQSYQZr
- MKYJHlBoVEK5VVR1uqN27VbXlwFzJpbna4xrgjM=
-X-Google-Smtp-Source: APXvYqwTSFTBYn1wiYBRqHfKdoCVAdr+1/wgpdan2TCSHZXnhVT5/9jZ4MbEQSjIRz89Tdd3klpPpTJYpCQPkyUEguo=
-X-Received: by 2002:a1f:b297:: with SMTP id b145mr13805982vkf.74.1553496282456; 
- Sun, 24 Mar 2019 23:44:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SQ2F5vKbzDqHx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:53:09 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44SQ223mkBz9v0Rt;
+ Mon, 25 Mar 2019 07:52:58 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=SsJewLc+; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id XTaxsEE-PT-g; Mon, 25 Mar 2019 07:52:58 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44SQ222g8Lz9v0Rr;
+ Mon, 25 Mar 2019 07:52:58 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553496778; bh=U6aYjqz/73cS/hlJOauTV57AvkWh/SqU5alecyRDuTU=;
+ h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
+ b=SsJewLc+FZm7Q871t4+5dm/+daz9m+iiWFbUiElaihL/jA2TH88ouLr6mBUO7wXng
+ 5EXTCgTShpATeIlnGS3nzciPjJeAiHdsTvfZgf6/jqilt57BZMcw01IsPgxij1tw6u
+ 7oS1s7emtb+FaTuO3fWgXmvB3zzY2tOnTuzKIcXU=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id C6FE28B7BC;
+ Mon, 25 Mar 2019 07:53:02 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id qtcAkNnR5onj; Mon, 25 Mar 2019 07:53:02 +0100 (CET)
+Received: from PO15451 (po15451.idsi0.si.c-s.fr [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 84FD88B74F;
+ Mon, 25 Mar 2019 07:53:02 +0100 (CET)
+Subject: Re: Regression in 5.1.0-rc2: PowerBook G4 Aluminum fails to boot -
+ bisected to commit 0df977eafc792
+To: Larry Finger <Larry.Finger@lwfinger.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <acc2d5a5-2fd4-4367-c8ef-497da951c208@lwfinger.net>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <ee247f37-8889-934c-571c-01c43fc31071@c-s.fr>
+Date: Mon, 25 Mar 2019 07:53:01 +0100
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.0
 MIME-Version: 1.0
-References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
- <CAK8P3a3BG_mxYxxCx4S_+ZKAer_+5FpmkzLk0VrACZekuD=2GQ@mail.gmail.com>
- <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
- <20190323092640.Horde.2lm4u26aZox5ialxuIRcYw2@messagerie.si.c-s.fr>
-In-Reply-To: <20190323092640.Horde.2lm4u26aZox5ialxuIRcYw2@messagerie.si.c-s.fr>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 25 Mar 2019 15:44:06 +0900
-X-Gmail-Original-Message-ID: <CAK7LNAQGifytZRQXcqma9VuvQPfL2w8NjzLRt7CxzFgvaMhyRw@mail.gmail.com>
-Message-ID: <CAK7LNAQGifytZRQXcqma9VuvQPfL2w8NjzLRt7CxzFgvaMhyRw@mail.gmail.com>
-Subject: Re: [PATCH] compiler: allow all arches to enable
- CONFIG_OPTIMIZE_INLINING
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <acc2d5a5-2fd4-4367-c8ef-497da951c208@lwfinger.net>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: fr
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,50 +93,56 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Dave Hansen <dave@sr71.net>,
- Arnd Bergmann <arnd@arndb.de>, the arch/x86 maintainers <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linux-mips@vger.kernel.org, Paul Burton <paul.burton@mips.com>,
- Ingo Molnar <mingo@redhat.com>, linux-mtd <linux-mtd@lists.infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Hi Christophe,
 
 
-On Sat, Mar 23, 2019 at 5:27 PM LEROY Christophe
-<christophe.leroy@c-s.fr> wrote:
->
-> Arnd Bergmann <arnd@arndb.de> a =C3=A9crit :
->
-> > On Wed, Mar 20, 2019 at 10:41 AM Arnd Bergmann <arnd@arndb.de> wrote:
-> >>
-> >> I've added your patch to my randconfig test setup and will let you
-> >> know if I see anything noticeable. I'm currently testing clang-arm32,
-> >> clang-arm64 and gcc-x86.
-> >
-> > This is the only additional bug that has come up so far:
-> >
-> > `.exit.text' referenced in section `.alt.smp.init' of
-> > drivers/char/ipmi/ipmi_msghandler.o: defined in discarded section
-> > `exit.text' of drivers/char/ipmi/ipmi_msghandler.o
->
-> Wouldn't it be useful to activate -Winline gcc warning to ease finding
-> out problematic usage of inline keyword ?
+Le 25/03/2019 à 01:49, Larry Finger a écrit :
+> A build of kernel 5.1.0-rc2 resulted in a failure to boot on my 
+> PowerBook G4 Aluminum. The bootstrap loads the initial kernel and issues 
+> the appropriate start, but the machine hangs at that point.
+
+Can you please be more explicit ? What do you mean by "issues the 
+appropriate start" ? What is "that point" ? Any messages on the console ?
+
+Thanks
+Christophe
 
 
-Yes, it is useful to find out
-which function is causing the error.
-Thanks for the tip.
-
-
-
-
---=20
-Best Regards
-Masahiro Yamada
+> 
+> The problem does not depend on the choice of PPC32 processor type. This 
+> machine has a 7447A according to /proc/cpuinfo.
+> 
+> The problem was bisected to the following:
+> 
+> commit 0df977eafc792a5365a7f81d8d5920132e03afad
+> Author: Christophe Leroy <christophe.leroy@c-s.fr>
+> Date:   Thu Feb 21 10:37:54 2019 +0000
+> 
+>      powerpc/6xx: Don't use SPRN_SPRG2 for storing stack pointer while 
+> in RTAS
+> 
+>      When calling RTAS, the stack pointer is stored in SPRN_SPRG2
+>      in order to be able to restore it in case of machine check in RTAS.
+> 
+>      As machine check is not a perfomance critical path, this patch
+>      frees SPRN_SPRG2 by using a field in thread struct instead.
+> 
+>      Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>      Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> I reverted this patch and found that the system began execution, and 
+> then failed, likely due to the reassignment of SPRN_SPRG2.
+> 
+> I had found this problem with 5.1.0-rc1, but -rc2 was out by the time I 
+> finished the bisection. Unfortunately, none of the changes in -rc2 fixed 
+> the problem.
+> 
+> Attached is the .config that I used.
+> 
+> Thanks,
+> 
+> Larry
