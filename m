@@ -7,51 +7,52 @@ X-Spam-Status: No, score=-7.4 required=3.0 tests=DATE_IN_PAST_06_12,
 	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2695C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C30DC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:47:37 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 123CB2087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:45:39 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 123CB2087C
+	by mail.kernel.org (Postfix) with ESMTPS id 164B320863
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 16:47:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 164B320863
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Sg9r6100zDqB4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 03:45:36 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SgD71v55zDqDr
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 03:47:35 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=intel.com
- (client-ip=134.134.136.20; helo=mga02.intel.com;
+ (client-ip=134.134.136.31; helo=mga06.intel.com;
  envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=intel.com
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Sg7p1B8BzDqHp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 03:43:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Sg9R02zLzDqKS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 03:45:14 +1100 (AEDT)
 X-Amp-Result: UNSCANNABLE
 X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
- by orsmga101.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
- 25 Mar 2019 09:43:40 -0700
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 25 Mar 2019 09:45:12 -0700
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="143686285"
+X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="125726528"
 Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
- by FMSMGA003.fm.intel.com with ESMTP; 25 Mar 2019 09:43:37 -0700
-Date: Mon, 25 Mar 2019 01:42:26 -0700
+ by orsmga007.jf.intel.com with ESMTP; 25 Mar 2019 09:45:11 -0700
+Date: Mon, 25 Mar 2019 01:43:59 -0700
 From: Ira Weiny <ira.weiny@intel.com>
 To: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [RESEND 4/7] mm/gup: Add FOLL_LONGTERM capability to GUP fast
-Message-ID: <20190325084225.GC16366@iweiny-DESK2.sc.intel.com>
+Subject: Re: [RESEND 5/7] IB/hfi1: Use the new FOLL_LONGTERM flag to
+ get_user_pages_fast()
+Message-ID: <20190325084359.GD16366@iweiny-DESK2.sc.intel.com>
 References: <20190317183438.2057-1-ira.weiny@intel.com>
- <20190317183438.2057-5-ira.weiny@intel.com>
- <CAA9_cmcx-Bqo=CFuSj7Xcap3e5uaAot2reL2T74C47Ut6_KtQw@mail.gmail.com>
+ <20190317183438.2057-6-ira.weiny@intel.com>
+ <CAA9_cmdQjMekSFU09gLc87-PVx2iHeeh2jC6KeFY1UeadpPh4A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAA9_cmcx-Bqo=CFuSj7Xcap3e5uaAot2reL2T74C47Ut6_KtQw@mail.gmail.com>
+In-Reply-To: <CAA9_cmdQjMekSFU09gLc87-PVx2iHeeh2jC6KeFY1UeadpPh4A@mail.gmail.com>
 User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -86,93 +87,50 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Fri, Mar 22, 2019 at 03:12:55PM -0700, Dan Williams wrote:
+On Fri, Mar 22, 2019 at 03:14:26PM -0700, Dan Williams wrote:
 > On Sun, Mar 17, 2019 at 7:36 PM <ira.weiny@intel.com> wrote:
 > >
 > > From: Ira Weiny <ira.weiny@intel.com>
 > >
-> > DAX pages were previously unprotected from longterm pins when users
-> > called get_user_pages_fast().
-> >
-> > Use the new FOLL_LONGTERM flag to check for DEVMAP pages and fall
-> > back to regular GUP processing if a DEVMAP page is encountered.
+> > Use the new FOLL_LONGTERM to get_user_pages_fast() to protect against
+> > FS DAX pages being mapped.
 > >
 > > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 > > ---
-> >  mm/gup.c | 29 +++++++++++++++++++++++++----
-> >  1 file changed, 25 insertions(+), 4 deletions(-)
+> >  drivers/infiniband/hw/hfi1/user_pages.c | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
 > >
-> > diff --git a/mm/gup.c b/mm/gup.c
-> > index 0684a9536207..173db0c44678 100644
-> > --- a/mm/gup.c
-> > +++ b/mm/gup.c
-> > @@ -1600,6 +1600,9 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
-> >                         goto pte_unmap;
-> >
-> >                 if (pte_devmap(pte)) {
-> > +                       if (unlikely(flags & FOLL_LONGTERM))
-> > +                               goto pte_unmap;
-> > +
-> >                         pgmap = get_dev_pagemap(pte_pfn(pte), pgmap);
-> >                         if (unlikely(!pgmap)) {
-> >                                 undo_dev_pagemap(nr, nr_start, pages);
-> > @@ -1739,8 +1742,11 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
-> >         if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
-> >                 return 0;
-> >
-> > -       if (pmd_devmap(orig))
-> > +       if (pmd_devmap(orig)) {
-> > +               if (unlikely(flags & FOLL_LONGTERM))
-> > +                       return 0;
-> >                 return __gup_device_huge_pmd(orig, pmdp, addr, end, pages, nr);
-> > +       }
-> >
-> >         refs = 0;
-> >         page = pmd_page(orig) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
-> > @@ -1777,8 +1783,11 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
-> >         if (!pud_access_permitted(orig, flags & FOLL_WRITE))
-> >                 return 0;
-> >
-> > -       if (pud_devmap(orig))
-> > +       if (pud_devmap(orig)) {
-> > +               if (unlikely(flags & FOLL_LONGTERM))
-> > +                       return 0;
-> >                 return __gup_device_huge_pud(orig, pudp, addr, end, pages, nr);
-> > +       }
-> >
-> >         refs = 0;
-> >         page = pud_page(orig) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
-> > @@ -2066,8 +2075,20 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
-> >                 start += nr << PAGE_SHIFT;
-> >                 pages += nr;
-> >
-> > -               ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
-> > -                                             gup_flags);
-> > +               if (gup_flags & FOLL_LONGTERM) {
-> > +                       down_read(&current->mm->mmap_sem);
-> > +                       ret = __gup_longterm_locked(current, current->mm,
-> > +                                                   start, nr_pages - nr,
-> > +                                                   pages, NULL, gup_flags);
-> > +                       up_read(&current->mm->mmap_sem);
-> > +               } else {
-> > +                       /*
-> > +                        * retain FAULT_FOLL_ALLOW_RETRY optimization if
-> > +                        * possible
-> > +                        */
-> > +                       ret = get_user_pages_unlocked(start, nr_pages - nr,
-> > +                                                     pages, gup_flags);
+> > diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
+> > index 78ccacaf97d0..6a7f9cd5a94e 100644
+> > --- a/drivers/infiniband/hw/hfi1/user_pages.c
+> > +++ b/drivers/infiniband/hw/hfi1/user_pages.c
+> > @@ -104,9 +104,11 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
+> >                             bool writable, struct page **pages)
+> >  {
+> >         int ret;
+> > +       unsigned int gup_flags = writable ? FOLL_WRITE : 0;
 > 
-> I couldn't immediately grok why this path needs to branch on
-> FOLL_LONGTERM? Won't get_user_pages_unlocked(..., FOLL_LONGTERM) do
-> the right thing?
+> Maybe:
+> 
+>     unsigned int gup_flags = FOLL_LONGTERM | (writable ? FOLL_WRITE : 0);
+> 
+> ?
 
-Unfortunately holding the lock is required to support FOLL_LONGTERM (to check
-the VMAs) but we don't want to hold the lock to be optimal (specifically allow
-FAULT_FOLL_ALLOW_RETRY).  So I'm maintaining the optimization for *_fast users
-who do not specify FOLL_LONGTERM.
-
-Another way to do this would have been to define __gup_longterm_unlocked with
-the above logic, but that seemed overkill at this point.
+Sure looks good.
 
 Ira
 
+> 
+> >
+> > -       ret = get_user_pages_fast(vaddr, npages, writable ? FOLL_WRITE : 0,
+> > -                                 pages);
+> > +       gup_flags |= FOLL_LONGTERM;
+> > +
+> > +       ret = get_user_pages_fast(vaddr, npages, gup_flags, pages);
+> >         if (ret < 0)
+> >                 return ret;
+> >
+> > --
+> > 2.20.1
+> >
+> 
