@@ -2,78 +2,79 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E612C43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 07:57:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A792AC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 08:45:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 0905B20830
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 07:57:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 7F78920863
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 08:45:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="ZyjtIOVp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 0905B20830
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="SB6H8+gG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 7F78920863
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SRSY4gSzzDqF1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 18:57:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44SSWd6VDhzDqGp
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 19:45:17 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.82; helo=conssluserg-03.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=c-s.fr
+ (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
+ envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="ZyjtIOVp"; 
+ dmarc=none (p=none dis=none) header.from=c-s.fr
+Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
+ unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="SB6H8+gG"; 
  dkim-atps=neutral
-Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
- [210.131.2.82])
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SRQY3pK7zDq5v
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 18:55:48 +1100 (AEDT)
-Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com
- [209.85.222.44]) (authenticated)
- by conssluserg-03.nifty.com with ESMTP id x2P7tN1S016135
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 16:55:24 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-03.nifty.com x2P7tN1S016135
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1553500524;
- bh=MNSR/rEIOcAArewi0EIYzwa6W/vsUcqG4KdVofhTqSQ=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=ZyjtIOVpxyBOn4a6GEYMaFwQC4gc8MCYc/7NgGdBpVa2FuzM12sLcCIlTGJy1MjVG
- yVehg7hPuPh/1x0qXuamzJ1Y4wpJ17F/dkiaeG4rEtT+ju726ZJNrToCekEjCqdAA9
- DA1eP1H08jc8sFzbUKRHHjZBOG8NwMNNH4SBy5MglHwghLHDHNIMkuwYTGJzqteZ+j
- xyuox9+hVSVVG7sViwPAS/HdEnDsye6OVQfv4MwXZscFM5Eqmjm5dXac2F1ra8FVRY
- F9Z/w5/abZ9TQRC3oKrSwGy6uQljW+Z416w1T429hpv0gyVgqArEPkMd55ng9LMoE+
- SeleNW2vuSs0g==
-X-Nifty-SrcIP: [209.85.222.44]
-Received: by mail-ua1-f44.google.com with SMTP id c13so1263084uao.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 00:55:24 -0700 (PDT)
-X-Gm-Message-State: APjAAAXeQD21FJC1ClTiWfrlsXv2eHOubh7srUqIXsVk3fCfY4t5CN76
- GV6uDVfPEuPHB7zrr2QAIq5oOUOQAGUgj5GdDqM=
-X-Google-Smtp-Source: APXvYqyhekNOWsqEE0/Be7lm9WkHu4bw/ySyZW5oHyXthk2oN26mxaoB5RYhMA6O73DJhsq2BgV3+fx1ravROmYHO3M=
-X-Received: by 2002:ab0:7493:: with SMTP id n19mr13096065uap.121.1553500523266; 
- Mon, 25 Mar 2019 00:55:23 -0700 (PDT)
-MIME-Version: 1.0
-References: <1553062828-27798-1-git-send-email-yamada.masahiro@socionext.com>
- <CAK8P3a3BG_mxYxxCx4S_+ZKAer_+5FpmkzLk0VrACZekuD=2GQ@mail.gmail.com>
- <CAK8P3a0GEYTbw5XCwzVeZe_-pGF=7e=1kXhH3U+fidnMZeP0CA@mail.gmail.com>
- <CAK7LNAQvvCVsQtd9ZYkechOSCg4HAeZFaNXCgaBbWWxBYXOgaQ@mail.gmail.com>
- <CAK8P3a1P812avY8reSSguYB0jPzgjs+30dSJpKZCnWwzyLoSVQ@mail.gmail.com>
-In-Reply-To: <CAK8P3a1P812avY8reSSguYB0jPzgjs+30dSJpKZCnWwzyLoSVQ@mail.gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 25 Mar 2019 16:54:47 +0900
-X-Gmail-Original-Message-ID: <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
-Message-ID: <CAK7LNARatcRQ2u0JhiZHx4qU+mzS=SUv-kj7F-7-Vx--RFX5tw@mail.gmail.com>
-Subject: Re: [PATCH] compiler: allow all arches to enable
- CONFIG_OPTIMIZE_INLINING
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44SSTl2PNSzDq8B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 19:43:38 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 44SSTY6VCsz9v0Yf;
+ Mon, 25 Mar 2019 09:43:29 +0100 (CET)
+Authentication-Results: localhost; dkim=pass
+ reason="1024-bit key; insecure key"
+ header.d=c-s.fr header.i=@c-s.fr header.b=SB6H8+gG; dkim-adsp=pass;
+ dkim-atps=neutral
+X-Virus-Scanned: Debian amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+ by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
+ with ESMTP id JfIeCVt34caO; Mon, 25 Mar 2019 09:43:29 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 44SSTY5NCWz9v0Yd;
+ Mon, 25 Mar 2019 09:43:29 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
+ t=1553503409; bh=OnQtmWg9C9UStx9j31BaChQI6BzXyrV/OOoH1buhqws=;
+ h=From:Subject:To:Cc:Date:From;
+ b=SB6H8+gGB0JpHxzT7cmlZcg03bIxRrb+JzZbtG0rQZI8N62LTZHT/hmn1qHfyYbu5
+ Z68x7NYVDVVvkHohYxgUSYOtiWmPLIY444VwxfzJ98/N+nZVo3+kWhulyONEtqemvL
+ qk57reGo69tHI8WTg+INwsuttanuqJlgiGhzzU1w=
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 49D508B89B;
+ Mon, 25 Mar 2019 09:43:34 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id hpS_PZ4n1TPe; Mon, 25 Mar 2019 09:43:34 +0100 (CET)
+Received: from po16846vm.idsi0.si.c-s.fr (po15451.idsi0.si.c-s.fr
+ [172.25.231.2])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1136A8B74F;
+ Mon, 25 Mar 2019 09:43:34 +0100 (CET)
+Received: by po16846vm.idsi0.si.c-s.fr (Postfix, from userid 0)
+ id CC8E86FC66; Mon, 25 Mar 2019 08:43:33 +0000 (UTC)
+Message-Id: <aab41779cac995ebdc03e700a9dc7cfc30a28770.1553503163.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/rtas: fix early boot failure.
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Larry Finger <Larry.Finger@lwfinger.net>
+Date: Mon, 25 Mar 2019 08:43:33 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -85,83 +86,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>, Dave Hansen <dave@sr71.net>,
- the arch/x86 maintainers <x86@kernel.org>, linux-mips@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Burton <paul.burton@mips.com>, Ingo Molnar <mingo@redhat.com>,
- linux-mtd <linux-mtd@lists.infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 25, 2019 at 4:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
->
-> On Mon, Mar 25, 2019 at 7:11 AM Masahiro Yamada
-> <yamada.masahiro@socionext.com> wrote:
-> > On Wed, Mar 20, 2019 at 10:34 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> > >
-> > > On Wed, Mar 20, 2019 at 10:41 AM Arnd Bergmann <arnd@arndb.de> wrote:
-> > > >
-> > > > I've added your patch to my randconfig test setup and will let you
-> > > > know if I see anything noticeable. I'm currently testing clang-arm32,
-> > > > clang-arm64 and gcc-x86.
-> > >
-> > > This is the only additional bug that has come up so far:
-> > >
-> > > `.exit.text' referenced in section `.alt.smp.init' of
-> > > drivers/char/ipmi/ipmi_msghandler.o: defined in discarded section
-> > > `exit.text' of drivers/char/ipmi/ipmi_msghandler.o
-> > >
-> > > diff --git a/arch/arm/kernel/atags.h b/arch/arm/kernel/atags.h
-> > > index 201100226301..84b12e33104d 100644
-> > > --- a/arch/arm/kernel/atags.h
-> > > +++ b/arch/arm/kernel/atags.h
-> > > @@ -5,7 +5,7 @@ void convert_to_tag_list(struct tag *tags);
-> > >  const struct machine_desc *setup_machine_tags(phys_addr_t __atags_pointer,
-> > >         unsigned int machine_nr);
-> > >  #else
-> > > -static inline const struct machine_desc *
-> > > +static __always_inline const struct machine_desc *
-> > >  setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
-> > >  {
-> > >         early_print("no ATAGS support: can't continue\n");
-> > >
-> >
-> >
-> > I do not know why to reproduce it,
-> > but is "__init __noreturn" more sensible than
-> > "__always_inline" here?
->
-> It's in a header file, so it has to be 'inline'. We could make it
-> static inline __init __noreturn,
+Commit 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing
+stack pointer while in RTAS") changes the code to use a field in
+thread struct to store the stack pointer while in RTAS instead of
+using SPRN_SPRG2. It therefore converts all places which were
+manipulating SPRN_SPRG2 to use that field. During early startup,
+the zeroing of SPRN_SPRG2 has been replaced by a zeroing of that
+field in thread struct. But at least in start_here, that's done
+wrongly because it used the physical address of the fields while
+MMU is on at that time.
 
-Yes, I like 'static inline __init __noreturn'
+So the virtual address of the field should be used instead, but in
+the meantime, thread struct has already been zeroised and initialised
+so we can just drop this initialisation.
 
-> but I don't see an advantage over
-> __always_inline there.
+Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+Fixes: 0df977eafc79 ("powerpc/6xx: Don't use SPRN_SPRG2 for storing stack pointer while in RTAS")
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_32.S | 8 --------
+ 1 file changed, 8 deletions(-)
 
-__always_inline takes away the compiler's freedom.
-
-I'd like to leave it up to the compiler where possible.
-
-The inlining decision may change
-depending on -O2, -Os, -Og(which was rejected)
-or whatever optimization strategy.
-
-
->
->         Arnd
->
-> ______________________________________________________
-> Linux MTD discussion mailing list
-> http://lists.infradead.org/mailman/listinfo/linux-mtd/
-
-
-
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 48051c8977c5..e25b615e9f9e 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -851,10 +851,6 @@ __secondary_start:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* phys address of our thread_struct */
+ 	mtspr	SPRN_SPRG_THREAD,r4
+-#ifdef CONFIG_PPC_RTAS
+-	li	r3,0
+-	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
+-#endif
+ 	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
+ 	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
+ 	mtspr	SPRN_SPRG_PGDIR, r4
+@@ -941,10 +937,6 @@ start_here:
+ 	tophys(r4,r2)
+ 	addi	r4,r4,THREAD	/* init task's THREAD */
+ 	mtspr	SPRN_SPRG_THREAD,r4
+-#ifdef CONFIG_PPC_RTAS
+-	li	r3,0
+-	stw	r3, RTAS_SP(r4)		/* 0 => not in RTAS */
+-#endif
+ 	lis	r4, (swapper_pg_dir - PAGE_OFFSET)@h
+ 	ori	r4, r4, (swapper_pg_dir - PAGE_OFFSET)@l
+ 	mtspr	SPRN_SPRG_PGDIR, r4
 -- 
-Best Regards
-Masahiro Yamada
+2.13.3
+
