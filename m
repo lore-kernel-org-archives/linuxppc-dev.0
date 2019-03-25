@@ -2,59 +2,59 @@ Return-Path: <SRS0=tR2X=R4=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.4 required=3.0 tests=DATE_IN_PAST_06_12,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BDADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:05:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D952CC43381
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:26:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 6A72A2087C
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:05:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 6A72A2087C
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=kaod.org
+	by mail.kernel.org (Postfix) with ESMTPS id 27E852087C
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Mar 2019 17:26:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 27E852087C
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=intel.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44SgdB1sb2zDqFD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 04:05:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Sh541RH3zDqM4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 04:26:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kaod.org
- (client-ip=178.33.251.53; helo=1.mo178.mail-out.ovh.net;
- envelope-from=groug@kaod.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=intel.com
+ (client-ip=134.134.136.31; helo=mga06.intel.com;
+ envelope-from=ira.weiny@intel.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=kaod.org
-Received: from 1.mo178.mail-out.ovh.net (1.mo178.mail-out.ovh.net
- [178.33.251.53])
+ dmarc=pass (p=none dis=none) header.from=intel.com
+Received: from mga06.intel.com (mga06.intel.com [134.134.136.31])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44SgbJ5gf3zDqHk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 04:04:08 +1100 (AEDT)
-Received: from player758.ha.ovh.net (unknown [10.109.159.68])
- by mo178.mail-out.ovh.net (Postfix) with ESMTP id A30FB59898
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 17:57:26 +0100 (CET)
-Received: from kaod.org (lns-bzn-46-82-253-208-248.adsl.proxad.net
- [82.253.208.248]) (Authenticated sender: groug@kaod.org)
- by player758.ha.ovh.net (Postfix) with ESMTPSA id 57382412597D;
- Mon, 25 Mar 2019 16:57:19 +0000 (UTC)
-Date: Mon, 25 Mar 2019 17:57:18 +0100
-From: Greg Kurz <groug@kaod.org>
-To: "Alastair D'Silva" <alastair@au1.ibm.com>
-Subject: Re: [PATCH v4 4/4] ocxl: Remove some unused exported symbols
-Message-ID: <20190325175718.5e3e3253@bahia.lab.toulouse-stg.fr.ibm.com>
-In-Reply-To: <20190325053456.14599-5-alastair@au1.ibm.com>
-References: <20190320053448.2098-1-alastair@au1.ibm.com>
- <20190325053456.14599-1-alastair@au1.ibm.com>
- <20190325053456.14599-5-alastair@au1.ibm.com>
-X-Mailer: Claws Mail 3.16.0 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Sh2s6WNJzDq5j
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 04:24:30 +1100 (AEDT)
+X-Amp-Result: UNSCANNABLE
+X-Amp-File-Uploaded: False
+Received: from orsmga007.jf.intel.com ([10.7.209.58])
+ by orsmga104.jf.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384;
+ 25 Mar 2019 10:24:27 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.60,269,1549958400"; d="scan'208";a="125738993"
+Received: from iweiny-desk2.sc.intel.com ([10.3.52.157])
+ by orsmga007.jf.intel.com with ESMTP; 25 Mar 2019 10:24:26 -0700
+Date: Mon, 25 Mar 2019 02:23:15 -0700
+From: Ira Weiny <ira.weiny@intel.com>
+To: Jason Gunthorpe <jgg@ziepe.ca>
+Subject: Re: [RESEND 4/7] mm/gup: Add FOLL_LONGTERM capability to GUP fast
+Message-ID: <20190325092314.GF16366@iweiny-DESK2.sc.intel.com>
+References: <20190317183438.2057-1-ira.weiny@intel.com>
+ <20190317183438.2057-5-ira.weiny@intel.com>
+ <CAA9_cmcx-Bqo=CFuSj7Xcap3e5uaAot2reL2T74C47Ut6_KtQw@mail.gmail.com>
+ <20190325084225.GC16366@iweiny-DESK2.sc.intel.com>
+ <20190325164713.GC9949@ziepe.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Ovh-Tracer-Id: 609674802812197195
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedutddrjeekgdeljecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfqggfjpdevjffgvefmvefgnecuuegrihhlohhuthemucehtddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20190325164713.GC9949@ziepe.ca>
+User-Agent: Mutt/1.11.1 (2018-12-01)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -66,141 +66,215 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, alastair@d-silva.org,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, Linux-sh <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mips@vger.kernel.org,
+ linux-mm <linux-mm@kvack.org>, Rich Felker <dalias@libc.org>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, linux-rdma@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, John Hubbard <jhubbard@nvidia.com>,
+ Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, 25 Mar 2019 16:34:55 +1100
-"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
-
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Mon, Mar 25, 2019 at 01:47:13PM -0300, Jason Gunthorpe wrote:
+> On Mon, Mar 25, 2019 at 01:42:26AM -0700, Ira Weiny wrote:
+> > On Fri, Mar 22, 2019 at 03:12:55PM -0700, Dan Williams wrote:
+> > > On Sun, Mar 17, 2019 at 7:36 PM <ira.weiny@intel.com> wrote:
+> > > >
+> > > > From: Ira Weiny <ira.weiny@intel.com>
+> > > >
+> > > > DAX pages were previously unprotected from longterm pins when users
+> > > > called get_user_pages_fast().
+> > > >
+> > > > Use the new FOLL_LONGTERM flag to check for DEVMAP pages and fall
+> > > > back to regular GUP processing if a DEVMAP page is encountered.
+> > > >
+> > > > Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+> > > >  mm/gup.c | 29 +++++++++++++++++++++++++----
+> > > >  1 file changed, 25 insertions(+), 4 deletions(-)
+> > > >
+> > > > diff --git a/mm/gup.c b/mm/gup.c
+> > > > index 0684a9536207..173db0c44678 100644
+> > > > +++ b/mm/gup.c
+> > > > @@ -1600,6 +1600,9 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+> > > >                         goto pte_unmap;
+> > > >
+> > > >                 if (pte_devmap(pte)) {
+> > > > +                       if (unlikely(flags & FOLL_LONGTERM))
+> > > > +                               goto pte_unmap;
+> > > > +
+> > > >                         pgmap = get_dev_pagemap(pte_pfn(pte), pgmap);
+> > > >                         if (unlikely(!pgmap)) {
+> > > >                                 undo_dev_pagemap(nr, nr_start, pages);
+> > > > @@ -1739,8 +1742,11 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+> > > >         if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
+> > > >                 return 0;
+> > > >
+> > > > -       if (pmd_devmap(orig))
+> > > > +       if (pmd_devmap(orig)) {
+> > > > +               if (unlikely(flags & FOLL_LONGTERM))
+> > > > +                       return 0;
+> > > >                 return __gup_device_huge_pmd(orig, pmdp, addr, end, pages, nr);
+> > > > +       }
+> > > >
+> > > >         refs = 0;
+> > > >         page = pmd_page(orig) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+> > > > @@ -1777,8 +1783,11 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+> > > >         if (!pud_access_permitted(orig, flags & FOLL_WRITE))
+> > > >                 return 0;
+> > > >
+> > > > -       if (pud_devmap(orig))
+> > > > +       if (pud_devmap(orig)) {
+> > > > +               if (unlikely(flags & FOLL_LONGTERM))
+> > > > +                       return 0;
+> > > >                 return __gup_device_huge_pud(orig, pudp, addr, end, pages, nr);
+> > > > +       }
+> > > >
+> > > >         refs = 0;
+> > > >         page = pud_page(orig) + ((addr & ~PUD_MASK) >> PAGE_SHIFT);
+> > > > @@ -2066,8 +2075,20 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+> > > >                 start += nr << PAGE_SHIFT;
+> > > >                 pages += nr;
+> > > >
+> > > > -               ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
+> > > > -                                             gup_flags);
+> > > > +               if (gup_flags & FOLL_LONGTERM) {
+> > > > +                       down_read(&current->mm->mmap_sem);
+> > > > +                       ret = __gup_longterm_locked(current, current->mm,
+> > > > +                                                   start, nr_pages - nr,
+> > > > +                                                   pages, NULL, gup_flags);
+> > > > +                       up_read(&current->mm->mmap_sem);
+> > > > +               } else {
+> > > > +                       /*
+> > > > +                        * retain FAULT_FOLL_ALLOW_RETRY optimization if
+> > > > +                        * possible
+> > > > +                        */
+> > > > +                       ret = get_user_pages_unlocked(start, nr_pages - nr,
+> > > > +                                                     pages, gup_flags);
+> > > 
+> > > I couldn't immediately grok why this path needs to branch on
+> > > FOLL_LONGTERM? Won't get_user_pages_unlocked(..., FOLL_LONGTERM) do
+> > > the right thing?
+> > 
+> > Unfortunately holding the lock is required to support FOLL_LONGTERM (to check
+> > the VMAs) but we don't want to hold the lock to be optimal (specifically allow
+> > FAULT_FOLL_ALLOW_RETRY).  So I'm maintaining the optimization for *_fast users
+> > who do not specify FOLL_LONGTERM.
+> > 
+> > Another way to do this would have been to define __gup_longterm_unlocked with
+> > the above logic, but that seemed overkill at this point.
 > 
-> Remove some unused exported symbols.
+> get_user_pages_unlocked() is an exported symbol, shouldn't it work
+> with the FOLL_LONGTERM flag?
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
-
-Reviewed-by: Greg Kurz <groug@kaod.org>
-
->  drivers/misc/ocxl/config.c        |  4 +---
->  drivers/misc/ocxl/ocxl_internal.h | 23 +++++++++++++++++++++++
->  include/misc/ocxl.h               | 23 -----------------------
->  3 files changed, 24 insertions(+), 26 deletions(-)
+> I think it should even though we have no user..
 > 
-> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-> index 4dc11897237d..5e65acb8e134 100644
-> --- a/drivers/misc/ocxl/config.c
-> +++ b/drivers/misc/ocxl/config.c
-> @@ -2,8 +2,8 @@
->  // Copyright 2017 IBM Corp.
->  #include <linux/pci.h>
->  #include <asm/pnv-ocxl.h>
-> -#include <misc/ocxl.h>
->  #include <misc/ocxl-config.h>
-> +#include "ocxl_internal.h"
->  
->  #define EXTRACT_BIT(val, bit) (!!(val & BIT(bit)))
->  #define EXTRACT_BITS(val, s, e) ((val & GENMASK(e, s)) >> s)
-> @@ -299,7 +299,6 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
->  	}
->  	return 1;
->  }
-> -EXPORT_SYMBOL_GPL(ocxl_config_check_afu_index);
->  
->  static int read_afu_name(struct pci_dev *dev, struct ocxl_fn_config *fn,
->  			struct ocxl_afu_config *afu)
-> @@ -535,7 +534,6 @@ int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count)
->  {
->  	return pnv_ocxl_get_pasid_count(dev, count);
->  }
-> -EXPORT_SYMBOL_GPL(ocxl_config_get_pasid_info);
->  
->  void ocxl_config_set_afu_pasid(struct pci_dev *dev, int pos, int pasid_base,
->  			u32 pasid_count_log)
-> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-> index 321b29e77f45..06fd98c989c8 100644
-> --- a/drivers/misc/ocxl/ocxl_internal.h
-> +++ b/drivers/misc/ocxl/ocxl_internal.h
-> @@ -107,6 +107,29 @@ void ocxl_pasid_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
->  int ocxl_actag_afu_alloc(struct ocxl_fn *fn, u32 size);
->  void ocxl_actag_afu_free(struct ocxl_fn *fn, u32 start, u32 size);
->  
-> +/*
-> + * Get the max PASID value that can be used by the function
-> + */
-> +int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-> +
-> +/*
-> + * Check if an AFU index is valid for the given function.
-> + *
-> + * AFU indexes can be sparse, so a driver should check all indexes up
-> + * to the maximum found in the function description
-> + */
-> +int ocxl_config_check_afu_index(struct pci_dev *dev,
-> +				struct ocxl_fn_config *fn, int afu_idx);
-> +
-> +/**
-> + * Update values within a Process Element
-> + *
-> + * link_handle: the link handle associated with the process element
-> + * pasid: the PASID for the AFU context
-> + * tid: the new thread id for the process element
-> + */
-> +int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-> +
->  struct ocxl_context *ocxl_context_alloc(void);
->  int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
->  			struct address_space *mapping);
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index 4544573cc93c..9530d3be1b30 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -56,15 +56,6 @@ struct ocxl_fn_config {
->  int ocxl_config_read_function(struct pci_dev *dev,
->  				struct ocxl_fn_config *fn);
->  
-> -/*
-> - * Check if an AFU index is valid for the given function.
-> - *
-> - * AFU indexes can be sparse, so a driver should check all indexes up
-> - * to the maximum found in the function description
-> - */
-> -int ocxl_config_check_afu_index(struct pci_dev *dev,
-> -				struct ocxl_fn_config *fn, int afu_idx);
-> -
->  /*
->   * Read the configuration space of a function for the AFU specified by
->   * the index 'afu_idx'. Fills in a ocxl_afu_config structure
-> @@ -74,11 +65,6 @@ int ocxl_config_read_afu(struct pci_dev *dev,
->  				struct ocxl_afu_config *afu,
->  				u8 afu_idx);
->  
-> -/*
-> - * Get the max PASID value that can be used by the function
-> - */
-> -int ocxl_config_get_pasid_info(struct pci_dev *dev, int *count);
-> -
->  /*
->   * Tell an AFU, by writing in the configuration space, the PASIDs that
->   * it can use. Range starts at 'pasid_base' and its size is a multiple
-> @@ -188,15 +174,6 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
->  		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->  		void *xsl_err_data);
->  
-> -/**
-> - * Update values within a Process Element
-> - *
-> - * link_handle: the link handle associated with the process element
-> - * pasid: the PASID for the AFU context
-> - * tid: the new thread id for the process element
-> - */
-> -int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-> -
->  /*
->   * Remove a Process Element from the Shared Process Area for a link
->   */
+> Otherwise the GUP API just gets more confusing.
 
+I agree WRT to the API.  But I think callers of get_user_pages_unlocked() are
+not going to get the behavior they want if they specify FOLL_LONGTERM.
+
+What I could do is BUG_ON (or just WARN_ON) if unlocked is called with
+FOLL_LONGTERM similar to the code in get_user_pages_locked() which does not
+allow locked and vmas to be passed together:
+
+        if (locked) {
+                /* if VM_FAULT_RETRY can be returned, vmas become invalid */
+                BUG_ON(vmas);
+                /* check caller initialized locked */
+                BUG_ON(*locked != 1);
+        }
+
+Combining Dan's comment and yours; I could do something like below? (not even
+compile tested)  Coded with WARN_ON because technically I _think_ the
+FOLL_LONGTERM would "work" but not be optimal.  I'm just not 100% sure.  A
+BUG_ON would be most protective IMO.
+
+
+diff --git a/mm/gup.c b/mm/gup.c
+index 173db0c44678..8e31411f485f 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1014,6 +1014,29 @@ long get_user_pages_locked(unsigned long start, unsigned long nr_pages,
+ }
+ EXPORT_SYMBOL(get_user_pages_locked);
+ 
++long __gup_longterm_unlocked(unsigned long start, unsigned long nr_pages,
++			     struct page **pages, unsigned int gup_flags)
++{
++	struct mm_struct *mm = current->mm;
++	int locked = 1;
++	long ret;
++
++	down_read(&mm->mmap_sem);
++	if (gup_flags & FOLL_LONGTERM) {
++		ret = __gup_longterm_locked(current, mm,
++					    start, nr_pages - nr,
++					    pages, NULL, gup_flags);
++	} else {
++		ret = __get_user_pages_locked(current, mm, start, nr_pages,
++					      pages, NULL, &locked,
++					      gup_flags | FOLL_TOUCH);
++	}
++	if (locked)
++		up_read(&mm->mmap_sem);
++
++	return ret;
++}
++
+ /*
+  * get_user_pages_unlocked() is suitable to replace the form:
+  *
+@@ -1032,16 +1055,9 @@ EXPORT_SYMBOL(get_user_pages_locked);
+ long get_user_pages_unlocked(unsigned long start, unsigned long nr_pages,
+ 			     struct page **pages, unsigned int gup_flags)
+ {
+-	struct mm_struct *mm = current->mm;
+-	int locked = 1;
+-	long ret;
++	WARN_ON(gup_flags & FOLL_LONGTERM);
+ 
+-	down_read(&mm->mmap_sem);
+-	ret = __get_user_pages_locked(current, mm, start, nr_pages, pages, NULL,
+-				      &locked, gup_flags | FOLL_TOUCH);
+-	if (locked)
+-		up_read(&mm->mmap_sem);
+-	return ret;
++	__gup_longterm_unlocked(start, nr_pages, pages, gup_flags);
+ }
+ EXPORT_SYMBOL(get_user_pages_unlocked);
+ 
+@@ -2075,20 +2091,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+ 		start += nr << PAGE_SHIFT;
+ 		pages += nr;
+ 
+-		if (gup_flags & FOLL_LONGTERM) {
+-			down_read(&current->mm->mmap_sem);
+-			ret = __gup_longterm_locked(current, current->mm,
+-						    start, nr_pages - nr,
+-						    pages, NULL, gup_flags);
+-			up_read(&current->mm->mmap_sem);
+-		} else {
+-			/*
+-			 * retain FAULT_FOLL_ALLOW_RETRY optimization if
+-			 * possible
+-			 */
+-			ret = get_user_pages_unlocked(start, nr_pages - nr,
+-						      pages, gup_flags);
+-		}
++		__gup_longterm_unlocked();
+ 
+ 		/* Have to be a bit careful with return values */
+ 		if (nr > 0) {
