@@ -2,63 +2,86 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3797DC10F05
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:42:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32FEFC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:00:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 92A8920828
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:41:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 678DC20811
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:00:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="ndZzi73z"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92A8920828
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ko9TC5vv"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 678DC20811
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44T0Pd3x9KzDqJl
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:41:57 +1100 (AEDT)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
- key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44T0My2Ks6zDqJX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 16:40:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44T0q33924zDqHX
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:00:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=neuling.org
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=neuling.org header.i=@neuling.org header.b="ndZzi73z"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="Ko9TC5vv"; 
  dkim-atps=neutral
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 44T0My0XDwz8syV;
- Tue, 26 Mar 2019 16:40:30 +1100 (AEDT)
-Received: from spoke.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 44T0Mx3khnz9sSq;
- Tue, 26 Mar 2019 16:40:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
- s=201811; t=1553578829;
- bh=M8BP5nEqxOo3BqzDRt8E/94wH59AuGBU5qi+ueBvoAg=;
- h=From:To:Cc:Subject:Date:From;
- b=ndZzi73zSbWOHk/MY17MNH73+T7Q61ZEBX0d6KXM36r6jLHnVMfPcXWcvozd2XRAJ
- r3TTSvYTvQKa0zWRWkYzHTNGE2s/O2r7NnfP/3FmKxqoThq73aCrYkGYhHTeFUjh3P
- T8ovAewqzjLBhNJS5+NQe4BRYjyFrm+Xd/LjCQ7jLLCykVMpPs0AJmGw1O6IHQNV7Q
- o0YxUd/FuTs1JqBr6LNtwL68kIXjFgj0pF0RJErkAXr8PKjjPDvmnY4stDNdae5SMk
- Ub+WnJUu3Ewx15fz7i6ECq3/mer6rQ50u/eYOYik86qNWnDx8mGs6DZj6yflPypc9d
- pC4/tJ1C5bGGg==
-Received: by spoke.localdomain (Postfix, from userid 1000)
- id 7676B2A052A; Tue, 26 Mar 2019 16:40:29 +1100 (AEDT)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Add force enable of DAWR on P9 option
-Date: Tue, 26 Mar 2019 16:40:22 +1100
-Message-Id: <20190326054022.5552-1-mikey@neuling.org>
-X-Mailer: git-send-email 2.20.1
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44T0nD0jL3zDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 16:58:53 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id m10so1115484plt.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 22:58:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=CbYmRGUZEd1iQvum1IXYqF42ybOYTBKz3+p6mg+oYlo=;
+ b=Ko9TC5vvEKuLwoXWFWzSAreUCqwrexYQMDa9zIoj6ql1FmP/l//6Ugs9azCRPyRu6J
+ 3rB852ZUpel8SIRAf1eA0VXvpeRr6gGfASPseK4uV3ZnuBZcy1lEUTLBEsSL7Db9ANKd
+ 8o8kh2cMlQR9PXoKKK3OkAnDekzGyhdfTLjBPSQi4IrHKdu48rwSnrWUESCOgx7OmYLe
+ NuJ8h6kSYMSPTd/YeqYCrrD9iqEV3RYTRXzclPfWx8vYe19Z6xcDINB/jVaeOe8lzh2j
+ eXmjJGFYw0Du/D5AhoU+ln+15kZ6rEM59plczL2dYyrQq/tDxtpP5uY7calONo898Fl/
+ 5htA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=CbYmRGUZEd1iQvum1IXYqF42ybOYTBKz3+p6mg+oYlo=;
+ b=qobcR0lLUxDXRfqd1vqmCAepVZL0tTD6B/v8BCOO1shaAAt3SYy9VcaSCjl1tyTfTt
+ Od2z1MXEqSRIpM5+4e7Q0VYR8KSC07KlP2nZ7MUjNhP8C83RkRs/sKC50Al5Q5b9ioOI
+ pNb+VZRHve55up56nlNi/qzTTYkRkI8B0BNQwHEQitZ7iYnTpSFjPkDfUsR76MgkViHP
+ LBWZwTMxMSPzwyUiRp6oKEgo9OpbYszHQBHh6YP3ggFHeE8qdX20lbrKvLoMEg53H3mL
+ tVMW/huNmMKPt895scF+uXMVNhLVoBUwjWDCQiPzA5bV59aW18a+T0vphGXLyupLEJ+k
+ KTew==
+X-Gm-Message-State: APjAAAVHKU2Zdj3jz9IU6wG1DIQUBoBHXIUha7Q0oin3TNx1ldwppAY1
+ epvD0iVPywhCukNb1un2v+g=
+X-Google-Smtp-Source: APXvYqwYpL9AXMOqLKcqIJyllvGM0xwvhgBITtdXdHbwwCZFAwPbb753YOq1ogdG3ANmWqO5UHFx5Q==
+X-Received: by 2002:a17:902:1008:: with SMTP id
+ b8mr28480020pla.120.1553579930670; 
+ Mon, 25 Mar 2019 22:58:50 -0700 (PDT)
+Received: from localhost ([193.114.107.176])
+ by smtp.gmail.com with ESMTPSA id 25sm22419793pfo.96.2019.03.25.22.58.48
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Mon, 25 Mar 2019 22:58:49 -0700 (PDT)
+Date: Tue, 26 Mar 2019 15:58:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2] arch/powerpc: Rework local_paca to avoid LTO warnings
+To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
+References: <20190313034208.13134-1-alastair@au1.ibm.com>
+ <20190314023125.10076-1-alastair@au1.ibm.com>
+In-Reply-To: <20190314023125.10076-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1553579424.0r39b9otz6.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -70,331 +93,82 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- Cameron Kaiser <spectre@floodgap.com>
+Cc: Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org,
+ Mike Rapoport <rppt@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-This adds a flag so that the DAWR can be enabled on P9 via:
-  echo Y > /sys/kernel/debug/powerpc/dawr_enable_dangerous
+Alastair D'Silva's on March 14, 2019 12:31 pm:
+> From: Alastair D'Silva <alastair@d-silva.org>
+>=20
+> When building an LTO kernel, the existing code generates warnings:
+>     ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
+>         =E2=80=98local_paca=E2=80=99 used for multiple global register va=
+riables
+>      register struct paca_struct *local_paca asm("r13");
+>                                   ^
+>     ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
+>         =E2=80=98local_paca=E2=80=99
 
-The DAWR was previously force disabled on POWER9 in:
-  9654153158 powerpc: Disable DAWR in the base POWER9 CPU features
-Also see Documentation/powerpc/DAWR-POWER9.txt
+Isn't this a bogus warning? It doesn't look like there's a way to=20
+define it any other way.
 
-This is a dangerous setting, USE AT YOUR OWN RISK.
+>=20
+> This patch reworks local_paca into an inline getter & setter function,
+> which addresses the warning.
+>=20
+> Changelog:
+> V2
+>   - Address whitespace issues
+>   - keep new implementation close to where the old implementation was
+>=20
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> ---
+>  arch/powerpc/include/asm/paca.h | 37 +++++++++++++++++++++++++--------
+>  arch/powerpc/kernel/paca.c      |  2 +-
+>  2 files changed, 29 insertions(+), 10 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/p=
+aca.h
+> index e843bc5d1a0f..2fa0b43357c9 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -34,19 +34,38 @@
+>  #include <asm/cpuidle.h>
+>  #include <asm/atomic.h>
+> =20
+> -register struct paca_struct *local_paca asm("r13");
+> -
+>  #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
+>  extern unsigned int debug_smp_processor_id(void); /* from linux/smp.h */
+> -/*
+> - * Add standard checks that preemption cannot occur when using get_paca(=
+):
+> - * otherwise the paca_struct it points to may be the wrong one just afte=
+r.
+> - */
+> -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
+> -#else
+> -#define get_paca()	local_paca
+>  #endif
+> =20
+> +static inline struct paca_struct *get_paca_no_preempt_check(void)
+> +{
+> +	register struct paca_struct *paca asm("r13");
+> +
+> +	return paca;
+> +}
 
-Some users may not care about a bad user crashing their box
-(ie. single user/desktop systems) and really want the DAWR.  This
-allows them to force enable DAWR.
+Problem is it now changes the global register variable to a local=20
+register variable. The compiler would presumably be within its rights
+to "cache" that return value or use another register for it, which
+is not really what we want.
 
-This flag can also be used to disable DAWR access. Once this is
-cleared, all DAWR access should be cleared immediately and your
-machine once again safe from crashing.
+Thanks,
+Nick
 
-Userspace may get confused by toggling this. If DAWR is force
-enabled/disabled between getting the number of breakpoints (via
-PTRACE_GETHWDBGINFO) and setting the breakpoint, userspace will get an
-inconsistent view of what's available. Similarly for guests.
-
-For the DAWR to be enabled in a KVM guest, the DAWR needs to be force
-enabled in the host AND the guest. For this reason, this won't work on
-POWERVM as it doesn't allow the HCALL to work. Writes of 'Y' to the
-dawr_enable_dangerous file will fail if the hypervisor doesn't support
-writing the DAWR.
-
-To double check the DAWR is working, run this kernel selftest:
-  tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-Any errors/failures/skips mean something is wrong.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- Documentation/powerpc/DAWR-POWER9.txt    | 32 +++++++++++++
- arch/powerpc/include/asm/hw_breakpoint.h |  7 +++
- arch/powerpc/kernel/hw_breakpoint.c      | 60 +++++++++++++++++++++++-
- arch/powerpc/kernel/process.c            |  9 ++--
- arch/powerpc/kernel/ptrace.c             |  3 +-
- arch/powerpc/kvm/book3s_hv.c             |  3 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 23 +++++----
- 7 files changed, 120 insertions(+), 17 deletions(-)
-
-diff --git a/Documentation/powerpc/DAWR-POWER9.txt b/Documentation/powerpc/DAWR-POWER9.txt
-index 2feaa66196..bdec036509 100644
---- a/Documentation/powerpc/DAWR-POWER9.txt
-+++ b/Documentation/powerpc/DAWR-POWER9.txt
-@@ -56,3 +56,35 @@ POWER9. Loads and stores to the watchpoint locations will not be
- trapped in GDB. The watchpoint is remembered, so if the guest is
- migrated back to the POWER8 host, it will start working again.
- 
-+Force enabling the DAWR
-+=============================
-+Kernels (since ~v5.2) have an option to force enable the DAWR via:
-+
-+  echo Y > /sys/kernel/debug/powerpc/dawr_enable_dangerous
-+
-+This enables the DAWR even on POWER9.
-+
-+This is a dangerous setting, USE AT YOUR OWN RISK.
-+
-+Some users may not care about a bad user crashing their box
-+(ie. single user/desktop systems) and really want the DAWR.  This
-+allows them to force enable DAWR.
-+
-+This flag can also be used to disable DAWR access. Once this is
-+cleared, all DAWR access should be cleared immediately and your
-+machine once again safe from crashing.
-+
-+Userspace may get confused by toggling this. If DAWR is force
-+enabled/disabled between getting the number of breakpoints (via
-+PTRACE_GETHWDBGINFO) and setting the breakpoint, userspace will get an
-+inconsistent view of what's available. Similarly for guests.
-+
-+For the DAWR to be enabled in a KVM guest, the DAWR needs to be force
-+enabled in the host AND the guest. For this reason, this won't work on
-+POWERVM as it doesn't allow the HCALL to work. Writes of 'Y' to the
-+dawr_enable_dangerous file will fail if the hypervisor doesn't support
-+writing the DAWR.
-+
-+To double check the DAWR is working, run this kernel selftest:
-+  tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
-+Any errors/failures/skips mean something is wrong.
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index ece4dc89c9..87c2a74f64 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -90,6 +90,13 @@ static inline void hw_breakpoint_disable(void)
- extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
- int hw_breakpoint_handler(struct die_args *args);
- 
-+extern int set_dawr(struct arch_hw_breakpoint *brk);
-+extern bool dawr_force_enable;
-+static inline bool dawr_enabled(void)
-+{
-+	return dawr_force_enable;
-+}
-+
- #else	/* CONFIG_HAVE_HW_BREAKPOINT */
- static inline void hw_breakpoint_disable(void) { }
- static inline void thread_change_pc(struct task_struct *tsk,
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index fec8a67731..0b2461e1d9 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -29,11 +29,14 @@
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <linux/smp.h>
-+#include <linux/debugfs.h>
-+#include <linux/init.h>
- 
- #include <asm/hw_breakpoint.h>
- #include <asm/processor.h>
- #include <asm/sstep.h>
- #include <asm/debug.h>
-+#include <asm/debugfs.h>
- #include <linux/uaccess.h>
- 
- /*
-@@ -174,7 +177,7 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
- 	if (!ppc_breakpoint_available())
- 		return -ENODEV;
- 	length_max = 8; /* DABR */
--	if (cpu_has_feature(CPU_FTR_DAWR)) {
-+	if (dawr_enabled()) {
- 		length_max = 512 ; /* 64 doublewords */
- 		/* DAWR region can't cross 512 boundary */
- 		if ((attr->bp_addr >> 9) !=
-@@ -376,3 +379,58 @@ void hw_breakpoint_pmu_read(struct perf_event *bp)
- {
- 	/* TODO */
- }
-+
-+bool dawr_force_enable;
-+
-+static ssize_t dawr_write_file_bool(struct file *file,
-+				    const char __user *user_buf,
-+				    size_t count, loff_t *ppos)
-+{
-+	struct arch_hw_breakpoint null_brk = {0, 0, 0};
-+	size_t rc;
-+
-+	/* Send error to user if they hypervisor won't allow us to write DAWR */
-+	if ((!dawr_force_enable) &&
-+	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
-+	    (set_dawr(&null_brk) != H_SUCCESS))
-+		return -1;
-+
-+	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
-+	if (rc)
-+		return rc;
-+
-+	/* If we are clearing, make sure all CPUs have the DAWR cleared */
-+	if (!dawr_force_enable)
-+		smp_call_function((smp_call_func_t)set_dawr, &null_brk, 0);
-+
-+	return rc;
-+}
-+
-+static const struct file_operations dawr_enable_fops = {
-+	.read =		debugfs_read_file_bool,
-+	.write =	dawr_write_file_bool,
-+	.open =		simple_open,
-+	.llseek =	default_llseek,
-+};
-+
-+static int __init dawr_force_setup(void)
-+{
-+	dawr_force_enable = false;
-+
-+	if (cpu_has_feature(CPU_FTR_DAWR)) {
-+		/* Don't setup sysfs file for user control on P8 */
-+		dawr_force_enable = true;
-+		return 0;
-+	}
-+
-+	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
-+		/* Turn DAWR off by default, but allow admin to turn it on */
-+		dawr_force_enable = false;
-+		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
-+					   powerpc_debugfs_root,
-+					   &dawr_force_enable,
-+					   &dawr_enable_fops);
-+	}
-+	return 0;
-+}
-+arch_initcall(dawr_force_setup);
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index dd9e0d5386..225705aac8 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -67,6 +67,7 @@
- #include <asm/cpu_has_feature.h>
- #include <asm/asm-prototypes.h>
- #include <asm/stacktrace.h>
-+#include <asm/hw_breakpoint.h>
- 
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-@@ -784,7 +785,7 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
- 	return __set_dabr(dabr, dabrx);
- }
- 
--static inline int set_dawr(struct arch_hw_breakpoint *brk)
-+int set_dawr(struct arch_hw_breakpoint *brk)
- {
- 	unsigned long dawr, dawrx, mrd;
- 
-@@ -816,7 +817,7 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
- {
- 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
- 
--	if (cpu_has_feature(CPU_FTR_DAWR))
-+	if (dawr_enabled())
- 		// Power8 or later
- 		set_dawr(brk);
- 	else if (!cpu_has_feature(CPU_FTR_ARCH_207S))
-@@ -830,8 +831,8 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
- /* Check if we have DAWR or DABR hardware */
- bool ppc_breakpoint_available(void)
- {
--	if (cpu_has_feature(CPU_FTR_DAWR))
--		return true; /* POWER8 DAWR */
-+	if (dawr_enabled())
-+		return true; /* POWER8 DAWR or POWER9 forced DAWR */
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		return false; /* POWER9 with DAWR disabled */
- 	/* DABR: Everything but POWER8 and POWER9 */
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index d9ac7d9465..684b0b315c 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -43,6 +43,7 @@
- #include <asm/tm.h>
- #include <asm/asm-prototypes.h>
- #include <asm/debug.h>
-+#include <asm/hw_breakpoint.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/syscalls.h>
-@@ -3088,7 +3089,7 @@ long arch_ptrace(struct task_struct *child, long request,
- 		dbginfo.sizeof_condition = 0;
- #ifdef CONFIG_HAVE_HW_BREAKPOINT
- 		dbginfo.features = PPC_DEBUG_FEATURE_DATA_BP_RANGE;
--		if (cpu_has_feature(CPU_FTR_DAWR))
-+		if (dawr_enabled())
- 			dbginfo.features |= PPC_DEBUG_FEATURE_DATA_BP_DAWR;
- #else
- 		dbginfo.features = 0;
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 06964350b9..0fab0a2010 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -74,6 +74,7 @@
- #include <asm/opal.h>
- #include <asm/xics.h>
- #include <asm/xive.h>
-+#include <asm/hw_breakpoint.h>
- 
- #include "book3s.h"
- 
-@@ -3374,7 +3375,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
- 	mtspr(SPRN_PURR, vcpu->arch.purr);
- 	mtspr(SPRN_SPURR, vcpu->arch.spurr);
- 
--	if (cpu_has_feature(CPU_FTR_DAWR)) {
-+	if (dawr_enabled()) {
- 		mtspr(SPRN_DAWR, vcpu->arch.dawr);
- 		mtspr(SPRN_DAWRX, vcpu->arch.dawrx);
- 	}
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 3a5e719ef0..139027c62d 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -822,18 +822,21 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	mtspr	SPRN_IAMR, r5
- 	mtspr	SPRN_PSPB, r6
- 	mtspr	SPRN_FSCR, r7
--	ld	r5, VCPU_DAWR(r4)
--	ld	r6, VCPU_DAWRX(r4)
--	ld	r7, VCPU_CIABR(r4)
--	ld	r8, VCPU_TAR(r4)
- 	/*
- 	 * Handle broken DAWR case by not writing it. This means we
- 	 * can still store the DAWR register for migration.
- 	 */
--BEGIN_FTR_SECTION
-+	LOAD_REG_ADDR(r5, dawr_force_enable)
-+	lbz	r5, 0(r5)
-+	cmpdi	r5, 0
-+	beq	1f
-+	ld	r5, VCPU_DAWR(r4)
-+	ld	r6, VCPU_DAWRX(r4)
- 	mtspr	SPRN_DAWR, r5
- 	mtspr	SPRN_DAWRX, r6
--END_FTR_SECTION_IFSET(CPU_FTR_DAWR)
-+1:
-+	ld	r7, VCPU_CIABR(r4)
-+	ld	r8, VCPU_TAR(r4)
- 	mtspr	SPRN_CIABR, r7
- 	mtspr	SPRN_TAR, r8
- 	ld	r5, VCPU_IC(r4)
-@@ -2513,11 +2516,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	blr
- 
- 2:
--BEGIN_FTR_SECTION
--	/* POWER9 with disabled DAWR */
-+	LOAD_REG_ADDR(r11, dawr_force_enable)
-+	lbz	r11, 0(r11)
-+	cmpdi	r11, 0
- 	li	r3, H_HARDWARE
--	blr
--END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
-+	beqlr
- 	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
- 	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
- 	rlwimi	r5, r4, 2, DAWRX_WT
--- 
-2.20.1
-
+=
