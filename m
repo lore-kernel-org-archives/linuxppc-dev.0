@@ -2,79 +2,64 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BFEB5C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:27:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32DE1C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:52:23 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 36C4F20823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:27:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="l86VO2N8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 36C4F20823
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	by mail.kernel.org (Postfix) with ESMTPS id B277B2070B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 06:52:22 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B277B2070B
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44T1QK2p5kzDqM9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:27:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44T1yr4sYTzDqML
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:52:20 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.85.214.196; helo=mail-pl1-f196.google.com;
+ envelope-from=bhsharma@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="l86VO2N8"; 
- dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mail-pl1-f196.google.com (mail-pl1-f196.google.com
+ [209.85.214.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44T1Js3gR5zDqBr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 17:22:53 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44T1Jn3r3fz9v25f;
- Tue, 26 Mar 2019 07:22:49 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=l86VO2N8; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id qWY4bGBmanWW; Tue, 26 Mar 2019 07:22:49 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44T1Jn2crJz9v08b;
- Tue, 26 Mar 2019 07:22:49 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553581369; bh=w9ZTq+9gYrT7Z+ul8f2ugxptugC8KBMJKVc640Gv0vU=;
- h=In-Reply-To:References:From:Subject:To:Cc:Date:From;
- b=l86VO2N82/ufoOs+unzzDSDLD+Qvv3O2AOGdtY9EFXUQA4sWEPcR58HdGJPnMy8oC
- 8J3TzAKKrboPnTZLEHmpE//gghVqDRcFVrl3xsstv27OGo7ESHgNqlSCUwVRRTF/xf
- eso5woF+OX3Ll0czr7JyCBOMo3QG/XRj0ZZDcaSU=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 30B2F8B77C;
- Tue, 26 Mar 2019 07:22:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id SUe2GIoZZt36; Tue, 26 Mar 2019 07:22:50 +0100 (CET)
-Received: from po16846vm.idsi0.si.c-s.fr (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id E80448B74C;
- Tue, 26 Mar 2019 07:22:49 +0100 (CET)
-Received: by localhost.localdomain (Postfix, from userid 0)
- id C022E69D61; Tue, 26 Mar 2019 06:22:49 +0000 (UTC)
-Message-Id: <cb99fd3c53dbc3cafcc1a09e1c07397a458b15c3.1553581290.git.christophe.leroy@c-s.fr>
-In-Reply-To: <670fb3e35793383652b961458c47ce865736a65f.1553581290.git.christophe.leroy@c-s.fr>
-References: <670fb3e35793383652b961458c47ce865736a65f.1553581290.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 3/3] powerpc/mm: print hash info in a helper
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 26 Mar 2019 06:22:49 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44T1x81dqkzDqCc
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 17:50:51 +1100 (AEDT)
+Received: by mail-pl1-f196.google.com with SMTP id q6so1181598pll.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 23:50:50 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id;
+ bh=FZhwv3yi5zyZbOFCZb2GEhrF1eNPuv7xg9JUzeBkJ/I=;
+ b=Yfk6BDIw+lsrWJzIEqebw1XJh6IpbeOIU75D7ESsuUC1JczW4z5Ht2iAlYneo4xuev
+ HuztCZyCJbQ6njzTEw/DUEwrtfv44RPB8hPjLk/yZTi7aaiOK95h76J9l2sMgtHRHPRi
+ a2aLnpxFEK4o6wWZciAGcKMfhbxI4pyTondY3vDTk83dV3JRCgQnj1PxAGscsVL/kSop
+ jjTLbxoC3+sUhD+kfK4mccbr3g7DPTK+ECiTkumx+k5yPE8hgiw//ZMILPq/GvOfRTIT
+ 6WYk+mbmIEOWPljuDPPICC5iFeTAdSXTJ9hjY4rj00WzSa6+V4b27rIQiRQyl6BPdvJH
+ 4ngA==
+X-Gm-Message-State: APjAAAU0FxX4w0mKoyXtOkaQhUE6pq53HBbRHRN1VJdo8u/3fnEOhx8d
+ MYsJRcnfQsHGJ5fpckLoDhzTBg==
+X-Google-Smtp-Source: APXvYqy39bmf1qbyFI6moNdEPCXkx4W2gXiUlmd3KBrqDCU2xEuOLaQloNXGw74Vf1g20sAehiiMvw==
+X-Received: by 2002:a17:902:142:: with SMTP id
+ 60mr29516055plb.191.1553583048524; 
+ Mon, 25 Mar 2019 23:50:48 -0700 (PDT)
+Received: from localhost ([182.69.197.66])
+ by smtp.gmail.com with ESMTPSA id e13sm30256596pgb.37.2019.03.25.23.50.46
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 25 Mar 2019 23:50:47 -0700 (PDT)
+From: Bhupesh Sharma <bhsharma@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] include/kcore: Remove left-over instances of
+ 'kclist_add_remap()'
+Date: Tue, 26 Mar 2019 12:20:28 +0530
+Message-Id: <1553583028-17804-1-git-send-email-bhsharma@redhat.com>
+X-Mailer: git-send-email 2.7.4
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -86,143 +71,69 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: x86@kernel.org, bhsharma@redhat.com, Dave Young <dyoung@redhat.com>,
+ kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Boris Petkov <bp@alien8.de>, James Morse <james.morse@arm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, bhupesh.linux@gmail.com,
+ Dave Anderson <anderson@redhat.com>, Ingo Molnar <mingo@kernel.org>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Reduce #ifdef mess by defining a helper to print
-hash info at startup.
+Commit bf904d2762ee ("x86/pti/64: Remove the SYSCALL64 entry trampoline")
+removed the sole usage of 'kclist_add_remap()' from
+'arch/x86/mm/cpu_entry_area.c', but it did not remove the left-over
+definition from the include file.
 
-In the meantime, remove the display of hash table address
-to reduce leak of non necessary information.
+Fix the same.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: James Morse <james.morse@arm.com>
+Cc: Boris Petkov <bp@alien8.de>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Dave Anderson <anderson@redhat.com>
+Cc: Dave Young <dyoung@redhat.com>
+Cc: x86@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: kexec@lists.infradead.org
+Signed-off-by: Bhupesh Sharma <bhsharma@redhat.com>
 ---
-v2: added header to avoid sparse warning
+ include/linux/kcore.h | 11 -----------
+ 1 file changed, 11 deletions(-)
 
- arch/powerpc/kernel/setup-common.c | 19 +------------------
- arch/powerpc/mm/hash_utils_64.c    | 10 ++++++++++
- arch/powerpc/mm/mmu_decl.h         |  5 ++++-
- arch/powerpc/mm/ppc_mmu_32.c       |  9 ++++++++-
- 4 files changed, 23 insertions(+), 20 deletions(-)
-
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 2e5dfb6e0823..f24a74f7912d 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -799,12 +799,6 @@ void arch_setup_pdev_archdata(struct platform_device *pdev)
- static __init void print_system_info(void)
- {
- 	pr_info("-----------------------------------------------------\n");
--#ifdef CONFIG_PPC_BOOK3S_64
--	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
--#endif
--#ifdef CONFIG_PPC_BOOK3S_32
--	pr_info("Hash_size         = 0x%lx\n", Hash_size);
--#endif
- 	pr_info("phys_mem_size     = 0x%llx\n",
- 		(unsigned long long)memblock_phys_mem_size());
+diff --git a/include/linux/kcore.h b/include/linux/kcore.h
+index c843f4a9c512..da676cdbd727 100644
+--- a/include/linux/kcore.h
++++ b/include/linux/kcore.h
+@@ -38,12 +38,6 @@ struct vmcoredd_node {
  
-@@ -826,18 +820,7 @@ static __init void print_system_info(void)
- 	pr_info("firmware_features = 0x%016lx\n", powerpc_firmware_features);
- #endif
+ #ifdef CONFIG_PROC_KCORE
+ void __init kclist_add(struct kcore_list *, void *, size_t, int type);
+-static inline
+-void kclist_add_remap(struct kcore_list *m, void *addr, void *vaddr, size_t sz)
+-{
+-	m->vaddr = (unsigned long)vaddr;
+-	kclist_add(m, addr, sz, KCORE_REMAP);
+-}
  
--#ifdef CONFIG_PPC_BOOK3S_64
--	if (htab_address)
--		pr_info("htab_address      = 0x%p\n", htab_address);
--	if (htab_hash_mask)
--		pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
--#endif
--#ifdef CONFIG_PPC_BOOK3S_32
--	if (Hash)
--		pr_info("Hash              = 0x%p\n", Hash);
--	if (Hash_mask)
--		pr_info("Hash_mask         = 0x%lx\n", Hash_mask);
--#endif
-+	print_system_hash_info();
- 
- 	if (PHYSICAL_START > 0)
- 		pr_info("physical_start    = 0x%llx\n",
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 0a4f939a8161..cef2d05fdb9b 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -65,6 +65,8 @@
- #include <asm/pte-walk.h>
- #include <asm/asm-prototypes.h>
- 
-+#include "mmu_decl.h"
-+
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
+ extern int __init register_mem_pfn_is_ram(int (*fn)(unsigned long pfn));
  #else
-@@ -1909,3 +1911,11 @@ static int __init hash64_debugfs(void)
+@@ -51,11 +45,6 @@ static inline
+ void kclist_add(struct kcore_list *new, void *addr, size_t size, int type)
+ {
  }
- machine_device_initcall(pseries, hash64_debugfs);
- #endif /* CONFIG_DEBUG_FS */
-+
-+void __init print_system_hash_info(void)
-+{
-+	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
-+
-+	if (htab_hash_mask)
-+		pr_info("htab_hash_mask    = 0x%lx\n", htab_hash_mask);
-+}
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index f7f1374ba3ee..dc617ade83ab 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -83,6 +83,8 @@ static inline void _tlbivax_bcast(unsigned long address, unsigned int pid,
- }
+-
+-static inline
+-void kclist_add_remap(struct kcore_list *m, void *addr, void *vaddr, size_t sz)
+-{
+-}
  #endif
  
-+static inline void print_system_hash_info(void) {}
-+
- #else /* CONFIG_PPC_MMU_NOHASH */
- 
- extern void hash_preload(struct mm_struct *mm, unsigned long ea,
-@@ -92,6 +94,8 @@ extern void hash_preload(struct mm_struct *mm, unsigned long ea,
- extern void _tlbie(unsigned long address);
- extern void _tlbia(void);
- 
-+void print_system_hash_info(void);
-+
- #endif /* CONFIG_PPC_MMU_NOHASH */
- 
- #ifdef CONFIG_PPC32
-@@ -105,7 +109,6 @@ extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
- extern struct hash_pte *Hash;
--extern unsigned long Hash_size, Hash_mask;
- 
- #endif /* CONFIG_PPC32 */
- 
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 088f14d57cce..864096489b6d 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -37,7 +37,7 @@
- #include "mmu_decl.h"
- 
- struct hash_pte *Hash;
--unsigned long Hash_size, Hash_mask;
-+static unsigned long Hash_size, Hash_mask;
- unsigned long _SDR1;
- 
- struct ppc_bat BATS[8][2];	/* 8 pairs of IBAT, DBAT */
-@@ -392,3 +392,10 @@ void setup_initial_memory_limit(phys_addr_t first_memblock_base,
- 	else /* Anything else has 256M mapped */
- 		memblock_set_current_limit(min_t(u64, first_memblock_size, 0x10000000));
- }
-+
-+void __init print_system_hash_info(void)
-+{
-+	pr_info("Hash_size         = 0x%lx\n", Hash_size);
-+	if (Hash_mask)
-+		pr_info("Hash_mask         = 0x%lx\n", Hash_mask);
-+}
+ #endif /* _LINUX_KCORE_H */
 -- 
-2.13.3
+2.7.4
 
