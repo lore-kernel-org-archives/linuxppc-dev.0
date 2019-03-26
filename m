@@ -2,70 +2,49 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95D99C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:08:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1B43C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:29:18 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id CE3052070D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:08:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Pi5bLvU2"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org CE3052070D
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id D591C206DF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:29:17 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D591C206DF
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=arm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TGJS5S6jzDqNR
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 03:08:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TGmW4CZCzDqLH
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 03:29:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=robh+dt@kernel.org; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=arm.com
+ (client-ip=217.140.101.70; helo=foss.arm.com;
+ envelope-from=steven.price@arm.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="Pi5bLvU2"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TGGj01sgzDqCg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 03:06:52 +1100 (AEDT)
-Received: from mail-qt1-f169.google.com (mail-qt1-f169.google.com
- [209.85.160.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 9085220896
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 16:06:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553616409;
- bh=n+YQMdyNixtA3ulybEQw/Fkej+e5djvPVPNuICR2uMQ=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=Pi5bLvU2FZBHeGJvRQqjKqG+eIkpmTPgEtizBYefEnYDWSeqv7ZW2dW1vDipEou77
- gnyDfAI8XgWawFuCMJFVynbx0fZ3D52BrCcyM/H09bcPucFhQUfcS3/wjVurOPq5Ns
- 5lNBr2KCTmEbdQFtstuoHZCoG1oEQFt3/bgF1A/s=
-Received: by mail-qt1-f169.google.com with SMTP id v20so15164947qtv.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 09:06:49 -0700 (PDT)
-X-Gm-Message-State: APjAAAWeErN6dJ0+MHh23V07rn0rOwQyFaYk0qDd5iUoGNu+LijUNCF7
- VH8yAQStIS6YIIoLN9Er8Y208QMLflb9r/DXiw==
-X-Google-Smtp-Source: APXvYqw83pPW8sTtnMW2/pivRygJIjkI7wQqunXKiwHrug9V4B++sp0PWbD9ZXw2VfcCpKx9ph3knTwET/1WllkreNQ=
-X-Received: by 2002:ac8:267c:: with SMTP id v57mr26094887qtv.76.1553616408717; 
- Tue, 26 Mar 2019 09:06:48 -0700 (PDT)
+ dmarc=none (p=none dis=none) header.from=arm.com
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44TGjp6LC8zDqHk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 03:26:53 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.72.51.249])
+ by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0C016168F;
+ Tue, 26 Mar 2019 09:26:51 -0700 (PDT)
+Received: from e112269-lin.arm.com (e112269-lin.cambridge.arm.com
+ [10.1.196.69])
+ by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 12AF63F614;
+ Tue, 26 Mar 2019 09:26:46 -0700 (PDT)
+From: Steven Price <steven.price@arm.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v6 04/19] powerpc: mm: Add p?d_large() definitions
+Date: Tue, 26 Mar 2019 16:26:09 +0000
+Message-Id: <20190326162624.20736-5-steven.price@arm.com>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20190326162624.20736-1-steven.price@arm.com>
+References: <20190326162624.20736-1-steven.price@arm.com>
 MIME-Version: 1.0
-References: <20190316142138.65860d88@archlinux>
- <55b4aaba-a94f-2a9d-c96d-e591877fe075@mind.be>
-In-Reply-To: <55b4aaba-a94f-2a9d-c96d-e591877fe075@mind.be>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 26 Mar 2019 11:06:35 -0500
-X-Gmail-Original-Message-ID: <CAL_JsqKmtr7Gojx9kfPay=HUJ-Xpg0W1dB-K4bfWDnhsA3KAyA@mail.gmail.com>
-Message-ID: <CAL_JsqKmtr7Gojx9kfPay=HUJ-Xpg0W1dB-K4bfWDnhsA3KAyA@mail.gmail.com>
-Subject: Re: [PATCH v2 4/7] dt-bindings: counter: ftm-quaddec
-To: Arnout Vandecappelle <arnout@mind.be>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -77,152 +56,150 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux PWM List <linux-pwm@vger.kernel.org>,
- "open list:IIO SUBSYSTEM AND DRIVERS" <linux-iio@vger.kernel.org>,
- Patrick Havelange <patrick.havelange@essensium.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- William Breathitt Gray <vilhelm.gray@gmail.com>, Li Yang <leoyang.li@nxp.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Esben Haabendal <esben@haabendal.dk>, Thomas Gleixner <tglx@linutronix.de>,
- Shawn Guo <shawnguo@kernel.org>, Jonathan Cameron <jic23@kernel.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>, "Liang,
+ Kan" <kan.liang@linux.intel.com>, x86@kernel.org,
+ Steven Price <steven.price@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Arnd Bergmann <arnd@arndb.de>,
+ kvm-ppc@vger.kernel.org,
+ =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org,
+ James Morse <james.morse@arm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 26, 2019 at 10:43 AM Arnout Vandecappelle <arnout@mind.be> wrote:
->
->  [Full disclosure: I'm a colleague of Patrick.]
->
-> On 2019-03-16 14:21:38, Jonathan Cameron wrote:
->
-> > On Tue, 12 Mar 2019 14:09:52 -0500
-> > Rob Herring <robh@kernel.org> wrote:
-> >
-> > > On Wed, Mar 06, 2019 at 12:12:05PM +0100, Patrick Havelange wrote:
-> > > > FlexTimer quadrature decoder driver.
-> > > >
-> > > > Signed-off-by: Patrick Havelange <patrick.havelange@essensium.com>
-> > > > Reviewed-by: Esben Haabendal <esben@haabendal.dk>
-> > > > ---
-> > > > Changes v2
-> > > > - None
-> > > > ---
-> > > > .../bindings/counter/ftm-quaddec.txt           | 18 ++++++++++++++++++
-> > > > 1 file changed, 18 insertions(+)
-> > > > create mode 100644 Documentation/devicetree/bindings/counter/ftm-quaddec.txt
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/counter/ftm-quaddec.txt \
-> > > > b/Documentation/devicetree/bindings/counter/ftm-quaddec.txt new file mode 100644
-> > > > index 000000000000..4d18cd722074
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/counter/ftm-quaddec.txt
-> > > > @@ -0,0 +1,18 @@
-> > > > +FlexTimer Quadrature decoder counter
-> > > > +
-> > > > +This driver exposes a simple counter for the quadrature decoder mode.
-> > >
-> > > Seems like this is more a mode of a h/w block than describing a h/w
-> > > block. Bindings should do the latter.
->
->
->   As Jonathan writes below, it really is a "hardware mode", since it is tied
-> very closely to how the device is wired up.
+walk_page_range() is going to be allowed to walk page tables other than
+those of user space. For this it needs to know when it has reached a
+'leaf' entry in the page tables. This information is provided by the
+p?d_large() functions/macros.
 
-Okay, as it is describing what is attached, I agree.
+For powerpc pmd_large() was already implemented, so hoist it out of the
+CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
 
-The thing to consider is whether you will need to describe more than
-just the mode. We often start adding properties of an attached device
-in the controller node only to realize later that we should have a
-node for the device itself. Even for something as simple as an LED
-we've ended up there.
+Also since we now have a pmd_large always implemented we can drop the
+pmd_is_leaf() function.
 
->  Basically, the same block can be used for pretty diverse functions: a PWM where
-> the pins are output, a counter where the pins are input, or a timer where the
-> interrupt or timer value is used purely internally.
->
->  This smells a bit like an MFD, but IMO it really isn't, because only one of the
-> functions can be enabled. So indeed, it's more like a mode.
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: kvm-ppc@vger.kernel.org
+Signed-off-by: Steven Price <steven.price@arm.com>
+---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
+ arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 ++------
+ 2 files changed, 24 insertions(+), 18 deletions(-)
 
-Agreed.
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 581f91be9dd4..f6d1ac8b832e 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -897,6 +897,12 @@ static inline int pud_present(pud_t pud)
+ 	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
+ }
+ 
++#define pud_large	pud_large
++static inline int pud_large(pud_t pud)
++{
++	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
++}
++
+ extern struct page *pud_page(pud_t pud);
+ extern struct page *pmd_page(pmd_t pmd);
+ static inline pte_t pud_pte(pud_t pud)
+@@ -940,6 +946,12 @@ static inline int pgd_present(pgd_t pgd)
+ 	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
+ }
+ 
++#define pgd_large	pgd_large
++static inline int pgd_large(pgd_t pgd)
++{
++	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ static inline pte_t pgd_pte(pgd_t pgd)
+ {
+ 	return __pte_raw(pgd_raw(pgd));
+@@ -1093,6 +1105,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
+ 	return pte_access_permitted(pmd_pte(pmd), write);
+ }
+ 
++#define pmd_large	pmd_large
++/*
++ * returns true for pmd migration entries, THP, devmap, hugetlb
++ */
++static inline int pmd_large(pmd_t pmd)
++{
++	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
++}
++
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+ extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
+ extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
+@@ -1119,15 +1140,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
+ 	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
+ }
+ 
+-/*
+- * returns true for pmd migration entries, THP, devmap, hugetlb
+- * But compile time dependent on THP config
+- */
+-static inline int pmd_large(pmd_t pmd)
+-{
+-	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
+-}
+-
+ static inline pmd_t pmd_mknotpresent(pmd_t pmd)
+ {
+ 	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index f55ef071883f..1b57b4e3f819 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -363,12 +363,6 @@ static void kvmppc_pte_free(pte_t *ptep)
+ 	kmem_cache_free(kvm_pte_cache, ptep);
+ }
+ 
+-/* Like pmd_huge() and pmd_large(), but works regardless of config options */
+-static inline int pmd_is_leaf(pmd_t pmd)
+-{
+-	return !!(pmd_val(pmd) & _PAGE_PTE);
+-}
+-
+ static pmd_t *kvmppc_pmd_alloc(void)
+ {
+ 	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
+@@ -460,7 +454,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full,
+ 	for (im = 0; im < PTRS_PER_PMD; ++im, ++p) {
+ 		if (!pmd_present(*p))
+ 			continue;
+-		if (pmd_is_leaf(*p)) {
++		if (pmd_large(*p)) {
+ 			if (full) {
+ 				pmd_clear(p);
+ 			} else {
+@@ -593,7 +587,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 	else if (level <= 1)
+ 		new_pmd = kvmppc_pmd_alloc();
+ 
+-	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_is_leaf(*pmd)))
++	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_large(*pmd)))
+ 		new_ptep = kvmppc_pte_alloc();
+ 
+ 	/* Check if we might have been invalidated; let the guest retry if so */
+@@ -662,7 +656,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
+ 		new_pmd = NULL;
+ 	}
+ 	pmd = pmd_offset(pud, gpa);
+-	if (pmd_is_leaf(*pmd)) {
++	if (pmd_large(*pmd)) {
+ 		unsigned long lgpa = gpa & PMD_MASK;
+ 
+ 		/* Check if we raced and someone else has set the same thing */
+-- 
+2.20.1
 
-> > The snag is that we need to dig ourselves out of the hole set by:
-> > fsl,vf610-ftm-pwm etc.
-> >
-> > Documentation/devicetree/bindings/pwm/pwm-fsl-ftm.txt
-> > Documentation/devicetree/bindings/timer/fsl,ftm-timer.txt
-> > (I'm assuming these are the same IP block).
-> >
-> > Can probably be sorted out though.  One core driver binds against the
-> > ftm and deals with instantiating the others depending on the configuration
-> > (note that this mode for instance does make sense in DT as it's
-> > really reflecting the fact there is a quadrature encoder
-> > connected to the ftm).
-> >
-> > Fiddly though :)
->
->
->  The way I see it, there are 3 ways this could be modelled (other than the
-> current way: several nodes with the same address).
->
->
-> 1. The SoC's .dtsi defines a single node, and the compatible string (which would
-> be defined by the board .dts) both enables the node and sets the compatible
-> string. The .dtsi would also define the static properties of all the different
-> functions: some "static" properties, e.g. reg, but also some function
-> specific-properties, e.g.#pwm-cells (only for PWM), interrupts (only for timer).
-> The driver (selected through compatible) anyway only uses the properties that it
-> needs, so it doesn't hurt to have those other-function properties there.
->
->
-> 2. Like 1, but instead of defining the compatible string in the .dts, use a
-> single compatible string for all the different drivers which is set in the
-> .dtsi, and add a mode property (to be set in the .dts) to select the driver. The
-> selection can be done either by having a top-level driver that calls out to the
-> subsystem-specific one based on the mode, or by having each driver bail out of
-> its probe function if the mode is not as expected.
->
->
-> 3. Have a common node that essentially does nothing except occupy the memory
-> resource, and sub-nodes for each function. This can again be combined with a
-> common driver that does the common resource allocation, or each function driver
-> can just look at its parent node to find the resources. A disadvantage of this
-> one is that it is possible to enable several functions in the DT, while only one
-> can actually work.
->
->
->  Option 3 is what is used for e.g. stm32-lptimer. It also uses an mfd driver to
-> model the common part. But possibly it actually allows the different functions
-> to operate simultaneously.
-
-I'm not all that thrilled with how that one ended up.
-
->  Option 3 has the additional disadvantage that it requires changes in existing
-> DTs for ftm-pwm and ftm-timer, because some properties are moved one level down.
-> Since we need to retain backward compatibility, we'd need to look for those
-> properties both in the node itself and in the parent node. In particular, the
-> common driver part would be fairly complicated to implement in a backward
-> compatible way because it's not enough to do a simple devm_of_platform_populate().
->
->
->  Personally I don't like the common driver part too much. This common driver
-> does almost nothing (iomap and clock) and it creates dependencies between
-> different drivers. Combined with the backward compatibility problem, I don't see
-> much point to it.
->
->
->  I personally like option 2 the most. It's easy to be backward compatible (if
-> mode is not set, revert to the current behaviour, i.e. assume that the
-> compatible string has encoded the mode and that you're the only driver). It
-> doesn't introduce subnodes that have no hardware equivalent. The only messy
-> thing about it is that properties belonging to the different modes are mixed
-> together in a single node. And also, I don't think this kind of model is
-> currently used anywhere else in the kernel.
-
-Option 2 seems best to me.
-
-Rob
