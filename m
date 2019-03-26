@@ -2,84 +2,83 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44444C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:25:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 39B56C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:27:22 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 82C4320823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:25:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id ABB8020823
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:27:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A6pmjlt8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82C4320823
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JHvJtvyJ"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org ABB8020823
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TJ1v0zw3zDqDD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:25:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TJ3W5d4XzDqQX
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:27:19 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::244; helo=mail-oi1-x244.google.com;
+ (client-ip=2607:f8b0:4864:20::344; helo=mail-ot1-x344.google.com;
  envelope-from=mr.nuke.me@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="A6pmjlt8"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="JHvJtvyJ"; 
  dkim-atps=neutral
-Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com
- [IPv6:2607:f8b0:4864:20::244])
+Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com
+ [IPv6:2607:f8b0:4864:20::344])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44THzg2rWZzDqGb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 04:23:59 +1100 (AEDT)
-Received: by mail-oi1-x244.google.com with SMTP id x188so10553823oia.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 10:23:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44THzg014tzDqGp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 04:23:55 +1100 (AEDT)
+Received: by mail-ot1-x344.google.com with SMTP id c16so12229022otn.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 10:23:55 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=Fiq9HXSF/eDUChK1D39FGIx6tNtbvfiGbda9koLVfWA=;
- b=A6pmjlt81e9rK+llVGSzdBcghOO4EtlGbsJ0l3lWyEpLSAHf/bLKnBU3R3qcdCvHp/
- j2dMyT9ZaHULEC4q3vEvEBigr6tQX3tJH75XM2BHA84lBuuNyF1wHxXw+IzrtRlonufN
- v7dmX6g17fHEUmhU4YBZQX0Chq2l7XAeskeHep+yheFxuJnBniBDJVh/0k/0GQP3KmUG
- RkzwMJpCcLnfIxjgjbqkMm/1druHpS/cGvq7mJtHjglKCy2gQ5ucpIJnhmj9vaOgNP8W
- boLFY8AlKhpelTBMRdE3O8FBDxFqQsZPEN9VYyRhClTEmw+cg+/0HnNcOqxqyoQRGi12
- 0gLw==
+ h=from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=POhWQIt+7MKKaB0xpr8RCC2Gi7vnEhrJDayyqfFtsbU=;
+ b=JHvJtvyJPNSo+HDI3O7LUbgFSAoKWqiK3xAPrdEDOHPmAjIxTX8HdIgpu5kRLeTYmG
+ D2ic5C23vN3pW7Bv3LMc1JMFV48cFhW850dIIrA+t8tO3t0Rh2MJ7D6EnJHRWz52o2M6
+ HrOC9eDL5XDADZCU+UX42MHeImCYJMqWbzTCR5P1ZT71eLBmRfrFX+iCW2kpflatDeNz
+ 5nEx6raxwOSBU5+OQOI/WxTChZxGdUTcoiIJFo/0fwLfIXwSb+h1hYxTal7y6MFkMLzd
+ x4qig8zmA/8PrYol34fPVvhv7SoAEB18tnbojWbrAw8U20QcG/aOxkU8l+4U4VuHJAZM
+ a5hQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=Fiq9HXSF/eDUChK1D39FGIx6tNtbvfiGbda9koLVfWA=;
- b=cEb/GhrORGKXccWnp3Xd+0xeljTrjMUM4kNRoNDLL2otpmGQiEn//LgvNVUYCubWB3
- 9boFDTDW4AbAhTbgID6AoQPjVTdXNstfjfssrEVuh87PG6QnSt8Y43LQlWOShUyzJhRO
- 5SEvj1py6Z2SZ4JvKq9mIBTPmx1qTObshIwIDvxfz4vehuiDYFWsq7vzdVk7HFkA31BX
- /7kDNwZqXB3+RB8syDUFutV08h+3crjsBb4nm+AI7yEXaRFkO8DVK4DHuC44yp3uOc00
- tpYEWEz5z5ejU+3nsHFAoO7D+yGdAj6/zwfLPg+OGuI7EKjKYq1LNTV/6Zjwu3tB0Hry
- WW/w==
-X-Gm-Message-State: APjAAAXIlftXW1/WUFZVbRCVjCPHp0q4NLTiV3SWrIFQjc2iPkuyrRJe
- 1vqD4nd2ovtRCC4+dxrmC+U=
-X-Google-Smtp-Source: APXvYqzjkiKtK6IggnWjo8r6fNzDaCeM87ogKjs1yliYkxyFn6OQUL5+X/HGcw0UbAXcsZN3NeswYQ==
-X-Received: by 2002:aca:4103:: with SMTP id o3mr16554560oia.71.1553621036988; 
- Tue, 26 Mar 2019 10:23:56 -0700 (PDT)
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+ :content-transfer-encoding;
+ bh=POhWQIt+7MKKaB0xpr8RCC2Gi7vnEhrJDayyqfFtsbU=;
+ b=p+QrP0Q/H9hlECYEoaOr3Czn/6oE8K/9uBUb0wPoYYKlEKQKOhdVMy0glCrwgSabqf
+ lVSWQT78EHANmMpv/QxWNofwgxBTo6a+RZKttGE2tJkZFtyFLGh2YPhfzD3aWZgp8Rds
+ eT58bhuB1lXJ/pIsrUR1cEywlbqFHcOqZx4B9EC/xyl8HtBeCijm7uEP0G6YUOpkY+YY
+ 7DVMlHUt2hj9sW0SxAJxUwlYGG0UdpRBPjK4WuS/O7BMO5DGQY3W3M9Tnx6zUVTvFAeQ
+ q64tdrIx3xd4UXb/OvIg/02q056EhtVrSiDTIo1EhEr6YGNUdU+ZuHuochrSzhpeCZh9
+ 8K1Q==
+X-Gm-Message-State: APjAAAX551CFqDUTXJ4K7jqqPSboofOrlVRmnaQlDQR1uwAZauHk76MU
+ 5PPc3Nj8i47dqWXvmZZYTxs=
+X-Google-Smtp-Source: APXvYqxV49KQ0KIVmX2RkMEowFct5KcJJEg8z5my4fLysNPQXWdjr4S/z3f64Wxu3k1PqZri9cA2MQ==
+X-Received: by 2002:a9d:5e90:: with SMTP id f16mr23703768otl.276.1553621032105; 
+ Tue, 26 Mar 2019 10:23:52 -0700 (PDT)
 Received: from nuclearis2-1.lan (c-98-195-139-126.hsd1.tx.comcast.net.
  [98.195.139.126])
- by smtp.gmail.com with ESMTPSA id z12sm3047459otp.2.2019.03.26.10.23.56
+ by smtp.gmail.com with ESMTPSA id z12sm3047459otp.2.2019.03.26.10.23.50
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 26 Mar 2019 10:23:56 -0700 (PDT)
+ Tue, 26 Mar 2019 10:23:51 -0700 (PDT)
 From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
 To: bhelgaas@google.com
-Subject: [PATCH v2 2/2] PCI/AER: Determine AER ownership based on _OSC instead
- of HEST
-Date: Tue, 26 Mar 2019 12:23:42 -0500
-Message-Id: <20190326172343.28946-3-mr.nuke.me@gmail.com>
+Subject: [PATCH v2 0/2] PCI/AER: Consistently use _OSC to determine who owns
+ AER
+Date: Tue, 26 Mar 2019 12:23:40 -0500
+Message-Id: <20190326172343.28946-1-mr.nuke.me@gmail.com>
 X-Mailer: git-send-email 2.19.2
-In-Reply-To: <20190326172343.28946-1-mr.nuke.me@gmail.com>
-References: <20190326172343.28946-1-mr.nuke.me@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,106 +102,89 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-HEST is used to describe the meaning of errors received as part of ACPI
-Platform Error Interfaces (APEI), however the correct way to determine
-AER ownership is the _OSC method.
+This started as a nudge from Keith, who pointed out that it doesn't make sense
+to disable AER services when only one device has a FIRMWARE_FIRST HEST.
 
-The ACPI spec allows _OSC and HEST to say things that might not make
-sense on a specific hardware implementation.
-For example _OSC can say "OS has control" on the root bus, while HEST
-says "This PCIe device is firmware-first". This is fine when the
-platform can differentiate error sources at the root complex. On x86
-platforms, AER errors can be routed to either to an MSI vector
-(native AER), or to SMM (firmware-first). As this is done at the root
-complex level, the example above would not make sense.
+I won't re-phrase the points in the original patch [1]. The patch started a
+long discussion in the ACPI Software Working Group (ASWG). The nearly unanimous
+conclusion is that my original interpretation is correct.
 
-Notice that in neither case is it correct to go to HEST to determine
-AER ownership. This is the conclusion of a six-months discussion in
-the ACPI Software Working Group.
+I'd like to quote one of the tables that was produced as part of that
+conversation:
 
-pci_dev->__aer_firmware_first is used to prevent modification of AER
-registers when firmware owns AER. This is synonymous with the AER
-ownership negotiated during _OSC. Thus _OSC is the correct way to
-use to set this flag, not HEST.
+(_OSC AER Control, HEST AER Structure FFS) = (0, 0)
+	* OSPM is prevented from writing to the PCI Express AER registers.
+	* OSPM has no guidance on how AER errors are being handled – but it
+	  does know that it is not in control of AER registers. PCI-e errors
+	  that make it to the OS (via NMI, etc) would be treated as spurious
+	  since access to the AER registers isn’t allowed for proper sourcing.
 
-Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
----
- drivers/pci/pcie/aer.c | 57 ++----------------------------------------
- 1 file changed, 2 insertions(+), 55 deletions(-)
 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index d029979e61f6..08cee30b3ef3 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -237,66 +237,13 @@ static inline bool hest_match_type(struct acpi_hest_header *hest_hdr,
- 	return false;
- }
- 
--struct aer_hest_parse_info {
--	struct pci_dev *pci_dev;
--	int firmware_first;
--};
--
--static int hest_source_is_pcie_aer(struct acpi_hest_header *hest_hdr)
--{
--	if (hest_hdr->type == ACPI_HEST_TYPE_AER_ROOT_PORT ||
--	    hest_hdr->type == ACPI_HEST_TYPE_AER_ENDPOINT ||
--	    hest_hdr->type == ACPI_HEST_TYPE_AER_BRIDGE)
--		return 1;
--	return 0;
--}
--
--static int aer_hest_parse(struct acpi_hest_header *hest_hdr, void *data)
--{
--	struct aer_hest_parse_info *info = data;
--	struct acpi_hest_aer_common *p;
--	int ff;
--
--	if (!hest_source_is_pcie_aer(hest_hdr))
--		return 0;
--
--	p = (struct acpi_hest_aer_common *)(hest_hdr + 1);
--	ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
--
--	/*
--	 * If no specific device is supplied, determine whether
--	 * FIRMWARE_FIRST is set for *any* PCIe device.
--	 */
--	if (!info->pci_dev) {
--		info->firmware_first |= ff;
--		return 0;
--	}
- 
--	/* Otherwise, check the specific device */
--	if (p->flags & ACPI_HEST_GLOBAL) {
--		if (hest_match_type(hest_hdr, info->pci_dev))
--			info->firmware_first = ff;
--	} else
--		if (hest_match_pci(p, info->pci_dev))
--			info->firmware_first = ff;
--
--	return 0;
--}
- 
- static void aer_set_firmware_first(struct pci_dev *pci_dev)
- {
--	int rc;
--	struct aer_hest_parse_info info = {
--		.pci_dev	= pci_dev,
--		.firmware_first	= 0,
--	};
-+	struct pci_host_bridge *host = pci_find_host_bridge(pci_dev->bus);
- 
--	rc = apei_hest_parse(aer_hest_parse, &info);
--
--	if (rc)
--		pci_dev->__aer_firmware_first = 0;
--	else
--		pci_dev->__aer_firmware_first = info.firmware_first;
-+	pci_dev->__aer_firmware_first = !host->native_aer;
- 	pci_dev->__aer_firmware_first_valid = 1;
- }
- 
+(_OSC AER Control, HEST AER Structure FFS) = (0, 1)
+	* OSPM is prevented from writing to the PCI Express AER registers.
+	* OSPM is being given guidance that Firmware is handling AER errors and
+	  those interrupts are routed to the platform. Firmware may pass along
+	  error information via GHES
+
+
+(_OSC AER Control, HEST AER Structure FFS) = (0, Does not exist)
+	* OSPM is prevented from writing to the PCI Express AER registers.
+	* OSPM has no guidance on how AER errors are being handled – but it
+	  does know that it is not in control of AER registers. PCI-e errors
+	  that make it to the OS (via NMI, etc) would be treated as spurious
+	  since access to the AER registers isn’t allowed for proper sourcing.
+
+(_OSC AER Control, HEST AER Structure FFS) = (1, 0)
+	* OSPM is in control of writing to the PCI Express AER registers.
+	* OSPM is being given guidance that AER errors will interrupt the OS
+	  directly and that the OS is expected to handle all AER capability
+	  structure read/clears for the devices with this attribute (or all if
+	  the Global Bit is set.)
+
+(_OSC AER Control, HEST AER Structure FFS) = (1, 1)
+	* OSPM is in control of writing to the PCI Express AER registers.
+	* OSPM is being given guidance that although OS is in control of AER
+	  read/writes – the actual interrupt is being routed to the platform
+	  first.
+	* Subsequent fields with masks/enables should be performed by the OS
+	  during initialization on behalf of firmware. These are to be honoured
+	  in this mode because with FF, the firmware needs to be able to handle
+	  the errors it expects and not be given errors it was not expecting to
+	  handle.
+	* Firmware may pass along error information via GHES, or generate an OS
+	  interrupt and allow the OS to interrogate AER status directly via the
+	  AER capability structures.
+
+
+(_OSC AER Control, HEST AER Structure FFS) = (0, Does not exist)
+	* OSPM is in control of writing to the PCI Express AER registers.
+	* OSPM has no guidance from the platform and is in complete control of
+	  AER error handling.
+
+
+There may be one caveat. Someone mentioned in the original discussions that
+there may exist machines which make the assumption that HEST is authoritative,
+but did not identify any such machine. We should keep in mind that they may
+require a quirk.
+
+Alex
+
+
+[1] https://lkml.org/lkml/2018/11/16/202
+
+Changes since v1:
+ * Started 6-month conversation in ASWG
+ * Re-phrased commit message to reflect some of the points in ASWG discussion
+
+Alexandru Gagniuc (2):
+  PCI/AER: Do not use APEI/HEST to disable AER services globally
+  PCI/AER: Determine AER ownership based on _OSC instead of HEST
+
+ drivers/acpi/pci_root.c  |  9 +----
+ drivers/pci/pcie/aer.c   | 82 ++--------------------------------------
+ include/linux/pci-acpi.h |  6 ---
+ 3 files changed, 5 insertions(+), 92 deletions(-)
+
 -- 
 2.19.2
 
