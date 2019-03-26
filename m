@@ -2,85 +2,58 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
-	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,USER_AGENT_MUTT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A302FC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:28:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34B3BC43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:36:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1C53020823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:28:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="N1vxrjEi"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1C53020823
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
+	by mail.kernel.org (Postfix) with ESMTPS id B6A0A2082F
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:36:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org B6A0A2082F
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=redhat.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TJ5610T7zDqMt
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:28:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TJG95RCzzDqC4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:36:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::243; helo=mail-oi1-x243.google.com;
- envelope-from=mr.nuke.me@gmail.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=redhat.com
+ (client-ip=209.132.183.28; helo=mx1.redhat.com;
+ envelope-from=joe.lawrence@redhat.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="N1vxrjEi"; 
- dkim-atps=neutral
-Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com
- [IPv6:2607:f8b0:4864:20::243])
+ dmarc=pass (p=none dis=none) header.from=redhat.com
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44THzh4kwNzDqGb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 04:23:57 +1100 (AEDT)
-Received: by mail-oi1-x243.google.com with SMTP id v84so10586603oif.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 10:23:57 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
- h=from:to:cc:subject:date:message-id:in-reply-to:references
- :mime-version:content-transfer-encoding;
- bh=GrNTWMSdwdmcCzwUphihcH8fY2Na1YarPGgraT4osj0=;
- b=N1vxrjEiksjfKwhhbLGIKcnVB7hA/pL2dejCO4eRxTkhqc+6aZPNVtsWZ8VkDE+f8Z
- 8h+qQg42haGOMWQ7B6RPUp39RspKwE1Fhow1TUTobcwQpPLqTb5gGjrxcCk/f3RMEWsd
- HN5tSi2AMHy5WuuP3zceCIYOn4EvdTRZKfA3a1tEOjmDAOfV/3eaVjdMXOrJJigHiVHp
- 83bVxq0jADf3EGDbptLvgzkNQH0f8QcETOSitL9rsSD7PtGbjFiOKpkB+jIZK+L3YDce
- sV66gKVcKlPdiIsC3UYI0UiPGr4GcNE52G6Si+MCmPQT6rjvqFvXwRJ96gKHZN65M2BA
- 1/Mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=1e100.net; s=20161025;
- h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
- :references:mime-version:content-transfer-encoding;
- bh=GrNTWMSdwdmcCzwUphihcH8fY2Na1YarPGgraT4osj0=;
- b=P66mp1j5dlUIg9eLSOU3S8XuIhrzv2NCX6RjW9uW0hO8YBiyyl82KLZSc9N9jFVCxb
- alUEE9eoCYxVsO7TECycBPBROoVxOJD1d1ySd/NdoNHFuMCJHiW2cBvC8tyZz01aSXEk
- 4KlDjvozWR92F81P3aOshTn8hVeP/sCm2Nem1Ptfhk9jE2Kap1Q9kkW9BFdajjjFg+/H
- j3hmWWEBl8mPa8csHpIVgzeg40cQh6/G1YFHuJPJ6RdKCF4MK841eVpHC3qLXtbqSaA/
- 5W/vyocYb/IbgHYK9YrLSlmlt1xkjXJfWIU62tzzNBQNAa/xnHn+YdrqeAGEp97lH3hs
- pgtA==
-X-Gm-Message-State: APjAAAUpH+J5AvOtC9Yn5LflW0uWRwB2P0m71r65J4p413bPwrV3hA01
- /OW6ZlhmgjsX9t+UflCXdOI=
-X-Google-Smtp-Source: APXvYqy1JxySdfPsTJRq7F+l/hXsj2wyaKmNfwvpuYQeZO36NckQmkeLRixW0McUEdg75shDev3B0w==
-X-Received: by 2002:aca:a84a:: with SMTP id r71mr16744805oie.56.1553621034688; 
- Tue, 26 Mar 2019 10:23:54 -0700 (PDT)
-Received: from nuclearis2-1.lan (c-98-195-139-126.hsd1.tx.comcast.net.
- [98.195.139.126])
- by smtp.gmail.com with ESMTPSA id z12sm3047459otp.2.2019.03.26.10.23.53
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 26 Mar 2019 10:23:54 -0700 (PDT)
-From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
-To: bhelgaas@google.com
-Subject: [PATCH v2 1/2] PCI/AER: Do not use APEI/HEST to disable AER services
- globally
-Date: Tue, 26 Mar 2019 12:23:41 -0500
-Message-Id: <20190326172343.28946-2-mr.nuke.me@gmail.com>
-X-Mailer: git-send-email 2.19.2
-In-Reply-To: <20190326172343.28946-1-mr.nuke.me@gmail.com>
-References: <20190326172343.28946-1-mr.nuke.me@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TJBP1M3hzDqBr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 04:33:17 +1100 (AEDT)
+Received: from smtp.corp.redhat.com (int-mx06.intmail.prod.int.phx2.redhat.com
+ [10.5.11.16])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by mx1.redhat.com (Postfix) with ESMTPS id 83DFE8666B;
+ Tue, 26 Mar 2019 17:33:12 +0000 (UTC)
+Received: from redhat.com (dhcp-17-208.bos.redhat.com [10.18.17.208])
+ by smtp.corp.redhat.com (Postfix) with ESMTPS id 7F2465C28D;
+ Tue, 26 Mar 2019 17:33:10 +0000 (UTC)
+Date: Tue, 26 Mar 2019 13:33:08 -0400
+From: Joe Lawrence <joe.lawrence@redhat.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH v2] kbuild: strip whitespace in cmd_record_mcount findstring
+Message-ID: <20190326173308.GA26546@redhat.com>
+References: <20190325160438.8982-1-joe.lawrence@redhat.com>
+ <CAK7LNARyD=tG0JhwN_mjdyDRSPAF8UoZKvqAT3Ah_v7GfymCPg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAK7LNARyD=tG0JhwN_mjdyDRSPAF8UoZKvqAT3Ah_v7GfymCPg@mail.gmail.com>
+User-Agent: Mutt/1.11.3 (2019-02-01)
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.16
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.5.16
+ (mx1.redhat.com [10.5.110.26]); Tue, 26 Mar 2019 17:33:15 +0000 (UTC)
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -92,119 +65,170 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shyam_Iyer@Dell.com, okaya@kernel.org,
- linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, keith.busch@intel.com,
- linux-acpi@vger.kernel.org, lukas@wunner.de, leo.duran@amd.com,
- Alexandru Gagniuc <mr.nuke.me@gmail.com>, scott.faasse@hpe.com,
- Oliver O'Halloran <oohall@gmail.com>, austin_bolen@dell.com,
- linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-As part of the ACPI Platform Error Interfaces (APEI), the HEST table
-describes the meaning of errors sources. Although HEST is related to
-ownership of AER, the gatekeeper for AER ownership is the _OSC method.
+On Tue, Mar 26, 2019 at 02:29:47PM +0900, Masahiro Yamada wrote:
+> On Tue, Mar 26, 2019 at 1:05 AM Joe Lawrence <joe.lawrence@redhat.com> wrote:
+> >
+> > CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
+> > findstring.
+> >
+> > For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
+> > GCC 4.9 and newer") introduced a change such that on my ppc64le box,
+> > CC_FLAGS_FTRACE="-pg -mprofile-kernel ".  (Note the trailing space.)
+> > When cmd_record_mcount is now invoked, findstring fails as the ftrace
+> > flags were found at very end of _c_flags, without the trailing space.
+> >
+> >   _c_flags=" ... -pg -mprofile-kernel"
+> >   CC_FLAGS_FTRACE="-pg -mprofile-kernel "
+> >                                        ^
+> >     findstring is looking for this extra space
+> >
+> > Remove the redundant whitespaces from CC_FLAGS_FTRACE in
+> > cmd_record_mcount to avoid this problem.
+> >
+> > Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer").
+> > Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
+> > ---
+> >
+> > Standard disclaimer: I'm not a kbuild expert, but this works around the
+> > problem I reported where ftrace and livepatch self-tests were failing as
+> > specified object files were not run through the recordmcount.pl script:
+> >
+> > ppc64le: ftrace self-tests and $(CC_FLAGS_FTRACE) broken?
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-March/187298.html
+> >
+> >  scripts/Makefile.build | 8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> > index 2554a15ecf2b..74d402b5aa3c 100644
+> > --- a/scripts/Makefile.build
+> > +++ b/scripts/Makefile.build
+> > @@ -199,10 +199,10 @@ sub_cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+> >         "$(if $(part-of-module),1,0)" "$(@)";
+> >  recordmcount_source := $(srctree)/scripts/recordmcount.pl
+> >  endif # BUILD_C_RECORDMCOUNT
+> > -cmd_record_mcount =                                            \
+> > -       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =   \
+> > -            "$(CC_FLAGS_FTRACE)" ]; then                       \
+> > -               $(sub_cmd_record_mcount)                        \
+> > +cmd_record_mcount =                                                    \
+> > +       if [ "$(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags))" =  \
+> > +            "$(strip $(CC_FLAGS_FTRACE))" ]; then                      \
+> > +               $(sub_cmd_record_mcount)                                \
+> >         fi
+> >  endif # CC_USING_RECORD_MCOUNT
+> >  endif # CONFIG_FTRACE_MCOUNT_RECORD
+> > --
+> > 2.20.1
+> >
+> 
+> 
+> 
+> I do not see a point in using the shell command here
+> in the first place.
+> 
+> Instead of adding crappy workarounds,
+> I guess the following simple code should work:
+> 
+> 
+> index 2554a15..5f13021 100644
+> --- a/scripts/Makefile.build
+> +++ b/scripts/Makefile.build
+> @@ -199,11 +199,8 @@ sub_cmd_record_mcount = perl
+> $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+>         "$(if $(part-of-module),1,0)" "$(@)";
+>  recordmcount_source := $(srctree)/scripts/recordmcount.pl
+>  endif # BUILD_C_RECORDMCOUNT
+> -cmd_record_mcount =                                            \
+> -       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =   \
+> -            "$(CC_FLAGS_FTRACE)" ]; then                       \
+> -               $(sub_cmd_record_mcount)                        \
+> -       fi
+> +cmd_record_mcount = $(if $(findstring $(CC_FLAGS_FTRACE),$(_c_flags)),\
+> +                 $(sub_cmd_record_mcount))
+>  endif # CC_USING_RECORD_MCOUNT
+>  endif # CONFIG_FTRACE_MCOUNT_RECORD
+> 
 
-HEST can identify error sources as firmware-first with granularity
-ranging from device-level to global. It's not uncommon for HEST to
-say "all AER errors sent via of APEI are firmware-first" by setting
-the firmware-first and global bits. It's still allowable to do this
-and grant the OS AER control over part of the PCIe topology.
+Hi Masahiro,
 
-Because there is quite some flexibility in how HEST and _OSC can
-interact, it is wrong to assume that global firmware-first implies
-_OSC will never grant AER control. If we don't ask for control, we are
-not going to get it, and we may have entire parts of the PCIe tree
-that do not report errors. Thus, ask for AER ownership, regardless of
-HEST.
+Agreed on the shell command ugliness, however I still think we need to
+strip the search pattern here.  With your suggestion:
 
-Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+% rm -f kernel/trace/trace_selftest_dynamic.o 
+% make kernel/trace/trace_selftest_dynamic.o
+  CALL    scripts/checksyscalls.sh
+  CALL    scripts/atomic/check-atomics.sh
+  CC      kernel/trace/trace_selftest_dynamic.o
+
+% eu-readelf --sections kernel/trace/trace_selftest_dynamic.o | grep mcount
+(nothing)
+
+Adding it back as, as below, restores those sections and the self tests
+work again.
+
+Regards,
+
+-- Joe
+
+-->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8--
+
+From 6a85e8ecf4179b3e80601a327ec43d8d49f0e3cd Mon Sep 17 00:00:00 2001
+From: Joe Lawrence <joe.lawrence@redhat.com>
+Date: Tue, 26 Mar 2019 10:50:28 -0400
+Subject: [PATCH v2] kbuild: strip whitespace in cmd_record_mcount findstring
+
+CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
+findstring.
+
+For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
+GCC 4.9 and newer") introduced a change such that on my ppc64le box,
+CC_FLAGS_FTRACE="-pg -mprofile-kernel ".  (Note the trailing space.)
+When cmd_record_mcount is now invoked, findstring fails as the ftrace
+flags were found at very end of _c_flags, without the trailing space.
+
+  _c_flags=" ... -pg -mprofile-kernel"
+  CC_FLAGS_FTRACE="-pg -mprofile-kernel "
+                                       ^
+    findstring is looking for this extra space
+
+Remove the redundant whitespaces from CC_FLAGS_FTRACE in
+cmd_record_mcount to avoid this problem.
+
+Suggested-by: Masahiro Yamada <yamada.masahiro@socionext.com> (refactoring)
+Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer").
+Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
 ---
- drivers/acpi/pci_root.c  |  9 ++-------
- drivers/pci/pcie/aer.c   | 25 +------------------------
- include/linux/pci-acpi.h |  6 ------
- 3 files changed, 3 insertions(+), 37 deletions(-)
+ scripts/Makefile.build | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 707aafc7c2aa..32b2053bb0fa 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -491,13 +491,8 @@ static void negotiate_os_control(struct acpi_pci_root *root, int *no_aspm,
- 	if (IS_ENABLED(CONFIG_HOTPLUG_PCI_SHPC))
- 		control |= OSC_PCI_SHPC_NATIVE_HP_CONTROL;
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 2554a15ecf2b..76ca30cc4791 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -199,11 +199,8 @@ sub_cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+ 	"$(if $(part-of-module),1,0)" "$(@)";
+ recordmcount_source := $(srctree)/scripts/recordmcount.pl
+ endif # BUILD_C_RECORDMCOUNT
+-cmd_record_mcount =						\
+-	if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =	\
+-	     "$(CC_FLAGS_FTRACE)" ]; then			\
+-		$(sub_cmd_record_mcount)			\
+-	fi
++cmd_record_mcount = $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags)),	\
++	$(sub_cmd_record_mcount))
+ endif # CC_USING_RECORD_MCOUNT
+ endif # CONFIG_FTRACE_MCOUNT_RECORD
  
--	if (pci_aer_available()) {
--		if (aer_acpi_firmware_first())
--			dev_info(&device->dev,
--				 "PCIe AER handled by firmware\n");
--		else
--			control |= OSC_PCI_EXPRESS_AER_CONTROL;
--	}
-+	if (pci_aer_available())
-+		control |= OSC_PCI_EXPRESS_AER_CONTROL;
- 
- 	requested = control;
- 	status = acpi_pci_osc_control_set(handle, &control,
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index f8fc2114ad39..d029979e61f6 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -313,29 +313,6 @@ int pcie_aer_get_firmware_first(struct pci_dev *dev)
- 	return dev->__aer_firmware_first;
- }
- 
--static bool aer_firmware_first;
--
--/**
-- * aer_acpi_firmware_first - Check if APEI should control AER.
-- */
--bool aer_acpi_firmware_first(void)
--{
--	static bool parsed = false;
--	struct aer_hest_parse_info info = {
--		.pci_dev	= NULL,	/* Check all PCIe devices */
--		.firmware_first	= 0,
--	};
--
--	if (pcie_ports_native)
--		return false;
--
--	if (!parsed) {
--		apei_hest_parse(aer_hest_parse, &info);
--		aer_firmware_first = info.firmware_first;
--		parsed = true;
--	}
--	return aer_firmware_first;
--}
- #endif
- 
- #define	PCI_EXP_AER_FLAGS	(PCI_EXP_DEVCTL_CERE | PCI_EXP_DEVCTL_NFERE | \
-@@ -1450,7 +1427,7 @@ static struct pcie_port_service_driver aerdriver = {
-  */
- int __init pcie_aer_init(void)
- {
--	if (!pci_aer_available() || aer_acpi_firmware_first())
-+	if (!pci_aer_available())
- 		return -ENXIO;
- 	return pcie_port_service_register(&aerdriver);
- }
-diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
-index 8082b612f561..2e9c0b973eba 100644
---- a/include/linux/pci-acpi.h
-+++ b/include/linux/pci-acpi.h
-@@ -116,10 +116,4 @@ static inline void acpi_pci_add_bus(struct pci_bus *bus) { }
- static inline void acpi_pci_remove_bus(struct pci_bus *bus) { }
- #endif	/* CONFIG_ACPI */
- 
--#ifdef CONFIG_ACPI_APEI
--extern bool aer_acpi_firmware_first(void);
--#else
--static inline bool aer_acpi_firmware_first(void) { return false; }
--#endif
--
- #endif	/* _PCI_ACPI_H_ */
 -- 
-2.19.2
+2.20.1
 
