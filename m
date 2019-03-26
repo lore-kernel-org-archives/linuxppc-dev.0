@@ -2,73 +2,63 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB2A7C43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:32:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3797DC10F05
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:42:00 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FA8D20828
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:32:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 92A8920828
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 05:41:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=nifty.com header.i=@nifty.com header.b="tq5a2XQJ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FA8D20828
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=socionext.com
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=neuling.org header.i=@neuling.org header.b="ndZzi73z"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 92A8920828
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=neuling.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44T0BY3mFNzDqKf
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:32:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org;
- spf=softfail (mailfrom) smtp.mailfrom=socionext.com
- (client-ip=210.131.2.90; helo=conssluserg-05.nifty.com;
- envelope-from=yamada.masahiro@socionext.com; receiver=<UNKNOWN>)
-Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=socionext.com
-Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=nifty.com header.i=@nifty.com header.b="tq5a2XQJ"; 
- dkim-atps=neutral
-Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
- [210.131.2.90])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	by lists.ozlabs.org (Postfix) with ESMTP id 44T0Pd3x9KzDqJl
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:41:57 +1100 (AEDT)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+ key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44T08r3yytzDqBv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 16:30:51 +1100 (AEDT)
-Received: from mail-vs1-f45.google.com (mail-vs1-f45.google.com
- [209.85.217.45]) (authenticated)
- by conssluserg-05.nifty.com with ESMTP id x2Q5UO59018363
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 14:30:24 +0900
-DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-05.nifty.com x2Q5UO59018363
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
- s=dec2015msa; t=1553578225;
- bh=2V8oJ4SOZOoa9r88dWoDFuRZe2fco3wf/520gsHE4Y0=;
- h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
- b=tq5a2XQJYg5mJXLOOo7OEqmCWD5Uck6dPci0qDI4HwNwBK1bRhyLyj/VPet0jspyJ
- LXFrfFGkb+S2qnb1ujQgoJK8s5+D0Al54EyANQ8zFYkYB0QrC6WFvHa42qhhCC6XR9
- j5bVL3WtozNQhGyvBxbUHfnGBTqc58cWv7TLTQDH79fcrvDqn6bhm6uQ8lpjaO9SQN
- ASc9lkXs0meixZWEvoZqG2qLE/1RxpF43nYkYNB/x12yL5hVmakpwM36kw0RkdCqxU
- AALlKTLF1O3Pa5oc+HVaJL39jqN7e0Ljo8RE7dEYYOOMpCN4+xCW+1aw25/uml1QUs
- TWKF7mQ9fdN1w==
-X-Nifty-SrcIP: [209.85.217.45]
-Received: by mail-vs1-f45.google.com with SMTP id f15so6892262vsk.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Mar 2019 22:30:24 -0700 (PDT)
-X-Gm-Message-State: APjAAAW8TKTLSJuviUdfv2f+PuMELVd9mEoMgtumvWeToxRV9MfodVWF
- yBJFs3KYVJorMFpiLBzRaDQ1JyWbSV21urHziDE=
-X-Google-Smtp-Source: APXvYqzkcmSuUYgRYqfOq756473wcaYDiCn793dCs9KhRBidCZ+kZmCBeeBa8ii2AD+i5Qtyl3RzzVHtzcxlkhw6TnQ=
-X-Received: by 2002:a67:f105:: with SMTP id n5mr17676008vsk.181.1553578223556; 
- Mon, 25 Mar 2019 22:30:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44T0My2Ks6zDqJX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 16:40:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org;
+ dmarc=none (p=none dis=none) header.from=neuling.org
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=neuling.org header.i=@neuling.org header.b="ndZzi73z"; 
+ dkim-atps=neutral
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 44T0My0XDwz8syV;
+ Tue, 26 Mar 2019 16:40:30 +1100 (AEDT)
+Received: from spoke.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 44T0Mx3khnz9sSq;
+ Tue, 26 Mar 2019 16:40:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=neuling.org;
+ s=201811; t=1553578829;
+ bh=M8BP5nEqxOo3BqzDRt8E/94wH59AuGBU5qi+ueBvoAg=;
+ h=From:To:Cc:Subject:Date:From;
+ b=ndZzi73zSbWOHk/MY17MNH73+T7Q61ZEBX0d6KXM36r6jLHnVMfPcXWcvozd2XRAJ
+ r3TTSvYTvQKa0zWRWkYzHTNGE2s/O2r7NnfP/3FmKxqoThq73aCrYkGYhHTeFUjh3P
+ T8ovAewqzjLBhNJS5+NQe4BRYjyFrm+Xd/LjCQ7jLLCykVMpPs0AJmGw1O6IHQNV7Q
+ o0YxUd/FuTs1JqBr6LNtwL68kIXjFgj0pF0RJErkAXr8PKjjPDvmnY4stDNdae5SMk
+ Ub+WnJUu3Ewx15fz7i6ECq3/mer6rQ50u/eYOYik86qNWnDx8mGs6DZj6yflPypc9d
+ pC4/tJ1C5bGGg==
+Received: by spoke.localdomain (Postfix, from userid 1000)
+ id 7676B2A052A; Tue, 26 Mar 2019 16:40:29 +1100 (AEDT)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Add force enable of DAWR on P9 option
+Date: Tue, 26 Mar 2019 16:40:22 +1100
+Message-Id: <20190326054022.5552-1-mikey@neuling.org>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-References: <20190325160438.8982-1-joe.lawrence@redhat.com>
-In-Reply-To: <20190325160438.8982-1-joe.lawrence@redhat.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Tue, 26 Mar 2019 14:29:47 +0900
-X-Gmail-Original-Message-ID: <CAK7LNARyD=tG0JhwN_mjdyDRSPAF8UoZKvqAT3Ah_v7GfymCPg@mail.gmail.com>
-Message-ID: <CAK7LNARyD=tG0JhwN_mjdyDRSPAF8UoZKvqAT3Ah_v7GfymCPg@mail.gmail.com>
-Subject: Re: [PATCH] kbuild: strip whitespace in cmd_record_mcount findstring
-To: Joe Lawrence <joe.lawrence@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -80,100 +70,331 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Marek <michal.lkml@markovi.net>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
+ Cameron Kaiser <spectre@floodgap.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Tue, Mar 26, 2019 at 1:05 AM Joe Lawrence <joe.lawrence@redhat.com> wrote:
->
-> CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
-> findstring.
->
-> For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
-> GCC 4.9 and newer") introduced a change such that on my ppc64le box,
-> CC_FLAGS_FTRACE="-pg -mprofile-kernel ".  (Note the trailing space.)
-> When cmd_record_mcount is now invoked, findstring fails as the ftrace
-> flags were found at very end of _c_flags, without the trailing space.
->
->   _c_flags=" ... -pg -mprofile-kernel"
->   CC_FLAGS_FTRACE="-pg -mprofile-kernel "
->                                        ^
->     findstring is looking for this extra space
->
-> Remove the redundant whitespaces from CC_FLAGS_FTRACE in
-> cmd_record_mcount to avoid this problem.
->
-> Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and newer").
-> Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
-> ---
->
-> Standard disclaimer: I'm not a kbuild expert, but this works around the
-> problem I reported where ftrace and livepatch self-tests were failing as
-> specified object files were not run through the recordmcount.pl script:
->
-> ppc64le: ftrace self-tests and $(CC_FLAGS_FTRACE) broken?
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-March/187298.html
->
->  scripts/Makefile.build | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-> index 2554a15ecf2b..74d402b5aa3c 100644
-> --- a/scripts/Makefile.build
-> +++ b/scripts/Makefile.build
-> @@ -199,10 +199,10 @@ sub_cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
->         "$(if $(part-of-module),1,0)" "$(@)";
->  recordmcount_source := $(srctree)/scripts/recordmcount.pl
->  endif # BUILD_C_RECORDMCOUNT
-> -cmd_record_mcount =                                            \
-> -       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =   \
-> -            "$(CC_FLAGS_FTRACE)" ]; then                       \
-> -               $(sub_cmd_record_mcount)                        \
-> +cmd_record_mcount =                                                    \
-> +       if [ "$(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags))" =  \
-> +            "$(strip $(CC_FLAGS_FTRACE))" ]; then                      \
-> +               $(sub_cmd_record_mcount)                                \
->         fi
->  endif # CC_USING_RECORD_MCOUNT
->  endif # CONFIG_FTRACE_MCOUNT_RECORD
-> --
-> 2.20.1
->
+This adds a flag so that the DAWR can be enabled on P9 via:
+  echo Y > /sys/kernel/debug/powerpc/dawr_enable_dangerous
 
+The DAWR was previously force disabled on POWER9 in:
+  9654153158 powerpc: Disable DAWR in the base POWER9 CPU features
+Also see Documentation/powerpc/DAWR-POWER9.txt
 
+This is a dangerous setting, USE AT YOUR OWN RISK.
 
-I do not see a point in using the shell command here
-in the first place.
+Some users may not care about a bad user crashing their box
+(ie. single user/desktop systems) and really want the DAWR.  This
+allows them to force enable DAWR.
 
-Instead of adding crappy workarounds,
-I guess the following simple code should work:
+This flag can also be used to disable DAWR access. Once this is
+cleared, all DAWR access should be cleared immediately and your
+machine once again safe from crashing.
 
+Userspace may get confused by toggling this. If DAWR is force
+enabled/disabled between getting the number of breakpoints (via
+PTRACE_GETHWDBGINFO) and setting the breakpoint, userspace will get an
+inconsistent view of what's available. Similarly for guests.
 
-index 2554a15..5f13021 100644
---- a/scripts/Makefile.build
-+++ b/scripts/Makefile.build
-@@ -199,11 +199,8 @@ sub_cmd_record_mcount = perl
-$(srctree)/scripts/recordmcount.pl "$(ARCH)" \
-        "$(if $(part-of-module),1,0)" "$(@)";
- recordmcount_source := $(srctree)/scripts/recordmcount.pl
- endif # BUILD_C_RECORDMCOUNT
--cmd_record_mcount =                                            \
--       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =   \
--            "$(CC_FLAGS_FTRACE)" ]; then                       \
--               $(sub_cmd_record_mcount)                        \
--       fi
-+cmd_record_mcount = $(if $(findstring $(CC_FLAGS_FTRACE),$(_c_flags)),\
-+                 $(sub_cmd_record_mcount))
- endif # CC_USING_RECORD_MCOUNT
- endif # CONFIG_FTRACE_MCOUNT_RECORD
+For the DAWR to be enabled in a KVM guest, the DAWR needs to be force
+enabled in the host AND the guest. For this reason, this won't work on
+POWERVM as it doesn't allow the HCALL to work. Writes of 'Y' to the
+dawr_enable_dangerous file will fail if the hypervisor doesn't support
+writing the DAWR.
 
+To double check the DAWR is working, run this kernel selftest:
+  tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
+Any errors/failures/skips mean something is wrong.
 
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ Documentation/powerpc/DAWR-POWER9.txt    | 32 +++++++++++++
+ arch/powerpc/include/asm/hw_breakpoint.h |  7 +++
+ arch/powerpc/kernel/hw_breakpoint.c      | 60 +++++++++++++++++++++++-
+ arch/powerpc/kernel/process.c            |  9 ++--
+ arch/powerpc/kernel/ptrace.c             |  3 +-
+ arch/powerpc/kvm/book3s_hv.c             |  3 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 23 +++++----
+ 7 files changed, 120 insertions(+), 17 deletions(-)
 
+diff --git a/Documentation/powerpc/DAWR-POWER9.txt b/Documentation/powerpc/DAWR-POWER9.txt
+index 2feaa66196..bdec036509 100644
+--- a/Documentation/powerpc/DAWR-POWER9.txt
++++ b/Documentation/powerpc/DAWR-POWER9.txt
+@@ -56,3 +56,35 @@ POWER9. Loads and stores to the watchpoint locations will not be
+ trapped in GDB. The watchpoint is remembered, so if the guest is
+ migrated back to the POWER8 host, it will start working again.
+ 
++Force enabling the DAWR
++=============================
++Kernels (since ~v5.2) have an option to force enable the DAWR via:
++
++  echo Y > /sys/kernel/debug/powerpc/dawr_enable_dangerous
++
++This enables the DAWR even on POWER9.
++
++This is a dangerous setting, USE AT YOUR OWN RISK.
++
++Some users may not care about a bad user crashing their box
++(ie. single user/desktop systems) and really want the DAWR.  This
++allows them to force enable DAWR.
++
++This flag can also be used to disable DAWR access. Once this is
++cleared, all DAWR access should be cleared immediately and your
++machine once again safe from crashing.
++
++Userspace may get confused by toggling this. If DAWR is force
++enabled/disabled between getting the number of breakpoints (via
++PTRACE_GETHWDBGINFO) and setting the breakpoint, userspace will get an
++inconsistent view of what's available. Similarly for guests.
++
++For the DAWR to be enabled in a KVM guest, the DAWR needs to be force
++enabled in the host AND the guest. For this reason, this won't work on
++POWERVM as it doesn't allow the HCALL to work. Writes of 'Y' to the
++dawr_enable_dangerous file will fail if the hypervisor doesn't support
++writing the DAWR.
++
++To double check the DAWR is working, run this kernel selftest:
++  tools/testing/selftests/powerpc/ptrace/ptrace-hwbreak.c
++Any errors/failures/skips mean something is wrong.
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index ece4dc89c9..87c2a74f64 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -90,6 +90,13 @@ static inline void hw_breakpoint_disable(void)
+ extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
+ int hw_breakpoint_handler(struct die_args *args);
+ 
++extern int set_dawr(struct arch_hw_breakpoint *brk);
++extern bool dawr_force_enable;
++static inline bool dawr_enabled(void)
++{
++	return dawr_force_enable;
++}
++
+ #else	/* CONFIG_HAVE_HW_BREAKPOINT */
+ static inline void hw_breakpoint_disable(void) { }
+ static inline void thread_change_pc(struct task_struct *tsk,
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index fec8a67731..0b2461e1d9 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -29,11 +29,14 @@
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/smp.h>
++#include <linux/debugfs.h>
++#include <linux/init.h>
+ 
+ #include <asm/hw_breakpoint.h>
+ #include <asm/processor.h>
+ #include <asm/sstep.h>
+ #include <asm/debug.h>
++#include <asm/debugfs.h>
+ #include <linux/uaccess.h>
+ 
+ /*
+@@ -174,7 +177,7 @@ int hw_breakpoint_arch_parse(struct perf_event *bp,
+ 	if (!ppc_breakpoint_available())
+ 		return -ENODEV;
+ 	length_max = 8; /* DABR */
+-	if (cpu_has_feature(CPU_FTR_DAWR)) {
++	if (dawr_enabled()) {
+ 		length_max = 512 ; /* 64 doublewords */
+ 		/* DAWR region can't cross 512 boundary */
+ 		if ((attr->bp_addr >> 9) !=
+@@ -376,3 +379,58 @@ void hw_breakpoint_pmu_read(struct perf_event *bp)
+ {
+ 	/* TODO */
+ }
++
++bool dawr_force_enable;
++
++static ssize_t dawr_write_file_bool(struct file *file,
++				    const char __user *user_buf,
++				    size_t count, loff_t *ppos)
++{
++	struct arch_hw_breakpoint null_brk = {0, 0, 0};
++	size_t rc;
++
++	/* Send error to user if they hypervisor won't allow us to write DAWR */
++	if ((!dawr_force_enable) &&
++	    (firmware_has_feature(FW_FEATURE_LPAR)) &&
++	    (set_dawr(&null_brk) != H_SUCCESS))
++		return -1;
++
++	rc = debugfs_write_file_bool(file, user_buf, count, ppos);
++	if (rc)
++		return rc;
++
++	/* If we are clearing, make sure all CPUs have the DAWR cleared */
++	if (!dawr_force_enable)
++		smp_call_function((smp_call_func_t)set_dawr, &null_brk, 0);
++
++	return rc;
++}
++
++static const struct file_operations dawr_enable_fops = {
++	.read =		debugfs_read_file_bool,
++	.write =	dawr_write_file_bool,
++	.open =		simple_open,
++	.llseek =	default_llseek,
++};
++
++static int __init dawr_force_setup(void)
++{
++	dawr_force_enable = false;
++
++	if (cpu_has_feature(CPU_FTR_DAWR)) {
++		/* Don't setup sysfs file for user control on P8 */
++		dawr_force_enable = true;
++		return 0;
++	}
++
++	if (PVR_VER(mfspr(SPRN_PVR)) == PVR_POWER9) {
++		/* Turn DAWR off by default, but allow admin to turn it on */
++		dawr_force_enable = false;
++		debugfs_create_file_unsafe("dawr_enable_dangerous", 0600,
++					   powerpc_debugfs_root,
++					   &dawr_force_enable,
++					   &dawr_enable_fops);
++	}
++	return 0;
++}
++arch_initcall(dawr_force_setup);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index dd9e0d5386..225705aac8 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -67,6 +67,7 @@
+ #include <asm/cpu_has_feature.h>
+ #include <asm/asm-prototypes.h>
+ #include <asm/stacktrace.h>
++#include <asm/hw_breakpoint.h>
+ 
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+@@ -784,7 +785,7 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
+ 	return __set_dabr(dabr, dabrx);
+ }
+ 
+-static inline int set_dawr(struct arch_hw_breakpoint *brk)
++int set_dawr(struct arch_hw_breakpoint *brk)
+ {
+ 	unsigned long dawr, dawrx, mrd;
+ 
+@@ -816,7 +817,7 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
+ {
+ 	memcpy(this_cpu_ptr(&current_brk), brk, sizeof(*brk));
+ 
+-	if (cpu_has_feature(CPU_FTR_DAWR))
++	if (dawr_enabled())
+ 		// Power8 or later
+ 		set_dawr(brk);
+ 	else if (!cpu_has_feature(CPU_FTR_ARCH_207S))
+@@ -830,8 +831,8 @@ void __set_breakpoint(struct arch_hw_breakpoint *brk)
+ /* Check if we have DAWR or DABR hardware */
+ bool ppc_breakpoint_available(void)
+ {
+-	if (cpu_has_feature(CPU_FTR_DAWR))
+-		return true; /* POWER8 DAWR */
++	if (dawr_enabled())
++		return true; /* POWER8 DAWR or POWER9 forced DAWR */
+ 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
+ 		return false; /* POWER9 with DAWR disabled */
+ 	/* DABR: Everything but POWER8 and POWER9 */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index d9ac7d9465..684b0b315c 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -43,6 +43,7 @@
+ #include <asm/tm.h>
+ #include <asm/asm-prototypes.h>
+ #include <asm/debug.h>
++#include <asm/hw_breakpoint.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/syscalls.h>
+@@ -3088,7 +3089,7 @@ long arch_ptrace(struct task_struct *child, long request,
+ 		dbginfo.sizeof_condition = 0;
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+ 		dbginfo.features = PPC_DEBUG_FEATURE_DATA_BP_RANGE;
+-		if (cpu_has_feature(CPU_FTR_DAWR))
++		if (dawr_enabled())
+ 			dbginfo.features |= PPC_DEBUG_FEATURE_DATA_BP_DAWR;
+ #else
+ 		dbginfo.features = 0;
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 06964350b9..0fab0a2010 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -74,6 +74,7 @@
+ #include <asm/opal.h>
+ #include <asm/xics.h>
+ #include <asm/xive.h>
++#include <asm/hw_breakpoint.h>
+ 
+ #include "book3s.h"
+ 
+@@ -3374,7 +3375,7 @@ static int kvmhv_load_hv_regs_and_go(struct kvm_vcpu *vcpu, u64 time_limit,
+ 	mtspr(SPRN_PURR, vcpu->arch.purr);
+ 	mtspr(SPRN_SPURR, vcpu->arch.spurr);
+ 
+-	if (cpu_has_feature(CPU_FTR_DAWR)) {
++	if (dawr_enabled()) {
+ 		mtspr(SPRN_DAWR, vcpu->arch.dawr);
+ 		mtspr(SPRN_DAWRX, vcpu->arch.dawrx);
+ 	}
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 3a5e719ef0..139027c62d 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -822,18 +822,21 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_IAMR, r5
+ 	mtspr	SPRN_PSPB, r6
+ 	mtspr	SPRN_FSCR, r7
+-	ld	r5, VCPU_DAWR(r4)
+-	ld	r6, VCPU_DAWRX(r4)
+-	ld	r7, VCPU_CIABR(r4)
+-	ld	r8, VCPU_TAR(r4)
+ 	/*
+ 	 * Handle broken DAWR case by not writing it. This means we
+ 	 * can still store the DAWR register for migration.
+ 	 */
+-BEGIN_FTR_SECTION
++	LOAD_REG_ADDR(r5, dawr_force_enable)
++	lbz	r5, 0(r5)
++	cmpdi	r5, 0
++	beq	1f
++	ld	r5, VCPU_DAWR(r4)
++	ld	r6, VCPU_DAWRX(r4)
+ 	mtspr	SPRN_DAWR, r5
+ 	mtspr	SPRN_DAWRX, r6
+-END_FTR_SECTION_IFSET(CPU_FTR_DAWR)
++1:
++	ld	r7, VCPU_CIABR(r4)
++	ld	r8, VCPU_TAR(r4)
+ 	mtspr	SPRN_CIABR, r7
+ 	mtspr	SPRN_TAR, r8
+ 	ld	r5, VCPU_IC(r4)
+@@ -2513,11 +2516,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	blr
+ 
+ 2:
+-BEGIN_FTR_SECTION
+-	/* POWER9 with disabled DAWR */
++	LOAD_REG_ADDR(r11, dawr_force_enable)
++	lbz	r11, 0(r11)
++	cmpdi	r11, 0
+ 	li	r3, H_HARDWARE
+-	blr
+-END_FTR_SECTION_IFCLR(CPU_FTR_DAWR)
++	beqlr
+ 	/* Emulate H_SET_DABR/X on P8 for the sake of compat mode guests */
+ 	rlwimi	r5, r4, 5, DAWRX_DR | DAWRX_DW
+ 	rlwimi	r5, r4, 2, DAWRX_WT
 -- 
-Best Regards
-Masahiro Yamada
+2.20.1
+
