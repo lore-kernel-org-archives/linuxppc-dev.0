@@ -2,82 +2,84 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 898ADC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:59:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 44444C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:25:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 03B6A2070D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 16:59:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 82C4320823
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 17:25:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=c-s.fr header.i=@c-s.fr header.b="rMUjOLqZ"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 03B6A2070D
-Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=c-s.fr
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A6pmjlt8"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 82C4320823
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44THRx0p9PzDqM6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 03:59:57 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TJ1v0zw3zDqDD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 04:25:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=c-s.fr
- (client-ip=93.17.236.30; helo=pegase1.c-s.fr;
- envelope-from=christophe.leroy@c-s.fr; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::244; helo=mail-oi1-x244.google.com;
+ envelope-from=mr.nuke.me@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=c-s.fr
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=c-s.fr header.i=@c-s.fr header.b="rMUjOLqZ"; 
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="A6pmjlt8"; 
  dkim-atps=neutral
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com
+ [IPv6:2607:f8b0:4864:20::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44THQ253RtzDqFD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 03:58:17 +1100 (AEDT)
-Received: from localhost (mailhub1-int [192.168.12.234])
- by localhost (Postfix) with ESMTP id 44THPv5XQvz9tyyq;
- Tue, 26 Mar 2019 17:58:11 +0100 (CET)
-Authentication-Results: localhost; dkim=pass
- reason="1024-bit key; insecure key"
- header.d=c-s.fr header.i=@c-s.fr header.b=rMUjOLqZ; dkim-adsp=pass;
- dkim-atps=neutral
-X-Virus-Scanned: Debian amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
- by localhost (pegase1.c-s.fr [192.168.12.234]) (amavisd-new, port 10024)
- with ESMTP id mRPEEK1aMQ5F; Tue, 26 Mar 2019 17:58:11 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
- by pegase1.c-s.fr (Postfix) with ESMTP id 44THPv4Cmfz9tyyn;
- Tue, 26 Mar 2019 17:58:11 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=c-s.fr; s=mail;
- t=1553619491; bh=LD6hSdcwvQiyOzYMP5lSb0ibAdI5w/B0bCTvzjdJMOI=;
- h=Subject:To:Cc:References:From:Date:In-Reply-To:From;
- b=rMUjOLqZISmdIE6B1jHtMrvKQEmm5vf8LcThjXGq2uQq5zmFsrMSqhX0wMZorCflN
- VvdQUOuwY4vEKk/LZROBr/v73HEkV1zvQ78GtkgVSZt/jS/eaJri/J7XoR09cUPO6r
- zysNlRLaNu/T1pa6nA5aGrAf3ynsBBmA3yhzfW2Y=
-Received: from localhost (localhost [127.0.0.1])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id F196D8B8DB;
- Tue, 26 Mar 2019 17:58:10 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
- by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
- with ESMTP id Yk3sBN4yLD5x; Tue, 26 Mar 2019 17:58:10 +0100 (CET)
-Received: from PO15451 (unknown [192.168.4.90])
- by messagerie.si.c-s.fr (Postfix) with ESMTP id 645E58B8D0;
- Tue, 26 Mar 2019 17:58:09 +0100 (CET)
-Subject: Re: [PATCH v6 04/19] powerpc: mm: Add p?d_large() definitions
-To: Steven Price <steven.price@arm.com>, linux-mm@kvack.org
-References: <20190326162624.20736-1-steven.price@arm.com>
- <20190326162624.20736-5-steven.price@arm.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <8a2efe07-b99f-3caa-fab9-47e49043bf66@c-s.fr>
-Date: Tue, 26 Mar 2019 17:58:09 +0100
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44THzg2rWZzDqGb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 04:23:59 +1100 (AEDT)
+Received: by mail-oi1-x244.google.com with SMTP id x188so10553823oia.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 10:23:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=from:to:cc:subject:date:message-id:in-reply-to:references
+ :mime-version:content-transfer-encoding;
+ bh=Fiq9HXSF/eDUChK1D39FGIx6tNtbvfiGbda9koLVfWA=;
+ b=A6pmjlt81e9rK+llVGSzdBcghOO4EtlGbsJ0l3lWyEpLSAHf/bLKnBU3R3qcdCvHp/
+ j2dMyT9ZaHULEC4q3vEvEBigr6tQX3tJH75XM2BHA84lBuuNyF1wHxXw+IzrtRlonufN
+ v7dmX6g17fHEUmhU4YBZQX0Chq2l7XAeskeHep+yheFxuJnBniBDJVh/0k/0GQP3KmUG
+ RkzwMJpCcLnfIxjgjbqkMm/1druHpS/cGvq7mJtHjglKCy2gQ5ucpIJnhmj9vaOgNP8W
+ boLFY8AlKhpelTBMRdE3O8FBDxFqQsZPEN9VYyRhClTEmw+cg+/0HnNcOqxqyoQRGi12
+ 0gLw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+ :references:mime-version:content-transfer-encoding;
+ bh=Fiq9HXSF/eDUChK1D39FGIx6tNtbvfiGbda9koLVfWA=;
+ b=cEb/GhrORGKXccWnp3Xd+0xeljTrjMUM4kNRoNDLL2otpmGQiEn//LgvNVUYCubWB3
+ 9boFDTDW4AbAhTbgID6AoQPjVTdXNstfjfssrEVuh87PG6QnSt8Y43LQlWOShUyzJhRO
+ 5SEvj1py6Z2SZ4JvKq9mIBTPmx1qTObshIwIDvxfz4vehuiDYFWsq7vzdVk7HFkA31BX
+ /7kDNwZqXB3+RB8syDUFutV08h+3crjsBb4nm+AI7yEXaRFkO8DVK4DHuC44yp3uOc00
+ tpYEWEz5z5ejU+3nsHFAoO7D+yGdAj6/zwfLPg+OGuI7EKjKYq1LNTV/6Zjwu3tB0Hry
+ WW/w==
+X-Gm-Message-State: APjAAAXIlftXW1/WUFZVbRCVjCPHp0q4NLTiV3SWrIFQjc2iPkuyrRJe
+ 1vqD4nd2ovtRCC4+dxrmC+U=
+X-Google-Smtp-Source: APXvYqzjkiKtK6IggnWjo8r6fNzDaCeM87ogKjs1yliYkxyFn6OQUL5+X/HGcw0UbAXcsZN3NeswYQ==
+X-Received: by 2002:aca:4103:: with SMTP id o3mr16554560oia.71.1553621036988; 
+ Tue, 26 Mar 2019 10:23:56 -0700 (PDT)
+Received: from nuclearis2-1.lan (c-98-195-139-126.hsd1.tx.comcast.net.
+ [98.195.139.126])
+ by smtp.gmail.com with ESMTPSA id z12sm3047459otp.2.2019.03.26.10.23.56
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 26 Mar 2019 10:23:56 -0700 (PDT)
+From: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+To: bhelgaas@google.com
+Subject: [PATCH v2 2/2] PCI/AER: Determine AER ownership based on _OSC instead
+ of HEST
+Date: Tue, 26 Mar 2019 12:23:42 -0500
+Message-Id: <20190326172343.28946-3-mr.nuke.me@gmail.com>
+X-Mailer: git-send-email 2.19.2
+In-Reply-To: <20190326172343.28946-1-mr.nuke.me@gmail.com>
+References: <20190326172343.28946-1-mr.nuke.me@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20190326162624.20736-5-steven.price@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: fr
 Content-Transfer-Encoding: 8bit
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -90,157 +92,117 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, x86@kernel.org,
- James Morse <james.morse@arm.com>, Arnd Bergmann <arnd@arndb.de>,
- Ard Biesheuvel <ard.biesheuvel@linaro.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, Will Deacon <will.deacon@arm.com>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Andy Lutomirski <luto@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, "Liang,
- Kan" <kan.liang@linux.intel.com>
+Cc: alex_gagniuc@dellteam.com, Sam Bobroff <sbobroff@linux.ibm.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Shyam_Iyer@Dell.com, okaya@kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, keith.busch@intel.com,
+ linux-acpi@vger.kernel.org, lukas@wunner.de, leo.duran@amd.com,
+ Alexandru Gagniuc <mr.nuke.me@gmail.com>, scott.faasse@hpe.com,
+ Oliver O'Halloran <oohall@gmail.com>, austin_bolen@dell.com,
+ linuxppc-dev@lists.ozlabs.org, Len Brown <lenb@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
+HEST is used to describe the meaning of errors received as part of ACPI
+Platform Error Interfaces (APEI), however the correct way to determine
+AER ownership is the _OSC method.
 
+The ACPI spec allows _OSC and HEST to say things that might not make
+sense on a specific hardware implementation.
+For example _OSC can say "OS has control" on the root bus, while HEST
+says "This PCIe device is firmware-first". This is fine when the
+platform can differentiate error sources at the root complex. On x86
+platforms, AER errors can be routed to either to an MSI vector
+(native AER), or to SMM (firmware-first). As this is done at the root
+complex level, the example above would not make sense.
 
-Le 26/03/2019 à 17:26, Steven Price a écrit :
-> walk_page_range() is going to be allowed to walk page tables other than
-> those of user space. For this it needs to know when it has reached a
-> 'leaf' entry in the page tables. This information is provided by the
-> p?d_large() functions/macros.
-> 
-> For powerpc pmd_large() was already implemented, so hoist it out of the
-> CONFIG_TRANSPARENT_HUGEPAGE condition and implement the other levels.
-> 
-> Also since we now have a pmd_large always implemented we can drop the
-> pmd_is_leaf() function.
+Notice that in neither case is it correct to go to HEST to determine
+AER ownership. This is the conclusion of a six-months discussion in
+the ACPI Software Working Group.
 
-Wouldn't it be better to drop the pmd_is_leaf() in a second patch ?
+pci_dev->__aer_firmware_first is used to prevent modification of AER
+registers when firmware owns AER. This is synonymous with the AER
+ownership negotiated during _OSC. Thus _OSC is the correct way to
+use to set this flag, not HEST.
 
-Christophe
+Signed-off-by: Alexandru Gagniuc <mr.nuke.me@gmail.com>
+---
+ drivers/pci/pcie/aer.c | 57 ++----------------------------------------
+ 1 file changed, 2 insertions(+), 55 deletions(-)
 
-> 
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Michael Ellerman <mpe@ellerman.id.au>
-> CC: linuxppc-dev@lists.ozlabs.org
-> CC: kvm-ppc@vger.kernel.org
-> Signed-off-by: Steven Price <steven.price@arm.com>
-> ---
->   arch/powerpc/include/asm/book3s/64/pgtable.h | 30 ++++++++++++++------
->   arch/powerpc/kvm/book3s_64_mmu_radix.c       | 12 ++------
->   2 files changed, 24 insertions(+), 18 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> index 581f91be9dd4..f6d1ac8b832e 100644
-> --- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-> @@ -897,6 +897,12 @@ static inline int pud_present(pud_t pud)
->   	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PRESENT));
->   }
->   
-> +#define pud_large	pud_large
-> +static inline int pud_large(pud_t pud)
-> +{
-> +	return !!(pud_raw(pud) & cpu_to_be64(_PAGE_PTE));
-> +}
-> +
->   extern struct page *pud_page(pud_t pud);
->   extern struct page *pmd_page(pmd_t pmd);
->   static inline pte_t pud_pte(pud_t pud)
-> @@ -940,6 +946,12 @@ static inline int pgd_present(pgd_t pgd)
->   	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PRESENT));
->   }
->   
-> +#define pgd_large	pgd_large
-> +static inline int pgd_large(pgd_t pgd)
-> +{
-> +	return !!(pgd_raw(pgd) & cpu_to_be64(_PAGE_PTE));
-> +}
-> +
->   static inline pte_t pgd_pte(pgd_t pgd)
->   {
->   	return __pte_raw(pgd_raw(pgd));
-> @@ -1093,6 +1105,15 @@ static inline bool pmd_access_permitted(pmd_t pmd, bool write)
->   	return pte_access_permitted(pmd_pte(pmd), write);
->   }
->   
-> +#define pmd_large	pmd_large
-> +/*
-> + * returns true for pmd migration entries, THP, devmap, hugetlb
-> + */
-> +static inline int pmd_large(pmd_t pmd)
-> +{
-> +	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
-> +}
-> +
->   #ifdef CONFIG_TRANSPARENT_HUGEPAGE
->   extern pmd_t pfn_pmd(unsigned long pfn, pgprot_t pgprot);
->   extern pmd_t mk_pmd(struct page *page, pgprot_t pgprot);
-> @@ -1119,15 +1140,6 @@ pmd_hugepage_update(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp,
->   	return hash__pmd_hugepage_update(mm, addr, pmdp, clr, set);
->   }
->   
-> -/*
-> - * returns true for pmd migration entries, THP, devmap, hugetlb
-> - * But compile time dependent on THP config
-> - */
-> -static inline int pmd_large(pmd_t pmd)
-> -{
-> -	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_PTE));
-> -}
-> -
->   static inline pmd_t pmd_mknotpresent(pmd_t pmd)
->   {
->   	return __pmd(pmd_val(pmd) & ~_PAGE_PRESENT);
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> index f55ef071883f..1b57b4e3f819 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-> @@ -363,12 +363,6 @@ static void kvmppc_pte_free(pte_t *ptep)
->   	kmem_cache_free(kvm_pte_cache, ptep);
->   }
->   
-> -/* Like pmd_huge() and pmd_large(), but works regardless of config options */
-> -static inline int pmd_is_leaf(pmd_t pmd)
-> -{
-> -	return !!(pmd_val(pmd) & _PAGE_PTE);
-> -}
-> -
->   static pmd_t *kvmppc_pmd_alloc(void)
->   {
->   	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
-> @@ -460,7 +454,7 @@ static void kvmppc_unmap_free_pmd(struct kvm *kvm, pmd_t *pmd, bool full,
->   	for (im = 0; im < PTRS_PER_PMD; ++im, ++p) {
->   		if (!pmd_present(*p))
->   			continue;
-> -		if (pmd_is_leaf(*p)) {
-> +		if (pmd_large(*p)) {
->   			if (full) {
->   				pmd_clear(p);
->   			} else {
-> @@ -593,7 +587,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->   	else if (level <= 1)
->   		new_pmd = kvmppc_pmd_alloc();
->   
-> -	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_is_leaf(*pmd)))
-> +	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_large(*pmd)))
->   		new_ptep = kvmppc_pte_alloc();
->   
->   	/* Check if we might have been invalidated; let the guest retry if so */
-> @@ -662,7 +656,7 @@ int kvmppc_create_pte(struct kvm *kvm, pgd_t *pgtable, pte_t pte,
->   		new_pmd = NULL;
->   	}
->   	pmd = pmd_offset(pud, gpa);
-> -	if (pmd_is_leaf(*pmd)) {
-> +	if (pmd_large(*pmd)) {
->   		unsigned long lgpa = gpa & PMD_MASK;
->   
->   		/* Check if we raced and someone else has set the same thing */
-> 
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index d029979e61f6..08cee30b3ef3 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -237,66 +237,13 @@ static inline bool hest_match_type(struct acpi_hest_header *hest_hdr,
+ 	return false;
+ }
+ 
+-struct aer_hest_parse_info {
+-	struct pci_dev *pci_dev;
+-	int firmware_first;
+-};
+-
+-static int hest_source_is_pcie_aer(struct acpi_hest_header *hest_hdr)
+-{
+-	if (hest_hdr->type == ACPI_HEST_TYPE_AER_ROOT_PORT ||
+-	    hest_hdr->type == ACPI_HEST_TYPE_AER_ENDPOINT ||
+-	    hest_hdr->type == ACPI_HEST_TYPE_AER_BRIDGE)
+-		return 1;
+-	return 0;
+-}
+-
+-static int aer_hest_parse(struct acpi_hest_header *hest_hdr, void *data)
+-{
+-	struct aer_hest_parse_info *info = data;
+-	struct acpi_hest_aer_common *p;
+-	int ff;
+-
+-	if (!hest_source_is_pcie_aer(hest_hdr))
+-		return 0;
+-
+-	p = (struct acpi_hest_aer_common *)(hest_hdr + 1);
+-	ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
+-
+-	/*
+-	 * If no specific device is supplied, determine whether
+-	 * FIRMWARE_FIRST is set for *any* PCIe device.
+-	 */
+-	if (!info->pci_dev) {
+-		info->firmware_first |= ff;
+-		return 0;
+-	}
+ 
+-	/* Otherwise, check the specific device */
+-	if (p->flags & ACPI_HEST_GLOBAL) {
+-		if (hest_match_type(hest_hdr, info->pci_dev))
+-			info->firmware_first = ff;
+-	} else
+-		if (hest_match_pci(p, info->pci_dev))
+-			info->firmware_first = ff;
+-
+-	return 0;
+-}
+ 
+ static void aer_set_firmware_first(struct pci_dev *pci_dev)
+ {
+-	int rc;
+-	struct aer_hest_parse_info info = {
+-		.pci_dev	= pci_dev,
+-		.firmware_first	= 0,
+-	};
++	struct pci_host_bridge *host = pci_find_host_bridge(pci_dev->bus);
+ 
+-	rc = apei_hest_parse(aer_hest_parse, &info);
+-
+-	if (rc)
+-		pci_dev->__aer_firmware_first = 0;
+-	else
+-		pci_dev->__aer_firmware_first = info.firmware_first;
++	pci_dev->__aer_firmware_first = !host->native_aer;
+ 	pci_dev->__aer_firmware_first_valid = 1;
+ }
+ 
+-- 
+2.19.2
+
