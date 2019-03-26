@@ -2,65 +2,55 @@ Return-Path: <SRS0=JA7W=R5=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_MUTT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-1.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_PASS autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F70DC43381
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 21:13:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BA88C43381
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 21:21:26 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E214620823
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 21:13:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="O5uhFalp"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E214620823
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
+	by mail.kernel.org (Postfix) with ESMTPS id A8E55206C0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Mar 2019 21:21:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A8E55206C0
+Authentication-Results: mail.kernel.org; dmarc=none (p=none dis=none) header.from=linutronix.de
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TP495c7FzDqPy
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 08:13:13 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TPFb0qw3zDqP5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 08:21:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=kernel.org
- (client-ip=198.145.29.99; helo=mail.kernel.org;
- envelope-from=helgaas@kernel.org; receiver=<UNKNOWN>)
+ spf=none (mailfrom) smtp.mailfrom=linutronix.de
+ (client-ip=2a01:7a0:2:106d:700::1; helo=galois.linutronix.de;
+ envelope-from=tglx@linutronix.de; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=pass (p=none dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="O5uhFalp"; 
- dkim-atps=neutral
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ dmarc=none (p=none dis=none) header.from=linutronix.de
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-SHA256 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TP2W0nJBzDqN5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 08:11:46 +1100 (AEDT)
-Received: from localhost (unknown [69.71.4.100])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 146D320823;
- Tue, 26 Mar 2019 21:11:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553634704;
- bh=20gWlyw4rGk46s3Kgkmub1DeOv360cZMjWjgYTLyHEw=;
- h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
- b=O5uhFalpz9xrHhXt9b62w9P++MRYpmjyoJIYm72iIgtetz/vr3Km9prWfJUOdXq1K
- I4pMXz7dc4gDcTYhrwR9ncmWpqca5SvxLze03rwAw4OoaY6I0J0Ve+pf+r+59bp+If
- H5gW2Chm/hIIjkCDJPd+47QMb4OsTne69GE4IUz4=
-Date: Tue, 26 Mar 2019 16:11:42 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-Subject: Re: [PATCH RFC v4 20/21] PCI: pciehp: Add support for the movable
- BARs feature
-Message-ID: <20190326211142.GX24180@google.com>
-References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
- <20190311133122.11417-21-s.miroshnichenko@yadro.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TPCT1WrxzDqJT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 08:19:32 +1100 (AEDT)
+Received: from p5492e2fc.dip0.t-ipconnect.de ([84.146.226.252] helo=nanos)
+ by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+ (Exim 4.80) (envelope-from <tglx@linutronix.de>)
+ id 1h8tSr-0006XE-Fg; Tue, 26 Mar 2019 22:18:33 +0100
+Date: Tue, 26 Mar 2019 22:18:32 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [RFC PATCH v2 08/14] watchdog/hardlockup: Decouple the hardlockup
+ detector from perf
+In-Reply-To: <1551283518-18922-9-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Message-ID: <alpine.DEB.2.21.1903262213470.1789@nanos.tec.linutronix.de>
+References: <1551283518-18922-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <1551283518-18922-9-git-send-email-ricardo.neri-calderon@linux.intel.com>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20190311133122.11417-21-s.miroshnichenko@yadro.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain; charset=US-ASCII
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required, ALL_TRUSTED=-1,
+ SHORTCIRCUIT=-0.0001
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -72,63 +62,47 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux@yadro.com
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Ricardo Neri <ricardo.neri@intel.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, Ashok Raj <ashok.raj@intel.com>,
+ x86@kernel.org, Andi Kleen <andi.kleen@intel.com>,
+ Borislav Petkov <bp@suse.de>, Don Zickus <dzickus@redhat.com>,
+ "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
+ Frederic Weisbecker <frederic@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Tony Luck <tony.luck@intel.com>, Babu Moger <babu.moger@oracle.com>,
+ linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Colin Ian King <colin.king@canonical.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On Mon, Mar 11, 2019 at 04:31:21PM +0300, Sergey Miroshnichenko wrote:
-> With movable BARs, adding a hotplugged device may affect all the PCIe
-> domain starting from the root, so use a pci_rescan_bus() function which
-> handles the rearrangement of existing BARs and bridge windows.
-> 
-> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
-> ---
->  drivers/pci/hotplug/pciehp_pci.c | 14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
-> index b9c1396db6fe..7c0871db5bae 100644
-> --- a/drivers/pci/hotplug/pciehp_pci.c
-> +++ b/drivers/pci/hotplug/pciehp_pci.c
-> @@ -56,12 +56,16 @@ int pciehp_configure_device(struct controller *ctrl)
->  		goto out;
->  	}
->  
-> -	for_each_pci_bridge(dev, parent)
-> -		pci_hp_add_bridge(dev);
-> +	if (pci_movable_bars_enabled()) {
-> +		pci_rescan_bus(parent);
-> +	} else {
-> +		for_each_pci_bridge(dev, parent)
-> +			pci_hp_add_bridge(dev);
->  
-> -	pci_assign_unassigned_bridge_resources(bridge);
-> -	pcie_bus_configure_settings(parent);
-> -	pci_bus_add_devices(parent);
-> +		pci_assign_unassigned_bridge_resources(bridge);
-> +		pcie_bus_configure_settings(parent);
-> +		pci_bus_add_devices(parent);
-> +	}
+On Wed, 27 Feb 2019, Ricardo Neri wrote:
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Detect hard lockups on a system
+> + *
+> + * Copyright (C) Intel Corporation 2019
+> + *
+> + * Note: All of this code comes from the original perf-specific hardlockup
+> + * detector.
 
-The addition of a second path at this level, i.e., different paths
-depending on whether movable BARs are enabled, seems a little
-problematic because it's hard to determine whether they're equivalent
-except for the movable BAR aspect.  For example, you don't call
-pci_hp_add_bridge() when movable BARs are enabled, and I can't tell
-whether that's intentional or whether it's a problem.
+And because you copied it from there without modification this becomes
+automatically Copyrighted by Intel?
 
-This looks like the sort of change that should be made in other
-hotplug paths, e.g., enable_slot() for acpiphp,
-pcibios_finish_adding_to_bus() for powerpc (maybe? I can't really
-tell), cpci_configure_slot() shpchp_configure_device()?
+May I recommend that you talk to your legal departement about this.
 
-If we have or could invent some top-level interface that all these
-places could use, and somewhere inside that we could do the movable
-BAR magic, I think that would make it more maintainable.
+Aside of that there is really no value in creating yet another file. The
+code in question can simply wrapped into a large #ifdef PERF in the old
+file.
 
->   out:
->  	pci_unlock_rescan_remove();
-> -- 
-> 2.20.1
-> 
+Thanks,
+
+	tglx
+
+
