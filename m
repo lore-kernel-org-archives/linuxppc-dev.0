@@ -2,25 +2,25 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E6A9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:32:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE6DBC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:40:58 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 8538A2146F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:32:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 2932D20651
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:40:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="nmXRMbxj"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 8538A2146F
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="VacfKeQF"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 2932D20651
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Tw6Y07SGzDqPv
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 04:32:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TwJl68zBzDqQq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 04:40:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -28,44 +28,46 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="nmXRMbxj"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="VacfKeQF"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tw4S2hnjzDqG8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 04:30:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TwGt30zdzDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 04:39:18 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 77C0841A37;
- Wed, 27 Mar 2019 17:30:13 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id 88B0841A37;
+ Wed, 27 Mar 2019 17:39:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-transfer-encoding:content-language:content-type
  :content-type:in-reply-to:mime-version:user-agent:date:date
  :message-id:from:from:references:subject:subject:received
- :received:received; s=mta-01; t=1553707811; x=1555522212; bh=kSU
- 9y6ZjfbrVlQ76vYI3yO++tQkgaT4bSitwn0LjxrM=; b=nmXRMbxjyp48gljeIhY
- Ad/PzGHGPucERBhyZYdM/GAEvz0aPESvN3Yva7c9lkYui3YAJ6Y6JHZYZM2bnE4N
- cAg2p3s70trOc2LK7g95TO2zLiZchU5dutAx19Ge7Rp9r3/fw5ueSGdJSOZ2vQF0
- XwtJmKWxh2Vl+Rr3e6qD8/uw=
+ :received:received; s=mta-01; t=1553708354; x=1555522755; bh=zwN
+ Z4BTW/4FhVHVHQORNSsf9Z/gjXzfQf9LmeqnUJ4U=; b=VacfKeQFjZv1Sfxm7Gb
+ lHNlY6D0+UpTzUaHBYWfoQCXfPEOxTeXiRGFgc+Qk9YkYFIygK3cGtLmXq/T2oRe
+ Wa6P4CjgdMBVry5dxW2+ELBkdCXqKXHC2qggyYWwCqXcbShT/juOLMtgZPuc0G5S
+ VuZ0JYWhvtBoQBpfvD9KLcA0=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id Stzs9-EdUjOG; Wed, 27 Mar 2019 20:30:11 +0300 (MSK)
+ with ESMTP id fOCjlebEzoc5; Wed, 27 Mar 2019 20:39:14 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id CA55F41A0C;
- Wed, 27 Mar 2019 20:30:10 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 32D9F41A0C;
+ Wed, 27 Mar 2019 20:39:14 +0300 (MSK)
 Received: from [172.17.15.60] (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 27
- Mar 2019 20:30:10 +0300
-Subject: Re: [PATCH RFC v4 08/21] nvme-pci: Handle movable BARs
-To: Bjorn Helgaas <helgaas@kernel.org>
+ Mar 2019 20:39:13 +0300
+Subject: Re: [PATCH RFC v4 09/21] PCI: Mark immovable BARs with PCI_FIXED
+To: David Laight <David.Laight@ACULAB.COM>, 'Bjorn Helgaas'
+ <helgaas@kernel.org>
 References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
- <20190311133122.11417-9-s.miroshnichenko@yadro.com>
- <20190326202055.GP24180@google.com>
+ <20190311133122.11417-10-s.miroshnichenko@yadro.com>
+ <20190326202838.GQ24180@google.com>
+ <3e3e163cbf35446ea575bb7fae1912be@AcuMS.aculab.com>
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
@@ -112,15 +114,15 @@ Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
  Nwdozk9DY6wY9cMQ8coYTctox5VsvYEz2rJCRiIc40NO76gdMVutEORjdSoeZK32srVNoBo9
  L0EK2QCFFRDcslPDpZWE1uDZQPW+GC2Z/dmuEpaMzlrIgfZ8GLXxHbB+VdDQ7QE//lphXskF
  lHi50np+KDDPzZS51tw=
-Message-ID: <63989325-c1f8-9579-8405-56dc83751a3b@yadro.com>
-Date: Wed, 27 Mar 2019 20:30:10 +0300
+Message-ID: <f6157813-07b7-61af-242e-71870d0b0043@yadro.com>
+Date: Wed, 27 Mar 2019 20:39:13 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <20190326202055.GP24180@google.com>
+In-Reply-To: <3e3e163cbf35446ea575bb7fae1912be@AcuMS.aculab.com>
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 X-Originating-IP: [172.17.15.60]
 X-ClientProxiedBy: T-EXCH-01.corp.yadro.com (172.17.10.101) To
  T-EXCH-02.corp.yadro.com (172.17.10.102)
@@ -135,142 +137,65 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Jens Axboe <axboe@fb.com>, Sagi Grimberg <sagi@grimberg.me>,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-nvme@lists.infradead.org, linux@yadro.com,
- Keith Busch <keith.busch@intel.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Hellwig <hch@lst.de>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux@yadro.com" <linux@yadro.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/26/19 11:20 PM, Bjorn Helgaas wrote:
-> [+cc Keith, Jens, Christoph, Sagi, linux-nvme, LKML]
-> 
-> On Mon, Mar 11, 2019 at 04:31:09PM +0300, Sergey Miroshnichenko wrote:
->> Hotplugged devices can affect the existing ones by moving their BARs.
->> PCI subsystem will inform the NVME driver about this by invoking
->> reset_prepare()+reset_done(), then iounmap()+ioremap() must be called.
-> 
-> Do you mean the PCI core will invoke ->rescan_prepare() and
-> ->rescan_done() (as opposed to *reset*)?
-> 
-
-Yes, of course, sorry for the confusion!
-
-These are new callbacks, so drivers can explicitly show their support of movable BARs, and
-the PCI core can detect if they don't and note that the corresponding BARs can't be moved
-for now.
-
->> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
->> ---
->>  drivers/nvme/host/pci.c | 29 +++++++++++++++++++++++++++--
->>  1 file changed, 27 insertions(+), 2 deletions(-)
+On 3/27/19 8:03 PM, David Laight wrote:
+> From: Bjorn Helgaas
+>> Sent: 26 March 2019 20:29
 >>
->> diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
->> index 92bad1c810ac..ccea3033a67a 100644
->> --- a/drivers/nvme/host/pci.c
->> +++ b/drivers/nvme/host/pci.c
->> @@ -106,6 +106,7 @@ struct nvme_dev {
->>  	unsigned int num_vecs;
->>  	int q_depth;
->>  	u32 db_stride;
->> +	resource_size_t current_phys_bar;
->>  	void __iomem *bar;
->>  	unsigned long bar_mapped_size;
->>  	struct work_struct remove_work;
->> @@ -1672,13 +1673,16 @@ static int nvme_remap_bar(struct nvme_dev *dev, unsigned long size)
->>  {
->>  	struct pci_dev *pdev = to_pci_dev(dev->dev);
->>  
->> -	if (size <= dev->bar_mapped_size)
->> +	if (dev->bar &&
->> +	    dev->current_phys_bar == pci_resource_start(pdev, 0) &&
->> +	    size <= dev->bar_mapped_size)
->>  		return 0;
->>  	if (size > pci_resource_len(pdev, 0))
->>  		return -ENOMEM;
->>  	if (dev->bar)
->>  		iounmap(dev->bar);
->> -	dev->bar = ioremap(pci_resource_start(pdev, 0), size);
->> +	dev->current_phys_bar = pci_resource_start(pdev, 0);
->> +	dev->bar = ioremap(dev->current_phys_bar, size);
+>> On Mon, Mar 11, 2019 at 04:31:10PM +0300, Sergey Miroshnichenko wrote:
+>>> If a PCIe device driver doesn't yet have support for movable BARs,
+>>> mark device's BARs with IORESOURCE_PCI_FIXED.
+>>
+>> I'm hesitant about using IORESOURCE_PCI_FIXED for this purpose.  That
+>> was originally added to describe resources that can not be changed
+>> because they're hardwired in the device, e.g., legacy resources and
+>> Enhanced Allocation resources.
+>>
+>> In general, I think the bits in res->flags should tell us things about
+>> the hardware.  This particular use would be something about the
+>> *driver*, and I think we should figure that out by looking at
+>> dev->driver.
 > 
-> dev->current_phys_bar is different from pci_resource_start() in the
-> case where the PCI core has moved the nvme BAR, but nvme has not yet
-> remapped it.
+> There will also be drivers that don't support BARs being moved,
+> but may be in a state (ie not actually open) where they can go
+> through a remove-rescan sequence to allow the BAR be moved.
 > 
-> I'm not sure it's worth keeping track of current_phys_bar, as opposed
-> to always unmapping and remapping.  Is this a performance path?  I
-> think there are advantages to always exercising the same code path,
-> regardless of whether the BAR happened to be moved, e.g., if there's a
-> bug in the "BAR moved" path, it may be a heisenbug because whether we
-> exercise that path depends on the current configuration.
+> This might even be true if the open count is non-zero.
 > 
-> If you do need to cache current_phys_bar, maybe this, so it's a little
-> easier to see that you're not changing the ioremap() itself:
+> 	David
 > 
->   dev->bar = ioremap(pci_resource_start(pdev, 0), size);
->   dev->current_phys_bar = pci_resource_start(pdev, 0);
+> -
+> Registered Address Lakeside, Bramley Road, Mount Farm, Milton Keynes, MK1 1PT, UK
+> Registration No: 1397386 (Wales)
 > 
 
-Oh, I see now. Rescan is rather a rare event, and unconditional remapping is simpler, so a
-bit more resistant to bugs.
+This approach with IORESOURCE_PCI_FIXED was used because struct resource doesn't have a
+pointer to its device (and so to its driver). But now, after you have mentioned that, I
+can see that in every place I use the FIXED flag to mark the immovable resources - also
+has the according struct pci_dev *dev nearby.
 
->>  	if (!dev->bar) {
->>  		dev->bar_mapped_size = 0;
->>  		return -ENOMEM;
->> @@ -2504,6 +2508,8 @@ static void nvme_reset_work(struct work_struct *work)
->>  	if (WARN_ON(dev->ctrl.state != NVME_CTRL_RESETTING))
->>  		goto out;
->>  
->> +	nvme_remap_bar(dev, db_bar_size(dev, 0));
-> 
-> How is this change connected to rescan?  This looks reset-related.
-> 
+So, replacing every
 
-Thanks for catching that! This has also slipped form early stage of this pathset, when
-reset_done() (which is rescan_done() now) just initiated an NVME reset.
+    if (r->flags & IORESOURCE_PCI_FIXED)
 
-Best regards,
+with
+
+    if (!dev->driver->rescan_prepare)
+
+or something like
+
+    if (pci_dev_movable_bars_capable(dev))
+
+will reduce this huge patchset a little, and also makes irrelevant the case I've
+completely forgotten about - IORESOURCE_PCI_FIXED must be unset on removing (rmmod) the
+"immovable" driver.
+
+Thanks a lot! I'll rework the changes in this way and resend it as v5.
+
 Serge
-
->>  	/*
->>  	 * If we're called to reset a live controller first shut it down before
->>  	 * moving on.
->> @@ -2910,6 +2916,23 @@ static void nvme_error_resume(struct pci_dev *pdev)
->>  	flush_work(&dev->ctrl.reset_work);
->>  }
->>  
->> +void nvme_rescan_prepare(struct pci_dev *pdev)
->> +{
->> +	struct nvme_dev *dev = pci_get_drvdata(pdev);
->> +
->> +	nvme_dev_disable(dev, false);
->> +	nvme_dev_unmap(dev);
->> +	dev->bar = NULL;
->> +}
->> +
->> +void nvme_rescan_done(struct pci_dev *pdev)
->> +{
->> +	struct nvme_dev *dev = pci_get_drvdata(pdev);
->> +
->> +	nvme_dev_map(dev);
->> +	nvme_reset_ctrl_sync(&dev->ctrl);
->> +}
->> +
->>  static const struct pci_error_handlers nvme_err_handler = {
->>  	.error_detected	= nvme_error_detected,
->>  	.slot_reset	= nvme_slot_reset,
->> @@ -2974,6 +2997,8 @@ static struct pci_driver nvme_driver = {
->>  	},
->>  	.sriov_configure = pci_sriov_configure_simple,
->>  	.err_handler	= &nvme_err_handler,
->> +	.rescan_prepare	= nvme_rescan_prepare,
->> +	.rescan_done	= nvme_rescan_done,
->>  };
->>  
->>  static int __init nvme_init(void)
->> -- 
->> 2.20.1
->>
