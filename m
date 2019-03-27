@@ -7,81 +7,81 @@ X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D2A9C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:03:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4FF8C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:19:29 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id A3A6920693
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:03:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 094E52075E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:19:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OMzUCZ+S"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3A6920693
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PVpIwPgu"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 094E52075E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TcrX1RlmzDqHp
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:03:56 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TdBQ4Ry9zDqPM
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:19:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=gmail.com
- (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ (client-ip=2607:f8b0:4864:20::543; helo=mail-pg1-x543.google.com;
  envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
- unprotected) header.d=gmail.com header.i=@gmail.com header.b="OMzUCZ+S"; 
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="PVpIwPgu"; 
  dkim-atps=neutral
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
- [IPv6:2607:f8b0:4864:20::643])
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tcpq2WXPzDqGX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 17:02:27 +1100 (AEDT)
-Received: by mail-pl1-x643.google.com with SMTP id m10so2803281plt.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 23:02:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Td8C24JpzDqQK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 17:17:31 +1100 (AEDT)
+Received: by mail-pg1-x543.google.com with SMTP id g8so9466343pgf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 23:17:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
  h=date:from:subject:to:cc:references:in-reply-to:mime-version
  :user-agent:message-id:content-transfer-encoding;
- bh=KzoF20xLXXHyuCyJwFWJTRtr4sQQnjQpJ/lE1vgkmDI=;
- b=OMzUCZ+SoT5qG9yhUgwjX7tjNPt4pdrwVBKikzC8q4ys0U+U7jlniqAK67wQfpn2Sb
- ycL2UxyNUjumwbILINLWnq/pk+DeQjNZAnF7oC/Q7YwV0tNl4dPnnNyoeMIYuJIkrITH
- HQtirbdtYx7gOu7gvMyTjQd/3V0MgNfR0kec7bRMlp37RyhZ/RPwlrp3El9CQzfCrVUO
- FIaFeD0tRgDQIJFdbMOYrjTzpJidV74U8FjXIJzX9+zEeQsrJAeVSYpjJu2jf5E4kLVD
- hKLiITEYF51aeNiB8DeaRm9eu+j/tl/nSK9VJKebZmzf/dJF2OSWgtgfj63NwJ6cz+Xm
- guvQ==
+ bh=axc9xNpyTRBrX7LQvA1WbHYImqcINzH7Eycv8MVMF/4=;
+ b=PVpIwPgukE0ulDL4eMxd0AVT7NxyKepWyR5/kfGAyuxYrIyneZKWAyqs2MXg7Kuocz
+ ZV1yM6vvG9TyDlTB/lYl+sgBPNnTQeCWixRc0WARv67XPxtciy871zgJ+StOHaN9n66t
+ SAzVwBcXnl8IZHMXVoWPZ1ezgWNJzVFycz4E4AV5isbLSiI78kN58oW1fVaBhvc/ATxO
+ k5j+O/+0wHM7ZVIuZml0uq28OJvDMy024uHQ4ZtDucjynD01t2kOdC+qdQvYdzCYOdt9
+ ARTY5HQL3ivBSA4aQuha0SX8o04W34yrb6OSflCuRyDokO3r/x7p/1UHFIFleI9hKQEh
+ KLlA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=1e100.net; s=20161025;
  h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
  :mime-version:user-agent:message-id:content-transfer-encoding;
- bh=KzoF20xLXXHyuCyJwFWJTRtr4sQQnjQpJ/lE1vgkmDI=;
- b=XY6/E08oIeOYI8Y54m74Q0TbI0Ka04LCibr/sEj2fPuiJhsV76z3V4uEj5BulDbiag
- nozyWjXKwrsKoFXz/2Y+z+yrTVJU9LUNMDGRKwnCv3DXdemZ/pXbqrDLpCZNbwZTQScr
- wr7JQNRl54XHqtCGUlOvDi86C49wcEJoeTMDztLu0oUEIaW+ZrzydiWBTHdwveFE9z2l
- q70KSNusUTVBaDE2TncgpcL5agYBqT3LlVq3GsmmvQVxnHNJqOP/0s38/t1Boo/thDlx
- 6SfEF3ie/A/ElGdb+q9lB2V7ZQOzQ97+2YVxrOml9AQwAGE3h9qxE89LRUl5pi045hVX
- 8YFQ==
-X-Gm-Message-State: APjAAAXqpUQMg4UI4btbcaHEAjgBDxrVXtPxQ67sl2d28NP+G5Cizxw9
- JGpPkkuQyOlIr0Pay7pOl84=
-X-Google-Smtp-Source: APXvYqxZoXL+IoJDc/8cBoh2N4FAo4Gu3+AaV6eO4N/9bOzKfQAxU7wuWbbkiFSkSI5928eYORtmZw==
-X-Received: by 2002:a17:902:6b8c:: with SMTP id
- p12mr35900971plk.282.1553666543898; 
- Tue, 26 Mar 2019 23:02:23 -0700 (PDT)
+ bh=axc9xNpyTRBrX7LQvA1WbHYImqcINzH7Eycv8MVMF/4=;
+ b=KbkX5/DmA81/m9bjU77Ad6J4fuRVvnxJ23xULy9BkDUes4WJ+8DpxJoHg/zOT1qJpq
+ RmGRg+Q6IR0x25jqRhVccpa04IgdKnCkns5sZ99agiHw1SAJ2AZkfGWSYeL88PFzVQld
+ Q1q46Q9Uhy/iwHoCjYA7vn84iW9LbzMtg1uxAxKtnhBAwkckUAiK89NuWXiOhSVDG2G1
+ bLoNdhzvBmKKzM1Yr4o67un3LNeTynRSDmqJ+HaC5Hz7ek5Pn4Xjf6p94/gmCEiwSOwx
+ pxa9gqTJyDdBLeeGtLvJdaEZFZCRVVCQkAnCXmRBrGOWBUg7uo30wBYQdg0FeIx0YU0b
+ ZdUA==
+X-Gm-Message-State: APjAAAVyHy+mIK9lc2z+/8RJ77LokuMF601XCReAtPjV3tLYrMV1ehPN
+ BzlDLOwt3c9YdmbIJqi0OMU=
+X-Google-Smtp-Source: APXvYqyaM2rwJz7R/xglj9vUJq7GnjXoEg8UYqDL3bywMLrAs+rHV2dBjJBeEOEfOQQkAtWHMBlbOA==
+X-Received: by 2002:a62:2046:: with SMTP id g67mr28278282pfg.121.1553667448718; 
+ Tue, 26 Mar 2019 23:17:28 -0700 (PDT)
 Received: from localhost (14-202-58-188.tpgi.com.au. [14.202.58.188])
- by smtp.gmail.com with ESMTPSA id w123sm31329456pfw.72.2019.03.26.23.02.22
+ by smtp.gmail.com with ESMTPSA id d75sm48701697pga.66.2019.03.26.23.17.26
  (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Tue, 26 Mar 2019 23:02:23 -0700 (PDT)
-Date: Wed, 27 Mar 2019 16:02:16 +1000
+ Tue, 26 Mar 2019 23:17:27 -0700 (PDT)
+Date: Wed, 27 Mar 2019 16:17:21 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2] arch/powerpc: Rework local_paca to avoid LTO warnings
-To: Alastair D'Silva <alastair@au1.ibm.com>
-References: <20190313034208.13134-1-alastair@au1.ibm.com>
- <20190314023125.10076-1-alastair@au1.ibm.com>
- <1553579424.0r39b9otz6.astroid@bobo.none>
- <8d8a97e145758b92c2760012373f5217877a035c.camel@au1.ibm.com>
-In-Reply-To: <8d8a97e145758b92c2760012373f5217877a035c.camel@au1.ibm.com>
+Subject: Re: [PATCH v2] kbuild: strip whitespace in cmd_record_mcount
+ findstring
+To: Joe Lawrence <joe.lawrence@redhat.com>, Masahiro Yamada
+ <yamada.masahiro@socionext.com>
+References: <20190325160438.8982-1-joe.lawrence@redhat.com>
+ <CAK7LNARyD=tG0JhwN_mjdyDRSPAF8UoZKvqAT3Ah_v7GfymCPg@mail.gmail.com>
+ <20190326173308.GA26546@redhat.com>
+In-Reply-To: <20190326173308.GA26546@redhat.com>
 MIME-Version: 1.0
 User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
-Message-Id: <1553665102.ow7h62jw1u.astroid@bobo.none>
+Message-Id: <1553667417.opxakvn5r6.astroid@bobo.none>
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
@@ -95,129 +95,196 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org,
- =?iso-8859-1?q?Mike=0A?= Rapoport <rppt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- =?iso-8859-1?q?Mahesh=0A?= Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michal Marek <michal.lkml@markovi.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-Alastair D'Silva's on March 27, 2019 2:37 pm:
-> On Tue, 2019-03-26 at 15:58 +1000, Nicholas Piggin wrote:
->> Alastair D'Silva's on March 14, 2019 12:31 pm:
->> > From: Alastair D'Silva <alastair@d-silva.org>
->> >=20
->> > When building an LTO kernel, the existing code generates warnings:
->> >     ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
->> >         =E2=80=98local_paca=E2=80=99 used for multiple global register=
- variables
->> >      register struct paca_struct *local_paca asm("r13");
->> >                                   ^
->> >     ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
->> >         =E2=80=98local_paca=E2=80=99
->>=20
->> Isn't this a bogus warning? It doesn't look like there's a way to=20
->> define it any other way.
->=20
-> There isn't any other way to define it as a global. However, the
-> warning is legitimate.
->=20
-> The compiler sees that there are multiple global register variables,
-> all pointing at the same register.
-
-It's one variable though, so it's not a legitimate warning (unless
-there is a way to declare a "reference" to it that we are not doing).
-
->=20
-> The compiler can only determine this when LTO is used, as otherwise it
-> only sees the one in the current compilation unit, whicd disappears by
-> the time the kernel is linked.
->=20
->>=20
->> > This patch reworks local_paca into an inline getter & setter
->> > function,
->> > which addresses the warning.
->> >=20
->> > Changelog:
->> > V2
->> >   - Address whitespace issues
->> >   - keep new implementation close to where the old implementation
->> > was
->> >=20
->> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+Joe Lawrence's on March 27, 2019 3:33 am:
+> On Tue, Mar 26, 2019 at 02:29:47PM +0900, Masahiro Yamada wrote:
+>> On Tue, Mar 26, 2019 at 1:05 AM Joe Lawrence <joe.lawrence@redhat.com> w=
+rote:
+>> >
+>> > CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
+>> > findstring.
+>> >
+>> > For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
+>> > GCC 4.9 and newer") introduced a change such that on my ppc64le box,
+>> > CC_FLAGS_FTRACE=3D"-pg -mprofile-kernel ".  (Note the trailing space.)
+>> > When cmd_record_mcount is now invoked, findstring fails as the ftrace
+>> > flags were found at very end of _c_flags, without the trailing space.
+>> >
+>> >   _c_flags=3D" ... -pg -mprofile-kernel"
+>> >   CC_FLAGS_FTRACE=3D"-pg -mprofile-kernel "
+>> >                                        ^
+>> >     findstring is looking for this extra space
+>> >
+>> > Remove the redundant whitespaces from CC_FLAGS_FTRACE in
+>> > cmd_record_mcount to avoid this problem.
+>> >
+>> > Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and =
+newer").
+>> > Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
 >> > ---
->> >  arch/powerpc/include/asm/paca.h | 37 +++++++++++++++++++++++++--
->> > ------
->> >  arch/powerpc/kernel/paca.c      |  2 +-
->> >  2 files changed, 29 insertions(+), 10 deletions(-)
->> >=20
->> > diff --git a/arch/powerpc/include/asm/paca.h
->> > b/arch/powerpc/include/asm/paca.h
->> > index e843bc5d1a0f..2fa0b43357c9 100644
->> > --- a/arch/powerpc/include/asm/paca.h
->> > +++ b/arch/powerpc/include/asm/paca.h
->> > @@ -34,19 +34,38 @@
->> >  #include <asm/cpuidle.h>
->> >  #include <asm/atomic.h>
->> > =20
->> > -register struct paca_struct *local_paca asm("r13");
->> > -
->> >  #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
->> >  extern unsigned int debug_smp_processor_id(void); /* from
->> > linux/smp.h */
->> > -/*
->> > - * Add standard checks that preemption cannot occur when using
->> > get_paca():
->> > - * otherwise the paca_struct it points to may be the wrong one
->> > just after.
->> > - */
->> > -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
->> > -#else
->> > -#define get_paca()	local_paca
->> >  #endif
->> > =20
->> > +static inline struct paca_struct *get_paca_no_preempt_check(void)
->> > +{
->> > +	register struct paca_struct *paca asm("r13");
->> > +
->> > +	return paca;
->> > +}
+>> >
+>> > Standard disclaimer: I'm not a kbuild expert, but this works around th=
+e
+>> > problem I reported where ftrace and livepatch self-tests were failing =
+as
+>> > specified object files were not run through the recordmcount.pl script=
+:
+>> >
+>> > ppc64le: ftrace self-tests and $(CC_FLAGS_FTRACE) broken?
+>> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2019-March/187298.html
+>> >
+>> >  scripts/Makefile.build | 8 ++++----
+>> >  1 file changed, 4 insertions(+), 4 deletions(-)
+>> >
+>> > diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+>> > index 2554a15ecf2b..74d402b5aa3c 100644
+>> > --- a/scripts/Makefile.build
+>> > +++ b/scripts/Makefile.build
+>> > @@ -199,10 +199,10 @@ sub_cmd_record_mcount =3D perl $(srctree)/script=
+s/recordmcount.pl "$(ARCH)" \
+>> >         "$(if $(part-of-module),1,0)" "$(@)";
+>> >  recordmcount_source :=3D $(srctree)/scripts/recordmcount.pl
+>> >  endif # BUILD_C_RECORDMCOUNT
+>> > -cmd_record_mcount =3D                                            \
+>> > -       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =3D   \
+>> > -            "$(CC_FLAGS_FTRACE)" ]; then                       \
+>> > -               $(sub_cmd_record_mcount)                        \
+>> > +cmd_record_mcount =3D                                                =
+    \
+>> > +       if [ "$(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c_flags))" =
+=3D  \
+>> > +            "$(strip $(CC_FLAGS_FTRACE))" ]; then                    =
+  \
+>> > +               $(sub_cmd_record_mcount)                              =
+  \
+>> >         fi
+>> >  endif # CC_USING_RECORD_MCOUNT
+>> >  endif # CONFIG_FTRACE_MCOUNT_RECORD
+>> > --
+>> > 2.20.1
+>> >
 >>=20
->> Problem is it now changes the global register variable to a local=20
->> register variable. The compiler would presumably be within its rights
->> to "cache" that return value or use another register for it, which
->> is not really what we want.
 >>=20
+>>=20
+>> I do not see a point in using the shell command here
+>> in the first place.
+>>=20
+>> Instead of adding crappy workarounds,
+>> I guess the following simple code should work:
+>>=20
+>>=20
+>> index 2554a15..5f13021 100644
+>> --- a/scripts/Makefile.build
+>> +++ b/scripts/Makefile.build
+>> @@ -199,11 +199,8 @@ sub_cmd_record_mcount =3D perl
+>> $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+>>         "$(if $(part-of-module),1,0)" "$(@)";
+>>  recordmcount_source :=3D $(srctree)/scripts/recordmcount.pl
+>>  endif # BUILD_C_RECORDMCOUNT
+>> -cmd_record_mcount =3D                                            \
+>> -       if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =3D   \
+>> -            "$(CC_FLAGS_FTRACE)" ]; then                       \
+>> -               $(sub_cmd_record_mcount)                        \
+>> -       fi
+>> +cmd_record_mcount =3D $(if $(findstring $(CC_FLAGS_FTRACE),$(_c_flags))=
+,\
+>> +                 $(sub_cmd_record_mcount))
+>>  endif # CC_USING_RECORD_MCOUNT
+>>  endif # CONFIG_FTRACE_MCOUNT_RECORD
 >>=20
 >=20
-> I've confirmed that at least with GCC 8.2.0, the generated assembler is
-> similar, but yes, the compiler may be free to take a copy into another
-> register (although that would be a terrible optimisation), and then
-> operate on that value.
-
-Yep.
-
+> Hi Masahiro,
 >=20
-> Subsequent uses would still have to call the function (ie. fetch the
-> data from r13) regardless, so I believe this scenario is safe.
+> Agreed on the shell command ugliness, however I still think we need to
+> strip the search pattern here.  With your suggestion:
 >=20
-> Can you think of a scenario where this is a problem?
+> % rm -f kernel/trace/trace_selftest_dynamic.o=20
+> % make kernel/trace/trace_selftest_dynamic.o
+>   CALL    scripts/checksyscalls.sh
+>   CALL    scripts/atomic/check-atomics.sh
+>   CC      kernel/trace/trace_selftest_dynamic.o
+>=20
+> % eu-readelf --sections kernel/trace/trace_selftest_dynamic.o | grep mcou=
+nt
+> (nothing)
+>=20
+> Adding it back as, as below, restores those sections and the self tests
+> work again.
 
-It wouldn't be the subsequent use but the one use. If you're preempted
-then you can't be using a stale r13 value.
-
-Quite possibly any bug like that would already be buggy now, the cases
-where it matters tend to need asm to access it. And it's something we
-need to really audit and have proper accessors and preempt warnings
-that Ben always harped on about.
-
-But to just work around this warning it seems pretty dangerous to
-change this and hope.
+Thanks for finding and fixing this, nice work!
 
 Thanks,
 Nick
 
+>=20
+> Regards,
+>=20
+> -- Joe
+>=20
+> -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8-- -->8--
+>=20
+> From 6a85e8ecf4179b3e80601a327ec43d8d49f0e3cd Mon Sep 17 00:00:00 2001
+> From: Joe Lawrence <joe.lawrence@redhat.com>
+> Date: Tue, 26 Mar 2019 10:50:28 -0400
+> Subject: [PATCH v2] kbuild: strip whitespace in cmd_record_mcount findstr=
+ing
+>=20
+> CC_FLAGS_FTRACE may contain trailing whitespace that interferes with
+> findstring.
+>=20
+> For example, commit 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on
+> GCC 4.9 and newer") introduced a change such that on my ppc64le box,
+> CC_FLAGS_FTRACE=3D"-pg -mprofile-kernel ".  (Note the trailing space.)
+> When cmd_record_mcount is now invoked, findstring fails as the ftrace
+> flags were found at very end of _c_flags, without the trailing space.
+>=20
+>   _c_flags=3D" ... -pg -mprofile-kernel"
+>   CC_FLAGS_FTRACE=3D"-pg -mprofile-kernel "
+>                                        ^
+>     findstring is looking for this extra space
+>=20
+> Remove the redundant whitespaces from CC_FLAGS_FTRACE in
+> cmd_record_mcount to avoid this problem.
+>=20
+> Suggested-by: Masahiro Yamada <yamada.masahiro@socionext.com> (refactorin=
+g)
+> Fixes: 6977f95e63b9 ("powerpc: avoid -mno-sched-epilog on GCC 4.9 and new=
+er").
+> Signed-off-by: Joe Lawrence <joe.lawrence@redhat.com>
+> ---
+>  scripts/Makefile.build | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+> index 2554a15ecf2b..76ca30cc4791 100644
+> --- a/scripts/Makefile.build
+> +++ b/scripts/Makefile.build
+> @@ -199,11 +199,8 @@ sub_cmd_record_mcount =3D perl $(srctree)/scripts/re=
+cordmcount.pl "$(ARCH)" \
+>  	"$(if $(part-of-module),1,0)" "$(@)";
+>  recordmcount_source :=3D $(srctree)/scripts/recordmcount.pl
+>  endif # BUILD_C_RECORDMCOUNT
+> -cmd_record_mcount =3D						\
+> -	if [ "$(findstring $(CC_FLAGS_FTRACE),$(_c_flags))" =3D	\
+> -	     "$(CC_FLAGS_FTRACE)" ]; then			\
+> -		$(sub_cmd_record_mcount)			\
+> -	fi
+> +cmd_record_mcount =3D $(if $(findstring $(strip $(CC_FLAGS_FTRACE)),$(_c=
+_flags)),	\
+> +	$(sub_cmd_record_mcount))
+>  endif # CC_USING_RECORD_MCOUNT
+>  endif # CONFIG_FTRACE_MCOUNT_RECORD
+> =20
+> --=20
+> 2.20.1
+>=20
+>=20
 =
