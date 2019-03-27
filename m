@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD30AC4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:24:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35E55C10F00
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:27:21 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 5B32C2087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:24:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id AD2D0206BA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:27:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cghY5gvy"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B32C2087C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="LCavE9D3"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AD2D0206BA
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TxHG0ZVCzDqHr
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:24:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TxLG52FxzDqRR
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:27:18 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,32 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="cghY5gvy"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="LCavE9D3"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Twrm6Yy2zDqLt
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:05:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TwsB0dXwzDqDK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:05:33 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 0E8F5217D9;
- Wed, 27 Mar 2019 18:05:09 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 72320217F9;
+ Wed, 27 Mar 2019 18:05:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553709910;
- bh=Ke7PKD/eQdDk1TotwE2Zwkfq6hKB7erw5boECmEx25I=;
+ s=default; t=1553709931;
+ bh=TfJu8wyhrjGqEs8YMbzF5xb8e6sBLHmcYhsNjOCYKx8=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=cghY5gvyWN6n2Y3eVVzFdsQ+vg0t28/A0nzI7fkjHYpJpDRsBlaqOAdOKvuhYeDvB
- dGEU+ivS9vCqoWpqmNxTnYmYMkZJpUqN77K3kKAyFcqCq0Th71dYf1mEa+8oxkHrQo
- iJJjBobRy3wVtq7V9cpiekReezxKZYhPSMsnMB+w=
+ b=LCavE9D3WEGTDgaVosLXqQE/YRwh1yh3RdhmUp4zXi6MV7iADlLmGwiC+IIUDRwZN
+ O6lk3F7l68fibbr1hwtzD36ObACu90xMuy94ftksAN4lOYJ4e/H9a+/PxT3hdk7tA6
+ tOL3ukAHpqMDzhBmuy1IbVkbm9QkgYWRKGxo/A48=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 106/262] powerpc/44x: Force PCI on for CURRITUCK
-Date: Wed, 27 Mar 2019 13:59:21 -0400
-Message-Id: <20190327180158.10245-106-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 118/262] SoC: imx-sgtl5000: add missing
+ put_device()
+Date: Wed, 27 Mar 2019 13:59:33 -0400
+Message-Id: <20190327180158.10245-118-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
 References: <20190327180158.10245-1-sashal@kernel.org>
@@ -71,55 +72,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Wen Yang <yellowriver2010@hotmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Wen Yang <yellowriver2010@hotmail.com>
 
-[ Upstream commit aa7150ba378650d0e9d84b8e4d805946965a5926 ]
+[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
 
-The recent rework of PCI kconfig symbols exposed an existing bug in
-the CURRITUCK kconfig logic.
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
 
-It selects PPC4xx_PCI_EXPRESS which depends on PCI, but PCI is user
-selectable and might be disabled, leading to a warning:
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
 
-  WARNING: unmet direct dependencies detected for PPC4xx_PCI_EXPRESS
-    Depends on [n]: PCI [=n] && 4xx [=y]
-    Selected by [y]:
-    - CURRITUCK [=y] && PPC_47x [=y]
-
-Prior to commit eb01d42a7778 ("PCI: consolidate PCI config entry in
-drivers/pci") PCI was enabled by default for currituck_defconfig so we
-didn't see the warning. The bad logic was still there, it just
-required someone disabling PCI in their .config to hit it.
-
-Fix it by forcing PCI on for CURRITUCK, which seems was always the
-expectation anyway.
-
-Fixes: eb01d42a7778 ("PCI: consolidate PCI config entry in drivers/pci")
-Reported-by: Randy Dunlap <rdunlap@infradead.org>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/44x/Kconfig | 1 +
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 4a9a72d01c3c..35be81fd2dc2 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -180,6 +180,7 @@ config CURRITUCK
- 	depends on PPC_47x
- 	select SWIOTLB
- 	select 476FPE
-+	select FORCE_PCI
- 	select PPC4xx_PCI_EXPRESS
- 	help
- 	  This option enables support for the IBM Currituck (476fpe) evaluation board
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index c29200cf755a..9b9a7ec52905 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -108,6 +108,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
+ 	}
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_err(&pdev->dev, "failed to find codec platform device\n");
 -- 
 2.19.1
 
