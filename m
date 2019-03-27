@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 187F8C10F00
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:21:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DD30AC4360F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:24:44 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 3FD592087C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:21:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 5B32C2087C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:24:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="QBnpBF9r"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 3FD592087C
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="cghY5gvy"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 5B32C2087C
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TxCd2pWQzDqGG
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:21:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TxHG0ZVCzDqHr
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:24:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,32 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="QBnpBF9r"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="cghY5gvy"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TwrC5MsSzDqDY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:04:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Twrm6Yy2zDqLt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:05:12 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id E7EB5217D9;
- Wed, 27 Mar 2019 18:04:40 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 0E8F5217D9;
+ Wed, 27 Mar 2019 18:05:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553709881;
- bh=ua7LJnVXX/Vm3FqF5WFEnE7RJx6RGO6dq81BORIG8QA=;
+ s=default; t=1553709910;
+ bh=Ke7PKD/eQdDk1TotwE2Zwkfq6hKB7erw5boECmEx25I=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=QBnpBF9rTVFd1ygqzoyhuGKxlIzPlX05PVO2NcF39NZBCktc4KBSbLO84jnJo3yCP
- AnV43znsOdRJIlPLhI2sN24gYi1OJMv/eKtHwkGWL+4GN9Y2Ic2eoyRuoIYa8CEweu
- aIEYb+3UYn8EEH9iw9vKoD9ShXT5XozcMehs7Ss4=
+ b=cghY5gvyWN6n2Y3eVVzFdsQ+vg0t28/A0nzI7fkjHYpJpDRsBlaqOAdOKvuhYeDvB
+ dGEU+ivS9vCqoWpqmNxTnYmYMkZJpUqN77K3kKAyFcqCq0Th71dYf1mEa+8oxkHrQo
+ iJJjBobRy3wVtq7V9cpiekReezxKZYhPSMsnMB+w=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 086/262] powerpc/hugetlb: Handle mmap_min_addr
- correctly in get_unmapped_area callback
-Date: Wed, 27 Mar 2019 13:59:01 -0400
-Message-Id: <20190327180158.10245-86-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 106/262] powerpc/44x: Force PCI on for CURRITUCK
+Date: Wed, 27 Mar 2019 13:59:21 -0400
+Message-Id: <20190327180158.10245-106-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
 References: <20190327180158.10245-1-sashal@kernel.org>
@@ -72,75 +71,55 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-[ Upstream commit 5330367fa300742a97e20e953b1f77f48392faae ]
+[ Upstream commit aa7150ba378650d0e9d84b8e4d805946965a5926 ]
 
-After we ALIGN up the address we need to make sure we didn't overflow
-and resulted in zero address. In that case, we need to make sure that
-the returned address is greater than mmap_min_addr.
+The recent rework of PCI kconfig symbols exposed an existing bug in
+the CURRITUCK kconfig logic.
 
-This fixes selftest va_128TBswitch --run-hugetlb reporting failures when
-run as non root user for
+It selects PPC4xx_PCI_EXPRESS which depends on PCI, but PCI is user
+selectable and might be disabled, leading to a warning:
 
-mmap(-1, MAP_HUGETLB)
+  WARNING: unmet direct dependencies detected for PPC4xx_PCI_EXPRESS
+    Depends on [n]: PCI [=n] && 4xx [=y]
+    Selected by [y]:
+    - CURRITUCK [=y] && PPC_47x [=y]
 
-The bug is that a non-root user requesting address -1 will be given address 0
-which will then fail, whereas they should have been given something else that
-would have succeeded.
+Prior to commit eb01d42a7778 ("PCI: consolidate PCI config entry in
+drivers/pci") PCI was enabled by default for currituck_defconfig so we
+didn't see the warning. The bad logic was still there, it just
+required someone disabling PCI in their .config to hit it.
 
-We also avoid the first mmap(-1, MAP_HUGETLB) returning NULL address as mmap address
-with this change. So we think this is not a security issue, because it only affects
-whether we choose an address below mmap_min_addr, not whether we
-actually allow that address to be mapped. ie. there are existing capability
-checks to prevent a user mapping below mmap_min_addr and those will still be
-honoured even without this fix.
+Fix it by forcing PCI on for CURRITUCK, which seems was always the
+expectation anyway.
 
-Fixes: 484837601d4d ("powerpc/mm: Add radix support for hugetlb")
-Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Fixes: eb01d42a7778 ("PCI: consolidate PCI config entry in drivers/pci")
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/hugetlbpage-radix.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/44x/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-index 2486bee0f93e..97c7a39ebc00 100644
---- a/arch/powerpc/mm/hugetlbpage-radix.c
-+++ b/arch/powerpc/mm/hugetlbpage-radix.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
-+#include <linux/security.h>
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
- #include <asm/cacheflush.h>
-@@ -73,7 +74,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	if (addr) {
- 		addr = ALIGN(addr, huge_page_size(h));
- 		vma = find_vma(mm, addr);
--		if (high_limit - len >= addr &&
-+		if (high_limit - len >= addr && addr >= mmap_min_addr &&
- 		    (!vma || addr + len <= vm_start_gap(vma)))
- 			return addr;
- 	}
-@@ -83,7 +84,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	 */
- 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
- 	info.length = len;
--	info.low_limit = PAGE_SIZE;
-+	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
- 	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 4a9a72d01c3c..35be81fd2dc2 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -180,6 +180,7 @@ config CURRITUCK
+ 	depends on PPC_47x
+ 	select SWIOTLB
+ 	select 476FPE
++	select FORCE_PCI
+ 	select PPC4xx_PCI_EXPRESS
+ 	help
+ 	  This option enables support for the IBM Currituck (476fpe) evaluation board
 -- 
 2.19.1
 
