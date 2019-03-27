@@ -6,19 +6,19 @@ X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63156C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:45:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 753BDC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:46:36 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id DE6ED2075E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:45:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org DE6ED2075E
+	by mail.kernel.org (Postfix) with ESMTPS id EBACF2075E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:46:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBACF2075E
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TcQk6D3bzDq6M
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 16:45:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TcST5hxkzDqQB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 16:46:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
  (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
@@ -29,67 +29,67 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tc8Q0417zDqN3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 16:32:37 +1100 (AEDT)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2R5TrPh101235
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:35 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2rg05m5ntn-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tc8R5qdhzDqNf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 16:32:39 +1100 (AEDT)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
+ x2R5TIqc063429
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:37 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2rg2pn8v93-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:35 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:37 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 27 Mar 2019 05:32:33 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com (9.149.109.197)
- by e06smtp01.uk.ibm.com (192.168.101.131) with IBM ESMTP SMTP Gateway:
+ Wed, 27 Mar 2019 05:32:35 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
+ by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
  Authorized Use Only! Violators will be prosecuted; 
  (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Mar 2019 05:32:30 -0000
-Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
- [9.149.105.61])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2R5WTmN41025782
+ Wed, 27 Mar 2019 05:32:31 -0000
+Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ x2R5WUwS19660974
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Mar 2019 05:32:29 GMT
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id D06DA11C064;
- Wed, 27 Mar 2019 05:32:28 +0000 (GMT)
-Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 4451411C066;
- Wed, 27 Mar 2019 05:32:28 +0000 (GMT)
+ Wed, 27 Mar 2019 05:32:30 GMT
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B399E42047;
+ Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
+Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 1AE5B4205C;
+ Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Mar 2019 05:32:28 +0000 (GMT)
+ by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+ Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
 Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 2F6EFA00BD;
- Wed, 27 Mar 2019 16:32:27 +1100 (AEDT)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 0DD47A00BD;
+ Wed, 27 Mar 2019 16:32:29 +1100 (AEDT)
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: alastair@d-silva.org
-Subject: [PATCH v4 6/7] ocxl: move event_fd handling to frontend
-Date: Wed, 27 Mar 2019 16:31:35 +1100
+Subject: [PATCH v4 7/7] ocxl: Provide global MMIO accessors for external
+ drivers
+Date: Wed, 27 Mar 2019 16:31:36 +1100
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20190327053137.15173-1-alastair@au1.ibm.com>
 References: <20190327053137.15173-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-x-cbid: 19032705-4275-0000-0000-0000031FB25F
+x-cbid: 19032705-0028-0000-0000-00000358B777
 X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032705-4276-0000-0000-0000382E4AC3
-Message-Id: <20190327053137.15173-7-alastair@au1.ibm.com>
+x-cbparentid: 19032705-0029-0000-0000-0000241771B6
+Message-Id: <20190327053137.15173-8-alastair@au1.ibm.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
  definitions=2019-03-27_03:, , signatures=0
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  priorityscore=1501
- malwarescore=0 suspectscore=3 phishscore=0 bulkscore=0 spamscore=0
+ malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
  clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ mlxlogscore=757 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-1810050000 definitions=main-1903270038
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
@@ -103,8 +103,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
+ linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
@@ -112,279 +112,399 @@ Sender: "Linuxppc-dev"
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-Event_fd is only used in the driver frontend, so it does not
-need to exist in the backend code. Relocate it to the frontend
-and provide an opaque mechanism for consumers instead.
+External drivers that communicate via OpenCAPI will need to make
+MMIO calls to interact with the devices.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+Reviewed-by: Greg Kurz <groug@kaod.org>
 ---
- drivers/misc/ocxl/afu_irq.c       | 74 ++++++++++++++++++-------------
- drivers/misc/ocxl/file.c          | 22 ++++++++-
- drivers/misc/ocxl/ocxl_internal.h |  5 ---
- include/misc/ocxl.h               | 46 +++++++++++++++++++
- 4 files changed, 109 insertions(+), 38 deletions(-)
+ drivers/misc/ocxl/Makefile |   2 +-
+ drivers/misc/ocxl/mmio.c   | 234 +++++++++++++++++++++++++++++++++++++
+ include/misc/ocxl.h        | 110 +++++++++++++++++
+ 3 files changed, 345 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/misc/ocxl/mmio.c
 
-diff --git a/drivers/misc/ocxl/afu_irq.c b/drivers/misc/ocxl/afu_irq.c
-index 2d410cd6f817..70f8f1c3929d 100644
---- a/drivers/misc/ocxl/afu_irq.c
-+++ b/drivers/misc/ocxl/afu_irq.c
+diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
+index bc4e39bfda7b..d07d1bb8e8d4 100644
+--- a/drivers/misc/ocxl/Makefile
++++ b/drivers/misc/ocxl/Makefile
 @@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0+
- // Copyright 2017 IBM Corp.
- #include <linux/interrupt.h>
--#include <linux/eventfd.h>
-+#include <asm/pnv-ocxl.h>
- #include "ocxl_internal.h"
- #include "trace.h"
+ # SPDX-License-Identifier: GPL-2.0+
+ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
  
-@@ -11,7 +11,9 @@ struct afu_irq {
- 	unsigned int virq;
- 	char *name;
- 	u64 trigger_page;
--	struct eventfd_ctx *ev_ctx;
-+	irqreturn_t (*handler)(void *private);
-+	void (*free_private)(void *private);
-+	void *private;
- };
- 
- int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset)
-@@ -24,14 +26,44 @@ u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id)
- 	return ctx->afu->irq_base_offset + (irq_id << PAGE_SHIFT);
- }
- 
-+int ocxl_irq_set_handler(struct ocxl_context *ctx, int irq_id,
-+		irqreturn_t (*handler)(void *private),
-+		void (*free_private)(void *private),
-+		void *private)
-+{
-+	struct afu_irq *irq;
-+	int rc;
+-ocxl-y				+= main.o pci.o config.o file.o pasid.o
++ocxl-y				+= main.o pci.o config.o file.o pasid.o mmio.o
+ ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
+ ocxl-y				+= core.o
+ obj-$(CONFIG_OCXL)		+= ocxl.o
+diff --git a/drivers/misc/ocxl/mmio.c b/drivers/misc/ocxl/mmio.c
+new file mode 100644
+index 000000000000..aae713db4ebe
+--- /dev/null
++++ b/drivers/misc/ocxl/mmio.c
+@@ -0,0 +1,234 @@
++// SPDX-License-Identifier: GPL-2.0+
++// Copyright 2019 IBM Corp.
++#include <linux/sched/mm.h>
++#include "trace.h"
++#include "ocxl_internal.h"
 +
-+	mutex_lock(&ctx->irq_lock);
-+	irq = idr_find(&ctx->irq_idr, irq_id);
-+	if (!irq) {
-+		rc = -EINVAL;
-+		goto unlock;
++int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 *val)
++{
++	if (offset > afu->config.global_mmio_size - 4)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		*val = readl_be((char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		*val = readl((char *)afu->global_mmio_ptr + offset);
++		break;
 +	}
 +
-+	irq->handler = handler;
-+	irq->private = private;
-+	irq->free_private = free_private;
-+
-+	rc = 0;
-+	// Fall through to unlock
-+
-+unlock:
-+	mutex_unlock(&ctx->irq_lock);
-+	return rc;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(ocxl_irq_set_handler);
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_read32);
 +
- static irqreturn_t afu_irq_handler(int virq, void *data)
- {
- 	struct afu_irq *irq = (struct afu_irq *) data;
- 
- 	trace_ocxl_afu_irq_receive(virq);
--	if (irq->ev_ctx)
--		eventfd_signal(irq->ev_ctx, 1);
--	return IRQ_HANDLED;
-+
-+	if (irq->handler)
-+		return irq->handler(irq->private);
-+
-+	return IRQ_HANDLED; // Just drop it on the ground
- }
- 
- static int setup_afu_irq(struct ocxl_context *ctx, struct afu_irq *irq)
-@@ -117,6 +149,7 @@ int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id)
- 	kfree(irq);
- 	return rc;
- }
-+EXPORT_SYMBOL_GPL(ocxl_afu_irq_alloc);
- 
- static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
- {
-@@ -126,8 +159,8 @@ static void afu_irq_free(struct afu_irq *irq, struct ocxl_context *ctx)
- 				ocxl_irq_id_to_offset(ctx, irq->id),
- 				1 << PAGE_SHIFT, 1);
- 	release_afu_irq(irq);
--	if (irq->ev_ctx)
--		eventfd_ctx_put(irq->ev_ctx);
-+	if (irq->free_private)
-+		irq->free_private(irq->private);
- 	ocxl_link_free_irq(ctx->afu->fn->link, irq->hw_irq);
- 	kfree(irq);
- }
-@@ -148,6 +181,7 @@ int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id)
- 	mutex_unlock(&ctx->irq_lock);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(ocxl_afu_irq_free);
- 
- void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
- {
-@@ -160,31 +194,6 @@ void ocxl_afu_irq_free_all(struct ocxl_context *ctx)
- 	mutex_unlock(&ctx->irq_lock);
- }
- 
--int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id, int eventfd)
--{
--	struct afu_irq *irq;
--	struct eventfd_ctx *ev_ctx;
--	int rc = 0;
--
--	mutex_lock(&ctx->irq_lock);
--	irq = idr_find(&ctx->irq_idr, irq_id);
--	if (!irq) {
--		rc = -EINVAL;
--		goto unlock;
--	}
--
--	ev_ctx = eventfd_ctx_fdget(eventfd);
--	if (IS_ERR(ev_ctx)) {
--		rc = -EINVAL;
--		goto unlock;
--	}
--
--	irq->ev_ctx = ev_ctx;
--unlock:
--	mutex_unlock(&ctx->irq_lock);
--	return rc;
--}
--
- u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id)
- {
- 	struct afu_irq *irq;
-@@ -197,3 +206,4 @@ u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id)
- 	mutex_unlock(&ctx->irq_lock);
- 	return addr;
- }
-+EXPORT_SYMBOL_GPL(ocxl_afu_irq_get_addr);
-diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-index 7f5282a3af3a..8aa22893ed76 100644
---- a/drivers/misc/ocxl/file.c
-+++ b/drivers/misc/ocxl/file.c
-@@ -3,6 +3,7 @@
- #include <linux/fs.h>
- #include <linux/poll.h>
- #include <linux/sched/signal.h>
-+#include <linux/eventfd.h>
- #include <linux/uaccess.h>
- #include <uapi/misc/ocxl.h>
- #include <asm/reg.h>
-@@ -183,11 +184,27 @@ static long afu_ioctl_get_features(struct ocxl_context *ctx,
- 			x == OCXL_IOCTL_GET_FEATURES ? "GET_FEATURES" :	\
- 			"UNKNOWN")
- 
-+static irqreturn_t irq_handler(void *private)
++int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 *val)
 +{
-+	struct eventfd_ctx *ev_ctx = private;
++	if (offset > afu->config.global_mmio_size - 8)
++		return -EINVAL;
 +
-+	eventfd_signal(ev_ctx, 1);
-+	return IRQ_HANDLED;
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		*val = readq_be((char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		*val = readq((char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++	return 0;
 +}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_read64);
 +
-+static void irq_free(void *private)
++int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 val)
 +{
-+	struct eventfd_ctx *ev_ctx = private;
++	if (offset > afu->config.global_mmio_size - 4)
++		return -EINVAL;
 +
-+	eventfd_ctx_put(ev_ctx);
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		writel_be(val, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		writel(val, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++
++	return 0;
 +}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_write32);
 +
- static long afu_ioctl(struct file *file, unsigned int cmd,
- 		unsigned long args)
- {
- 	struct ocxl_context *ctx = file->private_data;
- 	struct ocxl_ioctl_irq_fd irq_fd;
-+	struct eventfd_ctx *ev_ctx;
- 	int irq_id;
- 	u64 irq_offset;
- 	long rc;
-@@ -239,7 +256,10 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
- 		if (irq_fd.reserved)
- 			return -EINVAL;
- 		irq_id = ocxl_irq_offset_to_id(ctx, irq_fd.irq_offset);
--		rc = ocxl_afu_irq_set_fd(ctx, irq_id, irq_fd.eventfd);
-+		ev_ctx = eventfd_ctx_fdget(irq_fd.eventfd);
-+		if (!ev_ctx)
-+			return -EFAULT;
-+		rc = ocxl_irq_set_handler(ctx, irq_id, irq_handler, irq_free, ev_ctx);
- 		break;
- 
- 	case OCXL_IOCTL_GET_METADATA:
-diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-index 58969467bd5c..97415afd79f3 100644
---- a/drivers/misc/ocxl/ocxl_internal.h
-+++ b/drivers/misc/ocxl/ocxl_internal.h
-@@ -139,11 +139,6 @@ void ocxl_sysfs_unregister_afu(struct ocxl_file_info *info);
- 
- int ocxl_irq_offset_to_id(struct ocxl_context *ctx, u64 offset);
- u64 ocxl_irq_id_to_offset(struct ocxl_context *ctx, int irq_id);
--int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
--int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
- void ocxl_afu_irq_free_all(struct ocxl_context *ctx);
--int ocxl_afu_irq_set_fd(struct ocxl_context *ctx, int irq_id,
--			int eventfd);
--u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
- 
- #endif /* _OCXL_INTERNAL_H_ */
++int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 val)
++{
++	if (offset > afu->config.global_mmio_size - 8)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		writeq_be(val, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		writeq(val, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_write64);
++
++int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 mask)
++{
++	u32 tmp;
++
++	if (offset > afu->config.global_mmio_size - 4)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
++		tmp |= mask;
++		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		tmp = readl((char *)afu->global_mmio_ptr + offset);
++		tmp |= mask;
++		writel(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_set32);
++
++int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 mask)
++{
++	u64 tmp;
++
++	if (offset > afu->config.global_mmio_size - 8)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
++		tmp |= mask;
++		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		tmp = readq((char *)afu->global_mmio_ptr + offset);
++		tmp |= mask;
++		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_set64);
++
++int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 mask)
++{
++	u32 tmp;
++
++	if (offset > afu->config.global_mmio_size - 4)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
++		tmp &= ~mask;
++		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		tmp = readl((char *)afu->global_mmio_ptr + offset);
++		tmp &= ~mask;
++		writel(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear32);
++
++int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 mask)
++{
++	u64 tmp;
++
++	if (offset > afu->config.global_mmio_size - 8)
++		return -EINVAL;
++
++#ifdef __BIG_ENDIAN__
++	if (endian == OCXL_HOST_ENDIAN)
++		endian = OCXL_BIG_ENDIAN;
++#endif
++
++	switch (endian) {
++	case OCXL_BIG_ENDIAN:
++		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
++		tmp &= ~mask;
++		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++
++	default:
++		tmp = readq((char *)afu->global_mmio_ptr + offset);
++		tmp &= ~mask;
++		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
++		break;
++	}
++
++	writeq(tmp, (char *)afu->global_mmio_ptr + offset);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear64);
 diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index e4704632eac5..dea93885a839 100644
+index dea93885a839..5c4b4916e6be 100644
 --- a/include/misc/ocxl.h
 +++ b/include/misc/ocxl.h
-@@ -155,6 +155,52 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr,
+@@ -45,6 +45,12 @@ struct ocxl_fn_config {
+ 	s8 max_afu_index;
+ };
+ 
++enum ocxl_endian {
++	OCXL_BIG_ENDIAN = 0,    /**< AFU data is big-endian */
++	OCXL_LITTLE_ENDIAN = 1, /**< AFU data is little-endian */
++	OCXL_HOST_ENDIAN = 2,   /**< AFU data is the same endianness as the host */
++};
++
+ // These are opaque outside the ocxl driver
+ struct ocxl_afu;
+ struct ocxl_fn;
+@@ -230,6 +236,110 @@ void ocxl_afu_set_private(struct ocxl_afu *afu, void *private);
   */
- int ocxl_context_detach(struct ocxl_context *ctx);
+ void *ocxl_afu_get_private(struct ocxl_afu *dev);
  
-+// AFU IRQs
++// Global MMIO
++/**
++ * Read a 32 bit value from global MMIO
++ *
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @val: returns the value
++ *
++ * Returns 0 for success, negative on error
++ */
++int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 *val);
 +
 +/**
-+ * Allocate an IRQ associated with an AFU context
-+ * @ctx: the AFU context
-+ * @irq_id: out, the IRQ ID
++ * Read a 64 bit value from global MMIO
 + *
-+ * Returns 0 on success, negative on failure
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @val: returns the value
++ *
++ * Returns 0 for success, negative on error
 + */
-+extern int ocxl_afu_irq_alloc(struct ocxl_context *ctx, int *irq_id);
++int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 *val);
 +
 +/**
-+ * Frees an IRQ associated with an AFU context
-+ * @ctx: the AFU context
-+ * @irq_id: the IRQ ID
++ * Write a 32 bit value to global MMIO
 + *
-+ * Returns 0 on success, negative on failure
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @val: The value to write
++ *
++ * Returns 0 for success, negative on error
 + */
-+extern int ocxl_afu_irq_free(struct ocxl_context *ctx, int irq_id);
++int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 val);
 +
 +/**
-+ * Gets the address of the trigger page for an IRQ
-+ * This can then be provided to an AFU which will write to that
-+ * page to trigger the IRQ.
-+ * @ctx: The AFU context that the IRQ is associated with
-+ * @irq_id: The IRQ ID
++ * Write a 64 bit value to global MMIO
 + *
-+ * returns the trigger page address, or 0 if the IRQ is not valid
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @val: The value to write
++ *
++ * Returns 0 for success, negative on error
 + */
-+extern u64 ocxl_afu_irq_get_addr(struct ocxl_context *ctx, int irq_id);
++int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 val);
 +
 +/**
-+ * Provide a callback to be called when an IRQ is triggered
-+ * @ctx: The AFU context that the IRQ is associated with
-+ * @irq_id: The IRQ ID
-+ * @handler: the callback to be called when the IRQ is triggered
-+ * @free_private: the callback to be called when the IRQ is freed (may be NULL)
-+ * @private: Private data to be passed to the callbacks
++ * Set bits in a 32 bit global MMIO register
 + *
-+ * Returns 0 on success, negative on failure
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @mask: a mask of the bits to set
++ *
++ * Returns 0 for success, negative on error
 + */
-+int ocxl_irq_set_handler(struct ocxl_context *ctx, int irq_id,
-+		irqreturn_t (*handler)(void *private),
-+		void (*free_private)(void *private),
-+		void *private);
++int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 mask);
 +
- // AFU Metadata
++/**
++ * Set bits in a 64 bit global MMIO register
++ *
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @mask: a mask of the bits to set
++ *
++ * Returns 0 for success, negative on error
++ */
++int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 mask);
++
++/**
++ * Set bits in a 32 bit global MMIO register
++ *
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @mask: a mask of the bits to set
++ *
++ * Returns 0 for success, negative on error
++ */
++int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u32 mask);
++
++/**
++ * Set bits in a 64 bit global MMIO register
++ *
++ * @afu: The AFU
++ * @offset: The Offset from the start of MMIO
++ * @endian: the endianness that the MMIO data is in
++ * @mask: a mask of the bits to set
++ *
++ * Returns 0 for success, negative on error
++ */
++int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
++				enum ocxl_endian endian, u64 mask);
  
- /**
+ // Functions left here are for compatibility with the cxlflash driver
+ 
 -- 
 2.20.1
 
