@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2720C43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:42:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98E84C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:04:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id 1FF2B20651
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:42:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id D63D3217F9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:04:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="vGyuaLt8"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 1FF2B20651
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="IB/Y7hTG"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org D63D3217F9
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TwLS6m7SzDqQ5
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 04:42:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Twqz4NBszDqBZ
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:04:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -28,45 +29,45 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="vGyuaLt8"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="IB/Y7hTG"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44TwJk3cTPzDqLs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 04:40:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TwnD4X9YzDqK9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:02:08 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id A793A41A37;
- Wed, 27 Mar 2019 17:40:51 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id B292341A3E;
+ Wed, 27 Mar 2019 18:02:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-transfer-encoding:content-language:content-type
  :content-type:in-reply-to:mime-version:user-agent:date:date
  :message-id:from:from:references:subject:subject:received
- :received:received; s=mta-01; t=1553708450; x=1555522851; bh=PvP
- YCGFSswVy4YDP6tcndnzCyoVOTwno4RZvjnvDwNY=; b=vGyuaLt871TMt8i/nbG
- 2hI94GV38WBoqLVhFaY4dMQxi8CVyWcXgUgxmbj5a8R8AGXrpE5z/ClyQg7g1Nt/
- gdJ0Qy0bHpX+E2mU4SfFqungrZREgSCxHdX5Q+BzsqG8M9whJMnf61slXuaWbnZJ
- D71gZeEILFtuk0KdHFKzDOV4=
+ :received:received; s=mta-01; t=1553709724; x=1555524125; bh=CNS
+ e9NFSeRbT8lRLDxsT8CihYFHPcKyA+pYusTN6+Qk=; b=IB/Y7hTGtqZ5AEnrU0D
+ pa6YJz6le4q2MuHtjtJKqtWs7+uOJFHyleGzMNhzE6KSzf+clzZgQhPQz5Ca5ZW8
+ UWAg63WLLY8VnKF+YTd43gCiXqNMXVCq/p+a+4y0tfZdELiHN9wnfP3isylGrU5L
+ eD4Q6JeYLbi9/U1PAOoUQgRQ=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id qu9Rj9UteYu6; Wed, 27 Mar 2019 20:40:50 +0300 (MSK)
+ with ESMTP id 54W4ccCUBm-x; Wed, 27 Mar 2019 21:02:04 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 8168941A0C;
- Wed, 27 Mar 2019 20:40:50 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 241FC41860;
+ Wed, 27 Mar 2019 21:02:04 +0300 (MSK)
 Received: from [172.17.15.60] (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 27
- Mar 2019 20:40:50 +0300
-Subject: Re: [PATCH RFC v4 11/21] PCI: Release and reassign the root bridge
- resources during rescan
+ Mar 2019 21:02:03 +0300
+Subject: Re: [PATCH RFC v4 12/21] PCI: Don't allow hotplugged devices to steal
+ resources
 To: Bjorn Helgaas <helgaas@kernel.org>
 References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
- <20190311133122.11417-12-s.miroshnichenko@yadro.com>
- <20190326204102.GS24180@google.com>
+ <20190311133122.11417-13-s.miroshnichenko@yadro.com>
+ <20190326205533.GT24180@google.com>
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
@@ -113,12 +114,12 @@ Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
  Nwdozk9DY6wY9cMQ8coYTctox5VsvYEz2rJCRiIc40NO76gdMVutEORjdSoeZK32srVNoBo9
  L0EK2QCFFRDcslPDpZWE1uDZQPW+GC2Z/dmuEpaMzlrIgfZ8GLXxHbB+VdDQ7QE//lphXskF
  lHi50np+KDDPzZS51tw=
-Message-ID: <5f7dc5a9-0ae6-1c49-22c2-5eabf3274114@yadro.com>
-Date: Wed, 27 Mar 2019 20:40:49 +0300
+Message-ID: <73615c60-8b8d-dca6-cdd0-50b481c3d835@yadro.com>
+Date: Wed, 27 Mar 2019 21:02:03 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <20190326204102.GS24180@google.com>
+In-Reply-To: <20190326205533.GT24180@google.com>
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -141,120 +142,310 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/26/19 11:41 PM, Bjorn Helgaas wrote:
-> On Mon, Mar 11, 2019 at 04:31:12PM +0300, Sergey Miroshnichenko wrote:
->> When the movable BARs feature is enabled, don't rely on the memory gaps
->> reserved by the BIOS/bootloader/firmware, but instead rearrange the BARs
->> and bridge windows starting from the root.
+On 3/26/19 11:55 PM, Bjorn Helgaas wrote:
+> On Mon, Mar 11, 2019 at 04:31:13PM +0300, Sergey Miroshnichenko wrote:
+>> When movable BARs are enabled, the PCI subsystem at first releases
+>> all the bridge windows and then performs an attempt to assign new
+>> requested resources and re-assign the existing ones.
+> 
+> s/performs an attempt/attempts/
+> 
+> I guess "new requested resources" means "resources to newly hotplugged
+> devices"?
+> 
+
+Yes, that's exactly what I've tried to express :) Will rephrase that in v5.
+
+>> If a hotplugged device gets its resources first, there could be no
+>> space left to re-assign resources of already working devices, which
+>> is unacceptable. If this happens, this patch marks one of the new
+>> devices with the new introduced flag PCI_DEV_IGNORE and retries the
+>> resource assignment.
 >>
->> Endpoint device's BARs, after being released, are resorted and written
->> back by the pci_assign_unassigned_root_bus_resources().
->>
->> The last step of writing the recalculated windows to the bridges is done
->> by the new pci_setup_bridges() function.
+>> This patch adds a new res_mask bitmask to the struct pci_dev for
+>> storing the indices of assigned resources.
 >>
 >> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 >> ---
->>  drivers/pci/pci.h       |  1 +
->>  drivers/pci/probe.c     | 22 ++++++++++++++++++++++
->>  drivers/pci/setup-bus.c | 11 ++++++++++-
->>  3 files changed, 33 insertions(+), 1 deletion(-)
+>>  drivers/pci/bus.c       |   5 ++
+>>  drivers/pci/pci.h       |  11 +++++
+>>  drivers/pci/probe.c     | 100 +++++++++++++++++++++++++++++++++++++++-
+>>  drivers/pci/setup-bus.c |  15 ++++++
+>>  include/linux/pci.h     |   1 +
+>>  5 files changed, 130 insertions(+), 2 deletions(-)
 >>
+>> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+>> index 5cb40b2518f9..a9784144d6f2 100644
+>> --- a/drivers/pci/bus.c
+>> +++ b/drivers/pci/bus.c
+>> @@ -311,6 +311,11 @@ void pci_bus_add_device(struct pci_dev *dev)
+>>  {
+>>  	int retval;
+>>  
+>> +	if (pci_dev_is_ignored(dev)) {
+>> +		pci_warn(dev, "%s: don't enable the ignored device\n", __func__);
+>> +		return;
+> 
+> I'm not sure about this.  Even if we're unable to assign space for all
+> the device's BARs, it still should respond to config accesses, and I
+> think it should show up in sysfs and lspci.
+> 
+
+I agree, that would be better.
+
+Also, this patch introduces a new issue to think about: how to recover BARs for such
+devices when their neighbors was removed and it's enough space now.
+
+>> +	}
+>> +
+>>  	/*
+>>  	 * Can not put in pci_device_add yet because resources
+>>  	 * are not assigned yet for some devices.
 >> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
->> index 224d88634115..e06e8692a7b1 100644
+>> index e06e8692a7b1..56b905068ac5 100644
 >> --- a/drivers/pci/pci.h
 >> +++ b/drivers/pci/pci.h
->> @@ -248,6 +248,7 @@ void __pci_bus_assign_resources(const struct pci_bus *bus,
->>  				struct list_head *realloc_head,
->>  				struct list_head *fail_head);
->>  bool pci_bus_clip_resource(struct pci_dev *dev, int idx);
->> +void pci_bus_release_root_bridge_resources(struct pci_bus *bus);
+>> @@ -366,6 +366,7 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
 >>  
->>  void pci_reassigndev_resource_alignment(struct pci_dev *dev);
->>  void pci_disable_bridge_window(struct pci_dev *dev);
->> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> index 1cf6ec960236..692752c71f71 100644
->> --- a/drivers/pci/probe.c
->> +++ b/drivers/pci/probe.c
->> @@ -3299,6 +3299,25 @@ static void pci_bus_rescan_done(struct pci_bus *bus)
->>  	pm_runtime_put(&bus->dev);
+>>  /* pci_dev priv_flags */
+>>  #define PCI_DEV_ADDED 0
+>> +#define PCI_DEV_IGNORE 1
+>>  
+>>  static inline void pci_dev_assign_added(struct pci_dev *dev, bool added)
+>>  {
+>> @@ -377,6 +378,16 @@ static inline bool pci_dev_is_added(const struct pci_dev *dev)
+>>  	return test_bit(PCI_DEV_ADDED, &dev->priv_flags);
 >>  }
 >>  
->> +static void pci_setup_bridges(struct pci_bus *bus)
+>> +static inline void pci_dev_ignore(struct pci_dev *dev, bool ignore)
+>> +{
+>> +	assign_bit(PCI_DEV_IGNORE, &dev->priv_flags, ignore);
+>> +}
+>> +
+>> +static inline bool pci_dev_is_ignored(const struct pci_dev *dev)
+>> +{
+>> +	return test_bit(PCI_DEV_IGNORE, &dev->priv_flags);
+>> +}
+>> +
+>>  #ifdef CONFIG_PCIEAER
+>>  #include <linux/aer.h>
+>>  
+>> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+>> index 692752c71f71..62f4058a001f 100644
+>> --- a/drivers/pci/probe.c
+>> +++ b/drivers/pci/probe.c
+>> @@ -3248,6 +3248,23 @@ unsigned int pci_rescan_bus_bridge_resize(struct pci_dev *bridge)
+>>  	return max;
+>>  }
+>>  
+>> +static unsigned int pci_dev_res_mask(struct pci_dev *dev)
+>> +{
+>> +	unsigned int res_mask = 0;
+>> +	int i;
+>> +
+>> +	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++) {
+>> +		struct resource *r = &dev->resource[i];
+>> +
+>> +		if (!r->flags || (r->flags & IORESOURCE_UNSET) || !r->parent)
+>> +			continue;
+>> +
+>> +		res_mask |= (1 << i);
+>> +	}
+>> +
+>> +	return res_mask;
+>> +}
+>> +
+>>  static void pci_bus_rescan_prepare(struct pci_bus *bus)
+>>  {
+>>  	struct pci_dev *dev;
+>> @@ -3257,6 +3274,8 @@ static void pci_bus_rescan_prepare(struct pci_bus *bus)
+>>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>>  		struct pci_bus *child = dev->subordinate;
+>>  
+>> +		dev->res_mask = pci_dev_res_mask(dev);
+>> +
+>>  		if (child) {
+>>  			pci_bus_rescan_prepare(child);
+>>  		} else if (dev->driver &&
+>> @@ -3318,6 +3337,84 @@ static void pci_setup_bridges(struct pci_bus *bus)
+>>  		pci_setup_bridge(bus);
+>>  }
+>>  
+>> +static struct pci_dev *pci_find_next_new_device(struct pci_bus *bus)
 >> +{
 >> +	struct pci_dev *dev;
 >> +
+>> +	if (!bus)
+>> +		return NULL;
+>> +
 >> +	list_for_each_entry(dev, &bus->devices, bus_list) {
->> +		struct pci_bus *child;
+>> +		struct pci_bus *child_bus = dev->subordinate;
 >> +
->> +		if (!pci_dev_is_added(dev) || pci_dev_is_ignored(dev))
->> +			continue;
+>> +		if (!pci_dev_is_added(dev) && !pci_dev_is_ignored(dev))
+>> +			return dev;
 >> +
->> +		child = dev->subordinate;
->> +		if (child)
->> +			pci_setup_bridges(child);
+>> +		if (child_bus) {
+>> +			struct pci_dev *next_new_dev;
+>> +
+>> +			next_new_dev = pci_find_next_new_device(child_bus);
+>> +			if (next_new_dev)
+>> +				return next_new_dev;
+>> +		}
 >> +	}
 >> +
->> +	if (bus->self)
->> +		pci_setup_bridge(bus);
+>> +	return NULL;
+>> +}
+>> +
+>> +static bool pci_bus_validate_resources(struct pci_bus *bus)
+> 
+> The name of this function should tell us what the return value means.
+> Just from the name "pci_bus_validate_resources", I can't tell whether we
+> call it for side-effects, or whether true or false indicates success.
+> 
+
+Sure, now I realize this too. Would the pci_bus_check_all_bars_reassigned() be better choice?
+
+>> +{
+>> +	struct pci_dev *dev;
+>> +	bool ret = true;
+>> +
+>> +	if (!bus)
+>> +		return false;
+>> +
+>> +	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> +		struct pci_bus *child = dev->subordinate;
+>> +		unsigned int res_mask = pci_dev_res_mask(dev);
+>> +
+>> +		if (pci_dev_is_ignored(dev))
+>> +			continue;
+>> +
+>> +		if (dev->res_mask & ~res_mask) {
+>> +			pci_err(dev, "%s: Non-re-enabled resources found: 0x%x -> 0x%x\n",
+>> +				__func__, dev->res_mask, res_mask);
+> 
+> I don't think __func__ really tells users anything useful, so I would
+> just omit them.  Searching for the text of the message is almost as
+> good.
+> 
+
+Ok, I'll drop __func__'s.
+
+Serge
+
+>> +			ret = false;
+>> +		}
+>> +
+>> +		if (child && !pci_bus_validate_resources(child))
+>> +			ret = false;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static void pci_reassign_root_bus_resources(struct pci_bus *root)
+>> +{
+>> +	do {
+>> +		struct pci_dev *next_new_dev;
+>> +
+>> +		pci_bus_release_root_bridge_resources(root);
+>> +		pci_assign_unassigned_root_bus_resources(root);
+>> +
+>> +		if (pci_bus_validate_resources(root))
+>> +			break;
+>> +
+>> +		next_new_dev = pci_find_next_new_device(root);
+>> +		if (!next_new_dev) {
+>> +			dev_err(&root->dev, "%s: failed to re-assign resources even after ignoring all the hotplugged devices\n",
+>> +				__func__);
+>> +			break;
+>> +		}
+>> +
+>> +		dev_warn(&root->dev, "%s: failed to re-assign resources, disable the next hotplugged device %s and retry\n",
+>> +			 __func__, dev_name(&next_new_dev->dev));
+>> +
+>> +		pci_dev_ignore(next_new_dev, true);
+>> +	} while (true);
 >> +}
 >> +
 >>  /**
 >>   * pci_rescan_bus - Scan a PCI bus for devices
 >>   * @bus: PCI bus to scan
->> @@ -3321,8 +3340,11 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
->>  		pci_bus_rescan_prepare(root);
+>> @@ -3341,8 +3438,7 @@ unsigned int pci_rescan_bus(struct pci_bus *bus)
 >>  
 >>  		max = pci_scan_child_bus(root);
->> +
->> +		pci_bus_release_root_bridge_resources(root);
->>  		pci_assign_unassigned_root_bus_resources(root);
 >>  
->> +		pci_setup_bridges(root);
+>> -		pci_bus_release_root_bridge_resources(root);
+>> -		pci_assign_unassigned_root_bus_resources(root);
+>> +		pci_reassign_root_bus_resources(root);
+>>  
+>>  		pci_setup_bridges(root);
 >>  		pci_bus_rescan_done(root);
->>  	} else {
->>  		max = pci_scan_child_bus(bus);
 >> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
->> index be7d4e6d7b65..36a1907d9509 100644
+>> index 36a1907d9509..551108f48df7 100644
 >> --- a/drivers/pci/setup-bus.c
 >> +++ b/drivers/pci/setup-bus.c
->> @@ -1584,7 +1584,7 @@ static void pci_bridge_release_resources(struct pci_bus *bus,
->>  		pci_printk(KERN_DEBUG, dev, "resource %d %pR released\n",
->>  					PCI_BRIDGE_RESOURCES + idx, r);
->>  		/* keep the old size */
->> -		r->end = resource_size(r) - 1;
->> +		r->end = pci_movable_bars_enabled() ? 0 : (resource_size(r) - 1);
-> 
-> Doesn't this mean we're throwing away the information about the BAR
-> size, and we'll have to size the BAR again somewhere?  I would like to
-> avoid that.  But I don't know yet where you rely on this, so maybe
-> it's not possible to avoid it.
-> 
-
-This resource is not a BAR, but a bridge window, I'm freeing it intentionally, so
-pbus_size_mem() can later recalculate a new size.
-
-Serge
-
->>  		r->start = 0;
->>  		r->flags = 0;
->>  
->> @@ -1637,6 +1637,15 @@ static void pci_bus_release_bridge_resources(struct pci_bus *bus,
->>  		pci_bridge_release_resources(bus, type);
->>  }
->>  
->> +void pci_bus_release_root_bridge_resources(struct pci_bus *root_bus)
->> +{
->> +	pci_bus_release_bridge_resources(root_bus, IORESOURCE_IO, whole_subtree);
->> +	pci_bus_release_bridge_resources(root_bus, IORESOURCE_MEM, whole_subtree);
->> +	pci_bus_release_bridge_resources(root_bus,
->> +					 IORESOURCE_MEM_64 | IORESOURCE_PREFETCH,
->> +					 whole_subtree);
->> +}
->> +
->>  static void pci_bus_dump_res(struct pci_bus *bus)
+>> @@ -131,6 +131,9 @@ static void pdev_sort_resources(struct pci_dev *dev, struct list_head *head)
 >>  {
->>  	struct resource *res;
+>>  	int i;
+>>  
+>> +	if (pci_dev_is_ignored(dev))
+>> +		return;
+>> +
+>>  	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+>>  		struct resource *r;
+>>  		struct pci_dev_resource *dev_res, *tmp;
+>> @@ -181,6 +184,9 @@ static void __dev_sort_resources(struct pci_dev *dev,
+>>  {
+>>  	u16 class = dev->class >> 8;
+>>  
+>> +	if (pci_dev_is_ignored(dev))
+>> +		return;
+>> +
+>>  	/* Don't touch classless devices or host bridges or ioapics.  */
+>>  	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
+>>  		return;
+>> @@ -284,6 +290,9 @@ static void assign_requested_resources_sorted(struct list_head *head,
+>>  	int idx;
+>>  
+>>  	list_for_each_entry(dev_res, head, list) {
+>> +		if (pci_dev_is_ignored(dev_res->dev))
+>> +			continue;
+>> +
+>>  		res = dev_res->res;
+>>  		idx = res - &dev_res->dev->resource[0];
+>>  		if (resource_size(res) &&
+>> @@ -991,6 +1000,9 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
+>>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>>  		int i;
+>>  
+>> +		if (pci_dev_is_ignored(dev))
+>> +			continue;
+>> +
+>>  		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+>>  			struct resource *r = &dev->resource[i];
+>>  			resource_size_t r_size;
+>> @@ -1353,6 +1365,9 @@ void __pci_bus_assign_resources(const struct pci_bus *bus,
+>>  	pbus_assign_resources_sorted(bus, realloc_head, fail_head);
+>>  
+>>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> +		if (pci_dev_is_ignored(dev))
+>> +			continue;
+>> +
+>>  		pdev_assign_fixed_resources(dev);
+>>  
+>>  		b = dev->subordinate;
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 3d52f5538282..26aa59cb6220 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -369,6 +369,7 @@ struct pci_dev {
+>>  	 */
+>>  	unsigned int	irq;
+>>  	struct resource resource[DEVICE_COUNT_RESOURCE]; /* I/O and memory regions + expansion ROMs */
+>> +	unsigned int	res_mask;		/* Bitmask of assigned resources */
+>>  
+>>  	bool		match_driver;		/* Skip attaching driver */
+>>  
 >> -- 
 >> 2.20.1
 >>
