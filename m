@@ -6,21 +6,21 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6BADBC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:04:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7514C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:07:02 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id E322C206C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:04:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 49BB9204FD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 19:07:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="bowXXpTR"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org E322C206C0
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="DWTaClSe"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 49BB9204FD
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Ty8m6bHKzDqVd
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:04:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TyD36HlqzDqDW
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 06:06:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="bowXXpTR"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="DWTaClSe"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tx7N6smlzDqRD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:17:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tx7l058czDqSR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:18:10 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id CFA672082F;
- Wed, 27 Mar 2019 18:17:49 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id B6D902177E;
+ Wed, 27 Mar 2019 18:18:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553710670;
- bh=uuc1HHXdLAe0+YEC1wAIJYU0Exjc38Hsloi1QEJoW/4=;
+ s=default; t=1553710688;
+ bh=yndFG5TDCiBAyRfMNpx2aFT8XMkFs6scNwzQFgVIs1g=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=bowXXpTR41BakRYn9YqREwDTuvHzAVtznwLrPSLHVjvWYG3pmatH20WJkOf6+jAsa
- dOiF4RUvTO7v1O3YZA2slLTMgpiC+Zd54tRRYHuTszOIyxl9fTshghrehy+CbgloRI
- KIcklJEAsrySww1GGvPQGpTRFUs6Z/1OcrW+jaUI=
+ b=DWTaClSe5GjixqQsU+Y9rgyhdX+vxN4QsIwMR+2d2hVlKPczLeTA3mzxdsWYpd5Fl
+ DOUM+wLMlinqrxFyLlFkatQ9cc510PtgLPO0Anlcs5xEd0Ij6j0pzoq8sUzx7CWFw1
+ s13uOWKWJC78X1zqx7ivcJ3hjbGPvzdIege1j1K4=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 043/123] powerpc/hugetlb: Handle mmap_min_addr
- correctly in get_unmapped_area callback
-Date: Wed, 27 Mar 2019 14:15:07 -0400
-Message-Id: <20190327181628.15899-43-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 055/123] SoC: imx-sgtl5000: add missing
+ put_device()
+Date: Wed, 27 Mar 2019 14:15:19 -0400
+Message-Id: <20190327181628.15899-55-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190327181628.15899-1-sashal@kernel.org>
 References: <20190327181628.15899-1-sashal@kernel.org>
@@ -72,75 +72,70 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Sasha Levin <sashal@kernel.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sasha Levin <sashal@kernel.org>, alsa-devel@alsa-project.org,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@kernel.org>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Wen Yang <yellowriver2010@hotmail.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ NXP Linux Team <linux-imx@nxp.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <festevam@gmail.com>,
+ linux-arm-kernel@lists.infradead.org
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+From: Wen Yang <yellowriver2010@hotmail.com>
 
-[ Upstream commit 5330367fa300742a97e20e953b1f77f48392faae ]
+[ Upstream commit 8fa857da9744f513036df1c43ab57f338941ae7d ]
 
-After we ALIGN up the address we need to make sure we didn't overflow
-and resulted in zero address. In that case, we need to make sure that
-the returned address is greater than mmap_min_addr.
+The of_find_device_by_node() takes a reference to the underlying device
+structure, we should release that reference.
 
-This fixes selftest va_128TBswitch --run-hugetlb reporting failures when
-run as non root user for
+Detected by coccinelle with the following warnings:
+./sound/soc/fsl/imx-sgtl5000.c:169:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
+./sound/soc/fsl/imx-sgtl5000.c:177:1-7: ERROR: missing put_device;
+call of_find_device_by_node on line 105, but without a corresponding
+object release within this function.
 
-mmap(-1, MAP_HUGETLB)
-
-The bug is that a non-root user requesting address -1 will be given address 0
-which will then fail, whereas they should have been given something else that
-would have succeeded.
-
-We also avoid the first mmap(-1, MAP_HUGETLB) returning NULL address as mmap address
-with this change. So we think this is not a security issue, because it only affects
-whether we choose an address below mmap_min_addr, not whether we
-actually allow that address to be mapped. ie. there are existing capability
-checks to prevent a user mapping below mmap_min_addr and those will still be
-honoured even without this fix.
-
-Fixes: 484837601d4d ("powerpc/mm: Add radix support for hugetlb")
-Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Wen Yang <yellowriver2010@hotmail.com>
+Cc: Timur Tabi <timur@kernel.org>
+Cc: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Takashi Iwai <tiwai@suse.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>
+Cc: NXP Linux Team <linux-imx@nxp.com>
+Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/mm/hugetlbpage-radix.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ sound/soc/fsl/imx-sgtl5000.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/mm/hugetlbpage-radix.c b/arch/powerpc/mm/hugetlbpage-radix.c
-index bd022d16745c..a31bad29b55d 100644
---- a/arch/powerpc/mm/hugetlbpage-radix.c
-+++ b/arch/powerpc/mm/hugetlbpage-radix.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
-+#include <linux/security.h>
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
- #include <asm/cacheflush.h>
-@@ -79,7 +80,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	if (addr) {
- 		addr = ALIGN(addr, huge_page_size(h));
- 		vma = find_vma(mm, addr);
--		if (high_limit - len >= addr &&
-+		if (high_limit - len >= addr && addr >= mmap_min_addr &&
- 		    (!vma || addr + len <= vm_start_gap(vma)))
- 			return addr;
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index b99e0b5e00e9..8e525f7ac08d 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -115,6 +115,7 @@ static int imx_sgtl5000_probe(struct platform_device *pdev)
+ 		ret = -EPROBE_DEFER;
+ 		goto fail;
  	}
-@@ -89,7 +90,7 @@ radix__hugetlb_get_unmapped_area(struct file *file, unsigned long addr,
- 	 */
- 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
- 	info.length = len;
--	info.low_limit = PAGE_SIZE;
-+	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
- 	info.high_limit = mm->mmap_base + (high_limit - DEFAULT_MAP_WINDOW);
- 	info.align_mask = PAGE_MASK & ~huge_page_mask(h);
- 	info.align_offset = 0;
++	put_device(&ssi_pdev->dev);
+ 	codec_dev = of_find_i2c_device_by_node(codec_np);
+ 	if (!codec_dev) {
+ 		dev_err(&pdev->dev, "failed to find codec platform device\n");
 -- 
 2.19.1
 
