@@ -2,95 +2,88 @@ Return-Path: <SRS0=MnD0=R6=lists.ozlabs.org=linuxppc-dev-bounces+linuxppc-dev=ar
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_ADSP_CUSTOM_MED,
+	DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 753BDC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D2A9C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:03:59 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id EBACF2075E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 05:46:35 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org EBACF2075E
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=au1.ibm.com
+	by mail.kernel.org (Postfix) with ESMTPS id A3A6920693
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 06:03:58 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OMzUCZ+S"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A3A6920693
+Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TcST5hxkzDqQB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 16:46:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44TcrX1RlmzDqHp
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:03:56 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
- spf=pass (mailfrom) smtp.mailfrom=au1.ibm.com
- (client-ip=148.163.158.5; helo=mx0a-001b2d01.pphosted.com;
- envelope-from=alastair@au1.ibm.com; receiver=<UNKNOWN>)
+ spf=pass (mailfrom) smtp.mailfrom=gmail.com
+ (client-ip=2607:f8b0:4864:20::643; helo=mail-pl1-x643.google.com;
+ envelope-from=npiggin@gmail.com; receiver=<UNKNOWN>)
 Authentication-Results: lists.ozlabs.org;
- dmarc=none (p=none dis=none) header.from=au1.ibm.com
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org; dkim=pass (2048-bit key;
+ unprotected) header.d=gmail.com header.i=@gmail.com header.b="OMzUCZ+S"; 
+ dkim-atps=neutral
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tc8R5qdhzDqNf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 16:32:39 +1100 (AEDT)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.27/8.16.0.27) with SMTP id
- x2R5TIqc063429
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:37 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2rg2pn8v93-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 01:32:37 -0400
-Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 27 Mar 2019 05:32:35 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com (9.149.109.196)
- by e06smtp07.uk.ibm.com (192.168.101.137) with IBM ESMTP SMTP Gateway:
- Authorized Use Only! Violators will be prosecuted; 
- (version=TLSv1/SSLv3 cipher=AES256-GCM-SHA384 bits=256/256)
- Wed, 27 Mar 2019 05:32:31 -0000
-Received: from d06av24.portsmouth.uk.ibm.com (mk.ibm.com [9.149.105.60])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- x2R5WUwS19660974
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
- Wed, 27 Mar 2019 05:32:30 GMT
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id B399E42047;
- Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
-Received: from d06av24.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 1AE5B4205C;
- Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av24.portsmouth.uk.ibm.com (Postfix) with ESMTP;
- Wed, 27 Mar 2019 05:32:30 +0000 (GMT)
-Received: from adsilva.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 0DD47A00BD;
- Wed, 27 Mar 2019 16:32:29 +1100 (AEDT)
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: alastair@d-silva.org
-Subject: [PATCH v4 7/7] ocxl: Provide global MMIO accessors for external
- drivers
-Date: Wed, 27 Mar 2019 16:31:36 +1100
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20190327053137.15173-1-alastair@au1.ibm.com>
-References: <20190327053137.15173-1-alastair@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Tcpq2WXPzDqGX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Mar 2019 17:02:27 +1100 (AEDT)
+Received: by mail-pl1-x643.google.com with SMTP id m10so2803281plt.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Mar 2019 23:02:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=gmail.com; s=20161025;
+ h=date:from:subject:to:cc:references:in-reply-to:mime-version
+ :user-agent:message-id:content-transfer-encoding;
+ bh=KzoF20xLXXHyuCyJwFWJTRtr4sQQnjQpJ/lE1vgkmDI=;
+ b=OMzUCZ+SoT5qG9yhUgwjX7tjNPt4pdrwVBKikzC8q4ys0U+U7jlniqAK67wQfpn2Sb
+ ycL2UxyNUjumwbILINLWnq/pk+DeQjNZAnF7oC/Q7YwV0tNl4dPnnNyoeMIYuJIkrITH
+ HQtirbdtYx7gOu7gvMyTjQd/3V0MgNfR0kec7bRMlp37RyhZ/RPwlrp3El9CQzfCrVUO
+ FIaFeD0tRgDQIJFdbMOYrjTzpJidV74U8FjXIJzX9+zEeQsrJAeVSYpjJu2jf5E4kLVD
+ hKLiITEYF51aeNiB8DeaRm9eu+j/tl/nSK9VJKebZmzf/dJF2OSWgtgfj63NwJ6cz+Xm
+ guvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=1e100.net; s=20161025;
+ h=x-gm-message-state:date:from:subject:to:cc:references:in-reply-to
+ :mime-version:user-agent:message-id:content-transfer-encoding;
+ bh=KzoF20xLXXHyuCyJwFWJTRtr4sQQnjQpJ/lE1vgkmDI=;
+ b=XY6/E08oIeOYI8Y54m74Q0TbI0Ka04LCibr/sEj2fPuiJhsV76z3V4uEj5BulDbiag
+ nozyWjXKwrsKoFXz/2Y+z+yrTVJU9LUNMDGRKwnCv3DXdemZ/pXbqrDLpCZNbwZTQScr
+ wr7JQNRl54XHqtCGUlOvDi86C49wcEJoeTMDztLu0oUEIaW+ZrzydiWBTHdwveFE9z2l
+ q70KSNusUTVBaDE2TncgpcL5agYBqT3LlVq3GsmmvQVxnHNJqOP/0s38/t1Boo/thDlx
+ 6SfEF3ie/A/ElGdb+q9lB2V7ZQOzQ97+2YVxrOml9AQwAGE3h9qxE89LRUl5pi045hVX
+ 8YFQ==
+X-Gm-Message-State: APjAAAXqpUQMg4UI4btbcaHEAjgBDxrVXtPxQ67sl2d28NP+G5Cizxw9
+ JGpPkkuQyOlIr0Pay7pOl84=
+X-Google-Smtp-Source: APXvYqxZoXL+IoJDc/8cBoh2N4FAo4Gu3+AaV6eO4N/9bOzKfQAxU7wuWbbkiFSkSI5928eYORtmZw==
+X-Received: by 2002:a17:902:6b8c:: with SMTP id
+ p12mr35900971plk.282.1553666543898; 
+ Tue, 26 Mar 2019 23:02:23 -0700 (PDT)
+Received: from localhost (14-202-58-188.tpgi.com.au. [14.202.58.188])
+ by smtp.gmail.com with ESMTPSA id w123sm31329456pfw.72.2019.03.26.23.02.22
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Tue, 26 Mar 2019 23:02:23 -0700 (PDT)
+Date: Wed, 27 Mar 2019 16:02:16 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2] arch/powerpc: Rework local_paca to avoid LTO warnings
+To: Alastair D'Silva <alastair@au1.ibm.com>
+References: <20190313034208.13134-1-alastair@au1.ibm.com>
+ <20190314023125.10076-1-alastair@au1.ibm.com>
+ <1553579424.0r39b9otz6.astroid@bobo.none>
+ <8d8a97e145758b92c2760012373f5217877a035c.camel@au1.ibm.com>
+In-Reply-To: <8d8a97e145758b92c2760012373f5217877a035c.camel@au1.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-x-cbid: 19032705-0028-0000-0000-00000358B777
-X-IBM-AV-DETECTION: SAVI=unused REMOTE=unused XFE=unused
-x-cbparentid: 19032705-0029-0000-0000-0000241771B6
-Message-Id: <20190327053137.15173-8-alastair@au1.ibm.com>
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:, ,
- definitions=2019-03-27_03:, , signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501
- malwarescore=0 suspectscore=1 phishscore=0 bulkscore=0 spamscore=0
- clxscore=1015 lowpriorityscore=0 mlxscore=0 impostorscore=0
- mlxlogscore=757 adultscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.0.1-1810050000 definitions=main-1903270038
+User-Agent: astroid/0.14.0 (https://github.com/astroidmail/astroid)
+Message-Id: <1553665102.ow7h62jw1u.astroid@bobo.none>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 X-BeenThere: linuxppc-dev@lists.ozlabs.org
 X-Mailman-Version: 2.1.29
 Precedence: list
@@ -102,409 +95,129 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Greg Kurz <groug@kaod.org>,
- linux-kernel@vger.kernel.org, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Michal Hocko <mhocko@suse.com>, linux-kernel@vger.kernel.org,
+ =?iso-8859-1?q?Mike=0A?= Rapoport <rppt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ =?iso-8859-1?q?Mahesh=0A?= Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+Alastair D'Silva's on March 27, 2019 2:37 pm:
+> On Tue, 2019-03-26 at 15:58 +1000, Nicholas Piggin wrote:
+>> Alastair D'Silva's on March 14, 2019 12:31 pm:
+>> > From: Alastair D'Silva <alastair@d-silva.org>
+>> >=20
+>> > When building an LTO kernel, the existing code generates warnings:
+>> >     ./arch/powerpc/include/asm/paca.h:37:30: warning: register of
+>> >         =E2=80=98local_paca=E2=80=99 used for multiple global register=
+ variables
+>> >      register struct paca_struct *local_paca asm("r13");
+>> >                                   ^
+>> >     ./arch/powerpc/include/asm/paca.h:37:30: note: conflicts with
+>> >         =E2=80=98local_paca=E2=80=99
+>>=20
+>> Isn't this a bogus warning? It doesn't look like there's a way to=20
+>> define it any other way.
+>=20
+> There isn't any other way to define it as a global. However, the
+> warning is legitimate.
+>=20
+> The compiler sees that there are multiple global register variables,
+> all pointing at the same register.
 
-External drivers that communicate via OpenCAPI will need to make
-MMIO calls to interact with the devices.
+It's one variable though, so it's not a legitimate warning (unless
+there is a way to declare a "reference" to it that we are not doing).
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-Reviewed-by: Greg Kurz <groug@kaod.org>
----
- drivers/misc/ocxl/Makefile |   2 +-
- drivers/misc/ocxl/mmio.c   | 234 +++++++++++++++++++++++++++++++++++++
- include/misc/ocxl.h        | 110 +++++++++++++++++
- 3 files changed, 345 insertions(+), 1 deletion(-)
- create mode 100644 drivers/misc/ocxl/mmio.c
+>=20
+> The compiler can only determine this when LTO is used, as otherwise it
+> only sees the one in the current compilation unit, whicd disappears by
+> the time the kernel is linked.
+>=20
+>>=20
+>> > This patch reworks local_paca into an inline getter & setter
+>> > function,
+>> > which addresses the warning.
+>> >=20
+>> > Changelog:
+>> > V2
+>> >   - Address whitespace issues
+>> >   - keep new implementation close to where the old implementation
+>> > was
+>> >=20
+>> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+>> > ---
+>> >  arch/powerpc/include/asm/paca.h | 37 +++++++++++++++++++++++++--
+>> > ------
+>> >  arch/powerpc/kernel/paca.c      |  2 +-
+>> >  2 files changed, 29 insertions(+), 10 deletions(-)
+>> >=20
+>> > diff --git a/arch/powerpc/include/asm/paca.h
+>> > b/arch/powerpc/include/asm/paca.h
+>> > index e843bc5d1a0f..2fa0b43357c9 100644
+>> > --- a/arch/powerpc/include/asm/paca.h
+>> > +++ b/arch/powerpc/include/asm/paca.h
+>> > @@ -34,19 +34,38 @@
+>> >  #include <asm/cpuidle.h>
+>> >  #include <asm/atomic.h>
+>> > =20
+>> > -register struct paca_struct *local_paca asm("r13");
+>> > -
+>> >  #if defined(CONFIG_DEBUG_PREEMPT) && defined(CONFIG_SMP)
+>> >  extern unsigned int debug_smp_processor_id(void); /* from
+>> > linux/smp.h */
+>> > -/*
+>> > - * Add standard checks that preemption cannot occur when using
+>> > get_paca():
+>> > - * otherwise the paca_struct it points to may be the wrong one
+>> > just after.
+>> > - */
+>> > -#define get_paca()	((void) debug_smp_processor_id(), local_paca)
+>> > -#else
+>> > -#define get_paca()	local_paca
+>> >  #endif
+>> > =20
+>> > +static inline struct paca_struct *get_paca_no_preempt_check(void)
+>> > +{
+>> > +	register struct paca_struct *paca asm("r13");
+>> > +
+>> > +	return paca;
+>> > +}
+>>=20
+>> Problem is it now changes the global register variable to a local=20
+>> register variable. The compiler would presumably be within its rights
+>> to "cache" that return value or use another register for it, which
+>> is not really what we want.
+>>=20
+>>=20
+>=20
+> I've confirmed that at least with GCC 8.2.0, the generated assembler is
+> similar, but yes, the compiler may be free to take a copy into another
+> register (although that would be a terrible optimisation), and then
+> operate on that value.
 
-diff --git a/drivers/misc/ocxl/Makefile b/drivers/misc/ocxl/Makefile
-index bc4e39bfda7b..d07d1bb8e8d4 100644
---- a/drivers/misc/ocxl/Makefile
-+++ b/drivers/misc/ocxl/Makefile
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0+
- ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
- 
--ocxl-y				+= main.o pci.o config.o file.o pasid.o
-+ocxl-y				+= main.o pci.o config.o file.o pasid.o mmio.o
- ocxl-y				+= link.o context.o afu_irq.o sysfs.o trace.o
- ocxl-y				+= core.o
- obj-$(CONFIG_OCXL)		+= ocxl.o
-diff --git a/drivers/misc/ocxl/mmio.c b/drivers/misc/ocxl/mmio.c
-new file mode 100644
-index 000000000000..aae713db4ebe
---- /dev/null
-+++ b/drivers/misc/ocxl/mmio.c
-@@ -0,0 +1,234 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+// Copyright 2019 IBM Corp.
-+#include <linux/sched/mm.h>
-+#include "trace.h"
-+#include "ocxl_internal.h"
-+
-+int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 *val)
-+{
-+	if (offset > afu->config.global_mmio_size - 4)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		*val = readl_be((char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		*val = readl((char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_read32);
-+
-+int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 *val)
-+{
-+	if (offset > afu->config.global_mmio_size - 8)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		*val = readq_be((char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		*val = readq((char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_read64);
-+
-+int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 val)
-+{
-+	if (offset > afu->config.global_mmio_size - 4)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		writel_be(val, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		writel(val, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_write32);
-+
-+int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 val)
-+{
-+	if (offset > afu->config.global_mmio_size - 8)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		writeq_be(val, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		writeq(val, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_write64);
-+
-+int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 mask)
-+{
-+	u32 tmp;
-+
-+	if (offset > afu->config.global_mmio_size - 4)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-+		tmp |= mask;
-+		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		tmp = readl((char *)afu->global_mmio_ptr + offset);
-+		tmp |= mask;
-+		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_set32);
-+
-+int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 mask)
-+{
-+	u64 tmp;
-+
-+	if (offset > afu->config.global_mmio_size - 8)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-+		tmp |= mask;
-+		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		tmp = readq((char *)afu->global_mmio_ptr + offset);
-+		tmp |= mask;
-+		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_set64);
-+
-+int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 mask)
-+{
-+	u32 tmp;
-+
-+	if (offset > afu->config.global_mmio_size - 4)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		tmp = readl_be((char *)afu->global_mmio_ptr + offset);
-+		tmp &= ~mask;
-+		writel_be(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		tmp = readl((char *)afu->global_mmio_ptr + offset);
-+		tmp &= ~mask;
-+		writel(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear32);
-+
-+int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 mask)
-+{
-+	u64 tmp;
-+
-+	if (offset > afu->config.global_mmio_size - 8)
-+		return -EINVAL;
-+
-+#ifdef __BIG_ENDIAN__
-+	if (endian == OCXL_HOST_ENDIAN)
-+		endian = OCXL_BIG_ENDIAN;
-+#endif
-+
-+	switch (endian) {
-+	case OCXL_BIG_ENDIAN:
-+		tmp = readq_be((char *)afu->global_mmio_ptr + offset);
-+		tmp &= ~mask;
-+		writeq_be(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+
-+	default:
-+		tmp = readq((char *)afu->global_mmio_ptr + offset);
-+		tmp &= ~mask;
-+		writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-+		break;
-+	}
-+
-+	writeq(tmp, (char *)afu->global_mmio_ptr + offset);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ocxl_global_mmio_clear64);
-diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-index dea93885a839..5c4b4916e6be 100644
---- a/include/misc/ocxl.h
-+++ b/include/misc/ocxl.h
-@@ -45,6 +45,12 @@ struct ocxl_fn_config {
- 	s8 max_afu_index;
- };
- 
-+enum ocxl_endian {
-+	OCXL_BIG_ENDIAN = 0,    /**< AFU data is big-endian */
-+	OCXL_LITTLE_ENDIAN = 1, /**< AFU data is little-endian */
-+	OCXL_HOST_ENDIAN = 2,   /**< AFU data is the same endianness as the host */
-+};
-+
- // These are opaque outside the ocxl driver
- struct ocxl_afu;
- struct ocxl_fn;
-@@ -230,6 +236,110 @@ void ocxl_afu_set_private(struct ocxl_afu *afu, void *private);
-  */
- void *ocxl_afu_get_private(struct ocxl_afu *dev);
- 
-+// Global MMIO
-+/**
-+ * Read a 32 bit value from global MMIO
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @val: returns the value
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_read32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 *val);
-+
-+/**
-+ * Read a 64 bit value from global MMIO
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @val: returns the value
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_read64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 *val);
-+
-+/**
-+ * Write a 32 bit value to global MMIO
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @val: The value to write
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_write32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 val);
-+
-+/**
-+ * Write a 64 bit value to global MMIO
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @val: The value to write
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_write64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 val);
-+
-+/**
-+ * Set bits in a 32 bit global MMIO register
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @mask: a mask of the bits to set
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_set32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 mask);
-+
-+/**
-+ * Set bits in a 64 bit global MMIO register
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @mask: a mask of the bits to set
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_set64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 mask);
-+
-+/**
-+ * Set bits in a 32 bit global MMIO register
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @mask: a mask of the bits to set
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_clear32(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u32 mask);
-+
-+/**
-+ * Set bits in a 64 bit global MMIO register
-+ *
-+ * @afu: The AFU
-+ * @offset: The Offset from the start of MMIO
-+ * @endian: the endianness that the MMIO data is in
-+ * @mask: a mask of the bits to set
-+ *
-+ * Returns 0 for success, negative on error
-+ */
-+int ocxl_global_mmio_clear64(struct ocxl_afu *afu, size_t offset,
-+				enum ocxl_endian endian, u64 mask);
- 
- // Functions left here are for compatibility with the cxlflash driver
- 
--- 
-2.20.1
+Yep.
 
+>=20
+> Subsequent uses would still have to call the function (ie. fetch the
+> data from r13) regardless, so I believe this scenario is safe.
+>=20
+> Can you think of a scenario where this is a problem?
+
+It wouldn't be the subsequent use but the one use. If you're preempted
+then you can't be using a stale r13 value.
+
+Quite possibly any bug like that would already be buggy now, the cases
+where it matters tend to need asm to access it. And it's something we
+need to really audit and have proper accessors and preempt warnings
+that Ben always harped on about.
+
+But to just work around this warning it seems pretty dangerous to
+change this and hope.
+
+Thanks,
+Nick
+
+=
