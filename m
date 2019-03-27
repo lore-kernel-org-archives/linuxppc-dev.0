@@ -4,23 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38DCFC43381
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:15:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A89FEC43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:17:55 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id AAD20206C0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:15:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 24435206C0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 17:17:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="CFknAulS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org AAD20206C0
+	dkim=pass (1024-bit key) header.d=yadro.com header.i=@yadro.com header.b="qlEJgXST"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 24435206C0
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=yadro.com
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44TvlK47P5zDqQg
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 04:15:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Tvp83P4dzDqQD
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 04:17:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=yadro.com
  (client-ip=89.207.88.251; helo=mta-01.yadro.com;
@@ -28,45 +29,45 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=yadro.com
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=yadro.com header.i=@yadro.com header.b="CFknAulS"; 
+ unprotected) header.d=yadro.com header.i=@yadro.com header.b="qlEJgXST"; 
  dkim-atps=neutral
 Received: from mta-01.yadro.com (mta-01.yadro.com [89.207.88.251])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Tvhz0jFwzDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 04:13:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44TvmS4pLjzDq9D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 04:16:24 +1100 (AEDT)
 Received: from localhost (unknown [127.0.0.1])
- by mta-01.yadro.com (Postfix) with ESMTP id 471EC41A44;
- Wed, 27 Mar 2019 17:13:20 +0000 (UTC)
+ by mta-01.yadro.com (Postfix) with ESMTP id AC00641A44;
+ Wed, 27 Mar 2019 17:16:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=yadro.com; h=
  content-transfer-encoding:content-language:content-type
  :content-type:in-reply-to:mime-version:user-agent:date:date
  :message-id:from:from:references:subject:subject:received
- :received:received; s=mta-01; t=1553706799; x=1555521200; bh=K7g
- 1/G+fNOX0BFnKr7e0y+67jQd2TaEUx/4VdgjmKMo=; b=CFknAulS/hEZVS2sl3M
- qp4Zdii/CWVsluDfvbxgawvrIPtC6YiJrVBbE9swRQYZi1BVGWxjkS6RyoLIn9e0
- 5LGN7X0YHcevUPTlRtz7yV1coWNl9/GLgvTkvp6N5/ZFESF22dSNrRDZT8mn39cY
- WsHMOZsxNMwABzbeN6P+KxoI=
+ :received:received; s=mta-01; t=1553706980; x=1555521381; bh=QWA
+ HqCqDmbWsBpSOBa7xiV2wNZFRxir9vNiinpxdU14=; b=qlEJgXSTOp3SGrOOKIE
+ /kVy2FXfnw2M29Y92keNi3yd6hl7m3YUUeASfZEgYg7YbkUdKhSnId9lMnh6+xOh
+ vIEanCKkVbQyKDGXBQ8CTuKiK3vfOFqZ9rZhMbLt+5Dro5Xb4yN6xCZe9XXcafW7
+ rRUjhSZlYOZHxKpp8OV9K1Tg=
 X-Virus-Scanned: amavisd-new at yadro.com
 Received: from mta-01.yadro.com ([127.0.0.1])
  by localhost (mta-01.yadro.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id EaZtAG3Elj9O; Wed, 27 Mar 2019 20:13:19 +0300 (MSK)
+ with ESMTP id QZ8fkIxFbLmX; Wed, 27 Mar 2019 20:16:20 +0300 (MSK)
 Received: from T-EXCH-02.corp.yadro.com (t-exch-02.corp.yadro.com
  [172.17.10.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by mta-01.yadro.com (Postfix) with ESMTPS id 434EA41A3C;
- Wed, 27 Mar 2019 20:13:19 +0300 (MSK)
+ by mta-01.yadro.com (Postfix) with ESMTPS id 14BE041A3C;
+ Wed, 27 Mar 2019 20:16:20 +0300 (MSK)
 Received: from [172.17.15.60] (172.17.15.60) by T-EXCH-02.corp.yadro.com
  (172.17.10.102) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384) id 15.1.669.32; Wed, 27
- Mar 2019 20:13:18 +0300
-Subject: Re: [PATCH RFC v4 03/21] PCI: Enable bridge's I/O and MEM access for
- hotplugged devices
+ Mar 2019 20:16:19 +0300
+Subject: Re: [PATCH RFC v4 05/21] PCI: hotplug: Add a flag for the movable
+ BARs feature
 To: Bjorn Helgaas <helgaas@kernel.org>
 References: <20190311133122.11417-1-s.miroshnichenko@yadro.com>
- <20190311133122.11417-4-s.miroshnichenko@yadro.com>
- <20190326191307.GM24180@google.com>
+ <20190311133122.11417-6-s.miroshnichenko@yadro.com>
+ <20190326192455.GN24180@google.com>
 From: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
 Openpgp: preference=signencrypt
 Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
@@ -113,12 +114,12 @@ Autocrypt: addr=s.miroshnichenko@yadro.com; prefer-encrypt=mutual; keydata=
  Nwdozk9DY6wY9cMQ8coYTctox5VsvYEz2rJCRiIc40NO76gdMVutEORjdSoeZK32srVNoBo9
  L0EK2QCFFRDcslPDpZWE1uDZQPW+GC2Z/dmuEpaMzlrIgfZ8GLXxHbB+VdDQ7QE//lphXskF
  lHi50np+KDDPzZS51tw=
-Message-ID: <e1737a2d-0bbc-7c92-2295-e7520272caef@yadro.com>
-Date: Wed, 27 Mar 2019 20:13:18 +0300
+Message-ID: <3d17312b-7c7b-3c42-5901-6a5dcf35aa0d@yadro.com>
+Date: Wed, 27 Mar 2019 20:16:19 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.5.3
 MIME-Version: 1.0
-In-Reply-To: <20190326191307.GM24180@google.com>
+In-Reply-To: <20190326192455.GN24180@google.com>
 Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -141,54 +142,153 @@ Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.or
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-On 3/26/19 10:13 PM, Bjorn Helgaas wrote:
-> On Mon, Mar 11, 2019 at 04:31:04PM +0300, Sergey Miroshnichenko wrote:
->> After updating the bridge window resources, the PCI_COMMAND_IO and
->> PCI_COMMAND_MEMORY bits of the bridge must be addressed as well.
->>
->> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
->> ---
->>  drivers/pci/pci.c | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->>
->> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> index 895201d4c9e6..69898fe5255e 100644
->> --- a/drivers/pci/pci.c
->> +++ b/drivers/pci/pci.c
->> @@ -1622,6 +1622,14 @@ static void pci_enable_bridge(struct pci_dev *dev)
->>  		pci_enable_bridge(bridge);
->>  
->>  	if (pci_is_enabled(dev)) {
->> +		int i, bars = 0;
->> +
->> +		for (i = PCI_BRIDGE_RESOURCES; i < DEVICE_COUNT_RESOURCE; i++) {
->> +			if (dev->resource[i].flags & (IORESOURCE_MEM | IORESOURCE_IO))
->> +				bars |= (1 << i);
->> +		}
->> +		do_pci_enable_device(dev, bars);
+On 3/26/19 10:24 PM, Bjorn Helgaas wrote:
+> On Mon, Mar 11, 2019 at 04:31:06PM +0300, Sergey Miroshnichenko wrote:
+>> If a new PCIe device has been hot-plugged between the two active ones
+>> without big enough gap between their BARs, 
 > 
-> In what situation is this needed, exactly?  This code already exists
-> in pci_enable_device_flags().  Why isn't that enough?
+> Just to speak precisely here, a hot-added device is not "between" two
+> active ones because the new device has zeros in its BARs.
 > 
-> I guess maybe there's some case where we enable the bridge, then
-> assign bridge windows, then enable a downstream device?
+> BARs from different devices can be interleaved arbitrarily, subject to
+> bridge window constraints, so we can really only speak about a *BAR*
+> (not the entire device) being between two other BARs.
 > 
-> Does this fix a bug with current hotplug?
+> Also, I don't think there's anything here that is PCIe-specific, so we
+> should talk about "PCI", not "PCIe".
 > 
 
-Sure, this change was implemented because of the issue: pci_enable_device_flags() returns
-early if the device is already pci_is_enabled(), so if a bridge was already enabled before
-the hotplug event, but without MEM and/or IO being set, these bits will not be set even if
-a new device wants them.
+I agree, that should be rephrased. This patchset intends to solve the problem when a
+bridge window is not big enough (or fragmented too much) to fit new BARs, and it can't be
+expanded enough because blocked by "neighboring" BARs.
 
-I've chosen the pci_enable_bridge() for this snippet because it recursively updates all
-the parent bridges.
+>> these BARs should be moved
+>> if their drivers support this feature. The drivers should be notified
+>> and paused during the procedure:
+>>
+>> 1)                 dev 8 (new)
+>>                        |
+>>                        v
+>> .. |  dev 3  |  dev 3  |  dev 5  |  dev 7  |
+>> .. |  BAR 0  |  BAR 1  |  BAR 0  |  BAR 0  |
+>>
+>> 2)                             dev 8
+>>                                  |
+>>                                  v
+>> .. |  dev 3  |  dev 3  | -->           --> |  dev 5  |  dev 7  |
+>> .. |  BAR 0  |  BAR 1  | -->           --> |  BAR 0  |  BAR 0  |
+>>
+>>  3)
+>>
+>> .. |  dev 3  |  dev 3  |  dev 8  |  dev 8  |  dev 5  |  dev 7  |
+>> .. |  BAR 0  |  BAR 1  |  BAR 0  |  BAR 1  |  BAR 0  |  BAR 0  |
+>>
+>> Thus, prior reservation of memory regions by BIOS/bootloader/firmware
+>> is not required anymore for the PCIe hotplug.
+>>
+>> The PCI_MOVABLE_BARS flag is set by the platform is this feature is
+>> supported and tested, but can be overridden by the following command
+>> line option:
+>>     pcie_movable_bars={ off | force }
+> 
+> A chicken switch to turn this functionality off is OK, but I think it
+> should be enabled by default.  There isn't anything about this that's
+> platform-specific, is there?
+> 
+
+I'm a bit afraid to suppose that; I was once surprised that bus numbers can't be assigned
+arbitrarily on some platforms [1], so probably there are some similar restrictions on BARs
+too.
+
+Was going to propose adding pci_add_flags(PCI_MOVABLE_BARS) into arch/.../init.c for
+tested platforms, so there will be less upset people with their BARs suddenly broken. But
+this logic can be reversed: pci_clear_flags(PCI_MOVABLE_BARS) for platforms where movable
+BARs can't work.
 
 Serge
 
->>  		if (!dev->is_busmaster)
->>  			pci_set_master(dev);
->>  		mutex_unlock(&dev->enable_mutex);
+[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-September/178103.html
+
+>> Signed-off-by: Sergey Miroshnichenko <s.miroshnichenko@yadro.com>
+>> ---
+>>  .../admin-guide/kernel-parameters.txt         |  7 ++++++
+>>  drivers/pci/pci.c                             | 24 +++++++++++++++++++
+>>  include/linux/pci.h                           |  2 ++
+>>  3 files changed, 33 insertions(+)
+>>
+>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+>> index 2b8ee90bb644..d40eaf993f80 100644
+>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>> @@ -3417,6 +3417,13 @@
+>>  		nomsi	Do not use MSI for native PCIe PME signaling (this makes
+>>  			all PCIe root ports use INTx for all services).
+>>  
+>> +	pcie_movable_bars=[PCIE]
+>> +			Override the movable BARs support detection:
+>> +		off
+>> +			Disable even if supported by the platform
+>> +		force
+>> +			Enable even if not explicitly declared as supported
+>> +
+>>  	pcmv=		[HW,PCMCIA] BadgePAD 4
+>>  
+>>  	pd_ignore_unused
+>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> index 69898fe5255e..4dac49a887ec 100644
+>> --- a/drivers/pci/pci.c
+>> +++ b/drivers/pci/pci.c
+>> @@ -139,6 +139,30 @@ static int __init pcie_port_pm_setup(char *str)
+>>  }
+>>  __setup("pcie_port_pm=", pcie_port_pm_setup);
+>>  
+>> +static bool pcie_movable_bars_off;
+>> +static bool pcie_movable_bars_force;
+>> +static int __init pcie_movable_bars_setup(char *str)
+>> +{
+>> +	if (!strcmp(str, "off"))
+>> +		pcie_movable_bars_off = true;
+>> +	else if (!strcmp(str, "force"))
+>> +		pcie_movable_bars_force = true;
+>> +	return 1;
+>> +}
+>> +__setup("pcie_movable_bars=", pcie_movable_bars_setup);
+>> +
+>> +bool pci_movable_bars_enabled(void)
+>> +{
+>> +	if (pcie_movable_bars_off)
+>> +		return false;
+>> +
+>> +	if (pcie_movable_bars_force)
+>> +		return true;
+>> +
+>> +	return pci_has_flag(PCI_MOVABLE_BARS);
+>> +}
+>> +EXPORT_SYMBOL(pci_movable_bars_enabled);
+>> +
+>>  /* Time to wait after a reset for device to become responsive */
+>>  #define PCIE_RESET_READY_POLL_MS 60000
+>>  
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index cb2760a31fe2..cbe661aff9f5 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -866,6 +866,7 @@ enum {
+>>  	PCI_ENABLE_PROC_DOMAINS	= 0x00000010,	/* Enable domains in /proc */
+>>  	PCI_COMPAT_DOMAIN_0	= 0x00000020,	/* ... except domain 0 */
+>>  	PCI_SCAN_ALL_PCIE_DEVS	= 0x00000040,	/* Scan all, not just dev 0 */
+>> +	PCI_MOVABLE_BARS	= 0x00000080,	/* Runtime BAR reassign after hotplug */
+>>  };
+>>  
+>>  /* These external functions are only available when PCI support is enabled */
+>> @@ -1345,6 +1346,7 @@ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
+>>  void pci_setup_bridge(struct pci_bus *bus);
+>>  resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+>>  					 unsigned long type);
+>> +bool pci_movable_bars_enabled(void);
+>>  
+>>  #define PCI_VGA_STATE_CHANGE_BRIDGE (1 << 0)
+>>  #define PCI_VGA_STATE_CHANGE_DECODES (1 << 1)
 >> -- 
 >> 2.20.1
 >>
