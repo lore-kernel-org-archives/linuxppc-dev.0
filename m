@@ -4,23 +4,23 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-8.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BCD3C4360F
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:13:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22D38C43381
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:16:34 +0000 (UTC)
 Received: from lists.ozlabs.org (lists.ozlabs.org [203.11.71.2])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPS id C003A2184D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:13:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTPS id 9846720449
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Mar 2019 18:16:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="zKpQsigS"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org C003A2184D
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="PKufl1zV"
+DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org 9846720449
 Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=kernel.org
 Authentication-Results: mail.kernel.org; spf=pass smtp.mailfrom=linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 44Tx2R52yJzDqQc
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:13:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 44Tx5q59dvzDqMq
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Mar 2019 05:16:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org;
  spf=pass (mailfrom) smtp.mailfrom=kernel.org
  (client-ip=198.145.29.99; helo=mail.kernel.org;
@@ -28,33 +28,33 @@ Authentication-Results: lists.ozlabs.org;
 Authentication-Results: lists.ozlabs.org;
  dmarc=pass (p=none dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org; dkim=pass (1024-bit key;
- unprotected) header.d=kernel.org header.i=@kernel.org header.b="zKpQsigS"; 
+ unprotected) header.d=kernel.org header.i=@kernel.org header.b="PKufl1zV"; 
  dkim-atps=neutral
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44Twqf5k1JzDqQw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:04:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44Twql5m56zDqQk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Mar 2019 05:04:19 +1100 (AEDT)
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net
  [73.47.72.35])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D4A792063F;
- Wed, 27 Mar 2019 18:04:11 +0000 (UTC)
+ by mail.kernel.org (Postfix) with ESMTPSA id 191FF21871;
+ Wed, 27 Mar 2019 18:04:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
- s=default; t=1553709852;
- bh=jP3DAWteqrZWVLGoDQ1J1sgOBI1kizCw3nn9obA3X8Y=;
+ s=default; t=1553709857;
+ bh=RqPXrsMjM7S0nSetsJDiXM3heWfRxYPfkh6HyA8QHi4=;
  h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
- b=zKpQsigSHU6Z3+U0kDMAckoiAEiU0FgwsL2e8Pp68f3n8jSaxTcw+PH2qF9yLVImG
- lT2YHjZyCX9pbuR5IzSa1sIeDiVXcXyyAaGHOqWuQaBO84fU26EgiKU4TgmqbpfKLU
- W3K4Pls9uF92g54PCFE9hjauIYtoF0U0uBT8rRys=
+ b=PKufl1zVHX8w4L10bWlXhl4CQDwWJ3hM349ZdX7l8Wjt9F3IFk8qBsx5wire2x91G
+ S5kIoXzaMQqUnZGdhei953HI75JRWm9HNod1W291rQOGA581KFUuKfxu3F5hR7nIFT
+ 8BrsHHq7ZhYhn/4ZnHTDRcrFBoGkfzmk8sw0Mvlg=
 From: Sasha Levin <sashal@kernel.org>
 To: linux-kernel@vger.kernel.org,
 	stable@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.0 072/262] powerpc/powernv/ioda: Fix locked_vm
- counting for memory used by IOMMU tables
-Date: Wed, 27 Mar 2019 13:58:47 -0400
-Message-Id: <20190327180158.10245-72-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.0 076/262] powerpc/fsl: Fix the flush of branch
+ predictor.
+Date: Wed, 27 Mar 2019 13:58:51 -0400
+Message-Id: <20190327180158.10245-76-sashal@kernel.org>
 X-Mailer: git-send-email 2.19.1
 In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
 References: <20190327180158.10245-1-sashal@kernel.org>
@@ -72,94 +72,51 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+Cc: Diana Craciun <diana.craciun@nxp.com>, linuxppc-dev@lists.ozlabs.org,
  Sasha Levin <sashal@kernel.org>
 Errors-To: linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org
 Sender: "Linuxppc-dev"
  <linuxppc-dev-bounces+linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 
-[ Upstream commit 11f5acce2fa43b015a8120fa7620fa4efd0a2952 ]
+[ Upstream commit 27da80719ef132cf8c80eb406d5aeb37dddf78cc ]
 
-We store 2 multilevel tables in iommu_table - one for the hardware and
-one with the corresponding userspace addresses. Before allocating
-the tables, the iommu_table_group_ops::get_table_size() hook returns
-the combined size of the two and VFIO SPAPR TCE IOMMU driver adjusts
-the locked_vm counter correctly. When the table is actually allocated,
-the amount of allocated memory is stored in iommu_table::it_allocated_size
-and used to decrement the locked_vm counter when we release the memory
-used by the table; .get_table_size() and .create_table() calculate it
-independently but the result is expected to be the same.
+The commit identified below adds MC_BTB_FLUSH macro only when
+CONFIG_PPC_FSL_BOOK3E is defined. This results in the following error
+on some configs (seen several times with kisskb randconfig_defconfig)
 
-However the allocator does not add the userspace table size to
-.it_allocated_size so when we destroy the table because of VFIO PCI
-unplug (i.e. VFIO container is gone but the userspace keeps running),
-we decrement locked_vm by just a half of size of memory we are
-releasing.
+arch/powerpc/kernel/exceptions-64e.S:576: Error: Unrecognized opcode: `mc_btb_flush'
+make[3]: *** [scripts/Makefile.build:367: arch/powerpc/kernel/exceptions-64e.o] Error 1
+make[2]: *** [scripts/Makefile.build:492: arch/powerpc/kernel] Error 2
+make[1]: *** [Makefile:1043: arch/powerpc] Error 2
+make: *** [Makefile:152: sub-make] Error 2
 
-To make things worse, since we enabled on-demand allocation of
-indirect levels, it_allocated_size contains only the amount of memory
-actually allocated at the table creation time which can just be a
-fraction. It is not a problem with incrementing locked_vm (as
-get_table_size() value is used) but it is with decrementing.
+This patch adds a blank definition of MC_BTB_FLUSH for other cases.
 
-As the result, we leak locked_vm and may not be able to allocate more
-IOMMU tables after few iterations of hotplug/unplug.
-
-This sets it_allocated_size in the pnv_pci_ioda2_ops::create_table()
-hook to what pnv_pci_ioda2_get_table_size() returns so from now on we
-have a single place which calculates the maximum memory a table can
-occupy. The original meaning of it_allocated_size is somewhat lost now
-though.
-
-We do not ditch it_allocated_size whatsoever here and we do not call
-get_table_size() from vfio_iommu_spapr_tce.c when decrementing
-locked_vm as we may have multiple IOMMU groups per container and even
-though they all are supposed to have the same get_table_size()
-implementation, there is a small chance for failure or confusion.
-
-Fixes: 090bad39b237 ("powerpc/powernv: Add indirect levels to it_userspace")
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Fixes: 10c5e83afd4a ("powerpc/fsl: Flush the branch predictor at each kernel entry (64bit)")
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Reviewed-by: Diana Craciun <diana.craciun@nxp.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 1 -
- arch/powerpc/platforms/powernv/pci-ioda.c     | 7 ++++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-index 697449afb3f7..e28f03e1eb5e 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -313,7 +313,6 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
- 			page_shift);
- 	tbl->it_level_size = 1ULL << (level_shift - 3);
- 	tbl->it_indirect_levels = levels - 1;
--	tbl->it_allocated_size = total_allocated;
- 	tbl->it_userspace = uas;
- 	tbl->it_nid = nid;
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index afb638778f44..447defdd4503 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -349,6 +349,7 @@ ret_from_mc_except:
+ #define GEN_BTB_FLUSH
+ #define CRIT_BTB_FLUSH
+ #define DBG_BTB_FLUSH
++#define MC_BTB_FLUSH
+ #define GDBELL_BTB_FLUSH
+ #endif
  
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 145373f0e5dc..2d62c58f9a4c 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2594,8 +2594,13 @@ static long pnv_pci_ioda2_create_table_userspace(
- 		int num, __u32 page_shift, __u64 window_size, __u32 levels,
- 		struct iommu_table **ptbl)
- {
--	return pnv_pci_ioda2_create_table(table_group,
-+	long ret = pnv_pci_ioda2_create_table(table_group,
- 			num, page_shift, window_size, levels, true, ptbl);
-+
-+	if (!ret)
-+		(*ptbl)->it_allocated_size = pnv_pci_ioda2_get_table_size(
-+				page_shift, window_size, levels);
-+	return ret;
- }
- 
- static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
 -- 
 2.19.1
 
